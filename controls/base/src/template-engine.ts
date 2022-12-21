@@ -44,22 +44,22 @@ export function compile(templateString: string, helper?: Object, ignorePrefix?:b
         if (isBlazor() && !isStringTemplate) {
             const randomId: string = getRandomId();
             let blazorId: string = templateId + randomId;
-            if (!blazorTemplates[templateId]) {
-                blazorTemplates[templateId] = [];
+            if (!blazorTemplates[`${templateId}`]) {
+                blazorTemplates[`${templateId}`] = [];
             }
             if (!isNullOrUndefined(index)) {
-                const keys: string[] = Object.keys(blazorTemplates[templateId][index]);
+                const keys: string[] = Object.keys(blazorTemplates[`${templateId}`][parseInt(index.toString(), 10)]);
                 for (const key of keys) {
-                    if (key !== blazorTemplateId && data[key]) {
-                        blazorTemplates[templateId][index][key] = data[key];
+                    if (key !== blazorTemplateId && data[`${key}`]) {
+                        blazorTemplates[`${templateId}`][parseInt(index.toString(), 10)][`${key}`] = data[`${key}`];
                     }
                     if (key === blazorTemplateId) {
-                        blazorId = blazorTemplates[templateId][index][key];
+                        blazorId = blazorTemplates[`${templateId}`][parseInt(index.toString(), 10)][`${key}`];
                     }
                 }
             } else {
-                data[blazorTemplateId] = blazorId;
-                blazorTemplates[templateId].push(data);
+                data[`${blazorTemplateId}`] = blazorId;
+                blazorTemplates[`${templateId}`].push(data);
             }
             // eslint-disable-next-line
             return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
@@ -95,9 +95,9 @@ export function updateBlazorTemplate(
     isEmpty?: boolean, callBack?: Function): void {
     if (isBlazor()) {
         const ejsIntrop: string = 'sfBlazor';
-        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
+        window[`${ejsIntrop}`].updateTemplate(templateName, blazorTemplates[`${templateId}`], templateId, comp, callBack);
         if (isEmpty !== false) {
-            blazorTemplates[templateId] = [];
+            blazorTemplates[`${templateId}`] = [];
         }
     }
 }
@@ -117,19 +117,19 @@ export function resetBlazorTemplate(templateId?: string, templateName?: string, 
         for (let i: number = 0; i < innerTemplates.length; i++) {
             let tempId: string = ' ';
             if (!isNullOrUndefined(index)) {
-                tempId = innerTemplates[index].getAttribute('data-templateId');
+                tempId = innerTemplates[parseInt(index.toString(), 10)].getAttribute('data-templateId');
             } else {
-                tempId = innerTemplates[i].getAttribute('data-templateId');
+                tempId = innerTemplates[parseInt(i.toString(), 10)].getAttribute('data-templateId');
             }
             const tempElement: HTMLElement = document.getElementById(tempId);
             if (tempElement) {
                 const length: number = tempElement.childNodes.length;
                 for (let j: number = 0; j < length; j++) {
                     if (!isNullOrUndefined(index)) {
-                        innerTemplates[index].appendChild(tempElement.childNodes[0]);
+                        innerTemplates[parseInt(index.toString(), 10)].appendChild(tempElement.childNodes[0]);
                         i = innerTemplates.length;
                     } else {
-                        innerTemplates[i].appendChild(tempElement.childNodes[0]);
+                        innerTemplates[parseInt(i.toString(), 10)].appendChild(tempElement.childNodes[0]);
                     }
                 }
 

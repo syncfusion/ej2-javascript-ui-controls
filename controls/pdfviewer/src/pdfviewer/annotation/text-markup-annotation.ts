@@ -800,7 +800,9 @@ export class TextMarkupAnnotation {
                     y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
                     height = newBounds[0].height ? newBounds[0].height: newBounds[0].Height;
                     for (var j = 0; j < newBounds.length; j++) {
-                        width += newBounds[j].width ? newBounds[j].width : newBounds[j].Width;
+                        if ((!isNaN(newBounds[j].width) && newBounds[j].width > 0) || (!isNaN(newBounds[j].Width) && newBounds[j].Width > 0)) {
+                            width += newBounds[j].width ? newBounds[j].width : newBounds[j].Width;
+                        }
                     }
                     if (!newcanvas) {
                         newcanvas = this.pdfViewerBase.getElement('_annotationCanvas_' + newAnnotation.pageNumber);

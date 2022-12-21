@@ -54,10 +54,10 @@ export class BpmnDiagrams {
     public get textAnnotationConnectors(): ConnectorModel[] {
         const connectors: ConnectorModel[] = [];
         for (const key of Object.keys(this.annotationObjects)) {
-            const entry: {} = this.annotationObjects[key];
+            const entry: {} = this.annotationObjects[`${key}`];
             for (const annotation of Object.keys(entry)) {
                 const key: string = 'connector';
-                connectors.push(entry[annotation][key]);
+                connectors.push(entry[`${annotation}`][`${key}`]);
             }
         }
         return connectors;
@@ -70,7 +70,7 @@ export class BpmnDiagrams {
             const entry: {} = this.annotationObjects[obj.id];
             for (const annotation of Object.keys(entry)) {
                 const key: string = 'connector';
-                connectors.push(entry[annotation][key]);
+                connectors.push(entry[`${annotation}`][`${key}`]);
             }
         }
         return connectors;
@@ -137,9 +137,9 @@ export class BpmnDiagrams {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const annotations: {} = {};
         if (shape.annotations.length > 0) {
-            for (let i: number = 0; i < shape.annotations.length && shape.annotations[i].text; i++) {
+            for (let i: number = 0; i < shape.annotations.length && shape.annotations[parseInt(i.toString(), 10)].text; i++) {
                 (content as Canvas).children.push(this.getBPMNTextAnnotation(
-                    node, diagram, shape.annotations[i], content));
+                    node, diagram, shape.annotations[parseInt(i.toString(), 10)], content));
             }
             content.style.strokeDashArray = '2 2 6 2';
         }
@@ -531,7 +531,7 @@ export class BpmnDiagrams {
             subprocessNode.style.strokeWidth = 1; subprocessNode.style.strokeDashArray = '2 2';
             events = subProcess.events;
             for (let i: number = 0; i < events.length; i++) {
-                event = events[i];
+                event = events[parseInt(i.toString(), 10)];
                 this.getBPMNSubEvent(event as BpmnSubEvent, node, subProcessShapes);
             }
         }
@@ -700,8 +700,8 @@ export class BpmnDiagrams {
                 let edges: string[] = [];
                 edges = edges.concat((source as Node).outEdges, (source as Node).inEdges);
                 for (let i: number = edges.length - 1; i >= 0; i--) {
-                    if (diagram.bpmnModule.textAnnotationConnectors.indexOf(diagram.nameTable[edges[i]]) === -1) {
-                        diagram.remove(diagram.nameTable[edges[i]]);
+                    if (diagram.bpmnModule.textAnnotationConnectors.indexOf(diagram.nameTable[edges[parseInt(i.toString(), 10)]]) === -1) {
+                        diagram.remove(diagram.nameTable[edges[parseInt(i.toString(), 10)]]);
                     }
                 }
                 const obj: NodeModel = cloneObject(source);
@@ -733,12 +733,12 @@ export class BpmnDiagrams {
             && (source.shape as BpmnShapeModel).activity.subProcess.processes.length > 0) {
             for (let i: number = 0; i < (source.shape as BpmnShapeModel).activity.subProcess.processes.length; i++) {
                 this.updateIndex(diagram, source);
-                const processes: string = (source.shape as BpmnShapeModel).activity.subProcess.processes[i];
-                if (diagram.nameTable[processes].shape.activity.subProcess.processes.length > 0) {
+                const processes: string = (source.shape as BpmnShapeModel).activity.subProcess.processes[parseInt(i.toString(), 10)];
+                if (diagram.nameTable[`${processes}`].shape.activity.subProcess.processes.length > 0) {
 
-                    this.updateSubprocessNodeIndex(diagram.nameTable[processes], diagram, target);
+                    this.updateSubprocessNodeIndex(diagram.nameTable[`${processes}`], diagram, target);
                 } else {
-                    const node: Node = diagram.nameTable[(source.shape as BpmnShapeModel).activity.subProcess.processes[i]];
+                    const node: Node = diagram.nameTable[(source.shape as BpmnShapeModel).activity.subProcess.processes[parseInt(i.toString(), 10)]];
                     this.updateIndex(diagram, node);
                 }
             }
@@ -752,7 +752,7 @@ export class BpmnDiagrams {
             !(obj.shape as BpmnShape).activity.subProcess.collapsed) {
             const processTable: string[] = (obj.shape as BpmnShape).activity.subProcess.processes;
             for (const i of processTable) {
-                const actualObject: Node = diagram.nameTable[i];
+                const actualObject: Node = diagram.nameTable[`${i}`];
                 if (actualObject) {
                     diagram.updateConnectorEdges(actualObject);
                     actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
@@ -772,7 +772,7 @@ export class BpmnDiagrams {
             (currentObj.shape as BpmnShape).activity.subProcess.processes.length > 0) {
             const processes: string[] = (currentObj.shape as BpmnShape).activity.subProcess.processes;
             for (let j: number = processes.length - 1; j >= 0; j--) {
-                diagram.remove(diagram.nameTable[processes[j]]);
+                diagram.remove(diagram.nameTable[processes[parseInt(j.toString(), 10)]]);
             }
         }
         if (element) {
@@ -796,7 +796,7 @@ export class BpmnDiagrams {
     }
     /** @private */
     public removeProcess(id: string, diagram: Diagram): void {
-        const node: Node = diagram.nameTable[id];
+        const node: Node = diagram.nameTable[`${id}`];
         if (node) {
             const parent: NodeModel = diagram.nameTable[node.processId];
             if (parent && parent.shape.type === 'Bpmn') {
@@ -816,12 +816,12 @@ export class BpmnDiagrams {
         //let id: string;
         process.id = process.id || randomId();
         const id: string = process.id;
-        const node: Node = diagram.nameTable[id];
+        const node: Node = diagram.nameTable[`${id}`];
         if (!node) {
             diagram.add(process);
         }
         (process as Node).processId = parentId;
-        const parentNode: NodeModel = diagram.nameTable[parentId];
+        const parentNode: NodeModel = diagram.nameTable[`${parentId}`];
         const subProcess: BpmnSubProcessModel = (parentNode.shape as BpmnShape).activity.subProcess;
         if (node && parentNode && parentNode.shape.type === 'Bpmn' && node.shape.type === 'Bpmn' &&
             subProcess.processes) {
@@ -851,14 +851,14 @@ export class BpmnDiagrams {
             for (const i of processes) {
                 if (excludeChild !== i) {
                     if (!bound) {
-                        bound = diagram.nameTable[i].wrapper.bounds;
+                        bound = diagram.nameTable[`${i}`].wrapper.bounds;
                     } else {
-                        bound = diagram.nameTable[i].wrapper.bounds.uniteRect(bound);
+                        bound = diagram.nameTable[`${i}`].wrapper.bounds.uniteRect(bound);
                     }
                 }
             }
         }
-        return bound || diagram.nameTable[excludeChild].wrapper.bounds;
+        return bound || diagram.nameTable[`${excludeChild}`].wrapper.bounds;
     }
     /** @private */
     public updateSubProcessess(bound: Rect, obj: NodeModel, diagram: Diagram): void {
@@ -931,7 +931,7 @@ export class BpmnDiagrams {
         let annotations: DiagramElement; let ports: DiagramElement;
         if (events.annotations.length !== 0) {
             for (let i: number = 0; i < events.annotations.length; i++) {
-                const annot: Object = events.annotations[i];
+                const annot: Object = events.annotations[parseInt(i.toString(), 10)];
                 annotations = node.initAnnotationWrapper(annot as Annotation);
                 annotations.width = events.width; annotations.height = events.height;
                 subProcessEventsShapes.children.push(annotations);
@@ -939,7 +939,7 @@ export class BpmnDiagrams {
         }
         if (events.ports.length !== 0) {
             for (let i: number = 0; i < events.ports.length; i++) {
-                const port: Object = events.ports[i];
+                const port: Object = events.ports[parseInt(i.toString(), 10)];
                 ports = node.initPortWrapper(port as Port);
                 subProcessEventsShapes.children.push(ports);
             }
@@ -1058,8 +1058,8 @@ export class BpmnDiagrams {
         }
         const nodeKey: string = 'node';
         const connKey: string = 'connector';
-        entry[annotation.id][nodeKey] = annotationNode;
-        entry[annotation.id][connKey] = annotationConnector;
+        entry[annotation.id][`${nodeKey}`] = annotationNode;
+        entry[annotation.id][`${connKey}`] = annotationConnector;
         this.annotationObjects[node.id] = entry;
         diagram.initObject(annotationNode, undefined, false);
         annotationNode.zIndex = 10000;
@@ -1145,8 +1145,8 @@ export class BpmnDiagrams {
             const shape: BpmnShapes = (isBlazor() ? (node.shape as DiagramShape).bpmnShape : (node.shape as BpmnShape).shape);
             if (shape === 'TextAnnotation') {
                 return node.wrapper.children[1] as TextElement;
-            } else if (this.annotationObjects[node.id] && this.annotationObjects[node.id][id]) {
-                const annotationNode: NodeModel = this.annotationObjects[node.id][id].node;
+            } else if (this.annotationObjects[node.id] && this.annotationObjects[node.id][`${id}`]) {
+                const annotationNode: NodeModel = this.annotationObjects[node.id][`${id}`].node;
                 return this.getTextAnnotationWrapper(annotationNode, id);
             }
         }
@@ -1171,7 +1171,7 @@ export class BpmnDiagrams {
         const bpmnShape: BpmnShape = obj.shape as BpmnShape;
         if (bpmnShape.annotations.length) {
             for (let i: number = bpmnShape.annotations.length - 1; i >= 0; i--) {
-                const annotation: BpmnAnnotationModel = bpmnShape.annotations[i];
+                const annotation: BpmnAnnotationModel = bpmnShape.annotations[parseInt(i.toString(), 10)];
                 this.removeAnnotationObjects(obj, annotation, diagram);
             }
         }
@@ -1189,7 +1189,7 @@ export class BpmnDiagrams {
                 const id: string[] = node.id.split('_');
                 const annotationId: string = id[id.length - 1];
                 const nodeId: string = id[id.length - 3] || id[0];
-                const parentNode: NodeModel = diagram.nameTable[nodeId];
+                const parentNode: NodeModel = diagram.nameTable[`${nodeId}`];
                 const bpmnShape: BpmnShape = parentNode.shape as BpmnShape;
                 for (const annotation of bpmnShape.annotations) {
                     if (annotation.id === annotationId) {
@@ -1316,9 +1316,9 @@ export class BpmnDiagrams {
         if (this.annotationObjects) {
             const parentNodeId: string = activeLabel.parentId;
             const annotationId: string = activeLabel.id;
-            const parentNode: NodeModel = diagram.nameTable[parentNodeId];
-            if (parentNode && parentNode.shape.type === 'Bpmn' && this.annotationObjects[parentNodeId] &&
-                this.annotationObjects[parentNodeId][annotationId]) {
+            const parentNode: NodeModel = diagram.nameTable[`${parentNodeId}`];
+            if (parentNode && parentNode.shape.type === 'Bpmn' && this.annotationObjects[`${parentNodeId}`] &&
+                this.annotationObjects[`${parentNodeId}`][`${annotationId}`]) {
                 return parentNode;
             }
             return null;
@@ -1331,11 +1331,11 @@ export class BpmnDiagrams {
     public updateTextAnnotationContent(parentNode: NodeModel, activeLabel: ActiveLabel, text: string, diagram: Diagram): void {
         const parentNodeId: string = activeLabel.parentId;
         const annotationId: string = activeLabel.id;
-        if (this.annotationObjects[parentNodeId] && this.annotationObjects[parentNodeId][annotationId]) {
+        if (this.annotationObjects[`${parentNodeId}`] && this.annotationObjects[`${parentNodeId}`][`${annotationId}`]) {
             for (const annotation of (parentNode.shape as BpmnShape).annotations) {
                 if (annotation.id === annotationId) {
                     annotation.text = text;
-                    const wrapper: TextElement = this.annotationObjects[parentNodeId][annotationId].node.wrapper.children[1];
+                    const wrapper: TextElement = this.annotationObjects[`${parentNodeId}`][`${annotationId}`].node.wrapper.children[1];
                     wrapper.content = text;
                     wrapper.visible = true;
                     parentNode.wrapper.measure(new Size());
@@ -1351,7 +1351,7 @@ export class BpmnDiagrams {
         let annotationNode: NodeModel;
         if (annotation && annotation.length > 0) {
             for (let i: number = 0; i < annotation.length; i++) {
-                annotationNode = this.annotationObjects[actualObject.id][annotation[i].id].node;
+                annotationNode = this.annotationObjects[actualObject.id][annotation[parseInt(i.toString(), 10)].id].node;
                 diagram.updateQuad(annotationNode as IElement);
             }
         }
@@ -1359,32 +1359,32 @@ export class BpmnDiagrams {
 
 
     /** @private */
-    public updateTextAnnotationProp(actualObject: Node, oldObject: Node, diagram: Diagram, isChild?: boolean): void {
+    public updateTextAnnotationProp(actualObject: Node, oldObject: Node, diagram: Diagram,  isChild?: boolean): void {
         if (actualObject.shape.type === 'Bpmn') {
             const annotation: BpmnAnnotationModel = (actualObject.shape as BpmnShape).annotations;
             if (annotation && annotation.length > 0) {
                 for (let i: number = 0; i < (actualObject.wrapper.children[0] as Canvas).children.length; i++) {
                     for (let j: number = 0; j < annotation.length; j++) {
-                        const annotationId: string[] = (actualObject.wrapper.children[0] as Canvas).children[i].id.split('_');
+                        const annotationId: string[] = (actualObject.wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].id.split('_');
                         const id: string = annotationId[annotationId.length - 1];
-                        if (id === annotation[j].id) {
-                            const annotationNode: NodeModel = this.annotationObjects[actualObject.id][annotation[j].id].node;
-                            const connector: ConnectorModel = this.annotationObjects[actualObject.id][annotation[j].id].connector;
+                        if (id === annotation[parseInt(j.toString(), 10)].id) {
+                            const annotationNode: NodeModel = this.annotationObjects[actualObject.id][annotation[parseInt(j.toString(), 10)].id].node;
+                            const connector: ConnectorModel = this.annotationObjects[actualObject.id][annotation[parseInt(j.toString(), 10)].id].connector;
                             const direction: string = getPortDirection(
                                 connector.targetPoint, actualObject.wrapper.bounds, actualObject.wrapper.bounds, false);
                             let position: PointModel = connector.sourcePoint;
-                            // EJ2-63939 - If it is swimlane children node means we take the offsetX from the wrapper. 
+                             // EJ2-63939 - If it is swimlane children node means we take the offsetX from the wrapper. 
                             position = {
                                 x: connector.sourcePoint.x + (isChild ? actualObject.wrapper.offsetX : actualObject.offsetX) - (oldObject.offsetX),
                                 y: connector.sourcePoint.y + (isChild ? actualObject.wrapper.offsetY : actualObject.offsetY) - (oldObject.offsetY)
                             };
                             position = Point.transform(
                                 position,
-                                (annotation[j] as BpmnAnnotationModel).angle,
-                                (annotation[j] as BpmnAnnotationModel).length);
-                            (actualObject.wrapper.children[0] as Canvas).children[i].offsetX =
+                                (annotation[parseInt(j.toString(), 10)] as BpmnAnnotationModel).angle,
+                                (annotation[parseInt(j.toString(), 10)] as BpmnAnnotationModel).length);
+                            (actualObject.wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].offsetX =
                                 annotationNode.offsetX = position.x;
-                            (actualObject.wrapper.children[0] as Canvas).children[i].offsetY =
+                            (actualObject.wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].offsetY =
                                 annotationNode.offsetY = position.y;
                             diagram.updateQuad(annotationNode as IElement);
                         }
@@ -1547,7 +1547,7 @@ export class BpmnDiagrams {
     /** @private */
     public updateBPMNStyle(elementWrapper: DiagramElement, changedProp: string): void {
         for (let i: number = 0; i < (elementWrapper as Container).children.length; i++) {
-            const child: DiagramElement = (elementWrapper as Container).children[i];
+            const child: DiagramElement = (elementWrapper as Container).children[parseInt(i.toString(), 10)];
             updateStyle({ strokeColor: changedProp }, child);
         }
     }
@@ -1786,7 +1786,7 @@ export class BpmnDiagrams {
         const elementWrapper: Canvas = ((node.wrapper.children[0] as Canvas).children[0] as Canvas);
         const task: BpmnTaskModel = bpmnShape.activity.task;
         for (let i: number = 0; i < elementWrapper.children.length; i++) {
-            if (elementWrapper.children[i].id === node.id + '_1_taskTypeService') {
+            if (elementWrapper.children[parseInt(i.toString(), 10)].id === node.id + '_1_taskTypeService') {
                 elementWrapper.children.splice(i, 1);
                 const element: HTMLElement = document.getElementById(node.id + '_1_taskTypeService');
                 element.parentNode.removeChild(element);
@@ -1801,7 +1801,7 @@ export class BpmnDiagrams {
             const bpmnshapeTaskdata: string = getBpmnTaskShapePathData(task.type);
             (elementWrapper.children[1] as PathModel).data = bpmnshapeTaskdata;
                 for (let i: number = 0; i < elementWrapper.children.length; i++) {
-                    if (elementWrapper.children[i].id === node.id + '_1_tasktType') {
+                    if (elementWrapper.children[parseInt(i.toString(), 10)].id === node.id + '_1_tasktType') {
                         elementWrapper.children.splice(i, 1);
                         const element: HTMLElement = document.getElementById(node.id + '_1_tasktType');
                         element.parentNode.removeChild(element);
@@ -1886,16 +1886,16 @@ export class BpmnDiagrams {
     private updateChildMargin(elementWrapper: Container, subChildCount: number, area: number, x: number, start: number): void {
         if (subChildCount === 1) {
             for (let i: number = start; i < elementWrapper.children.length; i++) {
-                if (i !== 2 && elementWrapper.children[i].visible === true) {
-                    elementWrapper.children[i].margin.left = x;
+                if (i !== 2 && elementWrapper.children[parseInt(i.toString(), 10)].visible === true) {
+                    elementWrapper.children[parseInt(i.toString(), 10)].margin.left = x;
                     x = area + 8;
                 }
             }
         } else {
             x = area + (subChildCount - 1) * 8;
             for (let i: number = start; i < elementWrapper.children.length; i++) {
-                if (i !== 2 && elementWrapper.children[i].visible === true) {
-                    elementWrapper.children[i].margin.left = x; x += 12 + 8;
+                if (i !== 2 && elementWrapper.children[parseInt(i.toString(), 10)].visible === true) {
+                    elementWrapper.children[parseInt(i.toString(), 10)].margin.left = x; x += 12 + 8;
                 }
             }
         }
@@ -1947,9 +1947,9 @@ export class BpmnDiagrams {
         for (const key of Object.keys(subProcess.events)) {
             const eventIndex: number = Number(key);
             const eventWrapper: Canvas = nodeContent.children[eventIndex + start] as Canvas;
-            const actualEvent: BpmnSubEventModel = (node.shape as BpmnShape).activity.subProcess.events[eventIndex];
+            const actualEvent: BpmnSubEventModel = (node.shape as BpmnShape).activity.subProcess.events[parseInt(eventIndex.toString(), 10)];
             this.updateBPMNSubEvent(
-                node, subProcess.events[eventIndex], actualEvent, eventWrapper, newObject, oldObject, diagram);
+                node, subProcess.events[parseInt(eventIndex.toString(), 10)], actualEvent, eventWrapper, newObject, oldObject, diagram);
         }
     }
 
@@ -2049,7 +2049,7 @@ export class BpmnDiagrams {
         }
 
         for (const edge of (node as Node).outEdges) {
-            const connector: Connector = diagram.nameTable[edge];
+            const connector: Connector = diagram.nameTable[`${edge}`];
             switch (connector.sourcePortID) {
             case 'success':
                 if (transaction.success && transaction.success.visible !== undefined) {
@@ -2127,7 +2127,7 @@ export class BpmnDiagrams {
             && (node.shape as BpmnShape).activity.subProcess.processes.length > 0) {
             const processes: string[] = (node.shape as BpmnShape).activity.subProcess.processes;
             for (let j: number = processes.length - 1; j >= 0; j--) {
-                const currentNode: Node = diagram.nameTable[processes[j]];
+                const currentNode: Node = diagram.nameTable[processes[parseInt(j.toString(), 10)]];
                 currentNode.visible = visible;
                 diagram.updateElementVisibility(currentNode.wrapper, currentNode, visible);
                 if (visible) {
@@ -2141,7 +2141,7 @@ export class BpmnDiagrams {
                 }
                 const connectors: string[] = currentNode.inEdges.concat(currentNode.outEdges);
                 for (let i: number = connectors.length - 1; i >= 0; i--) {
-                    const connector: Connector = diagram.nameTable[connectors[i]];
+                    const connector: Connector = diagram.nameTable[connectors[parseInt(i.toString(), 10)]];
                     connector.visible = visible;
                     diagram.updateElementVisibility(connector.wrapper, connector, visible);
                 }
@@ -2203,51 +2203,67 @@ export class BpmnDiagrams {
     /** @private */
     public updateBPMNConnector(actualObject: Connector, oldObject: Connector, connection: Connector, diagram: Diagram): Connector {
         const flowType: BpmnFlowModel = connection.shape as BpmnFlowModel;
-        if (flowType.sequence !== undefined) {
+        //EJ2-66905 - Changing BPMN flow connectors at runtime is not working properly.
+        let flow = (actualObject.shape as BpmnFlowModel).flow;
+        if ((flowType.flow === 'Sequence'|| flowType.sequence) && flow === 'Sequence') {
             actualObject = this.getSequence(actualObject, oldObject, connection, diagram);
         }
-        if (flowType.association !== undefined) {
+        if ((flowType.flow === 'Association'|| flowType.association) && flow === 'Association') {
             actualObject = this.getAssociation(actualObject, oldObject, connection, diagram);
         }
-        if (flowType.message !== undefined) {
+        if ((flowType.flow === 'Message' || flowType.message )  && flow === 'Message') {
             actualObject = this.getMessage(actualObject, oldObject, connection, diagram);
         }
         return actualObject;
     }
     /** @private */
     public getSequence(actualObject: Connector, oldObject: Connector, connection: Connector, diagram: Diagram): Connector {
-        if (((connection.shape as BpmnFlowModel).sequence) === 'Normal') {
+        if (((connection.shape as BpmnFlowModel).sequence) === 'Normal' || (actualObject.shape as BpmnFlowModel).sequence === 'Normal') {
+            actualObject.targetDecorator.shape = 'Arrow';actualObject.sourceDecorator.shape = 'None';
+            actualObject.style.strokeDashArray = 'None'; actualObject.targetDecorator.style.fill = 'black';
+            actualObject.targetDecorator.width = 10 ;actualObject.targetDecorator.height = 10;
             diagram.connectorPropertyChange(actualObject, oldObject, ({
-                type: 'Straight',
-                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } }
+                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } ,height:10,width:10},
+                sourceDecorator: {shape:'None'},
+                style:{strokeDashArray: 'None'},
             } as Connector));
             actualObject.wrapper.children[3].visible = false;
         }
-        if (((connection.shape as BpmnFlowModel).sequence) === 'Default') {
+        if (((connection.shape as BpmnFlowModel).sequence) === 'Default' || (actualObject.shape as BpmnFlowModel).sequence === 'Default') {
+            actualObject.targetDecorator.shape = 'Arrow';actualObject.sourceDecorator.shape = 'None';
+            actualObject.style.strokeDashArray = 'None'; actualObject.targetDecorator.style.fill = 'black';
+            actualObject.targetDecorator.width = 10 ;actualObject.targetDecorator.height = 10;
             diagram.connectorPropertyChange(actualObject, oldObject, ({
-                type: 'Straight',
-                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } },
-                sourceDecorator: { shape: 'None' }
+                    style:{strokeDashArray:'None'},
+                    targetDecorator: { shape: 'Arrow', style: { fill: 'black' } ,height:10,width:10},
+                    sourceDecorator: { shape: 'None' }
             } as Connector));
             let segment: PathElement = new PathElement(); const pathseq: PathElement = new PathElement(); let pathseqData: Object;
             segment = actualObject.getSegmentElement(actualObject, segment);
             const anglePoints: PointModel[] = actualObject.intermediatePoints as PointModel[];
             for (let j: number = 0; j < anglePoints.length - 1; j++) {
                 // eslint-disable-next-line no-global-assign
-                length = length + actualObject.distance(anglePoints[j], anglePoints[j + 1]);
-                pathseqData = actualObject.findPath(anglePoints[j], anglePoints[j + 1]);
+                length = length + actualObject.distance(anglePoints[parseInt(j.toString(), 10)], anglePoints[j + 1]);
+                pathseqData = actualObject.findPath(anglePoints[parseInt(j.toString(), 10)], anglePoints[j + 1]);
             }
-            (actualObject.wrapper.children[3] as PathModel).data = pathseqData[0];
-            actualObject.wrapper.children[3].id = actualObject.id + '_' + ((connection.shape as BpmnFlowModel).sequence);
-            actualObject.wrapper.children[3].offsetX = pathseqData[1].x;
-            actualObject.wrapper.children[3].offsetY = pathseqData[1].y;
-            actualObject.wrapper.children[3].rotateAngle = 45;
-            actualObject.wrapper.children[3].transform = Transform.Self;
+            var content = new PathElement();
+
+            content.data = pathseqData[0];
+            content.id = actualObject.id + '_' + (connection.shape as BpmnFlowModel).sequence || (actualObject.shape as BpmnFlowModel).sequence;
+            content.offsetX = pathseqData[1].x;
+            content.offsetY = pathseqData[1].y;
+            content.rotateAngle = 45;
+            content.transform = Transform.Self;
+            this.removeDomElement(actualObject,diagram,content);
         }
-        if (((connection.shape as BpmnFlowModel).sequence) === 'Conditional') {
+        if (((connection.shape as BpmnFlowModel).sequence) === 'Conditional' || (actualObject.shape as BpmnFlowModel).sequence === 'Conditional') {
+            actualObject.sourceDecorator.shape = 'Diamond';actualObject.sourceDecorator.width = 20;
+            actualObject.sourceDecorator.height = 10;actualObject.sourceDecorator.style.fill = 'white';
+            actualObject.targetDecorator.style.fill = 'black';
+            actualObject.style.strokeDashArray = 'None';actualObject.targetDecorator.shape = 'Arrow';
             diagram.connectorPropertyChange(actualObject, oldObject, ({
-                type: 'Straight',
-                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } },
+                style:{strokeDashArray: 'None'},
+                targetDecorator: { shape: 'Arrow', style: { fill: 'black' },height:10,width:10 },
                 sourceDecorator: { shape: 'Diamond', width: 20, height: 10, style: { fill: 'white' } }
             } as Connector));
             actualObject.wrapper.children[3].visible = false;
@@ -2256,72 +2272,90 @@ export class BpmnDiagrams {
     }
     /** @private */
     public getAssociation(actualObject: Connector, oldObject: Connector, connection: Connector, diagram: Diagram): Connector {
-        if (((connection.shape as BpmnFlowModel).association) === 'Default') {
+        if (((connection.shape as BpmnFlowModel).association) === 'Default' || (actualObject.shape as BpmnFlowModel).association === 'Default') {
+            actualObject.sourceDecorator.shape = 'None';
+            actualObject.targetDecorator.shape = 'None';actualObject.style.strokeDashArray = '2 2';
             diagram.connectorPropertyChange(actualObject, oldObject, ({
-                type: 'Straight', style: { strokeDashArray: 'None' },
-                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } },
+                style: { strokeDashArray: '2 2' },
+                targetDecorator: { shape: 'None', },
                 sourceDecorator: { shape: 'None' }
             } as Connector));
+            actualObject.wrapper.children[3].visible = false;
         }
-        if (((connection.shape as BpmnFlowModel).association) === 'Directional') {
+        if (((connection.shape as BpmnFlowModel).association) === 'Directional' || (actualObject.shape as BpmnFlowModel).association === 'Directional') {
+            actualObject.sourceDecorator.shape = 'None';actualObject.style.strokeDashArray = '2 2';
+            actualObject.targetDecorator.shape = 'OpenArrow';actualObject.targetDecorator.width = 10;
+            actualObject.targetDecorator.height = 10;
             diagram.connectorPropertyChange(actualObject, oldObject, ({
-                type: 'Straight', style: { strokeDashArray: '2 2' },
-                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } },
+                style: { strokeDashArray: '2 2' },
+                targetDecorator: { shape: 'OpenArrow',width:10,height:10 },
                 sourceDecorator: { shape: 'None' }
             } as Connector));
+            actualObject.wrapper.children[3].visible = false;
         }
-        if (((connection.shape as BpmnFlowModel).association) === 'BiDirectional') {
+        if (((connection.shape as BpmnFlowModel).association) === 'BiDirectional' || (actualObject.shape as BpmnFlowModel).association === 'BiDirectional') {
+            actualObject.sourceDecorator.shape = 'OpenArrow';actualObject.targetDecorator.shape = 'OpenArrow';actualObject.sourceDecorator.width = 10;
+            actualObject.sourceDecorator.height = 10;actualObject.sourceDecorator.style.fill =  'black';
             diagram.connectorPropertyChange(actualObject, oldObject, ({
-                type: 'Straight', style: { strokeDashArray: '2 2' },
-                targetDecorator: { shape: 'Arrow', style: { fill: 'black' } },
-                sourceDecorator: { shape: 'Arrow', width: 5, height: 10, style: { fill: 'white' } }
+                style: { strokeDashArray: '2 2' },
+                targetDecorator: { shape: 'OpenArrow',width:10,height:10},
+                sourceDecorator: { shape: 'OpenArrow', width: 10, height: 10,style:{fill:'black'} }
             } as Connector));
+            actualObject.wrapper.children[3].visible = false;
         }
         return actualObject;
     }
     /** @private */
     public getMessage(actualObject: Connector, oldObject: Connector, connection: Connector, diagram: Diagram): Connector {
         const segmentOffset: number = 0.5; let angle: number; let pt: PointModel;
-        if (((oldObject.shape as BpmnFlowModel).message) === 'Default') {
-            if (((connection.shape as BpmnFlowModel).message) !== undefined) {
-                if ((((connection.shape as BpmnFlowModel).message) === 'InitiatingMessage') ||
-                    (((connection.shape as BpmnFlowModel).message) === 'NonInitiatingMessage')) {
-                    let segment: PathElement = new PathElement();
-                    segment = actualObject.getSegmentElement(actualObject, segment);
+        actualObject.sourceDecorator.shape = 'Circle';actualObject.sourceDecorator.width = 10;actualObject.targetDecorator.shape = 'Arrow';
+        actualObject.sourceDecorator.height = 10;actualObject.sourceDecorator.style.fill = 'White';actualObject.targetDecorator.style.fill = 'White';
+        diagram.connectorPropertyChange(actualObject,oldObject,({sourceDecorator:{shape:'Circle',style:{fill:'White'},width:10,height:10},targetDecorator:{shape:'Arrow',style:{fill:'white'}}} as Connector));
                     const anglePoints: PointModel[] = actualObject.intermediatePoints as PointModel[];
+                    let length = 0;
                     for (let j: number = 0; j < anglePoints.length - 1; j++) {
                         /* eslint-disable */
                         length = length + actualObject.distance(anglePoints[j], anglePoints[j + 1]);
                         /* eslint-enable */
                         const offLength: number = length * segmentOffset;
                         if (length >= offLength) {
-                            angle = findAngle(anglePoints[j], anglePoints[j + 1]);
-                            pt = Point.transform(anglePoints[j], angle, offLength);
+                            angle = findAngle(anglePoints[parseInt(j.toString(), 10)], anglePoints[j + 1]);
+                            pt = Point.transform(anglePoints[parseInt(j.toString(), 10)], angle, offLength);
                         }
                     }
-                }
-                actualObject.wrapper.children[3].id = actualObject.id + '_' + ((connection.shape as BpmnFlowModel).message);
-                actualObject.wrapper.children[3].width = 25;
-                actualObject.wrapper.children[3].height = 15;
-                (actualObject.wrapper.children[3] as PathModel).data = 'M0,0 L19.8,12.8 L40,0 L0, 0 L0, 25.5 L40, 25.5 L 40, 0';
-                actualObject.wrapper.children[3].horizontalAlignment = 'Center';
-                actualObject.wrapper.children[3].verticalAlignment = 'Center';
-                actualObject.wrapper.children[3].transform = Transform.Self;
-                actualObject.wrapper.children[3].style.fill = ((connection.shape as BpmnFlowModel).message) === 'NonInitiatingMessage' ?
-                    'lightgrey' : 'white';
-                actualObject.wrapper.children[3].offsetX = pt.x;
-                actualObject.wrapper.children[3].offsetY = pt.y;
-            }
-        } else if (((oldObject.shape as BpmnFlowModel).message) !== 'NonInitiatingMessage' ||
-            ((oldObject.shape as BpmnFlowModel).message) !== 'InitiatingMessage') {
-            if (((connection.shape as BpmnFlowModel).message) !== 'Default') {
-                actualObject.wrapper.children[3].style.fill = ((connection.shape as BpmnFlowModel).message) === 'NonInitiatingMessage' ?
+                    var content = new PathElement();
+                    actualObject.wrapper.children[0].style.strokeDashArray = ' 4 4';
+                    actualObject.style.strokeDashArray = '4 4';
+                    content.id = actualObject.id + '_' + (connection.shape as BpmnFlowModel).message || (actualObject.shape as BpmnFlowModel).message;
+                    content.width = 25;
+                    content.height = 15;
+                    content.data = 'M0,0 L19.8,12.8 L40,0 L0, 0 L0, 25.5 L40, 25.5 L 40, 0';
+                    content.horizontalAlignment = 'Center';
+                    content.verticalAlignment = 'Center';
+                    content.transform = Transform.Self;
+                    content.style.fill = (connection.shape as BpmnFlowModel).message === 'NonInitiatingMessage' ?
+                        'lightgrey' : 'white';
+                        content.offsetX = pt.x;
+                        content.offsetY = pt.y;
+            if (((connection.shape as BpmnFlowModel).message !== 'Default' && (connection.shape as BpmnFlowModel).message !== undefined) || (actualObject.shape as BpmnFlowModel).message !== 'Default') {
+                content.style.fill = ((connection.shape as BpmnFlowModel).message || (actualObject.shape as BpmnFlowModel).message) === 'NonInitiatingMessage' ?
                     'lightgrey' : 'white';
             } else {
-                actualObject.wrapper.children[3].visible = false;
+                content.visible = false;
             }
-        }
+            this.removeDomElement(actualObject,diagram,content);
         return actualObject;
+    }
+
+       // To remove old wrapper element from dom.
+       private removeDomElement(actualObject:Connector,diagram:Diagram,content:PathElement){
+        for (const elementId of diagram.views) {
+            removeElement(actualObject.id + '_groupElement', elementId);
+            removeElement(actualObject.id + '_content_groupElement', elementId);
+            removeElement(actualObject.id + '_html_element', elementId);
+        }
+        actualObject.wrapper.children.splice(3, 1);
+        actualObject.wrapper.children.splice(3, 0, content);
     }
 
     //End update Region
@@ -2353,7 +2387,7 @@ export class BpmnDiagrams {
         if (checkAnnotation[1] === 'textannotation') {
             let parentNode: NodeModel;
             for (let j: number = 0; j < (node as Node).inEdges.length; j++) {
-                const connector: Connector = diagram.nameTable[(node as Node).inEdges[j]];
+                const connector: Connector = diagram.nameTable[(node as Node).inEdges[parseInt(j.toString(), 10)]];
                 if (connector) {
                     parentNode = diagram.nameTable[connector.sourceID];
                 }
@@ -2363,9 +2397,9 @@ export class BpmnDiagrams {
                 const angle: number = Point.findAngle(end, start);
                 if ((parentNode.shape as BpmnShape).annotations) {
                     for (let x: number = 0; x < ((parentNode.shape as BpmnShape).annotations).length; x++) {
-                        if (((parentNode.shape as BpmnShape).annotations)[x].id === checkAnnotation[checkAnnotation.length - 1]) {
-                            ((parentNode.shape as BpmnShape).annotations[x]).length = length;
-                            ((parentNode.shape as BpmnShape).annotations[x]).angle = angle;
+                        if (((parentNode.shape as BpmnShape).annotations)[parseInt(x.toString(), 10)].id === checkAnnotation[checkAnnotation.length - 1]) {
+                            ((parentNode.shape as BpmnShape).annotations[parseInt(x.toString(), 10)]).length = length;
+                            ((parentNode.shape as BpmnShape).annotations[parseInt(x.toString(), 10)]).angle = angle;
                             this.setAnnotationPath(
                                 parentNode.wrapper.bounds, node.wrapper, start, node);
                             return false;
@@ -2451,13 +2485,13 @@ export class BpmnDiagrams {
             x = area - (childSpace / 2) - ((childCount - 1) * iconSpace) / 2;
         }
         for (let i: number = 0; i < (wrapper.children[0] as Canvas).children.length; i++) {
-            if ((wrapper.children[0] as Canvas).children[i].visible &&
-                ((wrapper.children[0] as Canvas).children[i].id.indexOf('_loop') > -1 ||
-                    (wrapper.children[0] as Canvas).children[i].id.indexOf('_0_compensation') > -1 ||
-                    (wrapper.children[0] as Canvas).children[i].id.indexOf('_0_adhoc') > -1 ||
-                    (wrapper.children[0] as Canvas).children[i].id.indexOf('_0_collapsed') > -1)) {
-                (wrapper.children[0] as Canvas).children[i].margin.left = x;
-                x += (wrapper.children[0] as Canvas).children[i].actualSize.width + iconSpace;
+            if ((wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].visible &&
+                ((wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].id.indexOf('_loop') > -1 ||
+                    (wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].id.indexOf('_0_compensation') > -1 ||
+                    (wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].id.indexOf('_0_adhoc') > -1 ||
+                    (wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].id.indexOf('_0_collapsed') > -1)) {
+                (wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].margin.left = x;
+                x += (wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].actualSize.width + iconSpace;
             }
         }
     }
@@ -2465,7 +2499,7 @@ export class BpmnDiagrams {
     private updateDiagramContainerVisibility(element: DiagramElement, visible: boolean): void {
         if (element instanceof Container) {
             for (let i: number = 0; i < element.children.length; i++) {
-                this.updateDiagramContainerVisibility(element.children[i], visible);
+                this.updateDiagramContainerVisibility(element.children[parseInt(i.toString(), 10)], visible);
             }
         }
         element.visible = visible;

@@ -99,7 +99,7 @@ export class RangeSeries extends NiceInterval {
         const xName: string = (series && series.xName) || control.xName;
         const yName: string = (series && series.yName) || control.yName;
         while (i < len) {
-            point = new DataPoint(getValue(xName, viewData[i]), getValue(yName, viewData[i]));
+            point = new DataPoint(getValue(xName, viewData[i as number]), getValue(yName, viewData[i as number]));
             point.yValue = +point.y;
             if (control.valueType === 'DateTime') {
                 const dateParser: Function = control.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
@@ -122,7 +122,7 @@ export class RangeSeries extends NiceInterval {
     }
     /**
      * Process x axis for range navigator.
-     * 
+     *
      * @private
      */
     public processXAxis(control: RangeNavigator): void {
@@ -191,7 +191,7 @@ export class RangeSeries extends NiceInterval {
         this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
         const colors: string[] = getSeriesColor(control.theme);
         control.series.map((series: RangeNavigatorSeries, index: number) => {
-            let isSeriesVisible: boolean = control.stockChart ? control.stockChart.series[index].visible : true;
+            const isSeriesVisible: boolean = control.stockChart ? control.stockChart.series[index as number].visible : true;
             if (isSeriesVisible) {
                 series.xAxis = this.xAxis;
                 series.yAxis = this.yAxis;
@@ -255,7 +255,7 @@ export class RangeSeries extends NiceInterval {
 
     /**
      * Calculate grouping bounds for x axis.
-     * 
+     *
      * @private
      */
     public calculateGroupingBounds(control: RangeNavigator): void {

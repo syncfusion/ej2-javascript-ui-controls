@@ -484,7 +484,7 @@ export function removeRangeEle(content: Element, checkEle: HTMLElement, cls: str
             const collection: NodeListOf<Element> = content.querySelectorAll('.' + cls);
             let i: number = 0;
             while (i < collection.length) {
-                collection[i].classList.remove(cls);
+                collection[i as number].classList.remove(cls);
                 i++;
             }
         } else {
@@ -753,7 +753,7 @@ const config: IAriaOptions<string> = {
 export function setAriaOptions(target: HTMLElement, options: IAriaOptions<boolean>): void {
     const props: string[] = Object.keys(options);
     props.forEach((name: string) => {
-        if (target) { target.setAttribute(config[name], <string>options[name]); }
+        if (target) { target.setAttribute(config[`${name}`], <string>options[`${name}`]); }
     });
 }
 
@@ -795,8 +795,8 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
     const frozenRow: number = parent.frozenRowCount(sheet); const frozenCol: number = parent.frozenColCount(sheet);
     if (isCol) {
         const header: Element = idx < frozenCol ? parent.getSelectAllContent() : parent.getColumnHeaderContent();
-        curEle = header.getElementsByTagName('th')[index]; curEleH = header.getElementsByTagName('col')[index];
-        curEleC = (idx < frozenCol ? parent.getRowHeaderContent() : parent.getMainContent()).getElementsByTagName('col')[index];
+        curEle = header.getElementsByTagName('th')[index as number]; curEleH = header.getElementsByTagName('col')[index as number];
+        curEleC = (idx < frozenCol ? parent.getRowHeaderContent() : parent.getMainContent()).getElementsByTagName('col')[index as number];
     } else {
         curEle = curEleH = frozenRow || frozenCol ? parent.getRow(idx, null, frozenCol - 1) :
             parent.getRow(idx, parent.getRowHeaderTable());
@@ -808,14 +808,14 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
             const hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
                 parent.getRowHeaderContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
             const hdrClone: HTMLElement[] = [];
-            hdrClone[0] = hdrRow[index].getElementsByTagName('td')[0].cloneNode(true) as HTMLElement;
+            hdrClone[0] = hdrRow[index as number].getElementsByTagName('td')[0].cloneNode(true) as HTMLElement;
             hdrFntSize = findMaxValue(parent.getRowHeaderTable(), hdrClone, false, parent) + 1;
         }
         const contentRow: HTMLCollectionOf<HTMLTableRowElement> =
             parent.getMainContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
         const contentClone: HTMLElement[] = [];
-        for (let idx: number = 0; idx < contentRow[index].getElementsByTagName('td').length; idx++) {
-            contentClone[idx] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true) as HTMLElement;
+        for (let idx: number = 0; idx < contentRow[index as number].getElementsByTagName('td').length; idx++) {
+            contentClone[idx as number] = contentRow[index as number].getElementsByTagName('td')[idx as number].cloneNode(true) as HTMLElement;
         }
         const cntFntSize: number = findMaxValue(parent.getContentTable(), contentClone, false, parent) + 1;
         const fntSize: number = hdrFntSize >= cntFntSize ? hdrFntSize : cntFntSize;
@@ -1229,6 +1229,9 @@ export function updateAction(
             return;
         }
     }
+    let cellSaveArgs: CellSaveEventArgs; let addrInfo: { sheetIndex: number, indices: number[] };
+    let clearArgs: { options: object, isFromUpdateAction: boolean, cfClearActionArgs?:
+        { previousConditionalFormats: object, conditionalFormats: object } };
     switch (options.action) {
     case 'sorting':
         args = {
@@ -1248,7 +1251,7 @@ export function updateAction(
         break;
     case 'cellSave':
         cellEvtArgs = options.eventArgs as CellSaveEventArgs;
-        const cellSaveArgs: CellSaveEventArgs = { element: cellEvtArgs.element, value: cellEvtArgs.value,
+        cellSaveArgs = { element: cellEvtArgs.element, value: cellEvtArgs.value,
             oldValue: cellEvtArgs.oldValue, address: cellEvtArgs.address, displayText: cellEvtArgs.displayText,
             formula: cellEvtArgs.formula, originalEvent: cellEvtArgs.originalEvent };
         cellValue = cellSaveArgs.formula ? { formula: cellSaveArgs.formula } : { value: cellSaveArgs.value };
@@ -1258,7 +1261,7 @@ export function updateAction(
         }
         break;
     case 'cellDelete':
-        const addrInfo: { sheetIndex: number, indices: number[] } = getAddressInfo(spreadsheet, options.eventArgs.address);
+        addrInfo = getAddressInfo(spreadsheet, options.eventArgs.address);
         clearRange(spreadsheet, addrInfo.indices, addrInfo.sheetIndex);
         break;
     case 'format':
@@ -1329,7 +1332,7 @@ export function updateAction(
         break;
     case 'renameSheet':
         const sheetIndex: number = getSheetIndexFromId(spreadsheet, eventArgs.index);
-        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[sheetIndex], 'name', eventArgs.value);
+        spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[sheetIndex as number], 'name', eventArgs.value);
         spreadsheet.notify(sheetNameUpdate, {
             items: spreadsheet.element.querySelector('.e-sheet-tabs-items'),
             value: eventArgs.value,
@@ -1422,7 +1425,7 @@ export function updateAction(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.deletedModel, modelType:
                     options.eventArgs.modelType, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames:
                     options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true,
-                    insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before', conditionalFormats: options.eventArgs.conditionalFormats, prevAction: options.action  });
+                insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before', conditionalFormats: options.eventArgs.conditionalFormats, prevAction: options.action  });
         } else {
             spreadsheet.notify(
                 deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex,
@@ -1437,31 +1440,30 @@ export function updateAction(
             spreadsheet.notify(
                 cellValidation, { rules: { type: eventArgs.type, operator: eventArgs.operator, value1: eventArgs.value1, value2:
                     eventArgs.value2, ignoreBlank: eventArgs.ignoreBlank, inCellDropDown: eventArgs.inCellDropDown },
-                    range: eventArgs.range });
+                range: eventArgs.range });
         }
         break;
     case 'removeHighlight':
     case 'addHighlight':
         spreadsheet.notify(
             invalidData, { isRemoveHighlight: options.action === 'removeHighlight' ? isRedo !== false : isRedo === false,
-            range: eventArgs.range, isPublic: true });
+                range: eventArgs.range, isPublic: true });
         break;
     case 'merge':
         options.eventArgs.isAction = false;
         model = [];
         for (let rIdx: number = 0, rCnt: number = eventArgs.model.length; rIdx < rCnt; rIdx++) {
             model.push({ cells: [] });
-            for (let cIdx: number = 0, cCnt: number = eventArgs.model[rIdx].cells.length; cIdx < cCnt; cIdx++) {
-                model[rIdx].cells[cIdx] = {};
-                Object.assign(model[rIdx].cells[cIdx], eventArgs.model[rIdx].cells[cIdx]);
+            for (let cIdx: number = 0, cCnt: number = eventArgs.model[rIdx as number].cells.length; cIdx < cCnt; cIdx++) {
+                model[rIdx as number].cells[cIdx as number] = {};
+                Object.assign(model[rIdx as number].cells[cIdx as number], eventArgs.model[rIdx as number].cells[cIdx as number]);
             }
         }
         spreadsheet.notify(setMerge, options.eventArgs);
         eventArgs.model = model;
         break;
     case 'clear':
-        const clearArgs: { options: object, isFromUpdateAction: boolean, cfClearActionArgs?: { previousConditionalFormats: object,
-            conditionalFormats: object } } = { options: options.eventArgs, isFromUpdateAction: isFromUpdateAction };
+        clearArgs = { options: options.eventArgs, isFromUpdateAction: isFromUpdateAction };
         spreadsheet.notify(clearViewer, clearArgs);
         if (!isFromUpdateAction && clearArgs.cfClearActionArgs) {
             eventArgs.cfClearActionArgs.previousConditionalFormats = clearArgs.cfClearActionArgs.previousConditionalFormats;
@@ -1473,7 +1475,7 @@ export function updateAction(
             spreadsheet.notify(
                 clearCFRule, <CFArgs>{ range: eventArgs.range, cfModel: { type: eventArgs.type, cFColor: eventArgs.cFColor,
                     value: eventArgs.value }, sheetIdx: eventArgs.sheetIdx, isUndoRedo: !eventArgs.cancel,
-                    isFromUpdateAction: isFromUpdateAction });
+                isFromUpdateAction: isFromUpdateAction });
         } else {
             spreadsheet.notify(
                 setCFRule, <CFArgs>{ cfModel: { type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
@@ -1502,7 +1504,8 @@ export function updateAction(
     case 'insertImage':
         if (isRedo === false) {
             spreadsheet.notify(
-                deleteImage, { id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range, preventEventTrigger: true });
+                deleteImage, { id: options.eventArgs.id, sheetIdx: options.eventArgs.sheetIndex + 1, range: options.eventArgs.range,
+                    preventEventTrigger: true });
         } else {
             spreadsheet.notify(
                 createImageElement, { options: { src: options.eventArgs.imageData, height: options.eventArgs.imageHeight, width:
@@ -1609,8 +1612,11 @@ export function updateAction(
         }
         break;
     case 'hyperlink':
-        spreadsheet.notify(setLinkModel, { hyperlink: eventArgs.hyperlink, cell: eventArgs.address, displayText: eventArgs.displayText, triggerEvt: false });
-        spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(eventArgs.address));
+        spreadsheet.notify(
+            setLinkModel, { hyperlink: eventArgs.hyperlink, cell: eventArgs.address, displayText: eventArgs.displayText,
+                triggerEvt: false });
+        spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+            getIndexesFromAddress(eventArgs.address), false, false, false, false, isImported(spreadsheet));
         break;
     case 'removeHyperlink':
         spreadsheet.notify(removeHyperlink, { range: eventArgs.address, preventEventTrigger: true });
@@ -1650,12 +1656,12 @@ export function updateAction(
  * @returns {boolean} - Returns the boolean value.
  */
 export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, sheetIdx: number): boolean {
-    const sheet: SheetModel = workbook.sheets[sheetIdx];
+    const sheet: SheetModel = workbook.sheets[sheetIdx as number];
     const ranges: RangeModel[] = sheet.ranges;
     let range: number[];
     for (let i: number = 0, len: number = ranges.length; i < len; i++) {
-        if (ranges[i].template) {
-            range = getRangeIndexes(ranges[i].address.length ? ranges[i].address : ranges[i].startCell);
+        if (ranges[i as number].template) {
+            range = getRangeIndexes(ranges[i as number].address.length ? ranges[i as number].address : ranges[i as number].startCell);
             if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                 return true;
             }
@@ -1934,10 +1940,10 @@ export function getTextHeightWithBorder(
  * @returns {void} - Setting maximum height while doing formats and wraptext
  */
 export function setMaxHgt(sheet: SheetModel, rIdx: number, cIdx: number, hgt: number): void {
-    if (!sheet.maxHgts[rIdx]) {
-        sheet.maxHgts[rIdx] = {};
+    if (!sheet.maxHgts[rIdx as number]) {
+        sheet.maxHgts[rIdx as number] = {};
     }
-    sheet.maxHgts[rIdx][cIdx] = hgt;
+    sheet.maxHgts[rIdx as number][cIdx as number] = hgt;
 }
 
 /**
@@ -1950,11 +1956,11 @@ export function setMaxHgt(sheet: SheetModel, rIdx: number, cIdx: number, hgt: nu
  */
 export function getMaxHgt(sheet: SheetModel, rIdx: number): number {
     let maxHgt: number = 0;
-    const rowHgt: object = sheet.maxHgts[rIdx];
+    const rowHgt: object = sheet.maxHgts[rIdx as number];
     if (rowHgt) {
         Object.keys(rowHgt).forEach((key: string) => {
-            if (rowHgt[key] > maxHgt) {
-                maxHgt = rowHgt[key];
+            if (rowHgt[`${key}`] > maxHgt) {
+                maxHgt = rowHgt[`${key}`];
             }
         });
     }
@@ -2026,9 +2032,9 @@ export function isDiscontinuousRange(range: string): boolean {
  * @returns {number[][]} - Returns the viewport indexes.
  * @hidden
  */
- export function getViewportIndexes(parent: Spreadsheet): number[][] {
+export function getViewportIndexes(parent: Spreadsheet): number[][] {
     const sheet: SheetModel = parent.getActiveSheet();
-    let indexes: number[][] = [[parent.viewport.topIndex + parent.frozenRowCount(sheet), parent.viewport.leftIndex +
+    const indexes: number[][] = [[parent.viewport.topIndex + parent.frozenRowCount(sheet), parent.viewport.leftIndex +
         parent.frozenColCount(sheet), parent.viewport.bottomIndex, parent.viewport.rightIndex]];
     if (sheet.frozenRows || sheet.frozenColumns) {
         const froezenRow: number = parent.frozenRowCount(sheet);
@@ -2063,7 +2069,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
     let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement; let prop: CellUpdateArgs;
     const uiRefresh: boolean = sheetIdx === context.activeSheetIndex; let cfRefreshAll: boolean;
     const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-    let cfRule: ConditionalFormatModel[] = [];
+    const cfRule: ConditionalFormatModel[] = [];
     for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
         if (isFilterHidden(sheet, sRIdx)) { continue; }
         for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
@@ -2114,4 +2120,15 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
     if ((cfRule.length || cfRefreshAll) && uiRefresh) {
         context.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
     }
+}
+
+/**
+ * Check whether the sheets are imported.
+ * 
+ * @param {Spreadsheet} context - Specifies the spreadsheet instance.
+ * @returns {boolean} - It returns true if the sheets are imported otherwise false.
+ * @hidden
+ */
+export function isImported(context: Spreadsheet): boolean {
+    return context.allowOpen && context.openModule.preventFormatCheck;
 }

@@ -1320,7 +1320,7 @@ describe('Symbol Palette', () => {
             }, 1000);
         });
     });
-
+    
     describe('Adding lane at runtime from palette', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -1447,7 +1447,7 @@ describe('Symbol Palette', () => {
                     let swimlane: NodeModel = diagram.getObject((diagram.selectedItems.nodes[0] as Node).parentId);
                     let shape: SwimLaneModel = swimlane.shape as SwimLaneModel;
                     let existingLane: LaneModel = cloneObject(shape.lanes[0]);
-    
+
                     let newLane: LaneModel = {
                         id: randomId(),
                         header: {
@@ -1457,7 +1457,7 @@ describe('Symbol Palette', () => {
                         style: existingLane.style as ShapeStyleModel,
                         height: existingLane.height, width: existingLane.width,
                     } as LaneModel;
-    
+
                     if (shape.orientation === 'Horizontal') {
                         let exclude = 0;
                         exclude += (shape.header) ? 1 : 0;
@@ -1470,7 +1470,7 @@ describe('Symbol Palette', () => {
                         newLane.header.width = existingLane.width;
                         newLane.header.height = existingLane.header.height;
                     }
-                
+
                         diagram.addLanes(swimlane, [newLane], index);
                     diagram.clearSelection();
                 }
@@ -1487,7 +1487,7 @@ describe('Symbol Palette', () => {
                     let swimlane: NodeModel = diagram.getObject((diagram.selectedItems.nodes[0] as Node).parentId);
                     let shape: SwimLaneModel = swimlane.shape as SwimLaneModel;
                     let existingLane: LaneModel = cloneObject(shape.lanes[0]);
-    
+
                     let newLane: LaneModel = {
                         id: randomId(),
                         header: {
@@ -1497,7 +1497,7 @@ describe('Symbol Palette', () => {
                         style: existingLane.style as ShapeStyleModel,
                         height: existingLane.height, width: existingLane.width,
                     } as LaneModel;
-    
+
                     if (shape.orientation === 'Horizontal') {
                         let exclude = 0;
                         exclude += (shape.header) ? 1 : 0;
@@ -1510,7 +1510,7 @@ describe('Symbol Palette', () => {
                         newLane.header.width = existingLane.width;
                         newLane.header.height = existingLane.header.height;
                     }
-                
+
                     diagram.addLanes(swimlane, [newLane], index+1);
                     diagram.clearSelection();
                 }

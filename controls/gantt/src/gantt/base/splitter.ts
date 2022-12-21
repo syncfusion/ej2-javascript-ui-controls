@@ -26,13 +26,20 @@ export class Splitter {
         this.parent.splitterElement = createElement('div', { className: cls.splitter });
         this.parent.treeGridPane = createElement('div', { className: cls.treeGridPane });
         this.parent.chartPane = createElement('div', { className: cls.ganttChartPane });
-        this.parent.splitterElement.appendChild(this.parent.treeGridPane);
-        this.parent.splitterElement.appendChild(this.parent.chartPane);
+        if (this.parent.enableRtl) {
+            this.parent.splitterElement.appendChild(this.parent.chartPane);
+            this.parent.splitterElement.appendChild(this.parent.treeGridPane);
+        }
+        else {
+            this.parent.splitterElement.appendChild(this.parent.treeGridPane);
+            this.parent.splitterElement.appendChild(this.parent.chartPane);
+        }
 
         this.splitterObject = new SplitterLayout({
             height: null,
             width: this.parent.ganttWidth.toString(),
             enablePersistence: this.parent.enablePersistence,
+            enableRtl: this.parent.enableRtl,
             separatorSize: this.parent.splitterSettings.separatorSize,
             paneSettings: [
                 {
@@ -46,6 +53,9 @@ export class Splitter {
             ],
             orientation: 'Horizontal',
             resizeStart: (args: ResizeEventArgs) => {
+                if (this.parent.contextMenuModule && this.parent.contextMenuModule.isOpen) {
+                    this.parent.contextMenuModule.contextMenu.close();
+                }
                 const leftPane: HTMLElement = args.pane[0];
                 const rightPane: HTMLElement = args.pane[1];
                 this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
@@ -135,7 +145,7 @@ export class Splitter {
         const tr: any = this.parent.ganttColumns;
         index = tr.length > index ? index : tr.length;
         for (let column: number = 0; column < index; column++) {
-            width = width + parseInt(tr[column].width);
+            width = width + parseInt(tr[column as number].width);
         }
         return width;
     }

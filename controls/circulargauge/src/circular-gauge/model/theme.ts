@@ -28,30 +28,30 @@ export namespace Theme {
 export function getRangePalette(theme: string): string[] {
     let palette: string[] = ['#50c917', '#27d5ff', '#fcde0b', '#ffb133', '#ff5985'];
     switch (theme.toLowerCase()) {
-        case 'tailwind':
-            palette = ['#0369A1', '#14B8A6', '#15803D', '#334155', '#5A61F6',
-                '#65A30D', '#8B5CF6', '#9333EA', '#F59E0B', '#F97316'];
-            break;
-        case 'tailwinddark':
-            palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
-                '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
-            break;
-        case 'bootstrap5':
-            palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-                '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-            break;
-        case 'bootstrap5dark':
-            palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-                '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
-            break;
-        case 'fluent':
-            palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
-                '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
-            break;
-        case 'fluentdark':
-            palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
-                '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
-            break;
+    case 'tailwind':
+        palette = ['#0369A1', '#14B8A6', '#15803D', '#334155', '#5A61F6',
+            '#65A30D', '#8B5CF6', '#9333EA', '#F59E0B', '#F97316'];
+        break;
+    case 'tailwinddark':
+        palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
+            '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
+        break;
+    case 'bootstrap5':
+        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+        break;
+    case 'bootstrap5dark':
+        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+        break;
+    case 'fluent':
+        palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+            '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+        break;
+    case 'fluentdark':
+        palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+            '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+        break;
     }
     return palette;
 }

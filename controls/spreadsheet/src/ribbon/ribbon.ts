@@ -387,7 +387,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     }
 
     private updateToolbar(index: number): void {
-        this.toolbarObj.items = this.items[index].content; this.toolbarObj.dataBind();
+        this.toolbarObj.items = this.items[index as number].content; this.toolbarObj.dataBind();
     }
 
     /**
@@ -455,16 +455,16 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             idx = this.getTabIndex(tab, -1);
             if (idx > -1) {
                 if (hide) {
-                    if (!this.items[idx].cssClass.includes(' e-hide')) {
-                        this.items[idx].cssClass = `${this.items[idx].cssClass} e-hide`;
-                        this.tabObj.items[this.getIndex(idx)].cssClass = this.items[idx].cssClass;
+                    if (!this.items[idx as number].cssClass.includes(' e-hide')) {
+                        this.items[idx as number].cssClass = `${this.items[idx as number].cssClass} e-hide`;
+                        this.tabObj.items[this.getIndex(idx)].cssClass = this.items[idx as number].cssClass;
                         if (activeTab === undefined && idx === this.selectedTab) { activeTab = true; }
                         stateChanged = true;
                     }
                 } else {
-                    if (this.items[idx].cssClass.includes(' e-hide')) {
-                        this.items[idx].cssClass = this.items[idx].cssClass.replace(' e-hide', '');
-                        this.tabObj.items[this.getIndex(idx)].cssClass = this.items[idx].cssClass;
+                    if (this.items[idx as number].cssClass.includes(' e-hide')) {
+                        this.items[idx as number].cssClass = this.items[idx as number].cssClass.replace(' e-hide', '');
+                        this.tabObj.items[this.getIndex(idx as number)].cssClass = this.items[idx as number].cssClass;
                         if (activeTab === undefined && idx === this.selectedTab) { activeTab = true; }
                         stateChanged = true;
                     }
@@ -486,7 +486,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
         }
         if (activeTab) {
             for (let i: number = 0; i < this.items.length; i++) {
-                if (!this.items[i].cssClass.includes(' e-hide')) {
+                if (!this.items[i as number].cssClass.includes(' e-hide')) {
                     this.tabObj.selectedItem = this.getIndex(i); this.tabObj.dataBind(); break;
                 }
             }
@@ -496,7 +496,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     private isAllHidden(): boolean {
         let allHidden: boolean = true;
         for (let i: number = 0; i < this.items.length; i++) {
-            if (!this.items[i].cssClass.includes(' e-hide')) { allHidden = false; break; }
+            if (!this.items[i as number].cssClass.includes(' e-hide')) { allHidden = false; break; }
         }
         return allHidden;
     }
@@ -512,7 +512,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
         tabs.forEach((tab: string): void => {
             let idx: number = (this.getTabIndex(tab, -1));
             if (idx > -1) {
-                this.items[idx].disabled = !enable; idx = this.getIndex(idx); this.tabObj.enableTab(idx, enable);
+                this.items[idx as number].disabled = !enable; idx = this.getIndex(idx); this.tabObj.enableTab(idx, enable);
             }
         });
         this.setProperties({ 'items': this.items }, true);
@@ -540,7 +540,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     private getTabIndex(headerText: string, idx: number = this.items.length): number {
         if (headerText) {
             for (let i: number = 0; i < this.items.length; i++) {
-                if (this.items[i].header.text === headerText) { idx = i; break; }
+                if (this.items[i as number].header.text === headerText) { idx = i; break; }
             }
         }
         return idx;
@@ -557,10 +557,10 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      */
     public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
         const tabIdx: number = this.getTabIndex(tab);
-        if (isNullOrUndefined(index)) { index = this.items[tabIdx].content.length; }
+        if (isNullOrUndefined(index)) { index = this.items[tabIdx as number].content.length; }
         items.forEach((item: ItemModel): void => {
-            item = new Item(<Item>this.items[tabIdx].content[0], 'content', item, true);
-            this.items[tabIdx].content.splice(index, 0, item); index++;
+            item = new Item(<Item>this.items[tabIdx as number].content[0], 'content', item, true);
+            this.items[tabIdx as number].content.splice(index, 0, item); index++;
         });
         this.setProperties({ 'items': this.items }, true);
         if (tabIdx === this.selectedTab && items.length) { this.updateToolbar(tabIdx); }
@@ -581,18 +581,18 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             const tabIdx: number = this.getTabIndex(tab, -1);
             if (tabIdx < 0) { return; }
             for (let i: number = 0; i < items.length; i++) {
-                if (typeof items[i] === 'string') {
-                    for (let j: number = 0; j < this.items[tabIdx].content.length; j++) {
-                        if (this.items[tabIdx].content[j].id === items[i]) { items[i] = j; break; }
+                if (typeof items[i as number] === 'string') {
+                    for (let j: number = 0; j < this.items[tabIdx as number].content.length; j++) {
+                        if (this.items[tabIdx as number].content[j as number].id === items[i as number]) { items[i as number] = j; break; }
                     }
                 }
-                if (typeof items[i] === 'string') {
+                if (typeof items[i as number] === 'string') {
                     if (items.length - 1 > i) { continue; } else { return; }
                 }
-                this.items[tabIdx].content[items[i]].disabled = !enable;
+                this.items[tabIdx as number].content[items[i as number]].disabled = !enable;
                 this.setProperties({ 'items': this.items }, true);
                 if (tabIdx === this.selectedTab) {
-                    this.toolbarObj.enableItems(<number>items[i], enable);
+                    this.toolbarObj.enableItems(<number>items[i as number], enable);
                 }
             }
         }
@@ -610,19 +610,20 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      * @returns {void} - To show/hide the existing Ribbon toolbar items.
      */
     public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
-        let tabIdx: number;
+        let tabIdx: number; let tabContent: ItemModel;
         for (let i: number = 0; i < this.items.length; i++) {
-            if (this.items[i].header.text === tab) {
+            if (this.items[i as number].header.text === tab) {
                 tabIdx = i;
                 indexes.forEach((idx: number): void => {
-                    if (this.items[tabIdx].content[idx]) {
+                    tabContent = this.items[tabIdx as number].content[idx as number];
+                    if (tabContent) {
                         if (hide) {
-                            if (!this.items[tabIdx].content[idx].cssClass.includes(' e-hide')) {
-                                this.items[tabIdx].content[idx].cssClass = this.items[tabIdx].content[idx].cssClass + ' e-hide';
+                            if (!tabContent.cssClass.includes(' e-hide')) {
+                                tabContent.cssClass = tabContent.cssClass + ' e-hide';
                             }
                         } else {
-                            if (this.items[tabIdx].content[idx].cssClass.includes(' e-hide')) {
-                                this.items[tabIdx].content[idx].cssClass = this.items[tabIdx].content[idx].cssClass.replace(' e-hide', '');
+                            if (tabContent.cssClass.includes(' e-hide')) {
+                                tabContent.cssClass = tabContent.cssClass.replace(' e-hide', '');
                             }
                         }
                     }

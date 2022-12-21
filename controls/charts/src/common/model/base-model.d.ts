@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
+import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
 
 /**
  * Interface for a class Connector
@@ -110,7 +110,7 @@ export interface FontModel {
     /**
      * Specifies the chart title text overflow
      *
-     * @default 'Trim'
+     * @default 'Wrap'
      */
 
     textOverflow?: TextOverflow;
@@ -171,6 +171,7 @@ export interface ChartAreaModel {
     /**
      * Options to customize the border of the chart area.
      */
+
     border?: BorderModel;
 
     /**
@@ -253,24 +254,28 @@ export interface ContainerPaddingModel {
 
     /**
      * Left padding in pixels.
+     *
      * @default 0
      */
     left?: number;
 
     /**
      * Right padding in pixels.
+     *
      * @default 0
      */
     right?: number;
 
     /**
      * Top padding in pixels.
+     *
      * @default 0
      */
     top?: number;
 
     /**
      * Bottom padding in pixels.
+     *
      * @default 0
      */
     bottom?: number;
@@ -568,6 +573,7 @@ export interface TooltipSettingsModel {
     /**
      * Options to customize tooltip borders.
      */
+
     border?: BorderModel;
 
 }
@@ -635,6 +641,7 @@ export interface PeriodSelectorSettingsModel {
     /**
      * Buttons
      */
+    
     periods?: PeriodsModel[];
 
 }

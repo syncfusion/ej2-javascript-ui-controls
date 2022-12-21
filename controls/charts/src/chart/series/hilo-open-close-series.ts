@@ -61,8 +61,8 @@ export class HiloOpenCloseSeries extends ColumnBase {
                     this.updateSymbolLocation(point, point.regions[0], series);
                     index1 = point.open > point.close ? 1 : 2;
                     index2 = point.open > point.close ? 2 : 1;
-                    const open: ChartLocation = { x: point.regions[index1].x, y: point.regions[index1].y };
-                    const close: ChartLocation = { x: point.regions[index2].x, y: point.regions[index2].y };
+                    const open: ChartLocation = { x: point.regions[index1 as number].x, y: point.regions[index1 as number].y };
+                    const close: ChartLocation = { x: point.regions[index2 as number].x, y: point.regions[index2 as number].y };
                     this.drawHiloOpenClosePath(series, point, open, close, highLowRect, argsData);
                 }
 

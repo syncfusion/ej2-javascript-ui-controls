@@ -193,7 +193,7 @@ export class FormFieldPopUp {
             if (formFieldData) {
                 if (formFieldData instanceof TextFormField) {
                     let resultText: string = formField.resultText;
-                    const rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+                    const rex: RegExp = RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
                     }

@@ -97,7 +97,7 @@ export class Data implements IDataProcessor {
             const selectQueryFields: string[] = [];
             const columns: string[] | Column[] | ColumnModel[] = this.parent.columns;
             for (let i: number = 0; i < columns.length; i++) {
-                selectQueryFields.push((columns[i] as Column).field);
+                selectQueryFields.push((columns[parseInt(i.toString(), 10)] as Column).field);
             }
             query.select(selectQueryFields);
         }
@@ -129,12 +129,12 @@ export class Data implements IDataProcessor {
     public aggregateQuery(query: Query): Query {
         const rows: AggregateRowModel[] = this.parent.aggregates;
         for (let i: number = 0; i < rows.length; i++) {
-            const row: AggregateRowModel = rows[i];
+            const row: AggregateRowModel = rows[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < row.columns.length; j++) {
-                const cols: AggregateColumnModel = row.columns[j];
+                const cols: AggregateColumnModel = row.columns[parseInt(j.toString(), 10)];
                 const types: string[] = cols.type instanceof Array ? cols.type : [cols.type];
                 for (let k: number = 0; k < types.length; k++) {
-                    query.aggregate(types[k].toLowerCase(), cols.field);
+                    query.aggregate(types[parseInt(k.toString(), 10)].toLowerCase(), cols.field);
                 }
             }
         }
@@ -145,7 +145,7 @@ export class Data implements IDataProcessor {
         const fName: string = 'fn';
         if (query.queries.length) {
             for (let i: number = 0; i < query.queries.length; i++) {
-                if (query.queries[i][fName] === 'onPage') {
+                if (query.queries[parseInt(i.toString(), 10)][`${fName}`] === 'onPage') {
                     query.queries.splice(i, 1);
                 }
             }
@@ -169,7 +169,7 @@ export class Data implements IDataProcessor {
             }
             if (query.queries.length) {
                 for (let i: number = 0; i < query.queries.length; i++) {
-                    if (query.queries[i][fName] === 'onPage') {
+                    if (query.queries[parseInt(i.toString(), 10)][`${fName}`] === 'onPage') {
                         query.queries.splice(i, 1);
                     }
                 }
@@ -193,16 +193,16 @@ export class Data implements IDataProcessor {
             }
             const columns: string[] = gObj.groupSettings.columns;
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
-                const column: Column = this.getColumnByField(columns[i]);
+                const column: Column = this.getColumnByField(columns[parseInt(i.toString(), 10)]);
                 if (!column) {
-                    this.parent.log('initial_action', { moduleName: 'group', columnName: columns[i] });
+                    this.parent.log('initial_action', { moduleName: 'group', columnName: columns[parseInt(i.toString(), 10)] });
                 }
                 const isGrpFmt: boolean = column.enableGroupByFormat;
                 const format: string | NumberFormatOptions | DateFormatOptions = column.format;
                 if (isGrpFmt) {
-                    query.group(columns[i], this.formatGroupColumn.bind(this), format);
+                    query.group(columns[parseInt(i.toString(), 10)], this.formatGroupColumn.bind(this), format);
                 } else {
-                    query.group(columns[i], null);
+                    query.group(columns[parseInt(i.toString(), 10)], null);
                 }
             }
         }
@@ -215,21 +215,21 @@ export class Data implements IDataProcessor {
             const columns: SortDescriptorModel[] = gObj.sortSettings.columns;
             const sortGrp: SortDescriptorModel[] = [];
             for (let i: number = columns.length - 1; i > -1; i--) {
-                const col: Column = this.getColumnByField(columns[i].field);
+                const col: Column = this.getColumnByField(columns[parseInt(i.toString(), 10)].field);
                 if (col) {
-                    col.setSortDirection(columns[i].direction);
+                    col.setSortDirection(columns[parseInt(i.toString(), 10)].direction);
                 } else {
-                    this.parent.log('initial_action', { moduleName: 'sort', columnName: columns[i].field });
+                    this.parent.log('initial_action', { moduleName: 'sort', columnName: columns[parseInt(i.toString(), 10)].field });
                     return query;
                 }
-                let fn: Function | string = columns[i].direction;
+                let fn: Function | string = columns[parseInt(i.toString(), 10)].direction;
                 if (col.sortComparer) {
                     this.parent.log('grid_sort_comparer');
-                    fn = !this.isRemote() ? (col.sortComparer as Function).bind(col) : columns[i].direction;
+                    fn = !this.isRemote() ? (col.sortComparer as Function).bind(col) : columns[parseInt(i.toString(), 10)].direction;
                 }
-                if (gObj.groupSettings.columns.indexOf(columns[i].field) === -1) {
+                if (gObj.groupSettings.columns.indexOf(columns[parseInt(i.toString(), 10)].field) === -1) {
                     if (col.isForeignColumn() || col.sortComparer) {
-                        query.sortByForeignKey(col.field, fn, undefined, columns[i].direction.toLowerCase());
+                        query.sortByForeignKey(col.field, fn, undefined, columns[parseInt(i.toString(), 10)].direction.toLowerCase());
                     } else {
                         query.sortBy(col.field, fn);
                     }
@@ -238,11 +238,12 @@ export class Data implements IDataProcessor {
                 }
             }
             for (let i: number = 0, len: number = sortGrp.length; i < len; i++) {
-                if (typeof sortGrp[i].direction === 'string') {
-                    query.sortBy(sortGrp[i].field, sortGrp[i].direction);
+                if (typeof sortGrp[parseInt(i.toString(), 10)].direction === 'string') {
+                    query.sortBy(sortGrp[parseInt(i.toString(), 10)].field, sortGrp[parseInt(i.toString(), 10)].direction);
                 } else {
-                    const col: Column = this.getColumnByField(sortGrp[i].field);
-                    query.sortByForeignKey(sortGrp[i].field, sortGrp[i].direction, undefined, col.getSortDirection().toLowerCase());
+                    const col: Column = this.getColumnByField(sortGrp[parseInt(i.toString(), 10)].field);
+                    query.sortByForeignKey(sortGrp[parseInt(i.toString(), 10)].field,
+                                           sortGrp[parseInt(i.toString(), 10)].direction, undefined, col.getSortDirection().toLowerCase());
                 }
             }
         }
@@ -261,12 +262,13 @@ export class Data implements IDataProcessor {
                 (<{ getModuleName?: Function }>adaptor).getModuleName() === 'ODataV4Adaptor')) {
                 fields = isForeignKey ? [fcolumn.foreignKeyValue] : fields;
                 for (let i: number = 0; i < fields.length; i++) {
-                    const column: Column = isForeignKey ? fcolumn : this.getColumnByField(fields[i]);
+                    const column: Column = isForeignKey ? fcolumn : this.getColumnByField(fields[parseInt(i.toString(), 10)]);
                     if (column.isForeignColumn() && !isForeignKey) {
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     } else {
                         predicateList.push(new Predicate(
-                            fields[i], sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent
+                            fields[parseInt(i.toString(), 10)], sSettings.operator, sSettings.key,
+                            sSettings.ignoreCase, sSettings.ignoreAccent
                         ));
                     }
                 }
@@ -307,12 +309,12 @@ export class Data implements IDataProcessor {
             }
             if (defaultFltrCols.length) {
                 for (let i: number = 0, len: number = defaultFltrCols.length; i < len; i++) {
-                    defaultFltrCols[i].uid = defaultFltrCols[i].uid ||
-                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[i].field).uid;
+                    defaultFltrCols[parseInt(i.toString(), 10)].uid = defaultFltrCols[parseInt(i.toString(), 10)].uid ||
+                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[parseInt(i.toString(), 10)].field).uid;
                 }
                 const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(defaultFltrCols);
                 for (const prop of Object.keys(excelPredicate)) {
-                    predicateList.push(<Predicate>excelPredicate[prop]);
+                    predicateList.push(<Predicate>excelPredicate[`${prop}`]);
                 }
             }
             if (foreignCols.length) {
@@ -331,7 +333,7 @@ export class Data implements IDataProcessor {
                     } else {
                         const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(columns);
                         for (const prop of Object.keys(excelPredicate)) {
-                            predicateList.push(<Predicate>excelPredicate[prop]);
+                            predicateList.push(<Predicate>excelPredicate[`${prop}`]);
                         }
                     }
                 }
@@ -407,7 +409,7 @@ export class Data implements IDataProcessor {
                 break;
             }
             const promise: string = 'promise';
-            args[promise] = crud;
+            args[`${promise}`] = crud;
             // eslint-disable-next-line no-prototype-builtins
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
                 return crud.then(() => {
@@ -473,7 +475,7 @@ export class Data implements IDataProcessor {
             promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData) as Promise<Object>;
             break;
         }
-        args[pr] = promise ? promise : args[pr];
+        args[`${pr}`] = promise ? promise : args[`${pr}`];
         this.parent.notify(events.crudAction, args);
     }
 
@@ -584,7 +586,7 @@ export class Data implements IDataProcessor {
                 const editArgs: DataSourceChangedEventArgs = args;
                 editArgs.key = key;
                 const promise: string = 'promise';
-                editArgs[promise] = deff.promise;
+                editArgs[`${promise}`] = deff.promise;
                 editArgs.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;

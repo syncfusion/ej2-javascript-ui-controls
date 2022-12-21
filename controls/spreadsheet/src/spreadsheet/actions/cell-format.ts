@@ -1,6 +1,6 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, getDPRValue, completeAction } from '../common/index';
-import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
+import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, isImported } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, getSwapRange } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight, cellValidation } from '../../workbook/index';
@@ -35,7 +35,7 @@ export class CellFormat {
             this.updateMergeBorder(args, sheet);
             if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
                 const curStyle: CellStyleModel = {};
-                Object.keys(args.style).forEach((key: string): void => { curStyle[key] = args.style[key]; });
+                Object.keys(args.style).forEach((key: string): void => { curStyle[`${key}`] = args.style[`${key}`]; });
                 if (curStyle.border !== undefined) {
                     Object.assign(cell.style, <CellStyleModel>{ borderRight: args.style.border, borderBottom: args.style.border });
                     this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first, sheet);
@@ -138,7 +138,7 @@ export class CellFormat {
                     let n: number = 0; const valLength: number = splitVal.length;
                     for (i = 0; i < valLength; i++) {
                         let lines: number = getLines(
-                            splitVal[i], getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle);
+                            splitVal[i as number], getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle);
                         if (lines === 0) {
                             lines = 1; // for empty new line
                         }
@@ -258,7 +258,7 @@ export class CellFormat {
         border: string, rowIdx: number, colIdx: number, cell: HTMLElement, row: HTMLElement, hRow: HTMLElement, actionUpdate: boolean,
         lastCell: boolean, manualUpdate: boolean): void {
         const size: number = border ? this.getBorderSize(border) : 1; const sheet: SheetModel = this.parent.getActiveSheet();
-        if (size > 2 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+        if (size > 2 && (!sheet.rows[rowIdx as number] || !sheet.rows[rowIdx as number].customHeight)) {
             if (manualUpdate) {
                 if (!this.checkHeight) { this.checkHeight = true; }
                 this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
@@ -272,7 +272,8 @@ export class CellFormat {
                 }
             }
         }
-        if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
+        if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx as number] ||
+                !sheet.rows[rowIdx as number].customHeight)) {
             if (!this.checkHeight) { this.checkHeight = true; }
             this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
         }
@@ -290,7 +291,7 @@ export class CellFormat {
         const sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
             getSheetIndex(this.parent as Workbook, options.range.split('!')[0]) : this.parent.activeSheetIndex;
         const rangeIdx: number[] = getSwapRange(getRangeIndexes(range));
-        const sheet: SheetModel = this.parent.sheets[sheetIndex];
+        const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
         let sRIdx: number = rangeIdx[0];
         const eRIdx: number = rangeIdx[2];
         let sCIdx: number;
@@ -304,7 +305,7 @@ export class CellFormat {
             if (args.isAction) {
                 this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
             }
-        }
+        };
         const actionComplete: Function = (): void => {
             if (args.isAction) {
                 eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
@@ -371,9 +372,8 @@ export class CellFormat {
                 this.parent.removeHyperlink(sheet.name + '!' + range);
             }
             this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
-            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(range));
-            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
-            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getSwapRange(getRangeIndexes(range)));
+            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+                getSwapRange(getRangeIndexes(range)), false, false, false, false, isImported(this.parent));
             this.parent.notify(addHighlight, { range: range, isclearFormat: true });
             if (!args.isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: range });

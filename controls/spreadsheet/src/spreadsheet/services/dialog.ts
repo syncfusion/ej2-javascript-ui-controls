@@ -75,6 +75,7 @@ export class Dialog {
     /**
      * To hide dialog.
      *
+     * @param {DialogModel} disableAnimation - To disable the animation while hiding the dialog.
      * @returns {void}
      */
     public hide(disableAnimation?: boolean): void {

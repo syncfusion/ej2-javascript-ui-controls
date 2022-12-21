@@ -41,7 +41,7 @@ export function getColIndex(text: string): number {
     let colIdx: number = 0;
     text = text.split('').reverse().join('');
     for (let i: number = text.length - 1; i >= 0; i--) {
-        colIdx += (text[i].charCodeAt(0) - 64) * (Math.pow(26, i));
+        colIdx += (text[i as number].charCodeAt(0) - 64) * (Math.pow(26, i));
     }
     return colIdx - 1;
 }
@@ -166,9 +166,9 @@ export function getSwapRange(range: number[]): number[] {
  * @returns {void} - Interchange values in an array.
  */
 function swap(range: number[], x: number, y: number): void {
-    const tmp: number = range[x];
-    range[x] = range[y];
-    range[y] = tmp;
+    const tmp: number = range[x as number];
+    range[x as number] = range[y as number];
+    range[y as number] = tmp;
 }
 
 /**

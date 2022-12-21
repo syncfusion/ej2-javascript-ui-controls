@@ -972,16 +972,20 @@ export class ParagraphDialog {
             this.special.destroy();
         }
         this.special = undefined;
-        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);
             }
             for (let q: number = 0; q < this.target.childNodes.length; q++) {
-                this.target.removeChild(this.target.childNodes[q]);
+                this.target.removeChild(this.target.childNodes[parseInt(q.toString(), 10)]);
                 q--;
             }
             this.target = undefined;
+            if (this.paragraphFormat) {
+                this.paragraphFormat.destroy();
+                this.paragraphFormat = undefined;
+            }
+            this.documentHelper = undefined;
         }
     }
 }

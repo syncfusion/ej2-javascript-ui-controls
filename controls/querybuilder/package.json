@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-querybuilder",
-	"version": "20.3.59",
+	"version": "18.19.2",
 	"description": "Essential JS 2 QueryBuilder",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-querybuilder.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-querybuilder.es2015.js",
+	"es2015": "./dist/es6/ej2-querybuilder.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*",
@@ -16,7 +16,6 @@
 		"@syncfusion/ej2-splitbuttons": "*"
 	},
 	"devDependencies": {
-		"json-sql": "^0.4.11",
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",
@@ -44,19 +43,16 @@
 	"keywords": [
 		"ej2",
 		"syncfusion",
-		"web-components",
-		"javascript",
-		"typescript",
-		"query-builder",
-		"ej2-query-builder",
-		"ej2-querybuilder",
-		"js querybuilder",
-		"js query builder",
-		"query builder js",
+		"JavaScript",
+		"TypeScript",
 		"query builder",
-		"javascript querybuilder",
-		"typescript querybuilder",
-		"querybuilder"
+		"querybuilder",
+		"query designer",
+		"filter",
+		"syncfusion filter",
+		"javascript query builder",
+		"typescript query builder",
+		"syncfusion query builder"
 	],
 	"repository": {
 		"type": "git",

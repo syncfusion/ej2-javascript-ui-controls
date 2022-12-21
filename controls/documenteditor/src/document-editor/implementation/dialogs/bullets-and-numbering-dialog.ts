@@ -394,7 +394,7 @@ export class BulletsAndNumberingDialog {
         if (this.target && this.target.parentElement) {
             this.target.parentElement.removeChild(this.target);
             for (let m: number = 0; m < this.target.childNodes.length; m++) {
-                this.target.removeChild(this.target.childNodes[m]);
+                this.target.removeChild(this.target.childNodes[parseInt(m.toString(), 10)]);
                 m--;
             }
             this.target = undefined;

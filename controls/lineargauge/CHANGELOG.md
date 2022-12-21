@@ -8,14 +8,6 @@
 
 ## [Unreleased]
 
-## 20.3.47 (2022-09-29)
-
-### Linear Gauge
-
-#### New Features
-
-- The animation of pointers has been improved. When the pointer value is dynamically updated, the animation will be performed.
-
 ## 18.3.47 (2020-11-05)
 
 ### LinearGauge

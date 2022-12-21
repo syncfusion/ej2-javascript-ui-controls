@@ -67,10 +67,10 @@ export class StringFilterUI implements IFilterMUI {
             let filterQuery: Predicate;
             for (let i: number = 0; i < filteredData.length; i++) {
                 if (filterQuery) {
-                    filterQuery = filterQuery.or(args.column.field, 'contains', filteredData[i][args.column.field], this.parent
+                    filterQuery = filterQuery.or(args.column.field, 'contains', filteredData[parseInt(i.toString(), 10)][args.column.field], this.parent
                         .filterSettings.enableCaseSensitivity, this.parent.filterSettings.ignoreAccent);
                 } else {
-                    filterQuery = new Predicate(args.column.field, 'contains', filteredData[i][args.column.field], this.parent
+                    filterQuery = new Predicate(args.column.field, 'contains', filteredData[parseInt(i.toString(), 10)][args.column.field], this.parent
                         .filterSettings.enableCaseSensitivity, this.parent.filterSettings.ignoreAccent);
                 }
             }
@@ -97,7 +97,7 @@ export class StringFilterUI implements IFilterMUI {
         this.acComplete = this.actionComplete(autoComplete);
         this.acOpen = this.openPopup.bind(this);
         autoComplete.addEventListener(literals.focus, this.acFocus);
-        autoComplete.addEventListener(literals.open, this.acOpen);
+        autoComplete.addEventListener(literals['open'], this.acOpen);
         autoComplete.addEventListener(events.actionComplete, this.acComplete);
         if (dataSource && 'result' in dataSource) {
             const query: Query = this.parent.getQuery ? this.parent.getQuery().clone() : new Query();
@@ -158,7 +158,7 @@ export class StringFilterUI implements IFilterMUI {
     private destroy(): void {
         if (!this.actObj || this.actObj.isDestroyed) { return; }
         this.actObj.removeEventListener(literals.focus, this.acFocus);
-        this.actObj.removeEventListener(literals.open, this.acOpen);
+        this.actObj.removeEventListener(literals['open'], this.acOpen);
         this.actObj.removeEventListener(events.actionComplete, this.acComplete);
         this.actObj.destroy();
         this.parent.off(events.filterMenuClose, this.destroy);

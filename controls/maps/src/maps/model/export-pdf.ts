@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createElement, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { ExportType } from '../utils/enum';
@@ -15,21 +14,23 @@ export class PdfExport {
     /**
      * Constructor for Maps
      *
-     * @param {Maps} control Specifies the instance of the map
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor() { }
 
     /**
      * To export the file as image/svg format
      *
-     * @param {ExportType} type - Specifies the type of the document
-     * @param {string} fileName - Specifies the file name of the document
-     * @param {boolean} allowDownload - Specifies whether to download the document or not
-     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component
-     * @returns {Promise<string>} - Returns the promise string
+     * @param {Maps} maps - Specifies the Maps instance.
+     * @param {ExportType} type - Specifies the type of the document.
+     * @param {string} fileName - Specifies the name of the PDF document.
+     * @param {boolean} allowDownload - Specifies whether to download the document or not.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component.
+     * @returns {Promise<string>} - Returns "null" value when the allowDownload is set to false.
      * @private
      */
-    public export(maps: Maps, type: ExportType, fileName: string, allowDownload?: boolean, orientation?: PdfPageOrientation): Promise<string> {
+    public export(maps: Maps, type: ExportType, fileName: string, allowDownload?: boolean,
+                  orientation?: PdfPageOrientation): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
@@ -81,8 +82,8 @@ export class PdfExport {
                 image.src = url;
             } else {
                 const svgParentElement: HTMLElement = document.getElementById(maps.element.id + '_MapAreaBorder');
-                let top: number = parseFloat(svgParentElement.getAttribute('y'));
-                let left: number = parseFloat(svgParentElement.getAttribute('x'));
+                const top: number = parseFloat(svgParentElement.getAttribute('y'));
+                const left: number = parseFloat(svgParentElement.getAttribute('x'));
                 const xHttp: XMLHttpRequest = new XMLHttpRequest();
                 const tileLength: number = maps.mapLayerPanel.tiles.length;
                 for (let i: number = 0; i <= tileLength + 1; i++) {
@@ -92,7 +93,7 @@ export class PdfExport {
                     ctx.fillStyle = maps.background ? maps.background : '#FFFFFF';
                     ctx.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
                     ctx.font = maps.titleSettings.textStyle.size + ' Arial';
-                    let titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
+                    const titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
                     if (!isNullOrUndefined(titleElement)) {
                         ctx.fillStyle = titleElement.getAttribute('fill');
                         ctx.fillText(
@@ -135,7 +136,7 @@ export class PdfExport {
                             tileImg.src = url;
                         } else {
                             setTimeout(() => {
-                                let tileSvg: Element = document.getElementById(maps.element.id + '_Tile_SVG');
+                                const tileSvg: Element = document.getElementById(maps.element.id + '_Tile_SVG');
                                 tileImg.src = window.URL.createObjectURL(new Blob(
                                     [(new XMLSerializer()).serializeToString(tileSvg)],
                                     { type: 'image/svg+xml' }));
@@ -166,5 +167,6 @@ export class PdfExport {
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

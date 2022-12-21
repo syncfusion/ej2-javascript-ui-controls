@@ -11,16 +11,20 @@ import { createGrid, destroy, getKeyUpObj, getClickObj } from '../base/specutil.
 import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { filterData } from '../base/datasource.spec';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { VirtualContentRenderer } from '../../../src/grid/renderer/virtual-content-renderer';
 import { SortSettingsModel } from '../../../src/grid/base/grid-model';
+import { Row } from '../../../src/grid/models/row';
 import { Column } from '../../../src/grid/models/column';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
+import { GroupLazyLoadRenderer } from '../../../src/grid/renderer/group-lazy-load-renderer';
 import { NotifyArgs, RowSelectEventArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 
-Grid.Inject(Page, Group, LazyLoadGroup, Reorder, ColumnChooser, Aggregate, InfiniteScroll, Sort, Filter, Toolbar, Edit);
+Grid.Inject(Page, Group, LazyLoadGroup, Reorder, ColumnChooser, Aggregate, InfiniteScroll, VirtualScroll, Sort, Filter, Toolbar, Edit);
 
 let lazyLoadData: Object[] = [];
 function createLazyLoadData(): void {
@@ -450,6 +454,83 @@ describe('LazyLoadGroup module', () => {
         });
     });
 
+    describe('LazyLoadGroup with aggregate and edit', () => {
+        let gridObj: any;
+        let currentPageGroupCache: Row<Column>[] = [];
+        let max: number = 0;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: lazyLoadData,
+                    allowGrouping: true,
+                    allowPaging: true,
+                    allowReordering: true,
+                    showColumnChooser: true,
+                    groupSettings: { enableLazyLoading: true, columns: ['ProductName', 'CustomerID'] },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal',
+                        showConfirmDialog: false, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'ProductName', headerText: 'Product Name', width: 120 },
+                        { field: 'Quantity', headerText: 'Quantity', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', width: 120 },
+                        { field: 'ProductID', headerText: 'Product ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerAddress', headerText: 'Address', width: 120 }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'OrderID',
+                            groupFooterTemplate: 'Total units: ${Sum}'
+                        },
+                        {
+                            type: 'Max',
+                            field: 'ProductID',
+                            groupCaptionTemplate: 'Maximum: ${Max}'
+                        }]
+                    }]
+                }, done);
+        });
+        it('caption expand', (done: Function) => {
+            const expandElem: NodeListOf<Element> = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[0]);
+            setTimeout(done, 200);
+        });
+        it('caption expand again', (done: Function) => {
+            const expandElem: NodeListOf<Element> = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[0]);
+            setTimeout(done, 200);
+        });
+        it('edit first row of first caption', () => {
+            const dataRow: HTMLElement = gridObj.getContentTable().querySelector('.e-row');
+            gridObj.selectRow(parseInt(dataRow.getAttribute('data-rowindex'), 10));
+            gridObj.startEdit();
+        });
+        it('edit group caption aggregate', (done: Function) => {
+            const groupLazyLoadRenderer: GroupLazyLoadRenderer = gridObj.contentModule as GroupLazyLoadRenderer;
+            const groupCache: { [x: number]: Row<Column>[]; } = groupLazyLoadRenderer.getGroupCache();
+            currentPageGroupCache = groupCache[gridObj.pageSettings.currentPage];
+            max = parseInt((currentPageGroupCache[0].data as any).aggregates['ProductID - max'], 10) + 1;
+            (select('#' + gridObj.element.id + (gridObj.columns[5] as Column).field, gridObj.element) as any).value = max.toString();
+            gridObj.endEdit();
+            setTimeout(done, 600);
+        });
+        it('check group caption aggregate after edit', () => {
+            expect(parseInt((currentPageGroupCache[0].data as any).aggregates['ProductID - max'], 10)).toBe(max);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
     describe('Group caption 1st column template with lazyloading =>', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -763,6 +844,102 @@ describe('LazyLoadGroup module', () => {
             }
             gridObj.actionComplete = actionComplete;
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // Lazy Load Grouping with Virtual Scroll Support
+    describe('Lazy Load Group with Virtual scroll => ', () => {
+        let gridObj: Grid;
+        let actionComplete: any;
+        let rowindex = 0;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: lazyLoadData,
+                    enableVirtualization: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    toolbar: ['Search'],
+                    groupSettings: { enableLazyLoading: true, columns: ['ProductName', 'CustomerName'] },
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, isPrimaryKey: true, validationRules: {required: true}, },
+                        { field: 'ProductName', headerText: 'Product Name', width: 160 },
+                        { field: 'ProductID', headerText: 'Product ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('check initial render', function () {
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(captionRows.length).toBe(gridObj.pageSettings.pageSize);
+        });
+
+        it('scroll to bottom', function (done) {
+            gridObj.getContent().firstElementChild.scrollTop = 500;
+            setTimeout(done, 500);
+        });
+        it('check current page, data append and expand level1 group', () => {
+            let blockSize: number =  (<VirtualContentRenderer>gridObj.contentModule).getBlockSize();
+            let blockLen: number = (<VirtualContentRenderer>gridObj.contentModule).currentInfo.blockIndexes.length;
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(captionRows.length).toBe(blockSize * blockLen);
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[5]);
+        });
+
+        it('expand level2 group', function () {
+            let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
+            expect(dataRows.length).toBe(0);
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[6]);
+        });
+
+        it('check data row, select and start edit', function () {
+            let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
+            rowindex = parseInt(dataRows[0].getAttribute("data-rowindex"), 10);
+            expect(dataRows.length).toBeGreaterThan(0);
+            gridObj.selectRow(rowindex);
+        });
+
+        it('Check Selection', function() {
+            expect(gridObj.getSelectedRows().length).toBe(1);
+            gridObj.clearSelection();
+        });
+
+        it('filter updated data', function(done: Function){
+            let actionComplete = (args?: Object): void => {
+                expect(checkFilterObj(gridObj.filterSettings.columns)).toBeTruthy();
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                expect(gridObj.pageSettings.currentPage).toBe(1);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.dataBind();
+            filterColumn(gridObj, 'CustomerID', gridObj.dataSource[rowindex][(gridObj.columns[3] as Column).field]);
+        });
+
+        it('clear filter', (done: Function) => {
+            let actionComplete = (args?: Object): void => {
+                expect(gridObj.filterSettings.columns.length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering();
+        });
+
+        it('check rows after clear filter', function () {
+            let captionRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr');
+            expect(captionRows.length).toBe(gridObj.pageSettings.pageSize);
         });
 
         afterAll(() => {

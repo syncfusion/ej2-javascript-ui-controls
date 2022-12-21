@@ -34,35 +34,40 @@ export class DrillThroughDialog {
     };
     private drillthroughKeyboardModule: KeyboardEvents;
 
-    /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
+     *
+     * @param {PivotView} parent - parent.
      * @hidden
      */
-    constructor(parent?: PivotView) {   /* eslint-disable-line */
+    constructor(parent?: PivotView) {
         this.parent = parent;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
-
-    private frameHeaderWithKeys(header: any): IDataSet {    /* eslint-disable-line */
-        let keys: string[] = Object.keys(header);
-        let keyPos: number = 0;
-        let framedHeader: any = {}; /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private frameHeaderWithKeys(header: any): IDataSet {
+        const keys: string[] = Object.keys(header);
+        let keyPos: number = 0; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const framedHeader: any = {};
         while (keyPos < keys.length) {
-            framedHeader[keys[keyPos]] = header[keys[keyPos]];
+            framedHeader[keys[keyPos as number]] = header[keys[keyPos as number]];
             keyPos++;
         }
         return framedHeader;
     }
 
-    /* eslint-disable-next-line */
-    /** @hidden */
+    /**
+     * show Drill Through Dialog
+     *
+     * @param {DrillThroughEventArgs} eventArgs - eventArgs.
+     * @returns {void}
+     * @hidden */
     public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
         this.gridData = eventArgs.rawData;
         for (let i: number = 0; i < eventArgs.rawData.length; i++) {
-            this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i]));
+            this.clonedData.push(this.frameHeaderWithKeys(eventArgs.rawData[i as number]));
         }
-        let actualText: string = eventArgs.currentCell.actualText.toString();
+        // let actualText: string = eventArgs.currentCell.actualText.toString();
         try {
             if (this.parent.currentView === 'Table' && this.parent.editSettings.allowInlineEditing &&
                 this.parent.editSettings.allowEditing && eventArgs.rawData.length === 1) {
@@ -73,7 +78,7 @@ export class DrillThroughDialog {
                 this.editCell(eventArgs);
             } else {
                 this.removeDrillThroughDialog();
-                let drillThroughDialog: HTMLElement = createElement('div', {
+                const drillThroughDialog: HTMLElement = createElement('div', {
                     id: this.parent.element.id + '_drillthrough',
                     className: cls.DRILLTHROUGH_DIALOG
                 });
@@ -96,21 +101,20 @@ export class DrillThroughDialog {
                             if (this.parent.dataSourceSettings.type === 'CSV') {
                                 this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
                             }
-                            let gridIndexObjectsValue: string[] = Object.keys(this.gridIndexObjects);
-                            let previousPosition: number[] = [];
-                            for (let value of gridIndexObjectsValue) {
-                                previousPosition.push(this.gridIndexObjects[value]);
+                            const gridIndexObjectsValue: string[] = Object.keys(this.gridIndexObjects);
+                            const previousPosition: number[] = [];
+                            for (const value of gridIndexObjectsValue) {
+                                previousPosition.push(this.gridIndexObjects[value as string]);
                             }
                             let count: number = Object.keys(this.gridIndexObjects).length;
-                            let addItems: IDataSet[] = [];
-                            let prevItems: IDataSet[] = [];
+                            const addItems: IDataSet[] = [];
+                            const prevItems: IDataSet[] = [];
                             let index: number = 0;
-                            /* eslint-disable @typescript-eslint/dot-notation */
-                            for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
+                            for (const item of this.drillThroughGrid.dataSource as IDataSet[]) {
                                 if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                                    for (let field of this.engine.fields) {
-                                        if (isNullOrUndefined(item[field])) {
-                                            delete item[field];
+                                    for (const field of this.engine.fields) {
+                                        if (isNullOrUndefined(item[field as string])) {
+                                            delete item[field as string];
                                         }
                                     }
                                     delete item['__index'];
@@ -124,40 +128,41 @@ export class DrillThroughDialog {
                                     if (item['__index']) {
                                         delete item['__index'];
                                     }
-                                    if (this.gridData[index]['__index']) {
-                                        delete this.gridData[index]['__index'];
+                                    if (this.gridData[index as number]['__index']) {
+                                        delete this.gridData[index as number]['__index'];
                                     }
                                 }
                                 index++;
                             }
                             count = 0;
                             if (this.parent.dataSourceSettings.mode === 'Server') {
-                                let gridIndex: object[] = [];   /* eslint-disable-line */
+                                const gridIndex: object[] = [];
                                 let keys: string[] = Object.keys(this.gridIndexObjects);
                                 for (let len: number = 0; len < keys.length; len++) {
-                                    delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len]]];
-                                    gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });    /* eslint-disable-line */
+                                    delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len as number]]];
+                                    gridIndex.push({ Key: keys[len as number], Value: this.gridIndexObjects[keys[len as number]] });
                                 }
-                                let indexObject: object[] = []; /* eslint-disable-line */
+                                const indexObject: object[] = [];
                                 keys = Object.keys(this.parent.drillThroughValue.indexObject);
                                 for (let len: number = 0; len < keys.length; len++) {
-                                    indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });  /* eslint-disable-line */
+                                    indexObject.push({
+                                        Key: keys[len as number], Value: this.parent.drillThroughValue.indexObject[keys[len as number]]
+                                    });
                                 }
                                 this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
                             } else {
                                 let items: IDataSet[] = [];
-                                let data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
-                                    this.parent.engineModule.actualData : this.parent.engineModule.data;
-                                for (let item of data as IDataSet[]) {
+                                const data: IDataSet[] | string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization)
+                                    ? this.parent.engineModule.actualData : this.parent.engineModule.data;
+                                for (const item of data as IDataSet[]) {
                                     delete item['__index'];
                                     if (this.gridIndexObjects[count.toString()] === undefined) {
                                         items.push(item);
                                     }
                                     count++;
                                 }
-                                /* eslint-enable @typescript-eslint/dot-notation */
                                 items = items.concat(addItems);
-                                let eventArgs: EditCompletedEventArgs = {
+                                const eventArgs: EditCompletedEventArgs = {
                                     currentData: this.drillThroughGrid.dataSource as IDataSet[],
                                     previousData: this.clonedData,
                                     previousPosition: previousPosition,
@@ -171,12 +176,12 @@ export class DrillThroughDialog {
                                 }
                             }
                             this.parent.actionObj.actionName = events.recordUpdated;
-                            let actionInfo: PivotActionInfo = {
+                            const actionInfo: PivotActionInfo = {
                                 editInfo: {
                                     type: this.drillThroughGrid.editSettings.mode, action: 'Update', currentData: this.drillThroughGrid.dataSource as IDataSet[],
                                     previousData: this.clonedData, previousPosition: previousPosition
                                 }
-                            }
+                            };
                             this.parent.actionObj.actionInfo = actionInfo;
                         }
                         this.isUpdated = false;
@@ -188,7 +193,7 @@ export class DrillThroughDialog {
                     locale: this.parent.locale,
                     enableRtl: this.parent.enableRtl,
                     width: this.parent.isAdaptive ? '100%' : '60%',
-                    position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
+                    position: { X: 'center', Y: 'center' },
                     closeOnEscape: !this.parent.editSettings.allowEditing,
                     target: document.body,
                     close: this.removeDrillThroughDialog.bind(this)
@@ -211,21 +216,21 @@ export class DrillThroughDialog {
     }
 
     private editCell(eventArgs: DrillThroughEventArgs): void {
-        let gridResize: boolean = this.parent.gridSettings.allowResizing;
-        let actualText: string = eventArgs.currentCell.actualText.toString();
-        let indexObject: number = Number(Object.keys(eventArgs.currentCell.indexObject));
+        const gridResize: boolean = this.parent.gridSettings.allowResizing;
+        const actualText: string = eventArgs.currentCell.actualText.toString();
+        const indexObject: number = Number(Object.keys(eventArgs.currentCell.indexObject));
         (eventArgs.currentTarget.firstElementChild as HTMLElement).style.display = 'none';
-        let cellValue: number = Number(eventArgs.rawData[0][actualText]);
-        /* eslint-disable */
-        let previousData: any = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
-        let currentData: any = eventArgs.rawData[eventArgs.rawData.length - 1];
-        /* eslint-enable */
+        const cellValue: number = Number(eventArgs.rawData[0][actualText as string]);
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const previousData: any = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
+        const currentData: any = eventArgs.rawData[eventArgs.rawData.length - 1];
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         // if (eventArgs.currentCell.actualText in previousData) {
         //     currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
         // }
-        let actionInfo: PivotActionInfo = {
+        const actionInfo: PivotActionInfo = {
             editInfo: { type: 'Inline editing', action: 'update', data: this.gridData }
-        }
+        };
         this.parent.actionObj.actionInfo = actionInfo;
         this.numericTextBox = new NumericTextBox({
             value: cellValue,
@@ -235,13 +240,13 @@ export class DrillThroughDialog {
             locale: this.parent.locale,
             cssClass: this.parent.cssClass,
             change: () => {
-                let textBoxValue: number = this.numericTextBox.value;
-                let indexValue: number = eventArgs.currentCell.indexObject[indexObject];
-                eventArgs.rawData[0][actualText] = textBoxValue;
-                this.parent.engineModule.data[indexValue] = eventArgs.rawData[0];
+                const textBoxValue: number = this.numericTextBox.value;
+                const indexValue: number = eventArgs.currentCell.indexObject[indexObject as number];
+                eventArgs.rawData[0][actualText as string] = textBoxValue;
+                this.parent.engineModule.data[indexValue as number] = eventArgs.rawData[0];
             },
             blur: () => {
-                let eventArgs: EditCompletedEventArgs = {
+                const eventArgs: EditCompletedEventArgs = {
                     currentData: currentData,
                     previousData: previousData,
                     previousPosition: currentData.index,
@@ -256,7 +261,7 @@ export class DrillThroughDialog {
                 }
             }
         });
-        let textBoxElement: HTMLElement = createElement('input', {
+        const textBoxElement: HTMLElement = createElement('input', {
             id: this.parent.element.id + '_inputbox'
         });
         eventArgs.currentTarget.appendChild(textBoxElement);
@@ -266,24 +271,24 @@ export class DrillThroughDialog {
         this.parent.gridSettings.allowResizing = false;
     }
 
-    /* eslint-disable , @typescript-eslint/no-explicit-any */
     private updateData(dataSource: IDataSet[]): void {
         let dataPos: number = 0;
-        let data: string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+        const data: string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
             this.parent.engineModule.actualData as string[][] : this.parent.engineModule.data as string[][];
-        while (dataPos < dataSource.length) {
-            let fields: string[] = Object.keys((dataSource as any)[dataPos]);
+        while (dataPos < dataSource.length) {   /* eslint-disable , @typescript-eslint/no-explicit-any */
+            const fields: string[] = Object.keys((dataSource as any)[dataPos as number]);
             let keyPos: number = 0;
-            let framedSet: any = [];
+            const framedSet: any = [];
             while (keyPos < fields.length) {
-                if (!isNullOrUndefined(this.parent.engineModule.fieldKeys[fields[keyPos]])) {
-                    framedSet[this.parent.engineModule.fieldKeys[fields[keyPos]] as any] = (dataSource as any)[dataPos][fields[keyPos]];
+                if (!isNullOrUndefined(this.parent.engineModule.fieldKeys[fields[keyPos as number]])) {
+                    framedSet[this.parent.engineModule.fieldKeys[fields[keyPos as number]] as any] =
+                    (dataSource as any)[dataPos as number][fields[keyPos as number]];
                 }
                 keyPos++;
             }
-            data[(dataSource as any)[dataPos]['__index']] = framedSet;  /* eslint-disable-line */
+            data[(dataSource as any)[dataPos as number]['__index']] = framedSet;
             dataPos++;
-        }
+        }   /* eslint-enable , @typescript-eslint/no-explicit-any */
         if (this.parent.allowDataCompression && this.parent.enableVirtualization) {
             this.parent.engineModule.actualData = data;
         } else {
@@ -299,7 +304,7 @@ export class DrillThroughDialog {
             }
             this.dialogPopUp.destroy();
         }
-        let dialogElement: HTMLElement = document.getElementById(this.parent.element.id + '_drillthrough');
+        const dialogElement: HTMLElement = document.getElementById(this.parent.element.id + '_drillthrough');
         if (dialogElement) {
             remove(dialogElement);
         }
@@ -308,11 +313,10 @@ export class DrillThroughDialog {
         }
     }
 
-    /* eslint-disable  */
     private createDrillThroughGrid(eventArgs: DrillThroughEventArgs): HTMLElement {
-        let drillThroughBody: HTMLElement =
+        const drillThroughBody: HTMLElement =
             createElement('div', { id: this.parent.element.id + '_drillthroughbody', className: cls.DRILLTHROUGH_BODY_CLASS });
-        let drillThroughBodyHeader: HTMLElement =
+        const drillThroughBodyHeader: HTMLElement =
             createElement('div', {
                 id: this.parent.element.id +
                     '_drillthroughbodyheader', className: cls.DRILLTHROUGH_BODY_HEADER_CONTAINER_CLASS
@@ -331,8 +335,8 @@ export class DrillThroughDialog {
                 eventArgs.columnHeaders + '</span></span>';
         }
         if (eventArgs.value !== '') {
-            let measure: string = eventArgs.value.split('(')[0];
-            let value: string = eventArgs.value.split('(')[1].split(')')[0];
+            const measure: string = eventArgs.value.split('(')[0];
+            const value: string = eventArgs.value.split('(')[1].split(')')[0];
             if (value !== '0') {
                 drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
                     cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
@@ -352,7 +356,7 @@ export class DrillThroughDialog {
                 toolbarItems = ['ColumnChooser', 'Add', 'Edit', 'Delete', 'Update', 'Cancel'];
             }
         }
-        let drillThroughGrid: HTMLElement =
+        const drillThroughGrid: HTMLElement =
             createElement('div', { id: this.parent.element.id + '_drillthroughgrid', className: cls.DRILLTHROUGH_GRID_CLASS });
         Grid.Inject(Selection, Reorder, Resize, Toolbar, ColumnChooser);
         this.drillThroughGrid = new Grid({
@@ -373,8 +377,8 @@ export class DrillThroughDialog {
         });
         if (this.parent.dataType === 'olap') {
             this.formatData();
-        }
-        let dialogModule: DrillThroughDialog = this;
+        }   // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const dialogModule: DrillThroughDialog = this;
         this.parent.trigger(events.beginDrillThrough, {
             cellInfo: eventArgs,
             gridObj: this.drillThroughGrid,
@@ -390,15 +394,17 @@ export class DrillThroughDialog {
             Grid.Inject(Edit, Page);
             try {
                 this.drillThroughGrid.editSettings = this.parent.editSettings;
-                this.drillThroughGrid.actionBegin = (args: any) => {
-                    let actionName: string = (args.requestType == 'save') ? events.saveEditedRecords : (args.requestType == 'add') ? events.addNewRecord : (args.requestType == 'delete') ? events.removeRecord : '';
+                this.drillThroughGrid.actionBegin = (args: any) => {    /* eslint-disable-line , @typescript-eslint/no-explicit-any */
+                    const actionName: string = (args.requestType === 'save') ? events.saveEditedRecords :
+                        (args.requestType === 'add') ? events.addNewRecord : (args.requestType === 'delete') ?
+                            events.removeRecord : '';
                     this.parent.actionObj.actionName = actionName;
                     if (this.parent.actionObj.actionName) {
                         if (this.parent.actionBeginMethod()) {
                             return;
                         }
                     }
-                }
+                };
                 if (this.parent.editSettings.allowCommandColumns) {
                     this.drillThroughGrid.editSettings.mode = 'Normal';
                     this.drillThroughGrid.editSettings.allowEditOnDblClick = false;
@@ -420,14 +426,14 @@ export class DrillThroughDialog {
             } catch (execption) {
                 this.parent.actionFailureMethod(execption);
             }
-            this.drillThroughGrid.actionComplete = (args: any) => {
+            this.drillThroughGrid.actionComplete = (args: any) => { /* eslint-disable-line , @typescript-eslint/no-explicit-any */
                 if (args.requestType === 'batchsave' || args.requestType === 'save' || args.requestType === 'delete') {
                     dialogModule.isUpdated = true;
                 }
                 this.parent.actionObj.actionName = this.parent.getActionCompleteName();
-                let actionInfo: PivotActionInfo = {
+                const actionInfo: PivotActionInfo = {
                     editInfo: { type: this.drillThroughGrid.editSettings.mode, action: args.requestType, data: this.gridData }
-                }
+                };
                 this.parent.actionObj.actionInfo = actionInfo;
                 if (this.parent.actionObj.actionName) {
                     this.parent.actionCompleteMethod();
@@ -441,7 +447,6 @@ export class DrillThroughDialog {
             this.drillThroughGrid.beforeBatchSave = () => {
                 dialogModule.isUpdated = true;
             };
-            /* eslint-enable @typescript-eslint/indent */
         } else {
             Grid.Inject(VirtualScroll);
         }
@@ -452,18 +457,24 @@ export class DrillThroughDialog {
         drillThroughBody.appendChild(drillThroughGrid);
         return drillThroughBody;
     }
-    /** @hidden */
+    /**
+     * frame Grid Columns
+     *
+     * @param {IDataSet[]} rawData - rawData.
+     * @returns {ColumnModel[]} - frame Grid Columns
+     * @hidden */
     public frameGridColumns(rawData: IDataSet[]): ColumnModel[] {
-        let keys: string[] = this.parent.dataType === 'olap' ? rawData[0] ? Object.keys(rawData[0]) : [] :
+        const keys: string[] = this.parent.dataType === 'olap' ? rawData[0] ? Object.keys(rawData[0]) : [] :
             Object.keys(this.engine.fieldList);
-        let columns: ColumnModel[] = [];
+        const columns: ColumnModel[] = [];
         if (this.parent.dataSourceSettings.formatSettings.length > 0) {
             for (let i: number = 0; i < this.parent.dataSourceSettings.formatSettings.length; i++) {
-                this.formatList[this.parent.dataSourceSettings.formatSettings[i].name] = this.parent.dataSourceSettings.formatSettings[i].format;
+                this.formatList[this.parent.dataSourceSettings.formatSettings[i as number].name] =
+                    this.parent.dataSourceSettings.formatSettings[i as number].format;
             }
         }
         if (this.parent.dataType === 'olap') {
-            for (let key of keys) {
+            for (const key of keys) {
                 columns.push({
                     field: key.replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join(''),
                     headerText: key.replace(/_x005B_|_x005D_|_x0024_/g, '').replace(/_x0020_/g, ' ').
@@ -471,34 +482,34 @@ export class DrillThroughDialog {
                     width: 120,
                     visible: true,
                     validationRules: { required: true },
-                    format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : null,
-                    type: !isNullOrUndefined(this.formatList[key]) ? null : 'string'
+                    format: !isNullOrUndefined(this.formatList[key as string]) ? this.formatList[key as string] : null,
+                    type: !isNullOrUndefined(this.formatList[key as string]) ? null : 'string'
                 });
             }
         } else {
-            for (let key of keys) {
-                if (this.engine.fieldList[key].aggregateType !== 'CalculatedField') {
+            for (const key of keys) {
+                if (this.engine.fieldList[key as string].aggregateType !== 'CalculatedField') {
                     let editType: string = '';
-                    let isDateField: boolean = ((this.engine.fieldList[key].type === 'date' || this.engine.fieldList[key].type === 'datetime')
-                        && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key] && rawData[0][key].toString().indexOf(' ') === -1))) ? true : false;
-                    if (this.engine.fieldList[key].type === 'number') {
+                    const isDateField: boolean = ((this.engine.fieldList[key as string].type === 'date' || this.engine.fieldList[key as string].type === 'datetime')
+                        && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key as string] && rawData[0][key as string].toString().indexOf(' ') === -1))) ? true : false;
+                    if (this.engine.fieldList[key as string].type === 'number') {
                         editType = 'numericedit';
-                    } else if (this.engine.fieldList[key].type === 'date' && isDateField) {
+                    } else if (this.engine.fieldList[key as string].type === 'date' && isDateField) {
                         editType = 'datepickeredit';
-                    } else if (this.engine.fieldList[key].type === 'datetime' && isDateField) {
+                    } else if (this.engine.fieldList[key as string].type === 'datetime' && isDateField) {
                         editType = 'datetimepickeredit';
                     } else {
                         editType = 'defaultedit';
                     }
                     columns.push({
                         field: key,
-                        headerText: this.engine.fieldList[key].caption,
+                        headerText: this.engine.fieldList[key as string].caption,
                         width: 120,
-                        visible: this.engine.fieldList[key].isSelected,
+                        visible: this.engine.fieldList[key as string].isSelected,
                         validationRules: { required: true },
                         editType: editType,
-                        format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : undefined,
-                        type: !isNullOrUndefined(this.formatList[key]) ? null : 'string'
+                        format: !isNullOrUndefined(this.formatList[key as string]) ? this.formatList[key as string] : undefined,
+                        type: !isNullOrUndefined(this.formatList[key as string]) ? null : 'string'
                     });
                 }
             }
@@ -508,15 +519,15 @@ export class DrillThroughDialog {
 
     private isDateFieldExist(key: string): boolean {
         for (let len: number = 0; len < this.parent.dataSourceSettings.formatSettings.length; len++) {
-            if (this.parent.dataSourceSettings.formatSettings[len].name === key &&
-                this.parent.dataSourceSettings.formatSettings[len].type.indexOf('date') > -1) {
+            if (this.parent.dataSourceSettings.formatSettings[len as number].name === key &&
+                this.parent.dataSourceSettings.formatSettings[len as number].type.indexOf('date') > -1) {
                 return true;
             }
         }
         for (let len: number = 0; len < this.parent.dataSourceSettings.fieldMapping.length; len++) {
-            if (this.parent.dataSourceSettings.fieldMapping[len].name === key &&
-                this.parent.dataSourceSettings.fieldMapping[len].dataType &&
-                this.parent.dataSourceSettings.fieldMapping[len].dataType.indexOf('date') > -1) {
+            if (this.parent.dataSourceSettings.fieldMapping[len as number].name === key &&
+                this.parent.dataSourceSettings.fieldMapping[len as number].dataType &&
+                this.parent.dataSourceSettings.fieldMapping[len as number].dataType.indexOf('date') > -1) {
                 return true;
             }
         }
@@ -526,27 +537,27 @@ export class DrillThroughDialog {
     private formatData(): void {
         let index: number = 0;
         while (index < this.gridData.length) {
-            let data: IDataSet = this.gridData[index];
-            let keys: string[] = Object.keys(this.gridData[index]);
-            let newData: IDataSet = {};
+            const data: IDataSet = this.gridData[index as number];
+            const keys: string[] = Object.keys(this.gridData[index as number]);
+            const newData: IDataSet = {};
             let i: number = 0;
             while (i < keys.length) {
-                let key: string = keys[i].replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join('');
-                newData[key] = data[keys[i]];
+                const key: string = keys[i as number].replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join('');
+                newData[key as string] = data[keys[i as number]];
                 i++;
             }
-            this.gridData[index] = newData;
+            this.gridData[index as number] = newData;
             index++;
         }
     }
 
     private dataWithPrimarykey(eventArgs: DrillThroughEventArgs): IDataSet[] {
-        let indexString: string[] = this.indexString.length > 0 ? this.indexString : Object.keys(eventArgs.currentCell.indexObject);
-        let rawData: IDataSet[] = this.gridData;
+        const indexString: string[] = this.indexString.length > 0 ? this.indexString : Object.keys(eventArgs.currentCell.indexObject);
+        const rawData: IDataSet[] = this.gridData;
         let count: number = 0;
-        for (let item of rawData) {
-            item['__index'] = indexString[count];
-            this.gridIndexObjects[indexString[count].toString()] = Number(indexString[count]);
+        for (const item of rawData) {
+            item['__index'] = indexString[count as number];
+            this.gridIndexObjects[indexString[count as number].toString()] = Number(indexString[count as number]);
             count++;
         }
         return rawData;
@@ -554,23 +565,22 @@ export class DrillThroughDialog {
 
     private drillthroughKeyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'escape':
-                this.processClose(e);
-                break;
+        case 'escape':
+            this.processClose(e);
+            break;
         }
     }
 
     private processClose(e: Event): void {
-        let target: Element = e.target as Element;
-        if (target && closest(target, '.e-popup.e-popup-open')) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
+        const target: Element = e.target as Element;
+        if (target && closest(target, '.e-popup.e-popup-open')) {   /* eslint-disable-next-line , @typescript-eslint/no-explicit-any */
+            const dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
             if (dialogInstance && !dialogInstance.closeOnEscape) {
-                let button: string = dialogInstance.element.getAttribute('data-fieldName');
+                const button: string = dialogInstance.element.getAttribute('data-fieldName');
                 dialogInstance.hide();
                 if (this.parent.element) {
-                    let pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-pivot-button'));
-                    for (let item of pivotButtons) {
+                    const pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-pivot-button'));
+                    for (const item of pivotButtons) {
                         if (item.getAttribute('data-uid') === button) {
                             item.focus();
                             break;
@@ -585,6 +595,7 @@ export class DrillThroughDialog {
 
     /**
      * To destroy the drillthrough keyboard module.
+     *
      * @returns  {void}
      * @hidden
      */

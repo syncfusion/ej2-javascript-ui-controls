@@ -21,9 +21,9 @@ export class Resize extends ActionBase {
     private resizeHelper(): void {
         if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.activeViewOptions.group.allowGroupEdit) {
             for (let i: number = 0, len: number = this.actionObj.originalElement.length; i < len; i++) {
-                const cloneElement: HTMLElement = this.createCloneElement(this.actionObj.originalElement[i]);
-                this.actionObj.cloneElement[i] = cloneElement;
-                if (this.actionObj.element === this.actionObj.originalElement[i]) {
+                const cloneElement: HTMLElement = this.createCloneElement(this.actionObj.originalElement[parseInt(i.toString(), 10)]);
+                this.actionObj.cloneElement[parseInt(i.toString(), 10)] = cloneElement;
+                if (this.actionObj.element === this.actionObj.originalElement[parseInt(i.toString(), 10)]) {
                     this.actionObj.clone = cloneElement;
                 }
             }
@@ -383,9 +383,9 @@ export class Resize extends ActionBase {
             }
             let resizeDate: Date;
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
-                resizeDate = new Date(this.parent.activeView.renderDates[cellIndex].getTime());
+                resizeDate = new Date(this.parent.activeView.renderDates[parseInt(cellIndex.toString(), 10)].getTime());
             } else {
-                resizeDate = this.parent.getDateFromElement(<HTMLElement>tr.children[cellIndex]);
+                resizeDate = this.parent.getDateFromElement(<HTMLElement>tr.children[parseInt(cellIndex.toString(), 10)]);
             }
             if (['TimelineMonth', 'Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1 ||
                 !this.parent.activeViewOptions.timeScale.enable) {
@@ -410,7 +410,7 @@ export class Resize extends ActionBase {
             const tr: HTMLTableRowElement = closest(this.actionObj.clone, 'tr') as HTMLTableRowElement;
             let dayIndex: number = isLeft ? cloneIndex - noOfDays : cloneIndex + noOfDays - 1;
             dayIndex = this.getIndex(dayIndex);
-            resizeTime = this.parent.getDateFromElement(<HTMLElement>tr.children[dayIndex]);
+            resizeTime = this.parent.getDateFromElement(<HTMLElement>tr.children[parseInt(dayIndex.toString(), 10)]);
             if (isLeft) {
                 resizeTime.setHours(eventStart.getHours(), eventStart.getMinutes(), eventStart.getSeconds());
             } else {

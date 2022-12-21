@@ -43,7 +43,7 @@ export class CartesianChart {
     public initializeChart(chartArgsData ?: object[]): void {
         const stockChart: StockChart = this.stockChart;
         const isProtect: string = 'isProtectedOnChange';
-        stockChart[isProtect]  = true;
+        stockChart[isProtect as string]  = true;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_chart'
@@ -118,20 +118,20 @@ export class CartesianChart {
         if (stockChart.indicators.length !== 0) {
             if (stockChart.isSelect) {
                 for (let i: number = 0; i < stockChart.indicators.length; i++) {
-                    stockChart.chart.indicators[i].animation.enable = false;
-                    stockChart.chart.indicators[i].dataSource = extend([], stockChart.chart.series[0].dataSource, null, true);
+                    stockChart.chart.indicators[i as number].animation.enable = false;
+                    stockChart.chart.indicators[i as number].dataSource = extend([], stockChart.chart.series[0].dataSource, null, true);
                 }
             }
             stockChart.isSelect = true;
         }
         stockChart.chart.stockChart = stockChart;
         stockChart.chart.appendTo(stockChart.chartObject as HTMLElement);
-        stockChart[isProtect] = false;
+        stockChart[isProtect as string] = false;
     }
 
     private findMargin(stockChart: StockChart): MarginModel {
         const margin: MarginModel = {};
-        margin.top = stockChart.stockLegendModule && stockChart.legendSettings.visible && stockChart.legendSettings.position === "Top" ?
+        margin.top = stockChart.stockLegendModule && stockChart.legendSettings.visible && stockChart.legendSettings.position === 'Top' ?
             stockChart.margin.top : stockChart.margin.top * 2;
         margin.left = stockChart.margin.left;
         margin.right = stockChart.margin.right;
@@ -142,18 +142,18 @@ export class CartesianChart {
     private findSeriesCollection(series: StockSeriesModel[]) : Series[] {
         const chartSeries : Series[] = [];
         for (let i: number = 0, len: number = series.length; i < len; i++) {
-            chartSeries.push(<Series>series[i]);
-            chartSeries[i].high = series[i].high;
-            chartSeries[i].low = series[i].low;
-            chartSeries[i].open = series[i].open;
-            chartSeries[i].close = series[i].close;
-            chartSeries[i].xName = series[i].xName;
-            chartSeries[i].volume = series[i].volume;
-            chartSeries[i].animation = series[i].animation;
-            if ((series[i] as StockSeries).localData) {
-                chartSeries[i].dataSource = (series[i] as StockSeries).localData;
+            chartSeries.push(<Series>series[i as number]);
+            chartSeries[i as number].high = series[i as number].high;
+            chartSeries[i as number].low = series[i as number].low;
+            chartSeries[i as number].open = series[i as number].open;
+            chartSeries[i as number].close = series[i as number].close;
+            chartSeries[i as number].xName = series[i as number].xName;
+            chartSeries[i as number].volume = series[i as number].volume;
+            chartSeries[i as number].animation = series[i as number].animation;
+            if ((series[i as number] as StockSeries).localData) {
+                chartSeries[i as number].dataSource = (series[i as number] as StockSeries).localData;
             }
-            chartSeries[i].yName = series[i].yName === '' ? series[i].close :  series[i].yName;
+            chartSeries[i as number].yName = series[i as number].yName === '' ? series[i as number].close :  series[i as number].yName;
         }
         return chartSeries;
     }

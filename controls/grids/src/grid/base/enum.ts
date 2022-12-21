@@ -813,3 +813,16 @@ export type IndicatorType =
     'Spinner' |
     /**  Defines Loading Indicator as Shimmer */
     'Shimmer';
+
+/**
+ * Defines active name.
+ *
+ * @hidden
+ */
+export type ActiveName =
+    'FrozenLeftHeader' |
+    'Movableheader' |
+    'FrozenRightHeader' |
+    'FrozenLeftContent' |
+    'MovableContent' |
+    'FrozenRightContent';

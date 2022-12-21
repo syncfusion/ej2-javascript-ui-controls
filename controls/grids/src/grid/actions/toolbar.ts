@@ -50,14 +50,14 @@ export class Toolbar {
         for (const item of preItems) {
             const itemStr: string = item.toLowerCase();
             const localeName: string = itemStr[0].toUpperCase() + itemStr.slice(1);
-            this.predefinedItems[item] = {
+            this.predefinedItems[`${item}`] = {
                 id: this.gridID + '_' + itemStr, prefixIcon: 'e-' + itemStr,
                 text: this.l10n.getConstant(localeName), tooltipText
                 : this.l10n.getConstant(localeName)
             };
             if (isAdaptive) {
-                this.predefinedItems[item].text = '';
-                this.predefinedItems[item].visible = excludingItems.indexOf(item) === -1;
+                this.predefinedItems[`${item}`].text = '';
+                this.predefinedItems[`${item}`].visible = excludingItems.indexOf(item) === -1;
             }
         }
         (this.predefinedItems as { Search: ItemModel }).Search = {
@@ -176,12 +176,12 @@ export class Toolbar {
         (<{ isReact?: boolean }>this.toolbar).isReact = this.parent.isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         const isStringTemplate: string = 'isStringTemplate';
-        this.toolbar[isStringTemplate] = true;
+        this.toolbar[`${isStringTemplate}`] = true;
         const viewStr: string = 'viewContainerRef';
         const registerTemp: string = 'registeredTemplate';
-        if (this.parent[viewStr]) {
-            this.toolbar[registerTemp] = {};
-            this.toolbar[viewStr] = this.parent[viewStr];
+        if (this.parent[`${viewStr}`]) {
+            this.toolbar[`${registerTemp}`] = {};
+            this.toolbar[`${viewStr}`] = this.parent[`${viewStr}`];
         }
         this.element = this.parent.createElement('div', { id: this.gridID + '_toolbarItems' });
         if (this.parent.enableAdaptiveUI) {
@@ -207,10 +207,10 @@ export class Toolbar {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
-        const tlbrLeftElement: Element = this.element.querySelector(".e-toolbar-left");
-        const tlbrCenterElement: Element = this.element.querySelector(".e-toolbar-center");
-        const tlbrRightElement: Element = this.element.querySelector(".e-toolbar-right");
-        const tlbrItems: Element = this.element.querySelector(".e-toolbar-items");
+        const tlbrLeftElement: Element = this.element.querySelector('.e-toolbar-left');
+        const tlbrCenterElement: Element = this.element.querySelector('.e-toolbar-center');
+        const tlbrRightElement: Element = this.element.querySelector('.e-toolbar-right');
+        const tlbrItems: Element = this.element.querySelector('.e-toolbar-items');
         const tlbrElement: Element = this.element;
         const tlbrLeftWidth: number = tlbrLeftElement ? tlbrLeftElement.clientWidth : 0;
         const tlbrCenterWidth: number = tlbrCenterElement ? tlbrCenterElement.clientWidth : 0;
@@ -374,7 +374,7 @@ export class Toolbar {
     }
 
     private getItemObject(itemName: string): ItemModel {
-        return this.predefinedItems[itemName] || { text: itemName, id: this.gridID + '_' + itemName };
+        return this.predefinedItems[`${itemName}`] || { text: itemName, id: this.gridID + '_' + itemName };
     }
 
     /**
@@ -430,7 +430,7 @@ export class Toolbar {
                             || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
                         this.renderResponsiveSearch(true);
                     }
-                        else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
+                    else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
                         this.searchElement.value = '';
                         this.sIcon.classList.remove('e-clear-icon');
                         this.sIcon.removeAttribute('title');
@@ -567,10 +567,10 @@ export class Toolbar {
                     return;
                 }
                 for (let i: number = 0; i < focusableToolbarItems.length; i++) {
-                    if (targetParent === focusableToolbarItems[i]) {
+                    if (targetParent === focusableToolbarItems[parseInt(i.toString(), 10)]) {
                         e.preventDefault();
                         const index: number = e.action === 'tab' ? i + 1 : i - 1;
-                        this.setFocusToolbarItem(focusableToolbarItems[index]);
+                        this.setFocusToolbarItem(focusableToolbarItems[parseInt(index.toString(), 10)]);
                         return;
                     }
                 }

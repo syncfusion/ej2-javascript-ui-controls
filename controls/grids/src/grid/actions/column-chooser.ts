@@ -68,7 +68,7 @@ export class ColumnChooser implements IAction {
             this.cBoxTrue.firstChild);
         this.cBoxFalse.insertBefore(
             this.parent.createElement('input', {
-                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox', 'aria-checked': 'false' }
+                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox', 'aria-checked': 'true' }
             }),
             this.cBoxFalse.firstChild);
         this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
@@ -347,7 +347,7 @@ export class ColumnChooser implements IAction {
             animationSettings: { effect: 'None' }
         });
         const isStringTemplate: string = 'isStringTemplate';
-        this.dlgObj[isStringTemplate] = true;
+        this.dlgObj[`${isStringTemplate}`] = true;
         this.dlgObj.appendTo(this.dlgDiv);
         this.wireEvents();
     }
@@ -417,7 +417,7 @@ export class ColumnChooser implements IAction {
 
     private changedColumnState(changedColumns: string[]): void {
         for (let index: number = 0; index < changedColumns.length; index++) {
-            const colUid: string = changedColumns[index];
+            const colUid: string = changedColumns[parseInt(index.toString(), 10)];
             const currentCol: Column = this.parent.getColumnByUid(colUid);
             this.changedStateColumns.push(currentCol);
         }
@@ -425,7 +425,7 @@ export class ColumnChooser implements IAction {
 
     private columnStateChange(stateColumns: string[], state: boolean): void {
         for (let index: number = 0; index < stateColumns.length; index++) {
-            const colUid: string = stateColumns[index];
+            const colUid: string = stateColumns[parseInt(index.toString(), 10)];
             const currentCol: Column = this.parent.getColumnByUid(colUid);
             if (currentCol.type !== 'checkbox') {
                 currentCol.visible = state;
@@ -559,8 +559,8 @@ export class ColumnChooser implements IAction {
                 this.changedColumns = [];
                 this.unchangedColumns = [];
                 for (let i: number = 0; i < column.length; i++) {
-                    if (column[i].showInColumnChooser) {
-                        this.checkstatecolumn(checkstate, column[i].uid, true);
+                    if (column[parseInt(i.toString(), 10)].showInColumnChooser) {
+                        this.checkstatecolumn(checkstate, column[parseInt(i.toString(), 10)].uid, true);
                     }
                 }
             } else {
@@ -604,13 +604,13 @@ export class ColumnChooser implements IAction {
     private refreshCheckboxButton(): void {
         const visibleCols: Column[] = this.parent.getVisibleColumns();
         for (let i: number = 0; i < visibleCols.length; i++) {
-            const columnUID: string = visibleCols[i].uid;
+            const columnUID: string = visibleCols[parseInt(i.toString(), 10)].uid;
             if (this.prevShowedCols.indexOf(columnUID) === -1) {
                 this.prevShowedCols.push(columnUID);
             }
         }
         for (let i: number = 0; i < this.hideColumn.length; i++) {
-            const index: number = this.prevShowedCols.indexOf(this.hideColumn[i]);
+            const index: number = this.prevShowedCols.indexOf(this.hideColumn[parseInt(i.toString(), 10)]);
             if (index !== -1) {
                 this.prevShowedCols.splice(index, 1);
             }
@@ -621,7 +621,7 @@ export class ColumnChooser implements IAction {
         const srchShowCols: string[] = [];
         const searchData: NodeListOf<HTMLInputElement> = [].slice.call(this.parent.element.getElementsByClassName('e-cc-chbox'));
         for (let i: number = 0, itemsLen: number = searchData.length; i < itemsLen; i++) {
-            const element: HTMLInputElement = searchData[i] as HTMLInputElement;
+            const element: HTMLInputElement = searchData[parseInt(i.toString(), 10)] as HTMLInputElement;
             const columnUID: string = parentsUntil(element, 'e-ccheck').getAttribute('uid');
             srchShowCols.push(columnUID);
         }
@@ -648,7 +648,7 @@ export class ColumnChooser implements IAction {
             addClass([selectAll], [this.parent.cssClass]);
         }
         for (let i: number = 0; i < gdCol.length; i++) {
-            const columns: Column = (gdCol[i] as Column);
+            const columns: Column = (gdCol[parseInt(i.toString(), 10)] as Column);
             this.renderCheckbox(columns);
         }
         return this.ulElement;
@@ -660,10 +660,10 @@ export class ColumnChooser implements IAction {
         const gridObject: IGrid = this.parent;
         const currentCheckBoxColls: NodeListOf<Element> = this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)');
         for (let i: number = 0, itemLen: number = currentCheckBoxColls.length; i < itemLen; i++) {
-            const element: HTMLInputElement = currentCheckBoxColls[i] as HTMLInputElement;
+            const element: HTMLInputElement = currentCheckBoxColls[parseInt(i.toString(), 10)] as HTMLInputElement;
             let columnUID: string;
             if (this.parent.childGrid || this.parent.detailTemplate) {
-                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[i],
+                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[parseInt(i.toString(), 10)],
                                          'e-ccheck').getAttribute('uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
             const column: Column = gridObject.getColumnByUid(columnUID);
@@ -755,8 +755,8 @@ export class ColumnChooser implements IAction {
         const openCC: Element[] = [].slice.call(document.getElementsByClassName('e-ccdlg')).filter((dlgEle: Element) =>
             dlgEle.classList.contains('e-popup-open'));
         for (let i: number = 0, dlgLen: number = openCC.length; i < dlgLen; i++) {
-            if (openCC[i].classList.contains('e-dialog') || this.parent.element.id + '_ccdlg' !== openCC[i].id) {
-                (openCC[i] as EJ2Intance).ej2_instances[0].hide();
+            if (openCC[parseInt(i.toString(), 10)].classList.contains('e-dialog') || this.parent.element.id + '_ccdlg' !== openCC[parseInt(i.toString(), 10)].id) {
+                (openCC[parseInt(i.toString(), 10)] as EJ2Intance).ej2_instances[0].hide();
             }
         }
     }

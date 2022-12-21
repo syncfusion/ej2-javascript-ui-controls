@@ -1,5 +1,5 @@
 /*! TreeView's material theme wise override definitions and variables */
-// sass-lint:disable-all
+/* stylelint-disable */
 $treeview-font-size: 13px !default;
 $treeview-icon-font-size: 10px !default;
 $treeview-image-font-size: 18px !default;
@@ -12,7 +12,7 @@ $treeview-text-color: rgba($grey-light-font, .87) !default;
 $treeview-item-border-color: transparent !default;
 $treeview-item-active-bg: $grey-200 !default;
 $treeview-icon-active-color: rgba($grey-light-font, .54) !default;
-$treeview-text-active-color: $accent !default;
+$treeview-text-active-color: $tree-node-text-color !default;
 $treeview-item-active-border-color: $grey-200 !default;
 $treeview-item-hover-bg: $grey-100 !default;
 $treeview-icon-hover-color: rgba($grey-light-font, .54) !default;

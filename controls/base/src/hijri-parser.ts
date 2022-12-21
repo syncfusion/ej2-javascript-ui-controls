@@ -151,7 +151,7 @@ export namespace HijriParser {
         const tempDay: number = z - Math.floor(29.5001 * im - 29);
         let i: number = 0;
         for (; i < dateCorrection.length; i++) {
-            if (dateCorrection[i] > modifiedJulianDate) {
+            if (dateCorrection[parseInt(i.toString(), 10)] > modifiedJulianDate) {
                 break;
             }
         }

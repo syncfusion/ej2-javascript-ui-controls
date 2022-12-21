@@ -54,4 +54,12 @@ export interface GroupModel {
      */
     headerTooltipTemplate?: string;
 
+    /**
+     * Decides whether to show/hide the non-working days. It is set to `false` by default and when set to `true`, it hides the non-working days.
+     * This property is applicable for `Day`, `Week`, `WorkWeek` and `month` views, which are grouped under date.
+     *
+     * @default false
+     */
+    hideNonWorkingDays?: boolean;
+
 }

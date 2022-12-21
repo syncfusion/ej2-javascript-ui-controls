@@ -234,9 +234,12 @@ export class TextPosition {
                 widget = page.endnoteWidget.bodyWidgets[value1];
             }
         } else if (!isNullOrUndefined(page)) {
-            widget = page.bodyWidgets[0];
+            if (parseInt(value, 10) < page.bodyWidgets.length) {
+                widget = page.bodyWidgets[parseInt(value, 10)];
+            } else {
+                widget = page.bodyWidgets[0];
+            }
         }
-
         index = parseInt(value, 10);
         if (widget instanceof BlockContainer) {
             index = position.index.indexOf(';');
@@ -621,7 +624,7 @@ export class TextPosition {
                     this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1] as LineWidget;
                     // line end with page break and updating offset before page break.
 
-                    this.offset = this.currentWidget.isEndsWithPageBreak ? this.currentWidget.getEndOffset() - 1 : this.currentWidget.getEndOffset();
+                    this.offset = (this.currentWidget.isEndsWithPageBreak || this.currentWidget.isEndsWithColumnBreak) ? this.currentWidget.getEndOffset() - 1 : this.currentWidget.getEndOffset();
                 } else {
                     this.currentWidget = previousParagraph.firstChild as LineWidget;
                     this.offset = this.selection.getStartLineOffset(this.currentWidget);
@@ -1621,7 +1624,7 @@ export class TextPosition {
         const top: number = selection.getTop(prevLine);
         // Here, updating the left position when line widget end with page break
         // to update cursor before page break
-        if (this.currentWidget.isEndsWithPageBreak && this.offset === this.currentWidget.getEndOffset() - 1) {
+        if ((this.currentWidget.isEndsWithPageBreak || this.currentWidget.isEndsWithColumnBreak) && this.offset === this.currentWidget.getEndOffset() - 1) {
             left = this.location.x;
         }
         selection.updateTextPositionWidget(prevLine, new Point(left, top), this, false);

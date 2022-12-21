@@ -381,7 +381,8 @@ describe('Agenda View', () => {
             '<div>EndTime: ${EndTime.toLocaleString()</div>';
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
-                height: '500px', currentView: 'Agenda', dateFormat: 'dd MMM yyyy',
+                height: '500px',
+                views:[{option:'Agenda', dateFormat: 'dd MMM yyyy'}],
                 dateHeaderTemplate: '<span>${date.toLocaleDateString()}</span>',
                 selectedDate: new Date(2017, 9, 30)
             };
@@ -399,6 +400,27 @@ describe('Agenda View', () => {
             expect(agendaDate.childElementCount).toEqual(1);
             expect(agendaDate.children[0].classList[0]).toEqual('e-day-date-header');
             expect(agendaDate.children[0].childElementCount).toEqual(1);
+        });
+
+        it('Checking dateRange template', () => {
+            expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(3);
+            expect(schObj.element.querySelector('.e-toolbar-items').children[0].className).toBe('e-toolbar-left');
+            const dateRangeEle: Element = schObj.element.querySelector('.e-tbar-btn-text');
+            schObj.dateRangeTemplate ='<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>',
+            schObj.dataBind();
+            expect(dateRangeEle.innerHTML).toEqual('<div class="date-text">9-10</div>');
+            schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/30/17, 12:00 AM-11/5/17, 12:00 AM</div>');  
+            schObj.dateRangeTemplate = '<div>${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0]["innerHTML"]).toBe('<div>30-5</div>');
+        });
+        
+        it('remove daterange', () => {
+            expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(3);
+            schObj.element.querySelector('.e-date-range').remove();
+            expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(2);
         });
 
         it('Checking appointment template', (done: DoneFn) => {

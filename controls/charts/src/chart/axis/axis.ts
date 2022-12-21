@@ -3,7 +3,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { Property, Complex, ChildProperty, Collection, extend } from '@syncfusion/ej2-base';
+import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';
 import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
 import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';
@@ -24,7 +24,7 @@ import { TextAlignment } from '../../common/utils/enum';
 import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';
 import { axisRangeCalculated } from '../../common/model/constants';
 import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';
-import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';
+import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel} from '../model/chart-base-model';
 import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -73,10 +73,10 @@ export class Row extends ChildProperty<Row> {
      */
     public computeSize(axis: Axis, scrollBarHeight: number, definition: Row | Column, chart: Chart): void {
         let width: number = 0;
-        const innerPadding: number = axis.labelPosition === 'Inside' && (chart.axes.indexOf(axis) > -1) ? -5 : 5;
+        const innerPadding: number = (axis.labelPosition === 'Inside' && (chart.axes.indexOf(axis) > -1)) ? -5 : 5;
         if (axis.visible && axis.internalVisibility) {
             width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding, definition) + axis.lineStyle.width * 0.5);
+                axis.findLabelSize(axis.crossInAxis, innerPadding, definition, chart) + axis.lineStyle.width * 0.5);
         }
 
         if (axis.isAxisOpposedPosition) {
@@ -138,7 +138,7 @@ export class Column extends ChildProperty<Column> {
         const innerPadding: number = 5;
         if (axis.visible && axis.internalVisibility) {
             height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
-                axis.findLabelSize(axis.crossInAxis, innerPadding, definition) + axis.lineStyle.width * 0.5);
+                axis.findLabelSize(axis.crossInAxis, innerPadding, definition, chart) + axis.lineStyle.width * 0.5);
         }
         if (axis.isAxisOpposedPosition) {
             this.farSizes.push(height);
@@ -722,6 +722,15 @@ export class Axis extends ChildProperty<Axis> {
     public labelRotation: number;
 
     /**
+     * Defines an angle to rotate axis title. By default, angle auto calculated based on position and orientation of axis.
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public titleRotation: number;
+
+    /**
      * Specifies the value at which the axis line has to be intersect with the vertical axis or vice versa.
      *
      * @default null
@@ -859,7 +868,7 @@ export class Axis extends ChildProperty<Axis> {
      * @default Trim
      */
 
-    @Property('Trim')
+    @Property(Browser.isDevice ? 'Rotate45' : 'Trim')
     public labelIntersectAction: LabelIntersectAction;
 
     /**
@@ -1008,7 +1017,7 @@ export class Axis extends ChildProperty<Axis> {
      * @private
      */
     public internalVisibility: boolean = true;
-    /** 
+    /**
      * This property is used to place the vertical axis in opposed position and horizontal axis in inversed
      * when RTL is enabled in chart
      * @private */
@@ -1053,11 +1062,18 @@ export class Axis extends ChildProperty<Axis> {
      * @returns {number} labelSize
      * @private
      */
-    public findLabelSize(crossAxis: Axis, innerPadding: number, definition: Row | Column): number {
+    public findLabelSize(crossAxis: Axis, innerPadding: number, definition: Row | Column, chart: Chart): number {
         let titleSize: number = 0; const isHorizontal: boolean = this.orientation === 'Horizontal';
         if (this.title) {
-            this.titleSize = measureText(this.title, this.titleStyle);
-            titleSize = this.titleSize.height + innerPadding;
+            const angle: number = this.titleRotation;
+            if (!angle) {
+                this.titleSize = measureText(this.title, this.titleStyle);
+                titleSize = this.titleSize.height + innerPadding;
+            }
+            else {
+                this.titleSize = rotateTextSize(this.titleStyle, this.title, angle, chart);
+                titleSize = (this.orientation === 'Vertical' ? this.titleSize.width : this.titleSize.height) + innerPadding;
+            }
             if (this.rect.width || this.rect.height) {
                 const length: number = isHorizontal ? this.rect.width : this.rect.height;
                 this.titleCollection = getTitle(this.title, this.titleStyle, length);
@@ -1227,7 +1243,7 @@ export class Axis extends ChildProperty<Axis> {
         this.angle = this.labelRotation; this.maxLabelSize = new Size(0, 0);
         const action: LabelIntersectAction = this.labelIntersectAction; let label: VisibleLabels;
         for (let i: number = 0, len: number = this.visibleLabels.length; i < len; i++) {
-            label = this.visibleLabels[i];
+            label = this.visibleLabels[i as number];
             isAxisLabelBreak = isBreakLabel(label.originalText);
             if (isAxisLabelBreak) {
                 label.size = measureText(label.originalText.replace(/<br>/g, ' '), this.labelStyle);
@@ -1284,11 +1300,11 @@ export class Axis extends ChildProperty<Axis> {
                         let result: string[]; const result1: string[] = []; let str: string;
                         for (let index: number = 0; index < label.text.length; index++) {
                             result = textWrap(
-                                label.text[index],
+                                label.text[index as number],
                                 this.rect.width / this.visibleLabels.length, this.labelStyle);
                             if (result.length > 1) {
                                 for (let j: number = 0; j < result.length; j++) {
-                                    str = result[j]; result1.push(str);
+                                    str = result[j as number]; result1.push(str);
                                 }
                             } else {
                                 result1.push(result[0]);
@@ -1351,7 +1367,7 @@ export class Axis extends ChildProperty<Axis> {
         const store: number[] = [];
         let isMultiRows: boolean;
         for (let i: number = length - 1; i >= 0; i--) {
-            label = this.visibleLabels[i];
+            label = this.visibleLabels[i as number];
             width2 = isBreakLabels ? label.breakLabelSize.width : label.size.width;
             pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
             isMultiRows = !this.isAxisInverse ? currentX < (pointX + width2 * 0.5) :
@@ -1385,19 +1401,20 @@ export class Axis extends ChildProperty<Axis> {
         }
     }
 
-   /**
+    /**
      * Set the axis `opposedPosition` and `isInversed` properties.
      *
      * @returns {void}
      * @private
      */
-   public setIsInversedAndOpposedPosition(isPolar : boolean = false): void {
-        this.isAxisOpposedPosition = this.opposedPosition || (!isPolar && this.isRTLEnabled && this.orientation == 'Vertical');
-        this.isAxisInverse = this.isInversed || (this.isRTLEnabled && this.orientation == 'Horizontal');
-   }
+    public setIsInversedAndOpposedPosition(isPolar : boolean = false): void {
+        this.isAxisOpposedPosition = this.opposedPosition || (!isPolar && this.isRTLEnabled && this.orientation === 'Vertical');
+        this.isAxisInverse = this.isInversed || (this.isRTLEnabled && this.orientation === 'Horizontal');
+    }
 }
 /**
  * Axis visible range
+ *
  * @public
  */
 export interface VisibleRangeModel {

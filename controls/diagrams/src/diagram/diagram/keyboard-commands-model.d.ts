@@ -120,6 +120,7 @@ export interface CommandModel {
 
     /**
      * Defines what to be executed when the key combination is recognized
+     *
      * @aspDefaultValueIgnore
      * @default undefined
      * @deprecated
@@ -168,12 +169,14 @@ export interface CommandModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     gesture?: KeyGestureModel;
 
     /**
      * Defines any additional parameters that are required at runtime
+     * 
      * @default ''
      */
     parameter?: string;

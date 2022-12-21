@@ -84,11 +84,11 @@ export class BlazorAction {
         const index: string = 'index';
         const editArgs: Object = {
             requestType: args.requestType,
-            data: args[data],
-            action: args[action]
+            data: args[`${data}`],
+            action: args[`${action}`]
         };
-        if (!isNullOrUndefined(args[index])) {
-            editArgs[index] = args[index];
+        if (!isNullOrUndefined(args[`${index}`])) {
+            editArgs[`${index}`] = args[`${index}`];
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         args.promise.then((e: ReturnType) => this.editSuccess(editArgs)
@@ -96,8 +96,8 @@ export class BlazorAction {
             if (isBlazor() && this.parent.isServerRendered) {
                 const error: string = 'error';
                 const message: string = 'message';
-                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
-                    e[error] = e[error][message];
+                if (!isNullOrUndefined(e[`${error}`]) && !isNullOrUndefined(e[`${error}`][`${message}`])) {
+                    e[`${error}`] = e[`${error}`][`${message}`];
                 }
             }
             this.parent.trigger(events.actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
@@ -129,7 +129,7 @@ export class BlazorAction {
             uid: uid, classList: target.classList[0], index: tr.getAttribute('data-rowindex'),
             rowIndex: gObj.getRowsObject().indexOf(rowObj), colSpan: this.parent.getVisibleColumns().length
         };
-        gObj[adaptor][invokeMethodAsync]('OnDetailClick', args);
+        gObj[`${adaptor}`][`${invokeMethodAsync}`]('OnDetailClick', args);
         if (target.classList.contains('e-detailrowcollapse')) {
             const rows: Row<Column>[] = gObj.getRowsObject();
             const rowData: Object = rowObj.data;
@@ -145,13 +145,13 @@ export class BlazorAction {
             for (let i: number = 0; i < len; i++) {
                 gridRow.cells.unshift(new Cell({ cellType: CellType.Indent }));
             }
-            rows.splice(args[rIndex] + 1, 0, gridRow);
+            rows.splice(args[`${rIndex}`] + 1, 0, gridRow);
             gObj.trigger(events.detailDataBound, { data: rowData});
             gObj.notify(events.detailDataBound, { rows: gObj.getRowsObject() });
             rowObj.isExpand = true;
             this.aria.setExpand(target as HTMLElement, true);
         } else {
-            gObj.getRowsObject().splice(args[rIndex] + 1, 1);
+            gObj.getRowsObject().splice(args[`${rIndex}`] + 1, 1);
             gObj.notify(events.detailDataBound, { rows: gObj.getRowsObject() });
             rowObj.isExpand = false;
             this.aria.setExpand(target as HTMLElement, false);
@@ -163,9 +163,9 @@ export class BlazorAction {
         const adaptor: string = 'interopAdaptor';
         const invokeMethodAsync: string = 'invokeMethodAsync';
         for (let i: number = 0; i < columns.length; i++) {
-            visible[columns[i].uid] = columns[i].visible;
+            visible[columns[parseInt(i.toString(), 10)].uid] = columns[parseInt(i.toString(), 10)].visible;
         }
-        this.parent[adaptor][invokeMethodAsync]('setColumnVisibility', {visible: visible});
+        this.parent[`${adaptor}`][`${invokeMethodAsync}`]('setColumnVisibility', {visible: visible});
     }
 
     public dataSuccess(args: ReturnType): void {
@@ -173,8 +173,8 @@ export class BlazorAction {
             this.actionArgs.requestType = 'virtualscroll';
         }
         const startIndex: string = 'startIndex'; const endIndex: string = 'endIndex';
-        this.actionArgs[startIndex] = args[startIndex];
-        this.actionArgs[endIndex] = args[endIndex];
+        this.actionArgs[`${startIndex}`] = args[`${startIndex}`];
+        this.actionArgs[`${endIndex}`] = args[`${endIndex}`];
         if (this.parent.enableVirtualization) {
             this.virtualContentModule = (<VirtualContentRenderer>this.parent.contentModule);
             if (this.virtualContentModule.activeKey === 'downArrow' || this.virtualContentModule.activeKey === 'upArrow') {
@@ -190,8 +190,8 @@ export class BlazorAction {
         if (args.foreignColumnsData) {
             const columns: Column[] = this.parent.getColumns();
             for (let i: number = 0; i < columns.length; i++) {
-                if (args.foreignColumnsData[columns[i].field]) {
-                    columns[i].columnData = args.foreignColumnsData[columns[i].field];
+                if (args.foreignColumnsData[columns[parseInt(i.toString(), 10)].field]) {
+                    columns[parseInt(i.toString(), 10)].columnData = args.foreignColumnsData[columns[parseInt(i.toString(), 10)].field];
                 }
             }
         }
@@ -199,11 +199,11 @@ export class BlazorAction {
             const agg: Object[] = [];
             const aggRows: AggregateRow | Object[] = this.parent.aggregates;
             for (let i: number = 0; i < aggRows.length; i++) {
-                const aggRow: AggregateRow = aggRows[i] as AggregateRow;
+                const aggRow: AggregateRow = aggRows[parseInt(i.toString(), 10)] as AggregateRow;
                 for ( let j: number = 0; j < aggRow.columns.length; j++) {
                     let aggr: Object = {};
-                    const type: string | AggregateType[] = aggRow.columns[j].type.toString();
-                    aggr = { type: type.toLowerCase(), field: aggRow.columns[j].field };
+                    const type: string | AggregateType[] = aggRow.columns[parseInt(j.toString(), 10)].type.toString();
+                    aggr = { type: type.toLowerCase(), field: aggRow.columns[parseInt(j.toString(), 10)].field };
                     agg.push(aggr);
                 }
             }
@@ -212,41 +212,41 @@ export class BlazorAction {
             const groupedCols: string[] = this.parent.groupSettings.columns;
             for ( let k: number = 0; k < groupedCols.length; k++) {
                 aggrds = data ? data : args.result;
-                data = DataUtil.group(aggrds, groupedCols[k], agg, null, null);
+                data = DataUtil.group(aggrds, groupedCols[parseInt(k.toString(), 10)], agg, null, null);
             }
             args.result = data ? data : args.result;
         }
         const rowUid: string = 'rowUid';
         const offsetTime: string = 'offsetTime'; const off: string = 'offset';
-        this.parent[rowUid] = args[rowUid];
-        args[off] = Math.sign(args[off]) === 1 ? -Math.abs(args[off]) : Math.abs(args[off]);
-        this.parent[offsetTime] = args[off];
-        if (this.parent[offsetTime] !== new Date().getTimezoneOffset() / 60) {
+        this.parent[`${rowUid}`] = args[`${rowUid}`];
+        args[`${off}`] = Math.sign(args[`${off}`]) === 1 ? -Math.abs(args[`${off}`]) : Math.abs(args[`${off}`]);
+        this.parent[`${offsetTime}`] = args[`${off}`];
+        if (this.parent[`${offsetTime}`] !== new Date().getTimezoneOffset() / 60) {
             if (this.parent.editSettings.mode !== 'Batch') {
                 const action: string = 'action';
                 const rowIndex: string = 'rowIndex';
                 const index: string = 'index';
-                if (this.actionArgs[action] === 'edit') {
-                    this.setClientOffSet(args, this.actionArgs[rowIndex]);
-                } else if (this.actionArgs[action] === 'add') {
-                    this.setClientOffSet(args, this.actionArgs[index]);
+                if (this.actionArgs[`${action}`] === 'edit') {
+                    this.setClientOffSet(args, this.actionArgs[`${rowIndex}`]);
+                } else if (this.actionArgs[`${action}`] === 'add') {
+                    this.setClientOffSet(args, this.actionArgs[`${index}`]);
                 }
             } else if (this.parent.editSettings.mode === 'Batch') {
                 const changes: string = 'changes';
                 const changedRecords: string = 'changedRecords';
                 const addedRecords: string = 'addedRecords';
                 const keyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-                const batchChanges: Object = this.actionArgs[changes] || { changedRecords: [], addedRecords: [] };
-                for (let i: number = 0; i < batchChanges[changedRecords].length; i++) {
+                const batchChanges: Object = this.actionArgs[`${changes}`] || { changedRecords: [], addedRecords: [] };
+                for (let i: number = 0; i < batchChanges[`${changedRecords}`].length; i++) {
                     for (let j: number = 0; j < args.result.length; j++) {
-                        if (batchChanges[changedRecords][i][keyField] === args.result[j][keyField]) {
+                        if (batchChanges[`${changedRecords}`][parseInt(i.toString(), 10)][`${keyField}`] === args.result[parseInt(j.toString(), 10)][`${keyField}`]) {
                             this.setClientOffSet(args, j);
                         }
                     }
                 }
-                for (let i: number = 0; i < batchChanges[addedRecords].length; i++) {
+                for (let i: number = 0; i < batchChanges[`${addedRecords}`].length; i++) {
                     for (let j: number = 0; j < args.result.length; j++) {
-                        if (batchChanges[addedRecords][i][keyField] === args.result[j][keyField]) {
+                        if (batchChanges[`${addedRecords}`][parseInt(i.toString(), 10)][`${keyField}`] === args.result[parseInt(j.toString(), 10)][`${keyField}`]) {
                             this.setClientOffSet(args, j);
                         }
                     }
@@ -268,9 +268,9 @@ export class BlazorAction {
     public removeDisplayNone(): void {
         const renderedContentRows: NodeListOf<HTMLElement> = this.parent.getContentTable().querySelectorAll('tr');
         for (let i: number = 0; i < renderedContentRows.length; i++) {
-            const renderedContentCells: NodeListOf<HTMLElement> = renderedContentRows[i].querySelectorAll('td');
+            const renderedContentCells: NodeListOf<HTMLElement> = renderedContentRows[parseInt(i.toString(), 10)].querySelectorAll('td');
             for (let j: number = 0; j < renderedContentCells.length; j++) {
-                renderedContentCells[j].style.display = '';
+                renderedContentCells[parseInt(j.toString(), 10)].style.display = '';
             }
         }
     }
@@ -311,7 +311,7 @@ export class BlazorAction {
     private setClientOffSet(args: ReturnType, index: number): void {
         const timeZone: number = DataUtil.serverTimezoneOffset;
         DataUtil.serverTimezoneOffset = 0;
-        args.result[index] = DataUtil.parse.parseJson(JSON.stringify(args.result[index]));
+        args.result[parseInt(index.toString(), 10)] = DataUtil.parse.parseJson(JSON.stringify(args.result[parseInt(index.toString(), 10)]));
         DataUtil.serverTimezoneOffset = timeZone;
     }
 
@@ -319,9 +319,9 @@ export class BlazorAction {
         const serverTimeZone: number = DataUtil.serverTimezoneOffset;
         const offsetTime: string = 'offsetTime';
         const data: string = 'data';
-        const timeZone: number = new Date().getTimezoneOffset() / 60 * 2 + this.parent[offsetTime];
+        const timeZone: number = new Date().getTimezoneOffset() / 60 * 2 + this.parent[`${offsetTime}`];
         DataUtil.serverTimezoneOffset = timeZone;
-        args[data] = DataUtil.parse.parseJson(JSON.stringify(args[data]));
+        args[`${data}`] = DataUtil.parse.parseJson(JSON.stringify(args[`${data}`]));
         DataUtil.serverTimezoneOffset = serverTimeZone;
     }
 
@@ -329,11 +329,11 @@ export class BlazorAction {
         const adaptor: string = 'interopAdaptor'; const content: string = 'contentModule';
         const invokeMethodAsync: string = 'invokeMethodAsync';
         const exactTopIndex: string = 'exactTopIndex';
-        args[exactTopIndex] = Math.round((this.parent.element.querySelector('.e-content').scrollTop) / this.parent.getRowHeight());
+        args[`${exactTopIndex}`] = Math.round((this.parent.element.querySelector('.e-content').scrollTop) / this.parent.getRowHeight());
         const rowHeight: string = 'rowHeight';
-        args[rowHeight] = this.parent.getRowHeight();
-        this.parent[adaptor][invokeMethodAsync]('OnGroupExpandClick', args).then(() => {
-            this.parent[content].rowElements = [].slice.call(this.parent.getContentTable().querySelectorAll('tr.e-row[data-uid]'));
+        args[`${rowHeight}`] = this.parent.getRowHeight();
+        this.parent[`${adaptor}`][`${invokeMethodAsync}`]('OnGroupExpandClick', args).then(() => {
+            this.parent[`${content}`].rowElements = [].slice.call(this.parent.getContentTable().querySelectorAll('tr.e-row[data-uid]'));
         });
     }
 
@@ -341,8 +341,8 @@ export class BlazorAction {
         const gObj: IGrid = this.parent;
         gObj.mergePersistGridData(args);
         const bulkChanges: string = 'bulkChanges';
-        if (gObj[bulkChanges].columns) {
-            delete gObj[bulkChanges].columns;
+        if (gObj[`${bulkChanges}`].columns) {
+            delete gObj[`${bulkChanges}`].columns;
         }
         gObj.headerModule.refreshUI();
         gObj.notify('persist-data-changed', {});
@@ -367,18 +367,19 @@ export class BlazorAction {
             gObj.pageSettings.currentPage = 1;
         }
         for (let i: number = 0; i < gObj.columns.length; i++) {
-            if (gObj.groupSettings.columns.indexOf((gObj.columns[i] as Column).field) > -1) {
-                (gObj.columns[i] as Column).visible = true;
+            if (gObj.groupSettings.columns.indexOf((gObj.columns[parseInt(i.toString(), 10)] as Column).field) > -1) {
+                (gObj.columns[parseInt(i.toString(), 10)] as Column).visible = true;
             }
         }
         gObj.mergePersistGridData(persistArgs);
         gObj.notify('persist-data-changed', {});
-        if (gObj[bulkChanges].columns) {
-            delete gObj[bulkChanges].columns;
+        if (gObj[`${bulkChanges}`].columns) {
+            delete gObj[`${bulkChanges}`].columns;
         }
         gObj.headerModule.refreshUI();
         for (let i: number = 0; i < gObj.columns.length; i++) {
-            (gObj.columns[i] as Column).editType = (gObj.columns[i] as Column).editType.toLowerCase();
+            (gObj.columns[parseInt(i.toString(), 10)] as Column).editType = (gObj.columns[parseInt(i.toString(), 10)] as Column)
+                .editType.toLowerCase();
         }
         gObj.setProperties({filterSettings: {columns: []}}, true);
     }

@@ -45,6 +45,442 @@ describe('Find & Replace ->', () => {
         });
     });
 
+    describe('UI - Interaction for find Next->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ index:1, cells: [{ index:1, value: '10' }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Active Cell from below Used Range Row', (done: Function) => {
+            helper.invoke('selectRange', ['A12']);
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+                findTxtBox.value = '10';
+                helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+                helper.click('.e-findtool-dlg .e-findRib-next');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
+                done();
+            });
+        });
+        it('Active Cell from after Used Range Column', (done: Function) => {
+            helper.invoke('selectRange', ['I11']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+            helper.click('.e-findtool-dlg .e-findRib-next');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
+            done();
+        });
+        it('Active Cell from below Used Range Row and after Used Range Column', (done: Function) => {
+            helper.invoke('selectRange', ['J12']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+            helper.click('.e-findtool-dlg .e-findRib-next');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
+            helper.click('.e-findtool-dlg .e-findRib-more');
+            setTimeout(() => {
+                helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
+                done();
+            })
+        });
+        it('Apply Find Next in Find Dialog by using searchby Rows with in workbook', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+                target.ej2_instances[0].value = 'Workbook';
+                target.ej2_instances[0].dataBind();
+                setTimeout(() => {
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                    findTxtBox.value = '10';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                    setTimeout(() => {
+                        helper.click('.e-find-dlg .e-btn-findNext');
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Apply Find Next in Find Dialog by using searchby Columns with in Sheet', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
+            dropDownList.ej2_instances[0].value = 'By Column';
+            dropDownList.ej2_instances[0].dataBind();
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-findNext');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('B11:B11');
+                done();
+            });
+        });
+        it('Apply Find Next in Find Dialog by using searchby Columns in last used Range Row Index', (done: Function) => {
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('C7:C7');
+            helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1].click();
+            done();
+        });
+        it('Apply Find Next in Find Dialog by using searchby Columns with in workbook', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('B11:B11');
+                done();
+            });
+        });
+        it('Apply Find Next in Find Dialog by using searchby Columns in Last used Range Column', (done: Function) => {
+            helper.invoke('selectRange', ['H10']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = '166';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-findNext');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
+                    done();
+                });
+            });
+        });
+        it('Apply Find Next in Find Dialog by using searchby Columns in Last used Range Column in active shet', (done: Function) => {
+            helper.invoke('selectRange', ['H10']);
+            let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+            target.ej2_instances[0].value = 'Sheet';
+            target.ej2_instances[0].dataBind();
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-findNext');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('H10:H10');
+                    done();
+                });
+            });
+        });
+        it('Apply Find Next in Find Dialog by using searchby Columns in Last used Range Column in active shet', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.click('.e-find-dlg .e-findnreplace-checkcase');
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = '100';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+            expect(helper.getElementFromSpreadsheet('.e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
+            helper.invoke('selectRange', ['A2']);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A2');
+            expect(helper.getElementFromSpreadsheet('.e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
+            done();
+        });
+        it('Apply Find Next in Find Dialog by match case option', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = 'Item Name';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
+            dropDownList.ej2_instances[0].value = 'By Row';
+            dropDownList.ej2_instances[0].dataBind();
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+            findTxtBox.value = 'Date';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('B1:B1');
+            done();
+        });
+        it('Apply Find Next in Find Dialog by match case and match entire cell Content option', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = 'Item Name';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+            findTxtBox.value = 'Date';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            helper.click('.e-find-dlg .e-btn-findNext');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('B1:B1');
+            done();
+        });
+    });
+
+    describe('UI - Interaction for find Previous->', () => { 
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ index:1, cells: [{ index:1, value: '10' }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Active Cell from below Used Range Row', (done: Function) => {
+            helper.invoke('selectRange', ['H12']);
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+                findTxtBox.value = '10';
+                helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+                helper.click('.e-findtool-dlg .e-findRib-prev');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E11');
+                done();
+            });
+        });
+        it('Active Cell from after Used Range Column', (done: Function) => {
+            helper.invoke('selectRange', ['I11']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+            helper.click('.e-findtool-dlg .e-findRib-prev');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('F10:F10');
+            done();
+        });
+        it('Active Cell from below Used Range Row and after Used Range Column', (done: Function) => {
+            helper.invoke('selectRange', ['J12']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+            helper.click('.e-findtool-dlg .e-findRib-prev');
+            expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E11');
+            done();
+        });
+        it('Apply Find Previous in Find Dialog by using searchby Rows with in workbook', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.click('.e-findtool-dlg .e-findRib-more');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+                target.ej2_instances[0].value = 'Workbook';
+                target.ej2_instances[0].dataBind();
+                setTimeout(() => {
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                    findTxtBox.value = '10';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                    setTimeout(() => {
+                        helper.click('.e-find-dlg .e-btn-findPrevious');
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[1].selectedRange).toBe('B2:B2');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Apply Find Previous in Find Dialog within sheet by selecting Workbook', (done: Function) => {
+            helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[0].click();
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A1']);
+                const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                findTxtBox.value = 'Item Name';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                setTimeout(() => {
+                    helper.click('.e-find-dlg .e-btn-findPrevious');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                    done();
+                });
+            });
+        });
+        it('Apply Find Previous in Find Dialog within workbook in selected cell', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+            target.ej2_instances[0].value = 'Sheet';
+            target.ej2_instances[0].dataBind();
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-findPrevious');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by search columns within sheet', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
+            dropDownList.ej2_instances[0].value = 'By Column';
+            dropDownList.ej2_instances[0].dataBind();
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-findPrevious');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by search columns within sheet by selecting within workbook', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+            target.ej2_instances[0].value = 'Workbook';
+            target.ej2_instances[0].dataBind();
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-findPrevious');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by search columns to navigate to another sheet', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[1].selectedRange).toBe('B2:B2');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by match case', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = '10';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+            target.ej2_instances[0].value = 'Sheet';
+            target.ej2_instances[0].dataBind();
+            helper.click('.e-find-dlg .e-findnreplace-checkcase');
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('H2:H2');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by match entire cell contetnts', (done: Function) => {
+            helper.click('.e-find-dlg .e-findnreplace-checkcase');
+            helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by match case and match entire cell contetnts', (done: Function) => {
+            helper.click('.e-find-dlg .e-findnreplace-checkcase');
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('E11:E11');
+                done();
+            });
+        });
+        it('Apply Find Previous in Find Dialog by match case and Match entire cell contents in Last used Range', (done: Function) => {
+            helper.invoke('selectRange', ['H11']);
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = '55';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            helper.click('.e-find-dlg .e-btn-findPrevious');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('H11:H11');
+                done();
+            });
+        });
+    });
+
+    describe('UI - Interaction for Replace & Replace all with other options->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ index:1, cells: [{ index:1, value: 'Test' }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Replace all by match entire cell contents', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
+            helper.edit('I1','Test')
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                helper.click('.e-findtool-dlg .e-findRib-more');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                    findTxtBox.value = 'Test';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                    const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                    replaceTxtBox.value = 'Tested';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+                    let target: any = helper.getElements('.e-find-dlg .e-search-within .e-dropdownlist')[0];
+                    target.ej2_instances[0].value = 'Workbook';
+                    target.ej2_instances[0].dataBind();
+                    setTimeout(() => {
+                        helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+                        helper.click('.e-find-dlg .e-btn-replaceAll');
+                        setTimeout(() => {
+                            expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe("0 matches replaced with Tested");
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Replace all by match case and match entire cell contents', (done: Function) => {
+            helper.click('.e-find-dlg .e-findnreplace-checkcase');
+            helper.click('.e-find-dlg .e-btn-replaceAll');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[1].rows[1].cells[1].value).toBe('Tested');
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Tested');
+                expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe("2 matches replaced with Tested");
+                done();
+            }, 20);
+        });
+        it('Replace all by match case', (done: Function) => {
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = 'Tested';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+            replaceTxtBox.value = 'Test';                    
+            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+                helper.click('.e-find-dlg .e-btn-replaceAll');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[1].rows[1].cells[1].value).toBe('Test');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Test');
+                    expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe("2 matches replaced with Test");
+                    done();
+                }, 10);
+            }); 
+        });
+        it('Replace by match case', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
+            helper.setAnimationToNone('.e-find-dlg.e-dialog');
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = 'Test';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+            replaceTxtBox.value = 'Tested';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-btn-replace');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Tested');
+                    done();
+                }, 10);
+            });
+        });
+        it('Replace by match case and match entire cell contents', (done: Function) => {
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = 'Tested';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+            replaceTxtBox.value = 'Test';                    
+            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+                helper.click('.e-find-dlg .e-btn-replace');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Test');
+                    done()
+                }, 10);
+            });
+        });
+        it('Replace all by match entire cell contents', (done: Function) => {
+            const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+            findTxtBox.value = 'Test';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+            replaceTxtBox.value = 'Tested';                    
+            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+            setTimeout(() => {
+                helper.click('.e-find-dlg .e-findnreplace-checkcase');
+                helper.click('.e-find-dlg .e-btn-replace');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Tested');
+                    done();
+                }, 10);
+            });
+        });
+    });
+    
     describe('UI Interaction ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 11, cells:

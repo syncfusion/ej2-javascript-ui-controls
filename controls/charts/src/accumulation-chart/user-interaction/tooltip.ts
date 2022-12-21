@@ -7,13 +7,13 @@
  */
 import { Browser, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { AccPoints, AccumulationSeries, getSeriesFromIndex } from '../model/acc-base';
+import { AccPoints, AccumulationSeries } from '../model/acc-base';
 import { AccumulationChart } from '../accumulation';
 import { TooltipSettingsModel } from '../../common/model/base-model';
 import { Index } from '../../common/model/base';
-import { getElement, AccPointData, withInBounds, indexFinder } from '../../common/utils/helper';
-import { Rect } from '@syncfusion/ej2-svg-base';
-import { BaseTooltip} from '../../common/user-interaction/tooltip';
+import { AccPointData, withInBounds, indexFinder } from '../../common/utils/helper';
+//import { Rect } from '@syncfusion/ej2-svg-base';
+import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { ITooltipRenderEventArgs } from '../../chart/model/chart-interface';
 import { tooltipRender } from '../../common/model/constants';
 
@@ -40,11 +40,11 @@ export class AccumulationTooltip extends BaseTooltip {
     }
 
     private mouseLeaveHandler(e: PointerEvent): void {
-          this.removeTooltip(this.accumulation.tooltip.fadeOutDuration);
+        this.removeTooltip(this.accumulation.tooltip.fadeOutDuration);
     }
 
     private mouseUpHandler(e: PointerEvent | TouchEvent): void {
-        let control: AccumulationChart = this.accumulation;
+        const control: AccumulationChart = this.accumulation;
         if (control.tooltip.enable && control.isTouch && withInBounds(control.mouseX, control.mouseY, control.initialClipRect)) {
             this.tooltip(e);
             this.removeTooltip(2000);
@@ -53,7 +53,7 @@ export class AccumulationTooltip extends BaseTooltip {
 
 
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
-        let control: AccumulationChart = this.accumulation;
+        const control: AccumulationChart = this.accumulation;
         // Tooltip for chart series.
         if (control.tooltip.enable && withInBounds(control.mouseX, control.mouseY, control.initialClipRect)) {
             this.tooltip(e);
@@ -68,9 +68,8 @@ export class AccumulationTooltip extends BaseTooltip {
      * @return {void}
      */
     public tooltip(event: PointerEvent | TouchEvent): void {
-       
         this.renderSeriesTooltip(this.accumulation,
-            this.getPieData(event, this.accumulation, this.accumulation.mouseX, this.accumulation.mouseY));
+                                 this.getPieData(event, this.accumulation, this.accumulation.mouseX, this.accumulation.mouseY));
     }
 
     /**
@@ -78,10 +77,10 @@ export class AccumulationTooltip extends BaseTooltip {
      */
 
     public renderSeriesTooltip(chart: AccumulationChart, data: AccPointData): void {
-        let svgElement: HTMLElement = this.getElement(this.element.id + '_tooltip_svg');
-        let isTooltip: boolean = svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0;
-        let tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
-        let isFirst: boolean = !isTooltip;
+        const svgElement: HTMLElement = this.getElement(this.element.id + '_tooltip_svg');
+        const isTooltip: boolean = svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0;
+        const tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
+        const isFirst: boolean = !isTooltip;
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
             if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
@@ -101,20 +100,22 @@ export class AccumulationTooltip extends BaseTooltip {
 
     private triggerTooltipRender(point: AccPointData, isFirst: boolean, textCollection: string,
                                  headerText: string, firstText: boolean = true): void {
-        let template: string;
-        let argsData: ITooltipRenderEventArgs = {
+        //let template: string;
+        const argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
-            series: this.accumulation.isBlazor  ?  {} as AccumulationSeries : point.series,  headerText : headerText,
-            data : { pointX: point.point.x , pointY: point.point.y as Object, seriesIndex: point.series.index,
-                     pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name  }
+            series: this.accumulation.isBlazor ? {} as AccumulationSeries : point.series, headerText: headerText,
+            data: {
+                pointX: point.point.x, pointY: point.point.y as Object, seriesIndex: point.series.index,
+                pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name
+            }
         };
-        let tooltipSuccess: Function = (argsData: ITooltipRenderEventArgs) => {
+        const tooltipSuccess: Function = (argsData: ITooltipRenderEventArgs) => {
             if (!argsData.cancel) {
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
                 this.headerText = argsData.headerText;
                 this.createTooltip(this.chart, isFirst, point.point.symbolLocation,
-                    point.series.clipRect, point.point, !this.chart.tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
+                                   point.series.clipRect, point.point, !this.chart.tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
                                    null, point.point, this.template ? argsData.template : '');
             } else {
                 this.removeHighlight();
@@ -125,16 +126,16 @@ export class AccumulationTooltip extends BaseTooltip {
         tooltipSuccess.bind(this, point);
         this.chart.trigger(tooltipRender, argsData, tooltipSuccess);
     }
-    private getPieData(e: PointerEvent | TouchEvent, chart: AccumulationChart, x: number, y: number) : AccPointData {
-        let target: Element = e.target as Element;
-        let id: Index = indexFinder(target.id, true);
+    private getPieData(e: PointerEvent | TouchEvent, chart: AccumulationChart, x: number, y: number): AccPointData {
+        const target: Element = e.target as Element;
+        const id: Index = indexFinder(target.id, true);
         if (!isNaN(id.series)) {
-            let seriesIndex: number = id.series;
-            let pointIndex: number = id.point;
+            const seriesIndex: number = id.series;
+            const pointIndex: number = id.point;
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
-                let series: AccumulationSeries = this.getSeriesFromIndex(seriesIndex, chart.visibleSeries);
+                const series: AccumulationSeries = this.getSeriesFromIndex(seriesIndex, chart.visibleSeries);
                 if (series.enableTooltip) {
-                    return new AccPointData(series.points[pointIndex], series);
+                    return new AccPointData(series.points[pointIndex as number], series);
                 }
             }
         }
@@ -147,15 +148,15 @@ export class AccumulationTooltip extends BaseTooltip {
         return <AccumulationSeries>visibleSeries[0];
     }
 
-    private getTooltipText(data : AccPointData, tooltip: TooltipSettingsModel) : string {
-        let series: AccumulationSeries = data.series;
+    private getTooltipText(data: AccPointData, tooltip: TooltipSettingsModel): string {
+        const series: AccumulationSeries = data.series;
         let format: string = this.accumulation.useGroupingSeparator ? '${point.x} : <b>${point.separatorY}</b>'
-        : '${point.x} : <b>${point.y}</b>';
+            : '${point.x} : <b>${point.y}</b>';
         format = tooltip.format ? tooltip.format : format;
         return this.parseTemplate(data.point, series, format);
     }
 
-    private findHeader(data : AccPointData) : string {
+    private findHeader(data: AccPointData): string {
         if (this.header === '') {
             return '';
         }
@@ -166,17 +167,19 @@ export class AccumulationTooltip extends BaseTooltip {
         return '';
     }
 
-    private parseTemplate(point : AccPoints, series : AccumulationSeries, format : string) : string {
+    private parseTemplate(point: AccPoints, series: AccumulationSeries, format: string): string {
         let value: RegExp;
         let textValue: string;
-        for (let dataValue of Object.keys(point)) {
+        for (const dataValue of Object.keys(point)) {
+            // eslint-disable-next-line security/detect-non-literal-regexp
             value = new RegExp('${point' + '.' + dataValue + '}', 'gm');
-            format = format.replace(value.source, point[dataValue]);
+            format = format.replace(value.source, point[dataValue as string]);
         }
 
-        for (let dataValue of Object.keys(Object.getPrototypeOf(series))) {
+        for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
+            // eslint-disable-next-line security/detect-non-literal-regexp
             value = new RegExp('${series' + '.' + dataValue + '}', 'gm');
-            textValue = series[dataValue];
+            textValue = series[dataValue as string];
             format = format.replace(value.source, textValue);
         }
         return format;
@@ -190,6 +193,7 @@ export class AccumulationTooltip extends BaseTooltip {
     }
     /**
      * To destroy the Tooltip.
+     *
      * @return {void}
      * @private
      */

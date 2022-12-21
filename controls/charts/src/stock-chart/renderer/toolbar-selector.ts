@@ -60,25 +60,25 @@ export class ToolBarSelector {
         const result: ItemModel[] = [];
         if (type === this.stockChart.seriesType) {
             for (let i: number = 0; i < type.length; i++) {
-                result.push({ text: '&nbsp;&nbsp;&nbsp;' + type[i].toString() });
+                result.push({ text: '&nbsp;&nbsp;&nbsp;' + type[i as number].toString() });
             }
             for (let i: number = 0; i < this.stockChart.series.length; i++) {
                 for (let j: number = 0; j < result.length; j++) {
-                    let text: string = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '');
+                    let text: string = result[j as number].text.replace('&nbsp;&nbsp;&nbsp;', '');
                     text = (text === 'OHLC') ? 'HiloOpenClose' : text;
-                    if (text === this.stockChart.series[i].type) {
-                        result[j].text = result[j].text.replace('&nbsp;&nbsp;&nbsp;', '&#10004&nbsp;');
+                    if (text === this.stockChart.series[i as number].type) {
+                        result[j as number].text = result[j as number].text.replace('&nbsp;&nbsp;&nbsp;', '&#10004&nbsp;');
                     }
                 }
             }
         } else if (type === this.stockChart.exportType) {
             for (let i: number = 0; i < type.length; i++) {
-                result.push({ text: type[i].toString() });
+                result.push({ text: type[i as number].toString() });
             }
         } else {
             for (let i: number = 0; i < type.length; i++) {
-                if (type[i].toString() !== 'Print') {
-                    result.push({ text: '&nbsp;&nbsp;&nbsp;' + type[i].toString() });
+                if (type[i as number].toString() !== 'Print') {
+                    result.push({ text: '&nbsp;&nbsp;&nbsp;' + type[i as number].toString() });
                 }
             }
         }
@@ -91,14 +91,14 @@ export class ToolBarSelector {
     private addedSeries(seriesType: string): void {
         const series: StockSeriesModel[] = this.stockChart.series;
         for (let i: number = 0; i < series.length; i++) {
-            if (series[i].yName === 'volume') {
+            if (series[i as number].yName === 'volume') {
                 continue;
             }
-            series[i].type = <ChartSeriesType>(seriesType.indexOf('Candle') > -1 ? 'Candle' :
+            series[i as number].type = <ChartSeriesType>(seriesType.indexOf('Candle') > -1 ? 'Candle' :
                 (seriesType.indexOf('OHLC') > -1 ? 'HiloOpenClose' : seriesType) );
-            series[i].enableSolidCandles = seriesType === 'Candle';
-            for (let index: number = 0; index < series[i].trendlines.length; index++) {
-                const trendLine: TrendlineModel = series[i].trendlines[index];
+            series[i as number].enableSolidCandles = seriesType === 'Candle';
+            for (let index: number = 0; index < series[i as number].trendlines.length; index++) {
+                const trendLine: TrendlineModel = series[i as number].trendlines[index as number];
                 trendLine.animation.enable = false;
                 trendLine.enableTooltip = false;
             }
@@ -128,7 +128,7 @@ export class ToolBarSelector {
     private secondayIndicators: TechnicalIndicators[] = [];
     public resetButton(): void {
         const isProtect: string = 'isProtectedOnChange';
-        this.stockChart[isProtect]  = true;
+        this.stockChart[isProtect as string]  = true;
         const reset: Button = new Button();
         reset.appendTo('#' + this.stockChart.element.id + '_reset');
         document.getElementById(this.stockChart.element.id + '_reset').onclick = () => {
@@ -151,12 +151,12 @@ export class ToolBarSelector {
                 this.stockChart.rows = [{}];
             }
             for (let i: number = 0; i < this.stockChart.series.length; i++) {
-                if (this.stockChart.series[i].yName === 'volume') {
+                if (this.stockChart.series[i as number].yName === 'volume') {
                     continue;
                 }
-                this.stockChart.series[i].type = this.stockChart.tempSeriesType[i];
-                if (this.stockChart.series[i].trendlines.length !== 0) {
-                    this.stockChart.series[i].trendlines[0].width = 0;
+                this.stockChart.series[i as number].type = this.stockChart.tempSeriesType[i as number];
+                if (this.stockChart.series[i as number].trendlines.length !== 0) {
+                    this.stockChart.series[i as number].trendlines[0].width = 0;
                 }
             }
             this.stockChart.indicatorElements = null;
@@ -164,7 +164,7 @@ export class ToolBarSelector {
             this.stockChart.zoomChange = false;
 
             this.stockChart.refresh();
-            this.stockChart[isProtect]  = true;
+            this.stockChart[isProtect as string]  = true;
         };
     }
     public initializeTrendlineSelector(): void {
@@ -180,7 +180,7 @@ export class ToolBarSelector {
                 if (this.trendline !== type) {
                     this.trendline = type;
                     for (let i: number = 0; i < this.stockChart.series.length; i++) {
-                        if (this.stockChart.series[i].yName === 'volume') {
+                        if (this.stockChart.series[i as number].yName === 'volume') {
                             continue;
                         }
                         if (this.stockChart.series[0].trendlines.length === 0) {
@@ -213,8 +213,8 @@ export class ToolBarSelector {
                 this.getDropDownItems(this.stockChart.indicatorType),
             select: (args: MenuEventArgs) => {
                 for (let l: number = 0; l < this.stockChart.series.length; l++) {
-                    if (this.stockChart.series[l].trendlines.length !== 0) {
-                        this.stockChart.series[l].trendlines[0].animation.enable = false;
+                    if (this.stockChart.series[l as number].trendlines.length !== 0) {
+                        this.stockChart.series[l as number].trendlines[0].animation.enable = false;
                     }
                 }
                 args.item.text = args.item.text.indexOf('&#10004&nbsp;') >= 0 ? args.item.text.substr(args.item.text.indexOf(';') + 1) :
@@ -235,7 +235,7 @@ export class ToolBarSelector {
                     } else {
                         args.item.text = '&nbsp;&nbsp;&nbsp;' + args.item.text;
                         for (let z: number = 0; z < this.stockChart.indicators.length; z++) {
-                            if (this.stockChart.indicators[z].type === type) {
+                            if (this.stockChart.indicators[z as number].type === type) {
                                 this.stockChart.indicators.splice(z, 1);
                             }
                         }
@@ -284,7 +284,7 @@ export class ToolBarSelector {
                 this.stockChart.axes[0].rowIndex += 1;
             } else {
                 for (let i: number = 0; i < this.stockChart.axes.length; i++) {
-                    this.stockChart.axes[i].rowIndex += 1;
+                    this.stockChart.axes[i as number].rowIndex += 1;
                 }
             }
             const axis: AxisModel[] = [{
@@ -306,22 +306,22 @@ export class ToolBarSelector {
         } else {
             args.item.text = '&nbsp;&nbsp;&nbsp;' + args.item.text;
             for (let i: number = 0; i < this.stockChart.indicators.length; i++) {
-                if (this.stockChart.indicators[i].type === type) {
+                if (this.stockChart.indicators[i as number].type === type) {
                     this.stockChart.indicators.splice(i, 1);
                 }
             }
             this.indicators.splice(this.indicators.indexOf(type), 1);
             let removedIndex: number = 0;
             for (let z: number = 0; z < this.stockChart.axes.length; z++) {
-                if (this.stockChart.axes[z].name === type) {
-                    removedIndex = this.stockChart.axes[z].rowIndex;
+                if (this.stockChart.axes[z as number].name === type) {
+                    removedIndex = this.stockChart.axes[z as number].rowIndex;
                     this.stockChart.rows.splice(z, 1);
                     this.stockChart.axes.splice(z, 1);
                 }
             }
             for (let z: number = 0; z < this.stockChart.axes.length; z++) {
-                if (this.stockChart.axes[z].rowIndex !== 0 && this.stockChart.axes[z].rowIndex > removedIndex) {
-                    this.stockChart.axes[z].rowIndex = this.stockChart.axes[z].rowIndex - 1;
+                if (this.stockChart.axes[z as number].rowIndex !== 0 && this.stockChart.axes[z as number].rowIndex > removedIndex) {
+                    this.stockChart.axes[z as number].rowIndex = this.stockChart.axes[z as number].rowIndex - 1;
                 }
             }
             this.stockChart.cartesianChart.initializeChart();
@@ -331,11 +331,11 @@ export class ToolBarSelector {
         let text: string;
         const items: ItemModel[] = args.item['parentObj'].items;
         for (let i: number = 0 ; i < items.length; i++ ) {
-            items[i].text = items[i].text.indexOf('&#10004&nbsp;') >= 0 ?
-                items[i].text.substr(items[i].text.indexOf(';') + 1) :
-                items[i].text;
-            if ( !(items[i].text.indexOf('&nbsp;&nbsp;&nbsp;') >= 0)) {
-                items[i].text = '&nbsp;&nbsp;&nbsp;' + items[i].text;
+            items[i as number].text = items[i as number].text.indexOf('&#10004&nbsp;') >= 0 ?
+                items[i as number].text.substr(items[i as number].text.indexOf(';') + 1) :
+                items[i as number].text;
+            if ( !(items[i as number].text.indexOf('&nbsp;&nbsp;&nbsp;') >= 0)) {
+                items[i as number].text = '&nbsp;&nbsp;&nbsp;' + items[i as number].text;
             }
         }
         if (args.item.text.indexOf('&nbsp;&nbsp;&nbsp;') >= 0) {
@@ -500,13 +500,13 @@ export class ToolBarSelector {
         const htmlObject: Element = renderer.createText(renderOptions, text);
         if (typeof options.text !== 'string' && options.text.length > 1) {
             for (let i: number = 1, len: number = options.text.length; i < len; i++) {
-                options.text[i] = ' ' + options.text[i];
+                options.text[i as number] = ' ' + options.text[i as number];
                 tspanElement = renderer.createTSpan(
                     {
                         'x': options.x + measureText(text, font).width + 5, 'id': options.id,
                         'y': (options.y), opacity : 0.5
                     },
-                    options.text[i]
+                    options.text[i as number]
                 );
                 htmlObject.appendChild(tspanElement);
             }

@@ -51,7 +51,6 @@ export function calculateRelativeBasedPosition(
 export function calculatePosition(
     currentElement: Element, positionX?: string, positionY?: string, parentElement?: boolean,
     targetValues?: ClientRect): OffsetPosition {
-    //eslint-disable-next-line
     popupRect = undefined;
     popupRect = targetValues;
     fixedParent = parentElement ? true : false;
@@ -136,6 +135,7 @@ function updatePosition(posX: string, posY: string, pos: OffsetPosition): Offset
         setPosy(getElementTop(), pos);
         break;
     }
+    element = null;
     return pos;
 
 }

@@ -250,7 +250,7 @@ export class Double {
         }
 
         if (!isNullOrUndefined(axis.desiredIntervals)) {
-            let delta: number = maximum - minimum;
+            const delta: number = maximum - minimum;
             interval = this.calculateNumericNiceInterval(axis, delta, size);
         }
 

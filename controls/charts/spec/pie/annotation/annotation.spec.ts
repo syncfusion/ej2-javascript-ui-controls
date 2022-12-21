@@ -299,7 +299,6 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as point with numeric value type as string', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect(element !== null).toBe(true);
                 done();
             };
             chartObj.legendSettings.visible = false;

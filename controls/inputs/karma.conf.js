@@ -15,6 +15,10 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
+      { pattern: "node_modules/@syncfusion/ej2-base/styles/material.css", included: true },
+      { pattern: "node_modules/@syncfusion/ej2-icons/styles/material.css", included: true },
+      { pattern: "node_modules/@syncfusion/ej2-popups/styles/material.css", included: true },
+      { pattern: "styles/material.css", included: true },
       "test-main.js",
       { pattern: "src/**/*.js", included: false },     
       { pattern: "spec/**/*.spec.js", included: false },

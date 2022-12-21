@@ -81,7 +81,7 @@ export class SparklineTooltip {
             const trackerPositions: number[] = locations.map((point: SparkValues): number => { return point.location.x; });
             let temp: number = Infinity;
             for (let i: number = 0, diff: number, len: number = trackerPositions.length; i < len; i++) {
-                diff = Math.abs(mouseX - trackerPositions[i]);
+                diff = Math.abs(mouseX - trackerPositions[i as number]);
                 if (temp > diff) {
                     temp = diff;
                     pointIndex = i;
@@ -100,8 +100,8 @@ export class SparklineTooltip {
             return;
         }
         this.pointIndex = pointIndex;
-        this.renderTrackerLine(visiblePoints[pointIndex]);
-        this.renderTooltip(visiblePoints[pointIndex]);
+        this.renderTrackerLine(visiblePoints[pointIndex as number]);
+        this.renderTooltip(visiblePoints[pointIndex as number]);
     }
 
     /**
@@ -163,7 +163,7 @@ export class SparklineTooltip {
         location = spark.type === 'Pie' ? { x: points.location.x, y: points.location.y } : location;
         const textColor: string = tooltip.textStyle.color || spark.sparkTheme.tooltipFontColor;
         const backgroundColor: string = tooltip.fill === '' ? spark.sparkTheme.tooltipFill : tooltip.fill;
-        let tooltipEvent: ITooltipRenderingEventArgs = {
+        const tooltipEvent: ITooltipRenderingEventArgs = {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
                 size: tooltip.textStyle.size,

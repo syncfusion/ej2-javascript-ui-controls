@@ -41,7 +41,9 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
         if (args.column.edit.params) {
             const keys: string[] = Object.keys(args.column.edit.params);
             for (let i: number = 0; i < keys.length; i++) {
-                params[keys[i]] = keys[i] === 'query' ? args.column.edit.params[keys[i]].clone() : args.column.edit.params[keys[i]];
+                params[keys[parseInt(i.toString(), 10)]] = keys[parseInt(i.toString(), 10)] === 'query' ?
+                    args.column.edit.params[keys[parseInt(i.toString(), 10)]].clone() :
+                    args.column.edit.params[keys[parseInt(i.toString(), 10)]];
             }
         }
         this.obj = new DropDownList(extend(
@@ -70,9 +72,9 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
     }
 
     private dropDownClose(args: PopupEventArgs): void {
-        // if (args.event && (args.event as KeyboardEventArgs).action === 'escape') {
-        //     (this as DropDownEditCell).parent.editModule.editCellDialogClose = true;
-        // }
+        if (args.event && (args.event as KeyboardEventArgs).action === 'escape') {
+            (this as DropDownEditCell).parent.editModule.editCellDialogClose = true;
+        }
     }
 
     private addEventListener(): void {
@@ -82,7 +84,7 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
         this.ddComplete = this.ddActionComplete.bind(this);
 
         this.obj.addEventListener(literals.create, this.ddCreated);
-        this.obj.addEventListener(literals.open, this.ddOpen);
+        this.obj.addEventListener(literals['open'], this.ddOpen);
         this.obj.addEventListener(literals.beforeOpen, this.ddBeforeOpen);
         this.obj.addEventListener(events.actionComplete, this.ddComplete);
     }
@@ -90,7 +92,7 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
     private removeEventListener(): void {
         if (this.obj.isDestroyed) { return; }
         this.obj.removeEventListener(literals.create, this.ddCreated);
-        this.obj.removeEventListener(literals.open, this.ddOpen);
+        this.obj.removeEventListener(literals['open'], this.ddOpen);
         this.obj.removeEventListener(literals.beforeOpen, this.ddBeforeOpen);
         this.obj.removeEventListener(events.actionComplete, this.ddComplete);
     }

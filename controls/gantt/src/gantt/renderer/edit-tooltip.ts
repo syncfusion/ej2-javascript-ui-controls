@@ -32,6 +32,7 @@ export class EditTooltip {
             {
                 opensOn: opensOn,
                 position: 'TopRight',
+                enableRtl: this.parent.enableRtl,
                 mouseTrail: mouseTrail,
                 cssClass: cls.ganttTooltip,
                 target: target ? target : null,
@@ -83,12 +84,15 @@ export class EditTooltip {
             this.parent.tooltipModule.toolTipObj.close();
             this.updateTooltip(segmentIndex);
             if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointLeftDrag') {
+               // eslint-disable-next-line security/detect-non-literal-fs-filename
                 this.toolTipObj.open(
                     this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointLeft));
             } else if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointRightDrag') {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 this.toolTipObj.open(
                     this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointRight));
             } else {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename
                 this.toolTipObj.open(this.taskbarEdit.taskBarEditElement);
             }
         } else if (!isNullOrUndefined(this.toolTipObj)) {
@@ -107,12 +111,12 @@ export class EditTooltip {
     public updateTooltip(segmentIndex: number): void {
         const ganttProp: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties;
         const taskWidth: number = segmentIndex === -1 ? ganttProp.width :
-            ganttProp.segments[segmentIndex].width;
+            ganttProp.segments[segmentIndex as number].width;
 
         const progressWidth: number = segmentIndex === -1 ? ganttProp.progressWidth :
-            ganttProp.segments[segmentIndex].progressWidth;
+            ganttProp.segments[segmentIndex as number].progressWidth;
 
-        const left: number = segmentIndex === -1 ? ganttProp.left : ganttProp.left + ganttProp.segments[segmentIndex].left;
+        const left: number = segmentIndex === -1 ? ganttProp.left : ganttProp.left + ganttProp.segments[segmentIndex as number].left;
 
         if (!isNullOrUndefined(this.toolTipObj)) {
             if (this.taskbarEdit.taskBarEditAction === 'ConnectorPointLeftDrag' ||
@@ -123,12 +127,27 @@ export class EditTooltip {
                 this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
-                    this.toolTipObj.offsetX = -taskWidth;
+                    if (this.parent.enableRtl) {
+                        this.toolTipObj.offsetX = 0;
+                    }
+                    else {
+                        this.toolTipObj.offsetX = -taskWidth;
+                    }
                 } else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
                     this.taskbarEdit.taskBarEditAction === 'ParentResizing') {
-                    this.toolTipObj.offsetX = 0;
+                        if (this.parent.enableRtl) {
+                            this.toolTipObj.offsetX = -taskWidth;
+                        }
+                        else {
+                            this.toolTipObj.offsetX = 0;
+                        }
                 } else if (this.taskbarEdit.taskBarEditAction === 'ProgressResizing') {
-                    this.toolTipObj.offsetX = -(taskWidth - progressWidth);
+                    if (this.parent.enableRtl) {
+                        this.toolTipObj.offsetX = -(progressWidth);
+                    }
+                    else {
+                        this.toolTipObj.offsetX = -(taskWidth - progressWidth);
+                    }
                 } else if (this.taskbarEdit.taskBarEditAction === 'MilestoneDrag') {
                     this.toolTipObj.offsetX = -(this.parent.chartRowsModule.milestoneHeight / 2);
                 } else if (taskWidth > 5) {
@@ -151,7 +170,7 @@ export class EditTooltip {
         let editRecord: ITaskData = this.taskbarEdit.taskBarEditRecord.ganttProperties as ITaskData;
         if (!isNullOrUndefined(editRecord.segments) && editRecord.segments.length > 0 && segmentIndex !== -1
             && this.taskbarEdit.taskBarEditAction !== 'ProgressResizing') {
-            editRecord = editRecord.segments[segmentIndex];
+            editRecord = editRecord.segments[segmentIndex as number];
         }
         if (this.parent.tooltipSettings.editing) {
             const templateNode: NodeList = this.parent.tooltipModule.templateCompiler(

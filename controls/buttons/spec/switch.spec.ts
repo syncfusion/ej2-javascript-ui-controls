@@ -111,10 +111,6 @@ describe('Switch', () => {
             element.parentElement.click();
             expect(i).toEqual(1);
         });
-        it('Switch with ARIA property', () => {
-            specSwitch = new Switch({}, '#specSwitch');
-            expect(element.parentElement.getAttribute('aria-checked')).toEqual('false');
-        });
         it('Mouse click test', () => {
             specSwitch = new Switch({}, '#specSwitch');
             element.parentElement.click();

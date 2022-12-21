@@ -55,18 +55,18 @@ export class ConditionalFormatting {
             removeClass([td], ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt', 'e-iconset']);
             let styleVal: string; let style: CellStyleModel;
             ['backgroundColor', 'color'].forEach((styleProp: string): void => {
-                if (td.style[styleProp]) {
-                    td.style[styleProp] = '';
-                    styleVal = cell && cell.style && cell.style[styleProp] || this.parent.commonCellStyle[styleProp];
+                if (td.style[`${styleProp}`]) {
+                    td.style[`${styleProp}`] = '';
+                    styleVal = cell && cell.style && cell.style[`${styleProp}`] || this.parent.commonCellStyle[`${styleProp}`];
                     if (styleVal) {
                         style = {};
-                        style[styleProp] = styleVal;
+                        style[`${styleProp}`] = styleVal;
                         this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: style, rowIdx: rIdx, colIdx: cIdx, cell: td });
                     }
                 }
             });
             let cfEle: HTMLElement;
-            ['.e-cf-databar', '.e-iconsetspan'].forEach((clsSelector): void => {
+            ['.e-cf-databar', '.e-iconsetspan'].forEach((clsSelector: string): void => {
                 cfEle = td.querySelector(clsSelector);
                 if (cfEle) {
                     td.removeChild(cfEle);
@@ -281,7 +281,8 @@ export class ConditionalFormatting {
     private checkCellHandler(rowIdx: number, colIdx: number, cf: ConditionalFormatModel): boolean {
         const ranges: string[] = cf.range.trim().split(',');
         for (let i: number = 0; i < ranges.length; i++) {
-            const indexes: number[] = getRangeIndexes(ranges[i].includes(':') ? ranges[i] : `${ranges[i]}:${ranges[i]}`);
+            const indexes: number[] = getRangeIndexes(ranges[i as number].includes(':') ? ranges[i as number] :
+                `${ranges[i as number]}:${ranges[i as number]}`);
             if (rowIdx >= indexes[0] && rowIdx <= indexes[2] && colIdx >= indexes[1] && colIdx <= indexes[3]) {
                 return true;
             }
@@ -392,19 +393,19 @@ export class ConditionalFormatting {
             };
         } else {
             updateFn = (): void => {
-                if (valueObj[val]) {
-                    if (!dupValueObj[val]) {
-                        dupValueObj[val] = true;
+                if (valueObj[`${val}`]) {
+                    if (!dupValueObj[`${val}`]) {
+                        dupValueObj[`${val}`] = true;
                         (<string[]>result).push(val);
                     }
                 } else {
-                    valueObj[val] = true;
+                    valueObj[`${val}`] = true;
                 }
             };
         }
         let cell: CellModel;
         for (let rangeIdx: number = 0; rangeIdx < rangeArr.length; rangeIdx++) {
-            rangeIndexes = getRangeIndexes(rangeArr[rangeIdx]);
+            rangeIndexes = getRangeIndexes(rangeArr[rangeIdx as number]);
             for (let i: number = rangeIndexes[0]; i <= rangeIndexes[2]; i++) {
                 for (let j: number = rangeIndexes[1]; j <= rangeIndexes[3]; j++) {
                     cell = getCell(i, j, sheet, false, true);
@@ -453,11 +454,11 @@ export class ConditionalFormatting {
             indexes = getViewportIndexes(this.parent);
         }
         for (let i: number = cfRule.length - 1; i >= 0; i--) {
-            if (rangeCheck && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i]) :
-                !checkRange(indexes, cfRule[i].range))) {
+            if (rangeCheck && (indexes[0].length === 2 ? !this.checkCellHandler(args.indexes[0], args.indexes[1], cfRule[i as number]) :
+                !checkRange(indexes, cfRule[i as number].range))) {
                 continue;
             }
-            isEditCellUpdated = this.updateCF(args, sheet, <ConditionalFormat>cfRule[i], isEditCellUpdated);
+            isEditCellUpdated = this.updateCF(args, sheet, <ConditionalFormat>cfRule[i as number], isEditCellUpdated);
         }
     }
 
@@ -469,7 +470,7 @@ export class ConditionalFormatting {
                 if (valueArr[0].split('(').length > 1) {
                     let valueStr: string = '';
                     for (let idx: number = 0; idx < valueArr.length; idx++) {
-                        valueStr += valueArr[idx] + ',';
+                        valueStr += valueArr[idx as number] + ',';
                         if (valueStr.split('(').length === valueStr.split(')').length && value1 === undefined) {
                             value1 = valueStr.substring(0, valueStr.length - 1);
                             valueStr = '';
@@ -479,7 +480,7 @@ export class ConditionalFormatting {
                 } else {
                     value1 = valueArr[0];
                     for (let idx: number = 1; idx < valueArr.length; idx++) {
-                        value2 += idx + 1 === valueArr.length ? valueArr[idx] : valueArr[idx] + ',';
+                        value2 += idx + 1 === valueArr.length ? valueArr[idx as number] : valueArr[idx as number] + ',';
                     }
                 }
             } else {
@@ -616,7 +617,7 @@ export class ConditionalFormatting {
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const topLeftIdx: number[] = getCellIndexes(sheet.topLeftCell);
             for (let i: number = 0; i < rangeArr.length; i++) {
-                this.updateRange(sheet, getRangeIndexes(rangeArr[i]), frozenRow, frozenCol, topLeftIdx, updateCF);
+                this.updateRange(sheet, getRangeIndexes(rangeArr[i as number]), frozenRow, frozenCol, topLeftIdx, updateCF);
             }
         }
         return isEditCellUpdated;
@@ -845,31 +846,31 @@ export class ConditionalFormatting {
         const colorCodeArr: string[] = cfColor.split('');
         const colorArr: string[] = [];
         for (let i: number = 0; i < colorCodeArr.length; i++) {
-            switch (colorCodeArr[i]) {
-                case 'G':
-                    colorArr.push('#63be7b');
-                    break;
-                case 'Y':
-                    colorArr.push('#ffeb84');
-                    break;
-                case 'R':
-                    colorArr.push('#f8696b');
-                    break;
-                case 'W':
-                    colorArr.push('#ffffff');
-                    break;
-                case 'B':
-                    colorArr.push('#5a8ac6');
-                    break;
-                case 'O':
-                    colorArr.push('#ffb628');
-                    break;
-                case 'LB':
-                    colorArr.push('#008aef');
-                    break;
-                case 'P':
-                    colorArr.push('#d6007b');
-                    break;
+            switch (colorCodeArr[i as number]) {
+            case 'G':
+                colorArr.push('#63be7b');
+                break;
+            case 'Y':
+                colorArr.push('#ffeb84');
+                break;
+            case 'R':
+                colorArr.push('#f8696b');
+                break;
+            case 'W':
+                colorArr.push('#ffffff');
+                break;
+            case 'B':
+                colorArr.push('#5a8ac6');
+                break;
+            case 'O':
+                colorArr.push('#ffb628');
+                break;
+            case 'LB':
+                colorArr.push('#008aef');
+                break;
+            case 'P':
+                colorArr.push('#d6007b');
+                break;
             }
         }
         return colorArr;

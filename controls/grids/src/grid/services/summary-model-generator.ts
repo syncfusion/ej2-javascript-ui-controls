@@ -34,7 +34,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         const rows: AggregateRowModel[] = [];
         const row: AggregateRowModel[] = this.parent.aggregates.slice();
         for (let i: number = 0; i < row.length; i++) {
-            const columns: AggregateColumnModel[] = row[i].columns.filter((column: AggregateColumnModel) => {
+            const columns: AggregateColumnModel[] = row[parseInt(i.toString(), 10)].columns.filter((column: AggregateColumnModel) => {
                 return !(column.footerTemplate || column.groupFooterTemplate || column.groupCaptionTemplate)
                     || this.columnSelector(column);
             });
@@ -80,7 +80,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         for (let i: number = 0; i < row.length; i++) {
             rows.push(
                 this.getGeneratedRow(
-                    row[i], data[i],
+                    row[parseInt(i.toString(), 10)], data[parseInt(i.toString(), 10)],
                     args ? (<SummaryData>args).level : undefined, start, end,
                     args ? (<SummaryData>args).parentUid : undefined, columns));
         }
@@ -102,12 +102,11 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         for (let i: number = 0; i < values.length; i++) {
             tmp.push(
                 this.getGeneratedCell(
-                    values[i],
+                    values[parseInt(i.toString(), 10)],
                     summaryRow,
                     i >= indentLength ? this.getCellType() :
-                        i === 0 && this.parent.childGrid ? CellType.DetailFooterIntent :
-                         CellType.Indent,
-                    indents[i], isDetailGridAlone));
+                        i === 0 && this.parent.childGrid ? CellType.DetailFooterIntent : CellType.Indent,
+                    indents[parseInt(i.toString(), 10)], isDetailGridAlone));
         }
 
         const row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });
@@ -158,10 +157,11 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let single: Object = {};
         for (let i: number = 0; i < summaryRows.length; i++) {
             single = {};
-            const column: AggregateColumn[] = (summaryRows[i].columns as AggregateColumn[]);
+            const column: AggregateColumn[] = (summaryRows[parseInt(i.toString(), 10)].columns as AggregateColumn[]);
             for (let j: number = 0; j < column.length; j++) {
                 single = this.setTemplate(
-                    (column[j] as AggregateColumn), (args && args.aggregates) ? <Object[]>args : <Object[]>data, single);
+                    (column[parseInt(j.toString(), 10)] as AggregateColumn),
+                    (args && args.aggregates) ? <Object[]>args : <Object[]>data, single);
             }
             dummy.push(single);
         }
@@ -182,12 +182,12 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
             types = <AggregateType[]>[column.type];
         }
         for (let i: number = 0; i < types.length; i++) {
-            const key: string = column.field + ' - ' + types[i].toLowerCase(); const disp: string = column.columnName;
-            const val: Object = types[i] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
-                calculateAggregate(types[i], group.aggregates ? group : <Object[]>data, column, this.parent);
-            single[disp] = single[disp] || {}; single[disp][key] = val;
-            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
-            if (group.field) { (<Group>single[disp]).field = group.field; (<Group>single[disp]).key = group.key; }
+            const key: string = column.field + ' - ' + types[parseInt(i.toString(), 10)].toLowerCase(); const disp: string = column.columnName;
+            const val: Object = types[parseInt(i.toString(), 10)] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[`${key}`] :
+                calculateAggregate(types[parseInt(i.toString(), 10)], group.aggregates ? group : <Object[]>data, column, this.parent);
+            single[`${disp}`] = single[`${disp}`] || {}; single[`${disp}`][`${key}`] = val;
+            single[`${disp}`][types[parseInt(i.toString(), 10)]] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
+            if (group.field) { (<Group>single[`${disp}`]).field = group.field; (<Group>single[`${disp}`]).key = group.key; }
         }
         helper.format = column.getFormatter();
         column.setTemplate(helper);

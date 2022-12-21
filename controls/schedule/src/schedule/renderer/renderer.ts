@@ -26,8 +26,8 @@ export class Render {
         if (this.parent.activeView) {
             const templates: string[] = [
                 'cellTemplate', 'eventTemplate', 'tooltipTemplate', 'majorSlotTemplate', 'minorSlotTemplate',
-                'headerTooltipTemplate', 'dateHeaderTemplate', 'dayHeaderTemplate', 'mothHeaderTemplate',
-                'headerIndentTemplate', 'resourceHeaderTemplate', 'cellHeaderTemplate'
+                'headerTooltipTemplate', 'dateHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate',
+                'headerIndentTemplate', 'resourceHeaderTemplate', 'cellHeaderTemplate', 'dateRangeTemplate'
             ];
             this.parent.resetTemplates(templates);
             this.parent.activeView.removeEventListener();
@@ -130,7 +130,7 @@ export class Render {
             } else if (this.parent.element.classList.contains(cls.READ_ONLY)) {
                 removeClass([this.parent.element], cls.READ_ONLY);
             }
-            this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
+            this.parent.headerModule.updateDateRange();
             this.parent.headerModule.updateHeaderItems('remove');
         }
     }

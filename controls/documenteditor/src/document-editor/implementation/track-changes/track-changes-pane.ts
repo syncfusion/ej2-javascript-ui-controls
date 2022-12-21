@@ -312,7 +312,7 @@ export class TrackChangesPane {
         }
         else {
             this.menuDropDownButton.disabled = false;
-        }   
+        }
     }
 
     private sortCollectionToDisplay(): void {
@@ -510,7 +510,7 @@ export class TrackChangesPane {
             for (let i: number = 0; i < this.changes.length; i++) {
                 let revision: Revision = this.changes.keys[i];
                 let changesSingleView: ChangesSingleView = this.changes.get(revision);
-                changesSingleView.destroy();
+                changesSingleView.clear();
             }
             this.changes.clear();
         }
@@ -531,7 +531,15 @@ export class TrackChangesPane {
      * @returns {void}
      */
     public destroy(): void {
-        this.removeAllChanges();
+        if (this.changes && this.changes.length > 0) {
+            for (let i: number = 0; i < this.changes.length; i++) {
+                let revision: Revision = this.changes.keys[i];
+                let changesSingleView: ChangesSingleView = this.changes.get(revision);
+                changesSingleView.destroy();
+            }
+            this.changes.clear();
+        }
+        this.changes = undefined;
         if (this.toolbar) {
             this.toolbar.destroy();
             this.toolbar = undefined;
@@ -561,11 +569,19 @@ export class TrackChangesPane {
             this.users = undefined;
         }
         if (this.trackChangeDiv) {
-            this.trackChangeDiv = undefined;
+            this.trackChangeDiv.innerHTML = '';
+            if (this.trackChangeDiv.parentElement) {
+                this.trackChangeDiv.parentElement.removeChild(this.trackChangeDiv);
+            }
         }
+        this.trackChangeDiv = undefined;
         if (this.changesInfoDiv) {
-            this.changesInfoDiv = undefined;
+            this.changesInfoDiv.innerHTML = '';
+            if (this.changesInfoDiv.parentElement) {
+                this.changesInfoDiv.parentElement.removeChild(this.changesInfoDiv);
+            }
         }
+        this.changesInfoDiv = undefined;
         if (this.commentReviewPane) {
             this.commentReviewPane = undefined;
         }
@@ -586,8 +602,8 @@ export class TrackChangesPane {
         this.viewTypeitems = undefined;
         this.userDropDownitems = [];
         this.userDropDownitems = undefined;
+        this.revisions = [];
         this.revisions = undefined;
-        this.changes = undefined;
         this.owner = undefined;
     }
     private addChanges(revision: Revision): void {
@@ -904,11 +920,11 @@ export class ChangesSingleView {
         }
         this.trackChangesPane.updateUsers();
     }
-
-    public destroy(): void {
-        if (this.revision) {
-            this.revision = undefined;
-        }
+    /**
+     *
+     * @private
+     */
+    public clear(): void {
         if (this.acceptButton) {
             this.acceptButton.destroy();
             this.acceptButton = undefined;
@@ -918,14 +934,90 @@ export class ChangesSingleView {
             this.rejectButton = undefined;
         }
         if (this.acceptButtonElement) {
+            this.acceptButtonElement.innerHTML = '';
+            if (this.acceptButtonElement.parentElement) {
+                this.acceptButtonElement.parentElement.removeChild(this.acceptButtonElement);
+            }
             this.acceptButtonElement = undefined;
         }
         if (this.rejectButtonElement) {
+            this.rejectButtonElement.innerHTML = '';
+            if (this.rejectButtonElement.parentElement) {
+                this.rejectButtonElement.parentElement.removeChild(this.rejectButtonElement);
+            }
             this.rejectButtonElement = undefined;
         }
         if (this.tableElement) {
+            this.tableElement.innerHTML = '';
+            if (this.tableElement.parentElement) {
+                this.tableElement.parentElement.removeChild(this.tableElement);
+            }
             this.tableElement = undefined;
         }
+        if (this.singleInnerDiv) {
+            this.singleInnerDiv.innerHTML = '';
+            if (this.singleInnerDiv.parentElement) {
+                this.singleInnerDiv.parentElement.removeChild(this.singleInnerDiv);
+            }
+            this.singleInnerDiv = undefined;
+        }
+        if (this.outerSingleDiv) {
+            this.outerSingleDiv.innerHTML = '';
+            if (this.outerSingleDiv.parentElement) {
+                this.outerSingleDiv.parentElement.removeChild(this.outerSingleDiv);
+            }
+            this.outerSingleDiv = undefined;
+        }
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public destroy(): void {
+        if (this.acceptButton) {
+            this.acceptButton.destroy();
+            this.acceptButton = undefined;
+        }
+        if (this.rejectButton) {
+            this.rejectButton.destroy();
+            this.rejectButton = undefined;
+        }
+        if (this.acceptButtonElement) {
+            this.acceptButtonElement.innerHTML = '';
+            if (this.acceptButtonElement.parentElement) {
+                this.acceptButtonElement.parentElement.removeChild(this.acceptButtonElement);
+            }
+            this.acceptButtonElement = undefined;
+        }
+        if (this.rejectButtonElement) {
+            this.rejectButtonElement.innerHTML = '';
+            if (this.rejectButtonElement.parentElement) {
+                this.rejectButtonElement.parentElement.removeChild(this.rejectButtonElement);
+            }
+            this.rejectButtonElement = undefined;
+        }
+        if (this.tableElement) {
+            this.tableElement.innerHTML = '';
+            if (this.tableElement.parentElement) {
+                this.tableElement.parentElement.removeChild(this.tableElement);
+            }
+            this.tableElement = undefined;
+        }
+        if (this.singleInnerDiv) {
+            this.singleInnerDiv.innerHTML = '';
+            if (this.singleInnerDiv.parentElement) {
+                this.singleInnerDiv.parentElement.removeChild(this.singleInnerDiv);
+            }
+            this.singleInnerDiv = undefined;
+        }
+        if (this.outerSingleDiv) {
+            this.outerSingleDiv.innerHTML = '';
+            if (this.outerSingleDiv.parentElement) {
+                this.outerSingleDiv.parentElement.removeChild(this.outerSingleDiv);
+            }
+            this.outerSingleDiv = undefined;
+        }
+        this.revision = undefined;
         this.user = undefined;
         this.revisionType = undefined;
         this.trackChangesPane = undefined;

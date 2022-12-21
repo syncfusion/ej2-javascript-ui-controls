@@ -40,10 +40,6 @@ export interface IGanttData {
     parentItem?: IParent;
     /** Defines the parent unique id of task. */
     parentUniqueID?: string;
-    /**
-     * Specifies the checkbox state of a record
-     */
-    checkboxState?: string;
     /** Defines the data which specified in data source.
      *
      * @isGenericType true

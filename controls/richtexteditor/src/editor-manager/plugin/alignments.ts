@@ -71,13 +71,13 @@ export class Alignments {
             this.parent.domNode.setMarker(save);
             const alignmentNodes: Node[] = this.parent.domNode.blockNodes();
             for (let i: number = 0; i < alignmentNodes.length; i++) {
-                const parentNode: Element = alignmentNodes[i] as Element;
+                const parentNode: Element = alignmentNodes[i as number] as Element;
                 setStyleAttribute(parentNode as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
             }
             const imageTags: NodeListOf<HTMLImageElement> = this.parent.domNode.getImageTagInSelection();
             for (let i: number = 0; i < imageTags.length; i++) {
                 const elementNode: Node[] = [];
-                elementNode.push(imageTags[i]);
+                elementNode.push(imageTags[i as number]);
                 this.parent.imgObj.imageCommand({
                     item: {
                         selectNode: elementNode

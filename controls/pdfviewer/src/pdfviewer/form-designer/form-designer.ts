@@ -2245,7 +2245,7 @@ export class FormDesigner {
         let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
         this.isFormFieldUpdated = true;
         if (formField) {
-            if (!formField.isReadonly) {
+            if (!formField.isReadonly || (!isNullOrUndefined(options.isReadOnly) && !options.isReadOnly)) {
             switch (formField.formFieldAnnotationType) {
                 case 'Textbox':
                 case 'PasswordField':
@@ -3980,7 +3980,7 @@ export class FormDesigner {
             if (this.borderColorValue || isUndoRedo) {
                 this.updateBorderColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.formFieldBorderWidth || isUndoRedo) {
+            if (!isNullOrUndefined (this.formFieldBorderWidth) || isUndoRedo) {
                 this.updateBorderThicknessPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldReadOnly || isUndoRedo) {
@@ -4048,7 +4048,7 @@ export class FormDesigner {
             if (this.borderColorValue || isUndoRedo) {
                 this.updateBorderColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.formFieldBorderWidth || isUndoRedo) {
+            if (!isNullOrUndefined (this.formFieldBorderWidth) || isUndoRedo) {
                 this.updateBorderThicknessPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldReadOnly || isUndoRedo) {
@@ -4107,7 +4107,7 @@ export class FormDesigner {
             if ((this.formFieldTooltip) || isUndoRedo) {
                 this.updateTooltipPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.formFieldBorderWidth || isUndoRedo) {
+            if (!isNullOrUndefined (this.formFieldBorderWidth)|| isUndoRedo) {
                 this.updateBorderThicknessPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldVisibility || isUndoRedo) {
@@ -4141,7 +4141,7 @@ export class FormDesigner {
         if (this.borderColorValue || isUndoRedo) {
             this.updateBorderColorPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
         }
-        if (this.formFieldBorderWidth || isUndoRedo) {
+        if (!isNullOrUndefined (this.formFieldBorderWidth) || isUndoRedo) {
             this.updateBorderThicknessPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
         }
         if (this.formFieldChecked) {
@@ -4198,7 +4198,7 @@ export class FormDesigner {
         if (this.formFieldVisibility || isUndoRedo) {
             this.updateVisibilityPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
         }
-        if ((this.pdfViewer.designerMode && this.formFieldBorderWidth) || isUndoRedo) {
+        if ((this.pdfViewer.designerMode && !isNullOrUndefined (this.formFieldBorderWidth)) || isUndoRedo) {
             this.updateBorderThicknessPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
         }
         if (this.backgroundColorValue || isUndoRedo) {
@@ -4293,7 +4293,7 @@ export class FormDesigner {
             if (this.borderColorValue || isUndoRedo || this.multilineCheckboxCheckedState) {
                 this.updateBorderColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.formFieldBorderWidth || isUndoRedo) {
+            if (!isNullOrUndefined (this.formFieldBorderWidth) || isUndoRedo) {
                 this.updateBorderThicknessPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldReadOnly || isUndoRedo) {
@@ -4468,7 +4468,7 @@ export class FormDesigner {
         if (isUndoRedo) {
             element.style.borderWidth = selectedItem.thickness.toString();
         } else {
-            element.style.borderWidth = this.formFieldBorderWidth ? this.formFieldBorderWidth : selectedItem.thickness;
+            element.style.borderWidth = this.formFieldBorderWidth ? this.formFieldBorderWidth + "px" : selectedItem.thickness + "px";
             selectedItem.thickness = borderWidth;
         }
         if (index > -1) {
@@ -5190,9 +5190,14 @@ export class FormDesigner {
         let formFieldValueContainer = createElement('input', { className: 'e-pv-properties-value-input e-input' });
         formFieldValueDiv.appendChild(formFieldValueContainer);
         formFieldValueMainDiv.appendChild(formFieldValueDiv);
-        // eslint-disable-next-line max-len
-        this.formFieldValue = new TextBox({ type: "text", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Value'), value: selectedItem.value, cssClass: 'e-pv-properties-formfield-value' }, (formFieldValueContainer as HTMLInputElement));
-        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'Textbox') {
+        if(this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType == 'PasswordField'){
+            // eslint-disable-next-line max-len
+           this.formFieldValue = new TextBox({ type: "password", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Value'), value: selectedItem.value, cssClass: 'e-pv-properties-formfield-value' }, (formFieldValueContainer as HTMLInputElement));
+       }else{
+            // eslint-disable-next-line max-len
+           this.formFieldValue = new TextBox({ type: "text", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Value'), value: selectedItem.value, cssClass: 'e-pv-properties-formfield-value' }, (formFieldValueContainer as HTMLInputElement));
+       }
+        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'Textbox' && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'PasswordField') {
             this.formFieldValue.enabled = false;
             this.formFieldValue.value = '';
         }
@@ -5995,7 +6000,7 @@ export class FormDesigner {
                 inputElement.style.borderWidth = selectedItem.thickness;
             }
             else {
-                inputElement.style.borderWidth = selectedItem.thickness;
+                inputElement.style.borderWidth = selectedItem.thickness +"px";
             }
             inputElement.style.borderColor = selectedItem.borderColor;
             if (selectedItem.formFieldAnnotationType === 'RadioButton') {

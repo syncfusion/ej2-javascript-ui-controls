@@ -1,7 +1,7 @@
 import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, EventHandler } from '@syncfusion/ej2-base';
 import { getRangeAddress } from "../../../src/index";
 
 /**
@@ -67,6 +67,16 @@ describe('Clipboard ->', () => {
                 helper.invoke('paste', ['A22']);
                 expect(helper.getInstance().sheets[0].rows[21].cells[0].rowSpan).toBe(3);
                 expect(helper.getInstance().sheets[0].rows[21].cells[0].colSpan).toBe(100);
+                done();
+            });
+        });
+
+        it('Copy and paste in Merged cells->', (done: Function) => {
+            helper.invoke('merge', ['N2:N5']);
+            helper.invoke('selectRange', ['N2']);
+            helper.invoke('copy', ['H1']).then(() => {
+                helper.invoke('paste', ['N2']);
+                expect(helper.getInstance().sheets[0].rows[1].cells[13].value.toString()).toBe('Profit');
                 done();
             });
         });
@@ -314,6 +324,120 @@ describe('Clipboard ->', () => {
                 helper.invoke('insertRow', [5]);
                 expect(helper.getInstance().sheets[0].rows[5]).toEqual({});
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('Sandals & Floaters');
+                done();
+            });
+        });
+
+        it('Insert Row in Copied Cell->', (done: Function) => {
+            helper.invoke('selectRange', ['A9']);
+            expect(helper.getInstance().sheets[0].rows[8].cells[0].value).toBe('Sneakers');
+            helper.invoke('copy', ['A9']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(8, 0, [6, 1], true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[8]).toEqual({});
+                    expect(helper.getInstance().sheets[0].rows[9].cells[0].value).toBe('Sneakers');
+                    done(); 
+                });
+            });
+        });
+
+        it('Apply Copy in One Sheet and Insert Row/Column in another Sheet->', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('Profit');
+            helper.invoke('selectRange', ['Sheet1!D4']);
+            helper.invoke('copy', ['Sheet1!D4']).then(function (){
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                helper.invoke('selectRange', ['I1']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 8, [6, 1], false, true);
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                    expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBe('Profit');
+                    done(); 
+                });
+            });
+        });
+    });
+
+    describe('Copy Chart/Image and Paste', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {  }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Copy Image and Paste->', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'D3', isPublic: true });
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                helper.invoke('copy').then(() => {
+                    helper.invoke('paste', ['M1']);
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_2","height":300,"width":400,"top":0,"left":768}]');
+                    EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                    done();
+                });
+            });
+        });
+        it('Copy Chart and Paste->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5',  }]]);
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            setTimeout(() => {
+                const Chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                helper.triggerMouseAction( 'mousedown', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, Chart, Chart);
+                helper.triggerMouseAction( 'mouseup', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, document, Chart);
+                setTimeout(() => {
+                    helper.invoke('copy').then(() => {
+                        helper.invoke('paste', ['M20']);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('Apply copy Freeze Pane applied cells', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], frozenRows: 3, frozenColumns: 3, selectedRange: 'C3' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Apply copy before Freezed Row and Freezed Column', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            helper.invoke('copy', ['C3']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                done();
+            });   
+        }); 
+        it('Apply copy after Freezed Row and before Freezed Column', (done: Function) => {
+            helper.invoke('selectRange', ['C4']);
+            helper.invoke('copy', ['C4']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                done();
+            });
+        });
+        it('Apply copy after Freezed Column and before Freezed Row', (done: Function) => {
+            helper.invoke('selectRange', ['D3']);
+            helper.invoke('copy', ['D3']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                done();
+            });
+        });
+        it('Apply copy after Freezed Column and before & after Freezed Row', (done: Function) => {
+            helper.invoke('selectRange', ['D3:D4']);
+            helper.invoke('copy', ['D3:D4']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                done();
+            });
+        });
+        it('Apply copy after Freezed ROw & before and after Freezed Column', (done: Function) => {
+            helper.invoke('selectRange', ['D4:C4']);
+            helper.invoke('copy', ['D4:C4']).then(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
                 done();
             });
         });

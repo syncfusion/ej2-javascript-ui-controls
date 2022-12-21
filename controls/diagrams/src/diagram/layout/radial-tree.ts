@@ -71,7 +71,7 @@ export class RadialTree {
     private doLayout(layout: IRadialLayout, nodes: INode[], nameTable: Object, viewport: PointModel): void {
         let node: INode;
         for (let i: number = 0; i < nodes.length; i++) {
-            node = nodes[i];
+            node = nodes[parseInt(i.toString(), 10)];
             if (!node.excludeFromLayout) {
                 layout.graphNodes[node.id] = this.setUpLayoutInfo(layout, node);
                 if (!node.inEdges || !node.inEdges.length) {
@@ -102,7 +102,7 @@ export class RadialTree {
         nodeInfo.visited = true;
         layout.maxLevel = Math.max(layout.maxLevel, depth);
         for (let j: number = 0; j < node.outEdges.length; j++) {
-            const edge: INode = nameTable[nameTable[node.outEdges[j]].targetID];
+            const edge: INode = nameTable[nameTable[node.outEdges[parseInt(j.toString(), 10)]].targetID];
             if (!edge.excludeFromLayout && !edge.visited) {
                 nodeInfo.children.push(edge);
                 this.updateEdges(layout, edge, depth + 1, nameTable);
@@ -116,7 +116,7 @@ export class RadialTree {
         if (nodeInfo.children.length) {
             y += 300;
             for (let i: number = 0; i < nodeInfo.children.length; i++) {
-                newValue = this.depthFirstAllignment(layout, nodeInfo.children[i], x, y);
+                newValue = this.depthFirstAllignment(layout, nodeInfo.children[parseInt(i.toString(), 10)], x, y);
                 x = newValue.x; y = newValue.y;
             }
             nodeInfo.children = nodeInfo.children.sort((obj1: INode, obj2: INode) => {
@@ -136,7 +136,7 @@ export class RadialTree {
                 x = nodeInfo.x + nodeInfo.width / 2 - (max - min) / 2;
                 nodeInfo.visited = false;
                 for (let i: number = 0; i < nodeInfo.children.length; i++) {
-                    newValue = this.depthFirstAllignment(layout, nodeInfo.children[i], x, y);
+                    newValue = this.depthFirstAllignment(layout, nodeInfo.children[parseInt(i.toString(), 10)], x, y);
                 }
                 nodeInfo.visited = true;
                 x = nodeInfo.x + nodeInfo.width + layout.horizontalSpacing;
@@ -180,8 +180,8 @@ export class RadialTree {
             newlevel.actualCircumference = 0;
             newlevel.height = 0;
             for (let k: number = 0; k < stages.length; k++) {
-                if (stages[k].height > newlevel.height) { newlevel.height = stages[k].height; }
-                newlevel.actualCircumference += Math.max(stages[k].width, stages[k].height);
+                if (stages[parseInt(k.toString(), 10)].height > newlevel.height) { newlevel.height = stages[parseInt(k.toString(), 10)].height; }
+                newlevel.actualCircumference += Math.max(stages[parseInt(k.toString(), 10)].width, stages[parseInt(k.toString(), 10)].height);
                 if (k !== stages.length - 1) { newlevel.actualCircumference += layout.horizontalSpacing; }
             }
             newlevel.circumference = newlevel.max - newlevel.min;
@@ -196,8 +196,8 @@ export class RadialTree {
                 }
             }
             for (let j: number = 0; j < stages.length; j++) {
-                stages[j].ratio = Math.abs(stages[j].x + stages[j].width / 2 - min) / full;
-                newlevel.nodes.push(stages[j] as INode);
+                stages[parseInt(j.toString(), 10)].ratio = Math.abs(stages[parseInt(j.toString(), 10)].x + stages[parseInt(j.toString(), 10)].width / 2 - min) / full;
+                newlevel.nodes.push(stages[parseInt(j.toString(), 10)] as INode);
             }
             layout.levels.push(newlevel as LevelBoundary);
         }
@@ -208,10 +208,10 @@ export class RadialTree {
         root.x = 0;
         root.y = 0;
         for (let i: number = 1; i < layout.levels.length; i++) {
-            for (let j: number = 0; j < layout.levels[i].nodes.length; j++) {
-                const nodeInfo: ILayoutInfo = layout.levels[i].nodes[j];
-                nodeInfo.x = Math.cos(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[i].radius + layout.verticalSpacing * i);
-                nodeInfo.y = Math.sin(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[i].radius + layout.verticalSpacing * i);
+            for (let j: number = 0; j < layout.levels[parseInt(i.toString(), 10)].nodes.length; j++) {
+                const nodeInfo: ILayoutInfo = layout.levels[parseInt(i.toString(), 10)].nodes[parseInt(j.toString(), 10)];
+                nodeInfo.x = Math.cos(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[parseInt(i.toString(), 10)].radius + layout.verticalSpacing * i);
+                nodeInfo.y = Math.sin(nodeInfo.ratio * 360 * Math.PI / 180) * (layout.levels[parseInt(i.toString(), 10)].radius + layout.verticalSpacing * i);
                 layout.anchorX = Math.min(layout.anchorX, nodeInfo.x);
                 layout.anchorY = Math.min(layout.anchorY, nodeInfo.y);
             }
@@ -230,7 +230,7 @@ export class RadialTree {
         node.offsetX += offsetX;
         node.offsetY += offsetY;
         for (let i: number = 0; i < nodeInfo.children.length; i++) {
-            const childInfo: INode = nodeInfo.children[i];
+            const childInfo: INode = nodeInfo.children[parseInt(i.toString(), 10)];
             this.updateNodes(layout, nameTable[childInfo.id], nameTable);
         }
     }

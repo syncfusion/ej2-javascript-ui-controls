@@ -16,11 +16,13 @@ import { FontModel } from '../model/base-model';
  */
 
 export class Annotations {
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     constructor() {
     }
     /**
-     * To render annotation elements
+     * To render annotation elements.
+     *
+     * @param {LinearGauge} gauge - Specifies the instance of Linear Gauge.
      */
     public renderAnnotationElements(gauge: LinearGauge): void {
         const secondaryID: string = gauge.element.id + '_Secondary_Element';
@@ -41,18 +43,22 @@ export class Annotations {
     }
     /**
      * To create annotation elements
+     *
+     * @param {HTMLElement} element - Specifies the content of the annotation to be updated in it.
+     * @param {number} annotationIndex - Specifies the index number of the annotation in which the content is to be changed.
+     * @param {LinearGauge} gauge - Specifies the instance of Linear Gauge.
      */
     public createAnnotationTemplate(element: HTMLElement, annotationIndex: number, gauge: LinearGauge): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let left: number; let top: number; let templateFn: any;
         let renderAnnotation: boolean = false;
         let templateElement: HTMLCollection; let axis: Axis;
-        let axisIndex: number; let axisValue: number;
-        const id: string = gauge.element.id + '_Annotation_' + annotationIndex;
-        const annotation: Annotation = <Annotation>gauge.annotations[annotationIndex];
+        let axisIndex: number;
+        const annotation: Annotation = <Annotation>gauge.annotations[annotationIndex as number];
         const childElement: HTMLElement = createElement('div', {
-            id: gauge.element.id + '_Annotation_' + annotationIndex, styles: 'position: absolute; z-index:' + annotation.zIndex + ';'
+            id: gauge.element.id + '_Annotation_' + annotationIndex
         });
+        childElement.style.cssText = 'position: absolute; z-index:' + annotation.zIndex + ';';
         const style: FontModel = {
             size: annotation.font.size,
             color: annotation.font.color,
@@ -61,39 +67,40 @@ export class Annotations {
             fontStyle: annotation.font.fontStyle,
             opacity: annotation.font.opacity
         };
-        let argsData: IAnnotationRenderEventArgs = {
+        const argsData: IAnnotationRenderEventArgs = {
             cancel: false, name: annotationRender, content: annotation.content,
             annotation: annotation, textStyle: style
         };
         argsData.textStyle.color = style.color || gauge.themeStyle.labelColor;
-        gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
+        gauge.trigger(annotationRender, argsData, () => {
             if (!argsData.cancel) {
                 templateFn = getTemplateFunction(argsData.content, gauge);
                 if (templateFn && templateFn(gauge, gauge, argsData.content, gauge.element.id + '_ContentTemplate' + annotationIndex).length) {
                     templateElement = Array.prototype.slice.call(templateFn(gauge, gauge, argsData.content, gauge.element.id + '_ContentTemplate' + annotationIndex));
                     const length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
-                        childElement.appendChild(templateElement[i]);
+                        childElement.appendChild(templateElement[i as number]);
                     }
                 } else {
-                    childElement.appendChild(createElement('div', {
-                        innerHTML: argsData.content,
-                        styles: getFontStyle(argsData.textStyle)
-                    }));
+                    const annotationElement: HTMLElement = createElement('div', {
+                        innerHTML: argsData.content
+                    });
+                    annotationElement.style.cssText = getFontStyle(argsData.textStyle);
+                    childElement.appendChild(annotationElement);
                 }
                 const offset: Size = getElementOffset(<HTMLElement>childElement.cloneNode(true), gauge.element);
                 if (!(isNullOrUndefined(annotation.axisValue))) {
                     axisIndex = isNullOrUndefined(annotation.axisIndex) ? 0 : annotation.axisIndex;
-                    axis = <Axis>gauge.axes[axisIndex];
+                    axis = <Axis>gauge.axes[axisIndex as number];
                     const range: VisibleRange = axis.visibleRange;
                     renderAnnotation = (annotation.axisValue >= range.min && annotation.axisValue <= range.max) ? true : false;
                     const line: Rect = axis.lineBounds;
                     const extraWidth: number = getExtraWidth(gauge.element);
                     const axisCollection: HTMLElement = getElement(gauge.element.id + '_Axis_Collections');
                     if (!isNullOrUndefined(axisCollection)) {
-                        const transformValue: string = axisCollection.getAttribute('transform').split("(")[1].split(")")[0];
-                        const leftTransformValue: number = parseInt(transformValue.split(",")[0]);
-                        const topTransformValue: number = parseInt(transformValue.split(",")[1]);
+                        const transformValue: string = axisCollection.getAttribute('transform').split('(')[1].split(')')[0];
+                        const leftTransformValue: number = parseInt(transformValue.split(',')[0], 10);
+                        const topTransformValue: number = parseInt(transformValue.split(',')[1], 10);
                         if (gauge.orientation === 'Vertical') {
                             left = line.x + parseFloat(annotation.x.toString()) + leftTransformValue - extraWidth;
                             top = ((valueToCoefficient(parseFloat(annotation.axisValue.toString()), axis, gauge.orientation, range) * line.height) + line.y);
@@ -160,5 +167,6 @@ export class Annotations {
      * @return {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

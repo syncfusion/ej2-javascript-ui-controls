@@ -152,7 +152,7 @@ export class BubbleSeries {
                 continue;
             }
             markerAnimate(
-                <HTMLElement>rectElements[count], delay, duration,
+                <HTMLElement>rectElements[count as number], delay, duration,
                 series, bubblePoint.index, bubblePoint.symbolLocations[0], false
             );
             count++;

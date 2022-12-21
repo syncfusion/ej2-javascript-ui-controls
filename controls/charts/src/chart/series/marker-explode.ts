@@ -1,3 +1,6 @@
+/* eslint-disable jsdoc/require-param-type */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-param-description */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 import { drawSymbol, ChartLocation } from '../../common/utils/helper';
@@ -66,7 +69,7 @@ export class MarkerExplode extends ChartData {
      */
     private mouseMoveHandler(): void {
         const chart: Chart = this.chart;
-        if ((chart.highlightMode !='None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
+        if ((chart.highlightMode !== 'None' || (chart.tooltip.enable)) && (!chart.isTouch || chart.startMove) && !this.isSelected(chart)) {
             this.markerMove(false);
         }
     }
@@ -240,36 +243,36 @@ export class MarkerExplode extends ChartData {
      * @param  {Series} series - Defines the series to animate.
      * @returns {void}
      */
-     public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
+    public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
         const duration: number = this.animationDuration();
         const delay: number = series.animation.delay;
         const rectElements: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
         for (let i: number = 0, len: number = rectElements.length; i < len; i++) {
             this.trackballAnimate(
-                <HTMLElement>rectElements[i], delay, duration, series,
+                <HTMLElement>rectElements[i as number], delay, duration, series,
                 point.index, point.symbolLocations[0], false, endAnimate
             );
         }
     }
 
     /**
-    * Animation Effect Calculation End
-    *
-    * @private
-    */
-     public trackballAnimate(
+     * Animation Effect Calculation End
+     *
+     * @private
+     */
+    public trackballAnimate(
         elements: Element, delays: number, durations: number, series: Series,
         pointIndex: number, point: ChartLocation, isLabel: boolean, endAnimate: boolean
     ): void {
 
         const centerX: number = point.x;
         const centerY: number = point.y;
-        const clipX: number = (series.type !== "Polar" && series.type !== "Radar") ? series.clipRect.x : 0;
-        const clipY: number = (series.type !== "Polar" && series.type !== "Radar") ? series.clipRect.y : 0;
+        const clipX: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.x : 0;
+        const clipY: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.y : 0;
         let height: number = 0;
         (<HTMLElement>elements).style.visibility = 'hidden';
-        let reducedHeight: number = endAnimate ? -8 : 1;
-        let transform: string = elements.getAttribute("transform");
+        const reducedHeight: number = endAnimate ? -8 : 1;
+        const transform: string = elements.getAttribute('transform');
         new Animation({}).animate(<HTMLElement>elements, {
             duration: durations,
             delay: delays,
@@ -278,12 +281,12 @@ export class MarkerExplode extends ChartData {
                     args.element.style.visibility = 'visible';
                     height = ((args.timeStamp - args.delay) / args.duration);
                     elements.setAttribute('transform', 'translate(' + (centerX + clipX)
-                        + ' ' + (centerY + clipY) + ') scale(' + (height/reducedHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        + ' ' + (centerY + clipY) + ') scale(' + (height / reducedHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
                 }
             },
             end: () => {
                 (<HTMLElement>elements).style.visibility = '';
-                elements.setAttribute("transform", transform);
+                elements.setAttribute('transform', transform);
                 if (!isLabel && (pointIndex === series.points.length - 1)) {
                     series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                 }
@@ -297,8 +300,17 @@ export class MarkerExplode extends ChartData {
     }
 
     /**
+     * @param series
+     * @param point
+     * @param fadeOut
+     * @param series
+     * @param point
+     * @param fadeOut
+     * @param series
+     * @param point
+     * @param fadeOut
      * @hidden
-    */
+     */
     public removeHighlightedMarker(series: Series = null, point: Points = null, fadeOut: boolean = false): void {
         if (!isNullOrUndefined(series) && !isNullOrUndefined(point)) {
             const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +

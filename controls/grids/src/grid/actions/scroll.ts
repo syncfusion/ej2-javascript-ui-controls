@@ -456,7 +456,7 @@ export class Scroll implements IAction {
         this.wireEvents();
         this.setHeight();
         const width: string = 'width';
-        this.setWidth(!isNullOrUndefined(e.properties[width]));
+        this.setWidth(!isNullOrUndefined(e.properties[`${width}`]));
     }
 
     private makeStickyHeader(): void {
@@ -471,7 +471,7 @@ export class Scroll implements IAction {
                 const parentTop: number = this.parentElement.getClientRects()[0].top;
                 const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
                 const left: number = contentRect.left;
-                let colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');
+                const colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');
                 if (top < height && contentRect.bottom > 0) {
                     headerEle.classList.add('e-sticky');
                     let elemTop: number = 0;

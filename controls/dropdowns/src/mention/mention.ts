@@ -6,7 +6,7 @@ import { DropDownBase, PopupEventArgs, SelectEventArgs, BeforeOpenEventArgs, dro
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MentionModel } from '../mention/mention-model';
 import { SortOrder } from '@syncfusion/ej2-lists';
-import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Popup, isCollide, createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';
 import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';
 
 export interface MentionChangeEventArgs extends SelectEventArgs {
@@ -50,6 +50,7 @@ export class Mention extends DropDownBase {
     private isFiltered: boolean;
     private beforePopupOpen: boolean;
     private listHeight: string;
+    private isListResetted: boolean;
     private range: Range;
     private displayTempElement: HTMLElement;
     private isCollided: boolean;
@@ -123,7 +124,7 @@ export class Mention extends DropDownBase {
     public minLength: number;
 
     /**
-     * Specifies the order to sort the data source. The possible sort orders are, 
+     * Specifies the order to sort the data source. The possible sort orders are,
      * * `None` - The data source is not sorted.
      * * `Ascending` - The data source is sorted in ascending order.
      * * `Descending` - The data source is sorted in descending order.
@@ -439,6 +440,7 @@ export class Mention extends DropDownBase {
         this.isFiltered = false;
         this.beforePopupOpen = false;
         this.initRemoteRender = false;
+        this.isListResetted = false;
         this.isPopupOpen = false;
         this.isCollided = false;
         this.lineBreak = false;
@@ -512,6 +514,7 @@ export class Mention extends DropDownBase {
     /**
      * Hides the spinner loader.
      *
+     * @private
      * @returns {void}
      */
     public hideSpinner(): void {
@@ -572,6 +575,7 @@ export class Mention extends DropDownBase {
             break;
         case 'tab':
             if (this.isPopupOpen) {
+                e.preventDefault();
                 const li: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
                 if (li) {
                     this.setSelection(li, e);
@@ -609,7 +613,8 @@ export class Mention extends DropDownBase {
             let startIndex: number = 0;
             startIndex = e.action === 'down' && isNullOrUndefined(this.activeIndex) ? 0 : this.liCollections.length - 1;
             index = index < 0 ? this.liCollections.length - 1 : index === this.liCollections.length ? 0 : index;
-            const nextItem: Element = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex] : this.liCollections[index];
+            const nextItem: Element = isNullOrUndefined(this.activeIndex) ?
+                this.liCollections[startIndex as number] : this.liCollections[index as number];
             if (!isNullOrUndefined(nextItem)) {
                 this.setSelection(nextItem, e);
             }
@@ -637,24 +642,31 @@ export class Mention extends DropDownBase {
         }
         let currentRange: string = this.getTextRange();
 	    const lastWordRange: string = this.getLastLetter(currentRange);
+        // eslint-disable-next-line security/detect-non-literal-regexp
         const Regex: RegExp = new RegExp(this.mentionChar, 'g');
         const charRegex: RegExp = new RegExp('[a-zA-Z]', 'g');
-        if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) { return; }
+        if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) {
+            if ((e.keyCode === 37 || e.keyCode === 39) && !isNullOrUndefined(currentRange) &&
+                currentRange.indexOf(this.mentionChar) === -1 && this.isPopupOpen) {
+                this.hidePopup();
+            }
+            return;
+        }
         if ((!currentRange || !lastWordRange) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
             (this.range.startContainer as HTMLElement).previousElementSibling && this.range.startContainer.textContent.split('').length > 0 &&
             (rangetextContent.length === 1 || rangetextContent[rangetextContent.length - 2].indexOf('') === -1 ||
             this.range.startContainer.nodeType === 1))) {
-                if (this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
+            if (this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
                 && !this.isMatchedText() && (currentRange.length > 1 && currentRange.replace(/\u00A0/g, ' ').charAt(currentRange.length - 2) !== ' ') &&
                 (this.list && this.list.querySelectorAll('ul').length > 0)) {
-                    this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
-                    this.searchLists(e);
-                } else if (this.isPopupOpen && (!this.allowSpaces || !lastWordRange)) {
-                    this.hidePopup();
-                    this.lineBreak = true;
-                }
+                this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
+                this.searchLists(e);
+            } else if (this.isPopupOpen && (!this.allowSpaces || !lastWordRange)) {
+                this.hidePopup();
+                this.lineBreak = true;
+            }
             return;
         }
         this.queryString = lastWordRange.replace(this.mentionChar, '');
@@ -664,7 +676,7 @@ export class Mention extends DropDownBase {
             if (!this.isPopupOpen && this.queryString.length >= this.minLength) {
                 if (!this.isContentEditable(this.inputElement)) {
                     this.showPopup();
-                } else if (this.isContentEditable(this.inputElement) && this.range && this.range.startContainer !== this.inputElement) {
+                } else if (this.isContentEditable(this.inputElement) && this.range && this.range.startContainer !== this.inputElement && e.keyCode !== 9) {
                     this.showPopup();
                 }
             }
@@ -688,15 +700,19 @@ export class Mention extends DropDownBase {
             this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
             this.searchLists(e);
         } else if (this.queryString === '' && this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40) {
-            this.resetList(this.dataSource, this.fields);
+            this.searchLists(e);
+            if(!this.isListResetted) {
+                this.resetList(this.dataSource, this.fields);
+            }
         }
+        this.isListResetted = false;
     }
 
     private isMatchedText(): boolean {
         let isMatched: boolean = false;
         for (let i: number = 0; i < (this.liCollections && this.liCollections.length); i++) {
             if (this.getTextRange() &&
-            this.getTextRange().substring(this.getTextRange().lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ').trim() === this.liCollections[i].getAttribute('data-value').toLowerCase()) {
+            this.getTextRange().substring(this.getTextRange().lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ').trim() === this.liCollections[i as number].getAttribute('data-value').toLowerCase()) {
                 isMatched = true;
             }
         }
@@ -725,7 +741,7 @@ export class Mention extends DropDownBase {
         this.activeIndex = null;
         const eventArgs: { [key: string]: Object } = {
             preventDefaultAction: false,
-            text: this.elementValue(),
+            text: this.queryString,
             updateData: (
                 dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
                 fields?: FieldSettingsModel) => {
@@ -748,8 +764,9 @@ export class Mention extends DropDownBase {
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         query?: Query, fields?: FieldSettingsModel): void {
         this.beforePopupOpen = true;
-        if (this.queryString !== '' && (this.queryString.length >= this.minLength)) {
+        if (this.queryString.length >= this.minLength) {
             this.resetList(dataSource, fields, query);
+            this.isListResetted = true;
         } else {
             if (this.isPopupOpen) { this.hidePopup(); }
             this.beforePopupOpen = false;
@@ -764,18 +781,18 @@ export class Mention extends DropDownBase {
             if (!isNullOrUndefined(ulElement)) {
                 attributes(ulElement, { 'id': this.inputElement.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
             }
-            let focusItem:HTMLLIElement = ulElement.querySelector('.' + dropDownBaseClasses.li);
+            let focusItem: HTMLLIElement = ulElement.querySelector('.' + dropDownBaseClasses.li);
             if (focusItem) {
                 focusItem.classList.add(dropDownBaseClasses.selected);
                 this.selectedLI = focusItem;
                 const value: string | number | boolean = this.getFormattedValue(focusItem.getAttribute('data-value'));
-               this.selectEventCallback(focusItem, this.getDataByValue(value), value, true);
-           }
+                this.selectEventCallback(focusItem, this.getDataByValue(value), value, true);
+            }
         }
     }
     private setDataIndex(): void {
         for (let i: number = 0; this.liCollections && i < this.liCollections.length; i++) {
-            this.liCollections[i].setAttribute('data-index', i.toString());
+            this.liCollections[i as number].setAttribute('data-index', i.toString());
         }
     }
 
@@ -817,7 +834,7 @@ export class Mention extends DropDownBase {
         const filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
         const filterType: string = (this.queryString === '' && !isNullOrUndefined(this.elementValue())) ? 'equal' : this.filterType;
         const queryString: string = (this.queryString === '' && !isNullOrUndefined(this.elementValue())) ?
-        this.elementValue() : this.queryString;
+            this.elementValue() : this.queryString;
         if (this.isFiltered) {
             return filterQuery;
         }
@@ -834,7 +851,7 @@ export class Mention extends DropDownBase {
             // Since defualt value of suggestioncount is 25, checked the condition
             if (this.suggestionCount !== 25) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
-                    if (filterQuery.queries[queryElements].fn === 'onTake') {
+                    if (filterQuery.queries[queryElements as number].fn === 'onTake') {
                         filterQuery.queries.splice(queryElements, 1);
                     }
                 }
@@ -849,8 +866,8 @@ export class Mention extends DropDownBase {
             for (let i: number = 0; i < this.liCollections.length; i++) {
                 const isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
-                    revertHighlightSearch(this.liCollections[i]);
-                    highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType);
+                    revertHighlightSearch(this.liCollections[i as number]);
+                    highlightSearch(this.liCollections[i as number], this.queryString, this.ignoreCase, this.filterType);
                 }
             }
         }
@@ -867,12 +884,14 @@ export class Mention extends DropDownBase {
                 }
             }
         } else {
-            const selectedElem: Node = this.range.startContainer;
-            if (!isNullOrUndefined(selectedElem)) {
-                const workingNodeContent: string = selectedElem.textContent;
-                let selectStartOffset: number = this.range.startOffset;
-                if (workingNodeContent && selectStartOffset >= 0) {
-                    text = workingNodeContent.substring(0, selectStartOffset);
+            if (this.range) {
+                const selectedElem: Node = this.range.startContainer;
+                if (!isNullOrUndefined(selectedElem)) {
+                    const workingNodeContent: string = selectedElem.textContent;
+                    const selectStartOffset: number = this.range.startOffset;
+                    if (workingNodeContent && selectStartOffset >= 0) {
+                        text = workingNodeContent.substring(0, selectStartOffset);
+                    }
                 }
             }
         }
@@ -880,11 +899,11 @@ export class Mention extends DropDownBase {
     }
 
     private getLastLetter(text: string): string {
-        if (isNullOrUndefined(text)) {return '';}
+        if (isNullOrUndefined(text)) {return ''; }
         const textValue: string = text.replace(/\u00A0/g, ' ');
         const words: string[] = textValue.split(/\s+/);
-        let wordCnt: number = words.length - 1;
-        return words[wordCnt].trim();
+        const wordCnt: number = words.length - 1;
+        return words[wordCnt as number].trim();
     }
 
     private isContentEditable(element: HTMLInputElement | HTMLTextAreaElement | HTMLElement): boolean {
@@ -897,9 +916,13 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     public showPopup(): void {
+        this.beforePopupOpen = true;
+        if (isNullOrUndefined(this.list)) {
+            this.initValue();
+        }
         this.renderPopup();
         attributes(this.inputElement, { 'aria-activedescendant': this.selectedElementID});
-        if(this.selectedElementID == null)
+        if (this.selectedElementID == null)
         {
             this.inputElement.removeAttribute('aria-activedescendant');
         }
@@ -948,7 +971,7 @@ export class Mention extends DropDownBase {
             if (!args.cancel) {
                 const popupEle: HTMLElement = isNullOrUndefined(this.target) ? this.createElement('div', {
                     id: this.inputElement.id + '_popup', className: 'e-mention e-popup ' + (this.cssClass != null ? this.cssClass : '')
-                }): this.element;
+                }) : this.element;
                 if (!isNullOrUndefined(this.target)) {
                     popupEle.id = this.inputElement.id + '_popup';
                     addClass([popupEle], ['e-mention' , 'e-popup',  'e-popup-close']);
@@ -963,17 +986,13 @@ export class Mention extends DropDownBase {
                     }
                 }
                 append([this.list], popupEle);
-                if ((!this.popupObj || !document.body.contains(this.popupObj.element)) || !document.contains(popupEle) && isNullOrUndefined(this.target)) {
+                if ((!this.popupObj || !document.body.contains(this.popupObj.element)) ||
+                 !document.contains(popupEle) && isNullOrUndefined(this.target)) {
                     document.body.appendChild(popupEle);
                 }
                 let coordinates: { [key: string]: number };
                 popupEle.style.visibility = 'hidden';
-                if (this.popupHeight !== 'auto') {
-                    this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
-                    popupEle.style.maxHeight = formatUnit(this.popupHeight);
-                } else {
-                    popupEle.style.height = 'auto';
-                }
+                this.setHeight(popupEle);
                 const offsetValue: number = 0;
                 const left: number = 0;
                 this.initializePopup(popupEle, offsetValue, left);
@@ -984,7 +1003,7 @@ export class Mention extends DropDownBase {
                 }
                 this.selectedElementID = this.selectedLI ? this.selectedLI.id : null;
                 attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options', 'aria-activedescendant': this.selectedElementID });
-                if(this.selectedElementID == null)
+                if (this.selectedElementID == null)
                 {
                     this.inputElement.removeAttribute('aria-activedescendant');
                 }
@@ -996,6 +1015,7 @@ export class Mention extends DropDownBase {
                     if (!eventArgs.cancel) {
                         this.renderReactTemplates();
                         this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.inputElement : null);
+                        if (isNullOrUndefined(this.getTriggerCharPosition())) { return; }
                         coordinates = this.getCoordinates(this.inputElement, this.getTriggerCharPosition());
                         if (!this.isCollided) {
                             popupEle.style.cssText = 'top: '.concat(coordinates.top.toString(), 'px;\n left: ').concat(coordinates.left.toString(), 'px;\nposition: absolute;\n display: block;');
@@ -1004,6 +1024,8 @@ export class Mention extends DropDownBase {
                             this.isCollided = false;
                         }
                         popupEle.style.width = this.popupWidth !== '100%' && !isNullOrUndefined(this.popupWidth) ? formatUnit(this.popupWidth) : 'auto';
+                        this.setHeight(popupEle);
+                        popupEle.style.zIndex = this.zIndex === 1000 ? getZindexPartial(popupEle).toString() : this.zIndex.toString();
                     } else {
                         this.beforePopupOpen = false;
                         this.destroyPopup();
@@ -1014,6 +1036,15 @@ export class Mention extends DropDownBase {
             }
         });
     }
+
+    private setHeight(popupEle: HTMLElement): void {
+        if (this.popupHeight !== 'auto') {
+            this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
+            popupEle.style.maxHeight = formatUnit(this.popupHeight);
+        } else {
+            popupEle.style.height = 'auto';
+        }
+    } 
 
     private checkCollision(popupEle: HTMLElement): void {
         if (!Browser.isDevice || (Browser.isDevice && !(this.getModuleName() === 'mention'))) {
@@ -1099,7 +1130,9 @@ export class Mention extends DropDownBase {
             computed = getComputedStyle((element as HTMLInputElement | HTMLTextAreaElement));
             div.style.position = 'absolute';
             div.style.visibility = 'hidden';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             properties.forEach((prop: any) => {
+                // eslint-disable-next-line security/detect-object-injection
                 div.style[prop] = computed[prop];
             });
             div.textContent = (element as HTMLInputElement | HTMLTextAreaElement).value.substring(0, position);
@@ -1131,12 +1164,12 @@ export class Mention extends DropDownBase {
             document.body.removeChild(div);
         } else {
             coordinates = {
-                top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize),
+                top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10),
                 left: rect.left + windowLeft
-            }
+            };
         }
         return coordinates;
-    };
+    }
 
     private initValue(): void {
         this.renderList();
@@ -1281,7 +1314,7 @@ export class Mention extends DropDownBase {
             const nextBottom: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
             let nextOffset: number = this.list.scrollTop + nextBottom - currentOffset;
             nextOffset = isInitial ? nextOffset + parseInt(getComputedStyle(this.list).paddingTop, 10) * 2 : nextOffset;
-            let boxRange: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
+            const boxRange: number = this.selectedLI.offsetTop + this.selectedLI.offsetHeight - this.list.scrollTop;
             if (this.activeIndex === 0) {
                 this.list.scrollTop = 0;
             } else if (nextBottom > currentOffset || !(boxRange > 0 && this.list.offsetHeight > boxRange)) {
@@ -1346,8 +1379,8 @@ export class Mention extends DropDownBase {
         return items;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private setValue(e?: KeyboardEventArgs | MouseEvent): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this as any).isReact) {
             if (!isNullOrUndefined(this.displayTemplate)) {
                 this.setDisplayTemplate();
@@ -1375,12 +1408,13 @@ export class Mention extends DropDownBase {
         const selection: Selection = this.inputElement.ownerDocument.getSelection();
         const startPos: number = this.getTriggerCharPosition();
         textSuffix = typeof this.suffixText === 'string' ? this.suffixText : '';
-        if (dataItem.value !== null) {
+        if (dataItem.text !== null) {
             value = this.mentionVal(dataItem.text);
         }
         if (!this.isContentEditable(this.inputElement)) {
             const myField: HTMLInputElement | HTMLTextAreaElement = this.inputElement as HTMLInputElement | HTMLTextAreaElement;
-            let currentTriggerSnippet: string = this.getTextRange().substring(startPos + this.mentionChar.length, this.getTextRange().length);
+            const currentTriggerSnippet: string =
+             this.getTextRange().substring(startPos + this.mentionChar.length, this.getTextRange().length);
             value += textSuffix;
             endPos = startPos + this.mentionChar.length;
             endPos += currentTriggerSnippet.length;
@@ -1404,6 +1438,7 @@ export class Mention extends DropDownBase {
             const frag: DocumentFragment = document.createDocumentFragment();
             let node: Node;
             let lastNode: Node;
+            // eslint-disable-next-line no-cond-assign
             while (node = element.firstChild) {
                 lastNode = frag.appendChild(node);
             }
@@ -1421,7 +1456,7 @@ export class Mention extends DropDownBase {
     }
 
     private mentionVal(value: string): string {
-        let showChar: string = this.showMentionChar ? this.mentionChar : '';
+        const showChar: string = this.showMentionChar ? this.mentionChar : '';
         if (!isNullOrUndefined(this.displayTemplate) && !isNullOrUndefined(this.displayTempElement)) {
             value = this.displayTempElement.innerHTML;
         }
@@ -1455,9 +1490,10 @@ export class Mention extends DropDownBase {
             this.itemData, this, 'displayTemplate', this.displayTemplateId, this.isStringTemplate, null, this.displayTempElement);
         if (displayCompTemp && displayCompTemp.length > 0) {
             for (let i: number = 0; i < displayCompTemp.length; i++) {
-                this.displayTempElement.appendChild(displayCompTemp[i]);
+                this.displayTempElement.appendChild(displayCompTemp[i as number]);
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this as any).isReact) {
             this.renderTemplates();
         } else {
@@ -1467,7 +1503,8 @@ export class Mention extends DropDownBase {
         }
     }
 
-    public renderTemplates(callBack?: any): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private renderTemplates(callBack?: any): void {
         this.renderReactTemplates(callBack);
     }
 
@@ -1494,9 +1531,10 @@ export class Mention extends DropDownBase {
             null, this, 'spinnerTemplate', this.spinnerTemplateId, this.isStringTemplate, null, this.spinnerTemplateElement);
         if (spinnerCompTemp && spinnerCompTemp.length > 0) {
             for (let i: number = 0; i < spinnerCompTemp.length; i++) {
-                this.spinnerTemplateElement.appendChild(spinnerCompTemp[i]);
+                this.spinnerTemplateElement.appendChild(spinnerCompTemp[i as number]);
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this as any).isReact) {
             this.renderTemplates();
             this.popupObj.element.appendChild(this.spinnerTemplateElement);
@@ -1598,7 +1636,7 @@ export class Mention extends DropDownBase {
     }
 
     private setHover(li: HTMLElement): void {
-        if (this.enabled && this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.hover)) {
+        if (this.isValidLI(li) && !li.classList.contains(dropDownBaseClasses.hover)) {
             this.removeHover();
             addClass([li], dropDownBaseClasses.hover);
         }
@@ -1627,8 +1665,13 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     public search(text: string, positionX: number, positionY: number): void {
-        if ((this.ignoreCase && (text === this.elementValue() || text === this.elementValue().toLowerCase()))
-            || !this.ignoreCase && text === this.elementValue()) {
+        if (this.isContentEditable(this.inputElement)) {
+            this.range = this.getCurrentRange();
+        }
+        const currentRange: string = this.getTextRange();
+	    const lastWordRange: string = this.getLastLetter(currentRange);
+        if ((this.ignoreCase && (text === lastWordRange || text === lastWordRange.toLowerCase()))
+            || !this.ignoreCase && text === lastWordRange) {
             this.resetList(this.dataSource, this.fields);
         } else {
             if (this.isPopupOpen) {

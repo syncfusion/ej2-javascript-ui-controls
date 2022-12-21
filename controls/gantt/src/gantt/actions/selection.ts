@@ -98,8 +98,8 @@ export class Selection {
     }
     private rowSelected(args: RowSelectEventArgs): void {
         const rowIndexes: string = 'rowIndexes';
-        const index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes])) ?
-            args[rowIndexes] : [args.rowIndex];
+        const index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes as string])) ?
+            args[rowIndexes as string] : [args.rowIndex];
         this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
@@ -132,7 +132,7 @@ export class Selection {
         } else {
             if (!isNullOrUndefined(args.rowIndexes)) {
                 for (let i: number = 0; i < args.rowIndexes.length; i++) {
-                    if (args.rowIndexes[i] === args.rowIndex) {
+                    if (args.rowIndexes[i as number] === args.rowIndex) {
                         isContains = true;
                     }
                 }
@@ -288,7 +288,7 @@ export class Selection {
         const cellDetails: ISelectedCell[] = this.parent.selectionModule.getSelectedRowCellIndexes();
         const cellSelectedRecords: IGanttData[] = [];
         for (let i: number = 0; i < cellDetails.length; i++) {
-            cellSelectedRecords.push(this.parent.currentViewData[cellDetails[i].rowIndex]);
+            cellSelectedRecords.push(this.parent.currentViewData[cellDetails[i as number].rowIndex]);
         }
         return cellSelectedRecords;
     }

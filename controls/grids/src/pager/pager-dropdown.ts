@@ -135,15 +135,16 @@ export class PagerDropDown {
     private convertValue(pageSizeValue: (number | string)[]): (number | string)[] {
         const item: (number | string)[] = pageSizeValue;
         for (let i: number = 0; i < item.length; i++) {
-            item[i] = parseInt(item[i] as string, 10) ? item[i].toString() : (this.pagerModule.getLocalizedLabel(item[i] as string) !== '')
-                ? this.pagerModule.getLocalizedLabel(item[i] as string) : item[i];
+            item[parseInt(i.toString(), 10)] = parseInt(item[parseInt(i.toString(), 10)] as string, 10) ?
+                item[parseInt(i.toString(), 10)].toString() : (this.pagerModule.getLocalizedLabel(item[parseInt(i.toString(), 10)] as string) !== '')
+                    ? this.pagerModule.getLocalizedLabel(item[parseInt(i.toString(), 10)] as string) : item[parseInt(i.toString(), 10)];
         }
         return item as string[];
     }
 
     public setDropDownValue(prop: string, value: string | number | Object | boolean): void {
         if (this.dropDownListObject) {
-            this.dropDownListObject[prop] = this.pagerModule.isAllPage ? this.pagerModule.getLocalizedLabel('All') : value;
+            this.dropDownListObject[`${prop}`] = this.pagerModule.isAllPage ? this.pagerModule.getLocalizedLabel('All') : value;
         }
     }
     public addEventListener(): void {

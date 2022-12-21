@@ -1,4 +1,15 @@
 @import 'ej2-base/styles/tailwind-dark-definition.scss';
+@import 'ej2-navigations/styles/toolbar/tailwind-dark-definition.scss';
+@import 'ej2-navigations/styles/treeview/tailwind-dark-definition.scss';
+@import 'ej2-inputs/styles/input/tailwind-dark-definition.scss';
+@import 'ej2-inputs/styles/numerictextbox/tailwind-dark-definition.scss';
+@import 'ej2-calendars/styles/calendar/tailwind-dark-definition.scss';
+@import 'ej2-calendars/styles/datepicker/tailwind-dark-definition.scss';
+@import 'ej2-calendars/styles/datetimepicker/tailwind-dark-definition.scss';
+@import 'ej2-dropdowns/styles/drop-down-list/tailwind-dark-definition.scss';
+@import 'ej2-dropdowns/styles/multi-select/tailwind-dark-definition.scss';
+@import 'ej2-buttons/styles/button/tailwind-dark-definition.scss';
+@import 'ej2-buttons/styles/check-box/tailwind-dark-definition.scss';
 @import 'tailwind-dark-definition.scss';
 @import 'icons/tailwind-dark.scss';
 @import 'all.scss';

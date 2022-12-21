@@ -126,7 +126,7 @@ export class Insert {
         }
     }
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
-        const sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
         let cellObj: CellModel;
         const indexes: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
         for (let i: number = 0; i <= indexes[2]; i++) {

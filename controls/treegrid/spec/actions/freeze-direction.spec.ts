@@ -350,4 +350,99 @@ describe('Ensure freeze direction', () => {
       destroy(gridObj);
     });
    });
+    
+   describe('EJ2-66966- Collapse Issue on freeze direction sample', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: [{
+            taskID: 1,
+            taskName: 'Planning',
+            startDate: new Date('02/03/2017'),
+            endDate: new Date('02/07/2017'),
+            progress: 100,
+            duration: 5,
+            isExpanded: false,
+            priority: 'Normal',
+            approved: false,
+            designation: 'Vice President',
+            employeeID: 1,
+            subtasks: [
+                {
+                    taskID: 2,
+                    taskName: 'Plan timeline',
+                    startDate: new Date('02/03/2017'),
+                    endDate: new Date('02/07/2017'),
+                    duration: 5,
+                    progress: 100,
+                    priority: 'Normal',
+                    approved: false,
+                    designation: 'Chief Executive Officer',
+                    employeeID: 2,
+                    subtasks: [
+                        {
+                            taskID: 3,
+                            taskName: 'Plan budget',
+                            startDate: new Date('02/03/2017'),
+                            endDate: new Date('02/07/2017'),
+                            duration: 5,
+                            progress: 100,
+                            priority: 'Low',
+                            approved: true,
+                            designation: 'Chief Executive Officer',
+                            employeeID: 3,
+                            subtasks: [
+                                {
+                                    taskID: 4,
+                                    taskName: 'Allocate resources',
+                                    startDate: new Date('02/03/2017'),
+                                    endDate: new Date('02/07/2017'),
+                                    duration: 5,
+                                    progress: 100,
+                                    priority: 'Critical',
+                                    approved: false,
+                                    designation: 'Chief Executive Officer',
+                                    employeeID: 4,
+                                },
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }],
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,  
+        allowSorting: true,
+        allowSelection: false,
+        height: 410,
+        columns: [
+            { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100,freeze: 'Left'  },
+            { field: 'taskName', headerText: 'Task Name', width: 250,freeze: 'Left' },
+            { field: 'startDate', headerText: 'Start Date', width: 130, textAlign: 'Right',
+                type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+            { field: 'endDate', headerText: 'End Date', width: 150, textAlign: 'Right',
+                type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+            { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 130 },
+            { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 130 },
+            { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 160 },
+            { field: 'designation', headerText: 'Designation', textAlign: 'Left', width: 190 },
+            { field: 'employeeID', headerText: 'EmployeeID', textAlign: 'Left', width: 120 },
+            { field: 'approved', headerText: 'Approved', width: 140, displayAsCheckBox: true, textAlign: 'Left',freeze: 'Right' }
+        ]
+        },
+        done
+      );
+    });
+
+    it('Collapse check for primary parent which has two level children', () => {
+      expect(gridObj.getVisibleRecords().length == 4 ).toBe(true);
+      gridObj.collapseRow(gridObj.getRows()[1]);
+      expect(gridObj.getVisibleRecords().length == 2 ).toBe(true);
+
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+   });
 });

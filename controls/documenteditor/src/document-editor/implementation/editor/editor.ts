@@ -19,7 +19,7 @@ import { isNullOrUndefined, Browser, classList, L10n, isVisible } from '@syncfus
 import {
     WParagraphFormat, WSectionFormat, WListFormat,
     WTableFormat, WRowFormat, WCellFormat, WStyle,
-    WBorder, WBorders, WShading, WTabStop
+    WBorder, WBorders, WShading, WTabStop, WColumnFormat
 } from '../index';
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
@@ -55,12 +55,16 @@ import { CommentActionEventArgs, beforeCommentActionEvent, trackChangeEvent, Xml
 import { CommentView } from '../comments';
 import { SelectionBorder } from '../selection/selection-format';
 import { Paragraph } from '../../../document-editor-container/properties-pane/paragraph-properties';
+import { SectionBreakType } from '../../base/types';
 
 
 /**
  * Editor module
  */
 export class Editor {
+    /**
+     * @private
+     */
     public documentHelper: DocumentHelper;
     private nodes: IWidget[] = [];
     private editHyperlinkInternal: boolean = false;
@@ -194,6 +198,9 @@ export class Editor {
         return true;
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
+    /**
+     * @private
+     */
     public copiedContent: any = '';
     /**
      * @private
@@ -208,9 +215,21 @@ export class Editor {
     private currentPasteOptions: PasteOptions;
     private pasteTextPosition: PositionInfo = undefined;
     //public isSkipHistory: boolean = false;
+    /**
+     * @private
+     */
     public isPaste: boolean = false;
+    /**
+     * @private
+     */
     public isPasteListUpdated: boolean = false;
+    /**
+     * @private
+     */
     public isHtmlPaste: boolean = false;
+    /**
+     * @private
+     */
     public base64: Base64;
     /**
      * @private
@@ -269,10 +288,10 @@ export class Editor {
         }
     }
     /**
-     * Inserts the specified field at cursor position
+     * Inserts the specified field at cursor position.
      *
-     * @param {string} code - Specify the field code
-     * @param {string} result - Specify the field result
+     * @param {string} code Specify the field code.
+     * @param {string} result Specify the field result.
      * @returns {void}
      */
     public insertField(code: string, result?: string): void {
@@ -336,9 +355,9 @@ export class Editor {
         return !isNullOrUndefined((styleObj as WParagraphStyle).link);
     }
     /**
-     * To update style for paragraph
+     * Applies the specified style for paragraph.
      *
-     * @param {string} style - style name
+     * @param {string} style Specify the style name to apply.
      * @param {boolean} clearDirectFormatting - Removes manual formatting (formatting not applied using a style)
      * from the selected text, to match the formatting of the applied style. Default value is false.
      * @returns {void}
@@ -407,35 +426,45 @@ export class Editor {
         this.documentHelper.owner.parser.isCutPerformed = true;
     }
     /**
-     * Insert editing region where everyone can edit.
+     * Inserts the editing region where everyone can edit.
      *
      * @returns {void}
      */
     public insertEditingRegion(): void;
     /**
-     * Insert editing region where mentioned user can edit.
+     * Inserts the editing region where mentioned user can edit.
      *
      * @returns {void}
      */
     public insertEditingRegion(user: string): void
     /**
-     * Insert editing region in current selection range.
+     * Inserts the editing region in the current selection range for the specified user.
      *
-     * @param {string} user - Specified the native rendering
+     * @param {string} user Specifies the native rendering
      * @returns {void}
      */
     public insertEditingRegion(user?: string): void {
         this.insertEditRangeElement(user && user !== '' ? user : 'Everyone');
     }
     /**
-     * Enforce document protection by protection type.
+     * Enforces the document protection by protection type.
      *
+     * @param {string} credential Specify the credential to protect the document.
+     * 
+     * @param {ProtectionType} protectionType Specify the document protection type.
+     * 
      * @returns {void}
      */
     public enforceProtection(credential: string, protectionType: ProtectionType): void;
     /**
-     * Enforce document protection.
-     *
+     * Enforces the document protection with the specified credential.
+     * 
+     * @param {string} credential Specify the credential to protect the document.
+     * 
+     * @param {boolean} limitToFormatting True if to limit the document formatting; Otherwise, false.
+     * 
+     * @param {boolean} isReadOnly  True if to allow read-only access to the document; Otherwise, false.
+     * 
      * @returns {void}
      */
     public enforceProtection(credential: string, limitToFormatting: boolean, isReadOnly: boolean): void;
@@ -477,9 +506,9 @@ export class Editor {
     }
 
     /**
-     * Insert comment
+     * Inserts the comment.
      *
-     * @param {string} text - comment text.
+     * @param {string} text Specify the comment text to be inserted.
      * @returns {void}
      */
     // Comment implementation starts
@@ -498,6 +527,7 @@ export class Editor {
     }
 
     private insertCommentInternal(text: string): void {
+        this.documentHelper.layout.allowLayout = false;
         if (this.selection.isEmpty) {
             // If selection is at paragraph end, move selection to previous word similar to MS Word
             if (this.selection.start.isAtSamePosition(this.selection.end) && this.selection.start.isAtParagraphEnd) {
@@ -532,8 +562,9 @@ export class Editor {
         // Adds comment start at selection start position.
         endPosition.setPositionInternal(startPosition);
         this.initInsertInline(commentRangeStart);
-        if (isNullOrUndefined(position.paragraph)) {
-            const endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+
+        if (isNullOrUndefined(position.paragraph) ||
+            (position.currentWidget && position.currentWidget.children.length === 0 && position.currentWidget.indexInOwner === -1)) {
             const endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
             position.setPositionInternal(endPos);
         }
@@ -573,6 +604,7 @@ export class Editor {
             this.editorHistory.updateComplexHistory();
         }
         this.reLayout(this.selection, false);
+        this.documentHelper.layout.allowLayout = true;
         if (!this.isUserInsert) {
             const comment: CommentView = this.owner.commentReviewPane.commentPane.comments.get(commentAdv);
             comment.postComment();
@@ -580,7 +612,7 @@ export class Editor {
     }
 
     /**
-     * Delete all the comments in current document
+     * Deletes all the comments in the current document.
      *
      * @returns {void}
      */
@@ -611,7 +643,7 @@ export class Editor {
         }
     }
     /**
-     * Delete current selected comment.
+     * Deletes the current selected comment.
      *
      * @returns {void}
      */
@@ -979,9 +1011,9 @@ export class Editor {
         this.owner.trackChangesPane.enableDisableButton(false);
     }
     /**
-     * Stop document protection.
+     * Stops the document protection.
      *
-     * @param {string} password - Specifies the password
+     * @param {string} password Specify the password to stop protection.
      * @returns {void}
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1551,7 +1583,12 @@ export class Editor {
             }
         } else if (shift && ctrl && !alt) {
             switch (key) {
-
+                case 13:
+                    if (!this.owner.isReadOnlyMode) {
+                        event.preventDefault();
+                        this.insertColumnBreak();
+                    }
+                    break;
                 case 68:
                     if (!this.owner.isReadOnlyMode) {
                         this.owner.selection.toggleUnderline('Double');
@@ -1886,7 +1923,7 @@ export class Editor {
     }
     /**
      * Inserts the specified text at cursor position
-     * @param {string} text - text to insert
+     * @param {string} text Specify the text to insert.
      */
     public insertText(text: string): void {
         if (isNullOrUndefined(text) || text === '') {
@@ -1924,7 +1961,7 @@ export class Editor {
             }
         }
         if (isReplace) {
-            this.documentHelper.layout.allowLayout = !isNullOrUndefined(allowLayout) ? allowLayout : true;
+            this.documentHelper.layout.isReplaceAll = !isNullOrUndefined(allowLayout) ? !allowLayout : false;
         }
         let selection: Selection = this.documentHelper.selection;
         let insertPosition: TextPosition; let isRemoved: boolean = true;
@@ -2196,7 +2233,11 @@ export class Editor {
             currentRevision.range.splice(isEnd ? rangeIndex + 1 : rangeIndex, 0, elementToInclude);
         }
     }
-
+    /**
+     * Retrieves the resultant field text from the specified field element box.
+     * @param item Specify the field element box to retrieve field text.
+     * @returns Returns the resultant field text.
+     */
     public retrieveFieldResultantText(item: FieldElementBox): string {
         let resultantText: string = '';
         if (item.fieldType === 1) {
@@ -2398,27 +2439,40 @@ export class Editor {
         this.selection.selectPosition(isUpdate ? start : endPosition, endPosition);
     }
     /**
-     * Insert Section break at cursor position
-     *
-     * @returns {void}
-     */
-    public insertSectionBreak(): void {
+      * Inserts the section break at cursor position with specified section break type.
+      *
+      * @param {SectionBreakType} sectionBreakType Specifies the section break type.
+      * > If this parameter is not set, it inserts the section break of type new page.
+      * @returns {void}
+      */
+    public insertSectionBreak(sectionBreakType?: SectionBreakType): void {
+        if (isNullOrUndefined(sectionBreakType)) {
+            sectionBreakType = SectionBreakType.NewPage;
+        }
         let selection: Selection = this.documentHelper.selection;
         if (isNullOrUndefined(selection) || this.owner.isReadOnlyMode || selection.start.paragraph.isInHeaderFooter) {
             return;
         }
-        this.initHistory('SectionBreak');
+        if (sectionBreakType === SectionBreakType.Continuous) {
+            this.initHistory('SectionBreakContinuous');
+        } else {
+            this.initHistory('SectionBreak');
+        }
         if (!selection.isEmpty) {
             selection.selectContent(selection.isForward ? selection.start : selection.end, true);
         }
         this.documentHelper.owner.isShiftingEnabled = true;
         this.updateInsertPosition();
-        this.insertSection(selection, true);
+        if (sectionBreakType === SectionBreakType.Continuous) {
+            this.insertSection(selection, true, undefined, true);
+        } else {
+            this.insertSection(selection, true);  
+        }
         this.updateEndPosition();
         this.reLayout(selection, true);
         //if (this.owner.layoutType === 'Continuous') {
         this.layoutWholeDocument(true);
-        //}
+        //} 
     }
 
     private combineRevisionWithBlocks(elementBox: ElementBox, revisionType?: RevisionType): void {
@@ -2571,6 +2625,12 @@ export class Editor {
         return false;
     }
 
+    /**
+     * Removes the specified revision from the document.
+     * 
+     * @param revisionToRemove Specify the revision to be removed.
+     * @returns {void}
+     */
     public removeRevision(revisionToRemove: Revision): any {
         let elementInfo: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset + 1, 0);
         let elementBox: ElementBox = elementInfo.element;
@@ -2588,7 +2648,12 @@ export class Editor {
         }
     }
 
-
+    /**
+     * Clears the specified revision from the document.
+     * 
+     * @param revision Specify the revision to clear from the document.
+     * @returns {void}
+     */
     public clearElementRevision(revision: Revision): void {
         if (isNullOrUndefined(revision)) {
             return;
@@ -2972,7 +3037,7 @@ export class Editor {
      * @private
      * @returns {BodyWidget}
      */
-    public insertSection(selection: Selection, selectFirstBlock: boolean, isUndoing?: boolean): BlockWidget {
+    public insertSection(selection: Selection, selectFirstBlock: boolean, isUndoing?: boolean, sectionBreakContinuous?: boolean): BlockWidget {
         let newSectionFormat: WSectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat.cloneFormat();
         let lastBlock: BlockWidget;
         let firstBlock: BlockWidget;
@@ -3019,7 +3084,7 @@ export class Editor {
             }
         }
         //Split body widget
-        firstBlock = this.splitBodyWidget(lastBlock.bodyWidget, newSectionFormat, lastBlock).firstChild as BlockWidget;
+        firstBlock = this.splitBodyWidget(lastBlock.bodyWidget, newSectionFormat, lastBlock, sectionBreakContinuous).firstChild as BlockWidget;
         if (isUndoing) {
             this.layoutWholeDocument(true);
         }
@@ -3038,12 +3103,36 @@ export class Editor {
     /**
      * @private
      */
-    public splitBodyWidget(bodyWidget: BodyWidget, sectionFormat: WSectionFormat, startBlock: BlockWidget): BodyWidget {
+    public splitBodyWidget(bodyWidget: BodyWidget, sectionFormat: WSectionFormat, startBlock: BlockWidget, sectionBreakContinuous?: boolean): BodyWidget {
         //let sectionIndex: number;
         //Move blocks after the start block to next body widget
-        let newBodyWidget: BodyWidget = this.documentHelper.layout.moveBlocksToNextPage(startBlock, true);
+        let newBodyWidget: BodyWidget = this.documentHelper.layout.moveBlocksToNextPage(startBlock, true, undefined, sectionBreakContinuous);
+        if (newBodyWidget.page === undefined) {
+            newBodyWidget.page = bodyWidget.page;
+            bodyWidget.page.bodyWidgets.splice(bodyWidget.index + 1, 0, newBodyWidget);
+
+        } else if (bodyWidget.page.bodyWidgets.length > 1 && newBodyWidget.page !== undefined && !this.editorHistory.isUndoing) {
+            let temp_NewBody: BodyWidget = newBodyWidget;
+
+            while (!isNullOrUndefined(bodyWidget.nextRenderedWidget) && newBodyWidget !== bodyWidget.nextRenderedWidget) {
+                let startindex: number = (bodyWidget.nextRenderedWidget as BodyWidget).page.bodyWidgets.indexOf(bodyWidget.nextRenderedWidget as BodyWidget);
+                newBodyWidget.page.bodyWidgets.push(bodyWidget.nextRenderedWidget as BodyWidget);
+                (bodyWidget.nextRenderedWidget as BodyWidget).page.bodyWidgets.splice(startindex, 1);
+            }
+
+            while (!isNullOrUndefined(newBodyWidget.nextRenderedWidget)) {
+                (newBodyWidget.nextRenderedWidget as BodyWidget).page = newBodyWidget.page;
+                newBodyWidget = newBodyWidget.nextRenderedWidget as BodyWidget;
+            }
+
+            newBodyWidget = temp_NewBody;
+            newBodyWidget.sectionFormat.breakCode = 'NewPage';
+        }
         //Update SectionIndex for splitted body widget
-        this.updateSectionIndex(sectionFormat, newBodyWidget, true);
+        if (sectionBreakContinuous) {
+            newBodyWidget.sectionFormat.breakCode = 'NoBreak';
+        }
+        this.updateSectionIndex(newBodyWidget.sectionFormat, newBodyWidget, true);
         // insert New header footer widget in to section index 
         if (this.editorHistory && !this.editorHistory.isUndoing) {
             this.insertRemoveHeaderFooter(newBodyWidget.sectionIndex, true);
@@ -3056,7 +3145,7 @@ export class Editor {
         //Update Child item index from 0 for new Section
         this.updateBlockIndex(0, newBodyWidget.firstChild as BlockWidget);
         // Start sinfting from first block
-        this.owner.viewer.updateClientArea(newBodyWidget.sectionFormat, newBodyWidget.page);
+        this.owner.viewer.updateClientArea(newBodyWidget, newBodyWidget.page);
         return newBodyWidget;
     }
     private insertRemoveHeaderFooter(sectionIndex: number, insert: boolean): void {
@@ -3759,11 +3848,11 @@ export class Editor {
         }
     }
     /**
-     * Insert Hyperlink
+     * Inserts the Hyperlink.
      *
-     * @param {string} address - Hyperlink URL
-     * @param {string} displayText - Display text for the hyperlink
-     * @param {string} screenTip - The screen tip text.
+     * @param {string} address Specify the Hyperlink URL to be inserted.
+     * @param {string} displayText Specify the display text for the hyperlink
+     * @param {string} screenTip Specify the screen tip text.
      * @returns {void}
      */
     public insertHyperlink(address: string, displayText?: string, screenTip?: string): void {
@@ -3911,7 +4000,7 @@ export class Editor {
     private initInsertInline(element: ElementBox, insertHyperlink?: boolean, isInsertRemovedBookamrk?: boolean): void {
         let selection: Selection = this.selection;
         let isSelectionUpdated: boolean = false;
-        if (isInsertRemovedBookamrk && element instanceof BookmarkElementBox) {
+        if (!this.isInsertingTOC && isInsertRemovedBookamrk && element instanceof BookmarkElementBox) {
             selection.start.offset--;
             selection.end.offset--;
             isSelectionUpdated = true;
@@ -4287,9 +4376,10 @@ export class Editor {
     }
 
     /**
-     * Pastes provided sfdt content or the data present in local clipboard if any.
+     * Pastes the provided sfdt content or the data present in local clipboard if any.
      *
-     * @param {string} sfdt? insert the specified sfdt content at current position
+     * @param {string} sfdt Specifies the sfdt content to paste at current position.
+     * @param {PasteOptions} defaultPasteOption Specifies the paste options.
      * @returns {void}
      */
     public paste(sfdt?: string, defaultPasteOption?: PasteOptions): void {
@@ -5323,7 +5413,7 @@ export class Editor {
             if (this.owner.viewer instanceof PageLayoutViewer) {
                 let page: Page = this.selection.start.paragraph.bodyWidget.page;
                 this.owner.viewer.updatePageBoundingRectangle(this.selection.start.paragraph.bodyWidget, page, page.boundingRectangle.y);
-                this.owner.viewer.updateClientArea(this.selection.start.paragraph.bodyWidget.sectionFormat, page);
+                this.owner.viewer.updateClientArea(this.selection.start.paragraph.bodyWidget, page);
             }
             layoutWholeDocument = true;
         }
@@ -6055,8 +6145,9 @@ export class Editor {
         }
         let bodyWidget: BodyWidget = selection.start.paragraph.containerWidget as BodyWidget;
         let blockIndex: number = selection.start.paragraph.index;
-        let insertIndex: number = bodyWidget.childWidgets.indexOf(selection.start.paragraph);
+        
         if (!isNullOrUndefined(bodyWidget)) {
+            let insertIndex: number = bodyWidget.childWidgets.indexOf(selection.start.paragraph);
             bodyWidget.childWidgets.splice(insertIndex, 0, block);
             block.containerWidget = bodyWidget;
             block.index = blockIndex;
@@ -6081,8 +6172,8 @@ export class Editor {
      * Inserts the image with specified size at cursor position in the document editor.
      *
      * @param {string} imageString  Base64 string, web URL or file URL.
-     * @param {number} width? Image width
-     * @param {number} height? Image height
+     * @param {number} width Specify the image width.
+     * @param {number} height Specify the image height.
      * @returns {void}
      */
     public insertImage(imageString: string, width?: number, height?: number): void {
@@ -6120,8 +6211,7 @@ export class Editor {
         }, 30);
     }
     /**
-     * Inserts a table of specified size at cursor position
-     *  in the document editor.
+     * Inserts a table of specified size at cursor position in the document editor.
      *
      * @param {number} rows Default value of ‘rows’ parameter is 1.
      * @param {number} columns Default value of ‘columns’ parameter is 1.
@@ -6265,7 +6355,7 @@ export class Editor {
     /**
      * Fits the table based on AutoFitType.
      *
-     * @param {AutoFitType} - auto fit type
+     * @param {AutoFitType} fitType Specify the auto fit type.
      * @returns {void}
      */
     public autoFitTable(fitType: AutoFitType): void {
@@ -6522,7 +6612,6 @@ export class Editor {
     public createTable(rows: number, columns: number): TableWidget {
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         let table: TableWidget = new TableWidget();
-        table.tableFormat = new WTableFormat(table);
         table.tableFormat.preferredWidthType = 'Auto';
         table.tableFormat.leftIndent = this.selection.start.paragraph.leftIndent;
         table.tableFormat.initializeTableBorders();
@@ -6841,9 +6930,9 @@ export class Editor {
         }
     }
     /**
-     * Determines whether merge cell operation can be done.
+     * Determines whether the merge cell operation can be done.
      *
-     * @returns {boolean} - Returns can merge cells.
+     * @returns {boolean} Returns true if to merge cells; Otherwise, false.
      */
     public canMergeCells(): boolean {
         if (this.selection.isEmpty || !this.selection.start.paragraph.isInsideTable || !this.selection.end.paragraph.isInsideTable) {
@@ -7117,6 +7206,7 @@ export class Editor {
         }
         this.removeEmptyLine(currentParagraph);
         if (!currentParagraph.isInsideTable) {
+            this.viewer.updateClientArea(currentParagraph.bodyWidget, currentParagraph.bodyWidget.page);
             this.documentHelper.layout.reLayoutParagraph(currentParagraph, 0, 0);
         }
     }
@@ -7294,25 +7384,27 @@ export class Editor {
             if (this.documentHelper.owner.enableHeaderAndFooter) {
                 this.updateHeaderFooterWidget();
             }
-            if (!isNullOrUndefined(selection.start.paragraph)) {
-                if (!isNullOrUndefined(selection.start.paragraph.bodyWidget.containerWidget) && selection.start.paragraph.bodyWidget.containerWidget instanceof FootNoteWidget) {
-                    if (selection.start.paragraph.bodyWidget.containerWidget.footNoteType === 'Footnote') {
-                        this.documentHelper.layout.isRelayoutFootnote = true;
-                        this.shiftFootnotePageContent(selection.start.paragraph.bodyWidget.containerWidget);
-                        //this.documentHelper.layout.layoutfootNote(selection.start.paragraph.bodyWidget.containerWidget);
-                    } else {
-                        this.documentHelper.layout.isRelayoutFootnote = false;
-                        this.shiftFootnotePageContent();
+            if (!this.documentHelper.isRowOrCellResizing) {
+                if (!isNullOrUndefined(selection.start.paragraph)) {
+                    if (!isNullOrUndefined(selection.start.paragraph.bodyWidget.containerWidget) && selection.start.paragraph.bodyWidget.containerWidget instanceof FootNoteWidget) {
+                        if (selection.start.paragraph.bodyWidget.containerWidget.footNoteType === 'Footnote') {
+                            this.documentHelper.layout.isRelayoutFootnote = true;
+                            this.shiftFootnotePageContent(selection.start.paragraph.bodyWidget.containerWidget);
+                            //this.documentHelper.layout.layoutfootNote(selection.start.paragraph.bodyWidget.containerWidget);
+                        } else {
+                            this.documentHelper.layout.isRelayoutFootnote = false;
+                            this.shiftFootnotePageContent();
+                        }
                     }
                 }
+                this.getOffsetValue(selection);
+                selection.upDownSelectionLength = selection.end.location.x;
+                selection.fireSelectionChanged(true);
+                this.documentHelper.updateFocus();
+                this.startParagraph = undefined;
+                this.endParagraph = undefined;
+                //this.documentHelper.layout.allowLayout = true;
             }
-            this.getOffsetValue(selection);
-            selection.upDownSelectionLength = selection.end.location.x;
-            selection.fireSelectionChanged(true);
-            this.documentHelper.updateFocus();
-            this.startParagraph = undefined;
-            this.endParagraph = undefined;
-            //this.documentHelper.layout.allowLayout = true;
         } else if (this.documentHelper.owner.enableHeaderAndFooter) {
             this.updateHeaderFooterWidget();
         }
@@ -7509,11 +7601,11 @@ export class Editor {
                     top = Math.max(headerDistance + section.page.headerWidget.height, top);
                 }
                 if (firstBlock.y !== top) {
-                    this.owner.viewer.updateClientArea(section.sectionFormat, section.page);
+                    this.owner.viewer.updateClientArea(section, section.page);
                     firstBlock = firstBlock.combineWidget(this.owner.viewer) as BlockWidget;
                     let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
                     if (prevWidget) {
-                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget) && !(prevWidget.containerWidget.lastChild instanceof ParagraphWidget && prevWidget.containerWidget.lastChild.isEndsWithPageBreak)) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget) && !(prevWidget.containerWidget.lastChild instanceof ParagraphWidget && (prevWidget.containerWidget.lastChild.isEndsWithPageBreak || prevWidget.containerWidget.lastChild.isEndsWithColumnBreak))) {
                             this.owner.viewer.cutFromTop(prevWidget.y + prevWidget.height);
 
                             this.documentHelper.layout.updateContainerWidget(firstBlock as Widget, prevWidget.containerWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
@@ -7571,7 +7663,7 @@ export class Editor {
                 }
             }
             if (!isNullOrUndefined(blockToShift)) {
-                this.owner.viewer.updateClientArea(bodyWidget.sectionFormat, page, true);
+                this.owner.viewer.updateClientArea(bodyWidget, page, true);
                 this.owner.viewer.cutFromTop(blockToShift.y);
                 this.documentHelper.blockToShift = blockToShift;
             }
@@ -7835,7 +7927,7 @@ export class Editor {
     /**
      * Toggles the highlight color property of selected contents.
      *
-     * @param {HighlightColor} highlightColor Default value of ‘underline’ parameter is Yellow.
+     * @param {HighlightColor} highlightColor Specify the highlight color to be applied (default: Yellow).
      * @returns {void}
      */
     public toggleHighlightColor(highlightColor?: HighlightColor): void {
@@ -7904,8 +7996,8 @@ export class Editor {
     /**
      * Applies the bullet list to selected paragraphs.
      *
-     * @param {string} bullet Bullet character
-     * @param {string} fontFamily Bullet font family
+     * @param {string} bullet Specify the bullet character to be applied.
+     * @param {string} fontFamily Specify the bullet font family name.
      * @returns {void}
      */
     public applyBullet(bullet: string, fontFamily: string): void {
@@ -7929,7 +8021,7 @@ export class Editor {
     /**
      * Toggles the baseline alignment property of selected contents.
      *
-     * @param {BaselineAlignment} baseAlignment Specifies the baseline alignment
+     * @param {BaselineAlignment} baseAlignment Specifies the baseline alignment.
      * @returns {void}
      */
     public toggleBaselineAlignment(baseAlignment: BaselineAlignment): void {
@@ -8045,9 +8137,9 @@ export class Editor {
         }
     }
     /**
-     * Creates a new instance of Style.
+     * Creates a new instance of the Style class with the specified style name.
      * 
-     * @returns {void}
+     * @returns {void} Specify the style name to be created.
      */
     public createStyle(styleString: string): void {
         this.createStyleIn(styleString);
@@ -8716,7 +8808,7 @@ export class Editor {
         this.changeCaseNextBlock(wRow.ownerTable, start, end, property, isRevert);
     }
     /**
-     * Toggle All Caps formatting for the selected content.
+     * Toggles the all Caps formatting for the selected content.
      *
      * @returns {void}
      */
@@ -8770,7 +8862,7 @@ export class Editor {
     /**
      * Toggles the underline property of selected contents.
      *
-     * @param underline Default value of ‘underline’ parameter is Single.
+     * @param underline Specify the underline to be toggled (default: Single).
      * @returns {void}
      */
     public toggleUnderline(underline?: Underline): void {
@@ -8782,7 +8874,7 @@ export class Editor {
     /**
      * Toggles the strike through property of selected contents.
      *
-     * @param {Strikethrough} strikethrough Default value of strikethrough parameter is SingleStrike.
+     * @param {Strikethrough} strikethrough Specify the strike through to be toggled (default: SingleStrike).
      * @returns {void}
      */
     public toggleStrikethrough(strikethrough?: Strikethrough): void {
@@ -9125,7 +9217,7 @@ export class Editor {
     /**
      * Toggles the text alignment of selected paragraphs.
      *
-     * @param {TextAlignment} textAlignment - Specified the text alignment.
+     * @param {TextAlignment} textAlignment Specifies the text alignment.
      * @returns {void}
      */
     public toggleTextAlignment(textAlignment: TextAlignment): void {
@@ -9673,7 +9765,7 @@ export class Editor {
         }
     }
     /**
-     * To apply continue numbering from the previous list
+     * Applies the continue numbering from the previous list.
      *
      * @returns {void}
      */
@@ -9992,7 +10084,71 @@ export class Editor {
             }
         }
     }
-
+    /**
+     * Apply column format changes
+     *
+     * @param {string} property - Specifies the property
+     * @param {Object} value - Specifies the value
+     * @private
+     * @returns {void}
+     */
+     public onApplyColumnFormat(property: string, value: Object): void {
+        if (this.restrictFormatting) {
+            return;
+        }
+        this.initHistory('SectionFormat');
+        let selection: Selection = this.documentHelper.selection;
+        selection.owner.isShiftingEnabled = true;
+        let startPosition: TextPosition = selection.start;
+        let endPosition: TextPosition = selection.end;
+        if (!selection.isForward) {
+            startPosition = selection.end;
+            endPosition = selection.start;
+        }
+        let startPageIndex: number;
+        let endPageIndex: number;
+        this.documentHelper.clearContent();
+        let startSectionIndex: number = startPosition.paragraph.bodyWidget.sectionIndex;
+        let endSectionIndex: number = endPosition.paragraph.bodyWidget.sectionIndex;
+        let isMultipleSection: boolean = false;
+        for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+            if (this.documentHelper.pages[i].bodyWidgets[0].index === startSectionIndex) {
+                startPageIndex = i;
+            } else {
+                isMultipleSection = true;
+            }
+        }
+        for (let i: number = startPageIndex; i < this.documentHelper.pages.length; i++) {
+            let bodyWidget: BodyWidget = this.documentHelper.pages[i].bodyWidgets[0];
+            endPageIndex = i;
+            if ((bodyWidget.index === startSectionIndex)) {
+                continue;
+            } else if ((bodyWidget.index >= startSectionIndex) && bodyWidget.index <= endSectionIndex) {
+                continue;
+            } else {
+                endPageIndex = i - 1;
+                break;
+            }
+        }
+        if(isMultipleSection && property == "differentOddAndEvenPages" && startPosition.paragraph.isInHeaderFooter){
+                startPageIndex = 0;
+                endPageIndex = this.documentHelper.pages.length - 1;
+        }
+        // let startPageIndex: number = this.documentHelper.pages.indexOf((selection.start.paragraph.containerWidget as BodyWidget).page);
+        // let endPageIndex: number = this.documentHelper.pages.indexOf((selection.end.paragraph.containerWidget as BodyWidget).page);
+        let update: boolean = true;
+        let index: number = 0;
+        for (let i: number = startPageIndex; i <= endPageIndex; i++) {
+            if (index !== this.documentHelper.pages[i].bodyWidgets[0].index && !update) {
+                update = true;
+            }
+            this.applyPropertyValueForSection(this.documentHelper.pages[i].bodyWidgets[0].sectionFormat, property, value, update);
+            index = this.documentHelper.pages[i].bodyWidgets[0].index;
+            update = false;
+        }
+        this.layoutWholeDocument();
+        this.fireContentChange();
+    }
     //Paragraph Format apply implementation Ends
     // Apply Selection Section Format Option Implementation Starts
     /**
@@ -10220,6 +10376,9 @@ export class Editor {
     private applyPropertyValueForSection(sectionFormat: WSectionFormat, property: string, value: Object, update: boolean): void {
         //let selection: Selection = this.documentHelper.selection;
         if (update && this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
+            if(property === 'columns'){
+                sectionFormat.numberOfColumns = (value as WColumnFormat[]).length;
+            }
             value = this.editorHistory.currentBaseHistoryInfo.addModifiedPropertiesForSection(sectionFormat, property, value);
         }
         if (isNullOrUndefined(value)) {
@@ -10267,6 +10426,14 @@ export class Editor {
             sectionFormat.initialFootNoteNumber = value as number;
         } else if (property === 'initialEndNoteNumber') {
             sectionFormat.initialEndNoteNumber = value as number;
+        } else if (property == 'numberOfColumns') {
+            sectionFormat.numberOfColumns = value as number;
+        } else if (property == 'equalWidth') {
+            sectionFormat.equalWidth = value as boolean;
+        } else if (property == 'lineBetweenColumns') {
+            sectionFormat.lineBetweenColumns = value as boolean;
+        } else if (property == 'columns') {
+            sectionFormat.columns = value as WColumnFormat[];
         }
     }
     /**
@@ -10308,16 +10475,22 @@ export class Editor {
         let sections: BodyWidget[] = [];
         let nextSection: BodyWidget = this.documentHelper.pages[0].bodyWidgets[0];
         do {
-            nextSection = this.combineSectionChild(nextSection, sections);
+            nextSection = this.combineSectionChild(nextSection, sections, false);
         } while (nextSection);
+        for (let j: number = 0; j < this.documentHelper.pages.length; j++) {
+            this.documentHelper.pages[j].destroy();
+            j--;
+        }
         return sections;
     }
-    private combineSectionChild(bodyWidget: BodyWidget, sections: BodyWidget[]): BodyWidget {
+    private combineSectionChild(bodyWidget: BodyWidget, sections: BodyWidget[], destoryPage: boolean): BodyWidget {
         let previousBodyWidget: BodyWidget = bodyWidget;
         let temp: BodyWidget = new BodyWidget();
+        let emptyBody: boolean = false;
         temp.sectionFormat = bodyWidget.sectionFormat;
         temp.index = previousBodyWidget.index;
         do {
+            emptyBody = false;
             previousBodyWidget = bodyWidget;
             if (bodyWidget.lastChild) {
                 (bodyWidget.lastChild as BlockWidget).combineWidget(this.owner.viewer);
@@ -10338,9 +10511,19 @@ export class Editor {
                 j--;
                 block.containerWidget = temp;
             }
-            previousBodyWidget.page.destroy();
+            for (let i: number = 0; i < previousBodyWidget.page.bodyWidgets.length; i++) {
+                if (previousBodyWidget.page.bodyWidgets[i].childWidgets.length === 0) {
+                    emptyBody = true;
+                } else {
+                    emptyBody = false;
+                    break;
+                }
+            }
+            if (emptyBody && destoryPage) {
+                previousBodyWidget.page.destroy();
+            }
             // this.documentHelper.pages.splice(previousBodyWidget.page.index, 1);
-        } while (bodyWidget && previousBodyWidget.equals(bodyWidget));
+        } while (bodyWidget && previousBodyWidget.index === bodyWidget.index);
         sections.push(temp);
         return bodyWidget;
     }
@@ -10763,7 +10946,7 @@ export class Editor {
         }
     }
     /**
-     * Merge the selected cells.
+     * Merges the selected cells.
      *
      * @returns {void}
      */
@@ -11144,7 +11327,7 @@ export class Editor {
             paragraph = previousWidget instanceof ParagraphWidget ? previousWidget as ParagraphWidget
                 : this.documentHelper.getLastParagraphInLastCell((previousWidget as TableWidget));
         }
-        return paragraph;
+        return paragraph;  
     }
     private deletePara(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, editAction: number): void {
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
@@ -11193,7 +11376,7 @@ export class Editor {
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
-                start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
+            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
             isCombineNextParagraph = true;
         }
         let paraEnd: TextPosition = end.clone();
@@ -11344,7 +11527,7 @@ export class Editor {
 
                         this.editorHistory.currentBaseHistoryInfo.endPosition = this.selection.getHierarchicalIndex(newParagraph, offset.toString());
                     }
-                } else if (paragraph === start.paragraph && (isNullOrUndefined(nextWidget) || (!isNullOrUndefined(nextWidget) && section.index !== nextWidget.bodyWidget.index)) && !isNullOrUndefined(prevParagraph)) {
+                } else if (paragraph === start.paragraph && (isNullOrUndefined(nextWidget) || (!isNullOrUndefined(nextWidget) && !isNullOrUndefined(section) && section.index !== nextWidget.bodyWidget.index)) && !isNullOrUndefined(prevParagraph)) {
                     let offset: number = this.selection.getParagraphLength(prevParagraph);
                     // if (isNullOrUndefined(block)) {
                     selection.editPosition = this.selection.getHierarchicalIndex(prevParagraph, offset.toString());
@@ -11389,7 +11572,7 @@ export class Editor {
         // } else {
         let bodyWidget: BodyWidget = section.getSplitWidgets()[0] as BodyWidget;
         let currentSection: BodyWidget[] = [];
-        this.combineSectionChild(bodyWidget, currentSection);
+        this.combineSectionChild(bodyWidget, currentSection, true);
         bodyWidget = currentSection[0];
         let lastBlockIndex: number = (bodyWidget.lastChild as BlockWidget).index;
         this.updateBlockIndex(lastBlockIndex + 1, nextSection.firstChild as BlockWidget);
@@ -11422,7 +11605,11 @@ export class Editor {
         }
         this.updateSectionIndex(undefined, nextSection, false);
         this.addRemovedNodes(bodyWidget);
-        // this.insert
+        this.documentHelper.removeEmptyPages();
+        if (this.editorHistory && this.editorHistory.isUndoing) {
+            nextSection.sectionFormat = section.sectionFormat;
+          
+        }
         // }
     }
     /* eslint-disable max-len */
@@ -13015,7 +13202,7 @@ export class Editor {
         }
     }
     /**
-     * Insert page break at cursor position
+     * Inserts the page break at the cursor position.
      *
      * @returns {void}
      */
@@ -13026,7 +13213,26 @@ export class Editor {
                 return;
             }
             this.initComplexHistory('PageBreak');
-            this.onEnter(true);
+            this.onEnter('PageBreak');
+            if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
+                this.editorHistory.updateComplexHistory();
+            }
+            this.selection.checkForCursorVisibility();
+        }
+    }
+    /**
+     * Inserts a column break at cursor position.
+     *
+     * @returns {void}
+     */
+    public insertColumnBreak(): void{
+        if (!this.owner.isReadOnlyMode) {
+            if (this.documentHelper.selection.start.paragraph.isInsideTable ||
+                this.documentHelper.selection.start.paragraph.isInHeaderFooter) {
+                return;
+            }
+            this.initComplexHistory('ColumnBreak');
+            this.onEnter('ColumnBreak');
             if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
                 this.editorHistory.updateComplexHistory();
             }
@@ -13037,7 +13243,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public onEnter(isInsertPageBreak?: boolean): void {
+    public onEnter(breakType?: string): void {
         let selection: Selection = this.documentHelper.selection;
         var format: SelectionCharacterFormat;
         if (isNullOrUndefined(selection.start.paragraph.paragraphFormat.baseStyle) ||
@@ -13081,13 +13287,20 @@ export class Editor {
             let initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset);
             this.setPositionForCurrentIndex(selection.start, initialStart);
-            if (isInsertPageBreak) {
+            if (!isNullOrUndefined(breakType) && (breakType === 'PageBreak' || breakType === 'ColumnBreak')) {
                 let currentParagraph: ParagraphWidget = selection.start.paragraph;
                 let breakParagraph: ParagraphWidget = new ParagraphWidget();
                 breakParagraph.characterFormat.copyFormat(currentParagraph.characterFormat);
                 breakParagraph.paragraphFormat.copyFormat(currentParagraph.paragraphFormat);
                 let pageBreak: TextElementBox = new TextElementBox();
-                pageBreak.text = '\f';
+                switch (breakType) {
+                    case 'PageBreak':
+                        pageBreak.text = '\f';
+                        break;
+                    case 'ColumnBreak':
+                        pageBreak.text = String.fromCharCode(14);
+                        break;
+                }
                 let line: LineWidget = new LineWidget(breakParagraph);
                 line.children.push(pageBreak);
                 pageBreak.line = line;
@@ -13107,7 +13320,7 @@ export class Editor {
             }
             selection.selectParagraphInternal(nextNode as ParagraphWidget, true);
             this.updateEndPosition();
-            if (isInsertPageBreak && this.editorHistory) {
+            if (!isNullOrUndefined(breakType) && this.editorHistory) {
                 this.owner.editorHistory.updateHistory();
             }
             // if (!isNullOrUndefined(selection.currentHistoryInfo)) {
@@ -13250,7 +13463,6 @@ export class Editor {
                 this.insertParaRevision(paragraphAdv);
             }
         }
-
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container as BodyWidget, paragraph, false);
     }
 
@@ -13396,19 +13608,46 @@ export class Editor {
      * @returns {void}
      */
     public updateNextBlocksIndex(block: BlockWidget, increaseIndex: boolean): void {
+        if (isNullOrUndefined(block.nextRenderedWidget) || block.nextRenderedWidget instanceof ParagraphWidget && block.bodyWidget.index !== block.nextRenderedWidget.bodyWidget.index) {
+            return;
+        }
         let nextIndex: number = block.containerWidget.childWidgets.indexOf(block) + 1;
-        if ((block.containerWidget instanceof BodyWidget && isNullOrUndefined(block.containerWidget.containerWidget)) || (block.containerWidget instanceof BodyWidget && !isNullOrUndefined(block.containerWidget.containerWidget) && !(block.containerWidget.containerWidget instanceof FootNoteWidget))) {
-            let currentSectionIndex: number = (block.containerWidget as BodyWidget).index;
-            for (let j: number = this.documentHelper.pages.indexOf(block.containerWidget.page); j < this.documentHelper.pages.length; j++) {
-                let page: Page = this.documentHelper.pages[j];
-                if (page.bodyWidgets[0].index === currentSectionIndex) {
-                    for (let k: number = nextIndex; k < page.bodyWidgets[0].childWidgets.length; k++) {
-                        let childWidget: BlockWidget = page.bodyWidgets[0].childWidgets[k] as BlockWidget;
-                        this.updateIndex(childWidget, increaseIndex);
+        if (block.containerWidget instanceof BodyWidget) {
+            // let startSel = this.selection.startOffset.substring(0,1);
+            // let endSel = this.selection.endOffset.substring(0,1);
+            if ((block.containerWidget as BodyWidget).page.bodyWidgets.length > 1) {
+                let fromSectionIndex: number = (block.containerWidget as BodyWidget).indexInOwner;
+                for (let i: number = this.documentHelper.pages.indexOf(block.containerWidget.page); i < this.documentHelper.pages.length; i++) {
+                    let page: Page = this.documentHelper.pages[i];
+                    for (let j: number = 0; j < page.bodyWidgets.length; j++) {
+                        if (page.bodyWidgets[j].indexInOwner === fromSectionIndex) {
+                            for (let k: number = nextIndex; k < page.bodyWidgets[j].childWidgets.length; k++) {
+                                let childWidget: BlockWidget = page.bodyWidgets[j].childWidgets[k] as BlockWidget;
+                                this.updateIndex(childWidget, increaseIndex);
+                            }
+                            nextIndex = 0;
+                            if (!isNullOrUndefined(page.bodyWidgets[j].nextRenderedWidget) && (page.bodyWidgets[j].nextRenderedWidget as BodyWidget).sectionFormat.breakCode !== 'NoBreak') {
+                                fromSectionIndex++;
+                            }
+                        }
                     }
-                    nextIndex = 0;
-                } else {
-                    return;
+                    if (fromSectionIndex !== block.containerWidget.indexInOwner && !isNullOrUndefined(page.bodyWidgets[page.bodyWidgets.length - 1].nextRenderedWidget) && (page.bodyWidgets[page.bodyWidgets.length - 1].nextRenderedWidget as BodyWidget).sectionFormat.columns.length > 1) {
+                        fromSectionIndex = 0;
+                    }
+                }
+            } else {
+                let currentSectionIndex: number = (block.containerWidget as BodyWidget).index;
+                for (let j: number = this.documentHelper.pages.indexOf(block.containerWidget.page); j < this.documentHelper.pages.length; j++) {
+                    let page: Page = this.documentHelper.pages[j];
+                    if (page.bodyWidgets[0].index === currentSectionIndex) {
+                        for (let k: number = nextIndex; k < page.bodyWidgets[0].childWidgets.length; k++) {
+                            let childWidget: BlockWidget = page.bodyWidgets[0].childWidgets[k] as BlockWidget;
+                            this.updateIndex(childWidget, increaseIndex);
+                        }
+                        nextIndex = 0;
+                    } else {
+                        return;
+                    }
                 }
             }
         } else if (block.containerWidget instanceof TableCellWidget) {
@@ -13431,21 +13670,15 @@ export class Editor {
             }
         } else if (block.containerWidget instanceof TableWidget) {
             for (let i: number = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
-                let row: TableRowWidget = block.containerWidget.childWidgets[i] as TableRowWidget;
+                let row: TableCellWidget = block.containerWidget.childWidgets[i] as TableCellWidget;
                 this.updateIndex(row, increaseIndex);
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
-                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                    cell.rowIndex = row.index;
-                    cell.index = j;
+                    (row.childWidgets[j] as TableCellWidget).rowIndex = row.index;
                 }
             }
             //update Row index of all the cell
-        } else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame) {
-            for (let i: number = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
-                let nextBlock: BlockWidget = block.containerWidget.childWidgets[i] as BlockWidget;
-                this.updateIndex(nextBlock, increaseIndex);
-            }
-        } else if (!isNullOrUndefined(block.containerWidget.containerWidget) && (block.containerWidget.containerWidget instanceof FootNoteWidget)) {
+        } else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame
+            || block.containerWidget instanceof FootNoteWidget) {
             for (let i: number = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
                 let nextBlock: BlockWidget = block.containerWidget.childWidgets[i] as BlockWidget;
                 this.updateIndex(nextBlock, increaseIndex);
@@ -13962,8 +14195,14 @@ export class Editor {
                     }
                 } else if (previousParagraph.isEmpty() && !this.owner.enableTrackChanges) {
                     this.removePrevParaMarkRevision(paragraph);
-                    this.removeBlock(previousParagraph);
-                    this.addRemovedNodes(previousParagraph);
+                    if (!(paragraph === paragraph.bodyWidget.lastChild && previousParagraph.bodyWidget.index !== paragraph.bodyWidget.index)) {
+                        this.removeBlock(previousParagraph);
+                        this.addRemovedNodes(previousParagraph);
+                    } else {
+                        let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
+                        let previousIndex: number = previousParagraph.childWidgets.length - 1;
+                        selection.selects(previousParagraph.childWidgets[previousIndex] as LineWidget, endOffset, true);
+                    }
                 } else if (this.owner.enableTrackChanges && previousParagraph.characterFormat.revisions != undefined && previousParagraph.characterFormat.revisions[0].revisionType == 'Deletion') {
                     let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                     let previousIndex: number = previousParagraph.childWidgets.length - 1;
@@ -13972,11 +14211,15 @@ export class Editor {
                     this.addRemovedNodes(paragraph);
                 } else {
                     this.removePrevParaMarkRevision(paragraph);
-                    this.removeBlock(paragraph, false, true);
+                    let checkCombine: boolean = false;
+                    if (!(paragraph === paragraph.bodyWidget.lastChild && previousParagraph.bodyWidget.index !== paragraph.bodyWidget.index)) {
+                        this.removeBlock(paragraph, false, true);
+                        checkCombine = true;
+                    }
                     let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                     let previousIndex: number = previousParagraph.childWidgets.length - 1;
                     let lineWidget: LineWidget;
-                    if (!paragraph.isEmpty()) {
+                    if (!paragraph.isEmpty() && checkCombine) {
                         for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
                             lineWidget = paragraph.childWidgets[i] as LineWidget;
                             previousParagraph.childWidgets.push(lineWidget);
@@ -13998,7 +14241,9 @@ export class Editor {
                     }
                     this.documentHelper.layout.reLayoutParagraph(previousParagraph, previousIndex, 0);
                     selection.selects(previousParagraph.childWidgets[previousIndex] as LineWidget, endOffset, true);
-                    this.addRemovedNodes(paragraph);
+                    if (checkCombine) {
+                        this.addRemovedNodes(paragraph);
+                    }
                 }
                 this.setPositionForHistory();
                 const footNoteWidgets: BodyWidget[] = this.documentHelper.layout.getFootNoteWidgetsOf(paragraph);
@@ -14475,7 +14720,7 @@ export class Editor {
         return isCombined;
     }
     /**
-     * Remove the current selected content or one character right of cursor.
+     * Removes the current selected content or one character right of the cursor.
      *
      * @returns {void}
      */
@@ -14730,7 +14975,7 @@ export class Editor {
             if (!isRedoing) {
                 this.initHistory('Delete');
             }
-            if (paragraph.isEndsWithPageBreak) {
+            if (paragraph.isEndsWithPageBreak || paragraph.isEndsWithColumnBreak) {
                 let lastLine: LineWidget = paragraph.lastChild as LineWidget;
                 let lastChild: ElementBox = lastLine.children[lastLine.children.length - 1] as ElementBox;
                 this.selection.start.setPositionForSelection(lastLine, lastChild, 0, this.selection.start.location);
@@ -14905,14 +15150,18 @@ export class Editor {
                         inline.paragraph = paragraph;
                         i--;
                     }
+                    if (nextParagraph.bodyWidget.index !== paragraph.bodyWidget.index) {
+                        this.deleteSection(selection, paragraph.bodyWidget, nextParagraph.bodyWidget, editAction);
+                    }
                     if (nextParagraph.childWidgets.length === 0) {
                         nextParagraph.childWidgets.push(new LineWidget(nextParagraph));
                     }
                     this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
                     this.removeBlock(nextParagraph);
                     //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
-                    if (this.editorHistory.currentBaseHistoryInfo.action !== "Insert")
+                    if (this.editorHistory.currentBaseHistoryInfo.action !== "Insert") {
                         this.addRemovedNodes(nextParagraph, isCombineLastBlock);
+                    }
                 }
             }
         }
@@ -15130,12 +15379,21 @@ export class Editor {
     }
     private fitImageToPage(selection: Selection, imageElementBox: ImageElementBox): void {
         const section: BodyWidget = selection.start.paragraph.bodyWidget as BodyWidget;
-        const pageWidth: number = section.sectionFormat.pageWidth - section.sectionFormat.leftMargin - section.sectionFormat.rightMargin;
         const pageHeight: number = section.sectionFormat.pageHeight - section.sectionFormat.topMargin - section.sectionFormat.topMargin;
-        //Resizes image to page size.
-        if (imageElementBox.width > pageWidth) {
-            imageElementBox.height = imageElementBox.height * pageWidth / imageElementBox.width;
-            imageElementBox.width = pageWidth;
+        let width: number = 0;
+        if (section instanceof BodyWidget && section.sectionFormat.columns.length > 1) {
+            // column width
+            let colIndex: number = section.page.bodyWidgets.indexOf(section);
+            width = (section.sectionFormat.columns[colIndex] as WColumnFormat).width;
+        }
+        else {
+            // page width
+            width = HelperMethods.convertPointToPixel(section.sectionFormat.pageWidth - section.sectionFormat.leftMargin - section.sectionFormat.rightMargin);
+        }
+        // Resize image based on page width or column width
+        if (imageElementBox.width > width) {
+            imageElementBox.height = imageElementBox.height * width / imageElementBox.width;
+            imageElementBox.width = width;
         }
         if (imageElementBox.height > pageHeight) {
             imageElementBox.width = imageElementBox.width * pageHeight / imageElementBox.height;
@@ -15368,11 +15626,16 @@ export class Editor {
         let currentBlock: BlockWidget;
         for (let j: number = 0; j < this.documentHelper.pages.length; j++) {
             const page: Page = this.documentHelper.pages[j];
-            if (page.bodyWidgets[0].index === sectionIndex) {
-                currentBlock = this.getNextBlockForList(page.bodyWidgets[0].firstChild as BlockWidget);
-                if (!isNullOrUndefined(currentBlock)) {
-                    break;
+            for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+                if (page.bodyWidgets[i].index === sectionIndex) {
+                    currentBlock = this.getNextBlockForList(page.bodyWidgets[i].firstChild as BlockWidget);
+                    if (!isNullOrUndefined(currentBlock)) {
+                        break;
+                    }
                 }
+            }
+            if (!isNullOrUndefined(currentBlock)) {
+                break;
             }
         }
         let isListUpdated: boolean = false;
@@ -15617,7 +15880,7 @@ export class Editor {
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
     }
     /**
-     * Insert page number in the current cursor position.
+     * Inserts the page number in the current cursor position.
      *
      * @param {string} numberFormat - Optional switch that overrides the numeral style of the page number.
      * @returns {void}
@@ -15678,9 +15941,9 @@ export class Editor {
         this.pasteContentsInternal([bodyWidget], false);
     }
     /**
-     * Insert Bookmark at current selection range
+     * Inserts the specified bookmark at the current selection range.
      *
-     * @param {string} name - Name of bookmark
+     * @param {string} name Specify the name of bookmark to be inserted.
      * @returns {void}
      */
     public insertBookmark(name: string): void {
@@ -15712,9 +15975,9 @@ export class Editor {
         this.fireContentChange();
     }
     /**
-     * Deletes specific bookmark
+     * Deletes the specified bookmark in the current document.
      *
-     * @param {string} bookmarkName - Name of bookmark to delete.
+     * @param {string} bookmarkName Specify the name of bookmark to be deleted.
      * @returns {void}
      */
     public deleteBookmark(bookmarkName: string): void {
@@ -15916,7 +16179,7 @@ export class Editor {
     /**
      * Applies the borders based on given settings.
      *
-     * @param {BorderSettings} settings
+     * @param {BorderSettings} settings Specify the border settings to be applied.
      * @returns {void}
      */
     public applyBorders(settings: BorderSettings): void {
@@ -16717,8 +16980,32 @@ export class Editor {
             this.tableResize.destroy();
             this.tableResize = undefined;
         }
-        this.documentHelper = undefined;
+        if (this.previousCharFormat) {
+            this.previousCharFormat.destroy();
+            this.previousCharFormat = undefined;
+        }
+        if (this.previousParaFormat) {
+            this.previousParaFormat.destroy();
+            this.previousParaFormat = undefined;
+        }
+        if (this.alertDialog) {
+            this.alertDialog.destroy();
+        }
+        this.alertDialog = undefined;
+        if (this.base64) {
+            this.base64.destroy();
+        }
+        this.base64 = undefined;
+        this.endParagraph = undefined;
+        this.copiedData = undefined;
+        this.copiedTextContent = undefined;
+        this.listNumberFormat = undefined;
         this.nodes = [];
+        this.removedTextNodes = [];
+        this.removedBookmarkElements = [];
+        this.editStartRangeCollection = [];
+        this.documentHelper = undefined;
+        
     }
     /**
      * Updates the table of contents.
@@ -16817,7 +17104,7 @@ export class Editor {
     /**
      * Inserts, modifies or updates the table of contents based on given settings.
      *
-     * @param {TableOfContentsSettings} tableOfContentsSettings
+     * @param {TableOfContentsSettings} tableOfContentsSettings Specify the table of content settings to be inserted.
      * @returns {void}
      */
     public insertTableOfContents(tableOfContentsSettings?: TableOfContentsSettings): void {
@@ -17647,9 +17934,9 @@ export class Editor {
         this.selection.skipEditRangeRetrieval = false;
     }
     /**
-     * Insert specified form field at current selection.
+     * Inserts the specified form field at the current selection.
      *
-     * @param {FormFieldType} type Form field type
+     * @param {FormFieldType} type Specify the Form field type to insert.
      * @returns {void}
      */
     public insertFormField(type: FormFieldType): void {
@@ -18110,7 +18397,7 @@ export class Editor {
         return initials;
     }
     /**
-     * Insert Footnote at current selection
+     * Inserts the footnote at the current selection.
      *
      * @returns {void}
      */
@@ -18188,7 +18475,7 @@ export class Editor {
     }
     // Footnote implementation ends
     /**
-     * Insert Endnote at current selection
+     * Inserts the endnote at the current selection
      *
      * @returns {void}
      */

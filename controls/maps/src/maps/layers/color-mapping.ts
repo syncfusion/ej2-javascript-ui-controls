@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps } from '../../index';
 import { ShapeSettingsModel, ColorMappingSettingsModel, ColorValue } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -28,7 +24,7 @@ export class ColorMapping {
     public getShapeColorMapping(shapeSettings: ShapeSettingsModel, layerData: any, color: string): any {
         const colorValuePath: string = shapeSettings.colorValuePath ? shapeSettings.colorValuePath : shapeSettings.valuePath;
         const equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
-            getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
+            getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath as string]) : layerData[colorValuePath as string];
         const colorValue: number = Number(equalValue);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shapeColor: any = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
@@ -36,13 +32,18 @@ export class ColorMapping {
     }
     /**
      * To color by value and color mapping
+     *
+     * @param {ColorMappingSettingsModel[]} colorMapping - Specifies the color mapping instance.
+     * @param {number} colorValue - Specifies the color value
+     * @param {string} equalValue - Specifies the equal value.
+     * @returns {any} - Returns the color mapping values.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public getColorByValue(colorMapping: ColorMappingSettingsModel[], colorValue: number, equalValue: string): any {
         if (isNaN(colorValue) && isNullOrUndefined(equalValue)) {
             return null;
         }
-        let fill: string = ''; let opacity: number; let gradientColor: string[]; let gradientFill: string;
+        let fill: string = ''; let opacity: number; let gradientFill: string;
         for (const colorMap of colorMapping) {
 
             if ((!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)
@@ -109,8 +110,8 @@ export class ColorMapping {
     public getGradientColor(value: number, colorMap: ColorMappingSettingsModel): ColorValue {
         const previousOffset: number = colorMap.from;
         const nextOffset: number = colorMap.to;
-        let percent: number = 0; let prev1: string;
-        const full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
+        let percent: number = 0;
+        const full: number = nextOffset - previousOffset; let midColor: string;
         percent = (value - previousOffset) / full; let previousColor: string; let nextColor: string;
         if (colorMap.color.length <= 2) {
             previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : this._colorNameToHex(colorMap.color[0]);
@@ -128,27 +129,27 @@ export class ColorMapping {
             for (let j: number = 1; j < length; j++) {
                 c = j * a;
                 b = previousOffset + c;
-                splitColor = { b: b, color: colorMap.color[j] };
+                splitColor = { b: b, color: colorMap.color[j as number] };
                 splitColorValueOffset.push(splitColor);
             }
             for (let i: number = 0; i < splitColorValueOffset.length; i++) {
-                if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
-                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                        splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
+                if (previousOffset <= value && value <= splitColorValueOffset[i as number]['b'] && i === 0) {
+                    midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i as number]['color'] : this._colorNameToHex(splitColorValueOffset[i as number]['color']);
                     nextColor = midColor;
-                    percent = value < splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
-                        : (value - splitColorValueOffset[i]['b']) / a;
-                } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
-                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                        splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
+                    percent = value < splitColorValueOffset[i as number]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i as number]['b']) / a)
+                        : (value - splitColorValueOffset[i as number]['b']) / a;
+                } else if (splitColorValueOffset[i as number]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
+                    midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i as number]['color'] : this._colorNameToHex(splitColorValueOffset[i as number]['color']);
                     previousColor = midColor;
-                    percent = value < splitColorValueOffset[i]['b'] ?
-                        1 - Math.abs((value - splitColorValueOffset[i]['b']) / a) : (value - splitColorValueOffset[i]['b']) / a;
+                    percent = value < splitColorValueOffset[i as number]['b'] ?
+                        1 - Math.abs((value - splitColorValueOffset[i as number]['b']) / a) : (value - splitColorValueOffset[i as number]['b']) / a;
                 }
                 if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
-                    if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
-                        midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                            splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
+                    if (splitColorValueOffset[i as number]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
+                        midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                            splitColorValueOffset[i as number]['color'] : this._colorNameToHex(splitColorValueOffset[i as number]['color']);
                         previousColor = midColor;
                         nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
                             splitColorValueOffset[i + 1]['color'] : this._colorNameToHex(splitColorValueOffset[i + 1]['color']);

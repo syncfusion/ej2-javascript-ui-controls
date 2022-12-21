@@ -52,64 +52,64 @@ export namespace Theme {
 export function getSeriesColor(theme: SmithchartTheme): string[] {
     let palette: string[];
     switch (theme.toLowerCase()) {
-        case 'fabric':
-            palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
-                '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
-            break;
-        case 'bootstrap4':
-            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
-                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
-            break;
-        case 'bootstrap':
-            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
-                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
-            break;
-        case 'highcontrastlight':
-        case 'highcontrast':
-            palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
-                '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
-            break;
-        case 'materialdark':
-            palette = ['#9ECB08', '#56AEFF', '#C57AFF', '#61EAA9', '#EBBB3E',
-                '#F45C5C', '#8A77FF', '#63C7FF', '#FF84B0', '#F7C928'];
-            break;
-        case 'fabricdark':
-            palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
-                '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
-            break;
-        case 'bootstrapdark':
-            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
-                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
-            break;
-        case 'tailwind':
-            palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
-                    '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
-            break;
-        case 'tailwinddark':
-            palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
-                        '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
-            break;
-        case 'bootstrap5':
-            palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-                        '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-            break;
-        case 'bootstrap5dark':
-            palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-                        '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
-            break;
-        case 'fluent':
-            palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
-                        '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
-            break;
-        case 'fluentdark':
-            palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
-                        '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
-            break;
-        default:
-            palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
-                '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
-            break;
-        }
+    case 'fabric':
+        palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
+            '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
+        break;
+    case 'bootstrap4':
+        palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+            '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+        break;
+    case 'bootstrap':
+        palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+            '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+        break;
+    case 'highcontrastlight':
+    case 'highcontrast':
+        palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
+            '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
+        break;
+    case 'materialdark':
+        palette = ['#9ECB08', '#56AEFF', '#C57AFF', '#61EAA9', '#EBBB3E',
+            '#F45C5C', '#8A77FF', '#63C7FF', '#FF84B0', '#F7C928'];
+        break;
+    case 'fabricdark':
+        palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
+            '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
+        break;
+    case 'bootstrapdark':
+        palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+            '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+        break;
+    case 'tailwind':
+        palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
+            '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
+        break;
+    case 'tailwinddark':
+        palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
+            '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
+        break;
+    case 'bootstrap5':
+        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+        break;
+    case 'bootstrap5dark':
+        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+        break;
+    case 'fluent':
+        palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+            '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+        break;
+    case 'fluentdark':
+        palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+            '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+        break;
+    default:
+        palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
+            '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
+        break;
+    }
     return palette;
 }
 

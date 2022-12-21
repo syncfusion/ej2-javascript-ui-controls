@@ -790,7 +790,7 @@ export class SpellChecker {
                 }
                 const currentElement: TextElementBox = (canCombine) ? element : elementBox;
 
-                if (currentElement.text !== '\f' && this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                if (currentElement.text !== '\f' && currentElement.text !== String.fromCharCode(14) && this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
                     return true;
                 }
             }

@@ -3701,6 +3701,7 @@ describe('Testing resize Events', () => {
 
     afterAll(() => {
         destroyDialog(dialog);
+        destroyDialog(dialog2);
         detach(resizeTarget);
     });
     it('Mouse events', (done) => {
@@ -3812,7 +3813,6 @@ describe('EJ2-62519-Provide the width and height property to the dialog utility'
 });
 
 describe('EJ2-62519-Provide the width and height property to the dialog utility', () => {
-
     let dialogObj: Dialog;
     beforeAll(() => {
         dialogObj = DialogUtility.confirm({
@@ -3856,7 +3856,43 @@ describe('EJ2-62999-In Dailog unique Id is not generated automatically when we d
         it(' check the id genarated or not ', () => {
             expect(dialogObj.element.hasAttribute('id')).toBe(true);
         });
-}); 
+});
+
+describe( 'BLAZ-25581- Resize is to odd and unable resize sometime in Dialog', () => {
+    let dialog: any;
+    let resizeTarget: any;
+    let defaultUserAgent = navigator.userAgent;
+    let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+    Browser.userAgent = androidUserAgent;
+    beforeAll( () => {
+        let ele: HTMLElement = createElement( 'div', { id: 'dialog1', styles: "background-color:red" } );
+        document.body.appendChild( ele );
+        dialog = new Dialog( {
+            header: 'Demo',
+            target: document.body,
+            content: 'First demo content', width: '300px', height: '300px',
+            enableResize: true,
+            resizeStart: function () { },
+            resizing: function () { },
+            resizeStop: function () { }
+        } );
+        dialog.appendTo( '#dialog1' );
+    } );
+
+    afterAll( () => {
+        destroyDialog( dialog );
+        Browser.userAgent = defaultUserAgent;
+    } );
+
+    it( 'Should add e-focused-handle CSS class after Touch start event called', () =>{
+        let evt: any = document.createEvent( 'UIEvent' );
+        evt.initUIEvent( 'touchstart', true, true );
+        document.querySelector( '.e-south-east' ).dispatchEvent( evt );
+        let resizeElem = document.body.querySelector( '.e-south-east' );
+        expect( resizeElem.classList.contains( 'e-focused-handle' ) ).toBe( true );
+    } );
+} );
 
 describe('EJ2-65299-DialogUtility position property is not working properly', () => {
     let dialogObj: Dialog;
@@ -3864,7 +3900,7 @@ describe('EJ2-65299-DialogUtility position property is not working properly', ()
          });
     beforeEach(()=>{
         document.body.appendChild(divElement);      
-
+      
             dialogObj = DialogUtility.confirm({
                 title: 'dialog Header!',
                 showCloseIcon: false,
@@ -3872,7 +3908,7 @@ describe('EJ2-65299-DialogUtility position property is not working properly', ()
                 okButton: { text: 'Okbtn' },
                 position: { X: 'right', Y: '100' },
             });
-
+        
         dialogObj.hide();
     });
     afterEach(() => {
@@ -3884,3 +3920,4 @@ describe('EJ2-65299-DialogUtility position property is not working properly', ()
     });
 
 });
+

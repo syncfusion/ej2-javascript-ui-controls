@@ -500,6 +500,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
+        this.tooltipEventArgs = null;
     }
     private closePopupHandler(): void {
         if ((this as any).isReact && !(this.opensOn === "Click" && typeof (this.content) === 'function')) {
@@ -507,6 +508,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.clear();
         this.trigger('afterClose', this.tooltipEventArgs);
+        this.tooltipEventArgs = null;
     }
     private calculateTooltipOffset(position: Position): OffsetPosition {
         const pos: OffsetPosition = { top: 0, left: 0 };
@@ -755,6 +757,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         for (const target of targetList) {
             this.restoreElement(target as HTMLElement);
         }
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
         this.showTooltip(target, this.animation.open, e);
     }
 
@@ -1058,6 +1061,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.isHidden = false;
             }
         });
+        this.tooltipEventArgs = null;
     }
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
         if (target) { this.restoreElement(target); }
@@ -1349,7 +1353,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.mouseTrail) {
             EventHandler.remove(target, 'mousemove touchstart mouseenter', this.onMouseMove);
         }
-        target.removeAttribute("tabindex");
     }
     private findTarget(): HTMLElement {
         const target: HTMLElement = select('[data-tooltip-id= "' + this.ctrlId + '_content"]', document) as HTMLElement;

@@ -455,8 +455,8 @@ export class FixedUserHandleTool extends ToolBase {
         let fixedUserHandle: NodeFixedUserHandleModel | ConnectorFixedUserHandleModel;
         const iconId: string = args.sourceWrapper.id;
         for (let i: number = 0; i < val.fixedUserHandles.length; i++) {
-            if (iconId.indexOf(val.fixedUserHandles[i].id) > -1) {
-                fixedUserHandle = val.fixedUserHandles[i];
+            if (iconId.indexOf(val.fixedUserHandles[parseInt(i.toString(), 10)].id) > -1) {
+                fixedUserHandle = val.fixedUserHandles[parseInt(i.toString(), 10)];
             }
         }
 
@@ -549,7 +549,7 @@ export class ConnectTool extends ToolBase {
         // Sets the selected segment
         if (this.endPoint === 'BezierSourceThumb' || this.endPoint === 'BezierTargetThumb') {
             for (let i: number = 0; i < connectors.segments.length; i++) {
-                const segment: BezierSegment = connectors.segments[i] as BezierSegment;
+                const segment: BezierSegment = connectors.segments[parseInt(i.toString(), 10)] as BezierSegment;
                 const segmentpoint1: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
                 const segmentpoint2: PointModel = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
                 if (contains(this.currentPosition, segmentpoint1, connectors.hitPadding) ||
@@ -575,16 +575,16 @@ export class ConnectTool extends ToolBase {
                 const nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                 const portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
                 this.tempArgs.oldValue = this.endPoint === 'ConnectorSourceEnd' ?
-                    { connectorSourceValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } } :
-                    { connectorTargetValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] } };
+                    { connectorSourceValue: { nodeId: this.oldConnector[`${nodeEndId}`], portId: this.oldConnector[`${portEndId}`] } } :
+                    { connectorTargetValue: { nodeId: this.oldConnector[`${nodeEndId}`], portId: this.oldConnector[`${portEndId}`] } };
                 temparg = {
                     state: this.tempArgs.state, oldValue: this.tempArgs.oldValue,
                     newValue: this.tempArgs.newValue, cancel: this.tempArgs.cancel, connectorEnd: this.tempArgs.connectorEnd
                 };
                 const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
-                if (window && window[blazor] && this.commandHandler[diagram].connectionChange) {
+                if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].connectionChange) {
                     const eventObj: object = { 'EventName': 'connectionChange', args: JSON.stringify(this.tempArgs) };
-                    temparg = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                    temparg = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
                 }
                 if (temparg) {
                     this.commandHandler.updateConnectorValue(temparg);
@@ -597,11 +597,11 @@ export class ConnectTool extends ToolBase {
             const portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
             const arg: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs = {
                 connector: cloneBlazorObject(connector),
-                oldValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] },
-                newValue: { nodeId: connector[nodeEndId], portId: connector[portEndId] }, cancel: false,
+                oldValue: { nodeId: this.oldConnector[`${nodeEndId}`], portId: this.oldConnector[`${portEndId}`] },
+                newValue: { nodeId: connector[`${nodeEndId}`], portId: connector[`${portEndId}`] }, cancel: false,
                 state: 'Changed', connectorEnd: this.endPoint
             };
-            if (connector[nodeEndId] !== this.oldConnector[nodeEndId]) {
+            if (connector[`${nodeEndId}`] !== this.oldConnector[`${nodeEndId}`]) {
                 this.commandHandler.triggerEvent(DiagramEvent.connectionChange, arg);
                 this.isConnected = false;
             }
@@ -664,6 +664,7 @@ export class ConnectTool extends ToolBase {
         }
         this.commandHandler.updateBlazorSelector();
         this.canCancel = undefined; this.tempArgs = undefined;
+        //(EJ2-66201) - Exception occurs when mouse-hover on ports in node
         if (args.source && (args.source as SelectorModel).connectors) {
         let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
         if ((connector as Connector).isBezierEditing) {
@@ -749,6 +750,7 @@ export class ConnectTool extends ToolBase {
                 inPort = getInOutConnectPorts((args.target as Node), true); outPort = getInOutConnectPorts((args.target as Node), false);
             }
             if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+                // EJ2-65331 - The condition checks whether the cancel argument is true or false
                 if(!arg.cancel){
                     this.blocked = !this.commandHandler.dragConnectorEnds(
                         this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
@@ -925,9 +927,9 @@ export class MoveTool extends ToolBase {
             };
             let blazorArgs: void | object;
             const diagram: string = 'diagram'; const blazorInterop: string = 'sfBlazor'; const blazor: string = 'Blazor';
-            if (window && window[blazor] && this.commandHandler[diagram].positionChange) {
+            if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].positionChange) {
                 const eventObj: object = { 'EventName': 'positionChange', args: JSON.stringify(arg) };
-                blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                blazorArgs = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
             }
             if (blazorArgs && (blazorArgs as IDraggingEventArgs).cancel) { this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true); this.canCancel = true; }
             if (this.canCancel) {
@@ -1031,7 +1033,7 @@ export class MoveTool extends ToolBase {
                     let isEndGroup: boolean = false;
                     let temp: boolean;
                     for (let i = 0; i < nodes.length; i++) {
-                        if ((nodes[0] as Node).parentId === (nodes[i] as Node).parentId) {
+                        if ((nodes[0] as Node).parentId === (nodes[parseInt(i.toString(), 10)] as Node).parentId) {
                             temp = true;
                         } else {
                             temp = false;
@@ -1039,11 +1041,11 @@ export class MoveTool extends ToolBase {
                         }
                     }
                     for (let i: number = 0; i < nodes.length; i++) {
-                        if (!nodes[i].container && temp) {
+                        if (!nodes[parseInt(i.toString(), 10)].container && temp) {
                             isEndGroup = true;
-                            this.commandHandler.updateLaneChildrenZindex(nodes[i] as Node,this.currentTarget);
-                            this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
-                            this.commandHandler.renderContainerHelper(nodes[i]);
+                            this.commandHandler.updateLaneChildrenZindex(nodes[parseInt(i.toString(), 10)] as Node,this.currentTarget);
+                            this.commandHandler.dropChildToContainer(this.currentTarget, nodes[parseInt(i.toString(), 10)]);
+                            this.commandHandler.renderContainerHelper(nodes[parseInt(i.toString(), 10)]);
                         }
                     }
                     if (historyAdded && this.commandHandler.isContainer && isEndGroup) {
@@ -1077,16 +1079,16 @@ export class MoveTool extends ToolBase {
         let selectedElement: any = arg.source;
         if (selectedElement instanceof Selector && selectedElement.nodes.length > 0) {
             for (let i: number = 0; i < selectedElement.nodes.length; i++) {
-                let node: NodeModel = selectedElement.nodes[i];
+                let node: NodeModel = selectedElement.nodes[parseInt(i.toString(), 10)];
                 if(node && (node as any).inEdges.length > 0) {
                     for (let j: number =0; j < (node as any).inEdges.length; j++) {
-                        let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).inEdges[j]);
+                        let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).inEdges[parseInt(j.toString(), 10)]);
                         this.triggerEndPointEvent(connector, arg, snappedPoint, 'targetPointChange');
                     }
                 }
                 if(node && (node as any).outEdges.length > 0) {
                     for (let j: number =0; j < (node as any).outEdges.length; j++) {
-                        let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).outEdges[j]);
+                        let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).outEdges[parseInt(j.toString(), 10)]);
                         this.triggerEndPointEvent(connector, arg, snappedPoint, 'sourcePointChange');
                     }
                 }
@@ -1291,8 +1293,8 @@ export class RotateTool extends ToolBase {
             const objects: (NodeModel | ConnectorModel)[] = [];
             const nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], objects);
             for (let i: number = 0; i < nodes.length; i++) {
-                const node: NodeModel = this.commandHandler.cloneChild(nodes[i].id);
-                this.childTable[nodes[i].id] = cloneObject(node);
+                const node: NodeModel = this.commandHandler.cloneChild(nodes[parseInt(i.toString(), 10)].id);
+                this.childTable[nodes[parseInt(i.toString(), 10)].id] = cloneObject(node);
             }
         }
 
@@ -1317,9 +1319,9 @@ export class RotateTool extends ToolBase {
                 state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
             };
             let blazorArgs: void | object;
-            if (window && window[blazor] && this.commandHandler[diagram].rotateChange) {
+            if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].rotateChange) {
                 const eventObj: object = { 'EventName': 'rotateChange', args: JSON.stringify(arg) };
-                blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                blazorArgs = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
             }
             if (blazorArgs && (blazorArgs as IRotationEventArgs).cancel) {
                 this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true);
@@ -1481,8 +1483,8 @@ export class ResizeTool extends ToolBase {
             const elements: (NodeModel | ConnectorModel)[] = [];
             const nodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getAllDescendants(this.undoElement.nodes[0], elements);
             for (let i: number = 0; i < nodes.length; i++) {
-                const node: NodeModel = this.commandHandler.cloneChild(nodes[i].id);
-                this.childTable[nodes[i].id] = cloneObject(node);
+                const node: NodeModel = this.commandHandler.cloneChild(nodes[parseInt(i.toString(), 10)].id);
+                this.childTable[nodes[parseInt(i.toString(), 10)].id] = cloneObject(node);
             }
         }
         this.commandHandler.checkSelection((args.source as Selector), this.corner);
@@ -1516,9 +1518,9 @@ export class ResizeTool extends ToolBase {
             };
             if (!this.canCancel) {
                 let blazorArgs: void | object;
-                if (window && window[blazor] && this.commandHandler[diagram].sizeChange) {
+                if (window && window[`${blazor}`] && this.commandHandler[`${diagram}`].sizeChange) {
                     const eventObj: object = { 'EventName': 'sizeChange', args: JSON.stringify(arg) };
-                    blazorArgs = await window[blazorInterop].updateBlazorDiagramEvents(eventObj, this.commandHandler[diagram]);
+                    blazorArgs = await window[`${blazorInterop}`].updateBlazorDiagramEvents(eventObj, this.commandHandler[`${diagram}`]);
                 }
                 if (blazorArgs && (blazorArgs as ISizeChangeEventArgs).cancel) {
                     this.commandHandler.enableCloneObject(true); this.commandHandler.ismouseEvents(true);
@@ -2118,6 +2120,7 @@ export class LabelTool extends ToolBase {
         { 
             windowOption = 'height='+windowHeight+',width='+windowWidth+',top='+screenTop+',left='+screenLeft;  
         }
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
         const win: Window = window.open((args.sourceWrapper as TextElement).hyperlink.link,tab,windowOption);
         win.focus();
         super.mouseUp(args);
@@ -2590,7 +2593,7 @@ export class FreeHandTool extends ToolBase {
                 let points = (obj as BasicShapeModel).points;
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
                 let prevId:string = this.drawingObject.id;
-                let prevObj = this.commandHandler.diagram.nameTable[prevId];
+                let prevObj = this.commandHandler.diagram.nameTable[`${prevId}`];
                 this.commandHandler.diagram.remove(prevObj);
                 points = this.pointReduction(points,tolerance);
                 const newObj: ConnectorModel = {
@@ -2624,7 +2627,7 @@ export class FreeHandTool extends ToolBase {
         pointIndex.push(firstPoint);
         pointIndex.push(lastPoint);
        
-        while(points[firstPoint]===(points[lastPoint]))
+        while(points[parseInt(firstPoint.toString(), 10)]===(points[parseInt(lastPoint.toString(), 10)]))
         {
             lastPoint--;
         }
@@ -2632,7 +2635,7 @@ export class FreeHandTool extends ToolBase {
         let returnedPoints:PointModel[]=[];
         pointIndex.sort(function(a, b){return a-b});
         pointIndex.forEach(element => {
-        returnedPoints.push(points[element]);
+        returnedPoints.push(points[parseInt(element.toString(), 10)]);
        });
        return returnedPoints;
     }
@@ -2643,7 +2646,7 @@ export class FreeHandTool extends ToolBase {
         let largestPointIndex:number = 0;
         for(let i:number = firstPoint; i < lastPoint; i++)
         {
-            let distance:number = this.perpendicularDistance(points[firstPoint] as Point,points[lastPoint] as Point,points[i] as Point);
+            let distance:number = this.perpendicularDistance(points[parseInt(firstPoint.toString(), 10)] as Point,points[parseInt(lastPoint.toString(), 10)] as Point,points[parseInt(i.toString(), 10)] as Point);
             if (distance > maxDistance)
                 {
                     maxDistance = distance;
@@ -2688,15 +2691,15 @@ export class FreeHandTool extends ToolBase {
         };
         for(let i:number = 0; i<points.length - 1 ; i++)
         {
-            let pointx1:number = points[i].x;
-            let pointy1:number = points[i].y;
+            let pointx1:number = points[parseInt(i.toString(), 10)].x;
+            let pointy1:number = points[parseInt(i.toString(), 10)].y;
             let pointx2:number = points[i + 1].x;
             let pointy2:number = points[i + 1].y;
             let pointx0:number;
             let pointy0:number;
             if (i === 0)
             {
-                var previousPoint = points[i];
+                var previousPoint = points[parseInt(i.toString(), 10)];
                 pointx0 = previousPoint.x;
                 pointy0 = previousPoint.y;
             }
@@ -2749,16 +2752,16 @@ export class FreeHandTool extends ToolBase {
             let segTargetPoint:PointModel = {x:pointx2,y:pointy2};
 
             segment.type = 'Bezier';
-            (drawingObject as Connector).segments[i] = segment;
+            (drawingObject as Connector).segments[parseInt(i.toString(), 10)] = segment;
             if(i=== 0){
                 cnPt1 = {x:pointx1,y:pointy1}
             };
             if(i === points.length-2){
                 cnPt2 = {x:pointx2,y:pointy2}
             };
-            ((drawingObject as Connector).segments[i] as BezierSegment).vector1 = {angle:findAngle(segSourcePoint,cnPt1),distance:Point.findLength(segSourcePoint,cnPt1)};
-            ((drawingObject as Connector).segments[i] as BezierSegment).vector2 = {angle:findAngle(segTargetPoint,cnPt2),distance:Point.findLength(segTargetPoint,cnPt2)};
-            ((drawingObject as Connector).segments[i] as BezierSegment).point = segTargetPoint;
+            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).vector1 = {angle:findAngle(segSourcePoint,cnPt1),distance:Point.findLength(segSourcePoint,cnPt1)};
+            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).vector2 = {angle:findAngle(segTargetPoint,cnPt2),distance:Point.findLength(segTargetPoint,cnPt2)};
+            ((drawingObject as Connector).segments[parseInt(i.toString(), 10)] as BezierSegment).point = segTargetPoint;
         }
         return drawingObject;   
     }

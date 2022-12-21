@@ -111,8 +111,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                 const foreignColumn: Column[] = this.parent.getForeignKeyColumns();
                 for (let index: number = 0; index < this.parent.columns.length; index++) {
                     for (let count: number = 0; count < this.parent.filterSettings.columns.length; count++) {
-                        if (this.parent.filterSettings.columns[count].field === column.field || (foreignColumn.length
-                            && column.foreignKeyValue === this.parent.filterSettings.columns[count].field)) {
+                        if (this.parent.filterSettings.columns[parseInt(count.toString(), 10)].field === column.field
+                            || (foreignColumn.length
+                            && column.foreignKeyValue === this.parent.filterSettings.columns[parseInt(count.toString(), 10)].field)) {
                             fltrMenuEle.classList.add('e-filtered');
                             matchFlColumns.push(column.field);
                             break;
@@ -158,11 +159,11 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                 const copied: Object = { 'index': colIndex };
                 node.firstElementChild.innerHTML = '';
                 column.getHeaderTemplate()(
-                    extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], null, node.firstElementChild);
+                    extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[`${str}`], null, node.firstElementChild);
                 this.parent.renderTemplates();
             } else {
                 result = column.getHeaderTemplate()(
-                    extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], undefined, undefined, this.parent['root']);
+                    extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
                 node.firstElementChild.innerHTML = '';
                 appendChildren(node.firstElementChild, result);
             }
@@ -189,7 +190,20 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
         node.setAttribute('aria-rowspan', (!isNullOrUndefined(cell.rowSpan) ? cell.rowSpan : 1).toString());
         node.setAttribute('aria-colspan', '1');
-        this.parent.trigger(headerCellInfo, {cell, node});
+        const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+            this.parent.parentDetails.parentInstObj.isReact;
+        if (((this.parent.isReact && this.parent.requireTemplateRef)
+            || (isReactChild && this.parent.parentDetails.parentInstObj.requireTemplateRef))
+            && !isNullOrUndefined(column.headerTemplate)) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const thisRef: HeaderCellRenderer = this;
+            thisRef.parent.renderTemplates(function(): void {
+                thisRef.parent.trigger(headerCellInfo, {cell, node});
+            });
+        }
+        else {
+            this.parent.trigger(headerCellInfo, {cell, node});
+        }
         return node;
     }
 
@@ -204,7 +218,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             if (this.parent.filterSettings.columns.length && this.parent.filterSettings.columns.length !== matchFilteredColumns.length) {
                 for (let i: number = 0; i < this.parent.columns.length; i++) {
                     for (let j: number = 0; j < this.parent.filterSettings.columns.length; j++) {
-                        if (this.parent.filterSettings.columns[j].field === column.field) {
+                        if (this.parent.filterSettings.columns[parseInt(j.toString(), 10)].field === column.field) {
                             element.classList.add('e-filtered');
                             matchFilteredColumns.push(column.field);
                             break;

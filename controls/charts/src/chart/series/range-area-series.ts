@@ -13,6 +13,8 @@ import { Axis } from '../axis/axis';
  */
 
 export class RangeAreaSeries extends LineBase {
+
+    public borderDirection : string ='';
     /**
      * Render RangeArea Series.
      *
@@ -24,11 +26,13 @@ export class RangeAreaSeries extends LineBase {
         let direction: string = '';
         let command: string = 'M';
         let closed: boolean = undefined;
+        const borderWidth: number = series.border.width ? series.border.width : 0;
+        const borderColor: string = series.border.color ? series.border.color : series.interior;
 
         const visiblePoints: Points[] = this.enableComplexProperty(series);
 
         for (let i: number = 0, length: number = visiblePoints.length; i < length; i++) {
-            point = visiblePoints[i];
+            point = visiblePoints[i as number];
             point.symbolLocations = [];
             point.regions = [];
 
@@ -61,6 +65,7 @@ export class RangeAreaSeries extends LineBase {
             //Path to connect the high points
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 direction = direction.concat(command + ' ' + (lowPoint.x) + ' ' + (lowPoint.y) + ' ');
+                this.borderDirection += (command + ' ' + (lowPoint.x) + ' ' + (lowPoint.y) + ' ');
                 closed = false;
 
                 if ((i + 1 < visiblePoints.length && !visiblePoints[i + 1].visible)
@@ -86,8 +91,23 @@ export class RangeAreaSeries extends LineBase {
 
         const options: PathOption = new PathOption(
             name, series.interior,
-            series.border.width, series.border.color, series.opacity, series.dashArray, direction);
+            0, 'transparent', series.opacity, series.dashArray, direction);
         this.appendLinePath(options, series, '');
+
+        /**
+         * To draw border for the path directions of area
+         */
+         if (series.border.width !== 0) {
+            this.appendLinePath(
+                new PathOption(
+                    series.chart.element.id + '_Series_border_' + series.index, 'transparent',
+                    borderWidth, borderColor, 1, series.dashArray,
+                    this.borderDirection
+                ),
+                series, ''
+            );
+            this.borderDirection = '';
+        }
         this.renderMarker(series);
     }
 
@@ -101,9 +121,10 @@ export class RangeAreaSeries extends LineBase {
     protected closeRangeAreaPath(
         visiblePoints: Points[], point: Points, series: Series, direction: string, i: number): string {
         for (let j: number = i; j >= 0; j--) {
-            if (visiblePoints[j].visible && visiblePoints[j].symbolLocations[0]) {
-                point = visiblePoints[j];
+            if (visiblePoints[j as number].visible && visiblePoints[j as number].symbolLocations[0]) {
+                point = visiblePoints[j as number];
                 direction += 'L' + ' ' + (point.symbolLocations[0].x) + ' ' + ((point.symbolLocations[0].y)) + ' ';
+                this.borderDirection += (j === i ? 'M' : "L") + ' ' + (point.symbolLocations[0].x) + ' ' + ((point.symbolLocations[0].y)) + ' ';
             } else {
                 break;
             }

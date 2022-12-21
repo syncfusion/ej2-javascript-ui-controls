@@ -64,16 +64,16 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         options.date = options.number;
         options.datetime = options.number;
         const model: MenuItemModel[] = [];
-        for (let i: number = 0; i < options[type].length; i++) {
-            if (options[type][i].length) {
+        for (let i: number = 0; i < options[`${type}`].length; i++) {
+            if (options[`${type}`][parseInt(i.toString(), 10)].length) {
                 if (operator) {
                     model.push({
-                        text: this.getLocalizedLabel(options[type][i]) + '...',
-                        iconCss: 'e-icons e-icon-check ' + (operator === options[type][i].toLowerCase() ? '' : 'e-emptyicon')
+                        text: this.getLocalizedLabel(options[`${type}`][parseInt(i.toString(), 10)]) + '...',
+                        iconCss: 'e-icons e-icon-check ' + (operator === options[`${type}`][parseInt(i.toString(), 10)].toLowerCase() ? '' : 'e-emptyicon')
                     });
                 } else {
                     model.push({
-                        text: this.getLocalizedLabel(options[type][i]) + '...'
+                        text: this.getLocalizedLabel(options[`${type}`][parseInt(i.toString(), 10)]) + '...'
                     });
                 }
             } else {
@@ -139,7 +139,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         if (type !== 'boolean') {
             ul.appendChild(this.createMenuElem(
-                this.getLocalizedLabel(options[type]), 'e-submenu',
+                this.getLocalizedLabel(options[`${type}`]), 'e-submenu',
                 isCheckIcon && this.ensureTextFilter() ? 'e-icon-check' : icon + ' e-emptyicon', true));
         }
         this.menu.appendChild(ul);
@@ -150,7 +150,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private createMenuElem(val: string, className?: string, iconName?: string, isSubMenu?: boolean): Element {
         const li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
         li.innerHTML = val;
-        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName, attrs:{ 'aria-hidden': 'true' } }), li.firstChild);
+        li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName, attrs: { 'aria-hidden': 'true' } }), li.firstChild);
         if (isSubMenu) {
             li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
         }
@@ -237,7 +237,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 const content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
                 const height: number = content.offsetHeight + 4;
                 this.menuObj.element.style.height = 'calc(100% - ' + height + 'px)';
-                this.menuObj.open(height, 0, document.body);
+                this.menuObj['open'](height, 0, document.body);
                 const header: string = this.getLocalizedLabel(options[this.options.type]);
                 this.parent.notify(events.renderResponsiveCmenu, {
                     target: this.menuObj.element.parentElement, header: header, isOpen: true
@@ -254,7 +254,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                     pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
                     pos.left = this.getCMenuYPosition(this.dlg);
                 }
-                this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);
+                this.menuObj['open'](pos.top, pos.left, e.target as HTMLElement);
             }
             applyBiggerTheme(this.parent.element, this.menuObj.element.parentElement);
         }
@@ -406,7 +406,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         const isStringTemplate: string = 'isStringTemplate';
-        this.dlgObj[isStringTemplate] = true;
+        this.dlgObj[`${isStringTemplate}`] = true;
         this.renderResponsiveDialog();
         this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
         this.childRefs.push(this.dlgObj);
@@ -555,8 +555,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 value: secondValue,
                 type: this.options.type
             });
-            // eslint-disable-next-line max-len
-            mPredicate = (mPredicate as Object)[predicate](field, secondOperator.toLowerCase(), secondValue as string, !matchCase, ignoreAccent);
+            mPredicate = (mPredicate as Object)[`${predicate}`](field, secondOperator.toLowerCase(), secondValue as string, !matchCase, ignoreAccent);
         }
         const args: Object = {
             action: 'filtering', filterCollection: fColl, field: this.options.field,
@@ -588,7 +587,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         optrDiv.appendChild(optrInput);
         xlfloptr.appendChild(optrDiv);
         const optr: string = this.options.type + 'Operator';
-        const dropDatasource: { [key: string]: Object }[] = this.customFilterOperators[optr];
+        const dropDatasource: { [key: string]: Object }[] = this.customFilterOperators[`${optr}`];
         this.optrData = dropDatasource;
         let selectedValue: string = this.dropSelectedVal(this.options.column as Column, predicates, isFirst);
 
@@ -616,7 +615,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.childRefs.push(dropOptr);
         const evt: object = { 'open': this.dropDownOpen.bind(this), 'change': this.dropDownValueChange.bind(this) };
         registerEventHandlers(optrInput.id, [literals.open, literals.change], evt, this);
-        dropOptr.addEventListener(literals.open, this.eventHandlers[optrInput.id][literals.open]);
+        dropOptr.addEventListener(literals['open'], this.eventHandlers[optrInput.id][literals.open]);
         dropOptr.addEventListener(literals.change, this.eventHandlers[optrInput.id][literals.change]);
         dropOptr.appendTo(optrInput);
         const operator: string = this.getSelectedValue(selectedValue);
@@ -676,7 +675,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private renderFilterUI(column: string, dlgConetntEle: Element): void {
-        const predicates: PredicateModel[] = this.existingPredicate[column];
+        const predicates: PredicateModel[] = this.existingPredicate[`${column}`];
         const table: HTMLElement = this.parent.createElement('table', { className: 'e-xlfl-table', attrs: { role: 'grid' } });
         dlgConetntEle.appendChild(table);
 
@@ -792,6 +791,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.parent as any).parentDetails.parentInstObj.isReact;
             const tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
             if (isReactCompiler || isReactChild) {
@@ -839,13 +839,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         predicates?: PredicateModel[], fltrPredicates?: Object[]): Object {
         const predIndex: number = elementId === '-xlfl-frstvalue' ? 0 : 1;
         if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
-            data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
+            data = { column: predicates instanceof Array ? predicates[parseInt(predIndex.toString(), 10)] : predicates };
             const indx: number = this.options.column.columnData && fltrPredicates.length > 1 ?
                 (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
-            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
-                ((<HTMLInputElement>fltrPredicates[indx]) as { value?: string | boolean | Date }).value;
+            data[this.options.field] = columnObj.foreignKeyValue ?
+                this.options.column.columnData[parseInt(indx.toString(), 10)][columnObj.foreignKeyValue] :
+                ((<HTMLInputElement>fltrPredicates[parseInt(indx.toString(), 10)]) as { value?: string | boolean | Date }).value;
             if (this.options.foreignKeyValue) {
-                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
+                data[this.options.foreignKeyValue] = this.options.column
+                    .columnData[parseInt(indx.toString(), 10)][columnObj.foreignKeyValue];
             }
         }
         return data;

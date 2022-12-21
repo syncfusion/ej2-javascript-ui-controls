@@ -115,7 +115,7 @@ export function removeChildInContainer(
     let container: NodeModel; //let connectorList: string[] = [];
     if (checkParentAsContainer(diagram, obj, true)) {
         const isProtectedOnChange: string = 'isProtectedOnChange';
-        const propertyChangeValue: boolean = diagram[isProtectedOnChange];
+        const propertyChangeValue: boolean = diagram[`${isProtectedOnChange}`];
         diagram.protectPropertyChange(true);
         container = diagram.nameTable[(obj as Node).parentId];
         const wrapper: Canvas = container.wrapper as Canvas;
@@ -162,7 +162,7 @@ export function findBounds(obj: NodeModel, columnIndex: number, isHeader: boolea
     const rows: GridRow[] = ((obj as Node).shape.type === 'SwimLane') ?
         (obj.wrapper.children[0] as GridPanel).rows : (obj.wrapper as GridPanel).rows;
     for (let i: number = ((isHeader) ? 1 : 0); i < rows.length; i++) {
-        rect.uniteRect(rows[i].cells[columnIndex].bounds);
+        rect.uniteRect(rows[parseInt(i.toString(), 10)].cells[parseInt(columnIndex.toString(), 10)].bounds);
     }
     return rect;
 }
@@ -179,7 +179,7 @@ export function createHelper(diagram: Diagram, obj: Node): Node {
     let newObj: Node;
     const cloneObject: Node | Connector = {} as Node | Connector;
     for (const prop of Object.keys(obj)) {
-        cloneObject[prop] = obj[prop];
+        cloneObject[`${prop}`] = obj[`${prop}`];
     }
     if (getObjectType(obj) === Node) {
         newObj = new Node(diagram, 'nodes', cloneObject, true);
@@ -301,10 +301,10 @@ function removeChildrenInLane(diagram: Diagram, node: NodeModel): void {
             const prevParentId: string = canvasId.substring(0, canvasId.length - 1);
             const lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes; let lane: LaneModel;
             for (let i: number = 0; i < lanes.length; i++) {
-                lane = lanes[i];
+                lane = lanes[parseInt(i.toString(), 10)];
                 if (prevParentId === lane.id) {
                     for (let j: number = 0; j < lane.children.length; j++) {
-                        if (lane.children[j].id === node.id) {
+                        if (lane.children[parseInt(j.toString(), 10)].id === node.id) {
                             lane.children.splice(j, 1);
                             j--;
                         }
@@ -346,7 +346,7 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
                 node.margin.left -= parentBounds.x - swimLaneBounds.x;
             } else {
                 const laneHeaderId: string = (parent as Node).parentId + (swimlane.shape as SwimLane).lanes[0].id + '_0_header';
-                node.margin.top -= parentBounds.y - swimLaneBounds.y - diagram.nameTable[laneHeaderId].wrapper.bounds.height;
+                node.margin.top -= parentBounds.y - swimLaneBounds.y - diagram.nameTable[`${laneHeaderId}`].wrapper.bounds.height;
             }
         }
         const container: NodeModel = diagram.nameTable[parent.id];
@@ -363,21 +363,21 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
             if ((container as Node).isLane && (container as Node).parentId) {
                 swimlane = diagram.nameTable[(container as Node).parentId];
                 // EJ2-63939 - Check whether the lane child is BPMN text node or not
-                if(node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
+                if (node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
                     (swimlane as Node).isTextNode = true;
                 }
                 const lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes;
                 const canvasId: string = (container.id.slice(swimlane.id.length));
                 const currentParentId: string = canvasId.substring(0, canvasId.length - 1);
                 for (let i: number = 0; i < lanes.length; i++) {
-                    if ((container as Node).isLane && currentParentId === lanes[i].id) {
+                    if ((container as Node).isLane && currentParentId === lanes[parseInt(i.toString(), 10)].id) {
                         // eslint-disable-next-line
                         if (!((node as any).parentObj instanceof Diagram)) {
                             // eslint-disable-next-line
-                            (node as any).parentObj = lanes[i];
+                            (node as any).parentObj = lanes[parseInt(i.toString(), 10)];
                         }
                         if (!diagram.nameTable.hasOwnProperty(node.id)) {
-                            lanes[i].children.push(node);
+                            lanes[parseInt(i.toString(), 10)].children.push(node);
                         }
                     }
                 }
@@ -535,10 +535,9 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
 // To set the parentObj and propName while removing child from lane.
 /** @private */
 export interface LaneChildrenState {
-    parentObj:object;
-    propName:string;
+    parentObj: object;
+    propName: string;
 }
-
 //#end region
 
 //# region Swimlane rendering

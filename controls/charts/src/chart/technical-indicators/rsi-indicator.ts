@@ -49,10 +49,10 @@ export class RsiIndicator extends TechnicalAnalysis {
             if (indicator.showZones) {
                 for (let i: number = 0; i < validData.length; i++) {
                     upperCollection.push(this.getDataPoint(
-                        validData[i].x, indicator.overBought, validData[i], indicator.targetSeries[1],
+                        validData[i as number].x, indicator.overBought, validData[i as number], indicator.targetSeries[1],
                         upperCollection.length));
                     lowerCollection.push(this.getDataPoint(
-                        validData[i].x, indicator.overSold, validData[i], indicator.targetSeries[2],
+                        validData[i as number].x, indicator.overSold, validData[i as number], indicator.targetSeries[2],
                         lowerCollection.length));
                 }
             }
@@ -61,7 +61,7 @@ export class RsiIndicator extends TechnicalAnalysis {
             let gain: number = 0;
             let loss: number = 0;
             for (let i: number = 1; i <= indicator.period; i++) {
-                const close: number = Number(validData[i].close);
+                const close: number = Number(validData[i as number].close);
                 if (close > prevClose) {
                     gain += close - prevClose;
                 } else {
@@ -77,7 +77,7 @@ export class RsiIndicator extends TechnicalAnalysis {
                 signalSeries, signalCollection.length));
 
             for (let j: number = indicator.period + 1; j < validData.length; j++) {
-                const close: number = Number(validData[j].close);
+                const close: number = Number(validData[j as number].close);
                 if (close > prevClose) {
                     gain = (gain * (indicator.period - 1) + (close - prevClose)) / indicator.period;
                     loss = (loss * (indicator.period - 1)) / indicator.period;
@@ -87,7 +87,7 @@ export class RsiIndicator extends TechnicalAnalysis {
                 }
                 prevClose = close;
                 signalCollection.push(this.getDataPoint(
-                    validData[j].x, 100 - (100 / (1 + gain / loss)), validData[j], signalSeries,
+                    validData[j as number].x, 100 - (100 / (1 + gain / loss)), validData[j as number], signalSeries,
                     signalCollection.length));
             }
         }

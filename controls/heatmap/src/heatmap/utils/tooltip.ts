@@ -197,16 +197,16 @@ export class Tooltip {
         const position: string = 'absolute';
         const top: number = heatMap.enableCanvasRendering && heatMap.allowSelection ? heatMap.availableSize.height : 0;
         const element2: Element = <HTMLElement>createElement('div', {
-            id: this.heatMap.element.id + 'Celltooltipcontainer',
-            styles: 'position:' + position + '; z-index: 3;top:-' + top + 'px'
+            id: this.heatMap.element.id + 'Celltooltipcontainer'
         });
-        this.heatMap.element.appendChild(
-            createElement(
-                'div', {
-                    id: this.heatMap.element.id + 'Celltooltipparent',
-                    styles: 'position:relative'
-                })
-                .appendChild(element2));
+        (element2 as HTMLElement).style.cssText = 'position:' + position + '; z-index: 3;top:-' + top + 'px';
+        const tooltipElement: Element = <HTMLElement>createElement(
+            'div', {
+                id: this.heatMap.element.id + 'Celltooltipparent'
+            });
+        (tooltipElement as HTMLElement).style.position = 'relative';
+        tooltipElement.appendChild(element2);
+        this.heatMap.element.appendChild(tooltipElement);
     }
 
     /**

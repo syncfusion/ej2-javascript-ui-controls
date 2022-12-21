@@ -726,14 +726,14 @@ function beforeExtOpen(parent: IFileManager, dlgName: string, args: BeforeOpenEv
  */
 function preventKeydown(btnElement: HTMLInputElement[]): void {
     for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
-        btnElement[btnCount].onkeydown = (e: KeyboardEvent) => {
+        btnElement[btnCount as number].onkeydown = (e: KeyboardEvent) => {
             if (e.keyCode === 13) {
                 e.preventDefault();
             }
         };
-        btnElement[btnCount].onkeyup = (e: KeyboardEvent) => {
+        btnElement[btnCount as number].onkeyup = (e: KeyboardEvent) => {
             if (e.keyCode === 13) {
-                btnElement[btnCount].click();
+                btnElement[btnCount as number].click();
             }
         };
     }
@@ -752,7 +752,7 @@ function getFilesName(data: SelectedEventArgs): HTMLElement {
     const filesData: FileInfo[] = data.isModified ? data.modifiedFilesData : data.filesData;
     for (let fileCount: number = 0; fileCount < filesData.length; fileCount++) {
         const liElement: HTMLElement = createElement('li', { className: 'dialogFiles' });
-        liElement.innerHTML = filesData[fileCount].name;
+        liElement.innerHTML = filesData[fileCount as number].name;
         ulElement.appendChild(liElement);
     }
     parent.appendChild(ulElement);

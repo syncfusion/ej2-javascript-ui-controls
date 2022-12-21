@@ -1,72 +1,72 @@
 [![coverage](http://ej2.syncfusion.com/badges/ej2-querybuilder/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-querybuilder)
 
-# ej2-querybuilder
+# JavaScript Query Builder Control (JavaScript Filter Control)
 
-[JavaScript Query Builder](https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) is a rich and responsive UI for filtering large amounts of data by creating or editing conditions that can be combined with data visualization controls like DataGrid and Charts to view the filtered data. It outputs structured JSON filters that can be easily parsed to create SQL queries. It allows you to create conditions and group them using AND/OR logic.
+The [JavaScript Query Builder](https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) control is a rich and responsive UI for filtering large amounts of data by creating or editing conditions that can be combined with data visualization controls like DataGrid and Charts to view the filtered data. It outputs structured JSON that can be easily parsed to create SQL queries. It allows you to create conditions and group them using AND/OR logic.
 
-![QueryBuilder](https://ej2.syncfusion.com/products/images/querybuilder/readme.gif)
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/query-builder/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm">Getting started</a> . 
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm#/material/query-builder/default.html">Online demos</a> . 
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm">Learn more</a>
+</p>
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA (https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here (https://www.syncfusion.com/account/manage-trials/start-trials).
+![JavaScript Query Builder Control](https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-query-builder.png)
 
-> A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+<p align="center">
+Trusted by the world's leading companies
+  <a href="https://www.syncfusion.com">
+    <img src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/syncfusion/syncfusion-trusted-companies.webp" alt="Bootstrap logo">
+  </a>
+</p>
 
 ## Setup
 
-To install `QueryBuilder` and its dependent packages, use the following command
+To install Query Builder and its dependent packages, use the following command.
 
 ```sh
 npm install @syncfusion/ej2-querybuilder
 ```
 
-## Components included
+## Supported frameworks
 
-Following list of components are available in the package.
+Query Builder control is also offered in the following list of frameworks.
 
-* QueryBuilder - `QueryBuilder` Query Builder component is a graphical user interface that allows users to create and edit filters. It outputs a structured JSON of filters that can be easily parsed to create SQL. It is integrated with Data Manager to communicate with data sources and returns the desired result based on the provided filter. It supports data binding, templates, validation, and horizontal and vertical orientation.
-   * [Getting Started](https://ej2.syncfusion.com/documentation/query-builder/getting-started?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
-    * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm#/material/querybuilder/default)
-    * [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
+| [<img src="https://ej2.syncfusion.com/github/images/angular.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| :-----: | :-----: | :-----: | :-----: | :-----: |
 
-## Supported Frameworks
+## Key features
 
-These components are available in following list of frameworks.
-1. [Angular Query Builder](https://www.syncfusion.com/angular-ui-components/angular-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
-2. [React Query Builder](https://www.syncfusion.com/react-ui-components/react-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
-3. [Vue Query Builder]([React Query Builder](https://www.syncfusion.com/vue-ui-components/vue-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm))
-4. [JavaScript Query Builder (ES5)](https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
-5. [ASP.NET Core Query Builder](https://www.syncfusion.com/aspnet-core-ui-controls/query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
-6. [ASP.NET MVC Query Builder](https://www.syncfusion.com/aspnet-mvc-ui-controls/query-builder?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
-
-## Showcase samples
-
-* Expense Tracker ([Source](https://github.com/syncfusion/ej2-showcase-ts-expensetracker), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/expensetracker/?utm_source=npm&utm_campaign=button#/dashboard))
-* Loan Calculator ([Source](https://github.com/syncfusion/ej2-showcase-ts-loancalculator), [Live Demo](https://ej2.syncfusion.com/showcase/typescript/loancalculator/?utm_source=npm&utm_campaign=button))
-
-
-## Key Features
-
-### QueryBuilder
-
-- **Data binding**: It auto populates the data source and maps the data to the appropriate fields.
-
-- **Template**: Supports templates and it is applicable for all input components.
-
-- **Queries**: Queries supports JSON/SQL rules.
+* [Data Sources](https://ej2.syncfusion.com/documentation/query-builder/data-binding): The Query Builder can be bound to a variety of data sources, including arrays of JSON objects, complex data structures such as nested objects or arrays, and Data Manager. This allows users to filter data from a wide range of sources.
+* [Template](https://ej2.syncfusion.com/documentation/query-builder/templates): The Query Builder offers templates that allow users to create custom user experiences by customizing the user interface for individual values, the entire rule, and the group header. This allows users to tailor the Query Builder to their specific needs and preferences.
+* [Importing and Exporting](https://ej2.syncfusion.com/documentation/query-builder/import-export): The Query Builder allows users to export filters or conditions as SQL and structured JSON, and to import these filters into the Query Builder for regeneration. This makes it easy for users to save and share their filters with others.
+* [Model Binding](https://ej2.syncfusion.com/documentation/query-builder/model-binding):  The Query Builder allows users to bind properties for the components used in the field, operator, and value user interfaces, allowing users to define the behavior and appearance of these components.
+* [RTL support](https://ej2.syncfusion.com/documentation/query-builder/how-to/rtl): The Query Builder supports RTL (right-to-left) mode, which aligns content from right to left. This is useful for languages that are written in a right-to-left script, such as Arabic.
+* [Localization](https://ej2.syncfusion.com/documentation/query-builder/global-local): The Query Builder provides inherent support for localization, allowing users to easily translate the user interface into different languages. This makes the Query Builder more accessible to users who speak languages other than English.
+* Rich and responsive UI: The Query Builder provides a user-friendly interface for creating and editing conditions, making it easy for users to filter large amounts of data.
+* AND/OR logic: The Query Builder allows users to group conditions using AND/OR logic, giving them greater control over the filtered data.
+* Integration with data visualization controls: The Query Builder can be used in conjunction with data visualization controls like DataGrid and Charts to view the filtered data, providing a more comprehensive view of the data.
+* Easy to use: The Query Builder is easy to use and can be easily integrated into any project, making it a convenient and powerful tool for filtering data.
 
 ## Support
 
-Product support is available for through following mediums.
+Product support is available through the following mediums.
 
-* Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm).
-* New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm).
-* Ask your query in [Stack Overflow](https://stackoverflow.com/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) with tag `syncfusion`, `ej2`.
-
-## License
-
-Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm).
+* [Support ticket](https://support.syncfusion.com/support/tickets/create) - Guaranteed Response in 24 hours | Unlimited tickets | Holiday support
+* [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
+* [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new)
+* [Request feature or report bug](https://www.syncfusion.com/feedback/javascript?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
+* Live chat
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/querybuilder/CHANGELOG.md?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/querybuilder/CHANGELOG.md?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
 
-© Copyright 2021 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+## License and copyright
+
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+
+> A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+
+See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-query-builder-npm) for more info.
+
+&copy; Copyright 2022 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

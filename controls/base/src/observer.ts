@@ -45,16 +45,16 @@ export class Observer {
         }
         const cntxt: Object = context || this.context;
         if (this.notExist(property)) {
-            this.boundedEvents[property] = [{ handler: handler, context: cntxt }];
+            this.boundedEvents[`${property}`] = [{ handler: handler, context: cntxt }];
             return;
         }
         if (!isNullOrUndefined(id)) {
             if (this.ranArray.indexOf(id) === -1) {
                 this.ranArray.push(id);
-                this.boundedEvents[property].push({ handler: handler, context: cntxt, id: id });
+                this.boundedEvents[`${property}`].push({ handler: handler, context: cntxt, id: id });
             }
-        } else if (!this.isHandlerPresent(this.boundedEvents[property], handler)) {
-            this.boundedEvents[property].push({ handler: handler, context: cntxt });
+        } else if (!this.isHandlerPresent(this.boundedEvents[`${property}`], handler)) {
+            this.boundedEvents[`${property}`].push({ handler: handler, context: cntxt });
         }
     }
 
@@ -74,7 +74,7 @@ export class Observer {
         if (handler) {
             for (let i: number = 0; i < curObject.length; i++) {
                 if (id) {
-                    if (curObject[i].id === id) {
+                    if (curObject[parseInt(i.toString(), 10)].id === id) {
                         curObject.splice(i, 1);
                         const indexLocation: number = this.ranArray.indexOf(id);
                         if (indexLocation !== -1) {
@@ -82,13 +82,13 @@ export class Observer {
                         }
                         break;
                     }
-                } else if (handler === curObject[i].handler) {
+                } else if (handler === curObject[parseInt(i.toString(), 10)].handler) {
                     curObject.splice(i, 1);
                     break;
                 }
             }
         } else {
-            delete this.boundedEvents[property];
+            delete this.boundedEvents[`${property}`];
         }
     }
 
@@ -113,7 +113,7 @@ export class Observer {
         }
         const blazor: string = 'Blazor';
         const curObject: BoundOptions[] = getValue(property, this.boundedEvents).slice(0);
-        if (window[blazor]) {
+        if (window[`${blazor}`]) {
             return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         } else {
             for (const cur of curObject) {
@@ -133,7 +133,7 @@ export class Observer {
         index: number): void | object {
         const isTrigger: boolean = index === objs.length - 1;
         if (index < objs.length) {
-            const obj: BoundOptions = objs[index];
+            const obj: BoundOptions = objs[parseInt(index.toString(), 10)];
             const promise: Promise<object> = obj.handler.call(obj.context, argument);
             if (promise && typeof promise.then === 'function') {
                 if (!successHandler) {

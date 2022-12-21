@@ -21,7 +21,7 @@ export class AxisRenderer {
      * @param {CircularGauge} gauge - Specifies the instance of the gauge
      * @private.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
     }
@@ -144,11 +144,10 @@ export class AxisRenderer {
                 (!style.autoAngle ? labelCollection[labelCollection.length - 1].size.height :
                     labelCollection[labelCollection.length - 1].size.width);
             lastTextHeight = lastTextHeight - this.offsetAxisLabelsize(lastLabelAngle, lastTextHeight);
-            lastLabelLocation = this.getAxisLabelStartPosition(lastLabelLocation, lastTextWidth, style, lastTextHeight, lastLabelAnchor,
-                                                               lastLabelAngle);
+            lastLabelLocation = this.getAxisLabelStartPosition(lastLabelLocation, lastTextWidth, lastLabelAnchor);
         }
         for (let i: number = 0, length: number = labelCollection.length; i < length; i++) {
-            label = labelCollection[i];
+            label = labelCollection[i as number];
             angle = Math.round(getAngleFromValue(label.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
             location = getLocationFromAngle(angle, radius, gauge.midPoint);
             anchor = this.findAnchor(location, style, angle, label);
@@ -158,14 +157,13 @@ export class AxisRenderer {
                 currentTextWidth = label.size.width;
                 currentTextHeight = !style.autoAngle ? label.size.height : currentTextWidth;
                 currentTextHeight = currentTextHeight - this.offsetAxisLabelsize(angle, currentTextHeight);
-                currentLocation = this.getAxisLabelStartPosition(currentLocation, currentTextWidth, style, currentTextHeight, anchor,
-                                                                 angle);
+                currentLocation = this.getAxisLabelStartPosition(currentLocation, currentTextWidth, anchor);
                 if (i === 0) {
                     previousLocation = getLocationFromAngle(angle, radius, gauge.midPoint);
                     textWidth = label.size.width;
                     textHeight = !style.autoAngle ? label.size.height : textWidth;
                     textHeight = textHeight - this.offsetAxisLabelsize(angle, textHeight);
-                    previousLocation = this.getAxisLabelStartPosition(previousLocation, textWidth, style, textHeight, anchor, angle);
+                    previousLocation = this.getAxisLabelStartPosition(previousLocation, textWidth, anchor);
                 }
             }
             if ((i === 0 && style.hiddenLabel === 'First') || (i === (length - 1) && style.hiddenLabel === 'Last')) {
@@ -248,7 +246,7 @@ export class AxisRenderer {
      * @returns {boolean} - Returns the boolean value.
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+
     private FindAxisLabelCollision(previousLocation: GaugeLocation, previousWidth: number, previousHeight: number,
                                    currentLocation: GaugeLocation, currentWidth: number, currentHeight: number): boolean {
         const labelVisisble: boolean = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
@@ -263,15 +261,11 @@ export class AxisRenderer {
      *
      * @param {GaugeLocation} actualLocation - Specifies the actual location.
      * @param {number} textWidth - Specifies the text width.
-     * @param {Label} style - Specifies the label style.
-     * @param {number} textHeight - Specifies the text height.
      * @param {string} anchorPosition - Specifies the anchor position.
-     * @param {number} angle - Specifies the angle.
      * @returns {GaugeLocation} - Returns the gauge location.
      * @private
      */
-    private getAxisLabelStartPosition(actualLocation: GaugeLocation, textWidth: number, style: Label, textHeight: number,
-                                      anchorPosition: string, angle: number): GaugeLocation {
+    private getAxisLabelStartPosition(actualLocation: GaugeLocation, textWidth: number, anchorPosition: string): GaugeLocation {
         if (anchorPosition === 'end') {
             actualLocation.x = actualLocation.x - textWidth;
         } else if (anchorPosition === 'middle') {
@@ -408,7 +402,6 @@ export class AxisRenderer {
      * @returns {void}
      * @private
      */
-    /* eslint-disable @typescript-eslint/dot-notation */
     public drawRangePath(
         axis: Axis, range: Range, startWidth: number, endWidth: number,
         rangeIndex: number, index: number, rangeElement: Element, colorIndex: number
@@ -611,7 +604,6 @@ export class AxisRenderer {
      * @param {number} oldEnd - Specifies the rounded path of the old end value..
      * @param {GaugeLocation} location - Specifies the location.
      * @param {number} colorIndex - Specifies the index of the lineargradient colorstop.
-     * @param {Axis} axis - Specifies the axis.
      * @returns {void}
      * @private
      */
@@ -629,7 +621,7 @@ export class AxisRenderer {
                 getRoundedPathArc(
                     location,
                     Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
-                    range.currentRadius, startWidth, endWidth, range, this.gauge.axes[index] as Axis
+                    range.currentRadius, startWidth, endWidth, range, this.gauge.axes[index as number] as Axis
                 ),
                 '', ''
             ),
@@ -668,7 +660,7 @@ export class AxisRenderer {
                     this.gauge.midPoint,
                     Math.floor(startAngle), Math.ceil(endAngle),
                     range.currentRadius, startWidth,
-                    endWidth, range, this.gauge.axes[index] as Axis
+                    endWidth, range, this.gauge.axes[index as number] as Axis
                 ),
                 '', ''
             ),
@@ -682,7 +674,6 @@ export class AxisRenderer {
      * @param {Axis} axis - Specifies the axis.
      * @param {number} index - Specifies the index.
      * @param {Element} element - Specifies the element.
-     * @param {CircularGauge} gauge - Specifies the gauge instance.
      * @returns {void}
      * @private
      */
@@ -736,7 +727,7 @@ export class AxisRenderer {
                     this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, i);
                 }
             } else {
-                if(!(range.start === range.end && axis.direction === 'AntiClockWise' && axis.startAngle === axis.endAngle)) {
+                if (!(range.start === range.end && axis.direction === 'AntiClockWise' && axis.startAngle === axis.endAngle)) {
                     this.drawRangePath(axis, range, startWidth, endWidth, rangeIndex, index, rangeElement, null);
                 }
             }
@@ -785,7 +776,7 @@ export class AxisRenderer {
      * @returns {void}
      * @private
      */
-     public destroy(): void {
+    public destroy(): void {
         this.gauge = null;
         this.majorValues = [];
     }

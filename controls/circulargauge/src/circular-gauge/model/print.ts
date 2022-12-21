@@ -17,7 +17,7 @@ export class Print {
      *
      * @param {CircularGauge} control - Specifies the instance of the gauge.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line
     constructor(control: CircularGauge) {
     }
 
@@ -30,12 +30,13 @@ export class Print {
      * @private
      */
     public print(gauge: CircularGauge, elements?: string[] | string | Element): void {
-        let printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        const printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         printWindow.moveTo(0, 0);
         printWindow.resizeTo(screen.availWidth, screen.availHeight);
         const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(gauge, elements), name: beforePrint
         };
+        // eslint-disable-next-line
         gauge.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
             if (!argsData.cancel) {
                 printFunction(argsData.htmlContent, printWindow);
@@ -77,10 +78,10 @@ export class Print {
 
     /**
      * To destroy the Print.
-     * 
+     *
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
-    
 }

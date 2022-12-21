@@ -207,22 +207,22 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 { 'color': '#4C6FB1' }]
         };
         break;
-        case 'fluentdark':
-            style = {
-                heatMapTitle: '#F3F2F1',
-                axisTitle: '#F3F2F1',
-                axisLabel: '#201F1E',
-                cellBorder: '#EDEBE9',
-                background: 'transparent',
-                cellTextColor: '#FFFFFF',
-                toggledColor: 'transparent',
-                emptyCellColor: '#292827',
-                legendLabel: '#F3F2F1',
-                palette: [{ 'color': '#292827' },
-                    { 'color': '#2A72D5' },
-                    { 'color': '#43B786' }]
-            };
-            break;
+    case 'fluentdark':
+        style = {
+            heatMapTitle: '#F3F2F1',
+            axisTitle: '#F3F2F1',
+            axisLabel: '#201F1E',
+            cellBorder: '#EDEBE9',
+            background: 'transparent',
+            cellTextColor: '#FFFFFF',
+            toggledColor: 'transparent',
+            emptyCellColor: '#292827',
+            legendLabel: '#F3F2F1',
+            palette: [{ 'color': '#292827' },
+                { 'color': '#2A72D5' },
+                { 'color': '#43B786' }]
+        };
+        break;
     default:
         style = {
             heatMapTitle: '#424242',

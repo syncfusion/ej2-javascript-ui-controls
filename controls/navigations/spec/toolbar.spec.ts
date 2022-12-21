@@ -3374,7 +3374,7 @@ describe('Toolbar Control', () => {
             };
             element.focus();
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(true);
+            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(false);
         });
         it('Right arrow Key  with multiple Separator testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -3441,7 +3441,7 @@ describe('Toolbar Control', () => {
             };
             element.focus();
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(true);
+            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(false);
         });
         it('Tab Key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -3594,7 +3594,7 @@ describe('Toolbar Control', () => {
             };
             toolbar.keyActionHandler(keyEventArgs);
             toolbar.element.focus();
-            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(true);
+            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(false);
         });
         it('Tab key without items testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -3614,7 +3614,7 @@ describe('Toolbar Control', () => {
             };
             toolbar.keyActionHandler(keyEventArgs);
             toolbar.element.focus();
-            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(true);
+            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(false);
         });
         it('Move Left with Focusing Navigation testing without Separator', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -4110,7 +4110,7 @@ describe('Toolbar Control', () => {
             };
             element.focus();
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement).toEqual(element);
+            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(false);
         });
         it('Left arrow Key Testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -4129,7 +4129,7 @@ describe('Toolbar Control', () => {
             };
             element.focus();
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement).toEqual(element);
+            expect(document.activeElement.classList.contains('e-toolbar')).toEqual(false);
         });
         it('Tab Key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');
@@ -5151,7 +5151,6 @@ describe('Toolbar Control', () => {
             if (toolbar) {
                 toolbar.destroy();
                 expect(toolbar.element.getAttribute('aria-disabled')).toEqual(null);
-                expect(toolbar.element.getAttribute('aria-haspopup')).toEqual(null);
                 expect(toolbar.element.getAttribute('aria-orientation')).toEqual(null);
                 expect(toolbar.element.getAttribute('role')).toEqual(null);
             }
@@ -5180,17 +5179,14 @@ describe('Toolbar Control', () => {
                 ],
             }, '#ej2Toolbar');
             expect(element.getAttribute('aria-disabled')).toEqual('false');
-            expect(element.getAttribute('aria-haspopup')).toEqual('false');
             expect(element.classList.contains('e-toolpop')).toEqual(true);
             expect(element.getAttribute('role')).toEqual('toolbar');
             expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
             toolbar.width = 200;
             toolbar.dataBind();
-            expect(element.getAttribute('aria-haspopup')).toEqual('true');
             expect(element.classList.contains('e-toolpop')).toEqual(true);
             toolbar.width = '1000px';
             toolbar.dataBind();
-            expect(element.getAttribute('aria-haspopup')).toEqual('false');
             expect(element.classList.contains('e-toolpop')).toEqual(true);
         });
     });
@@ -11986,7 +11982,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             toolbar.hideItem(0, true);
             toolbar.keyActionHandler(keyEventArgs);
             let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
-            expect(ele1.getAttribute('tabindex')).toEqual('-1');
+            expect(ele1.getAttribute('tabindex')).toEqual('0');
             let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
             expect(ele2.getAttribute('tabindex') === null).toEqual(true);
         });
@@ -12014,8 +12010,8 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
             expect(ele2.getAttribute('tabindex')).toEqual('-1');
             toolbar.hideItem(0, true);
-            expect(ele1.getAttribute('tabindex')).toEqual('-1');
-            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele2.getAttribute('tabindex')).toEqual('0');
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
         });
         it('Keyboard interaction not working for first hidden item as element', () => {
             let keyEventArgs: any;
@@ -12038,7 +12034,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item'), true);
             toolbar.keyActionHandler(keyEventArgs);
             let ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
-            expect(ele1.getAttribute('tabindex')).toEqual('-1');
+            expect(ele1.getAttribute('tabindex')).toEqual('0');
             let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
             expect(ele2.getAttribute('tabindex') === null).toEqual(true);
         });
@@ -12066,8 +12062,8 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             let ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
             expect(ele2.getAttribute('tabindex')).toEqual('-1');
             toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item'), true);
-            expect(ele1.getAttribute('tabindex')).toEqual('-1');
-            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele2.getAttribute('tabindex')).toEqual('0');
+            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
         });
         it('Keyboard interaction not working when we set focus to hidden item as element', () => {
             let keyEventArgs: any;
@@ -12102,7 +12098,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             toolbar.hideItem(toolbar.element.querySelector('.e-toolbar-item')[2], false);
             ele1 = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
             ele2 = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild
-            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele1.getAttribute('tabindex')).toEqual('0');
             expect(ele2.getAttribute('tabindex')).toEqual('-1');
         });
         it('Keyboard interaction not working when we set focus to hidden item as index', () => {
@@ -12138,7 +12134,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             toolbar.hideItem(2, false);
             ele1 = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
             ele2 = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild
-            expect(ele1.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele1.getAttribute('tabindex') === null).toEqual(false);
             expect(ele2.getAttribute('tabindex')).toEqual('-1');
         });
         it('Keyboard interaction not working when we remove the right aligned hidden item as element', () => {
@@ -12455,6 +12451,202 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(right.getAttribute('aria-label')).toEqual('Scroll right');
             expect(left.getAttribute('role')).toEqual('button');
             expect(right.getAttribute('role')).toEqual('button');
+        });
+    });
+
+    describe('tab key support in toolbar items ', () => {
+        let toolbar: any;
+        beforeEach((): void => {
+            toolbar = undefined;
+            const ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('tab key  support in scrollable mode', () => {
+            let keyEventArgs: any;
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Scrollable',
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left', tabIndex: 0 },
+                    { type: 'Button', text: 'Copy', align: 'Left', tabIndex: 1 },
+                    { type: 'Button', text: 'Paste', align: 'Left', tabIndex: 2},
+                    { type: 'Button', text: 'Italic', align: 'Left', tabIndex: 3 },
+                    { type: 'Button', text: 'Bullets', align: 'Center' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            const ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe('0');
+            expect(ele1.getAttribute('data-tabindex')).toBe('0');
+            const ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toBe('1');
+            expect(ele2.getAttribute('data-tabindex')).toBe('1');
+            const ele3: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild;
+            expect(ele3.getAttribute('tabindex')).toBe('2');
+            expect(ele3.getAttribute('data-tabindex')).toBe('2');
+            const ele4: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild;
+            expect(ele4.getAttribute('tabindex')).toBe('3');
+            expect(ele4.getAttribute('data-tabindex')).toBe('3');
+            const ele5: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[4].firstChild;
+            expect(ele5.getAttribute('tabindex')).toBe('-1');
+            expect(ele5.getAttribute('data-tabindex')).toBe('-1');
+        });
+        it('tab key support in  multirow mode', () => {
+            let keyEventArgs: any;
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'MultiRow',
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left', tabIndex: 0 },
+                    { type: 'Button', text: 'Copy', align: 'Left', tabIndex: 1 },
+                    { type: 'Button', text: 'Paste', align: 'Left', tabIndex: 2},
+                    { type: 'Button', text: 'Italic', align: 'Left', tabIndex: 3 },
+                    { type: 'Button', text: 'Bullets', align: 'Center' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            const ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe('0');
+            expect(ele1.getAttribute('data-tabindex')).toBe('0');
+            const ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toBe('1');
+            expect(ele2.getAttribute('data-tabindex')).toBe('1');
+            const ele3: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild;
+            expect(ele3.getAttribute('tabindex')).toBe('2');
+            expect(ele3.getAttribute('data-tabindex')).toBe('2');
+            const ele4: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild;
+            expect(ele4.getAttribute('tabindex')).toBe('3');
+            expect(ele4.getAttribute('data-tabindex')).toBe('3');
+            const ele5: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[4].firstChild;
+            expect(ele5.getAttribute('tabindex')).toBe('-1');
+            expect(ele5.getAttribute('data-tabindex')).toBe('-1');
+        });
+        it('tab key support in Popup mode', () => {
+            let keyEventArgs: any;
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left', tabIndex: 0 },
+                    { type: 'Button', text: 'Copy', align: 'Left', tabIndex: 1 },
+                    { type: 'Button', text: 'Paste', align: 'Left', tabIndex: 2},
+                    { type: 'Button', text: 'Italic', align: 'Left', tabIndex: 3 }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element
+            };
+            const ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe('0');
+            expect(ele1.getAttribute('data-tabindex')).toBe('0');
+            const ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toBe('1');
+            expect(ele2.getAttribute('data-tabindex')).toBe('1');
+            const ele3: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild;
+            expect(ele3.getAttribute('tabindex')).toBe('2');
+            expect(ele3.getAttribute('data-tabindex')).toBe('2');
+            const pop_Nav: HTMLElement = document.getElementById(element.id + '_nav');
+            const nav_icon: HTMLElement = pop_Nav.firstChild as HTMLElement;
+            pop_Nav.click();
+            const tool: any = toolbar;
+            tool.popObj.show();
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(true);
+            expect(nav_icon.classList.contains('e-popup-up-icon')).toEqual(true);
+            expect(pop_Nav.getAttribute('tabindex')).toBe('0');
+            const ele4: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild;
+            expect(ele4.getAttribute('tabindex')).toBe('3');
+            expect(ele4.getAttribute('data-tabindex')).toBe('3');
+        });
+        it('tab key support in Extended mode', () => {
+            let keyEventArgs: any;
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Extended',
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left', tabIndex: 0 },
+                    { type: 'Button', text: 'Copy', align: 'Left', tabIndex: 1 },
+                    { type: 'Button', text: 'Paste', align: 'Left', tabIndex: 2},
+                    { type: 'Button', text: 'Italic', align: 'Left', tabIndex: 3 },
+                    { type: 'Button', text: 'Bullets', align: 'Center' }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element
+            };
+            const ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe('0');
+            expect(ele1.getAttribute('data-tabindex')).toBe('0');
+            const ele2: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toBe('1');
+            expect(ele2.getAttribute('data-tabindex')).toBe('1');
+            const ele3: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild;
+            expect(ele3.getAttribute('tabindex')).toBe('2');
+            expect(ele3.getAttribute('data-tabindex')).toBe('2');
+            const pop_Nav: HTMLElement = document.getElementById(element.id + '_nav');
+            const nav_icon: HTMLElement = pop_Nav.firstChild as HTMLElement;
+            pop_Nav.click();
+            const tool: any = toolbar;
+            tool.popObj.show();
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(true);
+            expect(nav_icon.classList.contains('e-popup-up-icon')).toEqual(true);
+            expect(pop_Nav.getAttribute('tabindex')).toBe('0');
+            const ele4: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[3].firstChild;
+            expect(ele4.getAttribute('tabindex')).toBe('3');
+            expect(ele4.getAttribute('data-tabindex')).toBe('3');
+            const ele5: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[4].firstChild;
+            expect(ele5.getAttribute('tabindex')).toBe('-1');
+            expect(ele5.getAttribute('data-tabindex')).toBe('-1');
+        });
+        it('Toolbar Accessibility', () => {
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                width: 170,
+                overflowMode: 'Extended',
+                items: [
+                    { type: 'Button', text: 'Cut'},
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste'},
+                    { type: 'Button', text: 'Italic'},
+                    { type: 'Button', text: 'Bullets'}]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            const popNav: HTMLElement = document.getElementById(element.id + '_nav');
+            const navIcon: HTMLElement = popNav.firstChild as HTMLElement;
+            expect(popNav.getAttribute('role')).toBe('button');
+            expect(popNav.getAttribute('aria-haspopup')).toBe('true');
+            expect(popNav.getAttribute('aria-label')).toBe('overflow');
+            expect(popNav.getAttribute('aria-expanded')).toBe('false');
+            popNav.click();
+            toolbar.popObj.show();
+            expect(isVisible(element.querySelector('.e-popup'))).toEqual(true);
+            expect(navIcon.classList.contains('e-popup-up-icon')).toEqual(true);
+            expect(popNav.getAttribute('role')).toBe('button');
+            expect(popNav.getAttribute('aria-haspopup')).toBe('true');
+            expect(popNav.getAttribute('aria-expanded')).toBe('true');
         });
     });
 

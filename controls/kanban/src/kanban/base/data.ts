@@ -107,16 +107,17 @@ export class Data {
                         this.parent.kanbanData.push(data);
                     });
                     editArgs.changedRecords.forEach((changedRecord: Record<string, any>) => {
-                        let cardObj: Record<string, any> = this.parent.kanbanData.filter((data: Record<string, any>) =>
-                        data[this.parent.cardSettings.headerField] === changedRecord[this.parent.cardSettings.headerField])[0] as Record<string, any>;
+                        const cardObj: Record<string, any> = this.parent.kanbanData.filter((data: Record<string, any>) =>
+                            data[this.parent.cardSettings.headerField] ===
+                             changedRecord[this.parent.cardSettings.headerField])[0] as Record<string, any>;
                         extend(cardObj, changedRecord);
                     });
                     editArgs.deletedRecords.forEach((deletedRecord: Record<string, any>) => {
                         const index: number = this.parent.kanbanData.findIndex((data: Record<string, any>) =>
-                                data[this.parent.cardSettings.headerField] === deletedRecord[this.parent.cardSettings.headerField]);
+                            data[this.parent.cardSettings.headerField] === deletedRecord[this.parent.cardSettings.headerField]);
                         this.parent.kanbanData.splice(index, 1);
-                   });
-                }).catch(() => { this.parent.hideSpinner(); void 0});
+                    });
+                }).catch(() => { this.parent.hideSpinner(); void 0; });
             } else {
                 this.setState({ isPending: true, resolver: def.resolve });
                 this.parent.trigger(events.dataStateChange, state);
@@ -158,17 +159,19 @@ export class Data {
      * The function is used to handle the success response from dataManager
      *
      * @param {ReturnType} e Accepts the dataManager success result
+     * @param type
      * @returns {void}
      * @private
      */
+
     private dataManagerSuccess(e: ReturnType, type?: string, offlineArgs?: ActionEventArgs, index?: number): void {
         if (this.parent.isDestroyed) { return; }
         if (type) {
             const resultData: Record<string, any>[] = extend([], e.result, null, true) as Record<string, any>[];
             this.parent.kanbanData = resultData;
-        } 
+        }
         else{
-                this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
+            this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
                 const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
                 this.parent.kanbanData = resultData;
                 this.parent.notify(events.dataReady, { processedData: resultData });
@@ -232,7 +235,7 @@ export class Data {
                         this.refreshUI(offlineArgs, index);
                     }
                 } else {
-                    promise.then((args:ReturnType) => {
+                    promise.then((args: ReturnType) => {
                         if (this.parent.isDestroyed) { return; }
                         const dataManager: Promise<any> = this.getData(this.getQuery());
                         dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange', offlineArgs, index)).catch((e: ReturnType) => this.dataManagerFailure(e));
@@ -267,7 +270,7 @@ export class Data {
     private modifyArrayData(onLineData: Record<string, any>[], e: Record<string, any>[]): Record<string, any>[] {
         if (onLineData.length === e.length) {
             for (let i: number = 0; i < e.length; i++) {
-                onLineData[i] = extend(onLineData[i], e[i]);
+                onLineData[i as number] = extend(onLineData[i as number], e[i as number]);
             }
         }
         return onLineData;

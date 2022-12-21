@@ -19,8 +19,11 @@ $ddl-chip-padding: 0 4px 0 8px !default;
 $ddl-chip-close-top: 0 !default;
 $ddl-chip-close-left: 0 !default;
 $ddl-chip-close-margin: 0 0 0 !default;
+$ddl-chip-close-rtl-margin: 0 0 0 !default;
 $ddl-chip-close-square: $text-base !default;
+$ddl-chip-close-width: $text-base !default;
 $ddl-chip-hooker-square: 28px !default;
+$ddl-chip-hooker-width: 28px !default;
 $ddl-chip-close-font: $text-base !default;
 $ddl-chip-height: 22px !default;
 $ddl-chip-mobile-height: 30px !default;
@@ -127,18 +130,22 @@ $ddl-small-clear-icon-width: 28px !default;
 $ddl-bigger-small-clear-icon-height: 32px !default;
 $ddl-bigger-small-clear-icon-width: 32px !default;
 $ddl-bigger-chip-close-square: $text-xl !default;
+$ddl-bigger-chip-close-width: $text-xl !default;
 $ddl-bigger-chip-close-font: $text-xl !default;
+
 // Small size
 $ddl-select-all-height-small: 24px !default;
 $ddl-small-chip-height: 18px !default;
 $ddl-chip-small-font-size: 12px !default;
 $ddl-small-chip-close-square: $text-sm !default;
+$ddl-small-chip-close-width: $text-sm !default;
 $ddl-small-chip-close-font: $text-sm !default;
 $ddl-control-small-height: 24px !default;
 $ddl-small-input-height: 24px !default;
 $ddl-delim-small-font-size: 12px !default;
 $ddl-small-closer-margin-top: -1.65em !default;
 $ddl-chip-close-hooker-small-left: 6px !default;
+$ddl-chip-close-hooker-small-bigger-left: 6px !default;
 $ddl-delimviewheight-small: 24px !default;
 $ddl-multiselect-filled-input-min-height-small: 32px !default;
 $ddl-multiselect-filled-float-input-min-height-small: 22px !default;
@@ -154,6 +161,7 @@ $ddl-multiselect-filled-floatlabel-fontsize-bigger: 12px !default;
 $ddl-select-all-height-bigger-small: 32px !default;
 $ddl-bigger-small-chip-height: 26px !default;
 $ddl-bigger-small-chip-close-square: $text-lg !default;
+$ddl-bigger-small-chip-close-width: $text-lg !default;
 $ddl-bigger-small-chip-close-font: $text-lg !default;
 $ddl-control-bigger-small-height: 28px !default;
 $ddl-bigger-small-input-height: 32px !default;
@@ -189,7 +197,6 @@ $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $icon-color !default;
 $ddl-close-icon-hover-color: $icon-color-hover !default;
 
-
 @include export-module('multiselect-tailwind') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {
     line-height: 30px;
@@ -217,9 +224,8 @@ $ddl-close-icon-hover-color: $icon-color-hover !default;
     width: $ddl-chip-hooker-square;
   }
 
-  .e-multi-select-wrapper .e-searcher input[type='text'] {
+  .e-multi-select-wrapper .e-searcher input[type = 'text'] {
     color: $content-text-color;
     height: 100%;
   }
 }
-  

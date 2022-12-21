@@ -53,10 +53,11 @@ export class InlineEdit {
         const start: number = util.resetTime(new Date('' + saveObj[this.parent.eventFields.startTime])).getTime();
         const end: number = util.resetTime(new Date('' + saveObj[this.parent.eventFields.endTime])).getTime();
         const resIndex: number = args.groupIndex || 0;
-        if (this.parent.currentView === 'Day' || this.parent.currentView === 'Week' || this.parent.currentView === 'WorkWeek') {
+        const isVertical: boolean = this.parent.currentView === 'Day' || this.parent.currentView === 'Week' || this.parent.currentView === 'WorkWeek';
+        if (this.parent.activeViewOptions.timeScale.enable && isVertical) {
             const dayIndex: number = (saveObj[this.parent.eventFields.startTime] as Date).getDay();
             this.createVerticalViewInline(saveObj, dayIndex, resIndex, cellIndex);
-        } else if (this.parent.currentView === 'Month') {
+        } else if (this.parent.currentView === 'Month' || (!this.parent.activeViewOptions.timeScale.enable && isVertical)) {
             this.createMonthViewInline(saveObj, resIndex, start, end);
         } else {
             this.createTimelineViewInline(saveObj, start, end, resIndex);
@@ -103,7 +104,8 @@ export class InlineEdit {
         const count: number = this.getEventDaysCount(saveObj);
         const verticalEvent: VerticalEvent = new VerticalEvent(this.parent);
         verticalEvent.initializeValues();
-        const index: number = verticalEvent.dateRender[resIndex].map((date: Date) => date.getDay()).indexOf(dayIndex);
+        const index: number =
+          verticalEvent.dateRender[parseInt(resIndex.toString(), 10)].map((date: Date) => date.getDay()).indexOf(dayIndex);
         if (count >= 1) {
             verticalEvent.allDayElement = [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS));
             verticalEvent.slots.push(...this.parent.activeView.renderDates.map((date: Date) => +date));
@@ -131,14 +133,16 @@ export class InlineEdit {
         let monthCellSelector: string = '.' + cls.WORK_CELLS_CLASS;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             monthCellSelector += '[data-group-index="' + index + '"]';
-            const resourceData: TdData = this.parent.resourceBase.lastResourceLevel[index];
+            const resourceData: TdData = this.parent.resourceBase.lastResourceLevel[parseInt(index.toString(), 10)];
             renderDates = resourceData.renderDates;
             workDays = resourceData.workDays;
         }
+        monthEvent.dateRender = renderDates;
         monthEvent.workCells = [].slice.call(this.parent.element.querySelectorAll(monthCellSelector));
         monthEvent.cellWidth = monthEvent.workCells[0].offsetWidth;
         monthEvent.cellHeight = monthEvent.workCells[0].offsetHeight;
-        monthEvent.eventHeight = util.getElementHeightFromClass(this.parent.monthModule.element, cls.APPOINTMENT_CLASS);
+        monthEvent.eventHeight =
+            util.getElementHeightFromClass(this.parent.monthModule.element || monthEvent.element, cls.APPOINTMENT_CLASS);
         monthEvent.getSlotDates(workDays);
         const filteredDates: Date[] = monthEvent.getRenderedDates(renderDates);
         const spannedEvents: Record<string, any>[] = monthEvent.splitEvent(saveObject, filteredDates || renderDates);

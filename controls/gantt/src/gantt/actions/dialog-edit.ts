@@ -149,7 +149,7 @@ export class DialogEdit {
         const newDialogFields: AddDialogFieldSettingsModel[] = [];
         let emptyCustomColumn: number = 0;
         for (let i: number = 0; i < dialogFields.length; i++) {
-            const fieldItem: AddDialogFieldSettingsModel = getActualProperties(dialogFields[i]);
+            const fieldItem: AddDialogFieldSettingsModel = getActualProperties(dialogFields[i as number]);
             if (fieldItem.type === 'General' && (isNullOrUndefined(fieldItem.fields) || fieldItem.fields.length === 0)) {
                 fieldItem.fields = this.getGeneralColumnFields();
             }
@@ -180,7 +180,7 @@ export class DialogEdit {
             if (key === 'dependency' || key === 'resourceInfo' || key === 'notes') {
                 continue;
             }
-            fields.push(this.parent.columnMapping[key]);
+            fields.push(this.parent.columnMapping[key as string]);
         }
         return fields;
     }
@@ -193,7 +193,7 @@ export class DialogEdit {
     private getCustomColumnFields(): string[] {
         const fields: string[] = [];
         for (let i: number = 0; i < this.parent.customColumns.length; i++) {
-            fields.push(this.parent.customColumns[i]);
+            fields.push(this.parent.customColumns[i as number]);
         }
         return fields;
     }
@@ -281,48 +281,48 @@ export class DialogEdit {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         const id: number | string = this.parent.editModule.getNewTaskId();
         for (let i: number = 0; i < columns.length; i++) {
-            const field: string = columns[i].field;
+            const field: string = columns[i as number].field;
             if (field === taskSettings.id) {
-                tempData[field] = id;
-                tempData.ganttProperties.rowUniqueID = tempData[field];
-            } else if (columns[i].field === taskSettings.startDate) {
+                tempData[field as string] = id;
+                tempData.ganttProperties.rowUniqueID = tempData[field as string];
+            } else if (columns[i as number].field === taskSettings.startDate) {
                 if (isNullOrUndefined(tempData[taskSettings.endDate])) {
-                    tempData[field] = this.getMinimumStartDate();
+                    tempData[field as string] = this.getMinimumStartDate();
                 } else {
-                    tempData[field] = new Date(tempData[taskSettings.endDate]);
+                    tempData[field as string] = new Date(tempData[taskSettings.endDate]);
                 }
                 if (this.parent.timezone) {
-                    tempData[field] = this.parent.dateValidationModule.remove(tempData[field], this.parent.timezone);
+                    tempData[field as string] = this.parent.dateValidationModule.remove(tempData[field as string], this.parent.timezone);
                 }
-                tempData.ganttProperties.startDate = new Date(tempData[field]);
-            } else if (columns[i].field === taskSettings.endDate) {
+                tempData.ganttProperties.startDate = new Date(tempData[field as string]);
+            } else if (columns[i as number].field === taskSettings.endDate) {
                 if (isNullOrUndefined(tempData[taskSettings.startDate])) {
-                    tempData[field] = this.getMinimumStartDate();
+                    tempData[field as string] = this.getMinimumStartDate();
                 } else {
-                    tempData[field] = new Date(tempData[taskSettings.startDate]);
+                    tempData[field as string] = new Date(tempData[taskSettings.startDate]);
                 }
                 if (this.parent.timezone) {
-                    tempData[field] = this.parent.dateValidationModule.remove(tempData[field], this.parent.timezone);
+                    tempData[field as string] = this.parent.dateValidationModule.remove(tempData[field as string], this.parent.timezone);
                 }
-                tempData.ganttProperties.endDate = new Date(tempData[field]);
-            } else if (columns[i].field === taskSettings.duration) {
-                tempData[field] = 1;
-                tempData.ganttProperties.duration = tempData[field];
+                tempData.ganttProperties.endDate = new Date(tempData[field as string]);
+            } else if (columns[i as number].field === taskSettings.duration) {
+                tempData[field as string] = 1;
+                tempData.ganttProperties.duration = tempData[field as string];
                 tempData.ganttProperties.durationUnit = this.parent.durationUnit.toLocaleLowerCase();
-            } else if (columns[i].field === taskSettings.name) {
-                tempData[field] = this.localeObj.getConstant('addDialogTitle')+' '+ id;
-                tempData.ganttProperties.taskName = tempData[field];
-            } else if (columns[i].field === taskSettings.progress) {
-                tempData[field] = 0;
-                tempData.ganttProperties.progress = tempData[field];
-            } else if (columns[i].field === taskSettings.work) {
-                tempData[field] = 0;
-                tempData.ganttProperties.work = tempData[field];
-            } else if (columns[i].field === taskSettings.type) {
-                tempData[field] = this.parent.taskType;
-                tempData.ganttProperties.taskType = tempData[field];
+            } else if (columns[i as number].field === taskSettings.name) {
+                tempData[field as string] = this.localeObj.getConstant('addDialogTitle')+' '+ id;
+                tempData.ganttProperties.taskName = tempData[field as string];
+            } else if (columns[i as number].field === taskSettings.progress) {
+                tempData[field as string] = 0;
+                tempData.ganttProperties.progress = tempData[field as string];
+            } else if (columns[i as number].field === taskSettings.work) {
+                tempData[field as string] = 0;
+                tempData.ganttProperties.work = tempData[field as string];
+            } else if (columns[i as number].field === taskSettings.type) {
+                tempData[field as string] = this.parent.taskType;
+                tempData.ganttProperties.taskType = tempData[field as string];
             } else {
-                tempData[this.parent.ganttColumns[i].field] = '';
+                tempData[this.parent.ganttColumns[i as number].field] = '';
             }
         }
         tempData.ganttProperties.isAutoSchedule = (this.parent.taskMode === 'Auto') ? true :
@@ -363,16 +363,16 @@ export class DialogEdit {
         if (!isNullOrUndefined(taskId)) {
             if (!isNullOrUndefined(taskId['ganttProperties'])) {
                 if (typeof taskId['ganttProperties']['taskId'] === 'string') {
-                    this.numericOrString = "stringedit";
+                    this.numericOrString = 'stringedit';
                 } else {
-                    this.numericOrString = "numericedit";
+                    this.numericOrString = 'numericedit';
                 }
             }
             if (isNullOrUndefined(taskId['ganttProperties']) && !isNullOrUndefined(taskId)) {
                 if (isNaN(Number(taskId)) || this.parent.columnByField[this.parent.taskFields.id].editType === "stringedit") {
-                    this.numericOrString = "stringedit";
+                    this.numericOrString = 'stringedit';
                 } else {
-                    this.numericOrString = "numericedit";
+                    this.numericOrString = 'numericedit';
                 }
             }
         }
@@ -414,6 +414,7 @@ export class DialogEdit {
         dialogModel.animationSettings = { effect: 'None' };
         dialogModel.header = this.localeObj.getConstant(this.isEdit ? 'editDialogTitle' : 'addDialogTitle');
         dialogModel.isModal = true;
+	dialogModel.enableRtl = this.parent.enableRtl;
         dialogModel.allowDragging = this.parent.isAdaptive ? false : true;
         dialogModel.showCloseIcon = true;
         const position: PositionDataModel = this.parent.isAdaptive ? { X: 'top', Y: 'left' } : { X: 'center', Y: 'center' };
@@ -424,8 +425,8 @@ export class DialogEdit {
         dialogModel.close = this.dialogClose.bind(this);
         dialogModel.closeOnEscape = true;
 	dialogModel.beforeClose = function (args){
-            if(args.closedBy == "escape"){
-                if(args.event.name == "key-pressed" && args.event.target.nodeName == 'INPUT'){
+            if(args.closedBy === "escape"){
+                if(args.event.name === "key-pressed" && args.event.target.nodeName === 'INPUT'){
                     args.cancel = true;
                 }
             }
@@ -507,7 +508,7 @@ export class DialogEdit {
         const tabModel: TabModel = this.beforeOpenArgs.tabModel;
         const items: TabItemModel[] = tabModel.items;
         for (let i: number = 0; i < items.length; i++) {
-            const element: HTMLElement = items[i].content as HTMLElement;
+            const element: HTMLElement = items[i as number].content as HTMLElement;
             let id: string = element.id;
             if (!isNullOrUndefined(id) || id !== '') {
                 id = id.replace(ganttObj.element.id, '');
@@ -534,14 +535,14 @@ export class DialogEdit {
         const childNodes: NodeList = element.childNodes;
         const ganttObj: Gantt = this.parent;
         for (let i: number = 0; i < childNodes.length; i++) {
-            const div: HTMLElement = childNodes[i] as HTMLElement;
+            const div: HTMLElement = childNodes[i as  number] as HTMLElement;
             const inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
             if (inputElement) {
                 const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 const controlObj: any = <any>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
                 if (!isNullOrUndefined(controlObj)) {
-                    const column: GanttColumnModel = ganttObj.columnByField[fieldName];
+                    const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
                     if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                         let destroy: Function = column.edit.destroy as Function;
                         if (typeof destroy === 'string') {
@@ -591,11 +592,12 @@ export class DialogEdit {
         const length: number = dialogSettings.length;
         tabModel.items = tabItems;
         tabModel.locale = this.parent.locale;
+	tabModel.enableRtl = this.parent.enableRtl;
         this.beforeOpenArgs.tabModel = tabModel;
         let count: number = 0; let index: number = 0;
         if (length > 0) {
             for (let i: number = 0; i < length; i++) {
-                const dialogField: AddDialogFieldSettingsModel = dialogSettings[i];
+                const dialogField: AddDialogFieldSettingsModel = dialogSettings[i as number];
                 const tabItem: TabItemModel = {};
                 if (dialogField.type === 'General') {
                     if (Object.keys(ganttObj.columnMapping).length === 0) {
@@ -665,6 +667,11 @@ export class DialogEdit {
             cancel: this.beforeOpenArgs.cancel as boolean
         };
         this.parent.trigger('actionBegin', this.beforeOpenArgs, (arg: ActionBeginArgs | CObject) => {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
             this.renderTabItems();
             if (!arg.cancel) {
                 tabModel.selected = this.tabSelectedEvent.bind(this);
@@ -687,6 +694,11 @@ export class DialogEdit {
                     cancel: false
                 };
                 this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
+                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+                        this.parent.hideMaskRow();
+                    } else {
+                        this.parent.hideSpinner();
+                    }
                     if (actionCompleteArg.cancel) {
                         this.resetValues();
                     }
@@ -738,14 +750,14 @@ export class DialogEdit {
         const fieldsModel: Record<string, unknown> = {};
         const columnByField: Object = this.parent.columnByField;
         for (let i: number = 0; i < fields.length; i++) {
-            if (fields[i] === this.parent.taskFields.dependency ||
-                fields[i] === this.parent.taskFields.resourceInfo ||
-                fields[i] === this.parent.taskFields.notes) {
+            if (fields[i as number] === this.parent.taskFields.dependency ||
+                fields[i as number] === this.parent.taskFields.resourceInfo ||
+                fields[i as number] === this.parent.taskFields.notes) {
                 continue;
             }
-            if (!isNullOrUndefined(columnByField[fields[i]])) {
-                const fieldName: string = fields[i];
-                this.createInputModel(columnByField[fieldName], fieldsModel);
+            if (!isNullOrUndefined(columnByField[fields[i as number]])) {
+                const fieldName: string = fields[i as number];
+                this.createInputModel(columnByField[fieldName as string], fieldsModel);
             }
         }
         return fieldsModel;
@@ -769,7 +781,8 @@ export class DialogEdit {
         {
             const checkboxModel: CheckBoxModel = {
                 label: column.headerText,
-                locale: locale
+                locale: locale,
+		enableRtl: this.parent.enableRtl
             };
             fieldsModel[column.field] = checkboxModel;
             break;
@@ -778,6 +791,7 @@ export class DialogEdit {
         case 'stringedit':
         {
             const textBox: TextBox = common as TextBox;
+	    textBox.enableRtl = this.parent.enableRtl;
             if (column.field === ganttObj.columnMapping.duration || column.field === ganttObj.columnMapping.id || column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
                 textBox.change = (args: CObject): void => {
@@ -790,6 +804,7 @@ export class DialogEdit {
         case 'numericedit':
         {
             const numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
+	    numeric.enableRtl = this.parent.enableRtl;
             if (taskSettings.progress === column.field) {
                 numeric.min = 0;
                 numeric.max = 100;
@@ -806,6 +821,7 @@ export class DialogEdit {
         {
             const datePickerObj: DatePickerModel = common as DatePickerModel;
             datePickerObj.format = this.parent.getDateFormat();
+	    datePickerObj.enableRtl = this.parent.enableRtl;
             datePickerObj.strictMode = true;
             datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
             if (column.field === ganttObj.columnMapping.startDate ||
@@ -822,6 +838,7 @@ export class DialogEdit {
         {
             const dateTimePickerObj: DatePickerModel = common as DatePickerModel;
             dateTimePickerObj.format = this.parent.getDateFormat();
+	    dateTimePickerObj.enableRtl = this.parent.enableRtl;
             dateTimePickerObj.strictMode = true;
             dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
             if (column.field === ganttObj.columnMapping.startDate ||
@@ -840,9 +857,10 @@ export class DialogEdit {
                 const fieldsKey: string = 'fields';
                 const types: Record<string, unknown>[] = [
                     { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
-                common[dataKey] = types;
-                common[fieldsKey] = { value: 'Value' };
+                common[dataKey as string] = types;
+                common[fieldsKey as string] = { value: 'Value' };
                 const dropDownListObj: DropDownListModel = common as DropDownListModel;
+		dropDownListObj.enableRtl = this.parent.enableRtl;
                 dropDownListObj.change = (args: CObject | ChangeEventArgs): void => {
                     if (column.field === taskSettings.manual) {
                         this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
@@ -937,7 +955,7 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const ganttId: string = ganttObj.element.id;
         const columnName: string = getValue(ganttField, ganttObj.columnMapping);
-        const col: GanttColumnModel = ganttObj.columnByField[columnName];
+        const col: GanttColumnModel = ganttObj.columnByField[columnName as string];
         let tempValue: string | Date | number;
         const taskField: TaskFieldsModel = this.parent.taskFields;
         if (col.editType === 'stringedit') {
@@ -956,7 +974,7 @@ export class DialogEdit {
             const picker: DatePicker = col.editType === 'datepickeredit' ?
                 <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0] :
                 <DateTimePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = ganttProp[ganttField];
+            tempValue = ganttProp[ganttField as string];
             if (((isNullOrUndefined(picker.value)) && !isNullOrUndefined(tempValue)) ||
                 (isNullOrUndefined(tempValue) && !isNullOrUndefined(picker.value)) ||
                 (picker.value !== tempValue && !isNullOrUndefined(picker.value) && !isNullOrUndefined(tempValue)
@@ -967,7 +985,7 @@ export class DialogEdit {
         } else if (col.editType === 'numericedit') {
             const numericTextBox: NumericTextBox = <NumericTextBox>(
                 <EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = ganttProp[ganttField];
+            tempValue = ganttProp[ganttField as string];
             if (!isNullOrUndefined(tempValue) && numericTextBox.value !== tempValue) {
                 numericTextBox.value = tempValue as number;
                 numericTextBox.dataBind();
@@ -1159,24 +1177,24 @@ export class DialogEdit {
         for (let i: number = 0; i < fields.length; i++) {
             let gridColumn: GridColumnModel = {};
             const generalTabString: string = 'General';
-            switch (fields[i]) {
+            switch (fields[i as number]) {
             case 'startDate':
             case 'endDate':
                 gridColumn = {
-                    field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
+                    field: fields[i as number], headerText: this.localeObj.getConstant(fields[i as number]), editType: 'stringedit', width: '200px',
                     edit: {
                         write: (args: CObject): void => {
                             let datePickerModel: object;
-			    if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString])) {
-                                datePickerModel = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+			                if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString as string])) {
+                                datePickerModel = this.beforeOpenArgs[generalTabString as string][this.parent.taskFields[fields[i as number]]];
                             } else {
                                 let columnFields: string[] = this.getGeneralColumnFields();
                                 let columnModel: object = this.getFieldsModel(columnFields);
-                                datePickerModel = columnModel[this.parent.taskFields[fields[i]]];
+                                datePickerModel = columnModel[this.parent.taskFields[fields[i as number]]];
                             }
 			    const value: string = args.rowData[(args.column as GridColumnModel).field];
                             setValue('value', value, datePickerModel);
-		            const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i]]].editType](datePickerModel);
+		            const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i as number]]].editType](datePickerModel);
                             datePicker.appendTo(args.element as HTMLElement);
                         },
                         read: (args: HTMLElement): Date => {
@@ -1188,25 +1206,25 @@ export class DialogEdit {
                     },
                     format: this.parent.getDateFormat()
                 };
-                if (fields[i] === 'startDate') {
+                if (fields[i as number] === 'startDate') {
                     gridColumn.validationRules = { required: true };
                 }
                 gridColumns.push(gridColumn);
                 break;
             case 'duration':
                 gridColumn = {
-                    field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
-                    edit: {
+                    field: fields[i as number], headerText: this.localeObj.getConstant(fields[i as number]), editType: 'stringedit', 
+                    width: '100px', edit: {
                         write: (args: CObject): void => {
                             let inputTextModel: object;
-                            if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString])) {
-                             inputTextModel = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
+                            if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString as string])) {
+                             inputTextModel = this.beforeOpenArgs[generalTabString as string][this.parent.taskFields[fields[i as number]]];
                             } else {
                                 let columnFields: string[] = this.getGeneralColumnFields();
                                 let columnModel: object = this.getFieldsModel(columnFields);
-                                inputTextModel = columnModel[this.parent.taskFields[fields[i]]];
+                                inputTextModel = columnModel[this.parent.taskFields[fields[i as number]]];
                             }
-			    (inputTextModel as TextBox).floatLabelType = 'Never';
+			               (inputTextModel as TextBox).floatLabelType = 'Never';
                             const value: string = args.rowData[(args.column as GridColumnModel).field];
                             if (!isNullOrUndefined(value)) {
                                 setValue('value', value, inputTextModel);
@@ -1235,8 +1253,8 @@ export class DialogEdit {
     private getGridColumnByField(fieldName: string, columns: GridColumnModel[]): GridColumnModel {
         let column: GridColumnModel;
         for (let i: number = 0; i < columns.length; i++) {
-            if (columns[i].field === fieldName) {
-                column = columns[i];
+            if (columns[i as number].field === fieldName) {
+                column = columns[i as number];
             }
         }
         return column;
@@ -1246,7 +1264,7 @@ export class DialogEdit {
         const gridModel: GridModel = getValue('Segments', this.beforeOpenArgs) as GridModel;
         const col: GridColumnModel = this.getGridColumnByField(columnName, gridModel.columns as GridColumnModel[]);
         const ganttId: string = this.parent.element.id;
-        const tempValue: string | Date | number = segment[columnName];
+        const tempValue: string | Date | number = segment[columnName as string];
         let inputValue: TextBox | DatePicker;
 
         if (col.editType === 'stringedit') {
@@ -1256,7 +1274,7 @@ export class DialogEdit {
             inputValue = <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName))
                 .ej2_instances[0] as DatePicker;
         }
-        if (inputValue.value.toString() !== tempValue.toString()) {
+        if ((!isNullOrUndefined(inputValue.value))&&(inputValue.value.toString() !== tempValue.toString())) {
             inputValue.value = tempValue as string;
             inputValue.dataBind();
         }
@@ -1336,25 +1354,25 @@ export class DialogEdit {
         const columns: GridColumnModel[] = [];
         for (let i: number = 0; i < fields.length; i++) {
             let column: GridColumnModel = {};
-            if (fields[i].toLowerCase() === 'id') {
+            if (fields[i as number].toLowerCase() === 'id') {
                 column = {
                     field: 'id', headerText: this.localeObj.getConstant('id'), allowEditing: false, width: '70px'
                 };
                 columns.push(column);
-            } else if (fields[i].toLowerCase() === 'name') {
+            } else if (fields[i as number].toLowerCase() === 'name') {
                 column = {
                     field: 'name', headerText: this.localeObj.getConstant('name'), editType: 'stringedit', width: '250px',
                     validationRules: { required: true }
                 };
                 columns.push(column);
-            } else if (fields[i].toLowerCase() === 'type') {
+            } else if (fields[i as number].toLowerCase() === 'type') {
                 column = {
                     field: 'type', headerText: this.localeObj.getConstant('type'), editType: 'dropdownedit',
                     dataSource: this.types, foreignKeyField: 'id', foreignKeyValue: 'text',
                     defaultValue: 'FS', validationRules: { required: true }, width: '150px'
                 };
                 columns.push(column);
-            } else if (fields[i].toLowerCase() === 'offset') {
+            } else if (fields[i as number].toLowerCase() === 'offset') {
                 column = {
                     field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: this.parent.dataOperation.getDurationString(
@@ -1362,7 +1380,7 @@ export class DialogEdit {
                     validationRules: { required: true }, width: '100px'
                 };
                 columns.push(column);
-            } else if (fields[i].toLowerCase() === 'uniqueid') {
+            } else if (fields[i as number].toLowerCase() === 'uniqueid') {
                 column = {
                     field: 'uniqueId', isPrimaryKey: true, visible: false, defaultValue: getUid().toString()
                 };
@@ -1396,20 +1414,20 @@ export class DialogEdit {
         ];
         for (let i: number = 0; i < fields.length; i++) {
             let column: TreeGridColumnModel = {};
-            if (fields[i] === resourceSettings.id) {
+            if (fields[i as number] === resourceSettings.id) {
                 column = {
                     field: resourceSettings.id,
                     headerText: this.localeObj.getConstant('id'), isPrimaryKey: true, width: '100px',
                     allowEditing: false
                 };
                 columns.push(column);
-            } else if (fields[i] === resourceSettings.name) {
+            } else if (fields[i as number] === resourceSettings.name) {
                 column = {
                     field: resourceSettings.name, headerText: this.localeObj.getConstant('name'),
                     allowEditing: false
                 };
                 columns.push(column);
-            } else if (fields[i] === resourceSettings.unit) {
+            } else if (fields[i as number] === resourceSettings.unit) {
                 column = {
                     field: resourceSettings.unit,
                     headerText: this.localeObj.getConstant('unit'),
@@ -1417,7 +1435,7 @@ export class DialogEdit {
                     edit: { params: { min: 0 } }
                 };
                 columns.push(column);
-            } else if (fields[i] === resourceSettings.group && !isNullOrUndefined(resourceSettings.group)) {
+            } else if (fields[i as number] === resourceSettings.group && !isNullOrUndefined(resourceSettings.group)) {
                 column = {
                     field: resourceSettings.group,
                     headerText: this.localeObj.getConstant('group'),
@@ -1469,7 +1487,7 @@ export class DialogEdit {
         const items: TabItemModel[] = tabModel.items;
         let index: number = 0;
         for (let i: number = 0; i < items.length; i++) {
-            const item: TabItemModel = items[i];
+            const item: TabItemModel = items[i as number];
             if (item.content instanceof HTMLElement) {
                 continue;
             } else if (item.content === 'General') {
@@ -1494,7 +1512,7 @@ export class DialogEdit {
     private segmentGridActionBegin(args: ActionEventArgs): void {
         const taskFields: TaskFieldsModel = this.parent.taskFields;
         const itemName: string = 'Segments';
-        const gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
+        const gridModel: GridModel = this.beforeOpenArgs[itemName as string] as GridModel;
         if (args.requestType === 'add' || args.requestType === 'beginEdit' || args.requestType === 'save') {
             const gridData: Record<string, unknown>[] = gridModel.dataSource as Record<string, unknown>[];
             const selectedItem: Record<string, unknown> = getValue('rowData', args);
@@ -1545,7 +1563,7 @@ export class DialogEdit {
     }
     private renderSegmentsTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const gridModel: GridModel = this.beforeOpenArgs[itemName];
+        const gridModel: GridModel = this.beforeOpenArgs[itemName as string];
         const ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let preData: ITaskSegment[] = [];
         if (this.isEdit) {
@@ -1561,15 +1579,15 @@ export class DialogEdit {
     }
     private renderGeneralTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const itemModel: Object = this.beforeOpenArgs[itemName];
+        const itemModel: Object = this.beforeOpenArgs[itemName as string];
         const divElement: HTMLElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
         for (const key of Object.keys(itemModel)) {
-            if (this.parent.columnByField[key].visible === false) {
+            if (this.parent.columnByField[key as string].visible === false) {
                 continue;
             }
-            const column: GanttColumnModel = this.parent.columnByField[key];
-            const inputModel: { [key: string]: Record<string, unknown> } = itemModel[key];
+            const column: GanttColumnModel = this.parent.columnByField[key as string];
+            const inputModel: { [key: string]: Record<string, unknown> } = itemModel[key as string];
             divElement.appendChild(this.renderInputElements(inputModel, column));
         }
         return divElement;
@@ -1588,12 +1606,12 @@ export class DialogEdit {
                     column.field === this.parent.taskFields.baselineStartDate || column.field === this.parent.taskFields.baselineEndDate ||
                     column.field === this.parent.taskFields.work || column.field ===this.parent.taskFields.type) {
                     for (let i: number = 0; i<this.parent.currentViewData['length']; i++) {
-                        if(!isNullOrUndefined(this.parent.currentViewData[i].ganttProperties.taskId)) {
-                            stringOrNumber = this.parent.currentViewData[i].ganttProperties.taskId;
+                        if(!isNullOrUndefined(this.parent.currentViewData[i as number].ganttProperties.taskId)) {
+                            stringOrNumber = this.parent.currentViewData[i as number].ganttProperties.taskId;
                             break;
                         }
                     }
-                    if (typeof(stringOrNumber) === "string") {
+                    if (typeof(stringOrNumber) === 'string') {
                         disabled = false;
                     } else {
                         disabled = true;
@@ -1607,7 +1625,7 @@ export class DialogEdit {
             }
             if (this.editedRecord.hasChildRecords) {
                 if ((column.field === this.parent.taskFields.endDate && ((!isNullOrUndefined(this.editedRecord['isManual']) &&
-                    this.editedRecord['isManual'] == false) || this.parent.taskMode == 'Auto')) || column.field === this.parent.taskFields.duration ||
+                    this.editedRecord['isManual'] === false) || this.parent.taskMode === 'Auto')) || column.field === this.parent.taskFields.duration ||
                     column.field === this.parent.taskFields.progress || column.field === this.parent.taskFields.work ||
                     column.field === this.parent.taskFields.type) {
                     disabled = true;
@@ -1619,13 +1637,13 @@ export class DialogEdit {
 
     private isParentValid(data: IGanttData[]) {
         if (data.length > 0) {
-            for (let i = 0; i < data.length; i++) {
-                if (data[i].uniqueID == this.beforeOpenArgs.rowData['uniqueID']) {
+            for (let i: number = 0; i < data.length; i++) {
+                if (data[i as number].uniqueID == this.beforeOpenArgs.rowData['uniqueID']) {
                     this.isValidData = false;
                     break
                 }
-                if (data[i].hasChildRecords) {
-                    this.isParentValid(data[i].childRecords)
+                if (data[i as number].hasChildRecords) {
+                    this.isParentValid(data[i as number].childRecords)
                 }
                 if (!this.isValidData) {
                     break;
@@ -1637,7 +1655,7 @@ export class DialogEdit {
 
     private renderPredecessorTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const gridModel: GridModel = this.beforeOpenArgs[itemName];
+        const gridModel: GridModel = this.beforeOpenArgs[itemName as string];
         const dependencyColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.dependency];
         if (dependencyColumn.allowEditing === false || dependencyColumn.isPrimaryKey || this.parent.readOnly) {
             gridModel.editSettings.allowEditing = false;
@@ -1664,8 +1682,9 @@ export class DialogEdit {
                     dataSource: new DataManager(this.idCollection),
                     popupHeight: '180px',
                     allowCustom: false,
+		    enableRtl: this.parent.enableRtl,
                     fields: { value: 'text' },
-                    value: args.rowData[field],
+                    value: args.rowData[field as string],
                     change: (arg: ChangeEventArgs) => {
                         const tr: HTMLElement = closest(arg.element, 'tr') as HTMLElement;
                         const idInput: HTMLInputElement = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
@@ -1696,7 +1715,7 @@ export class DialogEdit {
 
     private gridActionBegin(args: GridActionEventArgs): void {
         const itemName: string = 'Dependency';
-        const gridModel: GridModel = this.beforeOpenArgs[itemName] as GridModel;
+        const gridModel: GridModel = this.beforeOpenArgs[itemName as string] as GridModel;
         if (args.requestType === 'add' || args.requestType === 'beginEdit') {
             const isEdit: boolean = args.requestType === 'add' ? false : true;
             this.idCollection = extend([], [], this.preTableCollection, true) as IDependencyEditData[];
@@ -1704,7 +1723,7 @@ export class DialogEdit {
             for (let i: number = 0; i <= gridData.length; i++) {
                 // eslint-disable-next-line
                 this.idCollection.forEach((data: IDependencyEditData, index: number): void => {
-                    if (data.id === getValue('id', gridData[i])) {
+                    if (data.id === getValue('id', gridData[i as number])) {
                         const selectedItem: object = getValue('rowData', args);
                         if (isEdit && getValue('id', selectedItem) === data.id) {
                             return;
@@ -1726,7 +1745,7 @@ export class DialogEdit {
                 let index: number;
                 const selectedItems: CObject[] = [];
                 for (index = 0; index < tempRecords.length; index++) {
-                    selectedItems.push(<CObject>tempRecords[index].taskData);
+                    selectedItems.push(<CObject>tempRecords[index as number].taskData);
                 }
                 this.ganttResources = <Record<string, unknown>[]>extend([], selectedItems);
             } else {
@@ -1742,15 +1761,15 @@ export class DialogEdit {
         const resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
         const ganttData: IGanttData = this.beforeOpenArgs.rowData;
         const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
-        const inputModel: TreeGridModel = this.beforeOpenArgs[itemName];
+        const inputModel: TreeGridModel = this.beforeOpenArgs[itemName as string];
         const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
         let resourceData: Object[] = [];
         if (this.parent.viewType === 'ResourceView') {
             for (let i: number = 0; i < ganttObj.currentViewData.length; i++) {
                 for (let j: number = 0; j < ganttObj.resources.length; j++) {
-                    if (ganttObj.currentViewData[i][ganttObj.taskFields.id] === ganttObj.resources[j][resourceSettings.id] && 
-                        (ganttObj.currentViewData[i].hasChildRecords || isNullOrUndefined(ganttObj.currentViewData[i].parentItem))) {
-                        resourceData.push(ganttObj.resources[j]);
+                    if (ganttObj.currentViewData[i as number][ganttObj.taskFields.id] === ganttObj.resources[j as number][resourceSettings.id] && 
+                        (ganttObj.currentViewData[i as number].hasChildRecords || isNullOrUndefined(ganttObj.currentViewData[i as number].parentItem))) {
+                        resourceData.push(ganttObj.resources[j as number]);
                     }
                 }
             }
@@ -1766,8 +1785,8 @@ export class DialogEdit {
             const resourceDataLength: number = resourceData.length;
             for (count = 0; count < rowResourceLength; count++) {
                 for (index = 0; index < resourceDataLength; index++) {
-                    if (rowResource[count][resourceSettings.id] === resourceData[index][resourceSettings.id]) {
-                        resourceData[index][resourceSettings.unit] = rowResource[count][resourceSettings.unit];
+                    if (rowResource[count as number][resourceSettings.id] === resourceData[index as number][resourceSettings.id]) {
+                        resourceData[index as number][resourceSettings.unit] = rowResource[count as number][resourceSettings.unit];
                     }
                 }
             }
@@ -1776,7 +1795,7 @@ export class DialogEdit {
         const resourceInfo: Object[] = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i: number = 0; i < resourceInfo.length; i++) {
-                this.ganttResources.push(resourceInfo[i]);
+                this.ganttResources.push(resourceInfo[i as number]);
             }
         }
         inputModel.rowSelected = (args: RowSelectEventArgs): void => {
@@ -1811,7 +1830,7 @@ export class DialogEdit {
         if (resources && resources.length > 0) {
             currentViewData.forEach((data: CObject, index: number): void => {
                 for (let i: number = 0; i < resources.length; i++) {
-                    if (data.taskData[this.parent.resourceFields.id] === resources[i][this.parent.resourceFields.id] &&
+                    if (data.taskData[this.parent.resourceFields.id] === resources[i as number][this.parent.resourceFields.id] &&
                         !isNullOrUndefined(resourceTreeGrid.selectionModule) &&
                         resourceTreeGrid.getSelectedRowIndexes().indexOf(index) === -1) {
                         resourceTreeGrid.selectRow(index);
@@ -1826,7 +1845,7 @@ export class DialogEdit {
 
     private renderNotesTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName];
+        const inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName as string];
         const ganttProp: ITaskData = this.editedRecord.ganttProperties;
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);
@@ -1918,7 +1937,7 @@ export class DialogEdit {
         this.preTaskIds = [];
         this.preTableCollection = [];
         for (let i: number = 0; i < flatData.length; i++) {
-            const data: IGanttData = flatData[i];
+            const data: IGanttData = flatData[i as number];
             let currentFlatData: IGanttData = data;
             if (data.parentUniqueID === this.beforeOpenArgs.rowData['uniqueID']) {
                 this.isValidData = false
@@ -1927,7 +1946,7 @@ export class DialogEdit {
                 do {
                     if (currentFlatData.parentItem) {
                         currentFlatData = this.parent.flatData[this.parent.ids.indexOf(currentFlatData.parentItem.taskId)];
-                        if (currentFlatData.uniqueID == this.beforeOpenArgs.rowData['uniqueID']) {
+                        if (currentFlatData.uniqueID === this.beforeOpenArgs.rowData['uniqueID']) {
                             this.isValidData = false;
                             break;
                         }
@@ -1962,20 +1981,20 @@ export class DialogEdit {
             const predecessor: IPredecessor[] = ganttProp.predecessor;
             const idCollection: IDependencyEditData[] = this.preTableCollection;
             for (let i: number = 0; i < predecessor.length; i++) {
-                const from: string = predecessor[i].from.toString();
+                const from: string = predecessor[i as number].from.toString();
                 const preData: IPreData = {};
                 const taskID: string = this.parent.viewType === 'ResourceView' ? ganttProp.taskId : ganttProp.rowUniqueID;
                 if (taskID.toString() !== from) {
                     preData.id = from;
                     for (let index: number = 0; index < idCollection.length; index++) {
-                        if (idCollection[index].value === from) {
-                            preData.name = idCollection[index].text;
+                        if (idCollection[index as number].value === from) {
+                            preData.name = idCollection[index as number].text;
                             break;
                         }
                     }
-                    preData.type = predecessor[i].type;
-                    const offset: number = predecessor[i].offset;
-                    const offsetUnit: string = predecessor[i].offsetUnit;
+                    preData.type = predecessor[i as number].type;
+                    const offset: number = predecessor[i as number].offset;
+                    const offsetUnit: string = predecessor[i as number].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
                     preData.uniqueId = getUid();
                     preDataCollection.push(preData);
@@ -2036,7 +2055,7 @@ export class DialogEdit {
         const tabModel: TabModel = this.beforeOpenArgs.tabModel;
         const items: TabItemModel[] = tabModel.items;
         for (let i: number = 0; i < items.length; i++) {
-            const element: HTMLElement = items[i].content as HTMLElement;
+            const element: HTMLElement = items[i as number].content as HTMLElement;
             let id: string = element.id;
             if (!isNullOrUndefined(id) || id !== '') {
                 id = id.replace(ganttObj.element.id, '');
@@ -2071,7 +2090,7 @@ export class DialogEdit {
                 const newRecords: Object = extend({}, this.addedRecord, true);
                 if (newRecords[this.parent.taskFields.resourceInfo].length) {
                     for (let i: number = 0; i < newRecords[this.parent.taskFields.resourceInfo].length; i++) {
-                        const id: string = newRecords[this.parent.taskFields.resourceInfo][i].toString();
+                        const id: string = newRecords[this.parent.taskFields.resourceInfo][i as number].toString();
                         const parentRecordIndex: number = this.parent.getTaskIds().indexOf('R' + id.toString());
                         if (parentRecordIndex !== -1) {
                             this.parent.editModule.addRecord(this.addedRecord, 'Child', parentRecordIndex);
@@ -2095,14 +2114,14 @@ export class DialogEdit {
             const taskData: Object = {};
 
             if (!isNullOrUndefined(taskSettings.startDate)) {
-                taskData[this.parent.taskFields.startDate] = dataSource[i].startDate;
+                taskData[this.parent.taskFields.startDate] = dataSource[i as number].startDate;
             }
             if (!isNullOrUndefined(taskSettings.endDate)) {
-                taskData[this.parent.taskFields.endDate] = dataSource[i].endDate;
+                taskData[this.parent.taskFields.endDate] = dataSource[i as number].endDate;
             }
             if (!isNullOrUndefined(taskSettings.duration)) {
-                taskData[this.parent.taskFields.duration] = Number(dataSource[i].duration);
-                dataSource[i].duration = taskData[this.parent.taskFields.duration];
+                taskData[this.parent.taskFields.duration] = Number(dataSource[i as number].duration);
+                dataSource[i as number].duration = taskData[this.parent.taskFields.duration];
             }
             userData.push(taskData);
         }
@@ -2131,11 +2150,10 @@ export class DialogEdit {
             gridObj.endEdit();
         }
         if (isEdit && gridObj.currentViewData.length != gridObj.dataSource['length']) {
-             dataSource = <ITaskSegment[]>gridObj.dataSource;
-        } else {
-            dataSource = <ITaskSegment[]>gridObj.currentViewData;
-        }
-        
+            dataSource = <ITaskSegment[]>gridObj.dataSource;
+       } else {
+           dataSource = <ITaskSegment[]>gridObj.currentViewData;
+       }
         this.updateSegmentTaskData(dataSource);
     }
 
@@ -2147,7 +2165,7 @@ export class DialogEdit {
             tasksData = this.addedRecord;
         }
         for (let i: number = 0; i < childNodes.length; i++) {
-            const div: HTMLElement = childNodes[i] as HTMLElement;
+            const div: HTMLElement = childNodes[i as number] as HTMLElement;
             const inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
             if (inputElement) {
                 const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
@@ -2156,28 +2174,30 @@ export class DialogEdit {
                     const valueString: string = controlObj.value.toString();
                     controlObj.value = valueString;
                 }
-                const column: GanttColumnModel = ganttObj.columnByField[fieldName];
+                const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
                 if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                     let read: Function = column.edit.read as Function;
                     if (typeof read === 'string') {
                         read = getObject(read, window);
-                        tasksData[fieldName] = read(inputElement, controlObj.value);
+                        tasksData[fieldName as string] = read(inputElement, controlObj.value);
                     } else {
-                        tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
+                        tasksData[fieldName as string] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
                 } else if (isCustom && column.editType === 'booleanedit') {
                     if (inputElement.checked === true) {
-                        tasksData[fieldName] = true;
+                        tasksData[fieldName as string] = true;
                     } else {
-                        tasksData[fieldName] = false;
+                        tasksData[fieldName as string] = false;
                     }
                 } else {
-                    tasksData[fieldName] = controlObj.value;
+                    tasksData[fieldName as string] = controlObj.value;
                 }
             }
         }
         if (this.isEdit) {
-            this.updateScheduleProperties(this.editedRecord, this.rowData);
+            if (!isCustom) {
+                this.updateScheduleProperties(this.editedRecord, this.rowData);
+            }
             ganttObj.editModule.validateUpdateValues(tasksData, this.rowData, true);
         }
     }
@@ -2229,7 +2249,7 @@ export class DialogEdit {
         let predecessorString: string = '';
         const ids: string[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
-            const preData: IPreData = dataSource[i];
+            const preData: IPreData = dataSource[i as number];
             if (ids.indexOf(preData.id) === -1) {
                 let name: string = preData.id + preData.type;
                 if (preData.offset && preData.offset.indexOf('-') !== -1) {
@@ -2289,7 +2309,7 @@ export class DialogEdit {
             this.updateScheduleProperties(this.editedRecord, this.rowData);
         } else {
             for (let i: number = 0; i < selectedItems.length; i++) {
-                idArray.push(selectedItems[i][this.parent.resourceFields.id]);
+                idArray.push(selectedItems[i as number][this.parent.resourceFields.id]);
                 this.isAddNewResource = true;
             }
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;

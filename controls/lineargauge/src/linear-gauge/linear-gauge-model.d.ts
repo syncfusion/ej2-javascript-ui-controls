@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';import { AxisModel } from './axes/axis-model';import { Axis, Pointer } from './axes/axis';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMouseUp, resized, valueChange } from './model/constant';import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange, getExtraWidth, stringToNumberSize } from './utils/helper';import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';import { dragEnd, dragMove, dragStart } from './model/constant';import { AxisLayoutPanel } from './axes/axis-panel';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { AxisRenderer } from './axes/axis-renderer';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { getThemeStyle } from './model/theme';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../linear-gauge/utils/enum';import { Print } from './model/print';import { PdfExport } from './model/pdf-export';import { ImageExport } from './model/image-export';import { Gradient } from './axes/gradient';
+import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';import { AxisModel } from './axes/axis-model';import { Axis, Pointer } from './axes/axis';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMouseUp, resized, valueChange } from './model/constant';import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';import { Size, valueToCoefficient, calculateShapes, removeElement, getElement, VisibleRange, getExtraWidth, stringToNumberSize } from './utils/helper';import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';import { dragEnd, dragMove, dragStart } from './model/constant';import { AxisLayoutPanel } from './axes/axis-panel';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { AxisRenderer } from './axes/axis-renderer';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { getThemeStyle } from './model/theme';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../linear-gauge/utils/enum';import { Print } from './model/print';import { PdfExport } from './model/pdf-export';import { ImageExport } from './model/image-export';import { Gradient } from './axes/gradient';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -165,35 +165,35 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers after the gauge gets rendered.
      *
-     * @event
+     * @event loaded
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before the gauge gets rendered.
      *
-     * @event
+     * @event load
      */
     load?: EmitType<ILoadEventArgs>;
 
     /**
      * Triggers after completing the animation for pointer.
      *
-     * @event
+     * @event animationComplete
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
      * Triggers before each axis label gets rendered.
      *
-     * @event
+     * @event axisLabelRender
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the pointer is dragged.
      *
-     * @event
+     * @event dragStart
      */
 
     dragStart?: EmitType<IPointerDragEventArgs>;
@@ -201,7 +201,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers while dragging the pointers.
      *
-     * @event
+     * @event dragMove
      */
 
     dragMove?: EmitType<IPointerDragEventArgs>;
@@ -209,21 +209,21 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers after the pointer is dragged.
      *
-     * @event
+     * @event dragEnd
      */
     dragEnd?: EmitType<IPointerDragEventArgs>;
 
     /**
      * Triggers before each annotation gets rendered.
      *
-     * @event
+     * @event annotationRender
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
     /**
      * Triggers before the tooltip get rendered.
      *
-     * @event
+     * @event tooltipRender
      * @deprecated
      */
 
@@ -232,7 +232,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when performing the mouse move operation on gauge area.
      *
-     * @event
+     * @event gaugeMouseMove
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -240,7 +240,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when performing the mouse leave operation from the gauge area.
      *
-     * @event
+     * @event gaugeMouseLeave
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -248,7 +248,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when performing the mouse down operation on gauge area.
      *
-     * @event
+     * @event gaugeMouseDown
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -256,7 +256,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when performing mouse up operation on gauge area.
      *
-     * @event
+     * @event gaugeMouseUp
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -264,7 +264,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers while changing the value of the pointer by UI interaction.
      *
-     * @event
+     * @event valueChange
      */
 
     valueChange?: EmitType<IValueChangeEventArgs>;
@@ -272,7 +272,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers after window resize.
      *
-     * @event
+     * @event resized
      */
 
     resized?: EmitType<IResizeEventArgs>;
@@ -280,7 +280,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      *
-     * @event
+     * @event beforePrint
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;

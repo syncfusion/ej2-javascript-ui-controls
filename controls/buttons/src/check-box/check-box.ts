@@ -209,7 +209,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private clickHandler(event: Event): void {
         if ((event.target as HTMLElement).tagName === 'INPUT' && this.clickTriggered) {
-            if(this.isVue) {
+            if (this.isVue) {
                 this.changeState(this.checked ? 'check' : 'uncheck');
             }
             this.clickTriggered = false;
@@ -389,7 +389,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (rippleSpan) {
             const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
             for (let i: number = 0; i < rippleElem.length - 1; i++) {
-                rippleSpan.removeChild(rippleSpan.childNodes[i]);
+                rippleSpan.removeChild(rippleSpan.childNodes[i as number]);
             }
             rippleMouseHandler(e, rippleSpan);
         }
@@ -592,7 +592,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             if (value && this.value) {
                 if (init) {
                     for (let i: number = 0; i < (this.value as string[]).length; i++) {
-                        if (value === (this.value as string[])[i]) {
+                        if (value === (this.value as string[])[i as number]) {
                             this.changeState('check'); this.setProperties({ 'checked': true }, true);
                         }
                     }
@@ -621,14 +621,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 if (containerAttr.indexOf(key) > -1) {
                     const wrapper: Element = this.getWrapper();
                     if (key === 'class') {
-                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                        addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
                     } else if (key === 'title') {
-                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                        wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else if (key === 'style') {
                         const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
-                        frameSpan.setAttribute(key, this.htmlAttributes[key]);
+                        frameSpan.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else {
-                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                        this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }
             }

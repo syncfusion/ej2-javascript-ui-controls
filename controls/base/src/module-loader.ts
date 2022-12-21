@@ -51,10 +51,10 @@ export class ModuleLoader {
             this.clearUnusedModule(requiredModules);
         }
         for (let i: number = 0; i < reqLength; i++) {
-            const modl: ModuleDeclaration = requiredModules[i];
+            const modl: ModuleDeclaration = requiredModules[parseInt(i.toString(), 10)];
             for (const module of moduleList) {
                 const modName: string = modl.member;
-                if ( module.prototype.getModuleName() === modl.member && !this.isModuleLoaded(modName)) {
+                if ( module && module.prototype.getModuleName() === modl.member && !this.isModuleLoaded(modName)) {
                     const moduleObject: Object = createInstance(module, modl.args);
                     const memberName: string = this.getMemberName(modName);
                     if (modl.isProperty) {

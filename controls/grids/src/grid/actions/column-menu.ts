@@ -56,14 +56,14 @@ export class ColumnMenu implements IAction {
     private wireEvents(): void {
         const elements: HTMLElement[] = this.getColumnMenuHandlers();
         for (let i: number = 0; i < elements.length; i++) {
-            EventHandler.add(elements[i], 'mousedown', this.columnMenuHandlerDown, this);
+            EventHandler.add(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown, this);
         }
     }
 
     private unwireEvents(): void {
         const elements: HTMLElement[] = this.getColumnMenuHandlers();
         for (let i: number = 0; i < elements.length; i++) {
-            EventHandler.remove(elements[i], 'mousedown', this.columnMenuHandlerDown);
+            EventHandler.remove(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown);
         }
     }
 
@@ -141,7 +141,7 @@ export class ColumnMenu implements IAction {
                 }
             }
         }
-        this.columnMenu.open(pos.top, pos.left);
+        this.columnMenu['open'](pos.top, pos.left);
         if (e.preventDefault) {
             e.preventDefault();
         }
@@ -295,7 +295,7 @@ export class ColumnMenu implements IAction {
         this.parent.trigger(events.columnMenuOpen, args);
         for (const item of args.items) {
             const key: string = this.getKeyFromId(item.id);
-            const dItem: ColumnMenuItemModel = this.defaultItems[key];
+            const dItem: ColumnMenuItemModel = this.defaultItems[`${key}`];
             if (this.getDefaultItems().indexOf(key) !== -1 && this.ensureDisabledStatus(key) && !dItem.hide) {
                 this.disableItems.push(item.text);
             }
@@ -345,8 +345,8 @@ export class ColumnMenu implements IAction {
                 && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
                 const sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
                 for (let i: number = 0; i < sortColumns.length; i++) {
-                    if (sortColumns[i].field === this.targetColumn.field
-                        && sortColumns[i].direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
+                    if (sortColumns[parseInt(i.toString(), 10)].field === this.targetColumn.field
+                        && sortColumns[parseInt(i.toString(), 10)].direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
                         status = true;
                     }
                 }
@@ -410,7 +410,7 @@ export class ColumnMenu implements IAction {
 
     private columnMenuOnClose(args: OpenCloseMenuEventArgs): void {
         const parent: string = 'parentObj';
-        if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
+        if (args.items.length > 0 && args.items[0][`${parent}`] instanceof Menu) {
             this.columnMenu.enableItems(this.disableItems, false);
             this.disableItems = [];
             this.columnMenu.showItems(this.hiddenItems);
@@ -467,15 +467,15 @@ export class ColumnMenu implements IAction {
             menuItem = { iconCss: this.FILTER };
             break;
         }
-        this.defaultItems[item] = {
+        this.defaultItems[`${item}`] = {
             text: this.getLocaleText(item), id: this.generateID(item),
             iconCss: menuItem.iconCss ? 'e-icons ' + menuItem.iconCss : null
         };
-        return this.defaultItems[item];
+        return this.defaultItems[`${item}`];
     }
 
     private getLocaleText(item: string): string {
-        return this.l10n.getConstant(this.localeText[item]);
+        return this.l10n.getConstant(this.localeText[`${item}`]);
     }
 
     private generateID(item: string, append?: string): string {
@@ -537,8 +537,8 @@ export class ColumnMenu implements IAction {
 
     private appendFilter(e: Event): void {
         const filter: string = 'Filter';
-        if (!this.defaultItems[filter]) { return; } else {
-            const key: string = this.defaultItems[filter].id;
+        if (!this.defaultItems[`${filter}`]) { return; } else {
+            const key: string = this.defaultItems[`${filter}`].id;
             if (closest((e as Event).target as Element, '#' + key) && !this.isFilterPopupOpen()) {
                 this.getFilter((e as Event).target as Element, key);
             } else if (!closest((e as Event).target as Element, '#' + key) && this.isFilterPopupOpen()) {

@@ -1,9 +1,9 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest } from '@syncfusion/ej2-base';
 import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
-import { RowDragEventArgs, GridColumn } from '@syncfusion/ej2-grids';
+import { RowDragEventArgs, GridColumn} from '@syncfusion/ej2-grids';
 import { GanttModel } from './gantt-model';
 import { TaskProcessor } from './task-processor';
 import { GanttChart } from './gantt-chart';
@@ -21,7 +21,7 @@ import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDesele
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
-import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';
+import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel,LoadingIndicatorModel, LoadingIndicator } from '../models/models';
 import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
 import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';
 import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';
@@ -86,6 +86,19 @@ export class Gantt extends Component<HTMLElement>
     public chartPane: HTMLElement;
     /** @hidden */
     public treeGridPane: HTMLElement;
+     /** @hidden */
+     private contentMaskTable: Element;
+     /** @hidden */
+    private headerMaskTable: Element;
+    /** @hidden */
+    public columnLoop: any;
+    public showIndicator: boolean = true;
+    public singleTier: number = 0;
+    public isVirtualScroll: boolean;
+    public scrollLeftValue: any;
+    public isToolBarClick: any;
+    /** @hidden */
+    public topBottomHeader: any;
     /** @hidden */
     public splitterElement: HTMLElement;
     /** @hidden */
@@ -314,6 +327,20 @@ export class Gantt extends Component<HTMLElement>
     @Property(true)
     public disableHtmlEncode: boolean;
     /**
+     * Configures the loading indicator of the Gantt Chart. Specifies whether to display spinner or shimmer effect during the waiting time on any actions performed in Gantt Chart.
+     *
+     * @default {indicatorType: 'Spinner'}
+     */
+    @Complex<LoadingIndicatorModel>({}, LoadingIndicator)
+    public loadingIndicator: LoadingIndicatorModel;
+    /**
+     * Specifies whether to display shimmer effect during scrolling action in virtual scrolling feature. If disabled, spinner is shown instead of shimmer effect.
+     *
+     * @default true
+     */
+     @Property(true)
+    public enableVirtualMaskRow: boolean;
+    /**
      * Enables or disables the focusing the task bar on click action.
      *
      * @default true
@@ -449,6 +476,8 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Configures the grid lines in tree grid and gantt chart.
+     * 
+     *  @default 'Horizontal'
      */
     @Property('Horizontal')
     public gridLines: GridLine;
@@ -486,6 +515,8 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Defines the baseline bar color.
+     * 
+     *  @default null
      */
     @Property()
     public baselineColor: string;
@@ -575,7 +606,8 @@ export class Gantt extends Component<HTMLElement>
     public rowHeight: number;
     /**
      * Defines height of taskbar element in Gantt.
-     *
+     * 
+     * @default null
      * @aspType int?
      */
     @Property(null)
@@ -697,6 +729,8 @@ export class Gantt extends Component<HTMLElement>
     public taskType: TaskType;
     /**
      * Defines the view type of the Gantt.
+     * 
+     *  @default 'ProjectView'
      */
     @Property('ProjectView')
     public viewType: ViewType;
@@ -887,6 +921,8 @@ export class Gantt extends Component<HTMLElement>
     public showOverAllocation: boolean;
     /**
      * Specifies task schedule mode for a project.
+     * 
+     * @default 'Auto'
      */
     @Property('Auto')
     public taskMode: ScheduleMode;
@@ -933,11 +969,11 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public isFromOnPropertyChange: boolean = false;
-    
+        
     /**
      * @private
      */
-     public isFromRenderBaseline: boolean = false;
+    public isFromRenderBaseline: boolean = false;
 
     /**
      * @private
@@ -1594,7 +1630,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To check whether the date is in DST.
      *
-     * @param {Date} date .
+     * @param {Date} date - Defines the date to check whether it is DST.
      * @returns {boolean} .
      * @private
      */
@@ -1683,8 +1719,332 @@ export class Gantt extends Component<HTMLElement>
         }
         this.splitterModule.renderSplitter();
         this.notify('renderPanels', null);
-        this.showSpinner();
+        if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === "Shimmer"){
+            this.showMaskRow();
+        } else {
+            this.showSpinner();
+        }
         this.dataOperation.checkDataBinding();
+    }
+    public hideMaskRow () {
+        let isTablePresent:any = this.element.querySelectorAll('.e-masked-table').length
+        if (!isNullOrUndefined(this.contentMaskTable) && isTablePresent !=0) {
+            const maskTable: Element = this.contentMaskTable;
+            remove(maskTable);
+            this.contentMaskTable = null
+        }
+        isTablePresent = this.element.querySelectorAll('.e-masked-table').length
+        if (!isNullOrUndefined(this.headerMaskTable) && isTablePresent !=0) {
+            const maskTable: Element = this.headerMaskTable;
+            remove(maskTable);
+            this.headerMaskTable = null
+        }
+        while ((this.element.querySelectorAll('.e-table-background')).length != 0) {
+            this.element.querySelectorAll('.e-table-background')[0].remove()
+        }
+        while ((this.element.querySelectorAll('.e-temp-timeline')).length != 0) {
+            this.element.querySelectorAll('.e-temp-timeline')[0].remove()
+        }
+        if (this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer).length != 0) {
+            for (var i = 0; i < this.singleTier; i++) {
+                if (!isNullOrUndefined(this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[i])) {
+                    this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[i]['style'].visibility = "visible";
+                }
+            }
+        }
+        if (!isNullOrUndefined(this.element.querySelector('.' + cls.timelineHeaderContainer))) {
+            this.element.querySelector('.' + cls.timelineHeaderContainer)['style'].position = "relative";
+        }
+        if (!isNullOrUndefined(this.element.getElementsByClassName(cls.chartBodyContent)[0])) {
+            this.element.getElementsByClassName(cls.chartBodyContent)[0]['style'].visibility  = "visible"
+        }
+    }
+    public showMaskRow (){
+        const ganttHeader: Element = this.chartPane.childNodes[0].childNodes[0] as Element;
+        this.scrollLeftValue = this.chartPane.childNodes[0].childNodes[0]['scrollLeft']
+        const ganttContent: Element = this.chartPane.childNodes[0].childNodes[1] as Element;
+        if (!this.contentMaskTable) {
+            if (ganttContent) {
+                let content: Element = ganttContent;
+                this.renderBackGround(content);
+                if (this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer).length != 0) {
+                    this.singleTier = this.timelineModule.isSingleTier ? 1:2;
+                    for (var i = 0; i < this.singleTier; i++) {
+                        this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[i]['style'].visibility = "hidden";
+                    }
+                }
+                if (this.singleTier === 0) {
+                    this.singleTier = 2;
+                }
+                this.element.getElementsByClassName(cls.chartBodyContent)[0]['style'].visibility  = "hidden"
+                this.contentMaskTable = this.contentMaskTable = this.createMaskTable(content)
+            }
+            if (ganttHeader) {
+                this.element.querySelector('.' + cls.timelineHeaderContainer)['style'].position = "static";
+                let content: Element = ganttHeader;
+                this.renderHeaderBackground(content);
+                this.headerMaskTable = this.headerMaskTable = this.createMaskTable(content)
+            }
+        }
+    }
+    private renderHeaderBackground (element:any):any {
+        const parentElement: Element = element;
+        const timelineHeight: any = element.getBoundingClientRect().height;
+        const header: boolean = closest(parentElement,'.' + cls.timelineHeaderContainer) ? true : false;
+        if (header) {
+            const div:Element = this.createElement('div', { className: 'e-table-background'});
+            const tempRow:Element = this.createElement('tr', { className: 'e-masked-row e-row', attrs: {
+                style: 'height: ' + timelineHeight  + 'px;'
+            } });
+            let backgroundLines:number = 0;
+            let containerWidth = Math.round(element.getBoundingClientRect().width);
+            for (let i:number = 0; i < 3; i++) {
+                if (this.enableRtl) {
+                    div.appendChild(this.createElement('div', { className: 'e-div-background', attrs: {
+                        style: 'left: ' + (containerWidth -= (
+                            (160))) + 'px; top:0px;'
+                    }}));
+                } else {
+                    div.appendChild(this.createElement('div', { className: 'e-div-background', attrs: {
+                        style: 'left: ' + (backgroundLines += (
+                            (160))) + 'px; top:0px;'
+                    }}));
+                }
+                
+            }
+            parentElement.insertBefore(div, parentElement.firstChild);
+        }
+    }
+    private renderBackGround (element:any):any {
+        const parentElement: Element = element;
+        const timelineHeight: any = element.getBoundingClientRect().height;
+        const content: boolean = closest(parentElement, '.' + cls.chartBodyContainer) ? true : false;
+        if (content) {
+            const div:Element = this.createElement('div', { className: 'e-table-background'});
+            const tempRow:Element = this.createElement('tr', { className: 'e-masked-row e-row', attrs: {
+                style: 'height: ' + timelineHeight  + 'px;'
+            } });
+            let backgroundLines:number = 0;
+            let containerWidth = Math.round(element.getBoundingClientRect().width);
+            for (let i:number = 0; i < 3; i++) {
+                if (this.enableRtl) {
+                    div.appendChild(this.createElement('div', { className: 'e-div-background', attrs: {
+                        style: 'left: ' + (containerWidth -= (160)) + 'px;z-index:1;'
+                    }}));
+                } else {
+                    div.appendChild(this.createElement('div', { className: 'e-div-background', attrs: {
+                        style: 'left: ' + (backgroundLines += (160)) + 'px;z-index:1;'
+                    }}));
+                }
+            }
+            parentElement.insertBefore(div, parentElement.firstChild);
+        }
+    }
+    private createMaskTable(element: Element): any {
+        const parentElement: Element = element;
+        const shimmerContainerHeight: any = element.getBoundingClientRect().height;
+        const header: boolean = closest(parentElement, '.' + cls.timelineHeaderContainer) ? true : false;
+        let maskTable:any;
+        if (header) {
+            maskTable = this.createEmptyTimeLineTable(shimmerContainerHeight);
+            maskTable.style.position = 'sticky';
+            maskTable.style.left = 0 + 'px';
+            if (this.enableRtl) {
+               maskTable.style.removeProperty('left');
+            }
+        } else {
+            maskTable = this.createEmptyMaskTable(shimmerContainerHeight);
+            maskTable.style.position = 'absolute';
+            maskTable.style.zIndex = 1;
+        }
+        if (!header) {
+            maskTable.style.height = element.getBoundingClientRect().height + 'px';
+            parentElement.insertBefore(maskTable,parentElement.firstChild)
+        } else {
+                maskTable.style.height = element.getBoundingClientRect().height + 'px';
+                let div:any = this.createElement('div', { className: 'e-temp-timeline' });
+                div.style.width = 614 + 'px';
+                div.style.position = 'sticky';
+                if (this.enableRtl) {
+                    div.style['margin-right'] = Math.abs(this.scrollLeftValue) + 'px';
+                } else {
+                    div.style['margin-left'] = this.scrollLeftValue + 'px';
+                }
+                div.appendChild(maskTable);
+                parentElement.insertBefore(div, parentElement.firstChild);
+        }
+        return maskTable;
+    }
+    private createEmptyTimeLineTable (timelineHeight:any):any {
+        const table: Element = this.createElement('table', { className: 'e-table e-masked-table'});
+        const tbody: Element = this.createElement('tbody', { className: 'e-masked-tbody'});
+        let row:any =[];
+        const duplicateRow: Element = this.createElement('tr', { className: 'e-masked-row e-row', attrs: {
+            style: 'height: ' + timelineHeight/2 + 'px;'
+        }});
+        for (let i: number = 0; i < this.singleTier; i++) {
+            row.push(duplicateRow.cloneNode(true))
+        }
+        this.topBottomHeader = 0;
+        for (let i: number = 0; i < row.length; i++) {
+            tbody.appendChild(this.applyTimelineMaskRow(row[i]));
+            this.topBottomHeader = this.topBottomHeader + 1;
+        }
+        table.appendChild(tbody);
+        (table as HTMLElement).style.width = 100 +'%';
+        return table
+    }
+    private applyTimelineMaskRow (row: Element):any {
+        const maskRow: Element = row;
+        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+        for (let i:number = 0; i < maskRow.childNodes.length-1; i++) {
+            maskRow.childNodes[i]['style']['width'] = 166 + 'px'
+        }
+        const maskCells: Element[] = [].slice.call(maskRow.childNodes);
+        for (let i: number = 0; i < maskCells.length; i++) {
+            const maskCell: Element = maskCells[i];
+            switch (this.topBottomHeader) {
+                case 0 :
+                    if (this.enableRtl) {
+                        maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-timelineHeader"></span>';
+                        maskCell.children[0]['style'].left = -20 + 'px';
+                    } else {
+                        maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-timelineHeader"></span>';
+                    }
+                    break;
+                case 1 :
+                    maskCell.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+                    maskCell.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+                    maskCell.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+                    const innerMaskCells: Element[] = [].slice.call(maskCell.childNodes);
+                    for (let i: number = 0; i < innerMaskCells.length; i++) {
+                        const htmlInner: Element = innerMaskCells[i];
+                        if (i === 0) {
+                            if (this.enableRtl) {
+                                htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML"></span>';
+                                htmlInner.children[0]['style'].left = -14 + 'px';
+                            } else {
+                                htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML"></span>';
+                            } 
+                        } else if (i === 1) {
+                            if (this.enableRtl) {
+                                htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML1"></span>';
+                                htmlInner.children[0]['style'].left = -30 + 'px';
+                            } else {
+                                htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML1"></span>';
+                            }
+                        } else {
+                            if (this.enableRtl) {
+                                htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML2"></span>';
+                                htmlInner.children[0]['style'].left = -60 + 'px';
+                            } else {
+                                htmlInner.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-innerHTML2"></span>';
+                            } 
+                        }
+                    }
+                    break;
+            }
+        }
+        return maskRow;
+    }
+    private createEmptyMaskTable (timelineHeight:any):any {
+        const table: Element = this.createElement('table', { className: 'e-table e-masked-table'});
+        const tbody: Element = this.createElement('tbody', { className: 'e-masked-tbody'});
+        let row:any =[];
+        const duplicateRow: Element = this.createElement('tr', { className: 'e-masked-row e-row', attrs: {
+            style: 'height: ' + timelineHeight/7 + 'px;'
+        } });
+        this.columnLoop = 0;
+        for (let i: number = 0; i < 6; i++) {
+            row.push(duplicateRow.cloneNode(true))
+        }
+        for (let j: number = 0; j < row.length; j++) {
+            if (this.columnLoop < 4) {
+                this.columnLoop = this.columnLoop + 1;
+            }
+            else if (this.columnLoop === 4) {
+                this.columnLoop = 1;
+            }
+            tbody.appendChild(this.applyMaskRow(row[j]));
+        }
+        table.appendChild(tbody);
+        (table as HTMLElement).style.width = 100 +'%';
+        let div:any = this.createElement('div', { className: 'e-temp-container' });
+        div.style.width = 'calc(100% - ' + 17 + 'px)';
+        div.style.overflow = 'hidden';
+        div.appendChild(table);
+        return div;
+    }
+    private applyMaskRow(row: Element): Element {
+        const maskRow: Element = row;
+        if (this.columnLoop < 4){
+            maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
+            maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
+        } else {
+            maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
+        }
+        const maskCells: Element[] = [].slice.call(maskRow.childNodes);
+        for (let i: number = 0; i < maskCells.length; i++) {
+            const maskCell: Element = maskCells[i];
+            switch (this.columnLoop) {
+                case 1:
+                    if (i === 0) {
+                        if (this.enableRtl) {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell01"></span>';
+                            maskCell.children[0]['style'].left = -14 + 'px';
+                        } else {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell01"></span>';
+                        }
+                    }
+                    else {
+                        maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell02"></span>';
+                    }
+                    break;
+                case 2:
+                    if (i === 0) {
+                        if (this.enableRtl) {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell03"></span>';
+                            maskCell.children[0]['style'].left = -14 + 'px';
+                        } else {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell03"></span>';
+                        }
+                    }
+                    else { 
+                        maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell04"></span>';
+                    }
+                    break;
+                case 3:
+                    if (i === 0) {
+                        if (this.enableRtl) {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell05"></span>';
+                            maskCell.children[0]['style'].left = -64 + 'px';
+                        } else {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell05"></span>';
+                        }
+                    }
+                    else {
+                        if (this.enableRtl) {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell06"></span>';
+                            maskCell.children[0]['style'].left = -192 + 'px';
+                        } else {
+                            maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell06"></span>'; 
+                        }
+                    }
+                    break;
+                case 4:
+                    if (this.enableRtl) {
+                        maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell07"></span>';
+                        maskCell.children[0]['style'].left = -388 + 'px';
+                    } else {
+                        maskCell.innerHTML = '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave e-maskcell07"></span>';
+                    }
+                    break;
+            }
+        }
+        return maskRow;
     }
     /**
      * Method used to show spinner.
@@ -1711,7 +2071,7 @@ export class Gantt extends Component<HTMLElement>
         this.timelineModule.calculateZoomingLevelsPerDayWidth(); // To calculate the perDaywidth
     }
     /**
-     * @param {boolean} isChange .
+     * @param {boolean} isChange -Defines whether task data is changed.
      * @returns {void} .
      * @private
      */
@@ -1811,7 +2171,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method for updating row height value in connector line collections
      *
-     * @param {IConnectorLineObject[]} collection .
+     * @param {IConnectorLineObject[]} collection  -Defines the CollectorLine collection.
      * @returns {void} .
      * @private
      */
@@ -1821,7 +2181,7 @@ export class Gantt extends Component<HTMLElement>
                 && this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
             if (rowHeight && !isNaN(rowHeight)) {
                 for (let count: number = 0; count < collection.length; count++) {
-                    collection[count].rowHeight = rowHeight;
+                    collection[count as number].rowHeight = rowHeight;
                 }
             }
         }
@@ -1847,19 +2207,19 @@ export class Gantt extends Component<HTMLElement>
         this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
     }
     /**
-     * @param {IGanttData} records .
+     * @param {IGanttData} records -Defines the delete record collections.
      * @returns {IGanttData} .
      * @private
      */
     public getRecordFromFlatdata(records: IGanttData[]): IGanttData[] {
         const updatedRecord: IGanttData[] = [];
         for (let i: number = 0; i < records.length; i++) {
-            updatedRecord.push(this.getTaskByUniqueID(records[i].uniqueID));
+            updatedRecord.push(this.getTaskByUniqueID(records[i as number].uniqueID));
         }
         return updatedRecord;
     }
     /**
-     * @param {object} args .
+     * @param {object} args -Update the gantt element content height.
      * @returns {void} .
      * @private
      */
@@ -2139,17 +2499,17 @@ export class Gantt extends Component<HTMLElement>
         for (let i: number = 0; i < gridColumns.length; i++) {
             gridColumn = {};
             for (let j = 0; j < this.columns.length; j++) {
-                if (this.columns[j]['field'] == gridColumns[i].field) {
-                    for (const prop of Object.keys(this.columns[j])) {
-                        if (!isUndefined(this.columns[j][prop])) {
-                            gridColumn[prop] = gridColumns[i][prop];
+                if (this.columns[j as number]['field'] == gridColumns[i as number].field) {
+                    for (const prop of Object.keys(this.columns[j as number])) {
+                        if (!isUndefined(this.columns[j as number][prop as string])) {
+                            gridColumn[prop as string] = gridColumns[i as number][prop as string];
                         }
-                        gridColumn.visible = gridColumns[i].visible;
-                        gridColumn.width = gridColumns[i].width;
+                        gridColumn.visible = gridColumns[i as number].visible;
+                        gridColumn.width = gridColumns[i as number].width;
                     }
-                    this.columns[j] = (gridColumn);
-                    if (this.columns[j]['type'] !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
-                        this.columns[j]['template'] = temp;
+                    this.columns[j as number] = (gridColumn);
+                    if (this.columns[j as number]['type'] !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
+                        this.columns[j as number]['template'] = temp;
                     }
                 }
             }
@@ -2200,7 +2560,11 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.height = '100%';
                 this.notify('tree-grid-created', {});
                 this.createGanttPopUpElement();
-                this.hideSpinner();
+                if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === "Shimmer") {
+                    this.hideMaskRow();
+                } else {
+                    this.hideSpinner();
+                }
                 setValue('isGanttCreated', true, args);
                 this.renderComplete();
             }
@@ -2211,6 +2575,11 @@ export class Gantt extends Component<HTMLElement>
             this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
         }
         this.notify('recordsUpdated', {});
+        for (let i: number = 0; i<document.getElementsByClassName('e-timeline-header-table-container').length ; i++) {
+            for (let j: number = 0; j<document.getElementsByClassName('e-timeline-header-table-container')[i as number].children[0].children[0].children.length; j++) {
+                (<HTMLElement>document.getElementsByClassName('e-timeline-header-table-container')[i as number].children[0].children[0].children[j as number].children[0]).setAttribute('tabindex', '-1');
+            }
+        }
         if (this.enableCriticalPath && this.criticalPathModule) {
             let criticalModule: CriticalPath = this.criticalPathModule;
             this.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,true, criticalModule.predecessorCollectionTaskIds);
@@ -2243,8 +2612,8 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Called internally, if any of the property value changed.
      *
-     * @param {GanttModel} newProp .
-     * @param {GanttModel} oldProp .
+     * @param {GanttModel} newProp - Defines the New GanttModel.
+     * @param {GanttModel} oldProp - Defines the old GanttModel.
      * @returns {void} .
      * @private
      */
@@ -2261,7 +2630,7 @@ export class Gantt extends Component<HTMLElement>
             case 'allowResizing':
             case 'allowReordering':
             case 'enableImmutableMode':
-                this.treeGrid[prop] = this[prop];
+                this.treeGrid[prop as string] = this[prop as string];
                 this.treeGrid.dataBind();
                 break;
             case 'workWeek':
@@ -2306,6 +2675,11 @@ export class Gantt extends Component<HTMLElement>
                 this.dataOperation.checkDataBinding(true);
                 break;
             case 'enableCriticalPath':
+                if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === "Shimmer") {
+                    this.hideMaskRow();
+                } else {
+                    this.hideSpinner();
+                }
                 if (this.enableCriticalPath && this.criticalPathModule) {
                     this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
                     let criticalModule: CriticalPath = this.criticalPathModule;
@@ -2498,10 +2872,10 @@ export class Gantt extends Component<HTMLElement>
         const ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
             'commandTemplate', 'commands', 'dataSource'];
         for (let i: number = 0; i < keyEntity.length; i++) {
-            const currentObject: Object = this[keyEntity[i]];
-            for (let k: number = 0, val: string[] = ignoreOnPersist[keyEntity[i]]; (!isNullOrUndefined(val) && k < val.length); k++) {
-                const objVal: string = val[k];
-                delete currentObject[objVal];
+            const currentObject: Object = this[keyEntity[i as number]];
+            for (let k: number = 0, val: string[] = ignoreOnPersist[keyEntity[i as number]]; (!isNullOrUndefined(val) && k < val.length); k++) {
+                const objVal: string = val[k as number];
+                delete currentObject[objVal as string];
             }
         }
         this.ignoreInArrays(ignoreOnColumn, <Column[]>this.columns);
@@ -2509,13 +2883,13 @@ export class Gantt extends Component<HTMLElement>
     }
     private ignoreInArrays(ignoreOnColumn: string[], columns: Column[]): void {
         for (let i: number = 0; i < columns.length; i++) {
-            this.ignoreInColumn(ignoreOnColumn, columns[i]);
+            this.ignoreInColumn(ignoreOnColumn, columns[i as number]);
         }
     }
 
     private ignoreInColumn(ignoreOnColumn: string[], column: Column): void {
         for (let i: number = 0; i < ignoreOnColumn.length; i++) {
-            delete column[ignoreOnColumn[i]];
+            delete column[ignoreOnColumn[i as number]];
             column.filter = {};
         }
     }
@@ -2531,8 +2905,8 @@ export class Gantt extends Component<HTMLElement>
         const modules: string[] = ['ganttChartModule', 'timelineModule', 'chartRowsModule',
             'treeGridModule', 'ganttDataUpdatesModule', 'dateValidationModule', 'tooltipModule'];
         for (let i: number = 0; i < modules.length; i++) {
-            if (this[modules[i]]) {
-                this[modules[i]] = null;
+            if (this[modules[i as number]]) {
+                this[modules[i as number]] = null;
             }
         }
         if (this.keyboardModule) {
@@ -2690,12 +3064,12 @@ export class Gantt extends Component<HTMLElement>
             this.treeGrid = new TreeGrid();
         }
         const persist1: string = 'mergePersistGridData';
-        this.treeGrid.grid[persist1].apply(this);
+        this.treeGrid.grid[persist1 as string].apply(this);
     }
 
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         const persist2: string = 'mergeColumns';
-        this.treeGrid.grid[persist2].apply(this, [storedColumn, columns]);
+        this.treeGrid.grid[persist2 as string].apply(this, [storedColumn, columns]);
     }
     /**
      * Clears all the sorted columns of the Gantt.
@@ -2727,7 +3101,7 @@ export class Gantt extends Component<HTMLElement>
             }
             if (chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
-                    removeClass([chartRowsTD[c]], className);
+                    removeClass([chartRowsTD[c as number]], className);
                 }
             }
         } else if (this.gridLines === 'Horizontal') {
@@ -2736,7 +3110,7 @@ export class Gantt extends Component<HTMLElement>
             }
             if (!chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
-                    addClass([chartRowsTD[c]], className);
+                    addClass([chartRowsTD[c as number]], className);
                 }
             }
         } else if (this.gridLines === 'Both') {
@@ -2749,7 +3123,7 @@ export class Gantt extends Component<HTMLElement>
             }
             if (!chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
-                    addClass([chartRowsTD[c]], className);
+                    addClass([chartRowsTD[c as number]], className);
                 }
             }
         } else if (this.gridLines === 'None') {
@@ -2758,7 +3132,7 @@ export class Gantt extends Component<HTMLElement>
             }
             if (chartRowsTD[0].classList.contains(className)) {
                 for (let c: number = 0; c < chartRowsTD.length; c++) {
-                    removeClass([chartRowsTD[c]], className);
+                    removeClass([chartRowsTD[c as number]], className);
                 }
             }
         }
@@ -2854,10 +3228,10 @@ export class Gantt extends Component<HTMLElement>
         const containerDiv: HTMLElement = createElement('div');
         for (let n: number = 0; n < thLength; n++) {
             leftPos = n === 0 ? -1 : (leftPos + parseFloat(thWidth));
-            thWidth = (thElements[n] as HTMLElement).style.width;
+            thWidth = (thElements[n as number] as HTMLElement).style.width;
             const divElement: HTMLElement = createElement('div', {
                 className: 'e-line-container-cell',
-                styles: 'left:' + leftPos + 'px'
+                styles: (this.enableRtl?'right:' + (leftPos + 1) : 'left:' + leftPos) + 'px'
             });
             containerDiv.appendChild(divElement);
         }
@@ -2993,12 +3367,17 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      *
-     * @param {object} args .
+     * @param {object} args -Defines the edited event args.
      * @returns {void} .
      * @private
      */
     public actionBeginTask(args: object): boolean | void {
         this.trigger('actionBegin', args);
+        if (!isNullOrUndefined(this.loadingIndicator) &&  this.loadingIndicator.indicatorType === "Shimmer") {
+            this.showMaskRow();
+        } else {
+            this.showSpinner();
+        }
     }
 
     /**
@@ -3036,7 +3415,7 @@ export class Gantt extends Component<HTMLElement>
         if (!isNullOrUndefined(left)) {
             left = this.ganttChartModule.scrollElement.scrollWidth <= left ?
                 this.ganttChartModule.scrollElement.scrollWidth : left;
-            this.ganttChartModule.scrollObject.setScrollLeft(left);
+            this.ganttChartModule.scrollObject.setScrollLeft(left, this.enableRtl? -1: 0);
         }
         if (!isNullOrUndefined(top)) {
             top = this.ganttChartModule.scrollElement.scrollHeight <= top ? this.ganttChartModule.scrollElement.scrollHeight : top;
@@ -3068,8 +3447,8 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Get parent task by clone parent item.
      *
-     * @param {IGanttData} ganttRecord .
-     * @param {number} level .
+     * @param {IGanttData} ganttRecord -Defines the Gantt record.
+     * @param {number} level -Defines the selected record level.
      * @returns {IGanttData} .
      * @hidden
      */
@@ -3189,7 +3568,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To update timeline at start point with one unit.
      *
-     * @param {string} mode .
+     * @param {string} mode - Render previous span of Timeline.
      * @returns {void} .
      * @public
      */
@@ -3201,7 +3580,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To update timeline at end point with one unit.
      *
-     * @param {string} mode .
+     * @param {string} mode - Render next span of Timeline.
      * @returns {void} .
      * @public
      */
@@ -3282,7 +3661,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method to clear edited collections in gantt set edit flag value
      *
-     * @param {boolean} isStart .
+     * @param {boolean} isStart -Defines whether to initiate edit action.
      * @returns {void} .
      * @private
      */
@@ -3405,7 +3784,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public setSplitterPosition(value: string | number, type: string): void {
         const tempSplitterSettings: Object = {};
-        tempSplitterSettings[type] = value;
+        tempSplitterSettings[type as string] = value;
         const splitterPosition: string = this.splitterModule.calculateSplitterPosition(
             tempSplitterSettings);
         const pane1: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
@@ -3429,8 +3808,8 @@ export class Gantt extends Component<HTMLElement>
             this.ganttChartModule.expandGanttRow(args);
         } else {
             for (let i: number = 0; i < index.length; i++) {
-                if (typeof index[i] === 'number') {
-                    const ind: number = index[i];
+                if (typeof index[i as number] === 'number') {
+                    const ind: number = index[i as number];
                     const args: object = this.contructExpandCollapseArgs(null, ind);
                     this.ganttChartModule.isExpandCollapseFromChart = true;
                     this.ganttChartModule.expandGanttRow(args);
@@ -3489,7 +3868,7 @@ export class Gantt extends Component<HTMLElement>
             if (this.viewType === 'ResourceView') {
                 this.editModule.addRowPosition = rowPosition;
                 this.editModule.addRowIndex = rowIndex;
-                let resources: Object[]
+                let resources: Object[];
                 if (!isNullOrUndefined(data)) {
                      resources = data[this.taskFields.resourceInfo];
                 }
@@ -3497,7 +3876,7 @@ export class Gantt extends Component<HTMLElement>
                 let parentTask: IGanttData;
                 if (!isNullOrUndefined(resources) && resources.length) {
                     for (let i: number = 0; i < resources.length; i++) {
-                        id = (typeof resources[i] === 'object') ? resources[i][this.resourceFields.id] :
+                        id = (typeof resources[i as number] === 'object') ? resources[i as number][this.resourceFields.id] :
                             resources[0];
                         parentTask = this.flatData[this.getTaskIds().indexOf('R' + id)];
                         if (parentTask) {
@@ -3505,7 +3884,7 @@ export class Gantt extends Component<HTMLElement>
                         }
                     }
                     if (parentTask && parentTask.childRecords.length || parentTask.level === 0) {
-                        const dropChildRecord: IGanttData = parentTask.childRecords[rowIndex];
+                        const dropChildRecord: IGanttData = parentTask.childRecords[rowIndex as number];
                         if (dropChildRecord) {
                             const position: RowPosition = rowPosition === 'Above' || rowPosition === 'Below' ? rowPosition :
                                 'Child';
@@ -3546,8 +3925,8 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To update existing taskId with new unique Id.
      *
-     * @param {number | string} currentId .
-     * @param {number | string} newId .
+     * @param {number | string} currentId - Defines the current Id of the record.
+     * @param {number | string} newId - Defines the new Id of the record.
      * @returns {void} .
      */
     public updateTaskId(currentId: number | string, newId: number | string): void {
@@ -3649,9 +4028,9 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Reorder the rows based on given indexes and position
      *
-     * @param {number[]} fromIndexes .
-     * @param {number} toIndex .
-     * @param {string} position .
+     * @param {number[]} fromIndexes - Defines the Dragged record index.
+     * @param {number} toIndex - Defines the Dropped record index.
+     * @param {string} position -Defines the position of the dropped row.
      * @returns {void} .
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
@@ -3669,7 +4048,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.editModule && this.editSettings.allowEditing) {
             const tasks: TaskFieldsModel = this.taskFields;
             const record: IGanttData = this.updatedRecords.length > 0 ?
-                !isNullOrUndefined(this.updatedRecords[index]) ? this.updatedRecords[index] : null : null;
+                !isNullOrUndefined(this.updatedRecords[index as number]) ? this.updatedRecords[index as number] : null : null;
             if (!isNullOrUndefined(record)) {
                 data[tasks.id] = record[tasks.id];
                 this.editModule.updateRecordByID(data);
@@ -3765,9 +4144,9 @@ export class Gantt extends Component<HTMLElement>
         } else if (!isNullOrUndefined(index)) {
             chartRow = this.getRowByIndex(index);
             rowIndex = getValue('rowIndex', chartRow);
-            record = this.currentViewData[rowIndex];
+            record = this.currentViewData[rowIndex as number];
         }
-        const gridRow: Node = this.treeGrid.getRows()[rowIndex];
+        const gridRow: Node = this.treeGrid.getRows()[rowIndex as number];
         return { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
     }
 
@@ -3781,7 +4160,7 @@ export class Gantt extends Component<HTMLElement>
         try {
             const gridRows: NodeList = this.element.querySelectorAll('.e-chart-row');
             if (!isNullOrUndefined(index)) {
-                return gridRows[index] as HTMLElement;
+                return gridRows[index as number] as HTMLElement;
             } else {
                 return null;
             }
@@ -3825,7 +4204,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method to get class name for unscheduled tasks
      *
-     * @param {ITaskData} ganttProp .
+     * @param {ITaskData} ganttProp -Defines the Gantt propertie.
      * @returns {boolean} .
      * @private
      */
@@ -3899,7 +4278,7 @@ export class Gantt extends Component<HTMLElement>
         const clientTop: number = document.documentElement.clientTop || document.body.clientTop || 0;
         const clientLeft: number = document.documentElement.clientLeft || document.body.clientLeft || 0;
         const top: number = box.top + scrollTop - clientTop;
-        const left: number = box.left + scrollLeft - clientLeft;
+        const left: number = this.enableRtl ? box.right + scrollLeft - clientLeft : box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left), width: box.width, height: box.height };
     }
 
@@ -3926,10 +4305,10 @@ export class Gantt extends Component<HTMLElement>
             for (let prop of Object.keys(args)) { // eslint-disable-line
                 switch (prop) {
                 case 'projectStartDate':
-                    this.setProperties({ projectStartDate: args[prop] }, true);
+                    this.setProperties({ projectStartDate: args[prop as string] }, true);
                     break;
                 case 'projectEndDate':
-                    this.setProperties({ projectEndDate: args[prop] }, true);
+                    this.setProperties({ projectEndDate: args[prop as string] }, true);
                     break;
                 }
             }
@@ -4182,7 +4561,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * To change the mode of a record.
      *
-     * @param {object} data .
+     * @param {object} data - Use to change the TaskMode either manual, auto or custom.
      * @returns {void} .
      */
     public changeTaskMode(data: Object): void {

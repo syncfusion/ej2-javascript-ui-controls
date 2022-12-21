@@ -168,8 +168,8 @@ export class AnnotationBase {
         }
 
         updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate',
-                             chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index], undefined,
-                             annotationRendered);
+                             chart.stockChart ? chart.stockChart.annotations[index as number] : this.control.annotations[index as number],
+                             undefined, annotationRendered);
 
     }
 
@@ -191,7 +191,7 @@ export class AnnotationBase {
                     break;
                 }
             } else {
-                if (accPoint.x == this.annotation.x && accPoint.y == this.annotation.y) {
+                if (accPoint.x === this.annotation.x && accPoint.y === this.annotation.y) {
                     point = accPoint;
                     break;
                 }

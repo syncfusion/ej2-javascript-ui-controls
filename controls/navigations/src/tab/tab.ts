@@ -262,6 +262,15 @@ export class TabItem extends ChildProperty<TabItem> {
      */
     @Property()
     public id: string;
+    /**
+     * Specifies the tab order of the Tabs items. When positive values assigned, it allows to switch focus to the next/previous tabs items with Tab/ShiftTab keys.
+     * By default, user can able to switch between items only via arrow keys.
+     * If the value is set to 0 for all tabs items, then tab switches based on element order.
+     *
+     * @default -1
+     */
+    @Property(-1)
+    public tabIndex: number
 }
 
 /** @hidden */
@@ -742,9 +751,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.setContentHeight(true);
                 this.select(this.selectedItem);
             }
+            this.tbItem = selectAll('.' + CLS_TB_ITEM, this.hdrEle);
             if (!isNOU(this.tbItem)) {
                 for (let i: number = 0; i < this.items.length; i++) {
-                    if (this.items[i]) {
+                    if (this.tbItem[i]) {
                         const tabID: string = this.items[i].id;
                         this.tbItem[i].setAttribute('data-id', tabID);
                     }
@@ -844,7 +854,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!this.isReplace && tbItems.length > 0) {
             const idList: number[] = [];
             tbItems.forEach((item: HTMLElement) => {
-                idList.push(parseInt(item.id.slice(item.id.indexOf('_') + 1), 10));
+                idList.push(this.getIndexFromEle(item.id));
             });
             maxId = Math.max(...idList);
         }
@@ -866,8 +876,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
             let itemIndex: number;
             if (this.isReplace && !isNOU(this.tbId) && this.tbId !== '') {
-                const num: number = (this.tbId.indexOf('_'));
-                itemIndex = parseInt(this.tbId.substring(num + 1), 10);
+                itemIndex = parseInt(this.tbId.substring(this.tbId.lastIndexOf('_') + 1), 10);
                 this.tbId = '';
             } else {
                 itemIndex = index + i;
@@ -905,7 +914,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.isIconAlone = true;
                 }
             }
-            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: '-1' };
+            const tabIndex : string =  isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
+            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex  };
             tCont.appendChild(this.btnCls.cloneNode(true));
             const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
@@ -1326,13 +1336,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 return;
             } else {
                 if (!this.isVertical()) {
-                    setStyle(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
+                    setStyle(this.cntEle, { 'height': (this.element.clientHeight - hdrEle.offsetHeight) + 'px' });
                 }
             }
         } else if (this.heightAdjustMode === 'Fill') {
             addClass([this.element], [CLS_FILL]);
             setStyle(this.element, { 'height': '100%' });
-            setStyle(this.cntEle, { 'height': (this.element.offsetHeight - hdrEle.offsetHeight) + 'px' });
+            this.cntEle.style.height = 'calc(100% - ' + this.hdrEle.offsetHeight + 'px)';
         } else if (this.heightAdjustMode === 'Auto') {
             if (this.isTemplate === true) {
                 const cnt: HTEle[] = selectAll('.' + CLS_CONTENT + ' > .' + CLS_ITEM, this.element);
@@ -1656,12 +1666,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             case 'shiftTab':
                 if (trg.classList.contains(CLS_WRAP)
                     && (<HTEle>closest(trg, '.' + CLS_TB_ITEM)).classList.contains(CLS_ACTIVE) === false) {
-                    trg.setAttribute('tabindex', '-1');
+                    trg.setAttribute('tabindex', trg.getAttribute('data-tabindex'));
                 }
                 if (this.popObj && isVisible(this.popObj.element)) {
                     this.popObj.hide(this.hide);
                 }
-                actEle.children.item(0).setAttribute('tabindex', '0');
+                if (!isNOU(actEle) && actEle.children.item(0).getAttribute('tabindex') === '-1') {
+                    actEle.children.item(0).setAttribute('tabindex', '0');
+                }
                 break;
             case 'moveLeft':
             case 'moveRight':
@@ -1709,6 +1721,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             return;
         }
     }
+    private getIndexFromEle (id: string): number {
+        return parseInt(id.substring(id.lastIndexOf('_') + 1), 10);
+    }
     private hoverHandler(e: MouseEventArgs): void {
         const trg: HTEle = <HTEle>e.target;
         if (!isNOU(trg.classList) && trg.classList.contains(CLS_ICON_CLOSE)) {
@@ -1727,8 +1742,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     const hdr: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_TB_ITEM)[index];
                     let itemIndex: number;
                     if (hdr && !isNOU(hdr.id) && hdr.id !== '') {
-                        const num: number = (hdr.id.lastIndexOf('_'));
-                        itemIndex = parseInt(hdr.id.substring(num + 1), 10);
+                        itemIndex = this.getIndexFromEle(hdr.id);
                     } else {
                         itemIndex = index;
                     }
@@ -2034,7 +2048,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
         if (value === true) {
             tbItems.classList.remove(CLS_DISABLE, CLS_OVERLAY);
-            (<HTEle>tbItems.firstElementChild).setAttribute('tabindex', '-1');
+            (<HTEle>tbItems.firstElementChild).setAttribute('tabindex',(<HTEle>tbItems.firstElementChild).getAttribute('data-tabindex'));
         } else {
             tbItems.classList.add(CLS_DISABLE, CLS_OVERLAY);
             (<HTEle>tbItems.firstElementChild).removeAttribute('tabindex');
@@ -2282,7 +2296,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.selectingID = this.extIndex(trg.id);
         }
         if (!isNOU(this.prevItem) && !this.prevItem.classList.contains(CLS_DISABLE)) {
-            this.prevItem.children.item(0).setAttribute('tabindex', '-1');
+            this.prevItem.children.item(0).setAttribute('tabindex', this.prevItem.firstElementChild.getAttribute('tabindex'));
         }
         const eventArg: SelectingEventArgs = {
             event: event,
@@ -2517,7 +2531,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         detach(txtWrap); tConts.appendChild(icon); this.isIconAlone = true;
                     }
                 }
-                const wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: '-1' };
+                const tabIndex: string = isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
+                const wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex};
                 tConts.appendChild(this.btnCls.cloneNode(true));
                 const wraper: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
                 wraper.appendChild(tConts);
@@ -2556,9 +2571,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             const tabItems: HTMLElement = this.element.querySelector('.' + CLS_TB_ITEMS);
             const element: HTMLElement = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE);
-            const id: string | number = element.id;
-            const num: number = (id.indexOf('_'));
-            const index: number = parseInt(id.substring(num + 1), 10);
+            const index: number = this.getIndexFromEle(element.id);
             const header: string = element.innerText;
             const detachContent: Element = this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).children[0];
             const mainContents: string = detachContent.innerHTML;
@@ -2577,7 +2590,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const conte: Str = this.createElement('div', {
                 className: CLS_TEXT_WRAP, innerHTML: txtString + this.btnCls.outerHTML
             }).outerHTML;
-            const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: '-1' } });
+            const tabIndex: string = element.firstElementChild.getAttribute('data-tabindex'); 
+            const wrap: HTEle = this.createElement('div', {
+                className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: tabIndex, 'data-tabindex': tabIndex }  });
             tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
             this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wrap);
             const crElem: HTEle = this.createElement('div', { innerHTML: mainContents });

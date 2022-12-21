@@ -43,7 +43,7 @@ export class TmaIndicator extends TechnicalAnalysis {
                     sum = 0;
                     index = validData.length - length;
                     for (let j: number = index; j < index + period; j++) {
-                        sum = sum + validData[j][field];
+                        sum = sum + validData[j as number][field as string];
                     }
                     sum = sum / period;
                     smaValues.push(sum);
@@ -54,7 +54,7 @@ export class TmaIndicator extends TechnicalAnalysis {
                 for (let k: number = 0; k < period - 1; k++) {
                     sum = 0;
                     for (let j: number = 0; j < k + 1; j++) {
-                        sum = sum + validData[j][field];
+                        sum = sum + validData[j as number][field as string];
                     }
                     sum = sum / (k + 1);
                     smaValues.splice(k, 0, sum);
@@ -64,11 +64,11 @@ export class TmaIndicator extends TechnicalAnalysis {
                 while (index <= smaValues.length) {
                     sum = 0;
                     for (let j: number = index - indicator.period; j < index; j++) {
-                        sum = sum + smaValues[j];
+                        sum = sum + smaValues[j as number];
                     }
                     sum = sum / indicator.period;
                     tmaPoints.push(this.getDataPoint(
-                        validData[index - 1][xField], sum, validData[index - 1], signalSeries, tmaPoints.length));
+                        validData[index - 1][xField as string], sum, validData[index - 1], signalSeries, tmaPoints.length));
                     index++;
                 }
             }

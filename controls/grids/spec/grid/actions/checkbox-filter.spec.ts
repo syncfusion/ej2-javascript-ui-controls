@@ -104,9 +104,10 @@ describe('Checkbox Filter module => ', () => {
                 if(args.requestType === 'filterchoicerequest'){
                 expect(gridObj.element.querySelector('.e-searchcontainer').querySelectorAll('.e-searchinput').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
-                expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(3);
+                expect(checkBoxFilter.querySelectorAll('.e-add-current').length).toBe(1);
+                expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(4);
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
-                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);       
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck:not(.e-add-current)').length).toBe(0);       
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);                    
                 gridObj.actionComplete =null;
                 done();
@@ -122,8 +123,9 @@ describe('Checkbox Filter module => ', () => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterchoicerequest'){                
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
+                expect(checkBoxFilter.querySelectorAll('.e-add-current').length).toBe(1);  
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
-                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);              
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck:not(.e-add-current)').length).toBe(0);              
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);              
                 gridObj.actionComplete =null;
                 done();
@@ -157,8 +159,9 @@ describe('Checkbox Filter module => ', () => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterchoicerequest'){                
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
+                expect(checkBoxFilter.querySelectorAll('.e-add-current').length).toBe(1);   
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
-                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);              
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck:not(.e-add-current)').length).toBe(0);              
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);              
                 expect(checkBoxFilter.children[0].tagName.toLowerCase()).not.toBe('span');
                 gridObj.actionComplete =null;
@@ -196,8 +199,9 @@ describe('Checkbox Filter module => ', () => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterchoicerequest'){                
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
+                expect(checkBoxFilter.querySelectorAll('.e-add-current').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
-                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);              
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck:not(.e-add-current)').length).toBe(0);              
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);               
                 (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();                         
                 gridObj.actionComplete =null;
@@ -2091,9 +2095,10 @@ describe('Checkbox Filter module => ', () => {
         it('search OrderID testing for searchlist length', function (done) {
             actionComplete = (args?: any): void => {
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);
-                expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(2);
+                expect(checkBoxFilter.querySelectorAll('.e-add-current').length).toBe(1);
+                expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
-                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck:not(.e-add-current)').length).toBe(0);
                 gridObj.actionComplete = null;
                 done();
             };
@@ -2471,6 +2476,7 @@ describe('EJ2-47692 - Throws script error while using hideSearchbox as true in I
         }
         gridObj.actionComplete = actionComplete;
         (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+        setTimeout(done, 200);
     });
     
     afterAll(() => {
@@ -2553,7 +2559,7 @@ describe('EJ2-50998 - Searching blank in filter text box', () => {
             if (args.requestType === 'filterchoicerequest') {
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
-                expect((checkBoxFilter.querySelector('.e-checkboxlist').children[1] as HTMLElement).innerText).toBe('Blanks');
+                expect((checkBoxFilter.querySelector('.e-checkboxlist').children[2] as HTMLElement).innerText).toBe('Blanks');
                 gridObj.actionComplete = null;
                 done();
             }

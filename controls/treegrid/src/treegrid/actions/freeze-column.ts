@@ -96,22 +96,23 @@ export class Freeze {
             rows = args.detailrows;
         }
         for (let i: number = 0; i < rows.length; i++) {
-            const rData: ITreeData = this.parent.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
-            rows[i].style.display = args.action;
-            if (freeze) {
-                frozenRightRows[i].style.display = args.action;
+            const rData: ITreeData = this.parent.grid.getRowObjectFromUID(rows[parseInt(i.toString(), 10)].getAttribute('data-Uid')).data;
+            rows[parseInt(i.toString(), 10)].style.display = args.action;
+            if (freeze && frozenRightRows.length) {
+                frozenRightRows[parseInt(i.toString(), 10)].style.display = args.action;
             }
             const queryselector: string = args.action === 'none' ? '.e-treecolumn-container .e-treegridcollapse'
                 : '.e-treecolumn-container .e-treegridexpand';
-            if (frozenrows[rows[i].rowIndex].querySelector(queryselector)) {
+            if (frozenrows[rows[parseInt(i.toString(), 10)].rowIndex].querySelector(queryselector)) {
                 const cRow: HTMLTableRowElement[] = [];
                 for (let i: number = 0; i < movableRows.length; i++) {
-                    if (movableRows[i].querySelector('.e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
-                        cRow.push(movableRows[i]);
+                    if (movableRows[parseInt(i.toString(), 10)].querySelector('.e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+                        cRow.push(movableRows[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (cRow.length) {
-                    this.rowExpandCollapse({ detailrows: cRow, action: args.action });
+                    const data: ITreeData = this.parent.getCurrentViewRecords()[cRow[0].rowIndex];
+                    this.rowExpandCollapse({ detailrows: cRow, action: args.action, record: data });
                 }
             }
         }

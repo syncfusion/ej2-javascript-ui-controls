@@ -1,3 +1,5 @@
+/* eslint-disable no-constant-condition */
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
@@ -181,8 +183,8 @@ export class Selection extends BaseSelection {
         const series: Series = <Series>chart.series[index.series];
         elementId = (series.type !== 'Scatter' && series.type !== 'Bubble' && marker) ? (elementId + '_Symbol' + suffix) : elementId;
 
-        return [getElement(elementId), ((series.type === 'RangeArea' || series.type === 'SplineRangeArea') && series.marker.visible) ? 
-        getElement(elementId + '1') : null];
+        return [getElement(elementId), ((series.type === 'RangeArea' || series.type === 'SplineRangeArea') && series.marker.visible) ?
+            getElement(elementId + '1') : null];
     }
 
     /**
@@ -220,14 +222,14 @@ export class Selection extends BaseSelection {
     public findTrackballElements(selectedElements: Element[] | NodeListOf<HTMLElement>, className: string): void {
         let trackballElements: Element[]; let elements: Element[];
         for (let i: number = 0; i < selectedElements.length; i++) {
-            if (!isNullOrUndefined(selectedElements[i])) {
-                trackballElements = !isNullOrUndefined(selectedElements[i].parentNode) ?
+            if (!isNullOrUndefined(selectedElements[i as number])) {
+                trackballElements = !isNullOrUndefined(selectedElements[i as number].parentNode) ?
                     <Element[]>[].slice.call((<Element>selectedElements[0].parentNode).querySelectorAll('.' + className)) : [];
                 if (trackballElements.length > 0) {
                     elements = [];
                     for (let i: number = 0; i < trackballElements.length; i++) {
-                        if (trackballElements[i].id.indexOf('Trackball') > -1) {
-                            elements.push(trackballElements[i]);
+                        if (trackballElements[i as number].id.indexOf('Trackball') > -1) {
+                            elements.push(trackballElements[i as number]);
                         }
                     }
                     this.removeStyles(elements);
@@ -277,22 +279,22 @@ export class Selection extends BaseSelection {
                 isElement = (parentNodeId.indexOf('SeriesGroup') > 0 || parentNodeId.indexOf('SymbolGroup') > 0) ? true : false;
             }
             for (let i: number = 0; i < this.previousSelectedEle.length; i++) {
-                if (this.previousSelectedEle[i].hasAttribute('class')) {
-                    if (this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1 &&
+                if (this.previousSelectedEle[i as number].hasAttribute('class')) {
+                    if (this.previousSelectedEle[i as number].getAttribute('class').indexOf('highlight') > -1 &&
                         (isElement || eventType === 'click')) {
-                        this.previousSelectedEle[i].removeAttribute('class');
+                        this.previousSelectedEle[i as number].removeAttribute('class');
                         if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None') {
-                            if (this.previousSelectedEle[i].id.indexOf('Group') > 0) {
-                                for (let j: number = 0; j < this.previousSelectedEle[i].children.length; j++) {
-                                    this.previousSelectedEle[i].children[j].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i].id).series].interior);
+                            if (this.previousSelectedEle[i as number].id.indexOf('Group') > 0) {
+                                for (let j: number = 0; j < this.previousSelectedEle[i as number].children.length; j++) {
+                                    this.previousSelectedEle[i as number].children[j as number].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i as number].id).series].interior);
                                 }
                             } else {
-                                this.previousSelectedEle[i].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i].id).series].interior);
+                                this.previousSelectedEle[i as number].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(this.previousSelectedEle[i as number].id).series].interior);
                             }
                         }
-                        this.addOrRemoveIndex(this.highlightDataIndexes, this.indexFinder((<HTMLElement>this.previousSelectedEle[i]).id));
-                    } else if (!isElement && this.previousSelectedEle[i].getAttribute('class').indexOf('highlight') > -1) {
-                        this.performSelection(this.indexFinder(this.previousSelectedEle[i].id), this.chart, this.previousSelectedEle[i]);
+                        this.addOrRemoveIndex(this.highlightDataIndexes, this.indexFinder((<HTMLElement>this.previousSelectedEle[i as number]).id));
+                    } else if (!isElement && this.previousSelectedEle[i as number].getAttribute('class').indexOf('highlight') > -1) {
+                        this.performSelection(this.indexFinder(this.previousSelectedEle[i as number].id), this.chart, this.previousSelectedEle[i as number]);
                     }
                 }
             }
@@ -301,7 +303,7 @@ export class Selection extends BaseSelection {
     }
 
 
-    private mouseClick(event: Event) {
+    private mouseClick(event: Event): void {
         this.calculateSelectedElements(event.target as HTMLElement, event.type);
     }
 
@@ -331,7 +333,7 @@ export class Selection extends BaseSelection {
             }
         }
         this.isAlreadySelected(targetElement, eventType);
-        if (targetElement.id && targetElement.id.indexOf('_Series_') > -1 && targetElement.id.indexOf('_Text_') == -1) {
+        if (targetElement.id && targetElement.id.indexOf('_Series_') > -1 && targetElement.id.indexOf('_Text_') === -1) {
             let element: Element;
             if (targetElement.id.indexOf('_Trackball_1') > -1) {
                 element = getElement(targetElement.id.split('_Trackball_')[0] + '_Symbol');
@@ -368,7 +370,7 @@ export class Selection extends BaseSelection {
             break;
         case 'Point':
             if (!isNaN(index.point) && element) {
-                let pointElements: Element[] = [];
+                const pointElements: Element[] = [];
                 pointElements.push(element);
                 if (pointElements[0] !== null && chart.series[index.series].marker.visible &&
                     (chart.series[index.series].type.indexOf('Column') !== -1 || chart.series[index.series].type.indexOf('Bar') !== -1)) {
@@ -406,17 +408,17 @@ export class Selection extends BaseSelection {
             for (const series of chart.visibleSeries) {
                 if (series.visible) {
                     for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
-                        pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i].point : index.point;
+                        pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i as number].point : index.point;
                         seriesIndex = series.index;
                         points = (<Series>series).points;
                         if (!isNaN(pointIndex)) {
-                            yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex].yValue :
-                                points[pointIndex].regions[0].y;
-                            selectedPointX = points[pointIndex].xValue;
+                            yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex as number].yValue :
+                                points[pointIndex as number].regions[0].y;
+                            selectedPointX = points[pointIndex as number].xValue;
                             if (chart.primaryXAxis.valueType === 'Category') {
-                                selectedPointX = points[pointIndex].x.toLocaleString();
+                                selectedPointX = points[pointIndex as number].x.toLocaleString();
                             } else if (chart.primaryXAxis.valueType === 'DateTime') {
-                                selectedPointX = new Date(points[pointIndex].xValue);
+                                selectedPointX = new Date(points[pointIndex as number].xValue);
                             }
                             if (series.category !== 'Indicator') {
                                 selectedPointValues.push({
@@ -426,7 +428,7 @@ export class Selection extends BaseSelection {
                             }
                             if (series.type === 'RangeArea' || series.type === 'SplineRangeArea') {
                                 selectedPointValues.push({
-                                    x: selectedPointX, y: points[pointIndex].regions[0].y,
+                                    x: selectedPointX, y: points[pointIndex as number].regions[0].y,
                                     seriesIndex: seriesIndex, pointIndex: pointIndex
                                 });
                             }
@@ -437,7 +439,7 @@ export class Selection extends BaseSelection {
         } else if (selectionMode === 'Series') {
             if (chart.isMultiSelect) {
                 for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
-                    seriesIndex = this.selectedDataIndexes[i].series;
+                    seriesIndex = this.selectedDataIndexes[i as number].series;
                     selectedPointValues.push({
                         seriesIndex: seriesIndex
                     });
@@ -450,18 +452,18 @@ export class Selection extends BaseSelection {
             }
         } else if (selectionMode === 'Point') {
             for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
-                pointIndex = this.selectedDataIndexes[i].point;
-                seriesIndex = this.selectedDataIndexes[i].series;
-                const series: SeriesModel = chart.series[seriesIndex];
+                pointIndex = this.selectedDataIndexes[i as number].point;
+                seriesIndex = this.selectedDataIndexes[i as number].series;
+                const series: SeriesModel = chart.series[seriesIndex as number];
                 points = (<Series>series).points;
                 if (!isNaN(pointIndex)) {
-                    selectedPointX = points[pointIndex].xValue;
-                    yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex].yValue :
-                        points[pointIndex].regions[0].y;
+                    selectedPointX = points[pointIndex as number].xValue;
+                    yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex as number].yValue :
+                        points[pointIndex as number].regions[0].y;
                     if (chart.primaryXAxis.valueType === 'Category') {
-                        selectedPointX = points[pointIndex].x.toLocaleString();
+                        selectedPointX = points[pointIndex as number].x.toLocaleString();
                     } else if (chart.primaryXAxis.valueType === 'DateTime') {
-                        selectedPointX = new Date(points[pointIndex].xValue);
+                        selectedPointX = new Date(points[pointIndex as number].xValue);
                     }
                     selectedPointValues.push({
                         x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
@@ -489,19 +491,19 @@ export class Selection extends BaseSelection {
                 this.removeMultiSelectElements(chart, this.selectedDataIndexes, index, chart.series);
             }
         }
-        let indexValue : number = (this.rangeColorMappingEnabled()) ? 0 : index.series;
+        const indexValue : number = (this.rangeColorMappingEnabled()) ? 0 : index.series;
         if (!isNullOrUndefined(selectedElements[0])) {
-                if ((<Series>chart.series[indexValue]).isRectSeries) {
-                    if (selectedElements[0].id) {
-                        if (document.getElementById(selectedElements[0].id + '_Symbol')) {
-                            selectedElements.push(getElement(selectedElements[0].id + '_Symbol'));
-                        } else if (selectedElements[0].id.indexOf('SeriesGroup') !== -1) {
-                            if (document.getElementById(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup'))) {
-                                selectedElements.push(getElement(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup')));
-                            }
+            if ((<Series>chart.series[indexValue as number]).isRectSeries) {
+                if (selectedElements[0].id) {
+                    if (document.getElementById(selectedElements[0].id + '_Symbol')) {
+                        selectedElements.push(getElement(selectedElements[0].id + '_Symbol'));
+                    } else if (selectedElements[0].id.indexOf('SeriesGroup') !== -1) {
+                        if (document.getElementById(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup'))) {
+                            selectedElements.push(getElement(selectedElements[0].id.replace('SeriesGroup', 'SymbolGroup')));
                         }
                     }
                 }
+            }
             let isAdd: boolean;
             const className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
             const pClassName: string = selectedElements[0].parentNode &&
@@ -520,7 +522,7 @@ export class Selection extends BaseSelection {
             }
             if (this.styleId.indexOf('highlight') > 0 && (chart.highlightMode !== 'None' || chart.legendSettings.enableHighlight)) {
                 this.addOrRemoveIndex(this.highlightDataIndexes, index, isAdd);
-            } 
+            }
             else {
                 this.addOrRemoveIndex(this.selectedDataIndexes, index, isAdd);
             }
@@ -542,13 +544,14 @@ export class Selection extends BaseSelection {
     public removeMultiSelectElements(chart: Chart, index: Index[], currentIndex: Index, seriesCollection: SeriesModel[]): void {
         let series: SeriesModel;
         for (let i: number = 0; i < index.length; i++) {
-            series = seriesCollection[index[i].series];
-            if ((this.isSeriesMode && !this.toEquals(index[i], currentIndex, this.isSeriesMode)) ||
-                (this.currentMode === 'Cluster' && !this.toEquals(index[i], currentIndex, false)) ||
-                (!this.isSeriesMode && this.toEquals(index[i], currentIndex, true) && !this.toEquals(index[i], currentIndex, false))) {
-                this.removeStyles(this.findElements(chart, series, index[i], '', false));
+            series = seriesCollection[index[i as number].series];
+            if ((this.isSeriesMode && !this.toEquals(index[i as number], currentIndex, this.isSeriesMode)) ||
+                (this.currentMode === 'Cluster' && !this.toEquals(index[i as number], currentIndex, false)) ||
+                (!this.isSeriesMode && this.toEquals(index[i as number], currentIndex, true) &&
+                !this.toEquals(index[i as number], currentIndex, false))) {
+                this.removeStyles(this.findElements(chart, series, index[i as number], '', false));
                 if (series.marker.visible) {
-                    this.removeStyles(this.findElements(chart, series, index[i], '', true));
+                    this.removeStyles(this.findElements(chart, series, index[i  as number], '', true));
                 }
                 index.splice(i, 1);
                 i--;
@@ -566,9 +569,9 @@ export class Selection extends BaseSelection {
         for (const series of visibleSeries) {
             let legendIndex: number; let legendStrokeColor: string;
             if (this.rangeColorMappingEnabled()) {
-                if (isLegend == false) {
-                    legendIndex = Object.keys(series.rangeColorPoints).indexOf(series.points[index].interior);
-                    legendStrokeColor = series.points[index].interior;
+                if (isLegend === false) {
+                    legendIndex = Object.keys(series.rangeColorPoints).indexOf(series.points[index as number].interior);
+                    legendStrokeColor = series.points[index as number].interior;
                 }
                 else {
                     legendIndex = index;
@@ -601,12 +604,13 @@ export class Selection extends BaseSelection {
     public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
         let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ? [element] : element.childNodes || element);
         if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             children = (element.childNodes as any || element);
         }
         let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
         for (let i: number = 0; i < children.length; i++) {
-            elementClassName = children[i].getAttribute('class') || '';
-            parentClassName = (<Element>children[i].parentNode).getAttribute('class') || '';
+            elementClassName = children[i as number].getAttribute('class') || '';
+            parentClassName = (<Element>children[i as number].parentNode).getAttribute('class') || '';
             if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
                 className = elementClassName.indexOf('selection') > 0 ||
                     elementClassName.indexOf('highlight') > 0 ? elementClassName : className;
@@ -615,16 +619,16 @@ export class Selection extends BaseSelection {
             }
             if (elementClassName.indexOf(className) === -1 &&
                 parentClassName.indexOf(className) === -1 && visibility) {
-                this.addSvgClass(children[i], this.unselected);
+                this.addSvgClass(children[i as number], this.unselected);
             } else {
-                selectElement = children[i];
-                this.removeSvgClass(children[i], this.unselected);
-                this.removeSvgClass(<Element>children[i].parentNode, this.unselected);
+                selectElement = children[i as number];
+                this.removeSvgClass(children[i as number], this.unselected);
+                this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
             }
-            if (children[i].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
-                this.removeSvgClass(children[i], this.unselected);
-                this.removeSvgClass(<Element>children[i].parentNode, this.unselected);
-                this.addSvgClass(children[i], className);
+            if (children[i as number].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
+                this.removeSvgClass(children[i as number], this.unselected);
+                this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
+                this.addSvgClass(children[i as number], className);
             }
         }
         if (element.id.indexOf('Symbol') > -1) {
@@ -642,30 +646,30 @@ export class Selection extends BaseSelection {
             if (legendShape) {
                 if (legendShape.hasAttribute('class')) {
                     this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
-                        if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '') && !this.chart.legendSettings.enableHighlight) {
-                            legendShape.setAttribute('stroke', legendStrokeColor);
-                            if (this.chart.highlightPattern === 'None') {
-                                legendShape.setAttribute('fill', legendStrokeColor);
-                            }
+                    if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '') && !this.chart.legendSettings.enableHighlight) {
+                        legendShape.setAttribute('stroke', legendStrokeColor);
+                        if (this.chart.highlightPattern === 'None') {
+                            legendShape.setAttribute('fill', legendStrokeColor);
                         }
                     }
+                }
                 elementClassName = selectElement.getAttribute('class') || '';
                 parentClassName = (<Element>selectElement.parentNode).getAttribute('class') || '';
                 if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
                     this.addSvgClass(legendShape, (this.chart.highlightMode === 'None' && this.chart.legendSettings.enableHighlight) ? className : this.unselected);
                     this.removeSvgClass(legendShape, className);
                     if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
-                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
+                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series as number].interior);
                         if (this.chart.highlightPattern === 'None') {
-                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series].interior);
+                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series as number].interior);
                         }
                     }
                 } else {
                     this.removeSvgClass(legendShape, this.unselected);
                     if (!isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== '') {
-                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series].interior);
+                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series as number].interior);
                         if (this.chart.highlightPattern === 'None') {
-                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series].interior);
+                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series as number].interior);
                         }
                     }
                     if ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') {
@@ -684,13 +688,13 @@ export class Selection extends BaseSelection {
                 if (this.rangeColorMappingEnabled()) {
                     for (let i: number = 0; i < this.chart.rangeColorSettings.length; i++) {
                         legendItemsId = document.getElementById(this.chart.element.id + '_chart_legend_shape_' + i);
-                        if (legendShape != legendItemsId) {
+                        if (legendShape !== legendItemsId) {
                             this.addSvgClass(legendItemsId, this.unselected);
                         }
-                        else if (isLegend == true) {
+                        else if (isLegend === true) {
                             this.addSvgClass(legendItemsId, className);
                         }
-                        if (elementClassName.indexOf(className) === -1 && isLegend == false) {
+                        if (elementClassName.indexOf(className) === -1 && isLegend === false) {
                             this.removeSvgClass(legendItemsId, this.unselected);
                         }
                     }
@@ -711,26 +715,26 @@ export class Selection extends BaseSelection {
             if (element) {
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
-                if (this.chart.series[0].pointColorMapping =='fill' || this.rangeColorMappingEnabled()) {
-                    let className: string = this.getSelectionClass(element.id);
-                    let patternName: string = this.styleId.indexOf('highlight') > 0 ? this.chart.highlightPattern : this.chart.selectionPattern;
+                if (this.chart.series[0].pointColorMapping === 'fill' || this.rangeColorMappingEnabled()) {
+                    const className: string = this.getSelectionClass(element.id);
+                    const patternName: string = this.styleId.indexOf('highlight') > 0 ? this.chart.highlightPattern : this.chart.selectionPattern;
                     let pattern: Element;
-                    let index: number = className.indexOf('highlight') > -1 ? parseInt(className.split(this.chart.element.id+'_ej2_chart_highlight_series_')[1], 10) : parseInt(className.split(this.chart.element.id+'_ej2_chart_selection_series_')[1], 10);
+                    const index: number = className.indexOf('highlight') > -1 ? parseInt(className.split(this.chart.element.id + '_ej2_chart_highlight_series_')[1], 10) : parseInt(className.split(this.chart.element.id + '_ej2_chart_selection_series_')[1], 10);
                     if (className.indexOf('highlight') > -1 || className.indexOf('selection') > -1) {
                         pattern = document.getElementById(this.chart.element.id + '_' + patternName + '_' + 'Selection' + '_' + index);
                     }
-                    if (element.id.indexOf('legend') == -1 && element.id.indexOf('Group') == -1 && pattern != null) {
+                    if (element.id.indexOf('legend') === -1 && element.id.indexOf('Group') === -1 && pattern != null) {
                         for (let i: number = 1; i < pattern.children.length; i++) {
-                            pattern.children[i].setAttribute('fill', element.getAttribute('fill'));
-                            pattern.children[i].setAttribute('stroke', element.getAttribute('fill'));
+                            pattern.children[i as number].setAttribute('fill', element.getAttribute('fill'));
+                            pattern.children[i as number].setAttribute('stroke', element.getAttribute('fill'));
                         }
                     }
                 }
                 this.addSvgClass(element, this.getSelectionClass(element.id));
-                if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None') {
+                if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightPattern === 'None' && this.chart.highlightColor !== 'transparent') {
                     if (element.id.indexOf('Group') > 0) {
                         for (let i: number = 0; i < element.children.length; i++) {
-                            element.children[i].setAttribute('fill', this.chart.highlightColor);
+                            element.children[i as number].setAttribute('fill', this.chart.highlightColor);
                         }
                     } else {
                         element.setAttribute('fill', this.chart.highlightColor);
@@ -758,10 +762,10 @@ export class Selection extends BaseSelection {
                 this.removeSvgClass(
                     element, this.getSelectionClass(element.id)
                 );
-                if (this.chart.highlightPattern === 'None' && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                if (this.chart.highlightPattern === 'None' && this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== 'transparent') {
                     if (element.id.indexOf('Group') > 0) {
                         for (let i: number = 0; i < element.children.length; i++) {
-                            element.children[i].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(element.id).series].interior);
+                            element.children[i as number].setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(element.id).series].interior);
                         }
                     } else {
                         element.setAttribute('fill', (this.control as Chart).visibleSeries[this.indexFinder(element.id).series].interior);
@@ -777,7 +781,7 @@ export class Selection extends BaseSelection {
      */
     public addOrRemoveIndex(indexes: Index[], index: Index, isAdd?: boolean): void {
         for (let i: number = 0; i < indexes.length; i++) {
-            if (this.toEquals(indexes[i], index, this.isSeriesMode)) {
+            if (this.toEquals(indexes[i as number], index, this.isSeriesMode)) {
                 indexes.splice(i, 1);
                 i--;
             }
@@ -839,7 +843,7 @@ export class Selection extends BaseSelection {
         }
         const isPreSelected: boolean = this.isAlreadySelected(targetElement, eventType);
         if (isPreSelected) {
-            let seriesStyle: string = this.generateStyle(chart.visibleSeries[series]);
+            let seriesStyle: string = this.generateStyle(chart.visibleSeries[series as number]);
             let selectedElements: NodeListOf<HTMLElement> =  <NodeListOf<HTMLElement>>(document.querySelectorAll('.' + seriesStyle));
             this.isSeriesMode = this.currentMode === 'Series';
             const isBlurEffectNeeded: boolean = true;
@@ -855,8 +859,9 @@ export class Selection extends BaseSelection {
                 }
                 let seriesElements: Element[] = [];
                 if (this.rangeColorMappingEnabled()) {
+                    // eslint-disable-next-line @typescript-eslint/tslint/config
                     for (let i: number = 0, a = chart.visibleSeries[0].seriesElement.children; i < a.length; i++) {
-                        const point = a[i];
+                        const point: Element = a[i as number];
                         if (targetElement.getAttribute('fill') === point.getAttribute('fill')) {
                             seriesElements.push(point);
                         }
@@ -869,7 +874,7 @@ export class Selection extends BaseSelection {
                     }
                 }
                 else {
-                    seriesElements = this.getSeriesElements(chart.visibleSeries[series]);
+                    seriesElements = this.getSeriesElements(chart.visibleSeries[series as number]);
                     for (const seriesElement of seriesElements) {
                         if (isNullOrUndefined(seriesElement)) {
                             return;
@@ -886,13 +891,14 @@ export class Selection extends BaseSelection {
     }
     /** @private */
     public rangeColorMappingEnabled(): boolean {
-        if ((this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 && this.chart.rangeColorSettings[0].colors.length > 0  &&
+        if ((this.chart.rangeColorSettings && this.chart.rangeColorSettings.length > 0 && this.chart.visibleSeries.length === 1 &&
+            this.chart.rangeColorSettings[0].colors.length > 0  &&
             (this.chart.series[0].type === 'Column' || this.chart.series[0].type === 'Bar' ||
                 this.chart.series[0].type === 'Scatter' || this.chart.series[0].type === 'Bubble'))) {
-            return true
+            return true;
         }
         else {
-            return false
+            return false;
         }
     }
     public removeSelection(
@@ -901,7 +907,7 @@ export class Selection extends BaseSelection {
         if (selectedElements.length > 0) {
             const elements: Element[] = [];
             for (let i: number = 0; i < selectedElements.length; i++) {
-                elements.push(selectedElements[i]);
+                elements.push(selectedElements[i as number]);
             }
             this.removeStyles(elements);
             this.isSeriesMode = true;
@@ -994,17 +1000,17 @@ export class Selection extends BaseSelection {
                     yAxisOffset = series.yAxis.rect.y - axisOffset.y;
                 }
                 for (let j: number = 0; j < points.length; j++) {
-                    const yValue: number = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[j].yValue :
-                        points[j].regions[0].y;
+                    const yValue: number = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[j as number].yValue :
+                        points[j as number].regions[0].y;
                     let isCurrentPoint: boolean;
-                    let selectedPointX: string | number | Date = points[j].xValue;
+                    let selectedPointX: string | number | Date = points[j as number].xValue;
                     if (chart.primaryXAxis.valueType === 'Category') {
-                        selectedPointX = points[j].x.toLocaleString();
+                        selectedPointX = points[j as number].x.toLocaleString();
                     } else if (chart.primaryXAxis.valueType === 'DateTime') {
-                        selectedPointX = new Date(points[j].xValue);
+                        selectedPointX = new Date(points[j as number].xValue);
                     }
                     if (series.type === 'BoxAndWhisker') {
-                        isCurrentPoint = points[j].regions.some((region: Rect): boolean => {
+                        isCurrentPoint = points[j as number].regions.some((region: Rect): boolean => {
                             return withInBounds(
                                 region.x + xAxisOffset,
                                 region.y + yAxisOffset, rect
@@ -1012,22 +1018,22 @@ export class Selection extends BaseSelection {
                         });
                     } else {
                         if (chart.selectionMode === 'Lasso') {
-                            isCurrentPoint = points[j].isSelect;
+                            isCurrentPoint = points[j as number].isSelect;
                         } else {
                             isCurrentPoint = (chart.allowMultiSelection) ?
-                                this.isPointSelect(points[j], xAxisOffset, yAxisOffset, this.filterArray) :
-                                points[j].symbolLocations.some((location: ChartLocation) => {
+                                this.isPointSelect(points[j as number], xAxisOffset, yAxisOffset, this.filterArray) :
+                                points[j as number].symbolLocations.some((location: ChartLocation) => {
                                     return location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect);
                                 });
                         }
                     }
                     if (isCurrentPoint && series.category !== 'Indicator') {
-                        index = new Index((<Series>series).index, points[j].index);
+                        index = new Index((<Series>series).index, points[j as number].index);
                         this.selection(chart, index, this.findElements(chart, series, index, '', !series.isRectSeries ? series.marker.visible : false));
                         selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
                     if (isCurrentPoint && (series.type === 'RangeArea' || series.type === 'SplineRangeArea')) {
-                        selectedPointValues.push({ x: selectedPointX, y: points[j].regions[0].y });
+                        selectedPointValues.push({ x: selectedPointX, y: points[j as number].regions[0].y });
                     }
                 }
                 selectedSeriesValues.push(selectedPointValues);
@@ -1068,7 +1074,7 @@ export class Selection extends BaseSelection {
      * @returns {void}
      * @private
      */
-    public drawDraggingRect(chart: Chart, dragRect: Rect, target?: Element): void {
+    public drawDraggingRect(chart: Chart, dragRect: Rect): void {
         const cartesianLayout: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         const border: number = chart.chartArea.border.width;
         const rectFill: string = chart.themeStyle.selectionRectFill;
@@ -1104,8 +1110,7 @@ export class Selection extends BaseSelection {
                 chart.svgObject.appendChild(multiGroup);
             }
             if (this.rectGrabbing || this.resizing) {
-                let rectElement: Element;
-                rectElement = getElement(this.draggedRect + this.targetIndex);
+                const rectElement: Element = getElement(this.draggedRect + this.targetIndex);
                 if (rectElement.nextSibling) {
                     remove(rectElement.nextSibling);
                 }
@@ -1119,7 +1124,7 @@ export class Selection extends BaseSelection {
             if (!(chart.selectionMode === 'Lasso')) {
                 element = chart.svgRenderer.drawRectangle(new RectOption(
                     this.draggedRect + this.count, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
-                (element as HTMLElement).style.cursor = "move";
+                (element as HTMLElement).style.cursor = 'move';
             } else {
                 element = chart.svgRenderer.drawPath(
                     new PathOption(
@@ -1168,7 +1173,7 @@ export class Selection extends BaseSelection {
     private getIndex(id: string): number {
         let i: number;
         for (i = id.length - 1; i > 0; i--) {
-            const x: number = Number(id[i]);
+            const x: number = Number(id[i as number]);
             if (!isNaN(x)) {
                 continue;
             } else {
@@ -1220,9 +1225,9 @@ export class Selection extends BaseSelection {
                 const index: number = this.getIndex(targetElement.id);
                 const multiRectGroupElement: Element = getElement(this.multiRectGroup);
                 remove(getElement(this.draggedRectGroup + index));
-                this.dragRectArray[index] = null;
-                this.filterArray[index] = null;
-                this.totalSelectedPoints[index] = null;
+                this.dragRectArray[index as number] = null;
+                this.filterArray[index as number] = null;
+                this.totalSelectedPoints[index as number] = null;
                 if (multiRectGroupElement && multiRectGroupElement.childElementCount === 0) {
                     removeElement(multiRectGroupElement);
                     this.dragRectArray = [];
@@ -1230,26 +1235,26 @@ export class Selection extends BaseSelection {
                     this.totalSelectedPoints = [];
                 }
                 if (this.currentMode === 'Lasso') {
-                    if (this.multiDataIndexes[index] != null) {
-                        for (let i: number = 0; i < this.multiDataIndexes[index].length; i++) {
-                            this.multiDataIndexes[index][i].isSelect = false;
+                    if (this.multiDataIndexes[index as number] != null) {
+                        for (let i: number = 0; i < this.multiDataIndexes[index as number].length; i++) {
+                            this.multiDataIndexes[index as number][i as number].isSelect = false;
                         }
                     }
-                    this.multiDataIndexes[index] = null;
+                    this.multiDataIndexes[index as number] = null;
                     for (let j: number = 0; j < this.multiDataIndexes.length; j++) {
-                        if (this.multiDataIndexes[j] != null) {
+                        if (this.multiDataIndexes[j as number] != null) {
                             isSelectedvalues = false;
-                            for (let k: number = 0; k < this.multiDataIndexes[j].length; k++) {
-                                this.multiDataIndexes[j][k].isSelect = true;
+                            for (let k: number = 0; k < this.multiDataIndexes[j as number].length; k++) {
+                                this.multiDataIndexes[j as number][k as number].isSelect = true;
                             }
                         }
                     }
                     this.calculateDragSelectedElements(chart, this.dragRect, true);
                 } else if (this.filterArray.length) {
                     for (let i: number = 0; i < this.filterArray.length; i++) {
-                        if (this.filterArray[i]) {
+                        if (this.filterArray[i as number]) {
                             isSelectedvalues = false;
-                            this.calculateDragSelectedElements(chart, this.filterArray[i], true);
+                            this.calculateDragSelectedElements(chart, this.filterArray[i as number], true);
                         }
                     }
                 } else {
@@ -1312,7 +1317,7 @@ export class Selection extends BaseSelection {
                 new Rect((rect.x + rect.width - 5), rect.y + 5, 5, rect.height - 15), //right
                 new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 10, 10)]; //corner
             for (let i: number = 0; i < resizeEdges.length; i++) {
-                if (withInBounds(location.x, location.y, resizeEdges[i])) {
+                if (withInBounds(location.x, location.y, resizeEdges[i as number])) {
                     cursorStyle = (i === 4) ? cursorStyle : (i % 2 === 0) ? 'ns-resize' : 'ew-resize';
                     resize = true;
                     this.resizeMode = i;
@@ -1383,7 +1388,7 @@ export class Selection extends BaseSelection {
     private setAttributes(ele: Element, object: Object): void {
         const keys: string[] = Object.keys(object);
         for (const key of keys) {
-            ele.setAttribute(key, object[key]);
+            ele.setAttribute(key, object[key as string]);
         }
     }
     /**
@@ -1404,14 +1409,14 @@ export class Selection extends BaseSelection {
         rect.y -= (grabbedPoint.y - chart.mouseY);
         rect = getDraggedRectLocation(rect.x, rect.y, rect.x + rect.width, rect.height + rect.y, chart.chartAxisLayoutPanel.seriesClipRect);
         if (doDrawing) {
-            this.drawDraggingRect(chart, rect, target);
+            this.drawDraggingRect(chart, rect);
         } else {
             this.calculateDragSelectedElements(chart, rect);
         }
     }
 
-    private mouseLeave(event: Event) {
-        this.completeSelection(event.target as HTMLElement, event.type)
+    private mouseLeave(event: Event): void {
+        this.completeSelection(event.target as HTMLElement, event.type);
     }
     /**
      * To complete the selection.
@@ -1494,7 +1499,7 @@ export class Selection extends BaseSelection {
                 this.targetIndex = this.isDragRect(target.id) ? index : undefined;
                 if (this.dragRectArray.length && this.isDragRect(target.id)) {
                     this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true, target);
-                    this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.dragRectArray[index]);
+                    this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.dragRectArray[index as number]);
                 }
             }
         }
@@ -1506,8 +1511,8 @@ export class Selection extends BaseSelection {
     /** @private */
     public mouseMove(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
-        let target: Element = <Element>event.target;
-        let eventType: string = event.type;
+        const target: Element = <Element>event.target;
+        const eventType: string = event.type;
         this.highlightChart(target, eventType);
         if (chart.selectionMode === 'None') {
             return;
@@ -1520,10 +1525,10 @@ export class Selection extends BaseSelection {
 
     /**
      * highlight parts
-     * 
+     *
      * @private
      */
-    public highlightChart(target: Element, eventType: string) {
+    public highlightChart(target: Element, eventType: string): void {
         if (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight) {
             if (!isNullOrUndefined(target)) {
                 if (target.id.indexOf('text') > 1) {
@@ -1534,21 +1539,21 @@ export class Selection extends BaseSelection {
                     return;
                 }
                 this.calculateSelectedElements(target as HTMLElement, eventType);
-                    if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
-                        target.id.indexOf("_chart_legend_") == -1 && target.id.indexOf("_Series_") == -1) {
-                        this.removeLegendHighlightStyles();
-                    }
+                if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
+                    target.id.indexOf('_chart_legend_') === -1 && target.id.indexOf('_Series_') === -1) {
+                    this.removeLegendHighlightStyles();
                 }
-                return;
             }
+            return;
+        }
     }
 
     /**
      * selection and drag selection
-     * 
+     *
      * @private
      */
-    public selectionAndDrag(chart: Chart, target: Element, eventType: string) {
+    public selectionAndDrag(chart: Chart, target: Element, eventType: string): void {
         const insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
         if (insideMoving) {
             if (this.rectGrabbing && !this.resizing) {
@@ -1556,10 +1561,10 @@ export class Selection extends BaseSelection {
             } else if (this.dragging && !this.resizing) {
                 if (chart.selectionMode === 'Lasso') {
                     this.getPath(chart.mouseDownX, chart.mouseDownY, chart.mouseX, chart.mouseY);
-                    this.drawDraggingRect(chart, this.dragRect, target);
+                    this.drawDraggingRect(chart, this.dragRect);
                 } else {
                     this.dragRect = this.getDragRect(chart, chart.chartAxisLayoutPanel.seriesClipRect);
-                    this.drawDraggingRect(chart, this.dragRect, target);
+                    this.drawDraggingRect(chart, this.dragRect);
                 }
             }
             if (this.rectPoints && !(chart.allowMultiSelection)) {
@@ -1571,38 +1576,37 @@ export class Selection extends BaseSelection {
             this.completeSelection(target as HTMLElement, eventType);
         }
     }
-    
-    /** 
+    /**
      * remove highlighted legend when not focused.
      *
      * @private
      */
-    public removeLegendHighlightStyles() {
+    public removeLegendHighlightStyles(): void {
         this.chart.highlightModule.highlightDataIndexes = [];
         let elementCollection: HTMLCollection;
-        for (let i = 0; i < this.chart.series.length; i++) {
-            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
+        for (let i: number = 0; i < this.chart.series.length; i++) {
+            elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i as number]));
             if (this.selectedDataIndexes.length === 0) {
-                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
+                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i as number]));
                 while (elementCollection.length > 0) {
-                    let element: HTMLElement = elementCollection[0] as HTMLElement;
+                    const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {
-                        this.removeSvgClass(element, element.getAttribute("class"));
+                        this.removeSvgClass(element, element.getAttribute('class'));
                     }
                 }
                 elementCollection = document.getElementsByClassName(this.unselected);
                 while (elementCollection.length > 0) {
-                    let element: HTMLElement = elementCollection[0] as HTMLElement;
+                    const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {
-                        this.removeSvgClass(element, element.getAttribute("class"));
+                        this.removeSvgClass(element, element.getAttribute('class'));
                     }
                 }
             } else {
-                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i]));
+                elementCollection = document.getElementsByClassName(this.generateStyle(this.chart.series[i as number]));
                 while (elementCollection.length > 0) {
-                    let element: HTMLElement = elementCollection[0] as HTMLElement;
+                    const element: HTMLElement = elementCollection[0] as HTMLElement;
                     if (element) {
-                        this.removeSvgClass(element, element.getAttribute("class"));
+                        this.removeSvgClass(element, element.getAttribute('class'));
                         this.addSvgClass(element, this.unselected);
                     }
                 }

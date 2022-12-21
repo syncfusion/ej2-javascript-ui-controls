@@ -723,10 +723,10 @@ export class BordersAndShadingDialog {
     private updateClassForSettingDivElements(): void {
         const settingDivs: HTMLCollectionOf<Element> = this.target.getElementsByClassName('e-de-table-border-inside-setting');
         for (let j: number = 0; j < settingDivs.length; j++) {
-            if (settingDivs[j].className.indexOf('e-de-table-border-inside-setting-click') !== -1) {
-                let tempClassName: string = settingDivs[j].className;
+            if (settingDivs[parseInt(j.toString(), 10)].className.indexOf('e-de-table-border-inside-setting-click') !== -1) {
+                let tempClassName: string = settingDivs[parseInt(j.toString(), 10)].className;
                 tempClassName = tempClassName.replace('e-de-table-border-inside-setting-click', '');
-                settingDivs[j].className = tempClassName;
+                settingDivs[parseInt(j.toString(), 10)].className = tempClassName;
             }
         }
     }
@@ -895,11 +895,11 @@ export class BordersAndShadingDialog {
     private setPropertyPreviewDivElement(ele: HTMLDivElement, compareElement: HTMLElement, compareClass: string, property: string): void {
         if (compareElement.classList.contains(compareClass) && property.split('-')[0] === 'border') {
             /* eslint-disable @typescript-eslint/no-explicit-any */
-            (ele as any).style[property] = '1px solid rgba(0, 0, 0, .54)';
+            (ele as any).style[`${property}`] = '1px solid rgba(0, 0, 0, .54)';
         } else if (compareElement.classList.contains(compareClass) && property === 'display') {
-            (ele as any).style[property] = 'block';
+            (ele as any).style[`${property}`] = 'block';
         } else {
-            (ele as any).style[property] = 'none';
+            (ele as any).style[`${property}`] = 'none';
             /* eslint-enable @typescript-eslint/no-explicit-any */
         }
     }
@@ -1287,6 +1287,10 @@ export class BordersAndShadingDialog {
         if (this.tableFormat) {
             this.tableFormat.destroy();
             this.tableFormat = undefined;
+        }
+        if (this.paragraphFormat) {
+            this.paragraphFormat.destroy();
+            this.paragraphFormat = undefined;
         }
         this.dialog = undefined;
         this.target = undefined;

@@ -61,21 +61,24 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         }
         if (this.parent.enableColumnVirtualization) {
             for (let i: number = 0; i < info.blockIndexes.length; i++) {
-                if (this.isBlockAvailable(info.blockIndexes[i])) {
-                    this.cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[i]]);
+                if (this.isBlockAvailable(info.blockIndexes[parseInt(i.toString(), 10)])) {
+                    this.cache[info.blockIndexes[parseInt(i.toString(), 10)]] =
+                        this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[parseInt(i.toString(), 10)]]);
                 }
-                if ((e.renderMovableContent && this.isMovableBlockAvailable(info.blockIndexes[i]))
-                    || (e.renderFrozenRightContent && this.isFrozenRightBlockAvailable(info.blockIndexes[i]))) {
+                if ((e.renderMovableContent && this.isMovableBlockAvailable(info.blockIndexes[parseInt(i.toString(), 10)]))
+                    || (e.renderFrozenRightContent && this.isFrozenRightBlockAvailable(info.blockIndexes[parseInt(i.toString(), 10)]))) {
                     const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                         ? this.movableCache : this.frozenRightCache;
-                    cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(cache[info.blockIndexes[i]]);
+                    cache[info.blockIndexes[parseInt(i.toString(), 10)]] =
+                        this.rowModelGenerator.refreshRows(cache[info.blockIndexes[parseInt(i.toString(), 10)]]);
                 }
             }
         }
         const values: number[] = info.blockIndexes;
         for (let i: number = 0; i < values.length; i++) {
-            if (!this.isBlockAvailable(values[i])) {
-                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex : this.getStartIndex(values[i], data);
+            if (!this.isBlockAvailable(values[parseInt(i.toString(), 10)])) {
+                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex :
+                    this.getStartIndex(values[parseInt(i.toString(), 10)], data);
                 const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: startIdx
                 });
@@ -101,14 +104,17 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     }
                 }
             }
-            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
-                this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
+            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[parseInt(i.toString(), 10)]] &&
+                !this.parent.groupSettings.enableLazyLoading) {
+                this.cache[values[parseInt(i.toString(), 10)]] =
+                    this.updateGroupRow(this.cache[values[parseInt(i.toString(), 10)]], values[parseInt(i.toString(), 10)]);
             }
-            if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[i]))
-                || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
+            if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[parseInt(i.toString(), 10)]))
+                || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[parseInt(i.toString(), 10)]))) {
                 const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                     ? this.movableCache : this.frozenRightCache;
-                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex : this.getStartIndex(values[i], data);
+                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex :
+                    this.getStartIndex(values[parseInt(i.toString(), 10)], data);
                 const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: startIdx
                 });
@@ -126,23 +132,23 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     }
                 }
             }
-            if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
-                result.push(...this.cache[values[i]]);
+            if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[parseInt(i.toString(), 10)]]) {
+                result.push(...this.cache[values[parseInt(i.toString(), 10)]]);
             } else {
                 const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                     ? this.movableCache : this.frozenRightCache;
-                if (cache[values[i]]) {
-                    result.push(...cache[values[i]]);
+                if (cache[values[parseInt(i.toString(), 10)]]) {
+                    result.push(...cache[values[parseInt(i.toString(), 10)]]);
                 }
             }
-            if (this.isBlockAvailable(values[i])) {
-                loadedBlocks.push(values[i]);
+            if (this.isBlockAvailable(values[parseInt(i.toString(), 10)])) {
+                loadedBlocks.push(values[parseInt(i.toString(), 10)]);
             }
         }
         info.blockIndexes = loadedBlocks;
         const grouping: string = 'records';
         if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-            this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
+            this.parent.currentViewData[`${grouping}`] = result.map((m: Row<Column>) => m.data);
         } else if (isFrozen) {
             if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
                 || this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenColumns())) || e.renderFrozenRightContent) {
@@ -220,7 +226,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;
         const left: number = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);
         keys.some((offset: string) => {
-            const iOffset: number = Number(offset); const offsetVal: number = this.cOffsets[offset];
+            const iOffset: number = Number(offset); const offsetVal: number = this.cOffsets[`${offset}`];
             const border: boolean = sLeft - calWidth <= offsetVal && left + calWidth >= offsetVal;
             if (border) {
                 indexes.push(iOffset);
@@ -260,13 +266,15 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             (!this.parent.groupSettings.showGroupedColumn ? this.parent.groupSettings.columns.indexOf(column.field) < 0 : column.visible);
         const c: string[] = this.parent.groupSettings.columns;
         for (let i: number = 0; i < c.length; i++) {
-            this.cOffsets[i] = (this.cOffsets[i - 1] | 0) + 30;
+            this.cOffsets[parseInt(i.toString(), 10)] = (this.cOffsets[i - 1] | 0) + 30;
         }
         // eslint-disable-next-line prefer-spread
         const blocks: number[] = Array.apply(null, Array(cLen)).map(() => col++);
         for (let j: number = 0; j < blocks.length; j++) {
-            blocks[j] = blocks[j] + gLen;
-            this.cOffsets[blocks[j]] = (this.cOffsets[blocks[j] - 1] | 0) + (isVisible(cols[j]) ? parseInt(<string>cols[j].width, 10) : 0);
+            blocks[parseInt(j.toString(), 10)] = blocks[parseInt(j.toString(), 10)] + gLen;
+            this.cOffsets[blocks[parseInt(j.toString(), 10)]] =
+                (this.cOffsets[blocks[parseInt(j.toString(), 10)] - 1] | 0) + (isVisible(cols[parseInt(j.toString(), 10)]) ?
+                    parseInt(<string>cols[parseInt(j.toString(), 10)].width, 10) : 0);
         }
     }
 
@@ -275,8 +283,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let rows: Row<Column>[] = [];
         const keys: string[] = Object.keys(this.cache);
         for (let i: number = 0; i < keys.length; i++) {
-            if (Number(keys[i]) < block) {
-                rows = [...rows, ...this.cache[keys[i]]];
+            if (Number(keys[parseInt(i.toString(), 10)]) < block) {
+                rows = [...rows, ...this.cache[keys[parseInt(i.toString(), 10)]]];
             }
         }
         if ((currentFirst && currentFirst.isDataRow) || block % 2 === 0) {
@@ -310,7 +318,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let rows: Row<Column>[] = [];
         const keys: string[] = Object.keys(this.cache);
         for (let i: number = 0; i < keys.length; i++) {
-            rows = [...rows, ...this.cache[keys[i]]];
+            rows = [...rows, ...this.cache[keys[parseInt(i.toString(), 10)]]];
         }
         return rows;
     }
@@ -319,7 +327,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const cells: Cell<Column>[] = [];
         const cols: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
         for (let i: number = 0; i < cols.length; i++) {
-            cells.push((this.rowModelGenerator as RowModelGenerator).generateCell(cols[i], null, null, null, null, foreignKeyData));
+            cells.push(
+                (this.rowModelGenerator as RowModelGenerator).generateCell(
+                    cols[parseInt(i.toString(), 10)],
+                    null, null, null, null, foreignKeyData));
         }
         return cells;
     }
@@ -328,13 +339,13 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const blocks: number = this.parent.contentModule.getGroupedTotalBlocks();
         const blockSize: number = this.parent.contentModule.getBlockSize();
         for (let i: number = 1; i <= blocks; i++) {
-            let count: number = 0; this.cache[i] = [];
+            let count: number = 0; this.cache[parseInt(i.toString(), 10)] = [];
             for (let j: number = ((i - 1) * blockSize); j < rows.length; j++) {
                 if (count === blockSize) {
                     break;
                 }
-                this.cache[i].push(rows[j]);
-                if (rows[j].isDataRow) {
+                this.cache[parseInt(i.toString(), 10)].push(rows[parseInt(j.toString(), 10)]);
+                if (rows[parseInt(j.toString(), 10)].isDataRow) {
                     count++;
                 }
             }

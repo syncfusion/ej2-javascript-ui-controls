@@ -8,7 +8,6 @@ export class WUniqueFormat {
     public propertiesHash: Dictionary<number, object>;
     public referenceCount: number = 0;
     public uniqueFormatType: number;
-
     public constructor(type: number) {
         this.uniqueFormatType = type;
         this.propertiesHash = new Dictionary<number, object>();
@@ -48,6 +47,9 @@ export class WUniqueFormat {
             break;
         case 10:
             isEqual = this.isSectionFormatEqual(source, property, modifiedValue);
+            break;
+        case 11:
+            isEqual = this.isColumnFormatEqual(source, property, modifiedValue);
             break;
         default:
             break;
@@ -108,6 +110,9 @@ export class WUniqueFormat {
             break;
         case 10:
             type = this.getSectionFormatType(property);
+            break;
+        case 11:
+            type = this.getColumnFormatType(property);
             break;
         default:
             break;
@@ -421,6 +426,15 @@ export class WUniqueFormat {
         }
         return 0;
     }
+    private static getColumnFormatType(property: string): number {
+        if (property === 'width') {
+            return 1;
+        }
+        if (property === 'space') {
+            return 2;
+        }
+        return 0;
+    }
     private static getSectionFormatType(property: string): number {
         if (property === 'headerDistance') {
             return 1;
@@ -487,6 +501,21 @@ export class WUniqueFormat {
         }
         if (property === 'pageNumberStyle') {
             return 22;
+        }
+        if (property === 'numberOfColumns') {
+            return 23;
+        }
+        if (property === 'equalWidth') {
+            return 24;
+        }
+        if (property === 'lineBetweenColumns') {
+            return 25;
+        }
+        if (property === 'columns') {
+            return 26;
+        }
+        if (property === 'breakCode') {
+            return 27;
         }
         return 0;
     }
@@ -886,6 +915,30 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('pageNumberStyle', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('numberOfColumns', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('equalWidth', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('lineBetweenColumns', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('breakCode', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        return true;
+    }
+    /**
+     * @private
+     */
+     public isColumnFormatEqual(source: Dictionary<number, object>, modifiedProperty: string, modifiedValue: Object): boolean {
+        if (this.isNotEqual('width', source, modifiedProperty, modifiedValue, 11)) {
+            return false;
+        }
+        if (this.isNotEqual('space', source, modifiedProperty, modifiedValue, 11)) {
             return false;
         }
         return true;

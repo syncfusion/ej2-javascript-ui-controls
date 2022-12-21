@@ -8,7 +8,7 @@ import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel, GroupSe
 import { DrillOptionsModel, ValueSortSettingsModel, CalculatedFieldSettingsModel } from './datasourcesettings-model';
 import { DataManager } from '@syncfusion/ej2-data';
 import { ConditionalFormatSettingsModel, AuthenticationModel } from './datasourcesettings-model';
-import { GrandTotalsPosition } from '../../common/base/enum';
+import { GrandTotalsPosition, SubTotalsPosition } from '../../common/base/enum';
 
 /**
  * Allows specific fields associated with field information that needs to be displayed in the field axes of pivot table. The following configurations which are applicable are as follows:
@@ -82,6 +82,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      * * `CalculatedField`: Allows to display the pivot table with calculated field values. It allows user to create a new calculated field alone.
      *
      * > It is applicable only for relational data source.
+     *
      * @default Sum
      */
     @Property('Sum')
@@ -96,6 +97,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to display all members items of a specific field to the pivot table, even doesn't have any data in its row/column intersection in data source.
      * > It is applicable only for relational data source.
+     *
      * @default false
      */
     @Property(false)
@@ -118,6 +120,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
 
     /**
      * Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -127,6 +130,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      * Allows you to set whether the specified field is a named set or not.
      * In general, the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself.
      * > It is applicable only for OLAP data source.
+     *
      * @default false
      */
     @Property(false)
@@ -135,6 +139,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows to set whether the specified field is a calculated field or not. In general, a calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table.
      * > This option is applicable only for OLAP data source.
+     *
      * @default false
      */
     @Property(false)
@@ -143,6 +148,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -151,6 +157,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
+     *
      * @default true
      */
     @Property(true)
@@ -159,6 +166,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
+     *
      * @default true
      */
     @Property(true)
@@ -167,6 +175,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This value type icon helps to select the appropriate aggregation type to specified value field at runtime.
+     *
      * @default true
      */
     @Property(true)
@@ -175,6 +184,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -183,6 +193,7 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
     /**
      * Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
+     *
      * @default true
      */
     @Property(true)
@@ -196,15 +207,16 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      * Allows you to either expand or collapse all the headers that are displayed in the pivot table.
      * By default, all the headers are collapsed in the pivot table.
      * > It is applicable only for Relational data.
-     * @default false    
+     *
+     * @default false
      */
     @Property(false)
     public expandAll: boolean;
     /**
-    * Allows you to create group folder for fields in pivot field list.
-    * Allows user to set the group (i.e., folder) name for selected fields that used to be displayed in the field list tree.
-    * > It is applicable only for relational data source.
-    */
+     * Allows you to create group folder for fields in pivot field list.
+     * Allows user to set the group (i.e., folder) name for selected fields that used to be displayed in the field list tree.
+     * > It is applicable only for relational data source.
+     */
     @Property()
     public groupName: string;
 }
@@ -290,6 +302,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
      * * Date - Specifies the filter type as date for date based filter.
      * * Number - Specifies the filter type as number for number based filter.
      * * Value - Specifies the filter type as value for value based filter.
+     *
      * @default Include
      */
     @Property('Include')
@@ -304,6 +317,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
     /**
      * Allows you to choose the operator type such as equals, greater than, less than, etc. for conditional-based filtering.
      * > It is applicable only for label and value filtering.
+     *
      * @default DoesNotEquals
      */
     @Property('DoesNotEquals')
@@ -333,6 +347,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
     /**
      * Allows to set level of the field to fetch data from the cube for filtering.
      * > This option is applicable only for user-defined hierarchies in OLAP data source.
+     *
      * @default 1
      */
     @Property(1)
@@ -411,15 +426,17 @@ export class Sort extends ChildProperty<Sort> implements ISort {
      * * `Ascending`: It allows to display the field members in ascending order.
      * * `Descending`: It allows to display the field members in descending order.
      * * `None`: It allows to display the field members based on JSON order.
+     *
      * @default Ascending
      */
     @Property('Ascending')
     public order: Sorting;
 
     /**
-    * Allows to specify the order in which the members should be sorted.
-    * @default []
-    */
+     * Allows to specify the order in which the members should be sorted.
+     *
+     * @default []
+     */
     @Property([])
     public membersOrder: string[] | number[];
 }
@@ -462,6 +479,7 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to use grouping to the formatted value,
+     *
      * @default true
      */
     @Property(true)
@@ -545,6 +563,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> implements IGrou
      * * Date - Defines group type as 'Date' for date type field
      * * Number - Defines group type as 'Number' for numeric type field.
      * * Custom - Defines group type as 'Custom' for custom group field.
+     *
      * @default Date
      */
     @Property('Date')
@@ -567,6 +586,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> implements IGrou
     /**
      * It allows to set the custom group information to create custom group fields.
      * > It is applicable only for custom grouping.
+     *
      * @default []
      */
     @Property()
@@ -586,6 +606,7 @@ export class CustomGroups extends ChildProperty<CustomGroups> implements ICustom
 
     /**
      * It allows to set the headers which needs to be grouped from display.
+     *
      * @default []
      */
     @Property([])
@@ -662,6 +683,7 @@ export class ValueSortSettings extends ChildProperty<ValueSortSettings> implemen
 
     /**
      * It allows to set the delimiter, which is used a separator to split the given header text.
+     *
      * @default '.'
      */
     @Property('.')
@@ -671,6 +693,7 @@ export class ValueSortSettings extends ChildProperty<ValueSortSettings> implemen
      * Allows to apply sorting to the specified field either by ascending or descending. The types are,
      * * `Ascending`: It allows to display the field members in ascending order.
      * * `Descending`: It allows to display the field members in descending order.
+     *
      * @default None
      */
     @Property('None')
@@ -759,6 +782,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to set the mode of rendering the pivot table.
+     *
      * @default Local
      */
     @Property('Local')
@@ -782,6 +806,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows to set the provider type to identify the given connection is either **Relational** or **SSAS** to render the pivot table and field list. The following options are:
      * * `Relational`: Allows to render the pivot table with JSON data collection either fetch at local or remote server.
      * * `SSAS`: Allows to render the pivot table with OLAP data fetch from OLAP cube.
+     *
      * @default Relational
      */
     @Property('Relational')
@@ -798,6 +823,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows you to set the specific culture code as number type to render pivot table with desired localization.
      * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale.
      * > It is applicale only for OLAP data source.
+     *
      * @default 1033
      */
     @Property(1033)
@@ -807,6 +833,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list.
      * You can fetch JSON data from remote server by using DataManager.
      * > It is applicable only for relational data source.
+     *
      * @isGenericType true
      */
     @Property()
@@ -834,6 +861,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     *
      * @default []
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
@@ -861,6 +889,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     *
      * @default []
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
@@ -886,6 +915,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     *
      * @default []
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
@@ -908,6 +938,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     *
      * @default []
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
@@ -936,6 +967,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * * `expandAll`: Allows you to expand or collapse all of the pivot table's headers for a specific field.
+     *
      * @default []
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
@@ -945,6 +977,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows you to restrict the specific field(s) from displaying it in the field list UI.
      * You may also be unable to render the pivot table with this field(s) by doing so.
      * > It is applicable only for relational data source.
+     *
      * @default []
      */
     @Property([])
@@ -954,6 +987,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows you to either expand or collapse all the headers that are displayed in the pivot table.
      * By default, all the headers are collapsed in the pivot table.
      * > It is applicable only for Relational data.
+     *
      * @default false
      */
     @Property(false)
@@ -961,6 +995,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows you to set the value fields that to be plotted either in row or column axis in the pivot table.
+     *
      * @default 'column'
      */
     @Property('column')
@@ -970,6 +1005,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows you to display the value headers based on the index position in row or column axis in the pivot table.
      * By default, the value headers are displayed at last index position based on the `valueAxis` property.
      * > It is applicale only for relational data source.
+     *
      * @default '-1'
      */
     @Property(-1)
@@ -977,6 +1013,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows specific fields associated with either selective or conditional-based filter members that used to be displayed in the pivot table.
+     *
      * @default []
      */
     @Collection<FilterModel[]>([], Filter)
@@ -985,6 +1022,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table.
      * By default, the data source containing fields are display with Ascending order alone. To use this option, it requires the `enableSorting` property to be **true**.
+     *
      * @default []
      */
     @Collection<SortModel[]>([], Sort)
@@ -992,6 +1030,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to perform sort operation to order members of a specific fields either in ascending or descending that used to be displayed in the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -999,6 +1038,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to define the data source type.
+     *
      * @default JSON
      */
     @Property('JSON')
@@ -1006,6 +1046,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to perform filter operation based on the selective filter members of the specific fields used to be displayed in the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -1013,6 +1054,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to perform filter operation based on the selective headers used to be displayed in the pivot table.
+     *
      * @default false
      */
     @Property(false)
@@ -1020,6 +1062,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to perform filter operation based only on value fields and its resultant aggregated values over other fields defined in row and column axes that used to be displayed in the pivot table.
+     *
      * @default false
      */
     @Property(false)
@@ -1027,6 +1070,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to show or hide sub-totals in both rows and columns axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -1034,6 +1078,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to show or hide sub-totals in row axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -1041,13 +1086,24 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to show or hide sub-totals in column axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
     public showColumnSubTotals: boolean;
 
     /**
+     * Allows the row and column sub-totals to be displayed at the top or bottom of the header group in the pivot table.
+     * > By default, the column sub-totals are displayed at the bottom and row sub-totals are displayed at the top of their header group in the pivot table.
+     *
+     * @default Auto
+     */
+    @Property('Auto')
+    public subTotalsPosition: SubTotalsPosition;
+
+    /**
      * Allows to show or hide grand totals in both rows and columns axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -1056,6 +1112,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows the grand totals to be displayed at the top or bottom of the pivot table's row and column axes.
      * > By default, the grand totals are displayed at the bottom of the pivot table's row and column axes.
+     *
      * @default Bottom
      */
     @Property('Bottom')
@@ -1063,6 +1120,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to show or hide grand totals in row axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -1070,6 +1128,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to show or hide grand totals in column axis of the pivot table.
+     *
      * @default true
      */
     @Property(true)
@@ -1077,6 +1136,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to show the value field header always in pivot table, even if it holds a single field in the value field axis.
+     *
      * @default false
      */
     @Property(false)
@@ -1085,6 +1145,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows the undefined headers to be displayed in the pivot table, when the specific field(s) are not defined in the raw data.
      * For example, if the raw data for the field ‘Country’ is defined as “United Kingdom” and “State” is not defined means, it will be shown as “United Kingdom >> Undefined” in the header section.
+     *
      * @default true
      */
     @Property(true)
@@ -1093,6 +1154,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows the pivot button with specific value field caption along with the aggregation type, to be displayed in the grouping bar and field list UI.
      * For example, if the value field "Sold Amount" is aggregated with Sum, it will be displayed with caption "Sum of Sold Amount" in its pivot button.
+     *
      * @default true
      */
     @Property(true)
@@ -1101,6 +1163,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     /**
      * Allows specific fields used to display the values with specific format that used to be displayed in the pivot table.
      * For example, to display a specific field with currency formatted values in the pivot table, the set the `format` property to be **C**.
+     *
      * @default []
      */
     @Collection<FormatSettingsModel[]>([], FormatSettings)
@@ -1108,6 +1171,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows specific fields used to display their the headers to be either expanded or collapsed in the pivot table.
+     *
      * @default []
      */
     @Collection<DrillOptionsModel[]>([], DrillOptions)
@@ -1121,6 +1185,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows to create new calculated fields from the bound data source or using simple formula with basic arithmetic operators in the pivot table.
+     *
      * @default []
      */
     @Collection<CalculatedFieldSettingsModel[]>([], CalculatedFieldSettings)
@@ -1128,6 +1193,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * Allows a collection of values fields to change the appearance of the pivot table value cells with different style properties such as background color, font color, font family, and font size based on specific conditions.
+     *
      * @default []
      */
     @Collection<ConditionalFormatSettingsModel[]>([], ConditionalFormatSettings)
@@ -1143,6 +1209,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * Allows specific fields to group their data on the basis of their type.
      * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc.
      * You can perform custom group to the string type fields that used to displayed in the pivot table.
+     *
      * @default []
      */
     @Collection<GroupSettingsModel[]>([], GroupSettings)

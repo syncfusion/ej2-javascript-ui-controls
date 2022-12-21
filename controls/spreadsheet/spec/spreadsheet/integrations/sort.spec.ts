@@ -3,6 +3,7 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
 import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell } from '../../../src/index';
 import { Dialog } from '../../../src/spreadsheet/services/index';
+import { getComponent } from '@syncfusion/ej2-base';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -182,6 +183,79 @@ describe('Spreadsheet sorting module ->', () => {
         });
     });
 
+    describe('Custom Sort Dialog', () => {
+        beforeAll((done: Function) => {
+            model = { sheets: [{ ranges: [{ dataSource: defaultData }] }],
+            created: (): void => {
+                    helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                }
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('custom Sort Dialog error for Selecting Same Column in dropdown', (done: Function) => {
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
+                helper.click('.e-customsort-dlg .e-sort-addbtn');
+                helper.click('.e-customsort-dlg .e-primary');
+                setTimeout(() => {
+                    expect(helper.getElement('.e-customsort-dlg .e-sort-error').textContent).toBe('All sort criteria must have a column specified. Check the selected sort criteria and try again.');
+                    done();
+                }, 20);
+            });
+        });
+        it('custom Sort Dialog error for not Selecting in dropdown', (done: Function) => {
+            helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
+            let input: HTMLElement = document.querySelector('.e-ul').children[1].querySelector('.e-sort-field-ddl');
+            helper.triggerMouseAction('mousedown', { x: input.getBoundingClientRect().left + 1, y: input.getBoundingClientRect().top + 1 }, input);
+            helper.triggerMouseAction('mouseup', { x: input.getBoundingClientRect().left + 1, y: input.getBoundingClientRect().top + 1 }, input);
+            setTimeout(() => {
+                let listValue = document.querySelector('.e-dropdownbase .e-ul').children[0] as HTMLElement;
+                listValue.click();
+                helper.click('.e-customsort-dlg .e-primary');
+                setTimeout(() => {
+                    expect(helper.getElement('.e-customsort-dlg .e-sort-error').textContent).toBe('  is being sorted by values more than once. Delete the duplicate sort criteria and try again.');
+                    done();
+                }, 20);
+            });
+        });
+        it('custom Sort Dialog error', (done: Function) => {
+            helper.click('.e-customsort-dlg .e-sort-delete');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
+                helper.click('.e-customsort-dlg .e-dlg-content .e-sort-header .e-sort-headercheckbox');
+                helper.click('.e-customsort-dlg .e-primary');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Item Name');
+                    done();
+                }, 20);
+            });
+        });
+        it('Apply custom fort with Text Formatting in Header and clicking Sorting Radio Button->', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '' }, 'H1']);
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2:H11' }]);
+            helper.invoke('selectRange', ['A1']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Text').click();
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-customsort-dlg.e-dialog');
+                helper.click('.e-customsort-dlg .e-sort-radiodesc');
+                helper.click('.e-customsort-dlg .e-sort-radioasc');
+                helper.click('.e-customsort-dlg .e-primary');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Cricket Shoes');
+                    done();
+                }, 20);
+            });
+        });
+    });
+    
     describe('CR-Issues ->', () => {
         describe('I311230, I311230, I309407, I300737, I315895 ->', () => {
             beforeAll((done: Function) => {

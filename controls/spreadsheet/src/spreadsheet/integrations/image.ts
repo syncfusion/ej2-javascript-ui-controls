@@ -105,7 +105,7 @@ export class SpreadsheetImage {
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const id: string = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
         const indexes: number[] = getRangeIndexes(range);
-        const sheet: SheetModel = isUndefined(sheetIndex) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIndex];
+        const sheet: SheetModel = isUndefined(sheetIndex) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIndex as number];
         if (document.getElementById(id)) {
             return;
         }
@@ -161,19 +161,19 @@ export class SpreadsheetImage {
     }): void {
         const count: number = args.count;
         const sheetIdx: number = args.sheetIdx;
-        const sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
         let pictureElements: HTMLElement;
         const currCellObj: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
         const imageLen: number = currCellObj.image.length;
         let top: number; let left: number;
         for (let i: number = 0; i < imageLen; i++) {
-            pictureElements = document.getElementById(currCellObj.image[i].id);
-            top = (args.type === 'Row') ? (args.status === 'insert') ? currCellObj.image[i].top + (count * 20) :
-                currCellObj.image[i].top - (count * 20) : currCellObj.image[i].top;
-            left = (args.type === 'Column') ? (args.status === 'insert') ? currCellObj.image[i].left + (count * 64) :
-                currCellObj.image[i].left - (count * 64) : currCellObj.image[i].left;
-            currCellObj.image[i].top = top;
-            currCellObj.image[i].left = left;
+            pictureElements = document.getElementById(currCellObj.image[i as number].id);
+            top = (args.type === 'Row') ? (args.status === 'insert') ? currCellObj.image[i as number].top + (count * 20) :
+                currCellObj.image[i as number].top - (count * 20) : currCellObj.image[i as number].top;
+            left = (args.type === 'Column') ? (args.status === 'insert') ? currCellObj.image[i as number].left + (count * 64) :
+                currCellObj.image[i as number].left - (count * 64) : currCellObj.image[i as number].left;
+            currCellObj.image[i as number].top = top;
+            currCellObj.image[i as number].left = left;
             pictureElements.style.top = top + 'px';
             pictureElements.style.left = left + 'px';
         }
@@ -192,8 +192,8 @@ export class SpreadsheetImage {
         const prevCellImgLen: number = (prevCellImg && prevCellImg.length) ? prevCellImg.length : 0;
         if (prevCellObj && prevCellObj.image && prevCellImg.length > 0) {
             for (let i: number = 0; i < prevCellImgLen; i++) {
-                if (prevCellImg[i] && (prevCellImg[i] as ImageModel).id === args.id) {
-                    prevImgObj = prevCellImg[i];
+                if (prevCellImg[i as number] && (prevCellImg[i as number] as ImageModel).id === args.id) {
+                    prevImgObj = prevCellImg[i as number];
                     prevImgObj.height = args.currentHeight;
                     prevImgObj.width = args.currentWidth;
                     prevImgObj.top = args.currentTop;
@@ -264,20 +264,22 @@ export class SpreadsheetImage {
                 this.parent.activeSheetIndex;
             const index: number[] = getRangeIndexes(rangeVal);
             rowIdx = index[0]; colIdx = index[1];
-            sheet = this.parent.sheets[sheetIndex];
+            sheet = this.parent.sheets[sheetIndex as number];
         }
         const cellObj: CellModel = getCell(rowIdx, colIdx, sheet);
         const prevCellImg: ImageModel[] = cellObj.image;
         const imgLength: number = prevCellImg.length;
         let image: ImageModel = {};
         for (let i: number = 0; i < imgLength; i++) {
-            if (prevCellImg[i].id === args.id) {
+            if (prevCellImg[i as number].id === args.id) {
                 image = prevCellImg.splice(i, 1)[0];
             }
         }
         setCell(rowIdx, colIdx, sheet, { image: prevCellImg }, true);
         if (!args.preventEventTrigger) {
-            this.parent.notify(completeAction, { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, cancel: false } });
+            this.parent.notify(
+                completeAction,
+                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, cancel: false } });
         }
     }
 

@@ -24,6 +24,24 @@ export interface DropDownListModel extends DropDownBaseModel{
     width?: string | number;
 
     /**
+     * Specifies a value that indicates whether the component is enabled or not.
+     *
+     * @default true
+     * @deprecated
+     */
+    enabled?: boolean;
+
+    /**
+       * Enable or disable persisting component's state between page reloads.
+       * If enabled, following list of states will be persisted.
+       * 1. value
+       *
+       * @default false
+       * @deprecated
+       */
+    enablePersistence?: boolean;
+
+    /**
      * Specifies the height of the popup list.
      * > For more details about the popup configuration refer to
      * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.

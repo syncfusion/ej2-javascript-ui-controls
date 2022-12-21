@@ -148,11 +148,11 @@ export interface DragArgs extends BaseEventArgs {
     modifiedData?: Record<string, any>[];
 }
 
-/** 
- * Provide information about Swimlane HeaderArgs 
- * 
+/**
+ * Provide information about Swimlane HeaderArgs
+ *
  * @interface HeaderArgs
- * */ 
+ * */
 export interface HeaderArgs {
     /** Defines the Swimlane key field */
     keyField: string | number;
@@ -182,11 +182,11 @@ export interface ScrollOffset {
     top?: number;
 }
 
-/** 
- * Custom Sort Compare Function to sort Swimlane rows 
- * 
- * @interface SortComparerFunction
- * */
+/**
+ * Custom Sort Compare Function to sort Swimlane rows W
+ *
+ * @interface SortCompareFunction
+ */
 export interface SortComparerFunction {
     /** Defines the Swimlane Header Arguments */
     (param: HeaderArgs[]): HeaderArgs[];

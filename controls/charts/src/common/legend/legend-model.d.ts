@@ -71,6 +71,7 @@ export interface LegendSettingsModel {
      * chart.appendTo('#Chart');
      * ```
      */
+
     location?: LocationModel;
 
     /**
@@ -88,13 +89,13 @@ export interface LegendSettingsModel {
     position?: LegendPosition;
 
     /**
-    * Mode of legend items
-    * * Series: Legend items generated based on series count.
-    * * Point: Legend items generated based on unique data points. 
-    * * Range: Legend items generated based on range color mapping property. 
-    * * Gradient: Single linear bar generated based on range color mapping property.
-    * This property is applicable for chart component only.
-    */
+     * Mode of legend items
+     * * Series: Legend items generated based on series count.
+     * * Point: Legend items generated based on unique data points.
+     * * Range: Legend items generated based on range color mapping property.
+     * * Gradient: Single linear bar generated based on range color mapping property.
+     * This property is applicable for chart component only.
+     */
     mode?: LegendMode;
 
     /**
@@ -127,6 +128,7 @@ export interface LegendSettingsModel {
     /**
      * Options to customize the legend text.
      */
+
     textStyle?: FontModel;
 
     /**
@@ -148,6 +150,7 @@ export interface LegendSettingsModel {
     /**
      * Options to customize the border of the legend.
      */
+
     border?: BorderModel;
 
     /**
@@ -195,10 +198,10 @@ export interface LegendSettingsModel {
     toggleVisibility?: boolean;
 
     /**
-    * If set to true, the series get highlighted, while hovering the legend.
-    *
-    * @default false
-    */
+     * If set to true, the series get highlighted, while hovering the legend.
+     *
+     * @default false
+     */
 
     enableHighlight?: boolean;
 
@@ -229,6 +232,7 @@ export interface LegendSettingsModel {
     /**
      * Options to customize the legend title.
      */
+    
     titleStyle?: FontModel;
 
     /**
@@ -244,7 +248,6 @@ export interface LegendSettingsModel {
      * * `Normal` -  Specifies to break words only at allowed break points.
      * * `Wrap` - Specifies to break a word once it is too long to fit on a line by itself.
      * * `AnyWhere` - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
-
      *
      * @default 'Normal'
      */
@@ -253,9 +256,8 @@ export interface LegendSettingsModel {
 
     /**
      * Defines the text overflow behavior to employ when the individual legend text overflows
-       * * `Clip` -  Specifies the text is clipped and not accessible.
-       * * `Ellipsis` -  Specifies an ellipsis (“...”) to the clipped text.
-
+     * * `Clip` -  Specifies the text is clipped and not accessible.
+     * * `Ellipsis` -  Specifies an ellipsis (“...”) to the clipped text.
      *
      * @default 'Ellipsis'
      */
@@ -287,9 +289,9 @@ export interface LegendSettingsModel {
     enablePages?: boolean;
 
     /**
-     * If `isInversed` set to true, then it inverses legend item content (image and text). 
-     * @default false. 
-     */ 
+     * If `isInversed` set to true, then it inverses legend item content (image and text).
+     * @default false.
+     */
 
     isInversed?: boolean;
 

@@ -4609,7 +4609,7 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
                     id: 'con17', sourceID: 'child2', targetID: 'leaf4'
                 },
             ];
-            
+
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -4617,15 +4617,15 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
                  nodes:nodes,
                 connectors: connectors,
                 getConnectorDefaults: function (connector:any, diagram:any) {
-                   
+
                     connector.type = 'Orthogonal';
                     return connector;
                 },
                 layout: {
                     type: 'ComplexHierarchicalTree', horizontalSpacing: 30, verticalSpacing: 30,
-                   
+
                       orientation:'LeftToRight',arrangement:ChildArrangement.Linear 
-                    
+
                 },
             });
             diagram.appendTo('#diagram');

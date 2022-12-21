@@ -32,7 +32,7 @@ export class LayoutAnimation {
         const i: number = 0;
         let j: number = 0;
         diagram.realActions = diagram.realActions | RealAction.AnimationClick;
-        setIntervalObject[i] = setInterval(
+        setIntervalObject[parseInt(i.toString(), 10)] = setInterval(
             () => {
                 j++;
                 return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram, node);
@@ -41,7 +41,7 @@ export class LayoutAnimation {
         if (node.isExpanded) {
             let opacity: number = .2;
             const protect: string = 'isProtectedOnChange';
-            this.protectChange = diagram[protect];
+            this.protectChange = diagram[`${protect}`];
             diagram.protectPropertyChange(false);
             //let objects: ILayout = diagram.doLayout();
             const setIntervalObjects: Object = {};
@@ -50,7 +50,7 @@ export class LayoutAnimation {
                 this.updateOpacity(node, opacity, diagram);
                 // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const current: LayoutAnimation = this;
-                setIntervalObjects[x] = setInterval(
+                setIntervalObjects[parseInt(x.toString(), 10)] = setInterval(
                     () => {
                         diagram.allowServerDataBinding = false;
                         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -79,9 +79,9 @@ export class LayoutAnimation {
     public layoutAnimation(objValue: ILayout, layoutTimer: Object, stop: boolean, diagram: Diagram, node?: NodeModel): void {
         if (!stop) {
             for (let k: number = 0; k < objValue.objects.length; k++) {
-                const node: NodeModel = diagram.nameTable[objValue.objects[k].id];
-                node.offsetX += objValue.objects[k].differenceX / 5;
-                node.offsetY += objValue.objects[k].differenceY / 5;
+                const node: NodeModel = diagram.nameTable[objValue.objects[parseInt(k.toString(), 10)].id];
+                node.offsetX += objValue.objects[parseInt(k.toString(), 10)].differenceX / 5;
+                node.offsetY += objValue.objects[parseInt(k.toString(), 10)].differenceY / 5;
             }
         }
         if (stop) {
@@ -116,11 +116,11 @@ export class LayoutAnimation {
      */
     public updateOpacity(source: Node, value: number, diagram: Diagram): void {
         for (let i: number = 0; i < source.outEdges.length; i++) {
-            const connector: ConnectorModel = diagram.nameTable[source.outEdges[i]];
+            const connector: ConnectorModel = diagram.nameTable[source.outEdges[parseInt(i.toString(), 10)]];
             const target: Node = diagram.nameTable[connector.targetID];
             connector.style.opacity = value;
             for (let j: number = 0; j < connector.wrapper.children.length; j++) {
-                connector.wrapper.children[j].style.opacity = value;
+                connector.wrapper.children[parseInt(j.toString(), 10)].style.opacity = value;
                 target.style.opacity = value;
                 if (target.wrapper instanceof Container) {
                     diagram.updateNodeProperty(target.wrapper, undefined, value);

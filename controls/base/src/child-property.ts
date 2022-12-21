@@ -35,9 +35,9 @@ export class ChildProperty<T> {
      */
     private updateChange(val: boolean, propName: string): void {
         if (val === true) {
-            this.parentObj.childChangedProperties[propName] = val;
+            this.parentObj.childChangedProperties[`${propName}`] = val;
         } else {
-            delete this.parentObj.childChangedProperties[propName];
+            delete this.parentObj.childChangedProperties[`${propName}`];
         }
         if (this.parentObj.updateChange) {
             this.parentObj.updateChange(val, this.parentObj.propName);
@@ -119,8 +119,8 @@ export class ChildProperty<T> {
     protected saveChanges(key: string, newValue: Object, oldValue: Object, restrictServerDataBind?: boolean): void {
         if (this.controlParent.isProtectedOnChange) { return; }
         if (!restrictServerDataBind) { this.serverDataBind(key, newValue, true); }
-        this.oldProperties[key] = oldValue;
-        this.changedProperties[key] = newValue;
+        this.oldProperties[`${key}`] = oldValue;
+        this.changedProperties[`${key}`] = newValue;
         this.updateChange(true, this.propName);
         this.finalUpdate();
         this.updateTimeOut();
@@ -136,18 +136,18 @@ export class ChildProperty<T> {
                 parent = newChanges;
                 for (let i: number = 0; i < complexKeys.length; i++) {
                     const isFinal: boolean = i === complexKeys.length - 1;
-                    parent[complexKeys[i]] = isFinal ? value : {};
-                    parent = isFinal ? parent : parent[complexKeys[i]];
+                    parent[complexKeys[parseInt(i.toString(), 10)]] = isFinal ? value : {};
+                    parent = isFinal ? parent : parent[complexKeys[parseInt(i.toString(), 10)]];
                 }
             } else {
-                newChanges[parentKey] = {};
-                parent = newChanges[parentKey];
-                newChanges[parentKey][key] = value;
+                newChanges[`${parentKey}`] = {};
+                parent = newChanges[`${parentKey}`];
+                newChanges[`${parentKey}`][`${key}`] = value;
             }
             /* istanbul ignore next */
             if (this.isParentArray) {
                 const actionProperty: string = 'ejsAction';
-                parent[actionProperty] = action ? action : 'none';
+                parent[`${actionProperty}`] = action ? action : 'none';
             }
             this.controlParent.serverDataBind(newChanges);
         }

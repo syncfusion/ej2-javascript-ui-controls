@@ -99,6 +99,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private cellHeaderTemplateFn: CallbackFunction;
     private cellTemplateFn: CallbackFunction;
     private dateHeaderTemplateFn: CallbackFunction;
+    private dateRangeTemplateFn: CallbackFunction;
     private dayHeaderTemplateFn: CallbackFunction;
     private monthHeaderTemplateFn: CallbackFunction;
     private majorSlotTemplateFn: CallbackFunction;
@@ -491,6 +492,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property()
     public dateHeaderTemplate: string;
+
+    /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
+     *
+     * @default null
+     */
+    @Property()
+    public dateRangeTemplate: string;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
@@ -1197,7 +1206,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     private getViewIndex(viewName: View): number {
         for (let item: number = 0; item < this.viewCollections.length; item++) {
-            const checkIndex: View = this.viewCollections[item].option;
+            const checkIndex: View = this.viewCollections[parseInt(item.toString(), 10)].option;
             if (checkIndex === viewName) {
                 return item;
             }
@@ -1232,6 +1241,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             const fieldViewName: string = viewName.charAt(0).toLowerCase() + viewName.slice(1);
             obj.cellHeaderTemplateName = obj.cellHeaderTemplate ? obj.option : '';
             obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
+            obj.dateRangeTemplateName = obj.dateRangeTemplate ? obj.option : '';
             obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
             obj.dayHeaderTemplateName = obj.dayHeaderTemplate ? obj.option : '';
             obj.monthHeaderTemplateName = obj.monthHeaderTemplate ? obj.option : '';
@@ -1245,10 +1255,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 delete obj.interval;
             }
             this.viewCollections.push(obj);
-            if (isNullOrUndefined(this.viewOptions[fieldViewName])) {
-                this.viewOptions[fieldViewName] = [obj];
+            if (isNullOrUndefined(this.viewOptions[`${fieldViewName}`])) {
+                this.viewOptions[`${fieldViewName}`] = [obj];
             } else {
-                this.viewOptions[fieldViewName].push(obj);
+                this.viewOptions[`${fieldViewName}`].push(obj);
             }
             count++;
         }
@@ -1277,7 +1287,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             allowGroupEdit: this.group.allowGroupEdit,
             resources: this.group.resources,
             headerTooltipTemplate: this.group.headerTooltipTemplate,
-            enableCompactView: this.group.enableCompactView
+            enableCompactView: this.group.enableCompactView,
+            hideNonWorkingDays: ['Day', 'Week', 'WorkWeek', 'Month'].indexOf(this.currentView)  > -1 ? this.group.hideNonWorkingDays : false
         };
         const workDays: number[] = this.viewCollections[this.viewIndex].workDays ? [] : this.workDays;
         const scheduleOptions: ViewsModel = {
@@ -1294,6 +1305,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             cellTemplate: this.cellTemplate,
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
+            dateRangeTemplate: this.dateRangeTemplate,
             resourceHeaderTemplate: this.resourceHeaderTemplate,
             headerIndentTemplate: this.headerIndentTemplate,
             firstMonthOfYear: this.firstMonthOfYear,
@@ -1377,6 +1389,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.monthHeaderTemplateFn = this.templateParser(this.activeViewOptions.monthHeaderTemplate);
         this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
         this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
+        this.dateRangeTemplateFn = this.templateParser(this.activeViewOptions.dateRangeTemplate);
         this.majorSlotTemplateFn = this.templateParser(this.activeViewOptions.timeScale.majorSlotTemplate);
         this.minorSlotTemplateFn = this.templateParser(this.activeViewOptions.timeScale.minorSlotTemplate);
         this.appointmentTemplateFn = this.templateParser(this.activeViewOptions.eventTemplate);
@@ -1493,16 +1506,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (!muteOnChange && index === this.viewIndex && this.currentView === view || index < 0) {
             return;
         }
-        this.viewIndex = index;
+        const previousView: View = this.activeViewOptions ? this.activeViewOptions.option : this.currentView;
         let args: ActionEventArgs = { requestType: 'viewNavigate', cancel: false, event: event };
         this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
                 const navArgs: NavigatingEventArgs = {
-                    action: 'view', cancel: false, currentDate: this.selectedDate, previousView: this.currentView, currentView: view, viewIndex: this.viewIndex
+                    action: 'view', cancel: false, currentDate: this.selectedDate, previousView: previousView, currentView: view, viewIndex: index
                 };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
-                        this.uiStateValues.isInitial = view.indexOf('Timeline') > -1 || this.currentView.indexOf('Timeline') > -1 ? true : this.uiStateValues.isInitial;
+                        const isVertical: boolean = ['Day', 'Week', 'WorkWeek'].indexOf(view) > -1 && ['Day', 'Week', 'WorkWeek'].indexOf(previousView) < 0;
+                        this.uiStateValues.isInitial = isVertical || view.indexOf('Timeline') > -1 || view.indexOf('Year') > -1;
+                        this.uiStateValues.top = view.indexOf('Timeline') > -1 && previousView.indexOf('Timeline') < 0 ? 0 : this.uiStateValues.top;
                         this.viewIndex = navigationArgs.viewIndex;
                         this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {
@@ -1514,8 +1529,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                         this.animateLayout();
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
+                    } else {
+                        this.currentView = previousView;
                     }
                 });
+            } else {
+                this.currentView = previousView;
             }
         });
     }
@@ -1537,7 +1556,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
-                        this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
+                        this.uiStateValues.isInitial = this.activeView.isTimelineView() && this.currentView !== 'TimelineYear';
                         this.validateDate(navigationArgs.currentDate);
                         if (this.headerModule) {
                             this.headerModule.setCalendarDate(navigationArgs.currentDate);
@@ -1966,6 +1985,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Method to process date range template
+     *
+     * @returns {CallbackFunction} Returns the callback function
+     * @private
+     */
+    public getDateRangeTemplate(): CallbackFunction {
+        return this.dateRangeTemplateFn;
+    }
+
+    /**
      * Method to process major slot template
      *
      * @returns {CallbackFunction} Returns the callback function
@@ -2345,14 +2374,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'dateFormat':
                 this.activeViewOptions = this.getActiveViewOptions();
                 if (this.headerModule) {
-                    this.headerModule.updateDateRange(this.activeView.getDateRangeText());
+                    this.headerModule.updateDateRange();
                 }
                 break;
             case 'showHeaderBar':
                 this.destroyHeaderModule();
                 if (newProp.showHeaderBar) {
                     this.headerModule = new HeaderRenderer(this);
-                    this.headerModule.updateDateRange(this.activeView.getDateRangeText());
+                    this.headerModule.updateDateRange();
                 }
                 this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties() });
                 if (this.activeView.isTimelineView()) {
@@ -2406,6 +2435,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.activeViewOptions.dateHeaderTemplate = newProp.dateHeaderTemplate;
                 this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
                 state.isLayout = true;
+                break;
+            case 'dateRangeTemplate':
+                this.activeViewOptions.dateRangeTemplate = newProp.dateRangeTemplate;
+                this.dateRangeTemplateFn = this.templateParser(this.activeViewOptions.dateRangeTemplate);
+                if (this.headerModule) {
+                    this.headerModule.updateDateRange();
+                }
                 break;
             case 'dayHeaderTemplate':
                 this.activeViewOptions.dayHeaderTemplate = newProp.dayHeaderTemplate;
@@ -2573,7 +2609,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (this.showHeaderBar && this.headerModule) {
                 this.destroyHeaderModule();
                 this.headerModule = new HeaderRenderer(this);
-                this.headerModule.updateDateRange(this.activeView.getDateRangeText());
+                this.headerModule.updateDateRange();
             }
             state.isLayout = true;
             break;
@@ -2596,7 +2632,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private onGroupSettingsPropertyChanged(newProp: GroupModel, oldProp: GroupModel, state: StateArgs): void {
         for (const prop of Object.keys(newProp)) {
             if (prop === 'headerTooltipTemplate') {
-                this.headerTooltipTemplateFn = this.templateParser(newProp[prop]);
+                this.headerTooltipTemplateFn = this.templateParser(newProp.headerTooltipTemplate);
             } else {
                 state.isLayout = true;
                 if (this.eventWindow) { this.eventWindow.refresh(); }
@@ -2768,7 +2804,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             util.resetTime(date);
             let renderDates: Date[] = this.activeView.renderDates;
             if (!isNullOrUndefined(groupIndex) && this.resourceBase && !this.activeView.isTimelineView()) {
-                renderDates = this.resourceBase.lastResourceLevel[groupIndex].renderDates;
+                renderDates = this.resourceBase.lastResourceLevel[parseInt(groupIndex.toString(), 10)].renderDates;
             }
             const colIndex: number = this.getIndexOfDate(renderDates, date);
             if (colIndex >= 0) {
@@ -2780,14 +2816,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 for (let i: number = startIndex; i < endIndex; i++) {
                     if (this.activeView.isTimelineView()) {
                         const rowIndex: number = (!isNullOrUndefined(groupIndex)) ? groupIndex : 0;
-                        cells.push(tableEle.rows[rowIndex].cells[i]);
+                        cells.push(tableEle.rows[parseInt(rowIndex.toString(), 10)].cells[parseInt(i.toString(), 10)]);
                     } else {
                         if (!isNullOrUndefined(groupIndex)) {
                             const selector: string = '.' + cls.WORK_CELLS_CLASS + '[data-group-index="' + groupIndex + '"]';
-                            const tds: HTMLTableCellElement[] = [].slice.call(tableEle.rows[i].querySelectorAll(selector));
-                            cells.push(tds[colIndex]);
+                            const tds: HTMLTableCellElement[] =
+                              [].slice.call(tableEle.rows[parseInt(i.toString(), 10)].querySelectorAll(selector));
+                            cells.push(tds[parseInt(colIndex.toString(), 10)]);
                         } else {
-                            cells.push(tableEle.rows[i].cells[colIndex]);
+                            cells.push(tableEle.rows[parseInt(i.toString(), 10)].cells[parseInt(colIndex.toString(), 10)]);
                         }
                     }
                 }
@@ -2876,7 +2913,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public changeCurrentView(viewName: View, viewIndex?: number): void {
         let index: number = this.getViewIndex(viewName);
         const view: string = viewName.charAt(0).toLowerCase() + viewName.slice(1);
-        const viewOptions: ViewsData[] = this.viewOptions[view];
+        const viewOptions: ViewsData[] = this.viewOptions[`${view}`];
         if (viewOptions) {
             index = this.viewCollections.indexOf(viewOptions[viewIndex || 0]);
         }
@@ -2907,7 +2944,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (index < 0 || index >= this.resourceBase.lastResourceLevel.length) {
                 return undefined;
             }
-            const data: TdData = this.resourceBase.lastResourceLevel[index];
+            const data: TdData = this.resourceBase.lastResourceLevel[parseInt(index.toString(), 10)];
             const groupData: Record<string, any> = {};
             this.resourceBase.setResourceValues(groupData, index);
             return { resource: data.resource, resourceData: data.resourceData, groupData: groupData };
@@ -3261,6 +3298,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
             this.activeView.refreshHeader();
             break;
+        case 'dateRangeTemplate':
+            this.dateRangeTemplateFn = this.templateParser(this.activeViewOptions.dateRangeTemplate);
+            if (this.headerModule) {
+                this.headerModule.refresh();
+            }
+            break;
         case 'resourceHeaderTemplate':
             this.resourceHeaderTemplateFn = this.templateParser(this.activeViewOptions.resourceHeaderTemplate);
             if (this.activeView.isTimelineView()) {
@@ -3366,7 +3409,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         eventEnd = this.getDateTime(eventEnd);
         let eventCollection: Record<string, any>[] = this.eventBase.filterEvents(eventStart, eventEnd);
         if (!isNullOrUndefined(groupIndex) && this.resourceBase && this.resourceBase.lastResourceLevel.length > 0) {
-            eventCollection = this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[groupIndex], eventCollection);
+            eventCollection =
+                this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[parseInt(groupIndex.toString(), 10)],
+                                                      eventCollection);
         }
         if (eventObj) {
             if (eventObj.Guid) {
@@ -3499,6 +3544,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Closes the tooltip.
+     * For example, when the context menu is opened for an event,
+     * the tooltip can be closed by calling this method.
+     *
+     * @function closeTooltip
+     * @returns {void}
+     */
+    public closeTooltip(): void {
+        if (this.eventTooltip) {
+            this.eventTooltip.close();
+        }
+    }
+
+    /**
      * Select the resource based on group index in mobile mode.
      *
      * @param {number} groupIndex Defines the resource index based on last level.
@@ -3613,7 +3672,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             'activeEventData', 'activeCellsData', 'renderModule'
         ];
         for (const module of modules) {
-            (this as any)[module] = null;
+            (this as any)[`${module}`] = null;
         }
         util.removeChildren(this.element);
         let removeClasses: string[] = [cls.ROOT, cls.RTL, cls.DEVICE_CLASS, cls.MULTI_DRAG];

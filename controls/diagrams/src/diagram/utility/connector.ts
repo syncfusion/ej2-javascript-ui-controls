@@ -150,7 +150,7 @@ function terminateConnection(
             if (element.segments.length > 0) {
                 let i: number = element.segments.length - 1;
                 while (i >= 0) {
-                    let seg: BezierSegment = element.segments[i] as BezierSegment;
+                    let seg: BezierSegment = element.segments[parseInt(i.toString(), 10)] as BezierSegment;
                     if (seg.isInternalSegment) {
                         element.segments.pop();
                     }
@@ -613,7 +613,7 @@ function findPointToPointOrtho(
     checkLastSegmentasTerminal(element); let removeSegment: number;
     if (element.segments.length > 0) {
         for (let i: number = 0; i < element.segments.length; i++) {
-            const seg: OrthogonalSegment = (element.segments[i] as OrthogonalSegment);
+            const seg: OrthogonalSegment = (element.segments[parseInt(i.toString(), 10)] as OrthogonalSegment);
             if (i === 0 && element.sourcePortWrapper !== undefined) {
                 port = { x: sourcePort.offsetX, y: sourcePort.offsetY };
                 direction = getPortDirection(port, cornersPointsBeforeRotation(sourceNode), sourceNode.bounds, false) as Direction;
@@ -642,7 +642,7 @@ function findPointToPointOrtho(
                     seg.points = [];
                     if (point.length >= 2) {
                         for (j = 0; j < point.length; j++) {
-                            seg.points.push(point[j]);
+                            seg.points.push(point[parseInt(j.toString(), 10)]);
                         }
                     } else {
                         removeSegment = i;
@@ -845,9 +845,9 @@ function checkSourceAndTargetIntersect(sourceWrapper: DiagramElement, targetWrap
     const sourceSegment: Segment[] = createSegmentsCollection(sourceWrapper, connector.sourcePadding);
     const targetSegment: Segment[] = createSegmentsCollection(targetWrapper, connector.targetPadding);
     for (let i: number = 0; i < sourceSegment.length - 1; i++) {
-        const srcSegment: Segment = sourceSegment[i];
+        const srcSegment: Segment = sourceSegment[parseInt(i.toString(), 10)];
         for (let j: number = 0; j < targetSegment.length - 1; j++) {
-            const tarSegmet: Segment = targetSegment[j];
+            const tarSegmet: Segment = targetSegment[parseInt(j.toString(), 10)];
             if (intersect3(srcSegment, tarSegmet).enabled) {
                 return true;
             }
@@ -869,7 +869,7 @@ function createSegmentsCollection(sourceWrapper: DiagramElement, padding: number
     const points: PointModel[] = getPoints(sourceWrapper, sourceWrapper.corners, padding);
     points.push(points[0]);
     for (let i: number = 0; i < points.length - 1; i++) {
-        segments.push(createLineSegment(points[i], points[i + 1]));
+        segments.push(createLineSegment(points[parseInt(i.toString(), 10)], points[i + 1]));
     }
     return segments;
 }
@@ -1105,7 +1105,7 @@ function intermeditatePointsForStraight(element: Connector, source: End, target:
     if (element.segments && element.segments.length > 0) {
         let i: number; let segPoint: PointModel[] = []; let srcPoint: PointModel = source.point;
         for (i = 0; i < element.segments.length; i++) {
-            const seg: StraightSegment | BezierSegment = (element.segments[i] as BezierSegment | StraightSegment);
+            const seg: StraightSegment | BezierSegment = (element.segments[parseInt(i.toString(), 10)] as BezierSegment | StraightSegment);
             segPoint = [];
             segPoint.push(srcPoint);
             if (i !== element.segments.length - 1) {
@@ -1113,14 +1113,14 @@ function intermeditatePointsForStraight(element: Connector, source: End, target:
             } else {
                 segPoint.push(target.point);
             }
-            (element.segments[i] as BezierSegment | StraightSegment).points = segPoint;
+            (element.segments[parseInt(i.toString(), 10)] as BezierSegment | StraightSegment).points = segPoint;
             if (element.segments.length > 1 && Point.equals(seg.points[0], seg.points[1])) {
                 (element.segments).splice(i, 1);
             }
             if (seg) {
                 for (let j: number = 0; j < seg.points.length; j++) {
                     if (j > 0 || i === 0) {
-                        intermeditatePoints.push(seg.points[j]);
+                        intermeditatePoints.push(seg.points[parseInt(j.toString(), 10)]);
                     }
                 }
             }
@@ -1188,7 +1188,7 @@ function checkLastSegmentasTerminal(ele: Connector): void {
  * @private
  */
 function checkConsectiveSegmentAsSame(ele: Connector, i: number, source: End): number {
-    const seg: OrthogonalSegment = ele.segments[i] as OrthogonalSegment;
+    const seg: OrthogonalSegment = ele.segments[parseInt(i.toString(), 10)] as OrthogonalSegment;
     const extra: number = (seg.direction === 'Left' || seg.direction === 'Top') ? -(seg.length) : seg.length;
     const angle: number = (seg.direction === 'Left' || seg.direction === 'Right') ? 0 : 90;
     const segPoint: PointModel = addLineSegment(source.point, extra, angle);
@@ -1330,7 +1330,7 @@ function findIntermeditatePoints(
     let j: number; let removeSegment: number;
     checkLastSegmentasTerminal(ele);
     for (let i: number = 0; i < ele.segments.length; i++) {
-        seg = (ele.segments[i] as OrthogonalSegment);
+        seg = (ele.segments[parseInt(i.toString(), 10)] as OrthogonalSegment);
         if (srcPort && source.direction === getOppositeDirection(seg.direction)) {
             seg.direction = source.direction;
         }
@@ -1338,7 +1338,7 @@ function findIntermeditatePoints(
             i = checkConsectiveSegmentAsSame(ele, i, source);
         } else {
             if (seg.direction) {
-                source.point = updateSegmentPoints(source, (ele.segments[i] as OrthogonalSegment));
+                source.point = updateSegmentPoints(source, (ele.segments[parseInt(i.toString(), 10)] as OrthogonalSegment));
             } else {
                 const segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
                 source.point = segment.points[segment.points.length - 1];
@@ -1356,20 +1356,20 @@ function findIntermeditatePoints(
             if (point.length >= 2) {
                 for (j = 0; j < point.length; j++) {
                     if (!ele.selectedSegmentIndex) {
-                        seg.points.push(point[j]);
+                        seg.points.push(point[parseInt(j.toString(), 10)]);
                     } else {
                         // EJ2-65063 - If point length is greater then 2 means then empty the last segment points and set it as two points instead of four points
                         if (j === point.length - 1 && point.length > 2) {
                             let point2: PointModel;
-                            point2 = { x: source.point.x, y: point[j].y };
+                            point2 = { x: source.point.x, y: point[parseInt(j.toString(), 10)].y };
                             // EJ2 - 65063 - Empty the segment points
                             seg.points = [];
                             seg.points.push(point2);
-                            seg.points.push(point[j]);
+                            seg.points.push(point[parseInt(j.toString(), 10)]);
                             let segment: OrthogonalSegment = ele.segments[i - 1] as OrthogonalSegment;
                             segment.points[1] = point2;
                         } else {
-                            seg.points.push(point[j]);
+                            seg.points.push(point[parseInt(j.toString(), 10)]);
                         }
                     }
 
@@ -1404,10 +1404,10 @@ function findIntermeditatePoints(
  */
 function returnIntermeditatePoints(element: Connector, intermeditatePoints: PointModel[]): PointModel[] {
     for (let i: number = 0; i < element.segments.length; i++) {
-        const seg: OrthogonalSegment = element.segments[i] as OrthogonalSegment;
+        const seg: OrthogonalSegment = element.segments[parseInt(i.toString(), 10)] as OrthogonalSegment;
         for (let j: number = 0; j < seg.points.length; j++) {
             if (j > 0 || i === 0) {
-                intermeditatePoints.push(seg.points[j]);
+                intermeditatePoints.push(seg.points[parseInt(j.toString(), 10)]);
             }
         }
     }
@@ -1796,7 +1796,7 @@ export function getIntersectionPoints(thisSegment: Segment, pts: Object[], minim
     if (isNaN(min) || min > 0) {
         for (let i: number = 1; i < length - 1; i++) {
             segment = {
-                x1: (pts[i] as PointModel).x, y1: (pts[i] as PointModel).y,
+                x1: (pts[parseInt(i.toString(), 10)] as PointModel).x, y1: (pts[parseInt(i.toString(), 10)] as PointModel).y,
                 x2: (pts[i + 1] as PointModel).x, y2: (pts[i + 1] as PointModel).y
             };
             const intersect: PointModel = intersectSegment(thisSegment, segment);

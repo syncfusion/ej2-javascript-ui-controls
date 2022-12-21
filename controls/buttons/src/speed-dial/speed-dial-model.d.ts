@@ -8,8 +8,8 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface SpeedDialAnimationSettingsModel {
 
     /**
-     * Defines  the type of animation effect used for opening and closing of the Speed Dial items. 
-     * 
+     * Defines  the type of animation effect used for opening and closing of the Speed Dial items.
+     *
      * @isenumeration true
      * @default SpeedDialAnimationEffect.Fade
      * @asptype SpeedDialAnimationEffect
@@ -18,6 +18,7 @@ export interface SpeedDialAnimationSettingsModel {
 
     /**
      * Defines the duration in milliseconds that the animation takes to open or close the popup.
+     *
      * @default 400
      * @aspType int
      */
@@ -25,6 +26,7 @@ export interface SpeedDialAnimationSettingsModel {
 
     /**
      * Defines the delay before starting the animation.
+     *
      * @default 0
      * @aspType int
      */
@@ -84,7 +86,7 @@ export interface RadialSettingsModel {
 export interface SpeedDialItemModel {
 
     /**
-     * Defines one or more CSS classes to include an icon or image in speed dial item. 
+     * Defines one or more CSS classes to include an icon or image in speed dial item.
      *
      * @default ''
      */
@@ -135,7 +137,7 @@ export interface SpeedDialModel extends ComponentModel{
     animation?: SpeedDialAnimationSettingsModel;
 
     /**
-     * Defines the content for the button of SpeedDial. 
+     * Defines the content for the button of SpeedDial.
      *
      * @default ''
      */
@@ -149,7 +151,7 @@ export interface SpeedDialModel extends ComponentModel{
     closeIconCss?: string;
 
     /**
-     * Defines one or more CSS classes to customize the appearance of SpeedDial. 
+     * Defines one or more CSS classes to customize the appearance of SpeedDial.
      *
      * @default ''
      */
@@ -157,13 +159,13 @@ export interface SpeedDialModel extends ComponentModel{
 
     /**
      * Defines the speed dial item display direction when mode is linear .
-     * The possible values are 
+     * The possible values are
      * * Up
      * * Down
      * * Left
      * * Right
      * * Auto
-     * 
+     *
      * @isenumeration true
      * @default LinearDirection.Auto
      * @asptype LinearDirection
@@ -178,14 +180,16 @@ export interface SpeedDialModel extends ComponentModel{
     disabled?: boolean;
 
     /**
-     * Defines the position of icon in the button of speed dial. 
+     * Defines the position of icon in the button of speed dial.
      * The possible values are:
      * * Left
      * * Right
      *
-     * @default "left"
+     * @isenumeration true
+     * @default IconPosition.Left
+     * @asptype IconPosition
      */
-    iconPosition?: IconPosition;
+    iconPosition?: string | IconPosition;
 
     /**
      * Defines the list of SpeedDial items.
@@ -195,14 +199,14 @@ export interface SpeedDialModel extends ComponentModel{
     items?: SpeedDialItemModel[];
 
     /**
-    * Defines the template content for the speed dial item.
-    *
-    * @default ''
-    */
+     * Defines the template content for the speed dial item.
+     *
+     * @default ''
+     */
     itemTemplate?: string;
 
     /**
-     * Defines the display mode of speed dial action items. 
+     * Defines the display mode of speed dial action items.
      * The possible values are:
      * * Linear
      * * Radial
@@ -214,14 +218,14 @@ export interface SpeedDialModel extends ComponentModel{
     mode?: string | SpeedDialMode;
 
     /**
-     * Defines one or more CSS classes to include an icon or image for the button of SpeedDial when it's closed.  
+     * Defines one or more CSS classes to include an icon or image for the button of SpeedDial when it's closed.
      *
      * @default ''
      */
     openIconCss?: string;
 
     /**
-     * Defines whether to open the popup when the button of SpeedDial is hovered. 
+     * Defines whether to open the popup when the button of SpeedDial is hovered.
      * By default, SpeedDial opens popup on click action.
      *
      * @default false
@@ -229,7 +233,7 @@ export interface SpeedDialModel extends ComponentModel{
     opensOnHover?: boolean;
 
     /**
-     * Defines the position of the button of Speed Dial relative to target. 
+     * Defines the position of the button of Speed Dial relative to target.
      * Defines the position of the FAB relative to target.
      * The possible values are:
      * * TopLeft: Positions the FAB at the target's top left corner.
@@ -241,9 +245,9 @@ export interface SpeedDialModel extends ComponentModel{
      * * BottomLeft: Positions the FAB at the target's top left corner.
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
-     *  To refresh the position of FAB on target resize, use refreshPosition method. 
+     *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
-     * 
+     *
      * @isenumeration true
      * @default FabPosition.BottomRight
      * @asptype FabPosition
@@ -251,8 +255,8 @@ export interface SpeedDialModel extends ComponentModel{
     position?: string | FabPosition;
 
     /**
-     * Defines whether the speed dial popup can be displayed as modal or modal less. 
-     * When enabled, the Speed dial creates an overlay that disables interaction with other elements other than speed dial items. 
+     * Defines whether the speed dial popup can be displayed as modal or modal less.
+     * When enabled, the Speed dial creates an overlay that disables interaction with other elements other than speed dial items.
      * If user clicks anywhere other than speed dial items then popup will get closed.
      *
      * @default false.
@@ -274,7 +278,7 @@ export interface SpeedDialModel extends ComponentModel{
     radialSettings?: RadialSettingsModel;
 
     /**
-     * Defines the selector that points to the element in which the button of SpeedDial will be positioned. 
+     * Defines the selector that points to the element in which the button of SpeedDial will be positioned.
      * By default button is positioned based on viewport of browser.
      * The target element must have relative position, else Button will get positioned based on the closest element which has relative position.
      *
@@ -283,28 +287,28 @@ export interface SpeedDialModel extends ComponentModel{
     target?: string | HTMLElement;
 
     /**
-     * Defines whether the SpeedDial is visible or hidden. 
+     * Defines whether the SpeedDial is visible or hidden.
      *
      * @default true.
      */
     visible?: boolean;
 
     /**
-     * Event callback that is raised before the speed dial popup is closed.  
+     * Event callback that is raised before the speed dial popup is closed.
      *
      * @event beforeClose
      */
     beforeClose?: EmitType<SpeedDialBeforeOpenCloseEventArgs>;
 
     /**
-     * Event callback that is raised before rendering the speed dial item.  
+     * Event callback that is raised before rendering the speed dial item.
      *
      * @event beforeItemRender
      */
     beforeItemRender?: EmitType<SpeedDialItemEventArgs>;
 
     /**
-     * Event callback that is raised before the speed dial popup is opened.    
+     * Event callback that is raised before the speed dial popup is opened.
      *
      * @event beforeOpen
      */
@@ -318,21 +322,21 @@ export interface SpeedDialModel extends ComponentModel{
     created?: EmitType<Event>;
 
     /**
-     * Event callback that is raised when a speed dial action item is clicked.  
+     * Event callback that is raised when a speed dial action item is clicked.
      *
      * @event clicked
      */
     clicked?: EmitType<SpeedDialItemEventArgs>;
 
     /**
-     * Event callback that is raised when the SpeedDial popup is closed.  
+     * Event callback that is raised when the SpeedDial popup is closed.
      *
      * @event onClose
      */
     onClose?: EmitType<SpeedDialOpenCloseEventArgs>;
 
     /**
-     * Event callback that is raised when the SpeedDial popup is opened.  
+     * Event callback that is raised when the SpeedDial popup is opened.
      *
      * @event onOpen
      */

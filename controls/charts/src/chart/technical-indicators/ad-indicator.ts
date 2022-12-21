@@ -40,9 +40,9 @@ export class AccumulationDistributionIndicator extends TechnicalAnalysis {
         let close: number = 0;
         const signalSeries: Series = indicator.targetSeries[0];
         for (i = 0; i < validData.length; i++) {
-            high = Number(validData[i].high);
-            low = Number(validData[i].low);
-            close = Number(validData[i].close);
+            high = Number(validData[i as number].high);
+            low = Number(validData[i as number].low);
+            close = Number(validData[i as number].close);
             /**
              * Money Flow Multiplier = [(Close -  Low) - (High - Close)] /(High - Low)
              * Money Flow Volume = Money Flow Multiplier x Volume for the Period
@@ -53,12 +53,12 @@ export class AccumulationDistributionIndicator extends TechnicalAnalysis {
             /**
              * Sum is to calculate the Y values of the Accumulation distribution indicator
              */
-            sum = sum + value * Number(validData[i].volume);
+            sum = sum + value * Number(validData[i as number].volume);
             /**
              * To calculate the x and y values for the Accumulation distribution indicator
              */
-            temp[i] = this.getDataPoint(
-                validData[i].x, sum, validData[i], signalSeries, temp.length);
+            temp[i as number] = this.getDataPoint(
+                validData[i as number].x, sum, validData[i as number], signalSeries, temp.length);
         }
         return temp;
     }

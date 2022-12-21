@@ -1012,19 +1012,30 @@ export type AggregateTypes =
  * The options available are:
  * * Stacked: Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
  * * Single: Allows the chart series to be displayed in a single chart area for different value fields.
+ * *Combined: Allows to draw chart series with a single Y-axis for all value fields in the pivot chart area.
+ * These chart series will be drawn based on the Y-axis range values calculated from all of the bound value fields.
+ * > The first value field in the value axis will be used to format the Y-axis range values.
+ * For example, if the first value field is in currency format and the remaining value fields are in different number formats or no format,
+ * the currency format will be used for the Y-axis range values.
  */
 export type MultipleAxisMode =
     /** Allows the chart series to be displayed in a separate chart area depending on the value fields specified. */
     'Stacked' |
     /** Allows the chart series to be displayed in a single chart area for different value fields. */
-    'Single';
+    'Single' |
+    /** Allows to draw chart series with a single Y-axis for all value fields in the pivot chart area.
+     * These chart series will be drawn based on the Y-axis range values calculated from all of the bound value fields.
+     *  > The first value field in the value axis will be used to format the Y-axis range values.
+     * For example, if the first value field is in currency format and the remaining value fields are in different number formats or no format,
+     * the currency format will be used for the Y-axis range values. */
+    'Combined';
 
 /**
-* Allows the grand totals to be displayed in either the top or bottom position in the pivot table's row and column axes.
-* The options available are:
-* * Top: Allows the grand totals to be displayed in top position in the pivot table's row and column axes.
-* * Bottom: Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes.
-*/
+ * Allows the grand totals to be displayed in either the top or bottom position in the pivot table's row and column axes.
+ * The options available are:
+ * * Top: Allows the grand totals to be displayed in top position in the pivot table's row and column axes.
+ * * Bottom: Allows the grand totals to be displayed in bottom position in the pivot table's row and column axes.
+ */
 export type GrandTotalsPosition =
     /** Allows the grand totals to be displayed in top position in the pivot table's row and column axes. */
     'Top' |
@@ -1032,13 +1043,39 @@ export type GrandTotalsPosition =
     'Bottom';
 
 /**
-* Allows to display the pager UI either at top or bottom of the Pivot Table UI.
-* The options available are:
-* * Top: Allows the pager UI to be displayed in top position of the Pivot Table UI.
-* * Bottom: Allows the pager UI to be displayed in bottom position of the Pivot Table UI. 
-*/
+ * Specifies different types of positions that will allow the row and column sub-totals to be displayed at the top or bottom of the header group in the pivot table.
+ * The available options are:
+ * * Auto: Defines the row and column sub-totals to be displayed in their default positions, i.e., the column sub-totals are displayed at the bottom and row sub-totals are displayed at the top of their header group in the pivot table.
+ * * Top: Defines the row and column sub-totals to be displayed at the top of the header group in the pivot table.
+ * * Bottom: Defines the row and column sub-totals to be displayed at the bottom of the header group in the pivot table.
+ */
+export type SubTotalsPosition =
+    /** Defines the row and column sub-totals to be displayed in their default positions, i.e., the column sub-totals are displayed at the bottom and row sub-totals are displayed at the top of their header group in the pivot table. */
+    'Auto' |
+    /** Defines the row and column sub-totals to be displayed at the top of the header group in the pivot table.*/
+    'Top' |
+    /** Defines the row and column sub-totals to be displayed at the bottom of the header group in the pivot table.*/
+    'Bottom';
+
+/**
+ * Allows to display the pager UI either at top or bottom of the Pivot Table UI.
+ * The options available are:
+ * * Top: Allows the pager UI to be displayed in top position of the Pivot Table UI.
+ * * Bottom: Allows the pager UI to be displayed in bottom position of the Pivot Table UI.
+ */
 export type PagerPosition =
     /** Allows the pager UI to be displayed in top position of the Pivot Table UI. */
     'Top' |
     /** Allows the pager UI to be displayed in bottom position of the Pivot Table UI. */
     'Bottom';
+
+/**
+ * Allows the table or chart to be exported in the PDF export document. The available options are:
+ * * Table - Determines the pivot table to be exported in the PDF export document.
+ * * Chart - Determines the pivot chart to be exported in the PDF export document.
+ */
+export type ExportView =
+    /**  Allows you to export the pivot table. */
+    'Table' |
+    /**  Allows you to export the pivot chart. */
+    'Chart';

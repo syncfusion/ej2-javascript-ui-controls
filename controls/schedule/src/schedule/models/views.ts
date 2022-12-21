@@ -105,6 +105,14 @@ export class Views extends ChildProperty<Views> {
     public dateHeaderTemplate: string;
 
     /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
+     *
+     * @default null
+     */
+    @Property()
+    public dateRangeTemplate: string;
+
+    /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the
      *  template accepts either the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The field accessible via template is `date`. It gets applied only to the view objects on which it is defined.
@@ -275,7 +283,7 @@ export class Views extends ChildProperty<Views> {
     /**
      * Allows to set different resource grouping options on all available schedule view modes.
      *
-     * @default { byDate: false, byGroupID: true, allowGroupEdit: false, resources:[]}
+     * @default { byDate: false, byGroupID: true, allowGroupEdit: false, resources:[], hideNonWorkingDays: false }
      */
     @Complex<GroupModel>({}, Group)
     public group: GroupModel;

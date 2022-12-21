@@ -143,13 +143,13 @@ export class ConnectorLineEdit {
         const lineArray: string[] = [];
         let editedConnectorLineString: string = '';
         for (let count: number = 0; count < records.length; count++) {
-            ganttRecord = records[count];
+            ganttRecord = records[count as number];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
             if (predecessorsCollection) {
                 for (let predecessorCount: number = 0; predecessorCount < predecessorsCollection.length; predecessorCount++) {
-                    predecessor = predecessorsCollection[predecessorCount];
+                    predecessor = predecessorsCollection[predecessorCount as number];
                     const from: string = 'from'; const to: string = 'to';
-                    this.parent.connectorLineModule.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
+                    this.parent.connectorLineModule.removeConnectorLineById('parent' + predecessor[from as string] + 'child' + predecessor[to as string]);
                     parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
                     childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
                     if (parentGanttRecord || childGanttRecord) {
@@ -159,7 +159,7 @@ export class ConnectorLineEdit {
                             const lineIndex: number = idArray.indexOf(connectorObj.connectorLineId);
                             const lineString: string = this.parent.connectorLineModule.getConnectorLineTemplate(connectorObj);
                             if (lineIndex !== -1) {
-                                lineArray[lineIndex] = lineString;
+                                lineArray[lineIndex as number] = lineString;
                             } else {
                                 idArray.push(connectorObj.connectorLineId);
                                 lineArray.push(lineString);
@@ -196,10 +196,10 @@ export class ConnectorLineEdit {
         let match: string[] = [];
         for (let j: number = 0; j < preArray.length; j++) {
             const strArray: string[] = [];
-            values = preArray[j].split('+');
+            values = preArray[j as number].split('+');
             offsetValue = '+';
-            if (preArray[j].indexOf('-') >= 0) {
-                values = preArray[j].split('-');
+            if (preArray[j as number].indexOf('-') >= 0) {
+                values = preArray[j as number].split('-');
                 offsetValue = '-';
             }
             if(!isNullOrUndefined(values[0])) {
@@ -234,7 +234,7 @@ export class ConnectorLineEdit {
         let currentId: string;
         let currentRecord: ITaskData;
         for (let count: number = 0; count < predecessor.length; count++) {
-            currentId = predecessor[count];
+            currentId = predecessor[count as number];
             const visitedIdArray: string[] = [];
             const predecessorCollection: string[] = predecessor.slice(0);
             predecessorCollection.splice(count, 1);
@@ -384,7 +384,7 @@ export class ConnectorLineEdit {
                     return false;
                 }
                 //Cyclick check
-                currentId = predecessorIdArray[count];
+                currentId = predecessorIdArray[count as number];
                 const visitedIdArray: string[] = [];
                 const predecessorCollection: string[] = predecessorIdArray.slice(0);
                 predecessorCollection.splice(count, 1);
@@ -420,7 +420,7 @@ export class ConnectorLineEdit {
                             if (currentIdArray.length > 1) {
                                 result = this.predecessorValidation(currentIdArray, ganttRecord.ganttProperties);
                             } else if (currentIdArray.length === 1) {
-                                currentId = currentRecord.predecessor[currentIdIndex].from;
+                                currentId = currentRecord.predecessor[currentIdIndex as number].from;
                             }
                             if (result === false) {
                                 return false;
@@ -513,7 +513,7 @@ export class ConnectorLineEdit {
         }
         for (let p: number = 0; p < predecessorIdArray.length; p++) {
             const record: IGanttData[] = this.parent.currentViewData.filter((item: IGanttData) => {
-                return item && item.ganttProperties.rowUniqueID.toString() === predecessorIdArray[p].toString();
+                return item && item.ganttProperties.rowUniqueID.toString() === predecessorIdArray[p as number].toString();
             });
             if (record[0] && record[0].hasChildRecords) {
                 return false;
@@ -542,6 +542,7 @@ export class ConnectorLineEdit {
         const validationDialog: Dialog = new Dialog({
             header: 'Validate Editing',
             isModal: true,
+            enableRtl: this.parent.enableRtl,
             visible: false,
             width: '50%',
             showCloseIcon: true,
@@ -661,11 +662,11 @@ export class ConnectorLineEdit {
                 offset = 0;
             }
             const preIndex: number = getIndex (predecessor, 'from', prevPredecessor, 'to');
-            prevPredecessor[preIndex].offset = offset;
+            prevPredecessor[preIndex as number].offset = offset;
             // Update predecessor in predecessor task
             const parentPredecessors: IPredecessor = extend([], parentTask.ganttProperties.predecessor, [], true);
             const parentPreIndex: number = getIndex(predecessor, 'from', parentPredecessors, 'to');
-            parentPredecessors[parentPreIndex].offset = offset;
+            parentPredecessors[parentPreIndex as number].offset = offset;
             this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
         }
         this.parent.setRecordValue('predecessor', prevPredecessor, record.ganttProperties, true);
@@ -686,10 +687,10 @@ export class ConnectorLineEdit {
             extend([], [], ganttRecord.ganttProperties.predecessor, true) as IPredecessor[];
         const preLength: number = predecessor.length;
         for (let i: number = 0; i < preLength; i++) {
-            const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor[i].from);
+            const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor[i as number].from as string);
             const parentPredecessor: IPredecessor[] =
                 extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-            const index: number = getIndex(predecessor[i], 'from', prevPredecessor, 'to');
+            const index: number = getIndex(predecessor[i as number], 'from', prevPredecessor, 'to');
             prevPredecessor.splice(index, 1);
             const parentIndex: number = getIndex(predecessor[i], 'from', parentPredecessor, 'to');
             parentPredecessor.splice(parentIndex, 1);
@@ -788,9 +789,9 @@ export class ConnectorLineEdit {
             ganttTaskData.endDate :
             this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
         for (let i: number = 0; i < predecessor.length; i++) {
-            parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i].from);
+            parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i as number].from as string);
             let violationType: string = null;
-            if (predecessor[i].type === 'FS') {
+            if (predecessor[i as number].type === 'FS') {
                 if (ganttTaskData.startDate < startDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_FS';
@@ -798,7 +799,7 @@ export class ConnectorLineEdit {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskAfterPredecessor_FS';
                 }
-            } else if (predecessor[i].type === 'SS') {
+            } else if (predecessor[i as number].type === 'SS') {
                 if (ganttTaskData.startDate < startDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_SS';
@@ -806,7 +807,7 @@ export class ConnectorLineEdit {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskAfterPredecessor_SS';
                 }
-            } else if (predecessor[i].type === 'FF') {
+            } else if (predecessor[i as number].type === 'FF') {
                 if (endDate <= parentGanttRecord.ganttProperties.endDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_FF';
@@ -814,7 +815,7 @@ export class ConnectorLineEdit {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskAfterPredecessor_FF';
                 }
-            } else if (predecessor[i].type === 'SF') {
+            } else if (predecessor[i as number].type === 'SF') {
                 if (endDate < parentGanttRecord.ganttProperties.startDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_SF';
@@ -851,7 +852,7 @@ export class ConnectorLineEdit {
             const prevPredecessor: IPredecessor[] = prevData.ganttProperties.predecessor;
             if (!isNullOrUndefined(prevPredecessor)) {
                 for (let p: number = 0; p < prevPredecessor.length; p++) {
-                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[p].from);
+                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[p as number].from as string);
                     if (parentGanttRecord === data) {
                         data.ganttProperties.predecessor.push(prevPredecessor[p]);
                     } else {
@@ -867,7 +868,7 @@ export class ConnectorLineEdit {
             }
             if (!isNullOrUndefined(newPredecessor)) {
                 for (let n: number = 0; n < newPredecessor.length; n++) {
-                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(newPredecessor[n].from);
+                    const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(newPredecessor[n].from as string);
                     const parentPredecessor: IPredecessor[] =
                         extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
                     parentPredecessor.push(newPredecessor[n]);
@@ -907,6 +908,7 @@ export class ConnectorLineEdit {
         this.confirmPredecessorDialog = new Dialog({
             width: '320px',
             isModal: true,
+            enableRtl: this.parent.enableRtl,
             content: this.parent.localeObj.getConstant('confirmPredecessorDelete'),
             buttons: [
                 {

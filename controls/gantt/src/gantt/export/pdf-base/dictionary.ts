@@ -79,7 +79,7 @@ export class TemporaryDictionary<K, V> {
         if (index < 0) {
             throw new RangeError('No item with the specified key has been added.');
         } else {
-            return this.mValues[index];
+            return this.mValues[index as number];
         }
     }
     /**
@@ -100,7 +100,7 @@ export class TemporaryDictionary<K, V> {
             this.mKeys.push(key);
             this.mValues.push(value);
         } else {
-            this.mValues[index] = value;
+            this.mValues[index as number] = value;
         }
     }
     /**

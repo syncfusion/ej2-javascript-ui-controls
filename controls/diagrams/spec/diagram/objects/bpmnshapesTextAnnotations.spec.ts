@@ -332,7 +332,7 @@ describe('Diagram Control', () => {
                 }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-           
+
 
             let nodes: NodeModel[] = [
                 {
@@ -353,10 +353,10 @@ describe('Diagram Control', () => {
                                 },
                                 height: 100,
                                 children: [
-                                   
+
                                 ],
                             },
-                            
+
                         ],
                         phases: [
                             {

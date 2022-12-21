@@ -1399,6 +1399,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.sliderContainer.classList.add(classNames.materialSlider);
             this.tooltipValue();
             this.tooltipObj.animation.close.effect = 'None';
+            // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
             this.tooltipObj.open(this.firstHandle);
         }
     }
@@ -1559,10 +1560,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 islargeTick = i % (customStep + 1) === 0;
                 if (islargeTick) {
                     if (orien === 'h') {
-                        start = <number>this.customValues[k];
+                        start = <number>this.customValues[k as number];
                         k++;
                     } else {
-                        start = <number>this.customValues[y];
+                        start = <number>this.customValues[y as number];
                         y--;
                     }
                     li.setAttribute('title', start.toString());
@@ -1711,22 +1712,22 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             (first.height * 2) : (first.width * 2);
         for (let i: number = 0; i < this.firstChild.children.length; i++) {
             if (this.orientation === 'Vertical') {
-                (this.firstChild.children[i] as HTMLElement).style.top = -(firstChild.height / 2) + 'px';
+                (this.firstChild.children[i as number] as HTMLElement).style.top = -(firstChild.height / 2) + 'px';
             } else {
                 if (!this.enableRtl) {
-                    (this.firstChild.children[i] as HTMLElement).style.left = -(firstChild.width / 2) + 'px';
+                    (this.firstChild.children[i as number] as HTMLElement).style.left = -(firstChild.width / 2) + 'px';
                 } else {
-                    (this.firstChild.children[i] as HTMLElement).style.left = (tickWidth -
-                        this.firstChild.children[i].getBoundingClientRect().width) / 2 + 'px';
+                    (this.firstChild.children[i as number] as HTMLElement).style.left = (tickWidth -
+                        this.firstChild.children[i as number].getBoundingClientRect().width) / 2 + 'px';
                 }
             }
         }
         for (let i: number = 0; i < other.length; i++) {
-            otherChild = (other[i] as HTMLElement).getBoundingClientRect();
+            otherChild = (other[i as number] as HTMLElement).getBoundingClientRect();
             if (this.orientation === 'Vertical') {
-                setStyleAttribute(other[i] as HTMLElement, { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                setStyleAttribute(other[i as number] as HTMLElement, { top: (tickWidth - otherChild.height) / 2 + 'px' });
             } else {
-                setStyleAttribute(other[i] as HTMLElement, { left: (tickWidth - otherChild.width) / 2 + 'px' });
+                setStyleAttribute(other[i as number] as HTMLElement, { left: (tickWidth - otherChild.width) / 2 + 'px' });
             }
         }
         if (this.enableRtl && this.lastChild.children.length && count !== 0) {
@@ -2720,6 +2721,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private openTooltip(target?: HTMLElement): void {
         if (this.tooltip.isVisible && this.tooltipObj && !this.isMaterialTooltip) {
             this.tooltipValue();
+            // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
             this.tooltipObj.open(target);
             this.tooltipTarget = target;
         }
@@ -3257,36 +3259,36 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         for (let i: number = 0; i < this.colorRange.length; i++) {
 
-            if (!isNullOrUndefined(this.colorRange[i].start) && !isNullOrUndefined(this.colorRange[i].end)) {
-                if (this.colorRange[i].end > this.colorRange[i].start) {
-                    if (this.colorRange[i].start < this.min) {
-                        this.colorRange[i].start = this.min;
+            if (!isNullOrUndefined(this.colorRange[i as number].start) && !isNullOrUndefined(this.colorRange[i as number].end)) {
+                if (this.colorRange[i as number].end > this.colorRange[i as number].start) {
+                    if (this.colorRange[i as number].start < this.min) {
+                        this.colorRange[i as number].start = this.min;
                     }
-                    if (this.colorRange[i].end > this.max) {
-                        this.colorRange[i].end = this.max;
+                    if (this.colorRange[i as number].end > this.max) {
+                        this.colorRange[i as number].end = this.max;
                     }
-                    const startingPosition: number = this.checkHandlePosition(this.colorRange[i].start);
-                    const endPosition: number = this.checkHandlePosition(this.colorRange[i].end);
+                    const startingPosition: number = this.checkHandlePosition(this.colorRange[i as number].start);
+                    const endPosition: number = this.checkHandlePosition(this.colorRange[i as number].end);
                     const trackContainer: HTMLElement = this.createElement('div');
-                    trackContainer.style.backgroundColor = this.colorRange[i].color;
-                    trackContainer.style.border = '1px solid ' + this.colorRange[i].color;
+                    trackContainer.style.backgroundColor = this.colorRange[i as number].color;
+                    trackContainer.style.border = '1px solid ' + this.colorRange[i as number].color;
                     if (this.orientation === 'Horizontal') {
                         trackClassName = classNames.sliderHorizantalColor;
                         if (this.enableRtl) {
                             if (isNullOrUndefined(this.customValues)) {
-                                trackPosition = this.checkHandlePosition(this.max) - this.checkHandlePosition(this.colorRange[i].end);
+                                trackPosition = this.checkHandlePosition(this.max) - this.checkHandlePosition(this.colorRange[i as number].end);
                             } else {
-                                trackPosition = this.checkHandlePosition(this.customValues.length - this.colorRange[i].end - 1);
+                                trackPosition = this.checkHandlePosition(this.customValues.length - this.colorRange[i as number].end - 1);
                             }
                         } else {
-                            trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                            trackPosition = this.checkHandlePosition(this.colorRange[i as number].start);
                         }
                         trackContainer.style.width = endPosition - startingPosition + 'px';
                         trackContainer.style.left = trackPosition + 'px';
 
                     } else {
                         trackClassName = classNames.sliderVerticalColor;
-                        trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        trackPosition = this.checkHandlePosition(this.colorRange[i as number].start);
                         trackContainer.style.height = endPosition - startingPosition + 'px';
                         trackContainer.style.bottom = trackPosition + 'px';
                     }

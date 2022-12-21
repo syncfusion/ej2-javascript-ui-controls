@@ -45,10 +45,10 @@ export type AccumulationSelectionMode =
     /** To select a point. */
     'Point';
 /**
-  * Defines the HighlightMode, They are.
-  * * None - Disable the Highlight.  
-  * * Point - To highlight a point.  
-  */
+ * Defines the HighlightMode, They are.
+ * * None - Disable the Highlight.
+ * * Point - To highlight a point.
+ */
 export type AccumulationHighlightMode =
     /** Disable the highlight. */
     'None' |

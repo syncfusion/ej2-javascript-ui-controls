@@ -68,8 +68,8 @@ export class ComplexHierarchicalTree {
         const parentId: string = 'parentId';
         const processId: string = 'processId';
         for (let i: number = 0; i < nodes.length; i++) {
-            node = nodes[i];
-            if ((node.inEdges.length + node.outEdges.length > 0) && !node[parentId] && !node[processId]) {
+            node = nodes[parseInt(i.toString(), 10)];
+            if ((node.inEdges.length + node.outEdges.length > 0) && !node[`${parentId}`] && !node[`${processId}`]) {
                 nodesCollection.push(node);
             }
         }
@@ -153,10 +153,10 @@ class HierarchicalLayoutUtil {
         const edges: IConnector[] = [];
         if (node) {
             for (let i: number = 0; node.inEdges.length > 0 && i < node.inEdges.length; i++) {
-                edges.push(this.nameTable[node.inEdges[i]]);
+                edges.push(this.nameTable[node.inEdges[parseInt(i.toString(), 10)]]);
             }
             for (let i: number = 0; node.outEdges.length > 0 && i < node.outEdges.length; i++) {
-                edges.push(this.nameTable[node.outEdges[i]]);
+                edges.push(this.nameTable[node.outEdges[parseInt(i.toString(), 10)]]);
             }
         }
         return edges;
@@ -168,12 +168,12 @@ class HierarchicalLayoutUtil {
         let best: Vertex = null;
         let maxDiff: number = -100000;
         for (const i of Object.keys(vertices)) {
-            const cell: Vertex = vertices[i];
+            const cell: Vertex = vertices[`${i}`];
             const conns: IConnector[] = this.getEdges(cell);
             let outEdges: number = 0;
             let inEdges: number = 0;
             for (let k: number = 0; k < conns.length; k++) {
-                const src: Vertex = this.getVisibleTerminal(conns[k], true);
+                const src: Vertex = this.getVisibleTerminal(conns[parseInt(k.toString(), 10)], true);
                 if (src.name === cell.name) {
                     outEdges++;
                 } else {
@@ -210,8 +210,8 @@ class HierarchicalLayoutUtil {
             terminalCache = this.nameTable[edge.sourceID];
         }
         for (let i: number = 0; i < this.vertices.length; i++) {
-            if (this.vertices[i].name === terminalCache.id) {
-                return this.vertices[i];
+            if (this.vertices[parseInt(i.toString(), 10)].name === terminalCache.id) {
+                return this.vertices[parseInt(i.toString(), 10)];
             }
         }
         return null;
@@ -233,28 +233,28 @@ class HierarchicalLayoutUtil {
     public traverse(vertex: Vertex, directed: boolean, edge: IConnector, currentComp: {}, hierarchyVertices: {}[], filledVertices: {}): {} {
         if (vertex != null) {
             const vertexID: string = vertex.name;
-            if ((filledVertices == null ? true : filledVertices[vertexID] != null)) {
-                if (currentComp[vertexID] == null) {
-                    currentComp[vertexID] = vertex;
+            if ((filledVertices == null ? true : filledVertices[`${vertexID}`] != null)) {
+                if (currentComp[`${vertexID}`] == null) {
+                    currentComp[`${vertexID}`] = vertex;
                 }
                 if (filledVertices != null) {
-                    delete filledVertices[vertexID];
+                    delete filledVertices[`${vertexID}`];
                 }
                 const edges: IConnector[] = this.getEdges(vertex);
                 const edgeIsSource: boolean[] = [];
                 for (let i: number = 0; i < edges.length; i++) {
-                    edgeIsSource[i] = this.getVisibleTerminal(edges[i], true) === vertex;
+                    edgeIsSource[parseInt(i.toString(), 10)] = this.getVisibleTerminal(edges[parseInt(i.toString(), 10)], true) === vertex;
                 }
                 for (let i: number = 0; i < edges.length; i++) {
-                    if (!directed || edgeIsSource[i]) {
-                        const next: Vertex = this.getVisibleTerminal(edges[i], !edgeIsSource[i]);
+                    if (!directed || edgeIsSource[parseInt(i.toString(), 10)]) {
+                        const next: Vertex = this.getVisibleTerminal(edges[parseInt(i.toString(), 10)], !edgeIsSource[parseInt(i.toString(), 10)]);
                         let netCount: number = 1;
                         for (let j: number = 0; j < edges.length; j++) {
                             if (j === i) {
                                 continue;
                             } else {
-                                const isSource2: boolean = edgeIsSource[j];
-                                const otherTerm: Vertex = this.getVisibleTerminal(edges[j], !isSource2);
+                                const isSource2: boolean = edgeIsSource[parseInt(j.toString(), 10)];
+                                const otherTerm: Vertex = this.getVisibleTerminal(edges[parseInt(j.toString(), 10)], !isSource2);
                                 if (otherTerm === next) {
                                     if (isSource2) {
                                         netCount++;
@@ -265,18 +265,18 @@ class HierarchicalLayoutUtil {
                             }
                         }
                         if (netCount >= 0) {
-                            currentComp = this.traverse(next, directed, edges[i], currentComp, hierarchyVertices, filledVertices);
+                            currentComp = this.traverse(next, directed, edges[parseInt(i.toString(), 10)], currentComp, hierarchyVertices, filledVertices);
                         }
                     }
                 }
             } else {
-                if (currentComp[vertexID] == null) {
+                if (currentComp[`${vertexID}`] == null) {
                     // We've seen this vertex before, but not in the current component This component and the one it's in need to be merged
                     for (let i: number = 0; i < hierarchyVertices.length; i++) {
-                        const comp: {} = hierarchyVertices[i];
-                        if (comp[vertexID] != null) {
+                        const comp: {} = hierarchyVertices[parseInt(i.toString(), 10)];
+                        if (comp[`${vertexID}`] != null) {
                             for (const key of Object.keys(comp)) {
-                                currentComp[key] = comp[key];
+                                currentComp[`${key}`] = comp[`${key}`];
                             }
                             // Remove the current component from the hierarchy set
                             hierarchyVertices.splice(i, 1);
@@ -294,7 +294,7 @@ class HierarchicalLayoutUtil {
         nodes = nodes.slice();
         let rect: Rect = null; let rect1: Rect = null;
         for (let i: number = 0; i < nodes.length; i++) {
-            rect = nodes[i].geometry;
+            rect = nodes[parseInt(i.toString(), 10)].geometry;
             if (rect1) {
                 const right: number = Math.max(rect1.x + rect1.width, rect.x + rect.width);
                 const bottom: number = Math.max(rect1.y + rect1.height, rect.y + rect.height);
@@ -338,16 +338,16 @@ class HierarchicalLayoutUtil {
         this.vertices = [];
         const filledVertexSet: {} = {};
         for (let i: number = 0; i < nodes.length; i++) {
-            const node: Vertex = this.createVertex(nodes[i], nodes[i].id, 0, 0, nodes[i].actualSize.width, nodes[i].actualSize.height);
+            const node: Vertex = this.createVertex(nodes[parseInt(i.toString(), 10)], nodes[parseInt(i.toString(), 10)].id, 0, 0, nodes[parseInt(i.toString(), 10)].actualSize.width, nodes[parseInt(i.toString(), 10)].actualSize.height);
             this.vertices.push(node);
-            if ((nodes[i] as INode).inEdges.length > 0 || (nodes[i] as INode).outEdges.length > 0) {
-                nodeWithMultiEdges.push((nodes[i] as INode));
+            if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0 || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
+                nodeWithMultiEdges.push((nodes[parseInt(i.toString(), 10)] as INode));
             }
             filledVertexSet[node.name] = node;
             if (lineDistribution) {
-                const outEdges: string[] = nodes[i].outEdges.slice();
+                const outEdges: string[] = nodes[parseInt(i.toString(), 10)].outEdges.slice();
                 for (let j: number = 0; j < outEdges.length; j++) {
-                    const outEdge: Connector = nameTable[outEdges[j]];
+                    const outEdge: Connector = nameTable[outEdges[parseInt(j.toString(), 10)]];
                     lineDistribution.setEdgeMapper({ key: outEdge, value: [] });
                 }
             }
@@ -359,17 +359,17 @@ class HierarchicalLayoutUtil {
         for (let i: number = 0; i < candidateRoots.length; i++) {
             const vertexSet: {} = {};
             hierarchyVertices.push(vertexSet);
-            this.traverse(candidateRoots[i], true, null, vertexSet, hierarchyVertices, filledVertexSet);
+            this.traverse(candidateRoots[parseInt(i.toString(), 10)], true, null, vertexSet, hierarchyVertices, filledVertexSet);
         }
         let limit: Margin = { marginX: 0, marginY: 0 };
         let tmp: Vertex[] = [];
         let checkLinear: boolean = false;
         let matrixModel: MatrixModelObject;
         for (let i: number = 0; i < hierarchyVertices.length; i++) {
-            const vertexSet: {} = hierarchyVertices[i];
+            const vertexSet: {} = hierarchyVertices[parseInt(i.toString(), 10)];
             // eslint-disable-next-line
             for (const key of Object.keys(vertexSet)) {
-                tmp.push(vertexSet[key]);
+                tmp.push(vertexSet[`${key}`]);
             }
             if ((layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) || canEnableRouting) {
                 checkLinear = true;
@@ -393,7 +393,7 @@ class HierarchicalLayoutUtil {
         const modelBounds: Rect = this.getModelBounds(this.vertices);
         this.updateMargin(layoutProp, layout, modelBounds, viewPort);
         for (let i: number = 0; i < this.vertices.length; i++) {
-            const clnode: Vertex = this.vertices[i];
+            const clnode: Vertex = this.vertices[parseInt(i.toString(), 10)];
             if (clnode) {//Check what is node.source/node.target -  && !clnode.source && !clnode.target) {
                 const dnode: INode = this.nameTable[clnode.name];
                 dnode.offsetX = 0;
@@ -417,7 +417,7 @@ class HierarchicalLayoutUtil {
         if (!checkLinear) {
 
             for (let i: number = 0; i < this.vertices.length; i++) {
-                this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+                this.isNodeOverLap(this.nameTable[this.vertices[parseInt(i.toString(), 10)].name], layoutProp);
             }
         }
         if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || canEnableRouting) {
@@ -427,11 +427,11 @@ class HierarchicalLayoutUtil {
             const vertices: object = {};
             let matrixrow1: MatrixCellGroupObject[];
             for (let p: number = 0; p < matrixModel.matrix.length; p++) {
-                matrixrow1 = matrixModel.matrix[p].value;
+                matrixrow1 = matrixModel.matrix[parseInt(p.toString(), 10)].value;
                 for (let q: number = 0; q < matrixrow1.length; q++) {
-                    const matrixCell: MatrixCellGroupObject = matrixrow1[q];
+                    const matrixCell: MatrixCellGroupObject = matrixrow1[parseInt(q.toString(), 10)];
                     for (let r: number = 0; r < (matrixCell.cells as MatrixCellGroupObject[]).length; r++) {
-                        const cell: IVertex = matrixCell.cells[r];
+                        const cell: IVertex = matrixCell.cells[parseInt(r.toString(), 10)];
                         const type: string = this.getType(cell.type);
                         if (type === 'internalVertex') {
                             const internalVertex: IVertex = cell;
@@ -443,8 +443,8 @@ class HierarchicalLayoutUtil {
             }
             this.updateRankValuess(model);
             for (let i: number = 0, a: string[] = Object.keys(vertices); i < a.length; i++) {
-                const key: string = a[i];
-                this.setVertexLocationValue(vertices[key], layoutProp.orientation, modelBounds);
+                const key: string = a[parseInt(i.toString(), 10)];
+                this.setVertexLocationValue(vertices[`${key}`], layoutProp.orientation, modelBounds);
             }
             this.localEdgeProcessing(model, vertices);
             this.assignRankOffset(model);
@@ -452,21 +452,21 @@ class HierarchicalLayoutUtil {
             const edges: IEdge[] = this.getValues(model.edgeMapper);
 
             for (let i: number = 0; i < edges.length; i++) {
-                if ((edges[i]).x.length > 0) {
-                    for (let j: number = 0; j < (edges[i]).x.length; j++) {
+                if ((edges[parseInt(i.toString(), 10)]).x.length > 0) {
+                    for (let j: number = 0; j < (edges[parseInt(i.toString(), 10)]).x.length; j++) {
                         if (layoutProp.orientation !== 'RightToLeft' && layoutProp.orientation !== 'LeftToRight') {
-                            (edges[i]).x[j] = (edges[i]).x[j] + layout.marginX;
+                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layout.marginX;
                         } else if (layoutProp.orientation === 'LeftToRight') {
-                            (edges[i]).x[j] = (edges[i]).x[j] + layoutProp.verticalSpacing / 2;
+                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layoutProp.verticalSpacing / 2;
                         } else {
-                            (edges[i]).x[j] = (edges[i]).x[j] + layoutProp.verticalSpacing / 2;
+                            (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] = (edges[parseInt(i.toString(), 10)]).x[parseInt(j.toString(), 10)] + layoutProp.verticalSpacing / 2;
                         }
                     }
                 }
-                this.setEdgePosition(edges[i], model, layout);
+                this.setEdgePosition(edges[parseInt(i.toString(), 10)], model, layout);
             }
             for (let p: number = 0; p < this.vertices.length; p++) {
-                const clnode: Vertex = this.vertices[p];
+                const clnode: Vertex = this.vertices[parseInt(p.toString(), 10)];
                 if (clnode.outEdges.length > 1) {
                     this.updateMultiOutEdgesPoints(clnode);
                 }
@@ -480,13 +480,13 @@ class HierarchicalLayoutUtil {
             let sourceValue: number;
 
             for (let i: number = 0; i < ranks.length; i++) {
-                for (let k: number = 0; k < ranks[i].length; k++) {
-                    if (ranks[i][k].id === node.target.id || ranks[i][k].id === node.source.id) {
+                for (let k: number = 0; k < ranks[parseInt(i.toString(), 10)].length; k++) {
+                    if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.target.id || ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.source.id) {
 
-                        if (ranks[i][k].id === node.target.id && targetValue === undefined) {
+                        if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.target.id && targetValue === undefined) {
                             targetValue = i;
                         }
-                        if (ranks[i][k].id === node.source.id && sourceValue === undefined) {
+                        if (ranks[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)].id === node.source.id && sourceValue === undefined) {
                             sourceValue = i;
                         }
                     }
@@ -511,18 +511,18 @@ class HierarchicalLayoutUtil {
             const value: number = this.resetOffsetXValue(rankOffsetValue, spacing / 10);
             node.x[layer - node.minRank - 1] = value;
             for (let k: number = 0; k < (node).edges.length; k++) {
-                (node).edges[k]['levelSkip'] = true;
+                (node).edges[parseInt(k.toString(), 10)]['levelSkip'] = true;
             }
         }
     }
 
     private resetOffsetXValue(value: number, spacing: number): number {
         for (let i: number = 0, a: string[] = Object.keys(this['edges']); i < a.length; i++) {
-            const key: string = a[i];
-            const length: number[] = this['edges'][key].x;
+            const key: string = a[parseInt(i.toString(), 10)];
+            const length: number[] = this['edges'][`${key}`].x;
             for (let j: number = 0; j < length.length; j++) {
                 let offsetValue: number;
-                if (this['edges'][key].x[j] === value) {
+                if (this['edges'][`${key}`].x[parseInt(j.toString(), 10)] === value) {
                     offsetValue = value + spacing;
                     offsetValue = this.resetOffsetXValue(offsetValue, spacing);
                     return offsetValue;
@@ -583,7 +583,7 @@ class HierarchicalLayoutUtil {
             }
 
             for (let i: number = 0; i < cell.edges.length; i++) {
-                const realEdge: IConnector = cell.edges[i];
+                const realEdge: IConnector = cell.edges[parseInt(i.toString(), 10)];
                 const realSource: Vertex = this.getVisibleTerminal(realEdge, true);
 
                 //List oldPoints = graph.getPoints(realEdge);
@@ -611,8 +611,8 @@ class HierarchicalLayoutUtil {
                 if (jettys != null) {
                     const arrayOffset: number = reversed ? 2 : 0;
                     let y: number = reversed ?
-                        (layoutReversed ? this.rankBottomY[minRank] : this.rankTopY[minRank]) :
-                        (layoutReversed ? this.rankTopY[maxRank] : this.rankBottomY[maxRank]);
+                        (layoutReversed ? this.rankBottomY[parseInt(minRank.toString(), 10)] : this.rankTopY[parseInt(minRank.toString(), 10)]) :
+                        (layoutReversed ? this.rankTopY[parseInt(maxRank.toString(), 10)] : this.rankBottomY[parseInt(maxRank.toString(), 10)]);
                     let jetty: number = jettys[parallelEdgeCount * 4 + 1 + arrayOffset];
 
                     if (reversed !== layoutReversed) {
@@ -651,14 +651,14 @@ class HierarchicalLayoutUtil {
                 // reverse order
                 for (let j: number = loopStart; (cell.maxRank !== cell.minRank) && j !== loopLimit; j += loopDelta) {
                     // The horizontal position in a vertical layout
-                    const positionX: number = cell.x[j] + offsetX;
+                    const positionX: number = cell.x[parseInt(j.toString(), 10)] + offsetX;
                     // This cell.x determines the deviated points of the connectors and jetty positions
                     //determine the src and targetgeo points .
 
                     // Work out the vertical positions in a vertical layout
                     // in the edge buffer channels above and below this rank
-                    let topChannelY: number = (this.rankTopY[currentRank] + this.rankBottomY[currentRank + 1]) / 2.0;
-                    let bottomChannelY: number = (this.rankTopY[currentRank - 1] + this.rankBottomY[currentRank]) / 2.0;
+                    let topChannelY: number = (this.rankTopY[parseInt(currentRank.toString(), 10)] + this.rankBottomY[currentRank + 1]) / 2.0;
+                    let bottomChannelY: number = (this.rankTopY[currentRank - 1] + this.rankBottomY[parseInt(currentRank.toString(), 10)]) / 2.0;
 
                     if (reversed) {
                         const tmp: number = topChannelY;
@@ -682,8 +682,8 @@ class HierarchicalLayoutUtil {
                 if (jettys != null) {
                     const arrayOffset: number = reversed ? 2 : 0;
                     const rankY: number = reversed ?
-                        (layoutReversed ? this.rankTopY[maxRank] : this.rankBottomY[maxRank]) :
-                        (layoutReversed ? this.rankBottomY[minRank] : this.rankTopY[minRank]);
+                        (layoutReversed ? this.rankTopY[parseInt(maxRank.toString(), 10)] : this.rankBottomY[parseInt(maxRank.toString(), 10)]) :
+                        (layoutReversed ? this.rankBottomY[parseInt(minRank.toString(), 10)] : this.rankTopY[parseInt(minRank.toString(), 10)]);
                     let jetty: number = jettys[parallelEdgeCount * 4 + 3 - arrayOffset];
 
                     if (reversed !== layoutReversed) {
@@ -733,9 +733,9 @@ class HierarchicalLayoutUtil {
                 isHorizontal = true;
             }
             for (let i: number = 0; i < model.ranks.length; i++) {
-                const rank: IVertex[] = model.ranks[i];
+                const rank: IVertex[] = model.ranks[parseInt(i.toString(), 10)];
                 for (let k: number = 0; k < rank.length; k++) {
-                    const cell: IVertex = rank[k];
+                    const cell: IVertex = rank[parseInt(k.toString(), 10)];
                     if ((cell).edges && (cell).edges.length > 0) {
                         const spacing: number = model.layout.horizontalSpacing > 0 ? (model.layout.horizontalSpacing / 2) : 15;
                         let check: boolean = true;
@@ -756,7 +756,7 @@ class HierarchicalLayoutUtil {
             cell.previousLayerConnectedCells[0] = [];
 
             for (let i: number = 0; i < (cell as IVertex).connectsAsSource.length; i++) {
-                const edge: IEdge = (cell as IVertex).connectsAsSource[i];
+                const edge: IEdge = (cell as IVertex).connectsAsSource[parseInt(i.toString(), 10)];
 
                 if (edge.minRank === -1 || edge.minRank === layer - 1) {
                     // No dummy nodes in edge, add node of other side of edge
@@ -786,10 +786,10 @@ class HierarchicalLayoutUtil {
         // Iterate through each vertex, look at the edges connected in
         // both directions.
         for (let rankIndex: number = 0; rankIndex < model.ranks.length; rankIndex++) {
-            const rank: IVertex[] = model.ranks[rankIndex];
+            const rank: IVertex[] = model.ranks[parseInt(rankIndex.toString(), 10)];
 
             for (let cellIndex: number = 0; cellIndex < rank.length; cellIndex++) {
-                const cell: IVertex = rank[cellIndex];
+                const cell: IVertex = rank[parseInt(cellIndex.toString(), 10)];
 
                 if (this.crossReduction.isVertex(cell)) {
                     let currentCells: IVertex[] = this.getPreviousLayerConnectedCells(rankIndex, cell);
@@ -807,7 +807,7 @@ class HierarchicalLayoutUtil {
                             for (let j: number = 0; j < currentCells.length; j++) {
 
                                 const sorter: WeightedCellSorter = this.weightedCellSorter(
-                                    currentCells[j], this.getX(currentRank, currentCells[j]));
+                                    currentCells[parseInt(j.toString(), 10)], this.getX(currentRank, currentCells[parseInt(j.toString(), 10)]));
                                 sortedCells.push(sorter);
                             }
 
@@ -832,7 +832,7 @@ class HierarchicalLayoutUtil {
                             const connectedEdges: IVertex[] = [];
                             // Calculate width requirements for all connected edges
                             for (let j: number = 0; j < sortedCells.length; j++) {
-                                const innerCell: IVertex = sortedCells[j].cell;
+                                const innerCell: IVertex = sortedCells[parseInt(j.toString(), 10)].cell;
                                 let connections: IEdge[];
 
                                 if (this.crossReduction.isVertex(innerCell)) {
@@ -845,13 +845,13 @@ class HierarchicalLayoutUtil {
                                     }
 
                                     for (let connIndex: number = 0; connIndex < connections.length; connIndex++) {
-                                        if (connections[connIndex].source === innerCell
-                                            || connections[connIndex].target === innerCell) {
-                                            connectedEdgeCount += connections[connIndex].edges
+                                        if (connections[parseInt(connIndex.toString(), 10)].source === innerCell
+                                            || connections[parseInt(connIndex.toString(), 10)].target === innerCell) {
+                                            connectedEdgeCount += connections[parseInt(connIndex.toString(), 10)].edges
                                                 .length;
                                             connectedEdgeGroupCount++;
 
-                                            connectedEdges.push(connections[connIndex]);
+                                            connectedEdges.push(connections[parseInt(connIndex.toString(), 10)]);
                                         }
                                     }
                                 } else {
@@ -881,16 +881,16 @@ class HierarchicalLayoutUtil {
                             let maxYOffset: number = 0;
 
                             for (let j: number = 0; j < connectedEdges.length; j++) {
-                                const numActualEdges: number = connectedEdges[j].edges
+                                const numActualEdges: number = connectedEdges[parseInt(j.toString(), 10)].edges
                                     .length;
                                 if (this.jettyPositions === undefined) {
                                     this.jettyPositions = {};
                                 }
-                                let pos: object = this.jettyPositions[connectedEdges[j].ids[0]];
+                                let pos: object = this.jettyPositions[connectedEdges[parseInt(j.toString(), 10)].ids[0]];
 
                                 if (pos == null) {
                                     pos = [];
-                                    this.jettyPositions[(connectedEdges[j] as IVertex).ids[0]] = pos;
+                                    this.jettyPositions[(connectedEdges[parseInt(j.toString(), 10)] as IVertex).ids[0]] = pos;
                                 }
 
                                 if (j < connectedEdgeCount / 2) {
@@ -922,10 +922,10 @@ class HierarchicalLayoutUtil {
     /* tslint:enable */
     private updateMultiOutEdgesPoints(clnode: Vertex): void {
         for (let i: number = 0; i < clnode.outEdges.length / 2; i++) {
-            const connector1: Connector = this.nameTable[clnode.outEdges[i]];
+            const connector1: Connector = this.nameTable[clnode.outEdges[parseInt(i.toString(), 10)]];
             const connector2: Connector = this.nameTable[clnode.outEdges[clnode.outEdges.length - (i + 1)]];
             const geometry: string = 'geometry';
-            connector2[geometry].points[0].y = connector1[geometry].points[0].y;
+            connector2[`${geometry}`].points[0].y = connector1[`${geometry}`].points[0].y;
         }
     }
     private getNextLayerConnectedCells(layer: number, cell: IEdge): IVertex[] {
@@ -934,7 +934,7 @@ class HierarchicalLayoutUtil {
             cell.nextLayerConnectedCells[0] = [];
 
             for (let i: number = 0; i < (cell as IVertex).connectsAsTarget.length; i++) {
-                const edge: IEdge = (cell as IVertex).connectsAsTarget[i];
+                const edge: IEdge = (cell as IVertex).connectsAsTarget[parseInt(i.toString(), 10)];
 
                 if (edge.maxRank === -1 || edge.maxRank === layer + 1) {
                     // Either edge is not in any rank or
@@ -960,7 +960,7 @@ class HierarchicalLayoutUtil {
     }
     private getGeometry(edge: IConnector): Geometry {
         const geometry: string = 'geometry';
-        return edge[geometry];
+        return edge[`${geometry}`];
     }
     private setEdgePoints(edge: IConnector, points: PointModel[], model: MultiParentModel): void {
         if (edge != null) {
@@ -977,7 +977,7 @@ class HierarchicalLayoutUtil {
             }
 
             (geometry as Geometry).points = points;
-            edge[geometryValue] = geometry;
+            edge[`${geometryValue}`] = geometry;
         }
 
     }
@@ -989,16 +989,16 @@ class HierarchicalLayoutUtil {
         }
     }
     private rankCoordinatesAssigment(rankValue: number, model: MultiParentModel): void {
-        const rank: IVertex[] = model.ranks[rankValue];
+        const rank: IVertex[] = model.ranks[parseInt(rankValue.toString(), 10)];
         const spacing: number = model.layout.horizontalSpacing;
         let localOffset: number;
         for (let i: number = 0; i < rank.length; i++) {
             if (this[rankValue + '_' + 'RankOffset'] === undefined) {
                 this[rankValue + '_' + 'RankOffset'] = 0;
             }
-            localOffset = rank[i].x[0];
+            localOffset = rank[parseInt(i.toString(), 10)].x[0];
             if (this[rankValue + '_' + 'RankOffset'] < localOffset) {
-                this[rankValue + '_' + 'RankOffset'] = localOffset + rank[i].width / 2 + spacing;
+                this[rankValue + '_' + 'RankOffset'] = localOffset + rank[parseInt(i.toString(), 10)].width / 2 + spacing;
             }
         }
     }
@@ -1015,8 +1015,8 @@ class HierarchicalLayoutUtil {
         this.rankBottomY = [];
 
         for (let i: number = 0; i < model.ranks.length; i++) {
-            this.rankTopY[i] = Number.MAX_VALUE;
-            this.rankBottomY[i] = -Number.MAX_VALUE;
+            this.rankTopY[parseInt(i.toString(), 10)] = Number.MAX_VALUE;
+            this.rankBottomY[parseInt(i.toString(), 10)] = -Number.MAX_VALUE;
         }
     }
     private setVertexLocationValue(cell: IVertex, orientation: LayoutOrientation, modelBounds: Rect): void {
@@ -1063,7 +1063,7 @@ class HierarchicalLayoutUtil {
         for (let i: number = 0; i < this.vertices.length; i++) {
             let rect: Rect = { x: 0, y: 0, width: 0, height: 0 };
             //let tempnode1: INode;
-            const tempnode1: INode = this.nameTable[this.vertices[i].value];
+            const tempnode1: INode = this.nameTable[this.vertices[parseInt(i.toString(), 10)].value];
             if (dnode.id !== tempnode1.id && tempnode1.offsetX !== 0 && tempnode1.offsetY !== 0) {
                 nodeRect = this.calculateRectValue(dnode);
                 rect = this.calculateRectValue(tempnode1);
@@ -1208,10 +1208,10 @@ class HierarchicalLayoutUtil {
         plalementChange.rankOffset = [];
         for (let rankValue: number = model.maxRank; rankValue >= 0; rankValue--) {
             let maxCellSize: number = 0.0;
-            const rank: (IVertex | IEdge)[] = model.ranks[rankValue];
+            const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
             let localOffset: number = isHorizontal ? plalementChange.marginY : plalementChange.marginX;
             for (let i: number = 0; i < rank.length; i++) {
-                const node: IVertex | IEdge = rank[i];
+                const node: IVertex | IEdge = rank[parseInt(i.toString(), 10)];
                 if (this.crossReduction.isVertex(node)) {
                     const vertex: IVertex = node as IVertex;
                     if (vertex.cell && (vertex.cell.inEdges || vertex.cell.outEdges)) {
@@ -1244,9 +1244,9 @@ class HierarchicalLayoutUtil {
                     plalementChange.widestRankValue = localOffset;
                     plalementChange.widestRank = rankValue;
                 }
-                plalementChange.rankSizes[rankValue] = localOffset;
+                plalementChange.rankSizes[parseInt(rankValue.toString(), 10)] = localOffset;
             }
-            plalementChange.rankOffset[rankValue] = offset;
+            plalementChange.rankOffset[parseInt(rankValue.toString(), 10)] = offset;
             const distanceToNextRank: number = maxCellSize / 2.0 + lastRankMaxCellSize / 2.0 + plalementChange.verticalSpacing;
             lastRankMaxCellSize = maxCellSize;
             if (plalementChange.orientation === 'north' || plalementChange.orientation === 'west') {
@@ -1255,7 +1255,7 @@ class HierarchicalLayoutUtil {
                 offset -= distanceToNextRank;
             }
             for (let i: number = 0; i < rank.length; i++) {
-                const cell: IVertex = rank[i];
+                const cell: IVertex = rank[parseInt(i.toString(), 10)];
                 this.setXY(cell, rankValue, offset, isHorizontal ? false : true);
             }
         }
@@ -1321,11 +1321,11 @@ class HierarchicalLayoutUtil {
         if (stage.model.layout.orientation === 'LeftToRight' || stage.model.layout.orientation === 'RightToLeft') {
             isHorizontal = true;
         }
-        const rank: (IVertex | IEdge)[] = model.ranks[rankValue];
+        const rank: (IVertex | IEdge)[] = model.ranks[parseInt(rankValue.toString(), 10)];
         let maxOffset: number = 0.0;
-        let localOffset: number = (isHorizontal ? stage.marginY : stage.marginX) + (stage.widestRankValue - stage.rankSizes[rankValue]) / 2;
+        let localOffset: number = (isHorizontal ? stage.marginY : stage.marginX) + (stage.widestRankValue - stage.rankSizes[parseInt(rankValue.toString(), 10)]) / 2;
         for (let i: number = 0; i < rank.length; i++) {
-            const node: IVertex = rank[i];
+            const node: IVertex = rank[parseInt(i.toString(), 10)];
             if (this.crossReduction.isVertex(node)) {
                 const obj: INode = this.nameTable[node.cell.name];
                 node.width = obj.actualSize.width;
@@ -1387,7 +1387,7 @@ class HierarchicalLayoutUtil {
                 return false;
             }
             for (let i: number = 0; i < node.hashCode.length; i++) {
-                if (node.hashCode[i] !== otherNode.hashCode[i]) {
+                if (node.hashCode[parseInt(i.toString(), 10)] !== otherNode.hashCode[parseInt(i.toString(), 10)]) {
                     return false;
                 }
             }
@@ -1412,9 +1412,9 @@ class HierarchicalLayoutUtil {
         const map: VertexMapper = { map: {} };
         const rank: IVertex[][] = [];
         for (let i: number = 0; i <= model.maxRank; i++) {
-            rank[i] = model.ranks[i];
-            for (let j: number = 0; j < rank[i].length; j++) {
-                const node: IVertex = rank[i][j];
+            rank[parseInt(i.toString(), 10)] = model.ranks[parseInt(i.toString(), 10)];
+            for (let j: number = 0; j < rank[parseInt(i.toString(), 10)].length; j++) {
+                const node: IVertex = rank[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)];
                 const nodeWrapper: WeightedCellSorter = this.weightedCellSorter(node, i);
                 nodeWrapper.rankIndex = j;
                 nodeWrapper.visited = true;
@@ -1454,7 +1454,7 @@ class HierarchicalLayoutUtil {
                     tempValue = cellMedian;
                     positionChanged = true;
                 } else {
-                    const leftCell: IVertex = rank[rankValue][rankIndex - 1];
+                    const leftCell: IVertex = rank[parseInt(rankValue.toString(), 10)][rankIndex - 1];
                     let leftLimit: number = this.crossReduction.getTempVariable(leftCell, rankValue);
                     leftLimit = leftLimit + leftCell.width / 2 + plalementChange.intraCellSpacing + cell.width / 2;
                     if (leftLimit < cellMedian) {
@@ -1466,12 +1466,12 @@ class HierarchicalLayoutUtil {
                     }
                 }
             } else if (cellMedian > currentPosition + tolerance) {
-                const rankSize: number = rank[rankValue].length;
+                const rankSize: number = rank[parseInt(rankValue.toString(), 10)].length;
                 if (rankIndex === rankSize - 1) {
                     tempValue = cellMedian;
                     positionChanged = true;
                 } else {
-                    const rightCell: IVertex = rank[rankValue][rankIndex + 1];
+                    const rightCell: IVertex = rank[parseInt(rankValue.toString(), 10)][rankIndex + 1];
                     let rightLimit: number = this.crossReduction.getTempVariable(rightCell, rankValue);
                     rightLimit = rightLimit - rightCell.width / 2 - plalementChange.intraCellSpacing - cell.width / 2;
                     if (rightLimit > cellMedian) {
@@ -1499,7 +1499,7 @@ class HierarchicalLayoutUtil {
     //Updates the ndoes collection
     private updateNodeList(nodeList: WeightedCellSorter[], map: VertexMapper, collection: IVertex[], model: MultiParentModel): void {
         for (let i: number = 0; i < collection.length; i++) {
-            const connectedCell: IVertex = collection[i];
+            const connectedCell: IVertex = collection[parseInt(i.toString(), 10)];
             const connectedCellWrapper: WeightedCellSorter = model.getDictionaryForSorter(map, connectedCell);
             if (connectedCellWrapper != null) {
                 if (connectedCellWrapper.visited === false) {
@@ -1517,7 +1517,7 @@ class HierarchicalLayoutUtil {
         }
         const medianValues: number[] = [];
         for (let i: number = 0; i < connectedCells.length; i++) {
-            medianValues[i] = this.crossReduction.getTempVariable(connectedCells[i], rankValue);
+            medianValues[parseInt(i.toString(), 10)] = this.crossReduction.getTempVariable(connectedCells[parseInt(i.toString(), 10)], rankValue);
         }
         medianValues.sort((a: number, b: number) => {
             return a - b;
@@ -1528,7 +1528,7 @@ class HierarchicalLayoutUtil {
         } else {
             const medianPoint: number = connectedCells.length / 2;
             const leftMedian: number = medianValues[medianPoint - 1];
-            const rightMedian: number = medianValues[medianPoint];
+            const rightMedian: number = medianValues[parseInt(medianPoint.toString(), 10)];
             return ((leftMedian + rightMedian) / 2);
         }
     }
@@ -1555,9 +1555,9 @@ class HierarchicalLayoutUtil {
             //there are less heavily angled edges and so the current positioning is used
             if ((isHorizontal ? plalementChange.currentYDelta : plalementChange.currentXDelta) < bestOffsetDelta) {
                 for (let j: number = 0; j < model.ranks.length; j++) {
-                    const rank: IVertex[] = model.ranks[j];
+                    const rank: IVertex[] = model.ranks[parseInt(j.toString(), 10)];
                     for (let k: number = 0; k < rank.length; k++) {
-                        const cell: IVertex = rank[k];
+                        const cell: IVertex = rank[parseInt(k.toString(), 10)];
                         this.setXY(cell, j, this.crossReduction.getTempVariable(cell, j), isHorizontal ? true : false);
                     }
                 }
@@ -1573,7 +1573,7 @@ class HierarchicalLayoutUtil {
     private setCellLocations(plalementChange: PlacementStage, model: MultiParentModel): void {
         const vertices: IVertex[] = this.getValues(model.vertexMapper);
         for (let i: number = 0; i < vertices.length; i++) {
-            this.setVertexLocation(plalementChange, vertices[i]);
+            this.setVertexLocation(plalementChange, vertices[parseInt(i.toString(), 10)]);
         }
     }
 
@@ -1628,7 +1628,7 @@ class HierarchicalLayoutUtil {
         const list: {}[] = [];
         if (mapper.map) {
             for (const key of Object.keys(mapper.map)) {
-                list.push(mapper.map[key]);
+                list.push(mapper.map[`${key}`]);
             }
         }
         return list;
@@ -1664,7 +1664,7 @@ class HierarchicalLayoutUtil {
             let allEdgesScanned: boolean = true;
             let minimumLayer: number = 100000000;
             for (let i: number = 0; i < layerDeterminingEdges.length; i++) {
-                const internalEdge: IEdge = layerDeterminingEdges[i];
+                const internalEdge: IEdge = layerDeterminingEdges[parseInt(i.toString(), 10)];
                 if (internalEdge.temp[0] === 5270620) {
                     // This edge has been scanned, get the layer of the node on the other end
                     const otherNode: IVertex = internalEdge.source;
@@ -1681,7 +1681,7 @@ class HierarchicalLayoutUtil {
                 model.maxRank = Math.min(model.maxRank, minimumLayer);
                 if (edgesToBeMarked != null) {
                     for (let i: number = 0; i < edgesToBeMarked.length; i++) {
-                        const internalEdge: IEdge = edgesToBeMarked[i];
+                        const internalEdge: IEdge = edgesToBeMarked[parseInt(i.toString(), 10)];
                         internalEdge.temp[0] = 5270620;
                         // Add node on other end of edge to LinkedList of nodes to be analysed
                         const otherNode: IVertex = internalEdge.target;
@@ -1707,14 +1707,14 @@ class HierarchicalLayoutUtil {
             }
         }
         for (let i: number = 0; i < internalNodes.length; i++) {
-            internalNodes[i].temp[0] -= model.maxRank;
+            internalNodes[parseInt(i.toString(), 10)].temp[0] -= model.maxRank;
         }
         for (let i: number = 0; i < startNodesCopy.length; i++) {
-            const internalNode: IVertex = startNodesCopy[i];
+            const internalNode: IVertex = startNodesCopy[parseInt(i.toString(), 10)];
             let currentMaxLayer: number = 0;
             const layerDeterminingEdges: IEdge[] = internalNode.connectsAsSource;
             for (let j: number = 0; j < layerDeterminingEdges.length; j++) {
-                const internalEdge: IEdge = layerDeterminingEdges[j];
+                const internalEdge: IEdge = layerDeterminingEdges[parseInt(j.toString(), 10)];
                 const otherNode: IVertex = internalEdge.target;
                 internalNode.temp[0] = Math.max(currentMaxLayer, otherNode.temp[0] + 1);
                 currentMaxLayer = internalNode.temp[0];
@@ -1735,8 +1735,8 @@ class HierarchicalLayoutUtil {
         const unseenNodesArray: IVertex[] = model.getDictionaryValues(model.vertexMapper);
         const unseenNodes: IVertex[] = [];
         for (let i: number = 0; i < unseenNodesArray.length; i++) {
-            unseenNodesArray[i].temp[0] = -1;
-            unseenNodes[unseenNodesArray[i].id] = unseenNodesArray[i];
+            unseenNodesArray[parseInt(i.toString(), 10)].temp[0] = -1;
+            unseenNodes[unseenNodesArray[parseInt(i.toString(), 10)].id] = unseenNodesArray[parseInt(i.toString(), 10)];
         }
 
         let rootsArray: IVertex[] = null;
@@ -1744,9 +1744,9 @@ class HierarchicalLayoutUtil {
             const modelRoots: Vertex[] = model.roots;
             rootsArray = [];
             for (let i: number = 0; i < modelRoots.length; i++) {
-                rootsArray[i] = model.getDictionary(model.vertexMapper, modelRoots[i]);
-                if (rootsArray[i] != null) {
-                    model.startNodes.push(rootsArray[i]);
+                rootsArray[parseInt(i.toString(), 10)] = model.getDictionary(model.vertexMapper, modelRoots[parseInt(i.toString(), 10)]);
+                if (rootsArray[parseInt(i.toString(), 10)] != null) {
+                    model.startNodes.push(rootsArray[parseInt(i.toString(), 10)]);
                 }
             }
         }
@@ -1803,10 +1803,10 @@ class HierarchicalLayoutUtil {
         const edges: IConnector[] = this.getEdges(source);
         const result: IConnector[] = [];
         for (let i: number = 0; i < edges.length; i++) {
-            const src: Vertex = this.getVisibleTerminal(edges[i], true);
-            const trg: Vertex = this.getVisibleTerminal(edges[i], false);
+            const src: Vertex = this.getVisibleTerminal(edges[parseInt(i.toString(), 10)], true);
+            const trg: Vertex = this.getVisibleTerminal(edges[parseInt(i.toString(), 10)], false);
             if ((src === source && trg === target) || (!directed && src === target && trg === source)) {
-                result.push(edges[i]);
+                result.push(edges[parseInt(i.toString(), 10)]);
             }
         }
         return result;
@@ -1846,19 +1846,19 @@ class MultiParentModel {
         this.hierarchicalLayout = layout;
         this.createInternalCells(layout, vertices, internalVertices, dlayout);
         for (let i: number = 0; i < vertices.length; i++) {
-            const edges: IEdge[] = internalVertices[i].connectsAsSource;
+            const edges: IEdge[] = internalVertices[parseInt(i.toString(), 10)].connectsAsSource;
             for (let j: number = 0; j < edges.length; j++) {
-                const internalEdge: IEdge = edges[j];
+                const internalEdge: IEdge = edges[parseInt(j.toString(), 10)];
                 const realEdges: IConnector[] = internalEdge.edges;
                 if (realEdges != null && realEdges.length > 0) {
                     const realEdge: IConnector = realEdges[0];
                     let targetCell: Vertex = layout.getVisibleTerminal(realEdge, false);
                     let internalTargetCell: IVertex = this.getDictionary(this.vertexMapper, targetCell);
-                    if (internalVertices[i] === internalTargetCell) {
+                    if (internalVertices[parseInt(i.toString(), 10)] === internalTargetCell) {
                         targetCell = layout.getVisibleTerminal(realEdge, true);
                         internalTargetCell = this.getDictionary(this.vertexMapper, targetCell);
                     }
-                    if (internalTargetCell != null && internalVertices[i] !== internalTargetCell) {
+                    if (internalTargetCell != null && internalVertices[parseInt(i.toString(), 10)] !== internalTargetCell) {
                         internalEdge.target = internalTargetCell;
                         if (internalTargetCell.connectsAsTarget.length === 0) {
                             internalTargetCell.connectsAsTarget = [];
@@ -1869,7 +1869,7 @@ class MultiParentModel {
                     }
                 }
             }
-            internalVertices[i].temp[0] = 1;
+            internalVertices[parseInt(i.toString(), 10)].temp[0] = 1;
         }
     }
     /* tslint:disable */
@@ -1883,44 +1883,44 @@ class MultiParentModel {
     // eslint-disable-next-line max-len
     private createInternalCells(layout: HierarchicalLayoutUtil, vertices: Vertex[], internalVertices: IVertex[], dlayout: LayoutProp): void {
         for (let i: number = 0; i < vertices.length; i++) {
-            internalVertices[i] = {
-                x: [], y: [], temp: [], cell: vertices[i],
-                id: vertices[i].name, connectsAsTarget: [], connectsAsSource: [], type: 'internalVertex'
+            internalVertices[parseInt(i.toString(), 10)] = {
+                x: [], y: [], temp: [], cell: vertices[parseInt(i.toString(), 10)],
+                id: vertices[parseInt(i.toString(), 10)].name, connectsAsTarget: [], connectsAsSource: [], type: 'internalVertex'
             };
-            this.setDictionary(this.vertexMapper, vertices[i], internalVertices[i]);
-            const conns: IConnector[] = layout.getEdges(vertices[i]);
-            internalVertices[i].connectsAsSource = [];
+            this.setDictionary(this.vertexMapper, vertices[parseInt(i.toString(), 10)], internalVertices[parseInt(i.toString(), 10)]);
+            const conns: IConnector[] = layout.getEdges(vertices[parseInt(i.toString(), 10)]);
+            internalVertices[parseInt(i.toString(), 10)].connectsAsSource = [];
             for (let j: number = 0; j < conns.length; j++) {
-                const cell: Vertex = layout.getVisibleTerminal(conns[j], false);
-                if (cell !== vertices[i]) {
-                    const undirectedEdges: IConnector[] = layout.getEdgesBetween(vertices[i], cell, false);
-                    const directedEdges: IConnector[] = layout.getEdgesBetween(vertices[i], cell, true);
+                const cell: Vertex = layout.getVisibleTerminal(conns[parseInt(j.toString(), 10)], false);
+                if (cell !== vertices[parseInt(i.toString(), 10)]) {
+                    const undirectedEdges: IConnector[] = layout.getEdgesBetween(vertices[parseInt(i.toString(), 10)], cell, false);
+                    const directedEdges: IConnector[] = layout.getEdgesBetween(vertices[parseInt(i.toString(), 10)], cell, true);
                     if (undirectedEdges != null && undirectedEdges.length > 0 && directedEdges.length * 2 >= undirectedEdges.length) {
                         const internalEdge: IEdge = { x: [], y: [], temp: [], edges: undirectedEdges, ids: [] };
                         if (dlayout.enableLayoutRouting) {
                             for (let k: number = 0; k < undirectedEdges.length; k++) {
-                                const edge: IConnector = undirectedEdges[k];
+                                const edge: IConnector = undirectedEdges[parseInt(k.toString(), 10)];
                                 this.setDictionary(this.edgeMapper, undefined, internalEdge, edge.id);
                                 // Resets all point on the edge and disables the edge style
                                 // without deleting it from the cell style
                                 this.resetEdge(edge);
                             }
                         }
-                        internalEdge.source = internalVertices[i];
+                        internalEdge.source = internalVertices[parseInt(i.toString(), 10)];
                         for (let m: number = 0; m < undirectedEdges.length; m++) {
-                            internalEdge.ids.push(undirectedEdges[m].id);
+                            internalEdge.ids.push(undirectedEdges[parseInt(m.toString(), 10)].id);
                         }
-                        internalEdge.source = internalVertices[i];
-                        if (!internalVertices[i].connectsAsSource) {
-                            internalVertices[i].connectsAsSource = [];
+                        internalEdge.source = internalVertices[parseInt(i.toString(), 10)];
+                        if (!internalVertices[parseInt(i.toString(), 10)].connectsAsSource) {
+                            internalVertices[parseInt(i.toString(), 10)].connectsAsSource = [];
                         }
-                        if (internalVertices[i].connectsAsSource.indexOf(internalEdge) < 0) {
-                            internalVertices[i].connectsAsSource.push(internalEdge);
+                        if (internalVertices[parseInt(i.toString(), 10)].connectsAsSource.indexOf(internalEdge) < 0) {
+                            internalVertices[parseInt(i.toString(), 10)].connectsAsSource.push(internalEdge);
                         }
                     }
                 }
             }
-            internalVertices[i].temp[0] = 0;
+            internalVertices[parseInt(i.toString(), 10)].temp[0] = 0;
         }
     }
     /* tslint:enable */
@@ -1936,17 +1936,17 @@ class MultiParentModel {
         const rankList: IVertex[][] = [];
         this.ranks = [];
         for (let i: number = 0; i < this.maxRank + 1; i++) {
-            rankList[i] = [];
-            this.ranks[i] = rankList[i];
+            rankList[parseInt(i.toString(), 10)] = [];
+            this.ranks[parseInt(i.toString(), 10)] = rankList[parseInt(i.toString(), 10)];
         }
         let rootsArray: IVertex[] = null;
         if (this.roots != null) {
             const oldRootsArray: Vertex[] = this.roots;
             rootsArray = [];
             for (let i: number = 0; i < oldRootsArray.length; i++) {
-                const cell: Vertex = oldRootsArray[i];
+                const cell: Vertex = oldRootsArray[parseInt(i.toString(), 10)];
                 const internalNode: IVertex = this.getDictionary(this.vertexMapper, cell);
-                rootsArray[i] = internalNode;
+                rootsArray[parseInt(i.toString(), 10)] = internalNode;
             }
         }
         this.visit('updateMinMaxRank', rootsArray, false, null, { seenNodes: null, unseenNodes: null, rankList: rankList });
@@ -1981,8 +1981,8 @@ class MultiParentModel {
                 edge.x = [];
                 edge.y = [];
                 for (let i: number = edge.minRank + 1; i < edge.maxRank; i++) {
-                    rankList[i].push(edge);
-                    this.hierarchicalUtil.setTempVariable(edge, i, rankList[i].length - 1);
+                    rankList[parseInt(i.toString(), 10)].push(edge);
+                    this.hierarchicalUtil.setTempVariable(edge, i, rankList[parseInt(i.toString(), 10)].length - 1);
                 }
             }
         }
@@ -1992,12 +1992,12 @@ class MultiParentModel {
     private setDictionary(dic: VertexMapper, key: Vertex, value: IVertex, edgeId?: string): IVertex {
         if (!edgeId) {
             const id: string = key.name;
-            const previous: IVertex = dic.map[id];
-            dic.map[id] = value;
+            const previous: IVertex = dic.map[`${id}`];
+            dic.map[`${id}`] = value;
             return previous;
         } else {
-            const previous: IVertex = dic.map[edgeId];
-            dic.map[edgeId] = value;
+            const previous: IVertex = dic.map[`${edgeId}`];
+            dic.map[`${edgeId}`] = value;
             return previous;
         }
     }
@@ -2018,8 +2018,8 @@ class MultiParentModel {
         if (!id) {
             //id = this._getDictionaryForSorter(dic, key);
         }
-        const previous: IVertex = dic.map[id];
-        dic.map[id] = value;
+        const previous: IVertex = dic.map[`${id}`];
+        dic.map[`${id}`] = value;
         return previous;
     }
 
@@ -2043,7 +2043,7 @@ class MultiParentModel {
                 return key.layoutObjectId as IVertex;
             } else { return dic.map[key.layoutObjectId]; }
         }
-        return dic.map[id];
+        return dic.map[`${id}`];
     }
 
 
@@ -2066,7 +2066,7 @@ class MultiParentModel {
                 return key.layoutObjectId as WeightedCellSorter;
             } else { return dic.map[key.layoutObjectId]; }
         }
-        return dic.map[id];
+        return dic.map[`${id}`];
     }
 
 
@@ -2080,7 +2080,7 @@ class MultiParentModel {
     public getDictionaryValues(dic: VertexMapper): IVertex[] {
         const result: IVertex[] = [];
         for (const key of Object.keys(dic.map)) {
-            result.push(dic.map[key]);
+            result.push(dic.map[`${key}`]);
         }
         return result;
     }
@@ -2104,7 +2104,7 @@ class MultiParentModel {
         // Run depth first search through on all roots
         if (dfsRoots != null) {
             for (let i: number = 0; i < dfsRoots.length; i++) {
-                const internalNode: IVertex = dfsRoots[i];
+                const internalNode: IVertex = dfsRoots[parseInt(i.toString(), 10)];
                 if (internalNode != null) {
                     if (seenNodes == null) {
                         seenNodes = new Object();
@@ -2137,13 +2137,13 @@ class MultiParentModel {
         //let edge: IEdge = data.edge;
         if (root != null) {
             const rootId: string = root.id;
-            if (seen[rootId] == null) {
-                seen[rootId] = root;
+            if (seen[`${rootId}`] == null) {
+                seen[`${rootId}`] = root;
                 this.updateConnectionRank(visitor, layer, 0, data);
                 // Copy the connects as source list so that visitors can change the original for edge direction inversions
                 const outgoingEdges: IEdge[] = root.connectsAsSource.slice();
                 for (let i: number = 0; i < outgoingEdges.length; i++) {
-                    const internalEdge: IEdge = outgoingEdges[i];
+                    const internalEdge: IEdge = outgoingEdges[parseInt(i.toString(), 10)];
                     const targetNode: IVertex = internalEdge.target;
                     // Root check is O(|roots|)
                     data.parent = root;
@@ -2210,12 +2210,12 @@ class MultiParentModel {
                 }
             }
             const rootId: string = root.id;
-            if (seen[rootId] == null) {
-                seen[rootId] = root;
+            if (seen[`${rootId}`] == null) {
+                seen[`${rootId}`] = root;
                 this.updateConnectionRank(visitor, layer, 0, data);
                 const outgoingEdges: IEdge[] = root.connectsAsSource.slice();
                 for (let i: number = 0; i < outgoingEdges.length; i++) {
-                    const internalEdge: IEdge = outgoingEdges[i];
+                    const internalEdge: IEdge = outgoingEdges[parseInt(i.toString(), 10)];
                     const targetNode: IVertex = internalEdge.target;
                     data.parent = root;
                     data.root = targetNode;
@@ -2245,11 +2245,11 @@ class MultiParentModel {
             const clonedObj: Object = obj.constructor();
             for (const i of Object.keys(obj)) {
                 if (i !== 'layoutObjectId' && (transients == null || transients.indexOf(i) < 0)) {
-                    if (!shallow && typeof (obj[i]) === 'object') {
+                    if (!shallow && typeof (obj[`${i}`]) === 'object') {
                         //not used
                         //  _clone[i] = $.extend(true, {}, obj[i]);
                     } else {
-                        clonedObj[i] = obj[i];
+                        clonedObj[`${i}`] = obj[`${i}`];
                     }
                 }
             }
@@ -2307,28 +2307,28 @@ class CrossReduction {
     //used to specify the number of conenctors crossing between the specified rank and its below rank
     private calculateRankCrossing(i: number, model: MultiParentModel): number {
         let totalCrossings: number = 0;
-        const rank: IVertex[] = model.ranks[i];
+        const rank: IVertex[] = model.ranks[parseInt(i.toString(), 10)];
         const previousRank: IVertex[] = model.ranks[i - 1];
         const tmpIndices: number[][] = [];
         // Iterate over the top rank and fill in the connection information
         for (let j: number = 0; j < rank.length; j++) {
-            const node: IVertex = rank[j];
+            const node: IVertex = rank[parseInt(j.toString(), 10)];
             const rankPosition: number = this.getTempVariable(node, i);
             const connectedCells: IVertex[] = this.getConnectedCellsOnLayer(node, i, true);
             ///####
             const nodeIndices: number[] = [];
             for (let k: number = 0; k < connectedCells.length; k++) {
-                const connectedNode: IVertex = connectedCells[k];
+                const connectedNode: IVertex = connectedCells[parseInt(k.toString(), 10)];
                 const otherCellRankPosition: number = this.getTempVariable(connectedNode, i - 1);
                 nodeIndices.push(otherCellRankPosition);
             }
             nodeIndices.sort((x: number, y: number): number => { return x - y; });
-            tmpIndices[rankPosition] = nodeIndices;
+            tmpIndices[parseInt(rankPosition.toString(), 10)] = nodeIndices;
         }
 
         let indices: number[] = [];
         for (let j: number = 0; j < tmpIndices.length; j++) {
-            indices = indices.concat(tmpIndices[j]);
+            indices = indices.concat(tmpIndices[parseInt(j.toString(), 10)]);
         }
 
         let firstIndex: number = 1;
@@ -2340,18 +2340,18 @@ class CrossReduction {
         firstIndex -= 1;
         const tree: number[] = [];
         for (let j: number = 0; j < treeSize; ++j) {
-            tree[j] = 0;
+            tree[parseInt(j.toString(), 10)] = 0;
         }
         for (let j: number = 0; j < indices.length; j++) {
-            const index: number = indices[j];
+            const index: number = indices[parseInt(j.toString(), 10)];
             let treeIndex: number = index + firstIndex;
-            ++tree[treeIndex];
+            ++tree[parseInt(treeIndex.toString(), 10)];
             while (treeIndex > 0) {
                 if (treeIndex % 2) {
                     totalCrossings += tree[treeIndex + 1];
                 }
                 treeIndex = (treeIndex - 1) >> 1;
-                ++tree[treeIndex];
+                ++tree[parseInt(treeIndex.toString(), 10)];
             }
         }
         return totalCrossings;
@@ -2368,7 +2368,7 @@ class CrossReduction {
         // Stores initial ordering
         this.nestedBestRanks = [];
         for (let i: number = 0; i < model.ranks.length; i++) {
-            this.nestedBestRanks[i] = model.ranks[i].slice();
+            this.nestedBestRanks[parseInt(i.toString(), 10)] = model.ranks[parseInt(i.toString(), 10)].slice();
         }
         let iterationsWithoutImprovement: number = 0;
         let currentBestCrossings: number = this.calculateCrossings(model);
@@ -2379,16 +2379,16 @@ class CrossReduction {
                 currentBestCrossings = candidateCrossings;
                 iterationsWithoutImprovement = 0;
                 for (let j: number = 0; j < this.nestedBestRanks.length; j++) {
-                    const rank: (IVertex | IEdge)[] = model.ranks[j];
+                    const rank: (IVertex | IEdge)[] = model.ranks[parseInt(j.toString(), 10)];
                     for (let k: number = 0; k < rank.length; k++) {
-                        const cell: IVertex | IEdge = rank[k];
-                        const obj: IVertex = this.nestedBestRanks[j][cell.temp[0]];
+                        const cell: IVertex | IEdge = rank[parseInt(k.toString(), 10)];
+                        const obj: IVertex = this.nestedBestRanks[parseInt(j.toString(), 10)][cell.temp[0]];
                         let check: boolean = true;
                         if ((cell as IEdge).edges && obj && !(obj as IEdge).edges) {
                             check = false;
                         }
                         if (obj && check) {
-                            this.nestedBestRanks[j][cell.temp[0]] = cell;
+                            this.nestedBestRanks[parseInt(j.toString(), 10)][cell.temp[0]] = cell;
                         }
                     }
                 }
@@ -2397,9 +2397,9 @@ class CrossReduction {
                 iterationsWithoutImprovement++;
                 // Restore the best values to the cells
                 for (let j: number = 0; j < this.nestedBestRanks.length; j++) {
-                    const rank: IVertex[] = model.ranks[j];
+                    const rank: IVertex[] = model.ranks[parseInt(j.toString(), 10)];
                     for (let k: number = 0; k < rank.length; k++) {
-                        const cell: IVertex = rank[k];
+                        const cell: IVertex = rank[parseInt(k.toString(), 10)];
                         this.setTempVariable(cell, j, k);
                     }
                 }
@@ -2412,12 +2412,12 @@ class CrossReduction {
         const ranks: IVertex[][] = [];
         const rankList: IVertex[][] = [];
         for (let i: number = 0; i < model.maxRank + 1; i++) {
-            rankList[i] = [];
-            ranks[i] = rankList[i];
+            rankList[parseInt(i.toString(), 10)] = [];
+            ranks[parseInt(i.toString(), 10)] = rankList[parseInt(i.toString(), 10)];
         }
         for (let i: number = 0; i < this.nestedBestRanks.length; i++) {
-            for (let j: number = 0; j < this.nestedBestRanks[i].length; j++) {
-                rankList[i].push(this.nestedBestRanks[i][j]);
+            for (let j: number = 0; j < this.nestedBestRanks[parseInt(i.toString(), 10)].length; j++) {
+                rankList[parseInt(i.toString(), 10)].push(this.nestedBestRanks[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)]);
             }
         }
         model.ranks = ranks;
@@ -2483,37 +2483,37 @@ class CrossReduction {
         }
         if (cell) {
             if (this.isVertex(cell)) {
-                if (cell[connectedlayer] == null) {
-                    cell[connectedlayer] = [];
-                    cell[connectedlayer][0] = [];
-                    for (let i: number = 0; i < cell[connectedAs].length; i++) {
-                        const edge: IEdge = cell[connectedAs][i];
+                if (cell[`${connectedlayer}`] == null) {
+                    cell[`${connectedlayer}`] = [];
+                    cell[`${connectedlayer}`][0] = [];
+                    for (let i: number = 0; i < cell[`${connectedAs}`].length; i++) {
+                        const edge: IEdge = cell[`${connectedAs}`][parseInt(i.toString(), 10)];
                         if (edge.maxRank === undefined) {
                             edge.maxRank = -1;
                         }
                         if (edge.maxRank === -1 || (isPrevious ? (edge.minRank === layer - 1) : (edge.maxRank === layer + 1))) {
                             // Either edge is not in any rank or no dummy nodes in edge, add node of other side of edge
-                            cell[connectedlayer][0].push(isPrevious ? edge.target : edge.source);
+                            cell[`${connectedlayer}`][0].push(isPrevious ? edge.target : edge.source);
                         } else {
                             // Edge spans at least two layers, add edge
-                            cell[connectedlayer][0].push(edge);
+                            cell[`${connectedlayer}`][0].push(edge);
                         }
                     }
                 }
-                return cell[connectedlayer][0];
+                return cell[`${connectedlayer}`][0];
             } else {
-                if (cell[connectedlayer] == null) {
-                    cell[connectedlayer] = [];
+                if (cell[`${connectedlayer}`] == null) {
+                    cell[`${connectedlayer}`] = [];
                     for (let i: number = 0; i < cell.temp.length; i++) {
-                        cell[connectedlayer][i] = [];
+                        cell[`${connectedlayer}`][parseInt(i.toString(), 10)] = [];
                         if (i === (isPrevious ? 0 : (cell.temp.length - 1))) {
-                            cell[connectedlayer][i].push(isPrevious ? cell.target : cell.source);
+                            cell[`${connectedlayer}`][parseInt(i.toString(), 10)].push(isPrevious ? cell.target : cell.source);
                         } else {
-                            cell[connectedlayer][i].push(cell);
+                            cell[`${connectedlayer}`][parseInt(i.toString(), 10)].push(cell);
                         }
                     }
                 }
-                return cell[connectedlayer][layer - cell.minRank - 1];
+                return cell[`${connectedlayer}`][layer - cell.minRank - 1];
             }
         }
         return null;
@@ -2533,7 +2533,7 @@ class CrossReduction {
         const medianValues: number[] = [];
         let arrayCount: number = 0;
         for (let i: number = 0; i < connectedCells.length; i++) {
-            const cell: IVertex = connectedCells[i];
+            const cell: IVertex = connectedCells[parseInt(i.toString(), 10)];
             medianValues[arrayCount++] = this.getTempVariable(cell, rankValue);
         }
         // sorts numerical order sort
@@ -2547,8 +2547,8 @@ class CrossReduction {
             const medianPoint: number = arrayCount / 2;
             const leftMedian: number = medianValues[medianPoint - 1] - medianValues[0];
             const rightMedian: number = medianValues[arrayCount - 1]
-                - medianValues[medianPoint];
-            return (medianValues[medianPoint - 1] * rightMedian + medianValues[medianPoint] * leftMedian) / (leftMedian + rightMedian);
+                - medianValues[parseInt(medianPoint.toString(), 10)];
+            return (medianValues[medianPoint - 1] * rightMedian + medianValues[parseInt(medianPoint.toString(), 10)] * leftMedian) / (leftMedian + rightMedian);
         }
     }
 
@@ -2574,11 +2574,11 @@ class CrossReduction {
      */
 
     private medianRank(rankValue: number, downwardSweep: boolean): void {
-        const numCellsForRank: number = this.nestedBestRanks[rankValue].length;
+        const numCellsForRank: number = this.nestedBestRanks[parseInt(rankValue.toString(), 10)].length;
         const medianValues: SortedEntry[] = [];
         const reservedPositions: boolean[] = [];
         for (let i: number = 0; i < numCellsForRank; i++) {
-            const cell: IVertex = this.nestedBestRanks[rankValue][i];
+            const cell: IVertex = this.nestedBestRanks[parseInt(rankValue.toString(), 10)][parseInt(i.toString(), 10)];
             const sorterEntry: SortedEntry = { medianValue: 0 };
             sorterEntry.cell = cell;
             // Flip whether or not equal medians are flipped on up and down sweeps
@@ -2602,7 +2602,7 @@ class CrossReduction {
         medianValues.sort(this.compare);
         // Set the new position of each node within the rank using its temp variable
         for (let i: number = 0; i < numCellsForRank; i++) {
-            if (reservedPositions[i] == null && medianValues.length > 0) {
+            if (reservedPositions[parseInt(i.toString(), 10)] == null && medianValues.length > 0) {
                 const cell: IVertex = medianValues.shift().cell;
                 this.setTempVariable(cell, rankValue, i);
             }

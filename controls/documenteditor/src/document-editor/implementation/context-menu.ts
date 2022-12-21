@@ -934,14 +934,40 @@ export class ContextMenu {
         if (this.contextMenuInstance) {
             this.contextMenuInstance.destroy();
         }
+        this.contextMenuInstance = undefined;
         if (this.contextMenu && this.contextMenu.parentElement) {
             this.contextMenu.parentElement.removeChild(this.contextMenu);
             this.contextMenu.innerHTML = '';
         }
         this.contextMenu = undefined;
-        this.contextMenuInstance = undefined;
         this.menuItems = [];
         this.customMenuItems = [];
         this.ids = [];
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.contextMenuInstance) {
+            this.contextMenuInstance.destroy();
+        }
+        this.contextMenuInstance = undefined;
+        if (this.contextMenu && this.contextMenu.parentElement) {
+            this.contextMenu.parentElement.removeChild(this.contextMenu);
+            this.contextMenu.innerHTML = '';
+        }
+        this.contextMenu = undefined;
+        this.menuItems = [];
+        this.menuItems = undefined;
+        this.customMenuItems = [];
+        this.customMenuItems = undefined;
+        this.ids = [];
+        this.ids = undefined;
+        this.customItems = [];
+        this.customItems = undefined;
+        this.spellContextItems = [];
+        this.spellContextItems = undefined;
+        this.documentHelper = undefined;
     }
 }

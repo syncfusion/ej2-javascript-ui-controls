@@ -537,7 +537,7 @@ export class ListDialog {
                 this.target.parentElement.removeChild(this.target);
             }
             for (let l: number = 0; l < this.target.childNodes.length; l++) {
-                this.target.removeChild(this.target.childNodes[l]);
+                this.target.removeChild(this.target.childNodes[parseInt(l.toString(), 10)]);
                 l--;
             }
             this.target = undefined;

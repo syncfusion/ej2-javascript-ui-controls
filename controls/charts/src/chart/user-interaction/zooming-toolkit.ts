@@ -45,10 +45,10 @@ export class Toolkit {
         this.chart.svgRenderer = new SvgRenderer(this.elementId);
         this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' :
             (chart.theme === 'Tailwind' || chart.theme === 'Bootstrap5' || chart.theme === 'Bootstrap5Dark' || chart.theme === 'TailwindDark') ? '#374151' :
-            chart.theme === 'Fluent' ? '#201F1E' : chart.theme === 'FluentDark' ? '#A19F9D' : '#ff4081';
+                chart.theme === 'Fluent' ? '#201F1E' : chart.theme === 'FluentDark' ? '#A19F9D' : '#ff4081';
         this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' :
             chart.theme === 'Tailwind' ? '#6B7280' : chart.theme === 'TailwindDark' ? '#D1D5DB' :
-            chart.theme === 'Fluent' ? '#A19F9D' : chart.theme === 'FluentDark' ? '#484644' : '#737373';
+                chart.theme === 'Fluent' ? '#A19F9D' : chart.theme === 'FluentDark' ? '#484644' : '#737373';
         this.iconRectOverFill = chart.theme === 'Bootstrap4' ? '#5A6268' : this.iconRectOverFill;
         this.iconRectSelectionFill = chart.theme === 'Bootstrap4' ? '#5B6269' : this.iconRectSelectionFill;
         this.iconRect = chart.theme === 'Bootstrap4' ? new Rect(-5, -5, 26, 26) : new Rect(0, 0, 16, 16);
@@ -89,7 +89,8 @@ export class Toolkit {
     public createZoomButton(childElement: Element, parentElement: Element): void {
         const render: SvgRenderer | CanvasRenderer = this.chart.svgRenderer;
         //This is for selecting initial fill color to ZOOM button
-        const fillColor: string = this.chart.zoomModule.isPanning || (!this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar) ? this.fillColor : this.selectionColor;
+        const fillColor: string = this.chart.zoomModule.isPanning || (!this.chart.zoomModule.isZoomed &&
+             this.chart.zoomSettings.showToolbar) ? this.fillColor : this.selectionColor;
         const rectColor: string = this.chart.zoomModule.isPanning ? 'transparent' : this.iconRectSelectionFill;
         let direction: string = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
         direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
@@ -185,7 +186,7 @@ export class Toolkit {
         direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
         childElement.id = this.elementId + '_Zooming_Reset';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
-        //This is for low oppacity to RESET button 
+        //This is for low oppacity to RESET button
         this.elementOpacity = !chart.zoomModule.isZoomed && chart.zoomSettings.showToolbar ? '0.2' : '1';
         childElement.setAttribute('opacity', this.elementOpacity);
         if (!isDevice) {

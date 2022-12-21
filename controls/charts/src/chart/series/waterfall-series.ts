@@ -182,13 +182,13 @@ export class WaterfallSeries extends ColumnBase {
         if (intermediateSum !== undefined && intermediateSum.length > 0) {
             for (let i: number = 0; i < intermediateSum.length; i++) {
                 for (let j: number = 0; j < data.length; j++) {
-                    if (j === intermediateSum[i]) {
+                    if (j === intermediateSum[i as number]) {
                         if (i === 0) {
-                            index = subArraySum(data, -1, intermediateSum[i], null, series);
+                            index = subArraySum(data, -1, intermediateSum[i as number], null, series);
                         } else {
-                            index = subArraySum(data, intermediateSum[i - 1], intermediateSum[i], null, series);
+                            index = subArraySum(data, intermediateSum[i - 1], intermediateSum[i as number], null, series);
                         }
-                        data[j][series.yName] = index;
+                        data[j as number][series.yName] = index;
                     }
                 }
             }
@@ -196,18 +196,18 @@ export class WaterfallSeries extends ColumnBase {
         if (sumIndex !== undefined && sumIndex.length > 0) {
             for (let k: number = 0; k < sumIndex.length; k++) {
                 for (let j: number = 0; j < data.length; j++) {
-                    if (j === sumIndex[k]) {
+                    if (j === sumIndex[k as number]) {
                         if (intermediateSum !== undefined) {
-                            index = subArraySum(data, intermediateSum[k] - 1, sumIndex[k], sumIndex, series);
+                            index = subArraySum(data, intermediateSum[k as number] - 1, sumIndex[k as number], sumIndex, series);
                         } else {
                             if (k === 0) {
-                                index = subArraySum(data, -1, sumIndex[k], null, series);
+                                index = subArraySum(data, -1, sumIndex[k as number], null, series);
                             } else {
-                                index = subArraySum(data, sumIndex[k - 1], sumIndex[k], null, series);
+                                index = subArraySum(data, sumIndex[k - 1], sumIndex[k as number], null, series);
                             }
                         }
                         sumValue += index;
-                        data[j][series.yName] = sumValue;
+                        data[j as number][series.yName] = sumValue;
                     }
                 }
             }

@@ -32,7 +32,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         let startIndex: number = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling && args ? this.getInfiniteIndex(args) : startIndex;
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
-            rows[i] = this.generateRow(data[i], startIndex);
+            rows[parseInt(i.toString(), 10)] = this.generateRow(data[parseInt(i.toString(), 10)], startIndex);
         }
         return rows;
     }
@@ -70,8 +70,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         if (this.parent.isPrinting) {
             if (this.parent.hierarchyPrintMode === 'All') {
                 options.isExpand = true;
-            } else if (this.parent.hierarchyPrintMode === 'Expanded' && this.parent.expandedRows && this.parent.expandedRows[index]) {
-                options.isExpand = this.parent.expandedRows[index].isExpand;
+            } else if (this.parent.hierarchyPrintMode === 'Expanded' && this.parent.expandedRows && this.parent.expandedRows[parseInt(index.toString(), 10)]) {
+                options.isExpand = this.parent.expandedRows[parseInt(index.toString(), 10)].isExpand;
             }
         }
         options.cssClass = cssClass;
@@ -89,7 +89,9 @@ export class RowModelGenerator implements IModelGenerator<Column> {
     protected refreshForeignKeyRow(options: IRow<Column>): void {
         const foreignKeyColumns: Column[] = this.parent.getForeignKeyColumns();
         for (let i: number = 0; i < foreignKeyColumns.length; i++) {
-            setValue(foreignKeyColumns[i].field, getForeignData(foreignKeyColumns[i], options.data), options.foreignKeyData);
+            setValue(
+                foreignKeyColumns[parseInt(i.toString(), 10)].field,
+                getForeignData(foreignKeyColumns[parseInt(i.toString(), 10)], options.data), options.foreignKeyData);
         }
     }
 
@@ -99,7 +101,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
         for (let i: number = 0; i < dummies.length; i++) {
             tmp.push(this.generateCell(
-                dummies[i], <string>options.uid, isNullOrUndefined(dummies[i].commands) ? undefined : CellType.CommandColumn, null, i,
+                dummies[parseInt(i.toString(), 10)], <string>options.uid,
+                isNullOrUndefined(dummies[parseInt(i.toString(), 10)].commands) ? undefined : CellType.CommandColumn, null, i,
                 options.foreignKeyData));
         }
         return tmp;
@@ -141,8 +144,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     public refreshRows(input?: Row<Column>[]): Row<Column>[] {
         for (let i: number = 0; i < input.length; i++) {
-            this.refreshForeignKeyRow(input[i]);
-            input[i].cells = this.generateCells(input[i]);
+            this.refreshForeignKeyRow(input[parseInt(i.toString(), 10)]);
+            input[parseInt(i.toString(), 10)].cells = this.generateCells(input[parseInt(i.toString(), 10)]);
         }
         return input;
     }

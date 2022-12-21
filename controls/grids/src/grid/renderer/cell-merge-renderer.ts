@@ -24,8 +24,9 @@ export class CellMergeRender<T> {
 
     public render(cellArgs: QueryCellInfoEventArgs, row: Row<T>, i: number, td: Element): Element {
         const cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
-        const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
-        let colSpan: number = row.cells[i].cellSpan ? row.cells[i].cellSpan :
+        const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[parseInt(i.toString(), 10)].cellType
+            || CellType.Data);
+        let colSpan: number = row.cells[parseInt(i.toString(), 10)].cellSpan ? row.cells[parseInt(i.toString(), 10)].cellSpan :
             (cellArgs.colSpan + i) <= row.cells.length ? cellArgs.colSpan : row.cells.length - i;
         const rowSpan: number = cellArgs.rowSpan;
         let visible: number = 0;
@@ -34,32 +35,32 @@ export class CellMergeRender<T> {
             const cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                 !this.parent.getRowsObject()[row.index - 1].isDataRow ? this.parent.getRowsObject()[row.index].cells :
                 this.parent.getRowsObject()[row.index - 1].cells;
-            const targetCell: Cell<T> = row.cells[i];
+            const targetCell: Cell<T> = row.cells[parseInt(i.toString(), 10)];
             const uid: string = 'uid';
-            spannedCell = cells.filter((cell: Cell<Column>) => cell.column.uid === targetCell.column[uid])[0];
+            spannedCell = cells.filter((cell: Cell<Column>) => cell.column.uid === targetCell.column[`${uid}`])[0];
         }
         const colSpanLen: number = spannedCell && spannedCell.colSpanRange > 1 && spannedCell.rowSpanRange > 1 ?
             spannedCell.colSpanRange : colSpan;
         for (let j: number = i + 1; j < i + colSpanLen && j < row.cells.length; j++) {
 
-            if (row.cells[j].visible === false) {
+            if (row.cells[parseInt(j.toString(), 10)].visible === false) {
                 visible ++;
             } else {
-                row.cells[j].isSpanned = true;
+                row.cells[parseInt(j.toString(), 10)].isSpanned = true;
             }
         }
         if (visible > 0) {
             for (let j: number = i + colSpan; j < i + colSpan + visible && j < row.cells.length; j++) {
-                row.cells[j].isSpanned = true;
+                row.cells[parseInt(j.toString(), 10)].isSpanned = true;
             }
             if ( i + colSpan + visible >= row.cells.length) {
                 colSpan -= (i + colSpan + visible) - row.cells.length;
             }
         }
-        if (row.cells[i].cellSpan) {
-            row.data[cellArgs.column.field] = row.cells[i].spanText;
+        if (row.cells[parseInt(i.toString(), 10)].cellSpan) {
+            row.data[cellArgs.column.field] = row.cells[parseInt(i.toString(), 10)].spanText;
             td = cellRenderer.render(
-                row.cells[i], row.data,
+                row.cells[parseInt(i.toString(), 10)], row.data,
                 { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' });
         }
         if (colSpan > 1) {
@@ -67,17 +68,17 @@ export class CellMergeRender<T> {
         }
         if (rowSpan > 1) {
             attributes(td, { 'rowspan': rowSpan.toString(), 'aria-rowspan': rowSpan.toString() });
-            row.cells[i].isRowSpanned = true;
-            row.cells[i].rowSpanRange = Number(rowSpan);
-            if (colSpan > 1) { row.cells[i].colSpanRange = Number(colSpan); }
+            row.cells[parseInt(i.toString(), 10)].isRowSpanned = true;
+            row.cells[parseInt(i.toString(), 10)].rowSpanRange = Number(rowSpan);
+            if (colSpan > 1) { row.cells[parseInt(i.toString(), 10)].colSpanRange = Number(colSpan); }
         }
         if (row.index > 0 && (spannedCell.rowSpanRange > 1)) {
-            row.cells[i].isSpanned = true;
-            row.cells[i].rowSpanRange = Number(spannedCell.rowSpanRange - 1);
-            row.cells[i].colSpanRange = spannedCell.rowSpanRange > 0 ? spannedCell.colSpanRange : 1;
+            row.cells[parseInt(i.toString(), 10)].isSpanned = true;
+            row.cells[parseInt(i.toString(), 10)].rowSpanRange = Number(spannedCell.rowSpanRange - 1);
+            row.cells[parseInt(i.toString(), 10)].colSpanRange = spannedCell.rowSpanRange > 0 ? spannedCell.colSpanRange : 1;
 
         }
-        if (this.parent.enableColumnVirtualization && !row.cells[i].cellSpan &&
+        if (this.parent.enableColumnVirtualization && !row.cells[parseInt(i.toString(), 10)].cellSpan &&
             !this.containsKey(cellArgs.column.field, cellArgs.data[cellArgs.column.field]) ) {
             this.backupMergeCells(cellArgs.column.field, cellArgs.data[cellArgs.column.field], cellArgs.colSpan);
         }
@@ -106,13 +107,13 @@ export class CellMergeRender<T> {
     }
 
     private setMergeCells(key: string, span: number): void {
-        this.parent.mergeCells[key] = span;
+        this.parent.mergeCells[`${key}`] = span;
     }
 
     public updateVirtualCells(rows:  Row<Column>[]):  Row<Column>[] {
         const mCells: {[key: string]: number} = this.getMergeCells();
         for (const key of Object.keys(mCells)) {
-            const value: number = mCells[key];
+            const value: number = mCells[`${key}`];
             const merge: string[] = this.splitKey(key);
             const columnIndex: number = this.getIndexFromAllColumns(merge[0]);
             const vColumnIndices: number[] = this.parent.getColumnIndexesInView();

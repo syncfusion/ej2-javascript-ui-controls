@@ -192,9 +192,10 @@ export class BasicFormulas {
     private init(): void {
         let fn: Function;
         for (let i: number = 0; i < this.formulas.length; i++) {
-            fn = getValue('Compute' + this.formulas[i].formulaName, this).bind(this);
+            fn = getValue('Compute' + this.formulas[i as number].formulaName, this).bind(this);
             this.addFormulaCollection(
-                this.formulas[i].formulaName.toUpperCase(), fn, this.formulas[i].category, this.formulas[i].description);
+                this.formulas[i as number].formulaName.toUpperCase(), fn, this.formulas[i as number].category,
+                this.formulas[i as number].description);
         }
     }
 
@@ -227,11 +228,11 @@ export class BasicFormulas {
                 }
             };
             for (let i: number = 0; i < argArr.length; i++) {
-                const argValue: string = argArr[i].toString();
+                const argValue: string = argArr[i as number].toString();
                 if (argValue.indexOf(':') > -1 && this.parent.isCellReference(argValue)) {
                     const cellCollection: string[] | string = this.parent.getCellCollection(argValue.split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellCollection.length; j++) {
-                        val = this.parent.getValueFromArg(cellCollection[j]);
+                        val = this.parent.getValueFromArg(cellCollection[j as number]);
                         if (this.parent.getErrorStrings().indexOf(val) > -1) {
                             return val;
                         }
@@ -242,13 +243,13 @@ export class BasicFormulas {
                         sum = sum + this.parent.parseFloat(val);
                     }
                 } else {
-                    if (argArr[i].split(this.parent.tic).join('') === this.parent.trueValue) {
-                        argArr[i] = '1';
+                    if (argArr[i as number].split(this.parent.tic).join('') === this.parent.trueValue) {
+                        argArr[i as number] = '1';
                     }
-                    if (argArr[i].split(this.parent.tic).join('') === this.parent.falseValue) {
-                        argArr[i] = '0';
+                    if (argArr[i as number].split(this.parent.tic).join('') === this.parent.falseValue) {
+                        argArr[i as number] = '0';
                     }
-                    orgValue = this.parent.getValueFromArg(argArr[i].split(this.parent.tic).join(''));
+                    orgValue = this.parent.getValueFromArg(argArr[i as number].split(this.parent.tic).join(''));
                     if (this.parent.getErrorStrings().indexOf(orgValue) > -1) {
                         return orgValue;
                     }
@@ -304,8 +305,10 @@ export class BasicFormulas {
             const dt: Date = new Date(Date.now());
             if ((this.parent.parentObject as { getModuleName: Function }).getModuleName() === 'spreadsheet') {
                 str = (this.parent.parentObject as { dateToInt: Function }).dateToInt(dt);
-                if (((this.parent.parser as unknown as { storedStringText: string }).storedStringText.toUpperCase().indexOf('TODAY') === 0) && this.parent.cell !== "") {
-                    (this.parent.parentObject as { setDateFormat: Function }).setDateFormat((this.parent as unknown as { getSheetId: Function }).getSheetId(this.parent.grid),
+                if ((this.parent.parser as unknown as { storedStringText: string }).storedStringText.toUpperCase().indexOf('TODAY') === 0 &&
+                    this.parent.cell !== '') {
+                    (this.parent.parentObject as { setDateFormat: Function }).setDateFormat(
+                        (this.parent as unknown as { getSheetId: Function }).getSheetId(this.parent.grid),
                         this.parent.rowIndex(this.parent.cell) - 1, this.parent.colIndex(this.parent.cell) - 1);
                 }
             } else {
@@ -348,10 +351,11 @@ export class BasicFormulas {
             }
             const splitArgs1: string[] = arg1.toLowerCase().split(' ');
             for (let i: number = 0; i < splitArgs1.length; i++) {
-                if (splitArgs1[i][0]) {
-                    for (let j: number = 0; j < splitArgs1[i].length; j++) {
-                        if (splitArgs1[i].charCodeAt(j) >= 97 && splitArgs1[i].charCodeAt(j) <= 122) {
-                            splitArgs1[i] = splitArgs1[i].replace(splitArgs1[i][j], splitArgs1[i][j].toUpperCase());
+                if (splitArgs1[i as number][0]) {
+                    for (let j: number = 0; j < splitArgs1[i as number].length; j++) {
+                        if (splitArgs1[i as number].charCodeAt(j) >= 97 && splitArgs1[i as number].charCodeAt(j) <= 122) {
+                            splitArgs1[i as number] = splitArgs1[i as number].replace(
+                                splitArgs1[i as number][j as number], splitArgs1[i as number][j as number].toUpperCase());
                             break;
                         }
                     }
@@ -361,10 +365,11 @@ export class BasicFormulas {
             if (str.indexOf('-') > 0) {
                 const splitArgs2: string[] = str.split('-');
                 for (let i: number = 0; i < splitArgs2.length; i++) {
-                    if (splitArgs2[i][0]) {
-                        for (let j: number = 0; j < splitArgs2[i].length; j++) {
-                            if (splitArgs2[i].charCodeAt(j) >= 97 && splitArgs2[i].charCodeAt(j) <= 122) {
-                                splitArgs2[i] = splitArgs2[i].replace(splitArgs2[i][j], splitArgs2[i][j].toUpperCase());
+                    if (splitArgs2[i as number][0]) {
+                        for (let j: number = 0; j < splitArgs2[i as number].length; j++) {
+                            if (splitArgs2[i as number].charCodeAt(j) >= 97 && splitArgs2[i as number].charCodeAt(j) <= 122) {
+                                splitArgs2[i as number] = splitArgs2[i as number].replace(
+                                    splitArgs2[i as number][j as number], splitArgs2[i as number][j as number].toUpperCase());
                                 break;
                             }
                         }
@@ -375,10 +380,11 @@ export class BasicFormulas {
             if (str.indexOf(',') > 0) {
                 const splitArgs3: string[] = str.split(',');
                 for (let i: number = 0; i < splitArgs3.length; i++) {
-                    if (splitArgs3[i][0]) {
-                        for (let j: number = 0; j < splitArgs3[i].length; j++) {
-                            if (splitArgs3[i].charCodeAt(j) >= 97 && splitArgs3[i].charCodeAt(j) <= 122) {
-                                splitArgs3[i] = splitArgs3[i].replace(splitArgs3[i][j], splitArgs3[i][j].toUpperCase());
+                    if (splitArgs3[i as number][0]) {
+                        for (let j: number = 0; j < splitArgs3[i as number].length; j++) {
+                            if (splitArgs3[i as number].charCodeAt(j) >= 97 && splitArgs3[i as number].charCodeAt(j) <= 122) {
+                                splitArgs3[i as number] = splitArgs3[i as number].replace(
+                                    splitArgs3[i as number][j as number], splitArgs3[i as number][j as number].toUpperCase());
                                 break;
                             }
                         }
@@ -400,7 +406,7 @@ export class BasicFormulas {
         let mulValues: number[] = null;
         const ranges: string[] = args;
         for (let k: number = 0; k < ranges.length; ++k) {
-            const range: string = ranges[k];
+            const range: string = ranges[k as number];
             if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
                 let i: number = range.indexOf(':');
                 const startRow: number = this.parent.rowIndex(range.substr(0, i));
@@ -414,7 +420,7 @@ export class BasicFormulas {
                     count = (endRow - startRow + 1) * (col2 - col1 + 1);
                     mulValues = [];
                     for (i = 0; i < count; ++i) {
-                        mulValues[i] = 1; //To create required index.
+                        mulValues[i as number] = 1; //To create required index.
                     }
                 }
                 i = 0;
@@ -424,12 +430,12 @@ export class BasicFormulas {
                         const result: string = this.parent.getValueFromArg(cellRef);
                         if (!isNaN(parseFloat(result))) {
                             //To return #VALUE! error when array dimensions are mismatched.
-                            if (isNaN(mulValues[i])) {
+                            if (isNaN(mulValues[i as number])) {
                                 return this.parent.getErrorStrings()[CommonErrors.name];
                             }
-                            mulValues[i] = mulValues[i] * parseFloat(result);
+                            mulValues[i as number] = mulValues[i as number] * parseFloat(result);
                         } else {
-                            mulValues[i] = 0;
+                            mulValues[i as number] = 0;
                         }
                         i++;
                     }
@@ -447,7 +453,7 @@ export class BasicFormulas {
             }
         }
         for (let i: number = 0; i < count; ++i) {
-            sum += mulValues[i];
+            sum += mulValues[i as number];
         }
         return sum;
     }
@@ -538,11 +544,11 @@ export class BasicFormulas {
         let result: number = 0;
         let cellValue: string;
         for (let i: number = 0; i < argArr.length; i++) {
-            argVal = argArr[i];
+            argVal = argArr[i as number];
             if (argVal.indexOf(':') > -1 && this.parent.isCellReference(argVal)) {
                 cellColl = this.parent.getCellCollection(argVal.split(this.parent.tic).join(''));
                 for (let j: number = 0; j < cellColl.length; j++) {
-                    cellValue = this.parent.getValueFromArg(cellColl[j]);
+                    cellValue = this.parent.getValueFromArg(cellColl[j as number]);
                     if (!isNaN(this.parent.parseFloat(cellValue))) {
                         if (argVal.length > 0 && argVal !== '' && argVal !== ' ' && cellValue !== '') {
                             result++;
@@ -575,7 +581,7 @@ export class BasicFormulas {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         for (let i: number = 0; i < argArr.length; ++i) {
-            argArr[i] = this.parent.getValueFromArg(argArr[i]);
+            argArr[i as number] = this.parent.getValueFromArg(argArr[i as number]);
         }
         argArr[0] = (argArr[0].split(this.parent.tic).join('') === 'TRUE') ? '1' : (argArr[0].split(this.parent.tic).join('') === 'FALSE') ? '0' : argArr[0];
         argArr[1] = (argArr[1].split(this.parent.tic).join('') === 'TRUE') ? '1' : (argArr[1].split(this.parent.tic).join('') === 'FALSE') ? '0' : argArr[1];
@@ -635,7 +641,7 @@ export class BasicFormulas {
             return this.parent.getErrorStrings()[CommonErrors.divzero];
         }
         for (let i: number = 0; i < argArr.length; i++) {
-            if (argArr[i].indexOf(this.parent.tic) > -1) {
+            if (argArr[i as number].indexOf(this.parent.tic) > -1) {
                 return this.parent.getErrorStrings()[CommonErrors.value];
             }
         }
@@ -670,7 +676,7 @@ export class BasicFormulas {
             return this.parent.getErrorStrings()[CommonErrors.num];
         }
         for (let i: number = 0; i < argArr.length; i++) {
-            if (argArr[i].indexOf(this.parent.tic) > -1) {
+            if (argArr[i as number].indexOf(this.parent.tic) > -1) {
                 return this.parent.getErrorStrings()[CommonErrors.value];
             }
         }
@@ -799,11 +805,11 @@ export class BasicFormulas {
         if (!isNullOrUndefined(range)) {
             const argArr: string[] = range;
             for (let i: number = 0; i < argArr.length; i++) {
-                const rangevalue: string = argArr[i];
+                const rangevalue: string = argArr[i as number];
                 if (rangevalue.indexOf(':') > -1 && this.parent.isCellReference(rangevalue)) {
                     const cellCollection: string[] | string = this.parent.getCellCollection(rangevalue);
                     for (let j: number = 0; j < cellCollection.length; j++) {
-                        val = this.parent.getValueFromArg(cellCollection[j].split(this.parent.tic).join(''));
+                        val = this.parent.getValueFromArg(cellCollection[j as number].split(this.parent.tic).join(''));
                         if (this.parent.getErrorStrings().indexOf(val) > -1) {
                             return val;
                         }
@@ -818,7 +824,7 @@ export class BasicFormulas {
                         }
                     }
                 } else {
-                    orgValue = this.parent.getValueFromArg(argArr[i].split(this.parent.tic).join(''));
+                    orgValue = this.parent.getValueFromArg(argArr[i as number].split(this.parent.tic).join(''));
                     if (this.parent.getErrorStrings().indexOf(orgValue) > -1) {
                         return orgValue;
                     }
@@ -877,7 +883,8 @@ export class BasicFormulas {
             return startDate;
         }
         const d1: string | Date = this.parent.isNaN(Number(endDate)) ? this.parent.parseDate(endDate) : this.parent.intToDate(endDate);
-        const d2: string | Date = this.parent.isNaN(Number(startDate)) ? this.parent.parseDate(startDate) : this.parent.intToDate(startDate);
+        const d2: string | Date = this.parent.isNaN(Number(startDate)) ? this.parent.parseDate(startDate) :
+            this.parent.intToDate(startDate);
         if (d1.toString()[0] === '#') {
             return d1.toString();
         }
@@ -918,8 +925,8 @@ export class BasicFormulas {
             if (this.parent.isCellReference(rangeSplit[0]) && this.parent.isCellReference(rangeSplit[1])) {
                 const collection: string[] = this.parent.dependencyCollection;
                 for (let i: number = 0; i < collection.length; i++) {
-                    if (collection[i].split(':')[0] === argArr[0].split(':')[0]) {
-                        this.clearDependency(collection[i]);
+                    if (collection[i as number].split(':')[0] === argArr[0].split(':')[0]) {
+                        this.clearDependency(collection[i as number]);
                     }
                 }
                 if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
@@ -945,12 +952,12 @@ export class BasicFormulas {
                 const cellRange: string | string[] = this.parent.getCellCollection(argArr[0]);
                 const colDiff: number = endColIdx - colIdx; const cellValues: string[] = [];
                 for (let i: number = 0; i < cellRange.length; i++) {
-                    cellValues.push(cellRange[i]);
+                    cellValues.push(cellRange[i as number]);
                 }
                 if (byCol === 'FALSE') {
                     if (colDiff === 0) {
                         for (let i: number = 0; i < cellValues.length; i++) {
-                            let val: string = this.parent.getValueFromArg(cellValues[i]);
+                            let val: string = this.parent.getValueFromArg(cellValues[i as number]);
                             val = val === '' ? '0' : val;
                             uniqueCollection.push(val);
                         }
@@ -958,19 +965,19 @@ export class BasicFormulas {
                         let temp: string = ''; let diff: number = colDiff;
                         for (let i: number = 0; i < cellValues.length; i++) {
                             if (i === cellValues.length - 1) {
-                                let val: string = this.parent.getValueFromArg(cellValues[i]);
+                                let val: string = this.parent.getValueFromArg(cellValues[i as number]);
                                 val = val === '' ? '0' : val;
                                 temp = temp + val + '+';
                                 uniqueCollection.push(temp.substring(0, temp.length - 1));
                             }
                             if (i <= diff) {
-                                let val: string = this.parent.getValueFromArg(cellValues[i]);
+                                let val: string = this.parent.getValueFromArg(cellValues[i as number]);
                                 val = val === '' ? '0' : val;
                                 temp = temp + val + '+';
                             } else {
                                 uniqueCollection.push(temp.substring(0, temp.length - 1));
                                 diff = colDiff + i;
-                                let val: string = this.parent.getValueFromArg(cellValues[i]);
+                                let val: string = this.parent.getValueFromArg(cellValues[i as number]);
                                 val = val === '' ? '0' : val;
                                 temp = val + '+';
                             }
@@ -990,17 +997,17 @@ export class BasicFormulas {
                 }
                 let tmp: string[] = []; const tmp2: string[] = [];
                 for (let i: number = 0; i < uniqueCollection.length; i++) {
-                    if (tmp.indexOf(uniqueCollection[i]) === -1) {
-                        tmp.push(uniqueCollection[i]);
+                    if (tmp.indexOf(uniqueCollection[i as number]) === -1) {
+                        tmp.push(uniqueCollection[i as number]);
                     } else {
-                        tmp2.push(uniqueCollection[i]);
+                        tmp2.push(uniqueCollection[i as number]);
                     }
                 }
                 if (exactlyOne === 'TRUE') {
                     const exactOne: string[] = [];
                     for (let i: number = 0; i < tmp.length; i++) {
-                        if (tmp2.indexOf(tmp[i]) === -1) {
-                            exactOne.push(tmp[i]);
+                        if (tmp2.indexOf(tmp[i as number]) === -1) {
+                            exactOne.push(tmp[i as number]);
                         }
                     }
                     tmp = exactOne;
@@ -1052,13 +1059,13 @@ export class BasicFormulas {
                         cellTxt = token + actCell;
                     }
                     for (let i: number = 0; i < tmp.length; i++) {
-                        const splitValue: string[] = tmp[i].split('+');
+                        const splitValue: string[] = tmp[i as number].split('+');
                         if (i > 0) {
                             actRowIdx++;
                             actColIdx = this.parent.colIndex(actCell);
                         }
                         for (let j: number = 0; j < splitValue.length; j++) {
-                            this.setValueRefresh(splitValue[j], actRowIdx, actColIdx, actCell);
+                            this.setValueRefresh(splitValue[j as number], actRowIdx, actColIdx, actCell);
                             if (i > 0 || j > 0) {
                                 this.parent.refresh(token + getAlphalabel(actColIdx) + actRowIdx.toString(), cellTxt);
                             }
@@ -1070,9 +1077,9 @@ export class BasicFormulas {
                     result = tmp[0].split('+')[0];
                 } else {
                     for (let i: number = 0; i < tmp.length; i++) {
-                        const splitValue: string[] = tmp[i].split('+');
+                        const splitValue: string[] = tmp[i as number].split('+');
                         for (let i: number = 0; i < splitValue.length; i++) {
-                            this.setValueRefresh(splitValue[i], actRowIdx, actColIdx, actCell);
+                            this.setValueRefresh(splitValue[i as number], actRowIdx, actColIdx, actCell);
                             if (splitValue[i + 1]) {
                                 actRowIdx++;
                             } else {
@@ -1095,8 +1102,7 @@ export class BasicFormulas {
 
     private setValueRefresh(splitValue: string, rowIdx: number, colIdx: number, actCell: string): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
-        splitValue, rowIdx, colIdx);
+        (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetId(this.parent.grid), splitValue, rowIdx, colIdx);
     }
 
     private checkSpill(i: number, j: number): boolean {
@@ -1483,13 +1489,14 @@ export class BasicFormulas {
         const cellCollection: string[] | string = this.parent.getCellCollection(args[0]);
         let num: number[] = [];
         for (let a: number = 0; a < cellCollection.length; a++) {
-            num.push(parseInt(this.parent.getValueFromArg(cellCollection[a]).split(this.parent.tic).join(''), 10));
+            num.push(parseInt(this.parent.getValueFromArg(cellCollection[a as number]).split(this.parent.tic).join(''), 10));
         }
         num = num.sort((n1: number, n2: number) => n1 - n2);
-        const len: number = num.length;
+        let len: number = num.length;
         for (let j: number = 0; j < len; j++) {
-            if (isNaN(num[j])) {
+            if (isNaN(num[j as number])) {
                 num.splice(j, 1);
+                len = num.length;
                 j--;
                 if (num.length === 0) {
                     break;
@@ -1569,7 +1576,7 @@ export class BasicFormulas {
         } else {
             const cellRange: string | string[] = this.parent.getCellCollection(args[0]);
             for (let i: number = 0; i < cellRange.length; i++) {
-                if (this.parent.getValueFromArg(cellRange[i]) === '') {
+                if (this.parent.getValueFromArg(cellRange[i as number]) === '') {
                     result++;
                 }
             }
@@ -1815,7 +1822,7 @@ export class BasicFormulas {
     public ComputeDOLLAR(...args: string[]): string | number  {
         let value: string;
         if (args.length === 1) {
-            args.push("2");
+            args.push('2');
         }
         if (isNullOrUndefined(args) || args.length !== 2 || args[0] === '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
@@ -1852,12 +1859,12 @@ export class BasicFormulas {
         const cellCollection: string[] | string = this.parent.getCellCollection(args[0]);
         let numArray: number[] = [];
         for (let j: number = 0; j < cellCollection.length; j++) {
-            numArray.push(parseFloat(this.parent.getValueFromArg(cellCollection[j]).split(this.parent.tic).join('')));
+            numArray.push(parseFloat(this.parent.getValueFromArg(cellCollection[j as number]).split(this.parent.tic).join('')));
         }
         numArray = numArray.sort((n1: number, n2: number) => n1 - n2);
         const len: number = numArray.length;
         for (let k: number = 0; k < len; k++) {
-            if ((isNaN(numArray[k]))) {
+            if ((isNaN(numArray[k as number]))) {
                 numArray.splice(k, 1);
                 k--;
                 if (numArray.length === 0) {
@@ -1894,11 +1901,11 @@ export class BasicFormulas {
         const cellCollection: string[] | string = this.parent.getCellCollection(args[0]);
         let numArr: number[] = [];
         for (let i: number = 0; i < cellCollection.length; i++) {
-            numArr.push(parseFloat(this.parent.getValueFromArg(cellCollection[i]).split(this.parent.tic).join('')));
+            numArr.push(parseFloat(this.parent.getValueFromArg(cellCollection[i as number]).split(this.parent.tic).join('')));
         }
         numArr = numArr.sort((n1: number, n2: number) => n2 - n1);
         for (let k: number = 0; k < numArr.length; k++) {
-            if (isNaN(numArr[k])) {
+            if (isNaN(numArr[k as number])) {
                 numArr.splice(k, 1);
                 k--;
                 if (numArr.length === 0) {
@@ -1953,10 +1960,10 @@ export class BasicFormulas {
         }
         indexNum = Math.floor(indexNum);
         let result: string | number;
-        if (isNullOrUndefined(argsArr[indexNum])) {
+        if (isNullOrUndefined(argsArr[indexNum as number])) {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
-        result = argsArr[indexNum];
+        result = argsArr[indexNum as number];
         if (result === '') {
             result = '0';
         }
@@ -2037,8 +2044,8 @@ export class BasicFormulas {
         }
         const argArr: string[] = args;
         for (let i: number = 0; i < argArr.length; i++) {
-            if (argArr[i].indexOf(':') > -1) {
-                if (argArr[i].indexOf(this.parent.tic) > -1) {
+            if (argArr[i as number].indexOf(':') > -1) {
+                if (argArr[i as number].indexOf(this.parent.tic) > -1) {
                     return this.parent.getErrorStrings()[CommonErrors.value];
                 }
             }
@@ -2077,11 +2084,11 @@ export class BasicFormulas {
         let result: string = '';
         let tempStr: string = '';
         for (let i: number = 0; i < argsList.length; i++) {
-            if (argsList[i].indexOf(':') > -1 && this.parent.isCellReference(argsList[i])) {
+            if (argsList[i as number].indexOf(':') > -1 && this.parent.isCellReference(argsList[i as number])) {
                 if (this.isConcat) {
-                    const cells: string[] | string = this.parent.getCellCollection(argsList[i]);
+                    const cells: string[] | string = this.parent.getCellCollection(argsList[i as number]);
                     for (let i: number = 0; i < cells.length; i++) {
-                        tempStr = this.parent.getValueFromArg(cells[i]);
+                        tempStr = this.parent.getValueFromArg(cells[i as number]);
                         result = result + tempStr;
                     }
                 } else {
@@ -2091,7 +2098,7 @@ export class BasicFormulas {
                 if (argsList.length === 1 && argsList[0].indexOf(this.parent.tic) < 0) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 } else {
-                    tempStr = this.parent.getValueFromArg(argsList[i]);
+                    tempStr = this.parent.getValueFromArg(argsList[i as number]);
                     result = result + tempStr;
                 }
             }
@@ -2221,16 +2228,16 @@ export class BasicFormulas {
         const rangeArr: string[] | string = [];
         if (argCount > 2) {
             for (let i: number = 0; i < argCount; i++) {
-                if (this.parent.isCellReference(argArr[i]) && argArr[i].indexOf(':') < 0) {
-                    const argValue: string = this.parent.getValueFromArg(argArr[i]);
+                if (this.parent.isCellReference(argArr[i as number]) && argArr[i as number].indexOf(':') < 0) {
+                    const argValue: string = this.parent.getValueFromArg(argArr[i as number]);
                     if (this.parent.getErrorStrings().indexOf(argValue) > -1) {
                         return this.parent.getErrorStrings()[CommonErrors.ref];
                     } else {
-                        rangeArr[i] = argValue;
+                        rangeArr[i as number] = argValue;
                     }
                 }
-                if (this.parent.isCellReference(argArr[i])) {
-                    rangeArr[i] = argArr[i];
+                if (this.parent.isCellReference(argArr[i as number])) {
+                    rangeArr[i as number] = argArr[i as number];
                 }
             }
         }
@@ -2293,7 +2300,7 @@ export class BasicFormulas {
         let condition: string = '';
         let result: string = '';
         for (let i: number = 0; i < argArr.length; i++) {
-            condition = this.parent.getValueFromArg(argArr[i]);
+            condition = this.parent.getValueFromArg(argArr[i as number]);
             if (condition !== this.parent.trueValue && condition !== this.parent.falseValue) {
                 return this.parent.getErrorStrings()[CommonErrors.value];
             }
@@ -2330,16 +2337,16 @@ export class BasicFormulas {
         let result: number = 0;
         let cellValue: string;
         for (let i: number = 0; i < argArr.length; i++) {
-            if (argArr[i].indexOf(':') > -1 && this.parent.isCellReference(argArr[i])) {
-                cellColl = this.parent.getCellCollection(argArr[i].split(this.parent.tic).join(''));
+            if (argArr[i as number].indexOf(':') > -1 && this.parent.isCellReference(argArr[i as number])) {
+                cellColl = this.parent.getCellCollection(argArr[i as number].split(this.parent.tic).join(''));
                 for (let j: number = 0; j < cellColl.length; j++) {
-                    cellValue = this.parent.getValueFromArg(cellColl[j]);
+                    cellValue = this.parent.getValueFromArg(cellColl[j as number]);
                     if (cellValue.length > 0) {
                         result++;
                     }
                 }
             } else {
-                const cellValue: string = this.parent.getValueFromArg(argArr[i].split(this.parent.tic).join(''));
+                const cellValue: string = this.parent.getValueFromArg(argArr[i as number].split(this.parent.tic).join(''));
                 if (cellValue.length > 0) {
                     result++;
                 }
@@ -2364,10 +2371,10 @@ export class BasicFormulas {
         let length: number = 0;
         let parseValue: string | number;
         for (let k: number = 0; k < argArrs.length; k++) {
-            if (argArrs[k].indexOf(':') > -1 && this.parent.isCellReference(argArrs[k])) {
-                cellCol = this.parent.getCellCollection(argArrs[k].split(this.parent.tic).join(''));
+            if (argArrs[k as number].indexOf(':') > -1 && this.parent.isCellReference(argArrs[k as number])) {
+                cellCol = this.parent.getCellCollection(argArrs[k as number].split(this.parent.tic).join(''));
                 for (let j: number = 0; j < cellCol.length; j++) {
-                    cellValue = this.parent.getValueFromArg(cellCol[j]);
+                    cellValue = this.parent.getValueFromArg(cellCol[j as number]);
                     if (cellValue.toUpperCase() === this.parent.trueValue) {
                         cellValue = '1';
                     } else if (cellValue.toUpperCase() === this.parent.falseValue || cellValue === '') {
@@ -2383,13 +2390,13 @@ export class BasicFormulas {
                 }
                 length = cellCol.length;
             } else {
-                if (argArrs[k] === this.parent.trueValue) {
-                    argArrs[k] = '1';
+                if (argArrs[k as number] === this.parent.trueValue) {
+                    argArrs[k as number] = '1';
                 }
-                if (argArrs[k] === this.parent.falseValue || argArrs[k] === '') {
-                    argArrs[k] = '0';
+                if (argArrs[k as number] === this.parent.falseValue || argArrs[k as number] === '') {
+                    argArrs[k as number] = '0';
                 }
-                cellValue = this.parent.getValueFromArg(argArrs[k].split(this.parent.tic).join(''));
+                cellValue = this.parent.getValueFromArg(argArrs[k as number].split(this.parent.tic).join(''));
                 if (this.parent.getErrorStrings().indexOf(cellValue) > -1) {
                     return cellValue;
                 }
@@ -2459,7 +2466,7 @@ export class BasicFormulas {
                 argArr[0] = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(eColIdx) + eRowIdx;
                 cellCollection = this.parent.getCellCollection(argArr[0]);
                 for (let i: number = 0; i < cellCollection.length; i++) {
-                    valueCollection.push(this.parent.getValueFromArg(cellCollection[i]));
+                    valueCollection.push(this.parent.getValueFromArg(cellCollection[i as number]));
                 }
                 const colSort: (string | number)[] = [];
                 const totalColumn: number = eColIdx - colIdx + 1;
@@ -2484,7 +2491,7 @@ export class BasicFormulas {
                 const sortedVal: object[] = DataUtil.sort(colSort, null, DataUtil.fnSort(order)); const id: number[] = [];
                 for (let a: number = 0; a < sortedVal.length; a++) {
                     for (let b: number = 0; b < colSort.length; b++) {
-                        if (JSON.stringify(sortedVal[a]) === JSON.stringify(colSort[b])) {
+                        if (JSON.stringify(sortedVal[a as number]) === JSON.stringify(colSort[b as number])) {
                             if (id.indexOf(b) === - 1) { id.push(b); }
                         }
                     }
@@ -2492,7 +2499,7 @@ export class BasicFormulas {
                 if (argArr[3] === 'TRUE') {
                     for (let startRow: number = rowIdx, rowInc: number = 0; startRow <= eRowIdx; startRow++, rowInc++) {
                         for (let a: number = 0, colInc: number = 0; a < id.length; a++, colInc++) {
-                            const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a] + colIdx) + startRow);
+                            const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a as number] + colIdx) + startRow);
                             let activeCell: string = this.parent.actCell;
                             activeCell = activeCell.indexOf('!') > - 1 ? activeCell.split('!')[1] : activeCell;
                             const actRowIdx: number = this.parent.rowIndex(activeCell);
@@ -2507,7 +2514,7 @@ export class BasicFormulas {
                 if (argArr[3] === 'FALSE') {
                     for (let a: number = 0, rowInc: number = 0; a < id.length; a++, rowInc++) {
                         for (let startCol: number = colIdx, colInc: number = 0; startCol <= eColIdx; startCol++, colInc++) {
-                            const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a] + rowIdx));
+                            const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a as number] + rowIdx));
                             let activeCell: string = this.parent.actCell;
                             activeCell = activeCell.indexOf('!') > - 1 ? activeCell.split('!')[1] : activeCell;
                             const actColIdx: number = this.parent.colIndex(activeCell);
@@ -2562,7 +2569,7 @@ export class BasicFormulas {
         if (argArr[0].indexOf(':') > -1 && this.parent.isCellReference(argArr[0])) {
             cellColl = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
             for (let j: number = 0; j < cellColl.length; j++) {
-                cellValue = this.parent.getValueFromArg(cellColl[j]);
+                cellValue = this.parent.getValueFromArg(cellColl[j as number]);
                 if (condition.indexOf('*') > -1 || condition.indexOf('?') > -1) {
                     cellValue = this.parent.findWildCardValue(condition, cellValue);
                 }
@@ -2595,9 +2602,9 @@ export class BasicFormulas {
         let checkArgs: string; const argsLength: number = args.length;
         for (let i: number = 0; i < argsLength; i++) {
             if (isNullOrUndefined(checkArgs)) {
-                checkArgs = args[i];
+                checkArgs = args[i as number];
             } else {
-                checkArgs = checkArgs + ',' + args[i];
+                checkArgs = checkArgs + ',' + args[i as number];
             }
         }
         const splitIndex: number = checkArgs.indexOf(',');
@@ -2645,9 +2652,9 @@ export class BasicFormulas {
                 // let mcount: number = 0;
                 let lastCharIndex: number = 0; let totalCharforM: number = 0;
                 for (i = 0; i < formatChar.length; ) {
-                    const c: string = formatChar[i];
-                    if (c === 's' && formatChar[lastCharIndex] === 'M') {
-                        formatChar[lastCharIndex] = 'm';
+                    const c: string = formatChar[i as number];
+                    if (c === 's' && formatChar[lastCharIndex as number] === 'M') {
+                        formatChar[lastCharIndex as number] = 'm';
                         if (formatChar[lastCharIndex - 1] === 'M') {
                             formatChar[lastCharIndex - 1] = 'm';
                         }
@@ -2662,7 +2669,7 @@ export class BasicFormulas {
                         totalCharforM++;
                     }
                     if (c === 'M' && isH) {
-                        formatChar[i] = 'm';
+                        formatChar[i as number] = 'm';
                         isMFound = true;
                     }
                     if (c === 'h') {
@@ -2746,42 +2753,42 @@ export class BasicFormulas {
         if (argArr[1].indexOf(':') > -1 || this.parent.isCellReference(argArr[1])) {
             cellColl = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
             for (let j: number = 0; j < cellColl.length; j++) {
-                cellValue[j] = this.parent.getValueFromArg(cellColl[j]).split(this.parent.tic).join('');
+                cellValue[j as number] = this.parent.getValueFromArg(cellColl[j as number]).split(this.parent.tic).join('');
             }
             for (let i: number = 0; i < cellValue.length; i++) {
-                if (!cellValue[i].toString().length) { continue; }
+                if (!cellValue[i as number].toString().length) { continue; }
                 if (matchType === 1) {
-                    if (lookupVal === cellValue[i]) {
+                    if (lookupVal === cellValue[i as number]) {
                         return i + 1;
-                    } else if (lookupVal > cellValue[i]) {
+                    } else if (lookupVal > cellValue[i as number]) {
                         if (!indexVal) {
                             index = i + 1;
-                            indexVal = cellValue[i];
-                        } else if (cellValue[i] > indexVal) {
+                            indexVal = cellValue[i as number];
+                        } else if (cellValue[i as number] > indexVal) {
                             index = i + 1;
-                            indexVal = cellValue[i];
+                            indexVal = cellValue[i as number];
                         }
                     }
                 } else if (matchType === 0) {
                     if (lookupVal.indexOf('*') > -1 || lookupVal.indexOf('?') > -1) {
-                        cellValue[i] = this.parent.findWildCardValue(lookupVal, cellValue[i]);
+                        cellValue[i as number] = this.parent.findWildCardValue(lookupVal, cellValue[i as number]);
                     }
-                    if (lookupVal === cellValue[i]) {
+                    if (lookupVal === cellValue[i as number]) {
                         return i + 1;
                     }
-                    if (this.parent.parseFloat(lookupVal) === this.parent.parseFloat(cellValue[i])) {
+                    if (this.parent.parseFloat(lookupVal) === this.parent.parseFloat(cellValue[i as number])) {
                         return i + 1;
                     }
                 } else if (matchType === -1) {
-                    if (lookupVal === cellValue[i]) {
+                    if (lookupVal === cellValue[i as number]) {
                         return i + 1;
-                    } else if (lookupVal < cellValue[i]) {
+                    } else if (lookupVal < cellValue[i as number]) {
                         if (!indexVal) {
                             index = i + 1;
-                            indexVal = cellValue[i];
-                        } else if (cellValue[i] < indexVal) {
+                            indexVal = cellValue[i as number];
+                        } else if (cellValue[i as number] < indexVal) {
                             index = i + 1;
-                            indexVal = cellValue[i];
+                            indexVal = cellValue[i as number];
                         }
                     }
                 }
@@ -2935,18 +2942,18 @@ export class BasicFormulas {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         for (let i: number = 0; i < argsLength; i++) {
-            if (range[i] === '') {
+            if (range[i as number] === '') {
                 return this.parent.getErrorStrings()[CommonErrors.na];
             }
-            if (range[i].indexOf(this.parent.tic) > -1) {
-                if (isNaN(parseFloat(range[i].split(this.parent.tic).join('')))) {
+            if (range[i as number].indexOf(this.parent.tic) > -1) {
+                if (isNaN(parseFloat(range[i as number].split(this.parent.tic).join('')))) {
                     return this.parent.getErrorStrings()[CommonErrors.value];
                 } else {
-                    range[i] = range[i].split(this.parent.tic).join('');
+                    range[i as number] = range[i as number].split(this.parent.tic).join('');
                 }
             }
-            argVal = parseFloat(this.parent.getValueFromArg(range[i]));
-            if (!this.parent.isCellReference(range[i])) {
+            argVal = parseFloat(this.parent.getValueFromArg(range[i as number]));
+            if (!this.parent.isCellReference(range[i as number])) {
                 if (isNaN(argVal)) {
                     return this.parent.getErrorStrings()[CommonErrors.name];
                 }
@@ -2957,7 +2964,7 @@ export class BasicFormulas {
                     max = argVal;
                 }
             } else {
-                argVal = this.parent.getValueFromArg(range[i]) === '' ? 0 : argVal;
+                argVal = this.parent.getValueFromArg(range[i as number]) === '' ? 0 : argVal;
                 if (i === 0)
                 {
                     min = argVal;
@@ -3007,11 +3014,11 @@ export class BasicFormulas {
         let sumX: number = 0;
         let sumY: number = 0;
         for (let i: number = 0, len: number = xPoints.length; i < len; ++i) {
-            if (Number(xPoints[i]).toString() !== 'NaN' && Number(yPoints[i]).toString() !== 'NaN') {
-                sumXY += Number(xPoints[i]) * Number(yPoints[i]);
-                sumX += Number(xPoints[i]);
-                sumY += Number(yPoints[i]);
-                sumX2 += Number(xPoints[i]) * Number(xPoints[i]);
+            if (Number(xPoints[i as number]).toString() !== 'NaN' && Number(yPoints[i as number]).toString() !== 'NaN') {
+                sumXY += Number(xPoints[i as number]) * Number(yPoints[i as number]);
+                sumX += Number(xPoints[i as number]);
+                sumY += Number(yPoints[i as number]);
+                sumX2 += Number(xPoints[i as number]) * Number(xPoints[i as number]);
             }
         }
         // if ((sumXY - sumX * sumY) === 0 || (sumX2 - sumX * sumX) === 0) {
@@ -3047,8 +3054,8 @@ export class BasicFormulas {
         let sumX: number = 0;
         let sumY: number = 0;
         for (let i: number = 0, len: number = xValues.length; i < len; ++i) {
-            sumX += Number(xValues[i]);
-            sumY += Number(yValues[i]);
+            sumX += Number(xValues[i as number]);
+            sumY += Number(yValues[i as number]);
         }
         sumX = sumX / xValues.length;
         sumY = sumY / xValues.length;
@@ -3056,8 +3063,8 @@ export class BasicFormulas {
         let sumX2: number = 0;
         let diff: number;
         for (let i: number = 0, len: number = xValues.length; i < len; ++i) {
-            diff = Number(xValues[i]) - sumX;
-            sumXY += diff * (Number(yValues[i]) - sumY);
+            diff = Number(xValues[i as number]) - sumX;
+            sumXY += diff * (Number(yValues[i as number]) - sumY);
             sumX2 += diff * diff;
         }
         const result: string = (sumY - sumXY / sumX2 * sumX).toString();
@@ -3171,7 +3178,7 @@ export class BasicFormulas {
     }
 
     private preciseRound(numValue: number, decimalValue: number): string {
-        let sign: number = numValue >= 0 ? 1 : -1;
+        const sign: number = numValue >= 0 ? 1 : -1;
         return (Math.round((numValue * Math.pow(10, decimalValue)) + (sign * 0.001)) / Math.pow(10, decimalValue)).toFixed(decimalValue);
     }
 
@@ -3322,13 +3329,13 @@ export class BasicFormulas {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         for (r = 0; r < argArr.length; r++) {
-            if (argArr[r].indexOf(':') > -1) {
+            if (argArr[r as number].indexOf(':') > -1) {
                 if (argArr[0] === this.parent.tic) {
                     return this.parent.getErrorStrings()[CommonErrors.value];
                 }
-                cell = this.parent.getCellCollection(argArr[r].split(this.parent.tic).join(''));
+                cell = this.parent.getCellCollection(argArr[r as number].split(this.parent.tic).join(''));
                 for (s = 0; s < cell.length; s++) {
-                    cellVal = this.parent.getValueFromArg(cell[s]);
+                    cellVal = this.parent.getValueFromArg(cell[s as number]);
                     cellVal = (cellVal.split(this.parent.tic).join('') === 'TRUE') ? '1' :
                         (cellVal.split(this.parent.tic).join('') === 'FALSE') ? '0' : cellVal;
                     dev = this.parent.parseFloat(cellVal);
@@ -3341,11 +3348,11 @@ export class BasicFormulas {
                 }
             } else {
 
-                cellVal = this.parent.getValueFromArg(argArr[r]);
+                cellVal = this.parent.getValueFromArg(argArr[r as number]);
                 if (cellVal.length > 0) {
                     cellVal = (cellVal.split(this.parent.tic).join('') === 'TRUE') ? '1' :
                         (cellVal.split(this.parent.tic).join('') === 'FALSE') ? '0' : cellVal;
-                    if (!this.parent.isCellReference(argArr[r])) {
+                    if (!this.parent.isCellReference(argArr[r as number])) {
                         if (isNaN(this.parent.parseFloat(cellVal))) {
                             return this.parent.getErrorStrings()[CommonErrors.name];
                         }
@@ -3368,7 +3375,7 @@ export class BasicFormulas {
     private getDataCollection(cells: string[] | string): string[] {
         const cellsData: string[] = [];
         for (let i: number = 0, len: number = cells.length; i < len; i++) {
-            cellsData.push(this.parent.getValueFromArg(cells[i]));
+            cellsData.push(this.parent.getValueFromArg(cells[i as number]));
         }
         return cellsData;
     }

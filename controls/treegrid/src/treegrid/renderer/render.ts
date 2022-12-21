@@ -98,7 +98,7 @@ export class Render {
         } else { index = data.index; }
         let columnIndex: number; const getVirtualColIndexByUid: string = 'getVirtualColIndexByUid';
         if (this.parent.enableColumnVirtualization && !this.parent.initialRender) {
-            columnIndex = this.parent[getVirtualColIndexByUid](args.column.uid);
+            columnIndex = this.parent[`${getVirtualColIndexByUid}`](args.column.uid);
         } else {
             columnIndex = grid.getColumnIndexByUid(args.column.uid);
         }
@@ -223,7 +223,7 @@ export class Render {
         }
         if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
             args.column.template = treeColumn.template;
-            args.column[templateFn] = templateCompiler(args.column.template);
+            args.column[`${templateFn}`] = templateCompiler(args.column.template);
             args.cell.classList.add('e-templatecell');
         }
         const textContent: string = args.cell.querySelector('.e-treecell') != null ?
@@ -239,24 +239,24 @@ export class Render {
                 const portals: string = 'portals';
                 const renderReactTemplates: string = 'renderReactTemplates';
                 if ((<{ isReact?: boolean }>this.parent).isReact && typeof (args.column.template) !== 'string') {
-                    args.column[templateFn](args.data, this.parent, 'template', tempID, null, null, cellElement);
-                    if (isNullOrUndefined(this.parent.grid[portals])) {
-                        this.parent.grid[portals] = this.parent[portals];
+                    args.column[`${templateFn}`](args.data, this.parent, 'template', tempID, null, null, cellElement);
+                    if (isNullOrUndefined(this.parent.grid[`${portals}`])) {
+                        this.parent.grid[`${portals}`] = this.parent[`${portals}`];
                     }
-                    this.parent.notify('renderReactTemplate', this.parent[portals]);
-                    this.parent[renderReactTemplates]();
+                    this.parent.notify('renderReactTemplate', this.parent[`${portals}`]);
+                    this.parent[`${renderReactTemplates}`]();
                 } else {
                     const str: string = 'isStringTemplate';
-                    const result: Element[] = args.column[templateFn](
-                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[str]);
+                    const result: Element[] = args.column[`${templateFn}`](
+                        extend({ 'index': '' }, args.data), this.parent, 'template', tempID, this.parent[`${str}`]);
                     appendChildren(cellElement, result);
                 }
                 delete args.column.template;
-                delete args.column[templateFn];
+                delete args.column[`${templateFn}`];
                 args.cell.innerHTML = '';
             } else {
                 for (let i: number = 0; i < len; len = args.cell.children.length) {
-                    cellElement.appendChild(args.cell.children[i]);
+                    cellElement.appendChild(args.cell.children[parseInt(i.toString(), 10)]);
                 }
             }
         } else {
@@ -280,13 +280,15 @@ export class Render {
                 const indent: number = this.parent.grid.getIndentCount();
                 const cellIndex: number = this.parent.grid.getNormalizedColumnIndex(columnUid);
                 for (let j: number = 0; j < rowsObj.length; j++) {
-                    if (rowsObj[j].isDataRow && !isNullOrUndefined(rowsObj[j].index)) {
-                        const cell: Cell<gridColumn> = rowsObj[j][cells][cellIndex];
+                    if (rowsObj[parseInt(j.toString(), 10)].isDataRow && !isNullOrUndefined(rowsObj[parseInt(j.toString(), 10)].index)) {
+                        const cell: Cell<gridColumn> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
                         const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
-                        const td: Element = this.parent.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
-                        cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
-                        const treecell: Element = this.parent.getRows()[j].cells[cellIndex];
-                        this.cellRender({data: rowsObj[j].data, cell: treecell, column: cell.column });
+                        const td: Element = this.parent.getCellFromIndex(rowsObj[parseInt(j.toString(), 10)].index, cellIndex - indent);
+                        cellRenderer.refreshTD(td, cell, rowsObj[parseInt(j.toString(), 10)].data, { index: rowsObj[parseInt(j.toString(), 10)][`${rowIdx}`] });
+                        const treecell: Element =
+                        this.parent.getRows()[parseInt(j.toString(), 10)]
+                            .cells[parseInt(cellIndex.toString(), 10)];
+                        this.cellRender({data: rowsObj[parseInt(j.toString(), 10)].data, cell: treecell, column: cell.column });
                     }
                 }
             });
@@ -300,9 +302,9 @@ export class Render {
     private reactTemplateRender(args: Object[]): void {
         const renderReactTemplates: string = 'renderReactTemplates';
         const portals: string = 'portals';
-        this.parent[portals] = args;
-        this.parent.notify('renderReactTemplate', this.parent[portals]);
-        this.parent[renderReactTemplates]();
+        this.parent[`${portals}`] = args;
+        this.parent.notify('renderReactTemplate', this.parent[`${portals}`]);
+        this.parent[`${renderReactTemplates}`]();
     }
 
     public destroy(): void {

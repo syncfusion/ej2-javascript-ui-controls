@@ -147,7 +147,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                 removeClass([rippleSpan], [RIPPLE_CHECK]);
             }
         }
-        wrapper.setAttribute('aria-checked', ariaState);
     }
     private clickHandler(evt?: Event): void {
         this.isDrag = false;
@@ -220,7 +219,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         let wrapper: Element = this.element.parentElement;
         if (!wrapper.classList.contains(WRAPPER)) {
             wrapper = this.createElement('div', {
-                className: WRAPPER, attrs: { 'aria-checked': 'false' }
+                className: WRAPPER
             });
             this.element.parentNode.insertBefore(wrapper, this.element);
         }

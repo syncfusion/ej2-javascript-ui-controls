@@ -223,7 +223,7 @@ export class Resize {
         } else {
             const resEle: HTMLCollectionOf<Element> = this.parent.element.getElementsByClassName(tClass) as HTMLCollectionOf<Element>;
             for (let index: number = 0; index < resEle.length; index++) {
-                resEle[index].classList.remove(tClass);
+                resEle[index as number].classList.remove(tClass);
             }
         }
     }
@@ -349,7 +349,8 @@ export class Resize {
             }
             oldValue = getColumnWidth(sheet, idx);
         } else {
-            const colLength: number = sheet.rows[idx] && sheet.rows[idx].cells ? sheet.rows[idx].cells.length : 0;
+            const colLength: number = sheet.rows[idx as number] && sheet.rows[idx as number].cells ?
+                sheet.rows[idx as number].cells.length : 0;
             colGrp = this.parent.createElement('colgroup');
             for (let colIdx: number = 0; colIdx < colLength; colIdx++) {
                 cell = getCell(idx, colIdx, sheet);
@@ -545,7 +546,7 @@ export class Resize {
         this.showHideCopyIndicator();
         if (width === undefined) {
             if (hideEvtArgs.autoFit) {
-                this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx })
+                this.autoFit({ isRow: false, startIndex: startIdx, endIndex: endIdx });
             } else {
                 const performAutoFit: Function = (): void => {
                     this.parent.off(contentLoaded, performAutoFit);
@@ -653,7 +654,7 @@ export class Resize {
                     }
                     this.parent.selectRange(sheet.selectedRange);
                 }
-                this.trgtEle.parentElement.style.display = ''; this.parent.getContentTable().rows[idx].style.display = '';
+                this.trgtEle.parentElement.style.display = ''; this.parent.getContentTable().rows[idx as number].style.display = '';
             }
         } else if (this.trgtEle.classList.contains('e-colresize')) {
             if (this.isMouseMoved && this.trgtEle.classList.contains('e-unhide-column') &&

@@ -79,7 +79,7 @@ export interface BreadcrumbModel extends ComponentModel{
      * - Wrap: Wraps the items on multiple lines when the Breadcrumb’s width exceeds the container space.
      * - Scroll: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
      * - None: Shows all the items on a single line.
-     * 
+     *
      * @default 'Menu'
      */
     overflowMode?: BreadcrumbOverflowMode;

@@ -14,6 +14,7 @@ import { OlapEngine } from '../../base/olap/engine';
 
 /**
  * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
+ *
  * @hidden
  */
 /** @hidden */
@@ -41,13 +42,13 @@ export class PivotCommon {
     /** @hidden */
     public control: PivotView | PivotFieldList;
     /** @hidden */
-    public currentTreeItems: { [key: string]: Object }[] = [];  /* eslint-disable-line */
+    public currentTreeItems: { [key: string]: Object }[] = [];
     /** @hidden */
     public savedTreeFilterPos: { [key: number]: string } = {};
     /** @hidden */
     public currentTreeItemsPos: { [key: string]: TreeDataInfo } = {};
     /** @hidden */
-    public searchTreeItems: { [key: string]: Object }[] = [];   /* eslint-disable-line */
+    public searchTreeItems: { [key: string]: Object }[] = [];
     /** @hidden */
     public editorLabelElement: HTMLLabelElement;
     /** @hidden */
@@ -76,10 +77,11 @@ export class PivotCommon {
 
     /**
      * Constructor for Pivot Common class.
-     * @param  {CommonArgs} control - control.
+     *
+     * @param  {CommonArgs} control - It contains the value of control.
      * @hidden
      */
-    constructor(control: CommonArgs) {  /* eslint-disable-line */
+    constructor(control: CommonArgs) {
         this.element = control.element;
         this.moduleName = control.moduleName;
         this.dataSourceSettings = control.dataSourceSettings;
@@ -102,6 +104,7 @@ export class PivotCommon {
 
     /**
      * To destroy the groupingbar.
+     *
      * @returns {void}
      * @hidden
      */

@@ -49,9 +49,9 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     public frRows: Row<Column>[] = [];
 
     public eventListener(action: string): void {
-        this.parent[action](events.getVirtualData, this.getVirtualData, this);
-        this.parent[action](events.setFreezeSelection, this.setFreezeSelection, this);
-        this.parent[action](events.refreshVirtualFrozenRows, this.refreshVirtualFrozenRows, this);
+        this.parent[`${action}`](events.getVirtualData, this.getVirtualData, this);
+        this.parent[`${action}`](events.setFreezeSelection, this.setFreezeSelection, this);
+        this.parent[`${action}`](events.refreshVirtualFrozenRows, this.refreshVirtualFrozenRows, this);
         this.parent.addEventListener(events.actionComplete, this.actionComplete.bind(this));
     }
 
@@ -322,11 +322,11 @@ export function renderFrozenRows(
             : parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector( literals.tbody);
     hdr.innerHTML = '';
     for (let i: number = 0; i < parent.frozenRows; i++) {
-        hdr.appendChild(rowRenderer.render(rows[i], parent.getColumns()));
+        hdr.appendChild(rowRenderer.render(rows[parseInt(i.toString(), 10)], parent.getColumns()));
         if (selectedIdx.indexOf(i) > -1) {
-            rows[i].isSelected = true;
-            for (let k: number = 0; k < rows[i].cells.length; k++) {
-                rows[i].cells[k].isSelected = true;
+            rows[parseInt(i.toString(), 10)].isSelected = true;
+            for (let k: number = 0; k < rows[parseInt(i.toString(), 10)].cells.length; k++) {
+                rows[parseInt(i.toString(), 10)].cells[parseInt(k.toString(), 10)].isSelected = true;
             }
         }
     }
@@ -358,8 +358,8 @@ export function renderFrozenRows(
 export function splitCells(data: Row<Column>[], tableName: freezeTable, parent: IGrid): Row<Column>[] {
     const rows: Row<Column>[] = [];
     for (let i: number = 0; i < data.length; i++) {
-        rows.push(extend({}, data[i]) as Row<Column>);
-        rows[i].cells = splitFrozenRowObjectCells(parent, rows[i].cells, tableName);
+        rows.push(extend({}, data[parseInt(i.toString(), 10)]) as Row<Column>);
+        rows[parseInt(i.toString(), 10)].cells = splitFrozenRowObjectCells(parent, rows[parseInt(i.toString(), 10)].cells, tableName);
     }
     return rows;
 }
@@ -383,7 +383,7 @@ export function collectRows(tableName: freezeTable, virtualRenderer: VirtualCont
     }
     const keys: string[] = Object.keys(cache);
     for (let i: number = 0; i < keys.length; i++) {
-        rows = [...rows, ...splitCells(cache[keys[i]], tableName, parent)];
+        rows = [...rows, ...splitCells(cache[keys[parseInt(i.toString(), 10)]], tableName, parent)];
     }
     return rows;
 }
@@ -397,19 +397,20 @@ export function collectRows(tableName: freezeTable, virtualRenderer: VirtualCont
  * @returns {void}
  * @hidden
  */
-export function setFreezeSelectionAction(args: { uid: string, set: boolean, clearAll?: boolean },
-                                   virtualRenderer: VirtualContentRenderer): void {
+export function setFreezeSelectionAction(
+    args: { uid: string, set: boolean, clearAll?: boolean },
+    virtualRenderer: VirtualContentRenderer): void {
     const leftKeys: string[] = Object.keys(virtualRenderer.vgenerator.cache);
     const movableKeys: string[] = Object.keys(virtualRenderer.vgenerator.movableCache);
     const rightKeys: string[] = Object.keys(virtualRenderer.vgenerator.frozenRightCache);
     for (let i: number = 0; i < leftKeys.length; i++) {
-        selectFreezeRows(args, virtualRenderer.vgenerator.cache[leftKeys[i]]);
+        selectFreezeRows(args, virtualRenderer.vgenerator.cache[leftKeys[parseInt(i.toString(), 10)]]);
     }
     for (let i: number = 0; i < movableKeys.length; i++) {
-        selectFreezeRows(args, virtualRenderer.vgenerator.movableCache[movableKeys[i]]);
+        selectFreezeRows(args, virtualRenderer.vgenerator.movableCache[movableKeys[parseInt(i.toString(), 10)]]);
     }
     for (let i: number = 0; i < rightKeys.length; i++) {
-        selectFreezeRows(args, virtualRenderer.vgenerator.frozenRightCache[rightKeys[i]]);
+        selectFreezeRows(args, virtualRenderer.vgenerator.frozenRightCache[rightKeys[parseInt(i.toString(), 10)]]);
     }
 }
 
@@ -425,10 +426,10 @@ export function setFreezeSelectionAction(args: { uid: string, set: boolean, clea
 export function selectFreezeRows(args: { uid: string, set: boolean, clearAll?: boolean }, cache: Row<Column>[]): void {
     const rows: Row<Column>[] = cache.filter((row: Row<Column>) => args.clearAll || args.uid === row.uid);
     for (let j: number = 0; j < rows.length; j++) {
-        rows[j].isSelected = args.set;
-        const cells: Cell<Column>[] = rows[j].cells;
+        rows[parseInt(j.toString(), 10)].isSelected = args.set;
+        const cells: Cell<Column>[] = rows[parseInt(j.toString(), 10)].cells;
         for (let k: number = 0; k < cells.length; k++) {
-            cells[k].isSelected = args.set;
+            cells[parseInt(k.toString(), 10)].isSelected = args.set;
         }
     }
 }
@@ -525,7 +526,7 @@ export function splitReorderedRows(
         tableName = 'frozen-left';
     }
     for (let i: number = 0, len: number = rows.length; i < len; i++) {
-        rows[i].cells = splitFrozenRowObjectCells(parent, rows[i].cells, tableName);
+        rows[parseInt(i.toString(), 10)].cells = splitFrozenRowObjectCells(parent, rows[parseInt(i.toString(), 10)].cells, tableName);
     }
     return rows;
 }
@@ -610,12 +611,13 @@ export function setColGroup(
  */
 export function setCache(instance: VirtualFreezeRenderer | ColumnVirtualFreezeRenderer, index: number): void {
     if (instance.virtualRenderer.vgenerator.cache[1]) {
-        instance.virtualRenderer.vgenerator.cache[1][index] = instance.frzRows[index];
+        instance.virtualRenderer.vgenerator.cache[1][parseInt(index.toString(), 10)] = instance.frzRows[parseInt(index.toString(), 10)];
     } else {
         instance.virtualRenderer.vgenerator.cache[1] = instance.frzRows;
     }
     if (instance.virtualRenderer.vgenerator.movableCache[1]) {
-        instance.virtualRenderer.vgenerator.movableCache[1][index] = instance.mvblRows[index];
+        instance.virtualRenderer.vgenerator.movableCache[1][parseInt(index.toString(), 10)] =
+            instance.mvblRows[parseInt(index.toString(), 10)];
     } else {
         instance.virtualRenderer.vgenerator.movableCache[1] = instance.mvblRows;
     }
@@ -674,7 +676,8 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
         if (args.requestType === 'delete' && this.parent.frozenRows) {
             for (let i: number = 0; i < this.parent.frozenRows; i++) {
                 if (this.virtualRenderer.vgenerator.frozenRightCache[1]) {
-                    this.virtualRenderer.vgenerator.frozenRightCache[1][i] = this.frRows.length ? this.frRows[i] : this.frzRows[i];
+                    this.virtualRenderer.vgenerator.frozenRightCache[1][parseInt(i.toString(), 10)] = this.frRows.length ?
+                        this.frRows[parseInt(i.toString(), 10)] : this.frzRows[parseInt(i.toString(), 10)];
                 } else {
                     this.virtualRenderer.vgenerator.frozenRightCache[1] = this.frRows.length ? this.frRows : this.frzRows;
                     break;
@@ -686,9 +689,9 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
 
     public eventListener(action: string): void {
         this.parent.addEventListener(events.actionComplete, this.actionComplete.bind(this));
-        this.parent[action](events.refreshVirtualFrozenRows, this.refreshVirtualFrozenRows, this);
-        this.parent[action](events.getVirtualData, this.getVirtualData, this);
-        this.parent[action](events.setFreezeSelection, this.setFreezeSelection, this);
+        this.parent[`${action}`](events.refreshVirtualFrozenRows, this.refreshVirtualFrozenRows, this);
+        this.parent[`${action}`](events.getVirtualData, this.getVirtualData, this);
+        this.parent[`${action}`](events.setFreezeSelection, this.setFreezeSelection, this);
     }
 
     private refreshVirtualFrozenRows(args: NotifyArgs): void {

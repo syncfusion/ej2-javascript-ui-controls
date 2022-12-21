@@ -62,9 +62,9 @@ export class TriangularBase extends AccumulationBase {
         //starting from bottom
         for (let i: number = points.length - 1; i >= 0; i--) {
             const index: number = reverse ? points.length - 1 - i : i;
-            if (points[index].visible) {
-                const height: number = coEff * points[index].y;
-                points[index].yRatio = y; points[index].heightRatio = height;
+            if (points[index as number].visible) {
+                const height: number = coEff * points[index as number].y;
+                points[index as number].yRatio = y; points[index as number].heightRatio = height;
                 y += height + spacing;
             }
         }
@@ -80,11 +80,11 @@ export class TriangularBase extends AccumulationBase {
         const last: number = points.length - 1;
         const bottom: number = series.type === 'Funnel' ? points.length - 2 : points.length - 1;
 
-        const x: number = (points[0].x + points[bottom].x) / 2;
+        const x: number = (points[0].x + points[bottom as number].x) / 2;
         const right: number = (points[1].x + points[bottom - 1].x) / 2;
 
 
-        point.region = new Rect(x, points[0].y, right - x, points[bottom].y - points[0].y);
+        point.region = new Rect(x, points[0].y, right - x, points[bottom as number].y - points[0].y);
 
         point.symbolLocation = {
             x: point.region.x + point.region.width / 2,
@@ -92,8 +92,8 @@ export class TriangularBase extends AccumulationBase {
         };
 
         point.labelOffset = {
-            x: point.symbolLocation.x - (points[0].x + points[last].x) / 2,
-            y: point.symbolLocation.y - (points[0].y + points[last].y) / 2
+            x: point.symbolLocation.x - (points[0].x + points[last as number].x) / 2,
+            y: point.symbolLocation.y - (points[0].y + points[last as number].y) / 2
         };
     }
 
@@ -105,7 +105,7 @@ export class TriangularBase extends AccumulationBase {
     protected findPath(locations: ChartLocation[]): string {
         let path: string = 'M';
         for (let i: number = 0; i < locations.length; i++) {
-            path += locations[i].x + ' ' + locations[i].y;
+            path += locations[i as number].x + ' ' + locations[i as number].y;
             if (i !== locations.length - 1) {
                 path += ' L';
             }

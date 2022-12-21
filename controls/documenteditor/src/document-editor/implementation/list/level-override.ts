@@ -8,6 +8,21 @@ export class WLevelOverride {
     public startAt: number;
     public levelNumber: number;
     public overrideListLevel: WListLevel;
+
+    /**
+     * @private
+     */
+    public clear(): void {
+        if (!isNullOrUndefined(this.overrideListLevel)) {
+            this.overrideListLevel.clearFormat();
+        }
+        this.overrideListLevel = undefined;
+    }
+
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
     public destroy(): void {
         if (!isNullOrUndefined(this.overrideListLevel)) {
             this.overrideListLevel.destroy();

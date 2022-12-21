@@ -433,6 +433,7 @@ export class RangeNavigator extends Component<HTMLElement> {
 
     /**
      * Triggers before window resize.
+     *
      * @event
      * @blazorProperty 'BeforeResize'
      */
@@ -535,7 +536,6 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Starting point of the control initialization
      */
     public preRender(): void {
-        const blazor: string = 'Blazor';
         this.unWireEvents();
         this.setCulture();
         this.allowServerDataBinding = false;
@@ -589,7 +589,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             theme: this.theme
         };
         this.trigger('load', loadEventData, () => {
-            this.theme = this.theme;
+            //this.theme = this.theme;
             this.setTheme();
             this.initPrivateVariables();
             this.createRangeSvg();
@@ -647,9 +647,9 @@ export class RangeNavigator extends Component<HTMLElement> {
         let left: number = 0;
         let top: number = 0;
         if (this.stockChart && this.stockChart.stockLegendModule && this.stockChart.legendSettings.visible) {
-            if (this.stockChart.legendSettings.position === "Left") {
+            if (this.stockChart.legendSettings.position === 'Left') {
                 left += this.stockChart.stockLegendModule.legendBounds.width;
-            } else if (this.stockChart.legendSettings.position === "Top") {
+            } else if (this.stockChart.legendSettings.position === 'Top') {
                 top += this.stockChart.stockLegendModule.legendBounds.height;
             }
         }
@@ -817,7 +817,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         }
         this.animateSeries = false;
         this.removeAllTooltip();
-        let beforeResizeArgs: IRangeBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false };
+        const beforeResizeArgs: IRangeBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -832,22 +832,22 @@ export class RangeNavigator extends Component<HTMLElement> {
         };
         this.trigger(beforeResize, beforeResizeArgs);
         if (!beforeResizeArgs.cancelResizedEvent) {
-        this.resizeTo = +setTimeout(
-            (): void => {
-                if (this.isDestroyed) {
-                    clearTimeout(this.resizeTo);
-                    return;
-                }
-                this.createRangeSvg();
-                arg.currentSize = this.availableSize;
-                this.trigger('resized', arg);
-                this.calculateBounds();
-                this.chartSeries.processXAxis(this);
-                this.chartSeries.calculateGroupingBounds(this);
-                this.chartSeries.processYAxis(this);
-                this.renderChart(true);
-            },
-            500);
+            this.resizeTo = +setTimeout(
+                (): void => {
+                    if (this.isDestroyed) {
+                        clearTimeout(this.resizeTo);
+                        return;
+                    }
+                    this.createRangeSvg();
+                    arg.currentSize = this.availableSize;
+                    this.trigger('resized', arg);
+                    this.calculateBounds();
+                    this.chartSeries.processXAxis(this);
+                    this.chartSeries.calculateGroupingBounds(this);
+                    this.chartSeries.processYAxis(this);
+                    this.renderChart(true);
+                },
+                500);
         }
         return false;
     }
@@ -936,9 +936,9 @@ export class RangeNavigator extends Component<HTMLElement> {
         let top: number = 0;
         let left: number = 0;
         if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
-            if (this.stockChart.legendSettings.position === "Top") {
+            if (this.stockChart.legendSettings.position === 'Top') {
                 top += this.stockChart.stockLegendModule.legendBounds.height;
-            } else if (this.stockChart.legendSettings.position === "Left") {
+            } else if (this.stockChart.legendSettings.position === 'Left') {
                 left += this.stockChart.stockLegendModule.legendBounds.width;
             }
         }
@@ -1041,7 +1041,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             case 'skeleton':
             case 'skeletonType':
             case 'secondaryLabelAlignment':
-            case "background":
+            case 'background':
                 renderer = true;
                 break;
             case 'dataSource':

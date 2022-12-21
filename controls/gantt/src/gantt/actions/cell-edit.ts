@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU, getValue, getElement, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, getValue, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs, ITaskSegment } from '../base/interface';
 import { ColumnModel } from '../models/column';
@@ -113,10 +113,10 @@ export class CellEdit {
             return true;
         } else if (!isNOU(editedValue) && !isNOU(previousValue)) {
             if (editedValue instanceof Date) {
-                return editedValue.getTime() !== data.taskData[field].getTime() ? true : false;
+                return editedValue.getTime() !== data.taskData[field as string].getTime() ? true : false;
             } else if (field === this.parent.taskFields.resourceInfo) {
                 return editedValue !== previousValue ? true : false;
-            } else if (editedValue !== data.taskData[field]) {
+            } else if (editedValue !== data.taskData[field as string]) {
                 return true;
             }
         }
@@ -503,7 +503,7 @@ export class CellEdit {
                 if (previousResource) {
                     const previousResourceLength: number = previousResource.length;
                     for (newIndex = 0; newIndex < previousResourceLength; newIndex++) {
-                        if (previousResource[newIndex][resourceSettings.id] === editedResourceId[count]) {
+                        if (previousResource[newIndex as number][resourceSettings.id] === editedResourceId[count as number]) {
                             index = newIndex;
                             break;
                         } else {
@@ -515,7 +515,7 @@ export class CellEdit {
                     editedResources.push(previousResource[index]);
                 } else {
                     const resource: Object[] = resourceData.filter((resourceInfo: Object) => {
-                        return (editedResourceId[count] === resourceInfo[resourceSettings.id]);
+                        return (editedResourceId[count as number] === resourceInfo[resourceSettings.id]);
                     });
                     const ganttDataResource: Object = extend({}, resource[0]);
                     ganttDataResource[resourceSettings.unit] = 100;

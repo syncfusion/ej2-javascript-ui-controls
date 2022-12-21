@@ -50,7 +50,7 @@ export function findToolToActivate(
     if (touchMove && touchMove.length > 1 && touchStart && touchStart.length > 1) { return 'PinchZoom'; }
     if (diagram.currentSymbol) { return 'Drag'; }
     const eventHandler: string = 'eventHandler';
-    if (diagram[eventHandler].action === 'PortDraw') {
+    if (diagram[`${eventHandler}`].action === 'PortDraw') {
         diagram.tool &= ~DiagramTools.DrawOnce;
     }
     //Drawing Tools
@@ -141,7 +141,7 @@ export function findToolToActivate(
             if (wrapper && wrapper.id) {
                 let userid: string;
                 for (let i: number = 0; i < obj.fixedUserHandles.length; i++) {
-                    userid = obj.fixedUserHandles[i].id;
+                    userid = obj.fixedUserHandles[parseInt(i.toString(), 10)].id;
                     if (wrapper.id && (wrapper.id.indexOf(userid) > -1)) { return 'FixedUserHandle'; }
                 }
             }
@@ -194,7 +194,7 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
     const sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
     if (conn.type === 'Bezier') {
         for (let i: number = 0; i < conn.segments.length; i++) {
-            const segment: BezierSegment = (conn.segments)[i] as BezierSegment;
+            const segment: BezierSegment = (conn.segments)[parseInt(i.toString(), 10)] as BezierSegment;
             if (contains(
                 position, !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
                 sourcePaddingValue)) {
@@ -211,7 +211,7 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
         if (conn.type === 'Straight' || conn.type === 'Bezier') {
             for (let i: number = 0; i < conn.segments.length; i++) {
                 //let segment: StraightSegmentModel | BezierSegmentModel;
-                const segment: StraightSegmentModel | BezierSegmentModel = (conn.segments)[i] as StraightSegmentModel | BezierSegmentModel;
+                const segment: StraightSegmentModel | BezierSegmentModel = (conn.segments)[parseInt(i.toString(), 10)] as StraightSegmentModel | BezierSegmentModel;
                 if (contains(position, segment.point, 10)) {
                     return 'SegmentEnd';
                 }
@@ -219,13 +219,13 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
         } else {
             for (let i: number = 0; i < conn.segments.length; i++) {
                 const segPoint: PointModel = { x: 0, y: 0 };
-                const segment: ConnectorSegment = (conn.segments)[i] as ConnectorSegment;
+                const segment: ConnectorSegment = (conn.segments)[parseInt(i.toString(), 10)] as ConnectorSegment;
                 if (segment.allowDrag) {
                     for (let j: number = 0; j < segment.points.length - 1; j++) {
-                        const length: number = Point.distancePoints(segment.points[j], segment.points[j + 1]);
+                        const length: number = Point.distancePoints(segment.points[parseInt(j.toString(), 10)], segment.points[j + 1]);
                         if (length >= 50) {
-                            segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
-                            segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
+                            segPoint.x = ((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2);
+                            segPoint.y = ((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2);
                             if (contains(position, segPoint, 30)) {
                                 return 'OrthoThumb';
                             }
@@ -272,9 +272,9 @@ export function findPortToolToActivate(
 
 /**
  * Resize handle for container and also object.
+ *
  * @private
  */
-
 function checkResizeHandleForContainer(diagram: Diagram, element: DiagramElement, position: PointModel, x: number, y: number): Actions {
     const ten: number = 10 / diagram.scroller.currentZoom;
     const forty: number = 40 / diagram.scroller.currentZoom;
@@ -461,9 +461,9 @@ export function getCursor(cursor: Actions, angle: number): string {
     angle %= 360;
 
     if (cursor.indexOf('Resize') === -1) {
-        return cursors[cursor];
+        return cursors[`${cursor}`];
     } else {
-        const dir: string = cursors[cursor];
+        const dir: string = cursors[`${cursor}`];
         if ((angle >= 0 && angle < 25) || (angle >= 160 && angle <= 205) || (angle >= 340 && angle <= 360)) {
             return dir;
         } else if ((angle >= 25 && angle <= 70) || (angle >= 205 && angle <= 250)) {
@@ -498,7 +498,7 @@ export function getCursor(cursor: Actions, angle: number): string {
             return 'n-resize';
         }
     }
-    return cursors[cursor];
+    return cursors[`${cursor}`];
 }
 
 const cursors: Object = {

@@ -45,8 +45,8 @@ function resize(diagram: Diagram, direction: string): void {
         left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
         let element: HTMLElement = document.getElementById(direction);
         let mouseEvents: MouseEvents = new MouseEvents();
-        let x: number = Number(element.getAttribute('cx'));
-        let y: number = Number(element.getAttribute('cy'));
+        let x: number = Number(element.getAttribute('x'));
+        let y: number = Number(element.getAttribute('y'));
         mouseEvents.mouseDownEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
         mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
         mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
@@ -2089,6 +2089,54 @@ describe('Bezier annotation alignment is not working properly',()=>{
         done();
     });
 
+});
+
+    describe('Annotation Fly off', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement; let left: number; let top: number;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'NodesAnnotationInteraction' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [{
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                annotations: [{ offset: { x: 2, y: 1.5 }, content: 'node1', constraints: AnnotationConstraints.Interaction, width: 100, height: 100 }]
+            }];
+            diagram = new Diagram({
+                width: 800, height: 500, nodes: nodes,
+            });
+            diagram.appendTo('#NodesAnnotationInteraction');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 1, 1);
+            left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Select', (done: Function) => {
+            let node: NodeModel = (diagram.nodes[0] as NodeModel);
+            let annotation: DiagramElement = node.wrapper.children[1];
+            mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
+            expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
+            done();
+        });
+        it('Drag', (done: Function) => {
+            drag(diagram);
+            drag(diagram);
+            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            expect(label.offsetX == 290 && label.offsetY == 240 && label.width == 100 && label.height == 100).toBe(true);
+            done();
+        });
 });
 
 describe('Checking annotation', () => {
@@ -5590,7 +5638,5 @@ describe('Checking annotation', () => {
         expect(check).toEqual(true);
         done();
     });
-
-
 });
 

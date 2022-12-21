@@ -175,6 +175,12 @@ export class CheckBoxSelection {
     public destroy(): void {
         this.removeEventListener();
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
+        this.checkAllParent = null;
+        this.clearIconElement = null;
+        this.filterInput = null;
+        this.filterInputObj = null;
+        this.checkWrapper = null;
+        this.selectAllSpan = null;
     }
     public listSelection(args: IUpdateListArgs): void {
         let target: EventTarget;
@@ -250,10 +256,6 @@ export class CheckBoxSelection {
                 this.parent.selectAllItems(false, e as MouseEvent);
                 this.setLocale();
             }
-        }
-        ariaState = state === 'check' ? 'true' : state === 'uncheck' ? 'false' : ariaState;
-        if (!isNullOrUndefined(ariaState)) {
-            wrapper.setAttribute('aria-checked', ariaState);
         }
     }
     protected setSearchBox(args: IUpdateListArgs): InputObject | void {
@@ -423,8 +425,8 @@ export class CheckBoxSelection {
                     e.preventDefault();
                 }
             }
-            if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) &&
-            !this.parent.overAllWrapper.contains(e.target as Node)) {
+            if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]'))
+                && !isNullOrUndefined(this.parent.overAllWrapper) && !this.parent.overAllWrapper.contains(e.target as Node)) {
                 if (this.parent.overAllWrapper.classList.contains(dropDownBaseClasses.focus) || this.parent.isPopupOpen()) {
                     this.parent.inputFocus = false;
                     this.parent.scrollFocusStatus = false;
@@ -436,7 +438,7 @@ export class CheckBoxSelection {
                 this.parent.scrollFocusStatus = (Browser.isIE || Browser.info.name === 'edge') &&
                 (document.activeElement === this.filterInput);
             }
-            if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
+            if (!isNullOrUndefined(this.parent.overAllWrapper) && !this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
                 if (Browser.isIE) {
                     this.parent.onBlurHandler();
@@ -466,7 +468,7 @@ export class CheckBoxSelection {
         }
     }
     private checkSelectAll(e: IUpdateListArgs): void {
-        if (e.value === 'check' && this.checkAllParent.getAttribute('aria-checked') !== 'true') {
+        if (e.value === 'check') {
             this.changeState(this.checkAllParent, e.value, null, null, false);
             this.setLocale(true);
         }

@@ -29,7 +29,8 @@ export interface DraggableModel {
     cursorAt?: PositionModel;
 
     /**
-     * If `clone` set to true, drag operations are performed in duplicate element of the draggable element. 
+     * If `clone` set to true, drag operations are performed in duplicate element of the draggable element.
+     *
      * @default true
      */
     clone?: boolean;
@@ -46,37 +47,42 @@ export interface DraggableModel {
 
     /**
      * Defines wheather need to replace drag element by currentstateTarget.
+     *
      * @private
      */
     isReplaceDragEle?: boolean;
 
     /**
      * Defines wheather need to add prevent select class to body or not.
+     *
      * @private
      */
     isPreventSelect?: boolean;
 
     /**
      * Specifies the callback function for drag event.
-
-     * @event
+     *
+     * @event drag
      */
     drag?: Function;
 
     /**
      * Specifies the callback function for dragStart event.
-     * @event
+     *
+     * @event dragStart
      */
     dragStart?: Function;
 
     /**
      * Specifies the callback function for dragStop event.
-     * @event
+     *
+     * @event dragStop
      */
     dragStop?: Function;
 
     /**
      * Defines the minimum distance draggable element to be moved to trigger the drag operation.
+     *
      * @default 1
      */
     distance?: number;
@@ -97,38 +103,42 @@ export interface DraggableModel {
     helper?: Function;
 
     /**
-     * Defines the scope value to group sets of draggable and droppable items. 
+     * Defines the scope value to group sets of draggable and droppable items.
      * A draggable with the same scope value will be accepted by the droppable.
      */
     scope?: string;
 
     /**
      * Specifies the dragTarget by which the clone element is positioned if not given current context element will be considered.
+     *
      * @private
      */
     dragTarget?: string;
 
     /**
-     * Defines the axis to limit the draggable element drag path.The possible axis path values are   
-     * * `x` - Allows drag movement in horizontal direction only. 
+     * Defines the axis to limit the draggable element drag path.The possible axis path values are
+     * * `x` - Allows drag movement in horizontal direction only.
      * * `y` - Allows drag movement in vertical direction only.
      */
     axis?: DragDirection;
 
     /**
      * Defines the function to change the position value.
+     *
      * @private
      */
     queryPositionInfo?: Function;
 
     /**
      * Defines whether the drag clone element will be split form the cursor pointer.
+     *
      * @private
      */
     enableTailMode?: boolean;
 
     /**
      * Defines whether to skip the previous drag movement comparison.
+     *
      * @private
      */
     skipDistanceCheck?: boolean;
@@ -141,6 +151,7 @@ export interface DraggableModel {
     /**
      * Defines whether to enable autoscroll on drag movement of draggable element.
      * enableAutoScroll
+     *
      * @private
      */
     enableAutoScroll?: boolean;
@@ -148,12 +159,14 @@ export interface DraggableModel {
     /**
      * Defines whether to enable taphold  on mobile devices.
      * enableAutoScroll
+     *
      * @private
      */
     enableTapHold?: boolean;
 
     /**
      * Specifies the time delay for tap hold.
+     *
      * @default 750
      *  @private
      */

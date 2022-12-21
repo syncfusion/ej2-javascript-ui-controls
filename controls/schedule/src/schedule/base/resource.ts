@@ -33,6 +33,7 @@ export class ResourceBase {
     private treePopup: Popup;
     private popupOverlay: HTMLElement;
     private leftPixel: number = 25;
+    public resourceDateTree: TdData[][] = [];
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -58,8 +59,8 @@ export class ResourceBase {
         }
         const trCount: number = this.lastResourceLevel.length;
         for (let i: number = 0; i < trCount; i++) {
-            const resData: Record<string, any> = this.lastResourceLevel[i].resourceData;
-            const res: ResourcesModel = this.lastResourceLevel[i].resource;
+            const resData: Record<string, any> = this.lastResourceLevel[parseInt(i.toString(), 10)].resourceData;
+            const res: ResourcesModel = this.lastResourceLevel[parseInt(i.toString(), 10)].resource;
             if (resData.ClassName === cls.RESOURCE_PARENT_CLASS && !resData[res.expandedField] &&
                 !isNullOrUndefined(resData[res.expandedField])) {
                 const trCollection: HTMLElement[] = [].slice.call(tBody.children);
@@ -105,10 +106,10 @@ export class ResourceBase {
     public setExpandedResources(): void {
         const resources: TdData[] = [];
         for (let i: number = 0; i < this.lastResourceLevel.length; i++) {
-            const resource: Record<string, any> = this.lastResourceLevel[i].resourceData;
+            const resource: Record<string, any> = this.lastResourceLevel[parseInt(i.toString(), 10)].resourceData;
             const count: number = resource.Count as number;
-            resources.push(this.lastResourceLevel[i]);
-            const isExpanded: boolean = resource[this.lastResourceLevel[i].resource.expandedField] as boolean;
+            resources.push(this.lastResourceLevel[parseInt(i.toString(), 10)]);
+            const isExpanded: boolean = resource[this.lastResourceLevel[parseInt(i.toString(), 10)].resource.expandedField] as boolean;
             if (!isNullOrUndefined(isExpanded) && !isExpanded && count > 0) {
                 i = i + count;
             }
@@ -125,20 +126,20 @@ export class ResourceBase {
         const td: Element = createElement('td', { attrs: { tabindex: isVirtualScroll ? '-1' : '0' } });
         for (let i: number = 0; i < resData.length; i++) {
             const ntd: Element = td.cloneNode() as Element;
-            rIndex = util.findIndexInData(<Record<string, any>[]>resColl, 'name', resData[i].resource.name);
+            rIndex = util.findIndexInData(<Record<string, any>[]>resColl, 'name', resData[parseInt(i.toString(), 10)].resource.name);
             if (rIndex === resColl.length - 1) {
-                extend(resData[i].resourceData, { ClassName: cls.RESOURCE_CHILD_CLASS });
-                this.renderedResources[i].className = [cls.RESOURCE_CHILD_CLASS];
+                extend(resData[parseInt(i.toString(), 10)].resourceData, { ClassName: cls.RESOURCE_CHILD_CLASS });
+                this.renderedResources[parseInt(i.toString(), 10)].className = [cls.RESOURCE_CHILD_CLASS];
             } else {
-                extend(resData[i].resourceData, { ClassName: cls.RESOURCE_PARENT_CLASS });
-                this.renderedResources[i].className = [cls.RESOURCE_PARENT_CLASS];
+                extend(resData[parseInt(i.toString(), 10)].resourceData, { ClassName: cls.RESOURCE_PARENT_CLASS });
+                this.renderedResources[parseInt(i.toString(), 10)].className = [cls.RESOURCE_PARENT_CLASS];
             }
             left = (rIndex * this.leftPixel) + 'px';
-            if (resData[i].resourceData.ClassName as string === cls.RESOURCE_PARENT_CLASS
-                && !isNullOrUndefined(resData[i].resourceData.Count) && (resData[i].resourceData.Count > 0)) {
+            if (resData[parseInt(i.toString(), 10)].resourceData.ClassName as string === cls.RESOURCE_PARENT_CLASS
+                && !isNullOrUndefined(resData[parseInt(i.toString(), 10)].resourceData.Count) && (resData[parseInt(i.toString(), 10)].resourceData.Count > 0)) {
                 let iconClass: string;
-                if (resData[i].resourceData[resColl[rIndex].expandedField] ||
-                    isNullOrUndefined(resData[i].resourceData[resColl[rIndex].expandedField])) {
+                if (resData[parseInt(i.toString(), 10)].resourceData[resColl[parseInt(rIndex.toString(), 10)].expandedField] ||
+                    isNullOrUndefined(resData[parseInt(i.toString(), 10)].resourceData[resColl[parseInt(rIndex.toString(), 10)].expandedField])) {
                     iconClass = cls.RESOURCE_COLLAPSE_CLASS;
                 } else {
                     iconClass = cls.RESOURCE_EXPAND_CLASS;
@@ -151,15 +152,15 @@ export class ResourceBase {
                     EventHandler.add(iconDiv, 'click', this.onTreeIconClick, this);
                 }
             }
-            this.parent.activeView.setResourceHeaderContent(ntd, resData[i], cls.RESOURCE_TEXT_CLASS);
-            ntd.setAttribute('data-group-index', resData[i].groupIndex.toString());
-            ntd.setAttribute('aria-label', (resData[i].resourceData[resData[i].resource.textField] as string) + ' resource');
+            this.parent.activeView.setResourceHeaderContent(ntd, resData[parseInt(i.toString(), 10)], cls.RESOURCE_TEXT_CLASS);
+            ntd.setAttribute('data-group-index', resData[parseInt(i.toString(), 10)].groupIndex.toString());
+            ntd.setAttribute('aria-label', (resData[parseInt(i.toString(), 10)].resourceData[resData[parseInt(i.toString(), 10)].resource.textField] as string) + ' resource');
             if (!this.parent.activeViewOptions.resourceHeaderTemplate) {
                 this.setMargin(ntd.querySelector('.' + cls.RESOURCE_TEXT_CLASS) as HTMLElement, left);
             }
-            const classCollection: string[] = [cls.RESOURCE_CELLS_CLASS, resData[i].resourceData.ClassName as string];
+            const classCollection: string[] = [cls.RESOURCE_CELLS_CLASS, resData[parseInt(i.toString(), 10)].resourceData.ClassName as string];
             addClass([ntd], classCollection);
-            const args: RenderCellEventArgs = { elementType: 'resourceHeader', element: ntd, groupIndex: resData[i].groupIndex };
+            const args: RenderCellEventArgs = { elementType: 'resourceHeader', element: ntd, groupIndex: resData[parseInt(i.toString(), 10)].groupIndex };
             this.parent.trigger(events.renderCell, args);
             const ntr: Element = tr.cloneNode() as Element;
             ntr.appendChild(ntd);
@@ -183,16 +184,18 @@ export class ResourceBase {
             for (let x: number = 0; x < data.length; x++) {
                 let totalCount: number = 0;
                 if (this.parent.activeViewOptions.group.byGroupID) {
-                    const query: Query = new Query().where(wholeCollection[wholeCollection.length - 1].groupIDField, 'equal', data[x][parentCollection[parentCollection.length - (y + 1)].idField] as string);
+                    const query: Query =
+                        new Query().where(wholeCollection[wholeCollection.length - 1].groupIDField, 'equal',
+                                          data[parseInt(x.toString(), 10)][parentCollection[parentCollection.length - (y + 1)].idField] as string);
                     collection = new DataManager(wholeCollection[wholeCollection.length - 1].dataSource).executeLocal(query) as Record<string, any>[];
                 } else {
                     collection = wholeCollection[wholeCollection.length - 1].dataSource as Record<string, any>[];
                 }
                 for (let z: number = 0; z < collection.length; z++) {
-                    totalCount = totalCount + parseInt(collection[z].Count as string, 10);
+                    totalCount = totalCount + parseInt(collection[parseInt(z.toString(), 10)].Count as string, 10);
                 }
-                totalCount = totalCount + parseInt(data[x].Count as string, 10);
-                extend(data[x], { Count: totalCount });
+                totalCount = totalCount + parseInt(data[parseInt(x.toString(), 10)].Count as string, 10);
+                extend(data[parseInt(x.toString(), 10)], { Count: totalCount });
             }
             wholeCollection = wholeCollection.slice(0, -1);
         }
@@ -246,7 +249,7 @@ export class ResourceBase {
         const workCellCollection: HTMLTableRowElement[] = [];
         const headerRowCollection: HTMLTableRowElement[] = [];
         let pNode: boolean;
-        const clickedRes: Record<string, any> = this.lastResourceLevel[index].resourceData as Record<string, any>;
+        const clickedRes: Record<string, any> = this.lastResourceLevel[parseInt(index.toString(), 10)].resourceData as Record<string, any>;
         const resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
         const contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
         const eventRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
@@ -258,37 +261,37 @@ export class ResourceBase {
         const clonedCollection: TdData[] = this.lastResourceLevel;
         for (let i: number = 0; i < rowCollection.length; i++) {
             let expanded: boolean = true;
-            pNode = rowCollection[i].children[0].classList.contains(cls.RESOURCE_PARENT_CLASS);
-            clonedCollection[index].resourceData[clonedCollection[index].resource.expandedField] = !hide;
+            pNode = rowCollection[parseInt(i.toString(), 10)].children[0].classList.contains(cls.RESOURCE_PARENT_CLASS);
+            clonedCollection[parseInt(index.toString(), 10)].resourceData[clonedCollection[parseInt(index.toString(), 10)].resource.expandedField] = !hide;
             if (hide) {
                 if (pNode) {
-                    const trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
+                    const trElem: Element = rowCollection[parseInt(i.toString(), 10)].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
                     if (trElem) {
                         classList(trElem, [cls.RESOURCE_EXPAND_CLASS], [cls.RESOURCE_COLLAPSE_CLASS]);
                     }
                 }
-                if (!rowCollection[i].classList.contains(cls.HIDDEN_CLASS)) {
-                    addClass([rowCollection[i], workCellCollection[i], headerRowCollection[i]], cls.HIDDEN_CLASS);
+                if (!rowCollection[parseInt(i.toString(), 10)].classList.contains(cls.HIDDEN_CLASS)) {
+                    addClass([rowCollection[parseInt(i.toString(), 10)], workCellCollection[parseInt(i.toString(), 10)], headerRowCollection[parseInt(i.toString(), 10)]], cls.HIDDEN_CLASS);
                 }
             } else {
                 if (pNode) {
-                    const rowIndex: number = rowCollection[i].rowIndex;
-                    if (!clonedCollection[rowIndex].resourceData[clonedCollection[rowIndex].resource.expandedField]
-                        && !isNullOrUndefined(clonedCollection[rowIndex].resourceData[clonedCollection[rowIndex].resource.expandedField])) {
-                        rowCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 10)));
-                        workCellCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 10)));
-                        headerRowCollection.splice(i + 1, (parseInt(clonedCollection[rowIndex].resourceData.Count as string, 10)));
+                    const rowIndex: number = rowCollection[parseInt(i.toString(), 10)].rowIndex;
+                    if (!clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData[clonedCollection[parseInt(rowIndex.toString(), 10)].resource.expandedField]
+                        && !isNullOrUndefined(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData[clonedCollection[parseInt(rowIndex.toString(), 10)].resource.expandedField])) {
+                        rowCollection.splice(i + 1, (parseInt(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData.Count as string, 10)));
+                        workCellCollection.splice(i + 1, (parseInt(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData.Count as string, 10)));
+                        headerRowCollection.splice(i + 1, (parseInt(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData.Count as string, 10)));
                         expanded = false;
                     }
                     if (expanded) {
-                        const trElem: Element = rowCollection[i].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
+                        const trElem: Element = rowCollection[parseInt(i.toString(), 10)].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
                         if (trElem) {
                             classList(trElem, [cls.RESOURCE_COLLAPSE_CLASS], [cls.RESOURCE_EXPAND_CLASS]);
                         }
                     }
                 }
-                if (rowCollection[i].classList.contains(cls.HIDDEN_CLASS)) {
-                    removeClass([rowCollection[i], workCellCollection[i], headerRowCollection[i]], cls.HIDDEN_CLASS);
+                if (rowCollection[parseInt(i.toString(), 10)].classList.contains(cls.HIDDEN_CLASS)) {
+                    removeClass([rowCollection[parseInt(i.toString(), 10)], workCellCollection[parseInt(i.toString(), 10)], headerRowCollection[parseInt(i.toString(), 10)]], cls.HIDDEN_CLASS);
                 }
             }
         }
@@ -296,7 +299,7 @@ export class ResourceBase {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public updateVirtualContent(index: number, expand: boolean, e: Event, target: Element): void {
-        this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
+        this.lastResourceLevel[parseInt(index.toString(), 10)].resourceData[this.lastResourceLevel[parseInt(index.toString(), 10)].resource.expandedField] = !expand;
         this.setExpandedResources();
         const resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
         const startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
@@ -390,7 +393,7 @@ export class ResourceBase {
         let groupIndex: number = 0;
         for (let i: number = 0, len: number = this.resourceTreeLevel.length; i < len; i++) {
             const treeHandler: CallbackFunction = (treeLevel: TreeSlotData, index: number, levelId: string): ResourceDetails => {
-                const resource: ResourcesModel = this.resourceCollection[index];
+                const resource: ResourcesModel = this.resourceCollection[parseInt(index.toString(), 10)];
                 let treeArgs: ResourceDetails;
                 let resObj: TdData;
                 if (!isTimeLine) {
@@ -427,9 +430,9 @@ export class ResourceBase {
                 return treeArgs;
             };
             if (!isTimeLine) {
-                treeCollection.push(treeHandler(this.resourceTreeLevel[i], 0, (i + 1).toString()));
+                treeCollection.push(treeHandler(this.resourceTreeLevel[parseInt(i.toString(), 10)], 0, (i + 1).toString()));
             } else {
-                treeHandler(this.resourceTreeLevel[i], 0, (i + 1).toString());
+                treeHandler(this.resourceTreeLevel[parseInt(i.toString(), 10)], 0, (i + 1).toString());
             }
         }
         if (isTimeLine) {
@@ -444,10 +447,10 @@ export class ResourceBase {
         const resource: TdData = this.lastResourceLevel[this.parent.uiStateValues.groupIndex];
         const headerCollection: HTMLElement[] = [];
         for (let i: number = 0, len: number = resource.groupOrder.length; i < len; i++) {
-            const resourceLevel: ResourcesModel = this.resourceCollection[i];
+            const resourceLevel: ResourcesModel = this.resourceCollection[parseInt(i.toString(), 10)];
             const resourceText: Record<string, any>[] =
                 (resourceLevel.dataSource as Record<string, any>[]).filter((resData: Record<string, any>) =>
-                    resData[resourceLevel.idField] === resource.groupOrder[i]);
+                    resData[resourceLevel.idField] === resource.groupOrder[parseInt(i.toString(), 10)]);
             const resourceName: HTMLElement = createElement('div', {
                 className: cls.RESOURCE_NAME,
                 innerHTML: (<Record<string, any>>resourceText[0])[resourceLevel.textField] as string
@@ -539,8 +542,8 @@ export class ResourceBase {
         if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.resourceCollection = [];
         for (let i: number = 0, length: number = e.length; i < length; i++) {
-            const resource: ResourcesModel = this.parent.resources[i];
-            const resourceObj: ResourcesModel = this.getResourceModel(resource, e[i].result);
+            const resource: ResourcesModel = this.parent.resources[parseInt(i.toString(), 10)];
+            const resourceObj: ResourcesModel = this.getResourceModel(resource, e[parseInt(i.toString(), 10)].result);
             this.parent.resourceCollection.push(resourceObj);
         }
         this.refreshLayout(isSetModel);
@@ -581,7 +584,7 @@ export class ResourceBase {
             for (const resource of this.parent.activeViewOptions.group.resources) {
                 const index: number = util.findIndexInData(<Record<string, any>[]>this.parent.resourceCollection, 'name', resource);
                 if (index >= 0) {
-                    requiredResources.push(this.parent.resourceCollection[index]);
+                    requiredResources.push(this.parent.resourceCollection[parseInt(index.toString(), 10)]);
                 }
             }
         } else if (this.parent.resourceCollection.length > 0) {
@@ -622,8 +625,8 @@ export class ResourceBase {
                     if (prevOrder && prevOrder.length > 0) {
                         groupOrder = groupOrder.concat(prevOrder);
                     }
-                    groupOrder.push((data[i] as Record<string, any>)[resource.idField] as string);
-                    const items: TdData[] = group(resources.slice(1), index + 1, resource, data[i], groupOrder);
+                    groupOrder.push((data[parseInt(i.toString(), 10)] as Record<string, any>)[resource.idField] as string);
+                    const items: TdData[] = group(resources.slice(1), index + 1, resource, data[parseInt(i.toString(), 10)], groupOrder);
                     // Here validate child item empty top level resource only
                     if (index === 0 && items.length === 0 && this.resourceCollection.length > 1) {
                         continue;
@@ -632,9 +635,9 @@ export class ResourceBase {
                     let renderDates: Date[] = this.parent.activeView.renderDates;
                     let resWorkDays: number[];
                     if (!this.parent.activeViewOptions.group.byDate && index + 1 === this.resourceCollection.length) {
-                        const workDays: number[] = data[i][resource.workDaysField] as number[];
-                        const resStartHour: string = data[i][resource.startHourField] as string;
-                        const resEndHour: string = data[i][resource.endHourField] as string;
+                        const workDays: number[] = data[parseInt(i.toString(), 10)][resource.workDaysField] as number[];
+                        const resStartHour: string = data[parseInt(i.toString(), 10)][resource.startHourField] as string;
+                        const resEndHour: string = data[parseInt(i.toString(), 10)][resource.endHourField] as string;
                         if (workDays && workDays.length > 0) {
                             renderDates = this.parent.activeView.getRenderDates(workDays);
                             resWorkDays = workDays;
@@ -646,22 +649,22 @@ export class ResourceBase {
                         const dateSlots: TdData[] = this.generateCustomHours(dateCol, resStartHour, resEndHour, groupOrder);
                         lastColumnDates = lastColumnDates.concat(dateSlots);
                     }
-                    const resCssClass: string = data[i][resource.cssClassField] as string;
+                    const resCssClass: string = data[parseInt(i.toString(), 10)][resource.cssClassField] as string;
                     const slotData: TreeSlotData = {
                         type: 'resourceHeader', className: ['e-resource-cells'],
                         resourceLevelIndex: index, groupOrder: groupOrder,
-                        resource: resource, resourceData: data[i],
+                        resource: resource, resourceData: data[parseInt(i.toString(), 10)],
                         colSpan: this.parent.activeViewOptions.group.byDate ? 1 : dateCol.length,
                         renderDates: renderDates, workDays: resWorkDays, cssClass: resCssClass,
                         child: items
                     };
                     resTree.push(slotData);
                 }
-                if (!resTreeGroup[index]) {
-                    resTreeGroup[index] = [];
+                if (!resTreeGroup[parseInt(index.toString(), 10)]) {
+                    resTreeGroup[parseInt(index.toString(), 10)] = [];
                 }
                 if (resTree.length > 0) {
-                    resTreeGroup[index].push(resTree);
+                    resTreeGroup[parseInt(index.toString(), 10)].push(resTree);
                 }
                 return resTree;
             }
@@ -691,10 +694,10 @@ export class ResourceBase {
         const headerLevels: TdData[][] = [];
         for (let i: number = resTreeGroup.length - 1; i >= 0; i--) {
             let temp: number = 0;
-            for (const currentLevelChilds of resTreeGroup[i]) {
+            for (const currentLevelChilds of resTreeGroup[parseInt(i.toString(), 10)]) {
                 for (const currentLevelChild of currentLevelChilds) {
                     if (resTreeGroup[i + 1] && resTreeGroup[i + 1].length > 0) {
-                        const nextLevelChilds: TdData[] = resTreeGroup[i + 1][temp];
+                        const nextLevelChilds: TdData[] = resTreeGroup[parseInt((i + 1).toString(), 10)][parseInt(temp.toString(), 10)];
                         if (!nextLevelChilds) { continue; }
                         let colSpan: number = 0;
                         for (const nextLevelChild of nextLevelChilds) {
@@ -718,7 +721,7 @@ export class ResourceBase {
             let index: number = 0;
             for (const lastLevelResource of this.lastResourceLevel) {
                 for (let i: number = 0; i < lastLevelResource.colSpan; i++) {
-                    lastColumnDates[index].groupIndex = lastLevelResource.groupIndex;
+                    lastColumnDates[parseInt(index.toString(), 10)].groupIndex = lastLevelResource.groupIndex;
                     index++;
                 }
             }
@@ -727,18 +730,90 @@ export class ResourceBase {
         }
         const dateHeaderLevels: TdData[][] = [];
         const levels: TdData[][] = <TdData[][]>extend([], headerLevels, null, true);
+        const datesColumn: TdData[] = [];
+        if (this.parent.activeViewOptions.group.hideNonWorkingDays) {
+            const renderDates: Date[][] = [];
+            let dateIndex: number = 0;
+            for (const headerDate of headerDates) {
+                this.resourceDateTree[parseInt(dateIndex.toString(), 10)] = [];
+                const currentDateLevels: TdData[][] = [];
+                for (let j: number = 0; j < this.lastResourceLevel.length; j++) {
+                    let workDays: number[] = this.lastResourceLevel[parseInt(j.toString(), 10)].resourceData[this.lastResourceLevel[parseInt(j.toString(), 10)].resource.workDaysField];
+                    if (!workDays) {
+                        workDays = this.parent.activeViewOptions.workDays;
+                    }
+                    if (workDays.indexOf(headerDate.date.getDay()) !== -1) {
+                        const resTd: TdData = <TdData>extend({}, this.lastResourceLevel[parseInt(j.toString(), 10)], null, true);
+                        resTd.date = headerDate.date;
+                        this.lastResourceLevel[parseInt(j.toString(), 10)].workDays = workDays;
+                        resTd.startHour = this.parent.getStartEndTime((resTd.resourceData[resTd.resource.startHourField] as string)) ||
+                            headerDate.startHour;
+                        resTd.endHour = this.parent.getStartEndTime((resTd.resourceData[resTd.resource.endHourField] as string)) ||
+                            headerDate.endHour;
+                        this.resourceDateTree[parseInt(dateIndex.toString(), 10)].push(resTd);
+                        for (let k: number = 0; k < resTd.groupOrder.length; k++) {
+                            if (!currentDateLevels[parseInt(k.toString(), 10)]) {
+                                currentDateLevels[parseInt(k.toString(), 10)] = [];
+                            }
+                            if (k === resTd.groupOrder.length - 1) {
+                                if (!renderDates[parseInt(j.toString(), 10)]) {
+                                    renderDates[parseInt(j.toString(), 10)] = [];
+                                }
+                                const filterDates: Date[] = resTd.renderDates.filter((x: Date) => x.getDay() === headerDate.date.getDay());
+                                renderDates[parseInt(j.toString(), 10)] = renderDates[parseInt(j.toString(), 10)].concat(filterDates);
+                                currentDateLevels[parseInt(k.toString(), 10)].push(resTd);
+                                continue;
+                            }
+                            const currentLevel: TdData[] = levels[parseInt(k.toString(), 10)];
+                            const filteredResource: TdData[] = currentLevel.filter((data: TdData) =>
+                                data.resourceData[data.resource.idField] === resTd.groupOrder[parseInt(k.toString(), 10)]);
+                            if (filteredResource && filteredResource.length > 0) {
+                                const existedResource: TdData[] = currentDateLevels[parseInt(k.toString(), 10)].filter((data: TdData) =>
+                                    data.resourceData[data.resource.idField] === resTd.groupOrder[parseInt(k.toString(), 10)]);
+                                if (existedResource && existedResource.length > 0) {
+                                    existedResource[0].colSpan += 1;
+                                }
+                                else {
+                                    const filteredTd: TdData = <TdData>extend({}, filteredResource[0], null, true);
+                                    filteredTd.colSpan = 1;
+                                    currentDateLevels[parseInt(k.toString(), 10)].push(filteredTd);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (currentDateLevels.length > 0) {
+                    for (let l: number = 0; l < levels.length; l++) {
+                        if (!dateHeaderLevels[parseInt(l.toString(), 10)]) {
+                            dateHeaderLevels[parseInt(l.toString(), 10)] = [];
+                        }
+                        dateHeaderLevels[parseInt(l.toString(), 10)] = dateHeaderLevels[parseInt(l.toString(), 10)].concat(currentDateLevels[parseInt(l.toString(), 10)]);
+                    }
+                    headerDate.colSpan = currentDateLevels[currentDateLevels.length - 1].length;
+                    datesColumn.push(headerDate);
+                }
+                dateIndex++;
+            }
+            this.resourceDateTree = this.resourceDateTree.filter((data: TdData[]) => data.length > 0);
+            this.lastResourceLevel.forEach((x: TdData, index: number) => {
+                if (renderDates[parseInt(index.toString(), 10)]) {
+                    x.renderDates = renderDates[parseInt(index.toString(), 10)].sort((a: Date, b: Date) => a.getTime() - b.getTime());
+                }
+            });
+            dateHeaderLevels.unshift(datesColumn);
+            return dateHeaderLevels;
+        }
         let dateColSpan: number = 0;
         for (const firstRowTd of levels[0]) {
             dateColSpan += firstRowTd.colSpan;
         }
-        const datesColumn: TdData[] = [];
         for (const headerDate of headerDates) {
             headerDate.colSpan = dateColSpan;
             datesColumn.push(headerDate);
             const resGroup: TdData[][] = <TdData[][]>extend([], levels, null, true);
             for (let k: number = 0, length: number = resGroup.length; k < length; k++) {
                 if (k === resGroup.length - 1) {
-                    for (const resTd of resGroup[k]) {
+                    for (const resTd of resGroup[parseInt(k.toString(), 10)]) {
                         resTd.date = headerDate.date;
                         resTd.workDays = headerDate.workDays;
                         resTd.startHour = this.parent.getStartEndTime((resTd.resourceData[resTd.resource.startHourField] as string)) ||
@@ -747,10 +822,10 @@ export class ResourceBase {
                             headerDate.endHour;
                     }
                 }
-                if (!dateHeaderLevels[k]) {
-                    dateHeaderLevels[k] = [];
+                if (!dateHeaderLevels[parseInt(k.toString(), 10)]) {
+                    dateHeaderLevels[parseInt(k.toString(), 10)] = [];
                 }
-                dateHeaderLevels[k] = dateHeaderLevels[k].concat(resGroup[k]);
+                dateHeaderLevels[parseInt(k.toString(), 10)] = dateHeaderLevels[parseInt(k.toString(), 10)].concat(resGroup[parseInt(k.toString(), 10)]);
             }
         }
         dateHeaderLevels.unshift(datesColumn);
@@ -759,10 +834,10 @@ export class ResourceBase {
 
     public setResourceValues(eventObj: Record<string, any>, groupIndex?: number): void {
         const setValues: CallbackFunction = (index: number, field: string, value: Record<string, any>) => {
-            if (this.resourceCollection[index].allowMultiple && this.parent.activeViewOptions.group.allowGroupEdit) {
-                eventObj[field] = [value];
+            if (this.resourceCollection[parseInt(index.toString(), 10)].allowMultiple && this.parent.activeViewOptions.group.allowGroupEdit) {
+                eventObj[`${field}`] = [value];
             } else {
-                eventObj[field] = value;
+                eventObj[`${field}`] = value;
             }
         };
         if (groupIndex === void 0) {
@@ -770,14 +845,14 @@ export class ResourceBase {
                 this.parent.activeCellsData.groupIndex;
         }
         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(groupIndex)) {
-            const groupOrder: number[] | string[] = this.lastResourceLevel[groupIndex].groupOrder;
+            const groupOrder: number[] | string[] = this.lastResourceLevel[parseInt(groupIndex.toString(), 10)].groupOrder;
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
-                setValues(index, this.resourceCollection[index].field, groupOrder[index]);
+                setValues(index, this.resourceCollection[parseInt(index.toString(), 10)].field, groupOrder[parseInt(index.toString(), 10)]);
             }
         } else if (this.parent.resourceCollection.length > 0) {
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
-                const data: Record<string, any> = (this.resourceCollection[index] as Record<string, unknown[]>).dataSource[0] as Record<string, any>;
-                if (data) { setValues(index, this.resourceCollection[index].field, data[this.resourceCollection[index].idField]); }
+                const data: Record<string, any> = (this.resourceCollection[parseInt(index.toString(), 10)] as Record<string, unknown[]>).dataSource[0] as Record<string, any>;
+                if (data) { setValues(index, this.resourceCollection[parseInt(index.toString(), 10)].field, data[this.resourceCollection[parseInt(index.toString(), 10)].idField]); }
             }
         }
     }
@@ -785,11 +860,11 @@ export class ResourceBase {
     public getResourceColor(eventObj: Record<string, any>, groupOrder?: string[]): string {
         const colorFieldIndex: number = (!isNullOrUndefined(groupOrder) &&
             this.colorIndex > groupOrder.length - 1) ? groupOrder.length - 1 : this.colorIndex;
-        const resource: ResourcesModel = this.resourceCollection[colorFieldIndex];
+        const resource: ResourcesModel = this.resourceCollection[parseInt(colorFieldIndex.toString(), 10)];
         if (isNullOrUndefined(groupOrder) && this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        const id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[colorFieldIndex];
+        const id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[parseInt(colorFieldIndex.toString(), 10)];
         const data: Record<string, any>[] = this.filterData(resource.dataSource as Record<string, any>[], resource.idField, id);
         if (data.length > 0) {
             return data[0][resource.colorField] as string;
@@ -820,27 +895,27 @@ export class ResourceBase {
     }
 
     private filterData(dataSource: Record<string, any>[], field: string, value: string): Record<string, any>[] {
-        return dataSource.filter((data: Record<string, any>) => data[field] === value);
+        return dataSource.filter((data: Record<string, any>) => data[`${field}`] === value);
     }
 
     public getResourceData(eventObj: Record<string, any>, index: number, groupEditIndex: number[]): void {
         if (this.parent.activeViewOptions.group.allowGroupEdit) {
             const resourceObj: Record<string, any> = {};
             for (const groupIndex of groupEditIndex) {
-                const resourceLevel: Record<string, any>[] = this.lastResourceLevel[groupIndex].groupOrder as unknown as Record<string, any>[];
+                const resourceLevel: Record<string, any>[] = this.lastResourceLevel[parseInt(groupIndex.toString(), 10)].groupOrder as unknown as Record<string, any>[];
                 for (let level: number = 0, length: number = resourceLevel.length; level < length; level++) {
-                    const fieldName: string = this.resourceCollection[level as number].field;
-                    if (isNullOrUndefined(resourceObj[fieldName])) {
-                        resourceObj[fieldName] = [];
+                    const fieldName: string = this.resourceCollection[parseInt((level as number).toString(), 10)].field;
+                    if (isNullOrUndefined(resourceObj[`${fieldName}`])) {
+                        resourceObj[`${fieldName}`] = [];
                     }
-                    (<Record<string, any>[]>resourceObj[fieldName]).push(resourceLevel[level]);
+                    (<Record<string, any>[]>resourceObj[`${fieldName}`]).push(resourceLevel[parseInt(level.toString(), 10)]);
                 }
             }
             eventObj = extend(eventObj, resourceObj) as Record<string, any>;
         } else {
             for (let level: number = 0, length: number = this.resourceCollection.length; level < length; level++) {
-                if (this.lastResourceLevel[index]) {
-                    eventObj[this.resourceCollection[level].field] = this.lastResourceLevel[index].groupOrder[level];
+                if (this.lastResourceLevel[parseInt(index.toString(), 10)]) {
+                    eventObj[this.resourceCollection[parseInt(level.toString(), 10)].field] = this.lastResourceLevel[parseInt(index.toString(), 10)].groupOrder[parseInt(level.toString(), 10)];
                 }
             }
         }
@@ -880,7 +955,7 @@ export class ResourceBase {
         }
         const resource: Record<string, any> = (resourceData.dataSource as Record<string, any>[]).filter((e: Record<string, any>) => {
             if (event && e[resourceData.idField] === id) {
-                if (e[resourceData.groupIDField] === event[parentField]) {
+                if (e[resourceData.groupIDField] === event[`${parentField}`]) {
                     return e[resourceData.idField] === id;
                 }
                 return null;
@@ -977,7 +1052,7 @@ export class ResourceBase {
             }
             const offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
             const offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);
-            scrollElement.scrollLeft = offset[index];
+            scrollElement.scrollLeft = offset[parseInt(index.toString(), 10)];
         }
     }
 

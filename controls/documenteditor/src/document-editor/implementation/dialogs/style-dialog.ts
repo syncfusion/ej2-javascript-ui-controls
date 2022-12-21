@@ -976,7 +976,6 @@ export class StyleDialog {
      * @returns {void}
      */
     public destroy(): void {
-        this.documentHelper = undefined;
         if (!isNullOrUndefined(this.target)) {
             if (this.target.parentElement) {
                 this.target.parentElement.removeChild(this.target);
@@ -986,6 +985,14 @@ export class StyleDialog {
                 n--;
             }
             this.target = undefined;
+        }
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        if (this.paragraphFormat) {
+            this.paragraphFormat.destroy();
+            this.paragraphFormat = undefined;
         }
         if (this.fontColor) {
             this.fontColor.destroy();
@@ -1035,5 +1042,6 @@ export class StyleDialog {
             this.styleDropdwn.destroy();
             this.styleDropdwn = undefined;
         }
+        this.documentHelper = undefined;
     }
 }

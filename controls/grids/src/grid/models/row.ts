@@ -109,10 +109,10 @@ export class Row<T> {
         if (!this.parent) {
             return;
         }
-        const isValDiff: boolean = !(this.data[field].toString() === value.toString());
+        const isValDiff: boolean = !(this.data[`${field}`].toString() === value.toString());
         if (isValDiff) {
             const pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-            const key: string | number = this.data[pKeyField];
+            const key: string | number = this.data[`${pKeyField}`];
             this.parent.setCellValue(key, field, value);
             this.makechanges(pKeyField, this.data);
         } else {

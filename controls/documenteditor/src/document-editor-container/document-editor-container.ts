@@ -32,35 +32,35 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(true)
     public showPropertiesPane: boolean;
     /**
-     * Enable or disable toolbar in document editor container.
+     * Enable or disable the toolbar in document editor container.
      *
      * @default true
      */
     @Property(true)
     public enableToolbar: boolean;
     /**
-     * Restrict editing operation.
+     * Specifies the restrict editing operation.
      *
      * @default false
      */
     @Property(false)
     public restrictEditing: boolean;
     /**
-     * Enable or disable spell checker in document editor container.
+     * Enable or disable the spell checker in document editor container.
      *
      * @default false
      */
     @Property(false)
     public enableSpellCheck: boolean;
     /**
-     * Enable or disable track changes in document editor container.
+     * Enable or disable the track changes in document editor container.
      *
      * @default false
      */
     @Property(false)
     public enableTrackChanges: boolean;
     /**
-     * Layout Type
+     * Gets or sets the Layout Type.
      *
      * @default Pages
      */
@@ -82,14 +82,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property('#FFFF00')
     public userColor: string;
     /**
-     * Enable local paste
+     * Enables the local paste.
      *
      * @default false
      */
     @Property(false)
     public enableLocalPaste: boolean;
     /**
-     * Sfdt service URL.
+     * Gets or sets the Sfdt service URL.
      *
      * @default ''
      */
@@ -104,12 +104,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(2000)
     public zIndex: number;
     /**
-     * Enable rendering with strict Content Security policy.
+     * Enables the rendering with strict Content Security policy.
      */
     @Property(false)
     public enableCsp: boolean;
     /**
-     * Gets or set a value indicating whether comment is enabled or not
+     * Gets or sets a value indicating whether comment is enabled or not
      *
      * @default true
      */
@@ -131,7 +131,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property('320px')
     public height: string;
     /**
-     * Enable partial lock and edit module.
+     * Enables the partial lock and edit module.
      *
      * @default false
      */
@@ -239,7 +239,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Event()
     public contentControl: EmitType<Object>;
     /**
-     * This event is triggered before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
+     * Triggers before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
      */
     @Event()
     public beforeXmlHttpRequestSend: EmitType<XmlHttpRequestEventArgs>;
@@ -329,11 +329,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
     public documentEditorSettings: DocumentEditorSettingsModel;
+
     /**
-    * Gets the settings and properties of the document that is opened in Document editor component.
-    *
-    * @default {}
-    */
+     * Gets the settings and properties of the document that is opened in Document editor component.
+     *
+     * @default {}
+     */
     @Complex<DocumentSettingsModel>({}, DocumentSettings)
     public documentSettings: DocumentSettingsModel;
     /**
@@ -352,7 +353,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /* eslint-enable max-len */
     /* eslint-disable */
     /**
-     * Add custom headers to XMLHttpRequest.
+     * Adds the custom headers to XMLHttpRequest.
      *
      * @default []
      */
@@ -360,27 +361,27 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public headers: object[];
      /* eslint-enable */
     /**
-     * Gets DocumentEditor instance.
+     * Gets the DocumentEditor instance.
      *
      * @aspType DocumentEditor
-     * @returns {DocumentEditor} - Returns the DocumentEditor instance.
+     * @returns {DocumentEditor} Returns the DocumentEditor instance.
      */
     public get documentEditor(): DocumentEditor {
         return this.documentEditorInternal;
     }
     /**
-     * Gets toolbar instance.
+     * Gets the toolbar instance.
      *
-     * @returns {Toolbar} - Returns toolbar module.
+     * @returns {Toolbar} Returns the toolbar module.
      */
     public get toolbar(): Toolbar {
         return this.toolbarModule;
     }
     /**
-     * Initialize the constructor of DocumentEditorContainer
+     * Initializes a new instance of the DocumentEditorContainer class.
      *
-     * @param { DocumentEditorContainerModel } options - Specified DocumentEditorContainer model as options.
-     * @param { string | HTMLElement }element - Specifies the element that is rendered as a DocumentEditorContainer.
+     * @param { DocumentEditorContainerModel } options Specifies the DocumentEditorContainer model as options.
+     * @param { string | HTMLElement } element Specifies the element that is rendered as a DocumentEditorContainer.
      */
     public constructor(options?: DocumentEditorContainerModel, element?: string | HTMLElement) {
         super(options, element);
@@ -567,10 +568,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'ZoomLevelTooltip': 'Zoom level. Click or tap to open the Zoom options.',
         'None': 'None',
         'Borders': 'Borders',
-        'ShowHiddenMarks Tooltip': 'Show the hidden characters like spaces, tab, paragraph marks, and breaks.(Ctrl + *)'
+        'ShowHiddenMarks Tooltip': 'Show the hidden characters like spaces, tab, paragraph marks, and breaks.(Ctrl + *)',
+        'Columns': 'Columns',
+        'Column Break': 'Column Break'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
-
+    /**
+     * @private
+     * Gets the DocumentEditorContainer module name.
+     *
+     * @returns {string} Returns the DocumentEditorContainer module name.
+     */
     public getModuleName(): string {
         return 'DocumentEditorContainer';
     }
@@ -949,6 +957,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
         this.documentEditor.off(internalviewChangeEvent, this.onViewChange);
+        this.documentEditor.off(protectionTypeChangeEvent, this.showPropertiesPaneOnSelection);
         this.documentEditor.off(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks);
         this.documentEditor.off(internalStyleCollectionChange, this.updateStyleCollection);
     }
@@ -1008,8 +1017,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     /**
      * Resizes the container component and its sub elements based on given size or client size.
-     * @param width 
-     * @param height 
+     * @param width The width to be applied.
+     * @param height The height to be applied.
      */
     public resize(width?: number, height?: number): void {
         if (this.element) {
@@ -1202,7 +1211,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Set the default character format for document editor container
-     * @param characterFormat
+     * @param characterFormat Specify the character format properties to be applied for document editor.
      */
     public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
         this.characterFormat = characterFormat;
@@ -1210,7 +1219,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Set the default paragraph format for document editor container
-     * @param paragraphFormat
+     * @param paragraphFormat Specify the paragraph format properties to be applied for document editor.
      */
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
         this.paragraphFormat = paragraphFormat;
@@ -1218,7 +1227,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Set the default section format for document editor container
-     * @param sectionFormat
+     * @param sectionFormat Specify the section format properties to be applied for document editor.
      */
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = sectionFormat;
@@ -1227,7 +1236,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Destroys all managed resources used by this object. 
      */
-     public destroy(): void {
+    public destroy(): void {
         super.destroy();
         if (this.element) {
             this.element.innerHTML = '';

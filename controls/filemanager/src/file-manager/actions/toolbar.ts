@@ -63,7 +63,7 @@ export class Toolbar {
     public getItemIndex(item: string): number {
         const itemId: string = this.getId(item);
         for (let i: number = 0; i < this.items.length; i++) {
-            if (this.items[i].id === itemId) {
+            if (this.items[i as number].id === itemId) {
                 return i;
             }
         }
@@ -111,8 +111,8 @@ export class Toolbar {
                     break;
                 case 'delete':
                     for (let i: number = 0; i < details.length; i++) {
-                        if (!hasEditAccess(details[i])) {
-                            createDeniedDialog(this.parent, details[i], events.permissionEdit);
+                        if (!hasEditAccess(details[i as number])) {
+                            createDeniedDialog(this.parent, details[i as number], events.permissionEdit);
                             return;
                         }
                     }
@@ -213,14 +213,14 @@ export class Toolbar {
         const btnElement: HTMLInputElement[] = (selectAll('.e-btn', this.toolbarObj.element) as HTMLInputElement[]);
         for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
             /* istanbul ignore next */
-            btnElement[btnCount].onkeydown = (e: KeyboardEvent) => {
+            btnElement[btnCount as number].onkeydown = (e: KeyboardEvent) => {
                 if (e.keyCode === 13 && !(<HTMLElement>e.target).classList.contains('e-fe-popup')) {
                     e.preventDefault();
                 }
             };
-            btnElement[btnCount].onkeyup = (e: KeyboardEvent) => {
+            btnElement[btnCount as number].onkeyup = (e: KeyboardEvent) => {
                 if (e.keyCode === 13 && !(<HTMLElement>e.target).classList.contains('e-fe-popup')) {
-                    btnElement[btnCount].click();
+                    btnElement[btnCount as number].click();
                 }
             };
         }
@@ -231,18 +231,18 @@ export class Toolbar {
         if (this.buttonObj) {
             const items: SplitButtonItemModel[] = this.buttonObj.items;
             for (let itemCount: number = 0; itemCount < items.length; itemCount++) {
-                if (items[itemCount].id === this.getPupupId('name')) {
-                    items[itemCount].iconCss = this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : '';
-                } else if (items[itemCount].id === this.getPupupId('size')) {
-                    items[itemCount].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
-                } else if (items[itemCount].id === this.getPupupId('date')) {
-                    items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
-                } else if (items[itemCount].id === this.getPupupId('ascending')) {
-                    items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
-                } else if (items[itemCount].id === this.getPupupId('descending')) {
-                    items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : '';
-                } else if (items[itemCount].id === this.getPupupId('none')) {
-                    items[itemCount].iconCss = this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : '';
+                if (items[itemCount as number].id === this.getPupupId('name')) {
+                    items[itemCount as number].iconCss = this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : '';
+                } else if (items[itemCount as number].id === this.getPupupId('size')) {
+                    items[itemCount as number].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
+                } else if (items[itemCount as number].id === this.getPupupId('date')) {
+                    items[itemCount as number].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
+                } else if (items[itemCount as number].id === this.getPupupId('ascending')) {
+                    items[itemCount as number].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
+                } else if (items[itemCount as number].id === this.getPupupId('descending')) {
+                    items[itemCount as number].iconCss = this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : '';
+                } else if (items[itemCount as number].id === this.getPupupId('none')) {
+                    items[itemCount as number].iconCss = this.parent.sortOrder === 'None' ? CLS.TB_OPTION_TICK : '';
                 }
             }
         }
@@ -272,11 +272,11 @@ export class Toolbar {
         }
         for (let i: number = 0; i < data.length; i++) {
             let item: ItemModel;
-            const itemId: string = this.getId(data[i]);
-            const itemText: string = getLocaleText(this.parent, data[i]);
-            const itemTooltip: string = getLocaleText(this.parent, 'Tooltip-' + data[i]);
+            const itemId: string = this.getId(data[i as number]);
+            const itemText: string = getLocaleText(this.parent, data[i as number]);
+            const itemTooltip: string = getLocaleText(this.parent, 'Tooltip-' + data[i as number]);
             const spanElement: string = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
-            switch (data[i]) {
+            switch (data[i as number]) {
             case '|':
                 item = { type: 'Separator' };
                 break;
@@ -399,7 +399,7 @@ export class Toolbar {
 
     private hideItems(tools: string[], toHide: boolean): void {
         for (let i: number = 0; i < tools.length; i++) {
-            const ele: Element = select('#' + this.getId(tools[i]), this.parent.element);
+            const ele: Element = select('#' + this.getId(tools[i as number]), this.parent.element);
             if (ele) { this.toolbarObj.hideItem(ele.parentElement, toHide); }
         }
     }
@@ -422,10 +422,10 @@ export class Toolbar {
             this.layoutBtnObj.iconCss = this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE;
             const items: SplitButtonItemModel[] = this.layoutBtnObj.items;
             for (let itemCount: number = 0; itemCount < items.length; itemCount++) {
-                if (items[itemCount].id === this.getPupupId('large')) {
-                    items[itemCount].iconCss = this.parent.view === 'LargeIcons' ? CLS.TB_OPTION_TICK : '';
-                } else if (items[itemCount].id === this.getPupupId('details')) {
-                    items[itemCount].iconCss = this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : '';
+                if (items[itemCount as number].id === this.getPupupId('large')) {
+                    items[itemCount as number].iconCss = this.parent.view === 'LargeIcons' ? CLS.TB_OPTION_TICK : '';
+                } else if (items[itemCount as number].id === this.getPupupId('details')) {
+                    items[itemCount as number].iconCss = this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : '';
                 }
             }
         }
@@ -488,7 +488,7 @@ export class Toolbar {
 
     public enableItems(items: string[], isEnable?: boolean): void {
         for (let i: number = 0; i < items.length; i++) {
-            const ele: Element = select('#' + this.getId(items[i]), this.parent.element);
+            const ele: Element = select('#' + this.getId(items[i as number]), this.parent.element);
             if (ele) {
                 this.toolbarObj.enableItems(ele.parentElement, isEnable);
             }

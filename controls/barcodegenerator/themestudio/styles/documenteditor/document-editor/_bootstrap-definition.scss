@@ -208,10 +208,10 @@ $de-icon-table-column-right-top: 127px !default;
 $de-icon-table-delete-top: 10px !default;
 $de-icon-table-row-delete-top: 49px !default;
 $de-icon-table-column-delete-top: 89px !default;
-$de-bullet-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-number-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-multilevel-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-list-dialog-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-bullet-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-number-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-multilevel-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-list-dialog-hover-color: rgba(0, 0, 0, .12) !default;
 $de-cell-options-left: 336px !default;
 $de-cell-options-top: 272px !default;
 $de-font-color-margin-bottom: 5px !default;
@@ -522,7 +522,6 @@ $de-rp-nav-btn-mrgn: 0 12px;
 $de-rp-btn-enforce-bx-shadow: 0 2px 2px 0 $de-rp-btn-nav-box-shadow, 0 2px 4px 0 $de-rp-btn-nav-box-shadow-next;
 $de-para-dlg-right-sub-container-top-margin: 0;
 
-
 //New Implementation
 
 $de-par-dlg-hdr-weight: 400 !default;
@@ -539,5 +538,9 @@ $de-para-dlg-rtl-btn-font-size: 12px;
 $de-para-dlg-rtl-btn-width: 200px;
 $de-de-rtl-btn-div-e-de-rtl-margin-right: 24px;
 $de-de-rtl-btn-div-e-de-rtl-margin-left: 12px;
+
 // Table properties
 $de-row-height-bottom-margin: 8px;
+
+//Columns Dialog
+$de-column-presets-font-size: 60px !default;

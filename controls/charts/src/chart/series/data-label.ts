@@ -10,7 +10,7 @@ import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer } from
 import { BorderModel, MarginModel, FontModel } from '../../common/model/base-model';
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { LabelPosition, ErrorBarDirection } from '../utils/enum';
-import { Series, Points, DataLabelSettings } from './chart-series';
+import { Series, Points } from './chart-series';
 import { ITextRenderEventArgs } from '../../chart/model/chart-interface';
 import { textRender } from '../../common/model/constants';
 import {
@@ -159,7 +159,7 @@ export class DataLabel {
         let rectCenterX: number; let rectCenterY: number;
         // Data label point iteration started
         for (let i: number = 0; i < visiblePoints.length; i++) {
-            point = visiblePoints[i];
+            point = visiblePoints[i as number];
             if (!dataLabel.showZero && ((point.y !== 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
                 return null;
             }
@@ -186,9 +186,9 @@ export class DataLabel {
                 for (let i: number = 0; i < labelLength; i++) {
                     argsData = {
                         cancel: false, name: textRender, series: series,
-                        point: point, text: labelText[i], border: border,
+                        point: point, text: labelText[i as number], border: border,
                         color: dataLabel.fill, template: dataLabel.template, font: argsFont, location: labelLocation,
-                        textSize: measureText(labelText[i], dataLabel.font)
+                        textSize: measureText(labelText[i as number], dataLabel.font)
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
@@ -221,14 +221,14 @@ export class DataLabel {
                                     this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
                                     const currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
                                     for (let index: number = currentPointIndex; index >= 0; index--) {
-                                        if (this.chart.rotatedDataLabelCollections[currentPointIndex] &&
+                                        if (this.chart.rotatedDataLabelCollections[currentPointIndex as number] &&
                                             this.chart.rotatedDataLabelCollections[index - 1] &&
                                             isRotatedRectIntersect(
-                                                this.chart.rotatedDataLabelCollections[currentPointIndex],
+                                                this.chart.rotatedDataLabelCollections[currentPointIndex as number],
                                                 this.chart.rotatedDataLabelCollections[index - 1])
                                         ) {
                                             isDataLabelOverlap = true;
-                                            this.chart.rotatedDataLabelCollections[currentPointIndex] = null;
+                                            this.chart.rotatedDataLabelCollections[currentPointIndex as number] = null;
                                             break;
                                         }
                                     }
@@ -251,7 +251,7 @@ export class DataLabel {
                                     }
                                 }
                                 // Checking the font color
-                                let backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme == "HighContrast") ? 'black' : 'white') : this.fontBackground;
+                                const backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme === 'HighContrast') ? 'black' : 'white') : this.fontBackground;
                                 rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
@@ -310,7 +310,8 @@ export class DataLabel {
 
     private isDataLabelOverlapWithChartBound(rectCoordinates: ChartLocation[], chart: Chart, clip: Rect): boolean {
         for (let index: number = 0; index < rectCoordinates.length; index++) {
-            if (!withInBounds(rectCoordinates[index].x + clip.x, rectCoordinates[index].y + clip.y, chart.initialClipRect)) {
+            if (!withInBounds(rectCoordinates[index as number].x + clip.x,
+                              rectCoordinates[index as number].y + clip.y, chart.initialClipRect)) {
                 return true;
             }
         }
@@ -343,14 +344,14 @@ export class DataLabel {
     public calculateTemplateLabelSize(
         parentElement: HTMLElement, childElement: HTMLElement, point: Points, series: Series, dataLabel: DataLabelSettingsModel,
         labelIndex: number, clip: Rect, redraw: boolean, isReactCallback?: boolean
-        ): void {
+    ): void {
         const elementRect: ClientRect = measureElementRect(childElement, redraw, isReactCallback);
         const rect: Rect = this.calculateTextPosition(
             point, series, { width: elementRect.width, height: elementRect.height },
             dataLabel, labelIndex
         );
-        let clipWidth: number = 0;
-        let clipHeight: number = 0;
+        const clipWidth: number = 0;
+        const clipHeight: number = 0;
         let isOverlap: boolean = false;
         if (isReactCallback) {
             isOverlap = (elementRect.width === 0 || elementRect.height === 0); // To check the data label already overlap before react callback call
@@ -360,7 +361,7 @@ export class DataLabel {
         }
         childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x - clipWidth) + 'px';
         childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y + clipHeight) + 'px';
-        let backgroundColor: string = this.fontBackground === 'transparent' ? (this.chart.theme.indexOf('Dark') > -1 ? 'black' : 'white') : this.fontBackground;
+        const backgroundColor: string = this.fontBackground === 'transparent' ? (this.chart.theme.indexOf('Dark') > -1 ? 'black' : 'white') : this.fontBackground;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
         const hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
@@ -621,7 +622,7 @@ export class DataLabel {
             let nextSeries: Series;
             let nextSeriesPoint: Points;
             for (let i: number = series.index + 1; i < seriesLength; i++) {
-                nextSeries = series.chart.series[i] as Series;
+                nextSeries = series.chart.series[i as number] as Series;
                 nextSeriesPoint = <Points>nextSeries.points[point.index];
                 if ((nextSeries.type.indexOf('Stacking') > -1) && (nextSeries.type.indexOf('100') === -1)) {
                     this.fontBackground = (nextSeriesPoint && ((nextSeriesPoint.yValue < 0 && point.yValue < 0) ||
@@ -794,7 +795,7 @@ export class DataLabel {
     ): number {
         const points: Points[] = series.points;
         const index: number = point.index;
-        const yValue: number = points[index].yValue;
+        const yValue: number = points[index as number].yValue;
         let position: LabelPosition;
         const nextPoint: Points = points.length - 1 > index ? points[index + 1] : null;
         const previousPoint: Points = index > 0 ? points[index - 1] : null;
@@ -870,7 +871,7 @@ export class DataLabel {
         const length: number = element ? 1 : textNode.length;
         let tempElement: HTMLElement;
         for (let i: number = 0; i < length; i++) {
-            tempElement = textNode[i] as HTMLElement;
+            tempElement = textNode[i as number] as HTMLElement;
             if (element) {
                 (<HTMLElement>element).style.visibility = 'hidden';
                 templateAnimate(element, delay, duration, 'ZoomIn');
@@ -879,8 +880,8 @@ export class DataLabel {
                     (+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2),
                     (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
                 markerAnimate(tempElement, delay, duration, series, null, location, true);
-                if (shapeElements[i]) {
-                    tempElement = shapeElements[i] as HTMLElement;
+                if (shapeElements[i as number]) {
+                    tempElement = shapeElements[i as number] as HTMLElement;
                     location = new ChartLocation(
                         (+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2),
                         (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
@@ -891,7 +892,7 @@ export class DataLabel {
     }
 
     private getPosition(index: number): LabelPosition {
-        return <LabelPosition>(['Outer', 'Top', 'Bottom', 'Middle', 'Auto'][index]);
+        return <LabelPosition>(['Outer', 'Top', 'Bottom', 'Middle', 'Auto'][index as number]);
     }
 
     /**

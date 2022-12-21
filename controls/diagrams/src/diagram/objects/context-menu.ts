@@ -231,12 +231,12 @@ export class DiagramContextMenu {
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {
         const parent: string = 'parentObj';
-        if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
+        if (args.items.length > 0 && args.items[0][`${parent}`] instanceof Menu) {
             this.updateItemStatus();
         }
     }
     private getLocaleText(item: string): string {
-        return this.l10n.getConstant(this.localeText[item]);
+        return this.l10n.getConstant(this.localeText[`${item}`]);
     }
 
     private updateItemStatus(): void {
@@ -259,7 +259,7 @@ export class DiagramContextMenu {
     public ensureItems(item: MenuItemModel, event?: Event): void {
         const key: string = this.getKeyFromId(item.id);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const dItem: ContextMenuItemModel = this.defaultItems[key];
+        const dItem: ContextMenuItemModel = this.defaultItems[`${key}`];
         if (this.getDefaultItems().indexOf(key) !== -1) {
             if ((item as ContextMenuItemModel).target && (event || this.parent.checkMenu) &&
                 !this.ensureTarget(item)) {
@@ -283,9 +283,9 @@ export class DiagramContextMenu {
     private updateItems(): void {
         let canInsert: boolean = true;
         for (let i: number = 0; i < this.parent.contextMenuSettings.items.length; i++) {
-            const items: ContextMenuItemModel = this.parent.contextMenuSettings.items[i];
+            const items: ContextMenuItemModel = this.parent.contextMenuSettings.items[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < this.contextMenu.items.length; j++) {
-                if (this.contextMenu.items[j].text === this.parent.contextMenuSettings.items[i].text) {
+                if (this.contextMenu.items[parseInt(j.toString(), 10)].text === this.parent.contextMenuSettings.items[parseInt(i.toString(), 10)].text) {
                     canInsert = false;
                 }
             }
@@ -327,13 +327,13 @@ export class DiagramContextMenu {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const contextItems: DiagramContextMenu = this;
         for (let i: number = 0; i < args.items.length; i++) {
-            const item: MenuItemModel = args.items[i];
+            const item: MenuItemModel = args.items[parseInt(i.toString(), 10)];
             if (contextItems.hiddenItems.indexOf(item.id) > -1) {
                 contextItems.contextMenu.hideItems([item.id], true);
             }
         }
         for (let i: number = 0; i < contextItems.contextMenu.items.length; i++) {
-            const item: MenuItemModel = contextItems.contextMenu.items[i];
+            const item: MenuItemModel = contextItems.contextMenu.items[parseInt(i.toString(), 10)];
             if (contextItems.hiddenItems.indexOf(item.id) === -1) {
                 hidden = false;
                 contextItems.contextMenu.showItems([item.id], true);
@@ -465,11 +465,11 @@ export class DiagramContextMenu {
             menuItem = { target: menuClass.content };
             break;
         }
-        this.defaultItems[item] = {
+        this.defaultItems[`${item}`] = {
             text: this.getLocaleText(item), id: this.generateID(item),
             target: menuItem.target, iconCss: menuItem.iconCss ? 'e-icons ' + menuItem.iconCss : ''
         };
-        return this.defaultItems[item];
+        return this.defaultItems[`${item}`];
     }
 
     private getDefaultItems(): string[] {

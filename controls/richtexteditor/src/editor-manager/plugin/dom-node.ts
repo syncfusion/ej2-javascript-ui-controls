@@ -100,7 +100,7 @@ export class DOMNode {
         const attributes: NamedNodeMap = element.attributes;
         if (attributes.length > 0) {
             for (let d: number = 0; d < attributes.length; d++) {
-                const e: Attr = attributes[d];
+                const e: Attr = attributes[d as number];
                 rawAttr[e.nodeName] = e.value;
             }
         }
@@ -123,8 +123,8 @@ export class DOMNode {
         const rawAttr: { [key: string]: string } = this.rawAttributes(element);
         const orderRawAttr: string[] = Object.keys(rawAttr).sort();
         for (let e: number = 0; e < orderRawAttr.length; e++) {
-            const attrKey: string = orderRawAttr[e];
-            let attrValue: string = rawAttr[attrKey];
+            const attrKey: string = orderRawAttr[e as number];
+            let attrValue: string = rawAttr[`${attrKey}`];
             /* eslint-disable */
             if (attrValue.indexOf("'") < 0 && attrValue.indexOf('"') >= 0) {
                 attr += ' ' + attrKey + "='" + attrValue + "'";
@@ -149,7 +149,7 @@ export class DOMNode {
      */
     public clearAttributes(element: Element): void {
         for (let attr: NamedNodeMap = element.attributes, c: number = attr.length - 1; c >= 0; c--) {
-            const key: Attr = attr[c];
+            const key: Attr = attr[c as number];
             element.removeAttribute(key.nodeName);
         }
     }
@@ -363,8 +363,8 @@ export class DOMNode {
             ((element.childNodes[index - 1] as Element).classList.contains(markerClassName.startSelection) ||
                 (element.childNodes[index - 1] as Element).classList.contains(markerClassName.endSelection))) {
             element = element.childNodes[index - 1] as Element;
-        } else if (element.nodeType === Node.ELEMENT_NODE && element.childNodes.length > 0 && element.childNodes[index]) {
-            element = element.childNodes[index] as Element;
+        } else if (element.nodeType === Node.ELEMENT_NODE && element.childNodes.length > 0 && element.childNodes[index as number]) {
+            element = element.childNodes[index as number] as Element;
         }
         if (element.nodeType === Node.TEXT_NODE) {
             element = element.parentNode as Element;
@@ -384,8 +384,8 @@ export class DOMNode {
     public nodeFinds(element: Element, elements: Element[]): Element[] {
         const existNodes: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
-            if (element.contains(elements[i]) && element !== elements[i]) {
-                existNodes.push(elements[i]);
+            if (element.contains(elements[i  as number]) && element !== elements[i as number]) {
+                existNodes.push(elements[i as number]);
             }
         }
         return existNodes;
@@ -426,7 +426,7 @@ export class DOMNode {
         } else {
             ranges = [this.currentDocument.createRange()];
         }
-        return 'undefined' !== typeof point ? ranges[point] : ranges;
+        return 'undefined' !== typeof point ? ranges[point  as number] : ranges;
     }
 
     public getSelection(): Selection {
@@ -625,7 +625,7 @@ export class DOMNode {
                 }
             }
             for (let i: number = 0; i < selfClosingTags.length; i++) {
-                start = (start.tagName === selfClosingTags[i] && !isTable) ? start.parentNode as Element : start;
+                start = (start.tagName === selfClosingTags[i as number] && !isTable) ? start.parentNode as Element : start;
             }
             if (start.nodeType === 3 && start.nodeName === '#text') {
                 this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
@@ -701,7 +701,7 @@ export class DOMNode {
             const ranges: Range[] = <Range[]>this.getRangePoint();
             for (let j: number = 0; j < ranges.length; j++) {
                 let parentNode: Element;
-                const range: Range = ranges[j] as Range;
+                const range: Range = ranges[j as number] as Range;
                 const startNode: Element = this.getSelectedNode(range.startContainer as Element, range.startOffset);
                 const endNode: Element = this.getSelectedNode(range.endContainer as Element, range.endOffset);
                 if (this.isBlockNode(startNode) && collectionNodes.indexOf(startNode) < 0) {
@@ -771,10 +771,10 @@ export class DOMNode {
             }
         }
         for (let i: number = collectionNodes.length - 1; i > 0; i--) {
-            const nodes: Element[] = this.nodeFinds(collectionNodes[i], collectionNodes);
+            const nodes: Element[] = this.nodeFinds(collectionNodes[i as number], collectionNodes);
             if (nodes.length) {
-                const listNodes: Element[] = <NodeListOf<Element> & Element[]>collectionNodes[i].querySelectorAll('ul, ol');
-                if (collectionNodes[i].tagName === 'LI' && listNodes.length > 0) {
+                const listNodes: Element[] = <NodeListOf<Element> & Element[]>collectionNodes[i as number].querySelectorAll('ul, ol');
+                if (collectionNodes[i as number].tagName === 'LI' && listNodes.length > 0) {
                     continue;
                 } else {
                     collectionNodes.splice(i, 1);

@@ -108,6 +108,7 @@ export class Link {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         this.updateCss(this.checkBoxObj, e);
         this.updateCss(this.dialogObj, e);
@@ -277,13 +278,13 @@ export class Link {
         });
         const htmlTextbox: string = (this.parent.editorMode === 'HTML') ? '<label>' + linkTooltip +
             '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '" class="e-input e-rte-linkTitle' + ' ' + this.parent.cssClass + '"></div>' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '"aria-label="'+ this.i10n.getConstant('linkTitle') + '" class="e-input e-rte-linkTitle' + ' ' + this.parent.cssClass + '"></div>' +
             '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
             '<input type="checkbox" class="e-rte-linkTarget' + ' ' + this.parent.cssClass + '"  data-role ="none"></div>' : '';
         const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '" class="e-input e-rte-linkurl' + ' ' + this.parent.cssClass + '"/></div>' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '"aria-label="'+this.i10n.getConstant('linkWebUrl') + '" class="e-input e-rte-linkurl' + ' ' + this.parent.cssClass + '"/></div>' +
             '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
-            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + ' ' + this.parent.cssClass + '" placeholder="' + textPlace + '">' +
+            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + ' ' + this.parent.cssClass + '"aria-label="'+ this.i10n.getConstant('linkText') +'" placeholder="' + textPlace + '">' +
             '</div><div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + htmlTextbox;
         const contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
@@ -309,7 +310,7 @@ export class Link {
             cssClass: CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px', height: 'inherit',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px',
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertlink.bind(selectObj),

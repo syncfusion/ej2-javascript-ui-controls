@@ -1,5 +1,6 @@
 /**
  * Specifies pivot external events
+ *
  * @hidden
  */
 

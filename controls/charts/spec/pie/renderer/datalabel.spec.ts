@@ -174,6 +174,7 @@ describe('Data Label checking for the pie doughnut series', () => {
             done();
         };
         accumulation.series[0].dataLabel.angle = 45;
+        accumulation.series[0].dataLabel.enableRotation = true;
         accumulation.refresh();
     });
     it('Datalabel angle checking with enable rotation', (done: Function) => {
@@ -182,6 +183,7 @@ describe('Data Label checking for the pie doughnut series', () => {
             expect(datalabel.getAttribute('labelRotation') !== null).toBe(true);
             done();
         };
+        accumulation.series[0].dataLabel.angle = 0;
         accumulation.series[0].dataLabel.enableRotation = true;
         accumulation.refresh();
     });
@@ -759,7 +761,7 @@ describe('Data label with dynamic changing legend', () =>{
     });
     it('Checking datalabel text without legend', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_13');
+            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_11');
             expect(element != null).toBe(true);
             done();
         };
@@ -776,24 +778,25 @@ describe('Data label with dynamic changing legend', () =>{
     });
     it('Checking datalabel text after disble legend', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_13');
+            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_11');
             expect(element != null).toBe(true);
             done();
         };
         accumulation.legendSettings.visible = false;
         accumulation.refresh();
     });
-    it('Checking datalabel text and legend position left and pyrmaid series', (done: Function) => {
-        accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_0');
-            expect(element.textContent == "55...").toBe(true);
-            done();
-        };
-        accumulation.legendSettings.visible = true;
-        accumulation.legendSettings.position = 'Left';
-        accumulation.series[0].type = 'Pyramid';
-        accumulation.refresh();
-    });
+    // it('Checking datalabel text and legend position left and pyrmaid series', (done: Function) => {
+    //     accumulation.loaded = (args: IAccLoadedEventArgs) => {
+    //         let element: HTMLElement = document.getElementById('ej2-container_datalabel_Series_0_text_0');
+    //         console.log(element.textContent);
+    //         expect(element.textContent == "5...").toBe(true);
+    //         done();
+    //     };
+    //     accumulation.legendSettings.visible = true;
+    //     accumulation.legendSettings.position = 'Left';
+    //     accumulation.series[0].type = 'Pyramid';
+    //     accumulation.refresh();
+    // });
 });
 it('memory leak', () => {
     profile.sample();
@@ -855,6 +858,202 @@ describe('Checking RTL Behaviour for datalabel', () => {
         };
         accumulation.loaded = loaded;
         accumulation.enableRtl = true;
+        accumulation.refresh();
+    });
+  });
+  describe('Checking Text wrap support for datalabel', () => {
+    let ele: HTMLElement;
+    let id: string = 'ej2-container';
+    let textEle: Element;
+    let accumulation: AccumulationChart;
+    beforeAll((): void => {
+        ele = createElement('div', { id: id });
+        document.body.appendChild(ele);
+        accumulation = new AccumulationChart({
+            border: { width: 1, color: 'blue' },
+            series: [
+                {
+                    type: 'Pie',
+                    dataSource:  [
+                    { 'x': 'China', y: 26, text: 'China: 26' },
+                    {'x': 'USA', y: 46, text: 'United States of America (USA): 46' },
+                    { 'x': 'Russia', y: 19, text: 'Russia: 19' },
+                    { 'x': 'Germany', y: 17, text: 'Germany: 17' },
+                    { 'x': 'Japan', y: 12, text: 'Japan: 12' },
+                    { 'x': 'France', y: 10, text: 'France: 10' },
+                    { 'x': 'South Korea', y: 9, text: 'South Korea: 9' },
+                    { 'x': 'Great Britain', y: 27, text: 'Great Britain: 27' },
+                    { 'x': 'Italy', y: 8, text: 'Italy: 8' },
+                    { 'x': 'Australia', y: 8, text: 'Australia: 8' },
+                   ], animation: { enable: false }, xName: 'x', yName: 'y',
+                    dataLabel: { visible: true, position:'Outside', name: 'text' }
+                }
+            ], 
+            width: '600', 
+            height: '400', 
+            legendSettings: { visible: false },
+        });
+        accumulation.appendTo('#' + id);
+    });
+
+    afterAll((): void => {
+        accumulation.destroy();
+        removeElement(id);
+    });
+    it('DataLabel Wrap with MaxWidth value(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length == 4).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length == 2).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.textWrap = 'Wrap';
+        accumulation.series[0].dataLabel.maxWidth = 50;
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap without MaxWidth value(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length > 1).toBe(true);
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_6');
+            expect(textEle.childNodes.length > 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.maxWidth = 0;
+        accumulation.width = '500';
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap without MaxWidth value and legend enabled(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length > 1).toBe(true);
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_6');
+            expect(textEle.childNodes.length > 1).toBe(true);              
+            done();
+        };
+        accumulation.legendSettings.visible = true;
+        accumulation.legendSettings.position = 'Right';
+        accumulation.width = '600';
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap with MaxWidth value and legend enabled(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length > 1).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length > 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.maxWidth = 50;
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap with MaxWidth(Datalabel Inside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length > 1).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length > 1).toBe(true);              
+            done();
+        };
+        accumulation.legendSettings.visible = false;
+        accumulation.series[0].dataLabel.enableRotation = true;
+        accumulation.series[0].dataLabel.position = "Inside";
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap without MaxWidth(Datalabel inside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length > 1).toBe(true);      
+            done();
+        };
+        accumulation.series[0].dataLabel.maxWidth = 0;
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap with anywhere (Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length > 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.textWrap = "AnyWhere";
+        accumulation.series[0].dataLabel.position = 'Outside';
+        accumulation.refresh();
+    });
+    it('DataLabel Clip(Datalabel inside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length == 1).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length == 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.textWrap = 'Normal';
+        accumulation.series[0].dataLabel.position = 'Inside';
+        accumulation.series[0].dataLabel.textOverflow = 'Clip';
+        accumulation.refresh();
+    });
+    it('DataLabel Clip with MaxWidth value and legend enabled(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length == 1).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length == 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.position = "Outside";
+        accumulation.legendSettings.visible = true;
+        accumulation.legendSettings.position = 'Left';
+        accumulation.series[0].dataLabel.maxWidth = 30;
+        accumulation.refresh();
+    });
+    it('DataLabel Clip with MaxWidth value and legend enabled(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length == 1).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length == 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.position = "Outside";
+        accumulation.legendSettings.visible = true;
+        accumulation.legendSettings.position = 'Right';
+        accumulation.series[0].dataLabel.maxWidth = 30;
+        accumulation.refresh();
+    });
+    it('DataLabel Clip without MaxWidth value(Datalabel outside)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length == 1).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length == 1).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.position = "Outside";
+        accumulation.series[0].dataLabel.maxWidth = 0;
+        accumulation.refresh();
+    });
+    it('DataLabel Wrap (<br> in data Label)', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_1');
+            expect(textEle.childNodes.length == 2).toBe(true); 
+            textEle = document.getElementById('ej2-container_datalabel_Series_0_text_3');
+            expect(textEle.childNodes.length == 2).toBe(true);              
+            done();
+        };
+        accumulation.series[0].dataLabel.position = "Outside";
+        accumulation.series[0].dataSource =[
+            { 'x': 'China', y: 26, text: 'China: <br> 26' },
+            {'x': 'USA', y: 46, text: 'United States of America (USA):  <br> 46' },
+            { 'x': 'Russia', y: 19, text: 'Russia:  <br> 19' },
+            { 'x': 'Germany', y: 17, text: 'Germany:  <br> 17' },
+            { 'x': 'Japan', y: 12, text: 'Japan:  <br> 12' },
+            { 'x': 'France', y: 10, text: 'France:  <br> 10' },
+            { 'x': 'South Korea', y: 9, text: 'South Korea:  <br> 9' },
+            { 'x': 'Great Britain', y: 27, text: 'Great Britain:  <br> 27' },
+            { 'x': 'Italy', y: 8, text: 'Italy:  <br> 8' },
+            { 'x': 'Australia', y: 8, text: 'Australia:  <br> 8' },
+           ];
         accumulation.refresh();
     });
   });

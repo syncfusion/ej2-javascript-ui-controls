@@ -344,7 +344,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                             'Ok': 'OK',
                             'Close': 'Schließen',
                             'Cancel': 'Abbrechen',
-                            'Apply': 'Anwenden',
+                            'Apply': 'Sich bewerben',
                             'MoreColors': 'Mehr Farben',
                             'StandardColors': 'Standard farben',
                             'General': 'Allgemeines',
@@ -408,8 +408,8 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                             'MATCH': 'Gibt die relative Position eines angegebenen Wertes im angegebenen Bereich zurück.',
                             'DefineNameExists': 'Dieser Name ist bereits vorhanden, versuchen Sie es mit einem anderen Namen.',
                             'CircularReference': 'Wenn eine Formel auf einen oder mehrere Zirkelverweise verweist, kann dies zu einer falschen Berechnung führen.',
-                            'CustomFormat': 'Geben Sie das Format ein',
-                            'APPLY':'vorgehen',
+                            'CustomFormat': 'Formats de nombre personnalisés',
+                            'APPLY':'Sich bewerben',
                         }
                     }
                 });
@@ -424,7 +424,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 helper.getElement('#'+helper.id+'_Custom').click();
                 setTimeout(()=> {
                     inputElement=helper.getElementFromSpreadsheet('.e-input.e-dialog-input');
-                    expect(inputElement.placeholder).toEqual('Geben Sie das Format ein');
+                    expect(inputElement.placeholder).toEqual('Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus');
                     done();
                 });  
             });

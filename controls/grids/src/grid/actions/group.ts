@@ -4,6 +4,7 @@ import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
 import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow, getComplexFieldID, isComplexField, findCellIndex } from '../base/util';
+import { generateExpandPredicates, getPredicates, capitalizeFirstLetter } from '../base/util';
 import { ReturnType } from '../base/type';
 import { AggregateType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -12,7 +13,7 @@ import * as events from '../base/constant';
 import { AriaService } from '../services/aria-service';
 import { FocusStrategy } from '../services/focus-strategy';
 import { GroupModelGenerator } from '../services/group-model-generator';
-import { DataUtil, Query } from '@syncfusion/ej2-data';
+import { DataUtil, Query, Predicate } from '@syncfusion/ej2-data';
 import { AggregateColumn, AggregateRow } from '../models/aggregate';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -20,6 +21,7 @@ import { Grid } from '../base/grid';
 import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 import * as literals from '../base/string-literals';
 import { AggregateColumnModel } from '../models/aggregate-model';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -35,6 +37,8 @@ export class Group implements IAction {
     public element: HTMLElement;
     /** @hidden */
     public groupSortFocus: boolean = false;
+    /** @hidden */
+    public groupTextFocus: boolean = false;
     /** @hidden */
     public groupCancelFocus: boolean = false;
     private colName: string;
@@ -131,7 +135,7 @@ export class Group implements IAction {
             }
             this.reorderingColumns = cols;
             for (let c: number = 0; c < cols.length; c++) {
-                this.addColToGroupDrop(cols[c]);
+                this.addColToGroupDrop(cols[parseInt(c.toString(), 10)]);
             }
         } else {
             this.addLabel();
@@ -306,10 +310,10 @@ export class Group implements IAction {
                 return;
             }
             for (let i: number = 0; i < focusableGroupedItems.length; i++) {
-                if (e.target === focusableGroupedItems[i]) {
+                if (e.target === focusableGroupedItems[parseInt(i.toString(), 10)]) {
                     e.preventDefault();
                     const index: number = e.action === 'tab' ? i + 1 : i - 1;
-                    (focusableGroupedItems[index] as HTMLElement).focus();
+                    (focusableGroupedItems[parseInt(index.toString(), 10)] as HTMLElement).focus();
                     return;
                 }
             }
@@ -329,8 +333,8 @@ export class Group implements IAction {
                 const dataRow: HTMLTableRowElement = gObj.getDataRows()[selected[selected.length - 1]] as HTMLTableRowElement;
                 let grpRow: Element;
                 for (let i: number = dataRow.rowIndex; i >= 0; i--) {
-                    if (!rows[i].classList.contains(literals.row) && !rows[i].classList.contains('e-detailrow')) {
-                        grpRow = rows[i];
+                    if (!rows[parseInt(i.toString(), 10)].classList.contains(literals.row) && !rows[parseInt(i.toString(), 10)].classList.contains('e-detailrow')) {
+                        grpRow = rows[parseInt(i.toString(), 10)];
                         break;
                     }
                 }
@@ -355,12 +359,12 @@ export class Group implements IAction {
                 break;
             }
             if (this.parent.isEdit || (closest(e.target as Element, '#' + this.parent.element.id + '_searchbar') !== null) ||
-                parentsUntil(e.target  as Element, 'e-pager')) {
+                parentsUntil(e.target  as Element, 'e-pager') || parentsUntil(e.target  as Element, 'e-toolbar')) {
                 return;
             }
             // eslint-disable-next-line no-case-declarations
             let element: HTMLElement = this.focus.getFocusedElement();
-            if (element.classList.contains('e-icon-grightarrow') || element.classList.contains('e-icon-gdownarrow')) {
+            if (element && (element.classList.contains('e-icon-grightarrow') || element.classList.contains('e-icon-gdownarrow'))) {
                 element = element.parentElement;
             }
             // eslint-disable-next-line no-case-declarations
@@ -394,9 +398,9 @@ export class Group implements IAction {
         if (this.groupSettings.columns.length) {
             const focusableGroupedHeaderItems: NodeListOf<Element> = this.element.querySelectorAll('.e-groupheadercell');
             for (let i: number = 0; i < focusableGroupedHeaderItems.length; i++) {
-                focusableGroupedItems.push(focusableGroupedHeaderItems[i].querySelector('.e-grouptext'));
-                focusableGroupedItems.push(focusableGroupedHeaderItems[i].querySelector('.e-groupsort'));
-                focusableGroupedItems.push(focusableGroupedHeaderItems[i].querySelector('.e-ungroupbutton'));
+                focusableGroupedItems.push(focusableGroupedHeaderItems[parseInt(i.toString(), 10)].querySelector('.e-grouptext'));
+                focusableGroupedItems.push(focusableGroupedHeaderItems[parseInt(i.toString(), 10)].querySelector('.e-groupsort'));
+                focusableGroupedItems.push(focusableGroupedHeaderItems[parseInt(i.toString(), 10)].querySelector('.e-ungroupbutton'));
             }
         }
         return focusableGroupedItems;
@@ -442,6 +446,9 @@ export class Group implements IAction {
     }
 
     private clickHandler(e: MouseEventArgs): void {
+        if ((e.target as Element).classList.contains('e-grouptext')) {
+            this.groupTextFocus = true;
+        }
         if ((e.target as Element).classList.contains('e-groupsort')) {
             this.groupSortFocus = true;
         }
@@ -522,7 +529,12 @@ export class Group implements IAction {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
                 }
                 if (this.parent.groupSettings.enableLazyLoading) {
-                    (this.parent.contentModule as GroupLazyLoadRenderer).captionExpand(trgt.parentElement as HTMLTableRowElement);
+                    if ((this.parent.filterSettings.columns.length || this.parent.sortSettings.columns.length ||
+                        this.parent.searchSettings.key.length) && this.parent.getContent().firstElementChild.scrollTop === 0) {
+                        (this.parent.contentModule as VirtualContentRenderer).isTop = true;
+                    }
+                    (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
+                        this.parent.contentModule as GroupLazyLoadRenderer).captionExpand(trgt.parentElement as HTMLTableRowElement);
                 }
             } else {
                 isHide = true; captionRow.isExpand = false;
@@ -533,7 +545,8 @@ export class Group implements IAction {
                     this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
                 }
                 if (this.parent.groupSettings.enableLazyLoading) {
-                    (this.parent.contentModule as GroupLazyLoadRenderer).captionCollapse(trgt.parentElement as HTMLTableRowElement);
+                    (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
+                        this.parent.contentModule as GroupLazyLoadRenderer).captionCollapse(trgt.parentElement as HTMLTableRowElement);
                 }
             }
             this.aria.setExpand(trgt, expand);
@@ -545,43 +558,45 @@ export class Group implements IAction {
                     gObj.infiniteScrollSettings.enableCache && rowObjs.length !== rowNodes.length ?
                     Array.from(rowNodes).indexOf(trgt.parentElement) : undefined;
                 for (let i: number = startIdx; i < rowObjs.length; i++) {
-                    if (i > startIdx && rowObjs[i].indent === indent) {
+                    if (i > startIdx && rowObjs[parseInt(i.toString(), 10)].indent === indent) {
                         break;
                     }
-                    if (rowObjs[i].isDetailRow) {
+                    if (rowObjs[parseInt(i.toString(), 10)].isDetailRow) {
                         const visible: boolean = rowObjs[i - 1].isExpand && rowObjs[i - 1].visible;
                         if (cacheStartIdx && cacheStartIdx > 0 && cacheStartIdx < rowNodes.length) {
-                            (rowNodes[cacheStartIdx] as HTMLElement).style.display = visible ? '' : 'none';
+                            (rowNodes[parseInt(cacheStartIdx.toString(), 10)] as HTMLElement).style.display = visible ? '' : 'none';
                         }
                         else if (isNullOrUndefined(cacheStartIdx)) {
-                            (rowNodes[i] as HTMLElement).style.display = visible ? '' : 'none';
+                            (rowNodes[parseInt(i.toString(), 10)] as HTMLElement).style.display = visible ? '' : 'none';
                         }
-                    } else if (rowsState[rowObjs[i].parentUid] === false) {
-                        rowObjs[i].visible = false;
+                    } else if (rowsState[rowObjs[parseInt(i.toString(), 10)].parentUid] === false) {
+                        rowObjs[parseInt(i.toString(), 10)].visible = false;
                         if (cacheStartIdx && cacheStartIdx > 0 && cacheStartIdx < rowNodes.length) {
-                            (rowNodes[cacheStartIdx] as HTMLElement).style.display = 'none';
+                            (rowNodes[parseInt(cacheStartIdx.toString(), 10)] as HTMLElement).style.display = 'none';
                         }
                         else if (isNullOrUndefined(cacheStartIdx)) {
-                            (rowNodes[i] as HTMLElement).style.display = 'none';
+                            (rowNodes[parseInt(i.toString(), 10)] as HTMLElement).style.display = 'none';
                         }
                     } else {
-                        if (!(rowObjs[i].isDataRow || rowObjs[i].isCaptionRow || rowObjs[i].isDetailRow || rowObjs[i].isAggregateRow)) {
-                            const visible: boolean = rowObjs[i].cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell
-                                && cell.visible);
-                            if (visible === rowObjs[i].visible) { continue; }
+                        if (!(rowObjs[parseInt(i.toString(), 10)].isDataRow || rowObjs[parseInt(i.toString(), 10)].isCaptionRow
+                            || rowObjs[parseInt(i.toString(), 10)].isDetailRow || rowObjs[parseInt(i.toString(), 10)].isAggregateRow)) {
+                            const visible: boolean = rowObjs[parseInt(i.toString(), 10)].cells
+                                .some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
+                            if (visible === rowObjs[parseInt(i.toString(), 10)].visible) { continue; }
                         }
-                        rowObjs[i].visible = true;
+                        rowObjs[parseInt(i.toString(), 10)].visible = true;
                         if (cacheStartIdx && cacheStartIdx > 0 && cacheStartIdx < rowNodes.length) {
-                            (rowNodes[cacheStartIdx] as HTMLElement).style.display = '';
-                            (rowNodes[cacheStartIdx] as HTMLElement).classList.remove('e-hide');
+                            (rowNodes[parseInt(cacheStartIdx.toString(), 10)] as HTMLElement).style.display = '';
+                            (rowNodes[parseInt(cacheStartIdx.toString(), 10)] as HTMLElement).classList.remove('e-hide');
                         }
                         else if (isNullOrUndefined(cacheStartIdx)) {
-                            (rowNodes[i] as HTMLElement).style.display = '';
-                            (rowNodes[i] as HTMLElement).classList.remove('e-hide');
+                            (rowNodes[parseInt(i.toString(), 10)] as HTMLElement).style.display = '';
+                            (rowNodes[parseInt(i.toString(), 10)] as HTMLElement).classList.remove('e-hide');
                         }
                     }
-                    if (rowObjs[i].isCaptionRow) {
-                        rowsState[rowObjs[i].uid] = rowObjs[i].isExpand && rowObjs[i].visible;
+                    if (rowObjs[parseInt(i.toString(), 10)].isCaptionRow) {
+                        rowsState[rowObjs[parseInt(i.toString(), 10)].uid] = rowObjs[parseInt(i.toString(), 10)].isExpand
+                        && rowObjs[parseInt(i.toString(), 10)].visible;
                     }
                     if (!isNullOrUndefined(cacheStartIdx)) {
                         cacheStartIdx++;
@@ -621,8 +636,8 @@ export class Group implements IAction {
         const rowObjs: Row<Column>[] = this.parent.getRowsObject();
         let row: Element;
         for (let i: number = 0, len: number = rowNodes.length; i < len; i++) {
-            if (rowNodes[i].querySelectorAll('.e-recordplusexpand, .e-recordpluscollapse').length) {
-                row = rowNodes[i].querySelector(isExpand ? '.e-recordpluscollapse' : '.e-recordplusexpand');
+            if (rowNodes[parseInt(i.toString(), 10)].querySelectorAll('.e-recordplusexpand, .e-recordpluscollapse').length) {
+                row = rowNodes[parseInt(i.toString(), 10)].querySelector(isExpand ? '.e-recordpluscollapse' : '.e-recordplusexpand');
                 if (row) {
                     if (isExpand) {
                         row.className = 'e-recordplusexpand';
@@ -637,15 +652,15 @@ export class Group implements IAction {
                         row.firstElementChild.setAttribute('title', 'collapsed');
                     }
                 }
-                if (!(rowNodes[i].firstElementChild.classList.contains('e-recordplusexpand') ||
-                    rowNodes[i].firstElementChild.classList.contains('e-recordpluscollapse'))) {
-                    (rowNodes[i] as HTMLElement).style.display = isExpand ? '' : 'none';
+                if (!(rowNodes[parseInt(i.toString(), 10)].firstElementChild.classList.contains('e-recordplusexpand') ||
+                    rowNodes[parseInt(i.toString(), 10)].firstElementChild.classList.contains('e-recordpluscollapse'))) {
+                    (rowNodes[parseInt(i.toString(), 10)] as HTMLElement).style.display = isExpand ? '' : 'none';
                 }
             } else {
-                (rowNodes[i] as HTMLElement).style.display = isExpand ? '' : 'none';
+                (rowNodes[parseInt(i.toString(), 10)] as HTMLElement).style.display = isExpand ? '' : 'none';
             }
-            if (rowObjs[i].isCaptionRow) {
-                rowObjs[i].isExpand = isExpand ? true : false;
+            if (rowObjs[parseInt(i.toString(), 10)].isCaptionRow) {
+                rowObjs[parseInt(i.toString(), 10)].isExpand = isExpand ? true : false;
             }
         }
         this.parent.updateVisibleExpandCollapseRows();
@@ -792,7 +807,7 @@ export class Group implements IAction {
         columns.splice(columns.indexOf(this.colName), 1);
         if (this.sortedColumns.indexOf(columnName) < 0) {
             for (let i: number = 0, len: number = gObj.sortSettings.columns.length; i < len; i++) {
-                if (columnName === gObj.sortSettings.columns[i].field) {
+                if (columnName === gObj.sortSettings.columns[parseInt(i.toString(), 10)].field) {
                     gObj.sortSettings.columns.splice(i, 1);
                     break;
                 }
@@ -851,7 +866,7 @@ export class Group implements IAction {
     private groupAddSortingQuery(colName: string): void {
         let i: number = 0;
         while (i < this.parent.sortSettings.columns.length) {
-            if (this.parent.sortSettings.columns[i].field === colName) {
+            if (this.parent.sortSettings.columns[parseInt(i.toString(), 10)].field === colName) {
                 break;
             }
             i++;
@@ -859,7 +874,7 @@ export class Group implements IAction {
         if (this.parent.sortSettings.columns.length === i) {
             this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending', isFromGroup: true });
         } else if (!this.parent.allowSorting) {
-            this.parent.sortSettings.columns[i].direction = 'Ascending';
+            this.parent.sortSettings.columns[parseInt(i.toString(), 10)].direction = 'Ascending';
         }
     }
     private createElement(field: string): Element {
@@ -969,14 +984,14 @@ export class Group implements IAction {
         if (this.groupSettings.showToggleButton) {
             const headers: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
             for (let i: number = 0, len: number = headers.length; i < len; i++) {
-                if (!((headers[i].classList.contains('e-emptycell')) || (headers[i].classList.contains('e-headerchkcelldiv')))) {
-                    const column: Column = this.parent.getColumnByUid(headers[i].getAttribute('e-mappinguid'));
+                if (!((headers[parseInt(i.toString(), 10)].classList.contains('e-emptycell')) || (headers[parseInt(i.toString(), 10)].classList.contains('e-headerchkcelldiv')))) {
+                    const column: Column = this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
                     if (!this.parent.showColumnMenu || (this.parent.showColumnMenu && !column.showColumnMenu)) {
-                        if (headers[i].getElementsByClassName('e-grptogglebtn').length) {
-                            remove(headers[i].querySelectorAll('.e-grptogglebtn')[0] as Element);
+                        if (headers[parseInt(i.toString(), 10)].getElementsByClassName('e-grptogglebtn').length) {
+                            remove(headers[parseInt(i.toString(), 10)].querySelectorAll('.e-grptogglebtn')[0] as Element);
                         }
                         if (!isRemove) {
-                            headers[i].appendChild(this.parent.createElement(
+                            headers[parseInt(i.toString(), 10)].appendChild(this.parent.createElement(
                                 'span', {
                                     className: 'e-grptogglebtn e-icons ' + (this.groupSettings.columns.indexOf(column.field) > -1 ?
                                         'e-toggleungroup e-icon-ungroup' : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1',
@@ -1018,33 +1033,33 @@ export class Group implements IAction {
                         if (!this.isAppliedGroup) {
                             this.updateGroupDropArea(true);
                             for (let j: number = 0; j < this.parent.sortSettings.columns.length; j++) {
-                                if (this.parent.sortSettings.columns[j].isFromGroup) {
+                                if (this.parent.sortSettings.columns[parseInt(j.toString(), 10)].isFromGroup) {
                                     this.parent.sortSettings.columns.splice(j, 1);
                                     j--;
                                 }
                             }
                             for (let i: number = 0; i < this.groupSettings.columns.length; i++) {
-                                this.colName = this.groupSettings.columns[i];
+                                this.colName = this.groupSettings.columns[parseInt(i.toString(), 10)];
                                 const col: Column = this.parent.getColumnByField(this.colName);
                                 col.visible = this.parent.groupSettings.showGroupedColumn;
                                 this.groupAddSortingQuery(this.colName);
                                 if (i < this.groupSettings.columns.length - 1) {
-                                    this.addColToGroupDrop(this.groupSettings.columns[i]);
+                                    this.addColToGroupDrop(this.groupSettings.columns[parseInt(i.toString(), 10)]);
                                 }
                             }
                         }
                         args = {
-                            columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
+                            columnName: this.colName, requestType: e.properties[`${prop}`].length ? 'grouping' : 'ungrouping',
                             type: events.actionBegin
                         };
                     } else {
                         args = { columnName: this.colName, requestType: 'ungrouping', type: events.actionBegin };
                     }
                     if (!this.groupSettings.showGroupedColumn) {
-                        const columns: string[] = e.oldProperties[prop];
+                        const columns: string[] = e.oldProperties[`${prop}`];
                         for (let i: number = 0; i < columns.length; i++) {
-                            if (e.properties[prop].indexOf(columns[i]) === -1) {
-                                this.parent.getColumnByField(columns[i]).visible = true;
+                            if (e.properties[`${prop}`].indexOf(columns[parseInt(i.toString(), 10)]) === -1) {
+                                this.parent.getColumnByField(columns[parseInt(i.toString(), 10)]).visible = true;
                             }
                         }
                     }
@@ -1080,14 +1095,14 @@ export class Group implements IAction {
 
     private updateGroupedColumn(isVisible: boolean): void {
         for (let i: number = 0; i < this.groupSettings.columns.length; i++) {
-            this.parent.getColumnByField(this.groupSettings.columns[i]).visible = isVisible;
+            this.parent.getColumnByField(this.groupSettings.columns[parseInt(i.toString(), 10)]).visible = isVisible;
         }
     }
 
     private updateButtonVisibility(isVisible: boolean, className: string): void {
         const gHeader: HTMLElement[] = [].slice.call(this.element.getElementsByClassName(className));
         for (let i: number = 0; i < gHeader.length; i++) {
-            gHeader[i].style.display = isVisible ? '' : 'none';
+            gHeader[parseInt(i.toString(), 10)].style.display = isVisible ? '' : 'none';
         }
     }
 
@@ -1132,7 +1147,7 @@ export class Group implements IAction {
             if (i === (len - 1)) {
                 this.contentRefresh = true;
             }
-            this.ungroupColumn(cols[i]);
+            this.ungroupColumn(cols[parseInt(i.toString(), 10)]);
         }
         this.contentRefresh = true;
     }
@@ -1155,30 +1170,30 @@ export class Group implements IAction {
         const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         this.refreshToggleBtn();
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (fieldNames.indexOf(cols[i].field) === -1) { continue; }
-            header = gObj.getColumnHeaderByField(cols[i].field);
-            if (!gObj.allowSorting && (this.sortedColumns.indexOf(cols[i].field) > -1 ||
-                this.groupSettings.columns.indexOf(cols[i].field) > -1)) {
+            if (fieldNames.indexOf(cols[parseInt(i.toString(), 10)].field) === -1) { continue; }
+            header = gObj.getColumnHeaderByField(cols[parseInt(i.toString(), 10)].field);
+            if (!gObj.allowSorting && (this.sortedColumns.indexOf(cols[parseInt(i.toString(), 10)].field) > -1 ||
+                this.groupSettings.columns.indexOf(cols[parseInt(i.toString(), 10)].field) > -1)) {
                 classList(header.querySelector('.e-sortfilterdiv'), ['e-ascending', 'e-icon-ascending'], []);
                 if (cols.length > 1) {
                     header.querySelector('.e-headercelldiv').appendChild(this.parent.createElement(
                         'span', { className: 'e-sortnumber', innerHTML: (i + 1).toString() }));
                 }
-            } else if (this.getGHeaderCell(cols[i].field) && this.getGHeaderCell(cols[i].field).getElementsByClassName('e-groupsort').length) {
-                if (cols[i].direction === 'Ascending') {
+            } else if (this.getGHeaderCell(cols[parseInt(i.toString(), 10)].field) && this.getGHeaderCell(cols[parseInt(i.toString(), 10)].field).getElementsByClassName('e-groupsort').length) {
+                if (cols[parseInt(i.toString(), 10)].direction === 'Ascending') {
                     classList(
-                        this.getGHeaderCell(cols[i].field).querySelector('.e-groupsort'),
+                        this.getGHeaderCell(cols[parseInt(i.toString(), 10)].field).querySelector('.e-groupsort'),
                         ['e-ascending', 'e-icon-ascending'], ['e-descending', 'e-icon-descending']);
                 } else {
                     classList(
-                        this.getGHeaderCell(cols[i].field).querySelector('.e-groupsort'),
+                        this.getGHeaderCell(cols[parseInt(i.toString(), 10)].field).querySelector('.e-groupsort'),
                         ['e-descending', 'e-icon-descending'], ['e-ascending', 'e-icon-ascending']);
                 }
             }
         }
         for (let i: number = 0, len: number = gCols.length; i < len; i++) {
-            if (fieldNames.indexOf(gCols[i]) === -1) { continue; }
-            gObj.getColumnHeaderByField(gCols[i]).setAttribute('aria-grouped', 'true');
+            if (fieldNames.indexOf(gCols[parseInt(i.toString(), 10)]) === -1) { continue; }
+            gObj.getColumnHeaderByField(gCols[parseInt(i.toString(), 10)]).setAttribute('aria-grouped', 'true');
         }
     }
 
@@ -1190,6 +1205,12 @@ export class Group implements IAction {
     }
 
     private onGroupAggregates(editedData: Object[]): void {
+        if (this.parent.groupSettings.enableLazyLoading) {
+            if (this.parent.editSettings.mode !== 'Batch') {
+                this.updateLazyLoadGroupAggregates(editedData);
+            }
+            return;
+        }
         const aggregates: Object[] = this.iterateGroupAggregates(editedData);
         const rowData: Object[] = this.groupGenerator.generateRows(aggregates, {});
         const summaryRows: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => !row.isDataRow);
@@ -1198,11 +1219,148 @@ export class Group implements IAction {
             this.parent.destroyTemplate(['groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate']);
         }
         for (let i: number = 0; i < updateSummaryRows.length; i++) {
-            const row: Row<Column> = updateSummaryRows[i] as Row<Column>;
+            const row: Row<Column> = updateSummaryRows[parseInt(i.toString(), 10)] as Row<Column>;
             const cells: Object[] = row.cells.filter((cell: Cell<{}>) => cell.isDataCell);
-            const args: Object = { cells: cells, data: row.data, dataUid: summaryRows[i] ? summaryRows[i].uid : '' };
+            const args: Object = { cells: cells, data: row.data, dataUid: summaryRows[parseInt(i.toString(), 10)] ? summaryRows[parseInt(i.toString(), 10)].uid : '' };
             this.parent.notify(events.refreshAggregateCell, args);
         }
+    }
+
+    private updateLazyLoadGroupAggregates(data: Object[], remoteResult?: Object[]): void {
+        const groupCaptionTemplates: Object[] = this.getGroupAggregateTemplates(true);
+        const groupFooterTemplates: Object[] = this.getGroupAggregateTemplates(false);
+        if (!groupCaptionTemplates.length && !groupFooterTemplates.length) { return; }
+        const gObj: IGrid = this.parent;
+        const isRemote: boolean = gObj.getDataModule().isRemote();
+        const updatedData: Object = data[0];
+        const editedRow: Element = (<{row?: Element}>data).row;
+        const groupedCols: string[] = gObj.groupSettings.columns;
+        const groupLazyLoadRenderer: GroupLazyLoadRenderer = gObj.contentModule as GroupLazyLoadRenderer;
+        const groupCache: { [x: number]: Row<Column>[]; } = groupLazyLoadRenderer.getGroupCache();
+        const currentPageGroupCache: Row<Column>[] = groupCache[gObj.pageSettings.currentPage];
+        let result: Object[] = remoteResult ? remoteResult : [];
+        for (let i: number = 0; i < groupedCols.length; i++) {
+            const groupField: string = groupedCols[parseInt(i.toString(), 10)];
+            const groupKey: string = updatedData[`${groupField}`];
+            const groupCaptionRowObject: Row<Column> = this.getGroupCaptionRowObject(editedRow, groupedCols.length - i);
+            if (isRemote && result.length) {
+                if (i !== 0) {
+                    const prevGroupField: string = groupedCols[i - 1];
+                    const prevGroupKey: string = updatedData[`${prevGroupField}`];
+                    result = (<{items: Object[]}>result.find((data: Object) => {
+                        return (<{key?: string}>data).key === prevGroupKey;
+                    })).items;
+                }
+                this.updateLazyLoadGroupAggregatesRow(result, groupKey, groupCaptionRowObject, currentPageGroupCache,
+                                                      groupCaptionTemplates, groupFooterTemplates);
+            } else {
+                const query: Query = gObj.renderModule.data.generateQuery();
+                if (i !== 0) {
+                    const currentLevelCaptionRowObjects: Row<Column>[] = currentPageGroupCache.filter((data: Row<Column>) => {
+                        return data.isCaptionRow && data.parentUid === groupCaptionRowObject.parentUid;
+                    });
+                    const index: number = currentLevelCaptionRowObjects.indexOf(groupCaptionRowObject);
+                    const fields: string[] = gObj.groupSettings.columns.slice(0, i).reverse();
+                    const keys: string[] = fields.map((data: string) => {
+                        return updatedData[`${data}`];
+                    });
+                    const pred: Predicate = generateExpandPredicates(fields, keys, groupLazyLoadRenderer);
+                    const predicateList: Predicate[] = getPredicates(pred);
+                    const lazyLoad: Object = { level: i, skip: index, take: 1, where: predicateList };
+                    query.lazyLoad.push({ key: 'onDemandGroupInfo', value: lazyLoad });
+                }
+                gObj.renderModule.data.getData({}, query).then((e: ReturnType) => {
+                    if (isRemote) {
+                        this.updateLazyLoadGroupAggregates(data, e.result);
+                    } else {
+                        this.updateLazyLoadGroupAggregatesRow(e.result, groupKey, groupCaptionRowObject, currentPageGroupCache,
+                                                              groupCaptionTemplates, groupFooterTemplates);
+                    }
+                    if (i === groupedCols.length - 1 || isRemote) { this.destroyRefreshGroupCaptionFooterTemplate(); }
+                }).catch((e: ReturnType) => gObj.renderModule.dataManagerFailure(e, { requestType: 'grouping' }));
+                if (isRemote) { break; }
+            }
+        }
+    }
+
+    private destroyRefreshGroupCaptionFooterTemplate(): void {
+        const gObj: IGrid = this.parent;
+        if (gObj.isAngular || gObj.isReact || gObj.isVue) {
+            gObj.destroyTemplate(['groupCaptionTemplate', 'groupFooterTemplate']);
+        }
+        gObj.refreshGroupCaptionFooterTemplate();
+        gObj.removeMaskRow();
+        gObj.hideSpinner();
+    }
+
+    private updateLazyLoadGroupAggregatesRow(result: Object[], groupKey: string, groupCaptionRowObject: Row<Column>,
+                                             currentPageGroupCache: Row<Column>[], groupCaptionTemplates: Object[],
+                                             groupFooterTemplates: Object[]): void {
+        const updatedGroupCaptionData: Object = result.find((data: Object) => {
+            return (<{key?: string}>data).key === groupKey;
+        });
+        if (groupCaptionTemplates.length) {
+            this.updateLazyLoadGroupAggregatesCell(updatedGroupCaptionData, groupCaptionRowObject, groupCaptionTemplates);
+        }
+        if (groupFooterTemplates.length) {
+            const groupFooterRowObject: Row<Column> = currentPageGroupCache.find((data: Row<Column>) => {
+                return data.isAggregateRow && data.parentUid === groupCaptionRowObject.uid;
+            });
+            this.updateLazyLoadGroupAggregatesCell(updatedGroupCaptionData, groupFooterRowObject, groupFooterTemplates);
+        }
+    }
+
+    private updateLazyLoadGroupAggregatesCell(updatedGroupCaptionData: Object, captionFooterRowObject: Row<Column>,
+                                              captionFooterTemplates: Object[]): void {
+        const prevCaptionFooterData: Object = captionFooterRowObject.data;
+        const updatedGroupCaptionDataAggregates: Object = (<{aggregates?: Object}>updatedGroupCaptionData).aggregates;
+        if (captionFooterRowObject.isCaptionRow) {
+            (<{aggregates?: Object}>prevCaptionFooterData).aggregates = updatedGroupCaptionDataAggregates;
+        }
+        for (let i: number = 0; i < captionFooterTemplates.length; i++) {
+            const template: { type: string, field: string } =
+                captionFooterTemplates[parseInt(i.toString(), 10)] as { type: string, field: string };
+            const key: string = template.field + ' - ' + template.type;
+            const fieldData: Object = prevCaptionFooterData[template.field];
+            fieldData[`${key}`] = updatedGroupCaptionDataAggregates[`${key}`];
+            fieldData[capitalizeFirstLetter(template.type)] = updatedGroupCaptionDataAggregates[`${key}`];
+            if (fieldData[template.type]) {
+                fieldData[template.type] = updatedGroupCaptionDataAggregates[`${key}`];
+            }
+        }
+    }
+
+    private getGroupCaptionRowObject(element: Element, groupCaptionIndex: number): Row<Column> {
+        const gObj: IGrid = this.parent;
+        const uid: string = element.getAttribute('data-uid');
+        let parentCaptionRowObject: Row<Column> = gObj.getRowObjectFromUID(uid);
+        for (let i: number = 0; i < groupCaptionIndex; i++) {
+            parentCaptionRowObject = gObj.getRowObjectFromUID(parentCaptionRowObject.parentUid);
+        }
+        return parentCaptionRowObject;
+    }
+
+    /**
+     * @param { boolean } groupCaptionTemplate - Defines template either group caption or footer
+     * @returns { Object[] } - Returns template array
+     * @hidden
+     */
+    public getGroupAggregateTemplates(groupCaptionTemplate: boolean): Object[] {
+        const aggregates: Object[] = [];
+        const aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
+        for (let j: number = 0; j < aggregateRows.length; j++) {
+            const row: AggregateRow = aggregateRows[parseInt(j.toString(), 10)] as AggregateRow;
+            for (let k: number = 0; k < row.columns.length; k++) {
+                if ((groupCaptionTemplate && row.columns[parseInt(k.toString(), 10)].groupCaptionTemplate)
+                    || (!groupCaptionTemplate && row.columns[parseInt(k.toString(), 10)].groupFooterTemplate)) {
+                    let aggr: Object = {};
+                    const type: string | AggregateType[] = row.columns[parseInt(k.toString(), 10)].type.toString();
+                    aggr = { type: type.toLowerCase(), field: row.columns[parseInt(k.toString(), 10)].field };
+                    aggregates.push(aggr);
+                }
+            }
+        }
+        return aggregates;
     }
 
     private iterateGroupAggregates(editedData: Object[]): Object[] {
@@ -1228,18 +1386,18 @@ export class Group implements IAction {
         const eData: Object = editedData;
         if (!((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel') && deletedCols.length > 0) {
             for (let i: number = 0; i < deletedCols.length; i++) {
-                const index: number = mergeData.indexOf(deletedCols[i]);
+                const index: number = mergeData.indexOf(deletedCols[parseInt(i.toString(), 10)]);
                 mergeData.splice(index, 1);
             }
         }
         const aggregates: Object[] = [];
         const aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
         for (let j: number = 0; j < aggregateRows.length; j++) {
-            const row: AggregateRow = aggregateRows[j] as AggregateRow;
+            const row: AggregateRow = aggregateRows[parseInt(j.toString(), 10)] as AggregateRow;
             for (let k: number = 0; k < row.columns.length; k++) {
                 let aggr: Object = {};
-                const type: string | AggregateType[] = row.columns[k].type.toString();
-                aggr = { type: type.toLowerCase(), field: row.columns[k].field };
+                const type: string | AggregateType[] = row.columns[parseInt(k.toString(), 10)].type.toString();
+                aggr = { type: type.toLowerCase(), field: row.columns[parseInt(k.toString(), 10)].field };
                 aggregates.push(aggr);
             }
         }
@@ -1248,7 +1406,7 @@ export class Group implements IAction {
         const groupedCols: string[] = this.parent.groupSettings.columns;
         for (let l: number = 0; l < groupedCols.length; l++) {
             aggrds = result ? result : mergeData;
-            result = DataUtil.group(aggrds, groupedCols[l], aggregates, null, null);
+            result = DataUtil.group(aggrds, groupedCols[parseInt(l.toString(), 10)], aggregates, null, null);
         }
         return result;
     }
@@ -1257,11 +1415,11 @@ export class Group implements IAction {
         const uid: string = args.uid; const isExpand: boolean = args.isExpand;
         const rows: Row<Column>[] = this.parent.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
-            const row: Row<Column> = rows[i];
+            const row: Row<Column> = rows[parseInt(i.toString(), 10)];
             if (row.uid === uid || isNullOrUndefined(uid)) {
                 row.isExpand = isExpand;
                 for (let j: number = i + 1; j < rows.length; j++) {
-                    const childRow: Row<Column> = rows[j];
+                    const childRow: Row<Column> = rows[parseInt(j.toString(), 10)];
                     let closestParent: Row<Column>;
 
                     if (childRow.parentUid !== row.uid) {

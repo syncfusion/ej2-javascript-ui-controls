@@ -143,6 +143,68 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('Schedule event window with group without child', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                group: { resources: ['Project', 'Categories', 'Subcategories'] },
+                resources: [
+                    {
+                        field: 'ProjectId',
+                        title: 'Project',
+                        name: 'Project', allowMultiple: false,
+                        dataSource: [
+                            { text: "Department A", id: 1, color: "#cb6bb2" },
+                            { text: "Department B", id: 2, color: "#cb6bb2" }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'CategoriesId',
+                        title: 'Categories',
+                        name: 'Categories', allowMultiple: true,
+                        dataSource: [
+                            { text: "Instrument X", id: 1, groupId: 2, color: "#1aaa55" },
+                            { text: "Instrument Y", id: 2, groupId: 2, color: "#1aaa55" }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    },
+                    {
+                        field: 'SubcategoriesId',
+                        title: 'Subcategories',
+                        name: 'Subcategories', allowMultiple: true,
+                        dataSource: [
+                            { text: "Technician 1", id: 1, groupId: 1, color: "#7fa900" },
+                            { text: "Technician 2", id: 2, groupId: 1, color: "#7fa900" },
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    }
+                ],
+            };
+            schObj = util.createSchedule(model, resourceAppointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Multilevel change event checking', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as DropDownList;
+            expect(repeatElement.value).toEqual(2);
+            repeatElement.value = 1;
+            repeatElement.dataBind();
+            const categories: MultiSelect =
+                (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[1].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            expect(categories.value).toEqual([null]);
+            const technician: MultiSelect =
+                (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[2].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            expect(technician.value).toEqual(null);
+        });
+    });
+
     describe('Schedule event window initial load without group', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -2716,12 +2778,12 @@ describe('Schedule event window initial load', () => {
             listObj.filterInput.value = 'Ha';
             listObj.onInput();
             listObj.onFilterUp(keyEventArgs);
-            let element: Element = document.querySelector('.e-dropdownbase .e-list-parent');
+            let element: Element = [].slice.call(document.querySelectorAll('.e-dropdownbase .e-list-parent')).slice(-1)[0];
             expect(element.childNodes[0].textContent).toEqual('Hawaii Time');
             listObj.filterInput.value = '';
             listObj.onInput();
             listObj.onFilterUp(keyEventArgs);
-            element = document.querySelector('.e-dropdownbase .e-list-parent');
+            element = [].slice.call(document.querySelectorAll('.e-dropdownbase .e-list-parent')).slice(-1)[0];
             expect(element.childNodes.length).toEqual(6);
             listObj.onInput();
             listObj.onFilterUp(keyEventArgs);

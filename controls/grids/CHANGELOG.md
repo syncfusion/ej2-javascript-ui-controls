@@ -2,119 +2,17 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
+## 20.4.38 (2022-12-21)
 
 ### Grid
 
-#### Bug Fixes
+#### New Features
 
-- `#I408271` - The reference link for the `checkBoxChange` event arguments has been updated in the documentation.
-- `#I420019` - script error for focusing the content after deleting all the records has been fixed.
-
-## 20.3.60 (2022-12-06)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I397543` - Issue with custom toolbar template item in grid has been resolved.
-- `#I418069` - Searching issue when clicking search icon in adaptive mode has been fixed.
-- `#I417934` - Column Reordering was not working properly after hiding the column has been fixed.
-- `#I415585` - When JAWS is running, go to first page and last page buttons are working properly when enter key is pressed after focusing.
-
-## 20.3.59 (2022-11-29)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I397894` - When pressing Tab Key, the first focusable element in the grid is need to be focused, instead of grid container issue has been fixed.
-
-## 20.3.58 (2022-11-22)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I413206` - Unsaved batch changes gets deleted when grouping enabled and perform show/hide column using column chooser has been fixed.
-- `#I413517` - column menu is now rendering properly with sticky header.
-- `#I414774` - Grid checkbox filter issue while pasting text and search has been resolved.
-- `#I415399` - Row Template issue while using react states to set grid datasource has been resolved.
-
-## 20.3.57 (2022-11-15)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I413480` - Enter and shift enter key functionalities are working fine with template columns.
-- `#F178089` - Script error with virtual scroll and frozen columns has been resolved.
-- `#I414874` - Column chooser checkbox state is now reading properly by JAWS screen reader.
-- `#I379911` - Now, the selected page will be read as current page by JAWS screen reader.
-- `#I408692` - Tooltip Issue while using fancy characters in grid has been fixed.
-- `#F38295` - Incorrect Ellipsis with narrow checkbox column in grid has been fixed.
-- `#I413202` - Issue with rendering dropdown component in grid cell with batch editing has been fixed.
-
-## 20.3.56 (2022-11-08)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I388098` - Editing issue in grouping with `virtualization` has been fixed.
-- `#I406671` - Edit element not maintained when executing `setRowData` method is fixed.
-- `#I413403` - Script error with toolbar template has been resolved.
-- `#I408977` - Infinite Scrolling with row grouping and checkbox selection is now working fine.
-- `#F177783` - Sort icon Alignment issue with header text right align when using autofit has been fixed.
-
-## 20.3.52 (2022-10-26)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I400775` - `DataStateChange` event argument type is not matched with the original argument list has been fixed.
-- `#I411026` - Expanding child grid throws script while adding data dynamically to the child has been resolved.
-- `#I412478` - `SetCellValue` is working fine with `virtualization`.
-- `#I411780` - German translation for the word search has been changed.
-- `#I367158` - While rendering the grid in the template column the script error thrown with resizing the frozen column has been fixed.
-
-## 20.3.50 (2022-10-18)
-
-### Grid
-
-#### Bug Fixes
-
-- `#F176739` - CSS problem occurs when drag and drop between child grid and other grid issue has been fixed.
-- `#I389344` - PDF Exporting issue with Hierarchy grid and  grouping in parent grid has been fixed.
-- `#F177682` - Validation message is not showing properly in movable columns with empty records has been fixed.
-
-## 20.3.49 (2022-10-11)
-
-### Grid
-
-#### Bug Fixes
-
-- `#F177034` - Grid editing after removing frozen column throws script error has been fixed.
-- `#I409787` - Checkbox selection is not working properly on down arrow key navigation has been fixed.
-- `#F177722` - Save action of command column is not working when Grid having both left and right frozen has been fixed.
-- `#FB37591` - Frozen rows are not emptied even if filtering returns no record when `virtualization` enabled has been fixed.
-- `#F177810` - Provided localization support for sort buttons in Adaptive Grid.
-- `#I405703` - `CellSelected` event not triggered with custom span element in row cells has been fixed.
-- `#I394025` - Memory leak issue with Command column has been fixed.
-- `#FB32003`, `#FB38052` - Ellipsis is not showing in the Firefox browser has been fixed.
-- `#I407497` - Focus issue while render multiple inputs in the column template issue has been fixed.
-
-## 20.3.48 (2022-10-05)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I397183` - checkbox issue when enabling the persistence has been fixed.
-- `#I399882` - `rowIndexes` in `RowSelectEventArgs` becomes undefined when single row is selected has been fixed.
-- `#I402071` - Column chooser with frozen columns and wrap mode as header throws script error has been fixed.
-- `#I404733` - `SetRowData` method is not working properly used inside the `childGrid` is fixed.
+- `#I395531` - Improved the template rendering performance in React.
+- `#I396818` - Provided support to add current selection to the filter.
+- Provided support to skip the focus in non-editable columns while pressing tab/shift-tab in batch edit.
+- Provided the lazy load group support for virtual scroll enabled grid.
+- Provided support to refresh the aggregate values with lazy load grouping.
 
 ## 20.3.47 (2022-09-29)
 
@@ -129,14 +27,6 @@
 #### Breaking Changes
 
 - `#I374913` - Prevented the group collapse action in infinite scrolling with cache mode by hiding the icons.
-
-#### Bug Fixes
-
-- `#I397430` - Script error while hiding the Sticky Header Grid using `ngIf` property has been fixed.
-- `#I407127` - Custom command buttons not working with infinite scrolling is fixed.
-- `#I401295` - Group by fails for 1 record on collapse issue has been fixed.
-- `#I401412` - Script error after destroying the Grid with sticky header has been fixed.
-- `#F176953` - Filtering issue with Frozen column and Row drag and drop feature has been resolved.
 
 ## 20.2.38 (2022-07-12)
 

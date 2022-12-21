@@ -81,7 +81,7 @@
         }
         #{if(&, '&', '*')}.e-year td:hover span.e-day,
         #{if(&, '&', '*')}.e-decade td:hover span.e-day {
-          background-color: $calendar-yeardecade-hover-bg;
+          background-color: $calendar-hover-color;
         }
         #{if(&, '&', '*')}.e-year td.e-selected:hover span.e-day,
         #{if(&, '&', '*')}.e-decade td.e-selected:hover span.e-day {

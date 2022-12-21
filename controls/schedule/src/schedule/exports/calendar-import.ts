@@ -77,7 +77,7 @@ export class ICalendarImport {
                     case 'BEGIN':
                         break;
                     case 'UID':
-                        curEvent[uId] = value;
+                        curEvent[`${uId}`] = value;
                         if (typeof(id) == 'number') {
                             curEvent[fields.id] = parseInt(value, 10);
                             if (isNaN(curEvent[fields.id])) {
@@ -107,9 +107,9 @@ export class ICalendarImport {
                         if (this.parent.resourceCollection.length > 0) {
                             const resData: Record<string, any>[] =
                                 this.parent.resourceCollection.filter((data: Record<string, any>) => data.field === type);
-                            curEvent[type] = (resData.length > 0 && (typeof (resData[0].dataSource[0][resData[0].idField]) == 'number')) ? parseInt(value, 10) : value;
+                            curEvent[`${type}`] = (resData.length > 0 && (typeof (resData[0].dataSource[0][resData[0].idField]) == 'number')) ? parseInt(value, 10) : value;
                         } else {
-                            curEvent[type] = value;
+                            curEvent[`${type}`] = value;
                         }
                     }
                 }
@@ -136,28 +136,28 @@ export class ICalendarImport {
                 id = eventObj[fields.id] as string;
             }
             if (appointmentIds.indexOf(eventObj[fields.id]) < 0) {
-                const data: Record<string, any>[] = app.filter((data: Record<string, any>) => data.UID === eventObj[uId]);
+                const data: Record<string, any>[] = app.filter((data: Record<string, any>) => data.UID === eventObj[`${uId}`]);
                 if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
                     id = typeof(maxId) === 'number' ? maxId++ : id;
                     for (let i: number = 0; i < data.length; i++) {
                         // eslint-disable-next-line no-prototype-builtins
-                        if (data[i].hasOwnProperty(fields.recurrenceID)) {
-                            const exdate: string = data[i][fields.recurrenceID] as string;
-                            data[i][fields.id] = typeof(maxId) === 'number' ? maxId++ : this.parent.eventBase.generateGuid();
-                            data[i][fields.recurrenceID] = id;
-                            data[i][fields.recurrenceException] = null;
+                        if (data[parseInt(i.toString(), 10)].hasOwnProperty(fields.recurrenceID)) {
+                            const exdate: string = data[parseInt(i.toString(), 10)][fields.recurrenceID] as string;
+                            data[parseInt(i.toString(), 10)][fields.id] = typeof(maxId) === 'number' ? maxId++ : this.parent.eventBase.generateGuid();
+                            data[parseInt(i.toString(), 10)][fields.recurrenceID] = id;
+                            data[parseInt(i.toString(), 10)][fields.recurrenceException] = null;
                             parentObj[fields.recurrenceException] =
                                 this.getExcludeDateString(parentObj[fields.recurrenceException], exdate);
-                            delete data[i][uId];
-                            appoint.push(data[i]);
+                            delete data[parseInt(i.toString(), 10)][`${uId}`];
+                            appoint.push(data[parseInt(i.toString(), 10)]);
                         }
                     }
-                    delete parentObj[uId];
+                    delete parentObj[`${uId}`];
                     parentObj[fields.id] = id;
                     appoint.push(parentObj);
                     // eslint-disable-next-line no-prototype-builtins
                 } else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
-                    delete eventObj[uId];
+                    delete eventObj[`${uId}`];
                     eventObj[fields.id] = typeof(maxId) === 'number' ? maxId++ : id;
                     appoint.push(eventObj);
                 }
@@ -188,8 +188,7 @@ export class ICalendarImport {
     }
 
     private dateParsing(element: string): Date {
-        const expression: RegExp = /([^':;]+)((?:;(?:[^':;]+)(?:=(?:(?:'[^']*')|(?:[^':;]+))))*):(.*)/;
-        const split: string[] = (element.match(expression)).slice(1);
+        const split: string[] = element.split(':');
         const value: string = split[split.length - 1];
         let newDate: Date = new Date(this.getDateString(value));
         if (element && (element.indexOf('VALUE=DATE') > -1 || element.indexOf('RECURRENCE-ID;TZID') > -1)) {

@@ -27,7 +27,7 @@ export class TreeClipboard extends GridClipboard {
         const uniqueID: string = 'uniqueID';
         const currentRecords: Object[] = this.treeGridParent.getCurrentViewRecords();
         if (window.getSelection().toString() === '') {
-            this.clipBoardTextArea.value = this[copyContent] = '';
+            this.clipBoardTextArea.value = this[`${copyContent}`] = '';
             const rows: Element[] = this.treeGridParent.grid.getRows();
             if (this.treeGridParent.selectionSettings.mode !== 'Cell') {
                 const selectedIndexes: number[] = this.treeGridParent.getSelectedRowIndexes().sort((a: number, b: number) => {
@@ -37,19 +37,19 @@ export class TreeClipboard extends GridClipboard {
                     if (i > 0) {
                         this.treeCopyContent += '\n';
                     }
-                    if (!rows[selectedIndexes[i] as number].classList.contains('e-summaryrow')) {
-                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell'));
-                        const uniqueid: string = this.treeGridParent.getSelectedRecords()[i as number][uniqueID];
+                    if (!rows[selectedIndexes[parseInt(i.toString(), 10)] as number].classList.contains('e-summaryrow')) {
+                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell'));
+                        const uniqueid: string = this.treeGridParent.getSelectedRecords()[parseInt(i.toString(), 10) as number][`${uniqueID}`];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                             if (this.treeGridParent.copyHierarchyMode === 'Parent' || this.treeGridParent.copyHierarchyMode === 'Both') {
-                                this.parentContentData(currentRecords, selectedIndexes[i], rows, withHeader, i);
+                                this.parentContentData(currentRecords, selectedIndexes[parseInt(i.toString(), 10)], rows, withHeader, i);
                             }
-                            this[getCopyData](cells, false, '\t', withHeader);
-                            this.treeCopyContent += this[copyContent];
+                            this[`${getCopyData}`](cells, false, '\t', withHeader);
+                            this.treeCopyContent += this[`${copyContent}`];
                             this.copiedUniqueIdCollection.push(uniqueid);
-                            this[copyContent] = '';
+                            this[`${copyContent}`] = '';
                             if (this.treeGridParent.copyHierarchyMode === 'Child' || this.treeGridParent.copyHierarchyMode === 'Both') {
-                                this.childContentData(currentRecords, selectedIndexes[i], rows, withHeader);
+                                this.childContentData(currentRecords, selectedIndexes[parseInt(i.toString(), 10)], rows, withHeader);
                             }
                         }
                     }
@@ -57,10 +57,11 @@ export class TreeClipboard extends GridClipboard {
                 if (withHeader) {
                     const headerTextArray: string[] = [];
                     for (let i: number = 0; i < this.treeGridParent.getVisibleColumns().length; i++) {
-                        headerTextArray[i] = this.treeGridParent.getVisibleColumns()[i].headerText;
+                        headerTextArray[parseInt(i.toString(), 10)] =
+                         this.treeGridParent.getVisibleColumns()[parseInt(i.toString(), 10)].headerText;
                     }
-                    this[getCopyData](headerTextArray, false, '\t', withHeader);
-                    this.treeCopyContent = this[copyContent] + '\n' + this.treeCopyContent;
+                    this[`${getCopyData}`](headerTextArray, false, '\t', withHeader);
+                    this.treeCopyContent = this[`${copyContent}`] + '\n' + this.treeCopyContent;
                 }
                 const args: BeforeCopyEventArgs = {
                     data: this.treeCopyContent,
@@ -70,7 +71,7 @@ export class TreeClipboard extends GridClipboard {
                 if (args.cancel) {
                     return;
                 }
-                this.clipBoardTextArea.value = this[copyContent] = args.data;
+                this.clipBoardTextArea.value = this[`${copyContent}`] = args.data;
                 if (!Browser.userAgent.match(/ipad|ipod|iphone/i)) {
                     this.clipBoardTextArea.select();
                 } else {
@@ -79,7 +80,7 @@ export class TreeClipboard extends GridClipboard {
                         this.clipBoardTextArea.value.length
                     );
                 }
-                this[isSelect] = true;
+                this[`${isSelect}`] = true;
                 this.copiedUniqueIdCollection = [];
                 this.treeCopyContent = '';
             } else {
@@ -94,24 +95,24 @@ export class TreeClipboard extends GridClipboard {
         const parentItem: string = 'parentItem';
         const uniqueID: string = 'uniqueID';
         const level: string = 'level';
-        if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem])) {
-            const treeLevel: number = currentRecords[selectedIndex][parentItem][level];
+        if (!isNullOrUndefined(currentRecords[parseInt(selectedIndex.toString(), 10)][`${parentItem}`])) {
+            const treeLevel: number = currentRecords[parseInt(selectedIndex.toString(), 10)][`${parentItem}`][`${level}`];
             for (let i: number = 0; i < treeLevel + 1; i++) {
                 for (let j: number = 0; j < currentRecords.length; j++) {
-                    if (!isNullOrUndefined(currentRecords[selectedIndex][parentItem]) &&
-                        currentRecords[j][uniqueID] === currentRecords[selectedIndex][parentItem][uniqueID]) {
+                    if (!isNullOrUndefined(currentRecords[parseInt(selectedIndex.toString(), 10)][`${parentItem}`]) &&
+                        currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`] === currentRecords[parseInt(selectedIndex.toString(), 10)][`${parentItem}`][`${uniqueID}`]) {
                         selectedIndex = j;
-                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndex].querySelectorAll('.e-rowcell'));
-                        const uniqueid: string = currentRecords[j][uniqueID];
+                        const cells: HTMLElement[] = [].slice.call(rows[parseInt(selectedIndex.toString(), 10)].querySelectorAll('.e-rowcell'));
+                        const uniqueid: string = currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
-                            this[getCopyData](cells, false, '\t', withHeader);
+                            this[`${getCopyData}`](cells, false, '\t', withHeader);
                             if (index > 0) {
-                                this.treeCopyContent = this.treeCopyContent + this[copyContent] + '\n';
+                                this.treeCopyContent = this.treeCopyContent + this[`${copyContent}`] + '\n';
                             } else {
-                                this.treeCopyContent = this[copyContent] + '\n' + this.treeCopyContent;
+                                this.treeCopyContent = this[`${copyContent}`] + '\n' + this.treeCopyContent;
                             }
                             this.copiedUniqueIdCollection.push(uniqueid);
-                            this[copyContent] = '';
+                            this[`${copyContent}`] = '';
                             break;
                         }
                     }
@@ -150,18 +151,18 @@ export class TreeClipboard extends GridClipboard {
         const childRecords: string = 'childRecords';
         const hasChildRecords: string = 'hasChildRecords';
         const uniqueID: string = 'uniqueID';
-        if (currentRecords[selectedIndex][hasChildRecords]) {
-            const childData: Object[] = currentRecords[selectedIndex][childRecords];
+        if (currentRecords[parseInt(selectedIndex.toString(), 10)][`${hasChildRecords}`]) {
+            const childData: Object[] = currentRecords[parseInt(selectedIndex.toString(), 10)][`${childRecords}`];
             for (let i: number = 0; i < childData.length; i++ ) {
                 for (let j: number = 0; j < currentRecords.length; j++) {
-                    if (!isNullOrUndefined(childData[i][uniqueID]) && currentRecords[j][uniqueID] === childData[i][uniqueID]) {
-                        if ((!isNullOrUndefined(rows[j])) && !rows[j].classList.contains('e-summaryrow')) {
-                            const cells: HTMLElement[] = [].slice.call(rows[j].querySelectorAll('.e-rowcell'));
-                            const uniqueid: string = currentRecords[j][uniqueID];
+                    if (!isNullOrUndefined(childData[parseInt(i.toString(), 10)][`${uniqueID}`]) && currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`] === childData[parseInt(i.toString(), 10)][`${uniqueID}`]) {
+                        if ((!isNullOrUndefined(rows[parseInt(j.toString(), 10)])) && !rows[parseInt(j.toString(), 10)].classList.contains('e-summaryrow')) {
+                            const cells: HTMLElement[] = [].slice.call(rows[parseInt(j.toString(), 10)].querySelectorAll('.e-rowcell'));
+                            const uniqueid: string = currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`];
                             if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
-                                this[getCopyData](cells, false, '\t', withHeader);
-                                this.treeCopyContent += ('\n' + this[copyContent]);
-                                this[copyContent] = '';
+                                this[`${getCopyData}`](cells, false, '\t', withHeader);
+                                this.treeCopyContent += ('\n' + this[`${copyContent}`]);
+                                this[`${copyContent}`] = '';
                                 this.copiedUniqueIdCollection.push(uniqueid);
                                 this.childContentData(currentRecords, j, rows, withHeader);
                             }

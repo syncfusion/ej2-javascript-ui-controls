@@ -630,6 +630,14 @@ export class DateTimePicker extends DatePicker {
             this.keyboardHandler.destroy();
         }
         this.unBindInputEvents();
+        this.liCollections = null;
+        this.rippleFn = null;
+        this.selectedElement = null;
+        this.listTag = null;
+        this.timeIcon = null;
+        this.popupObject = null;
+        this.preventArgs = null;
+        this.keyboardModule = null;
         super.destroy();
     }
     /**
@@ -1037,7 +1045,7 @@ export class DateTimePicker extends DatePicker {
             event.preventDefault();
         }
         if (!(closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
-            && target !== this.timeIcon && target !== this.inputWrapper.container) {
+            && target !== this.timeIcon && !isNullOrUndefined(this.inputWrapper) && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
                 this.hide(event);
                 this.focusOut();
@@ -1285,9 +1293,9 @@ export class DateTimePicker extends DatePicker {
             const items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>collections.querySelectorAll('.' + LISTCLASS);
             if (items.length) {
                 for (let i: number = 0; i < items.length; i++) {
-                    if (this.timeCollections[i] === +(this.valueWithMinutes)) {
-                        items[i].setAttribute('aria-selected', 'true');
-                        this.selectedElement = items[i];
+                    if (this.timeCollections[i as number] === +(this.valueWithMinutes)) {
+                        items[i as number].setAttribute('aria-selected', 'true');
+                        this.selectedElement = items[i as number];
                         this.activeIndex = i;
                         this.setTimeActiveDescendant();
                         break;
@@ -1601,16 +1609,16 @@ export class DateTimePicker extends DatePicker {
             } else {
                 if (event.action === 'down') {
                     for (let i: number = 0; i < listCount; i++) {
-                        if (+value < this.timeCollections[i]) {
-                            dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[i])));
+                        if (+value < this.timeCollections[i as number]) {
+                            dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[i as number])));
                             this.activeIndex = i;
                             break;
                         }
                     }
                 } else {
                     for (let i: number = listCount - 1; i >= 0; i--) {
-                        if (+value > this.timeCollections[i]) {
-                            dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[i])));
+                        if (+value > this.timeCollections[i as number]) {
+                            dateTimeVal = +(this.createDateObj(new Date(this.timeCollections[i as number])));
                             this.activeIndex = i;
                             break;
                         }
@@ -1685,7 +1693,7 @@ export class DateTimePicker extends DatePicker {
                 let index: number = (event.keyCode === 40 || event.keyCode === 39) ? ++this.activeIndex : --this.activeIndex;
                 this.activeIndex = index = this.activeIndex === (listCount) ? 0 : this.activeIndex;
                 this.activeIndex = index = this.activeIndex < 0 ? (listCount - 1) : this.activeIndex;
-                nextItemValue = isNullOrUndefined(this.timeCollections[index]) ? this.timeCollections[0] : this.timeCollections[index];
+                nextItemValue = isNullOrUndefined(this.timeCollections[index as number]) ? this.timeCollections[0] : this.timeCollections[index as number];
             } else if (event.action === 'home') {
                 this.activeIndex = 0;
                 nextItemValue = this.timeCollections[0];
@@ -1893,7 +1901,7 @@ export class DateTimePicker extends DatePicker {
                 super.onPropertyChanged(newProp, oldProp);
                 break;
             }
-            if (!this.isDynamicValueChanged && !this.isIconClicked) {
+            if (!this.isDynamicValueChanged) {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;

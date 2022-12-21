@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';import { Complex, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';import { BorderModel, TitleSettingsModel, MarginModel, LevelSettingsModel, FontModel } from './model/base-model';import { LeafItemSettingsModel, TooltipSettingsModel, LegendSettingsModel, InitialDrillSettingsModel } from './model/base-model';import { HighlightSettingsModel, SelectionSettingsModel } from './model/base-model';import { Border, Margin, TitleSettings, LegendSettings, InitialDrillSettings } from './model/base';import { SelectionSettings, TooltipSettings, LevelSettings, LeafItemSettings, HighlightSettings } from './model/base';import { LayoutMode, TreeMapTheme, RenderingMode } from './utils/enum';import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs } from '../treemap/model/interface';import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs, IItemDataEventArgs } from '../treemap/model/interface';import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRightClickEventArgs } from '../treemap/model/interface';import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeElement, setItemTemplateContent } from '../treemap/utils/helper';import { removeClassNames, removeShape, textFormatter } from '../treemap/utils/helper';import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';import { LayoutPanel } from './layout/render-panel';import { TreeMapTooltip } from './user-interaction/tooltip';import { ExportType } from '../treemap/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { TreeMapHighlight, TreeMapSelection } from './user-interaction/highlight-selection';import { TreeMapLegend } from './layout/legend';import { DataManager, Query } from '@syncfusion/ej2-data';import { getThemeStyle } from './model/theme';import { Print } from './model/print';import { ImageExport } from './model/image-export';import { PdfExport } from './model/pdf-export';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';import { Complex, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';import { BorderModel, TitleSettingsModel, MarginModel, LevelSettingsModel, FontModel } from './model/base-model';import { LeafItemSettingsModel, TooltipSettingsModel, LegendSettingsModel, InitialDrillSettingsModel } from './model/base-model';import { HighlightSettingsModel, SelectionSettingsModel } from './model/base-model';import { Border, Margin, TitleSettings, LegendSettings, InitialDrillSettings } from './model/base';import { SelectionSettings, TooltipSettings, LevelSettings, LeafItemSettings, HighlightSettings } from './model/base';import { LayoutMode, TreeMapTheme, RenderingMode } from './utils/enum';import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs } from '../treemap/model/interface';import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs } from '../treemap/model/interface';import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRightClickEventArgs } from '../treemap/model/interface';import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeElement, setItemTemplateContent } from '../treemap/utils/helper';import { removeClassNames, removeShape, textFormatter } from '../treemap/utils/helper';import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';import { load, loaded, drillStart, drillEnd } from '../treemap/model/constants';import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';import { LayoutPanel } from './layout/render-panel';import { TreeMapTooltip } from './user-interaction/tooltip';import { ExportType } from '../treemap/utils/enum';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { TreeMapHighlight, TreeMapSelection } from './user-interaction/highlight-selection';import { TreeMapLegend } from './layout/legend';import { DataManager, Query } from '@syncfusion/ej2-data';import { getThemeStyle } from './model/theme';import { Print } from './model/print';import { ImageExport } from './model/image-export';import { PdfExport } from './model/pdf-export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -206,126 +206,126 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Triggers when the treemap is on load.
      *
-     * @event
+     * @event load
      */
     load?: EmitType<ILoadEventArgs>;
 
     /**
      * Triggers before the prints gets started.
      *
-     * @event
+     * @event beforePrint
      */
     beforePrint?: EmitType<IPrintEventArgs>;
 
     /**
      * Triggers after treemap is rendered.
      *
-     * @event
+     * @event loaded
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before item rendering in the treemap component.
      *
-     * @event
+     * @event itemRendering
      */
     itemRendering?: EmitType<IItemRenderingEventArgs>;
 
     /**
      * Triggers on performing drill down functionality in the treemap.
      *
-     * @event
+     * @event drillStart
      */
     drillStart?: EmitType<IDrillStartEventArgs>;
 
     /**
      * Triggers after drill down functionality gets completed in the treemap.
      *
-     * @event
+     * @event drillEnd
      */
     drillEnd?: EmitType<IDrillEndEventArgs>;
 
     /**
      * Triggers after selecting a treemap item.
      *
-     * @event
+     * @event itemSelected
      */
     itemSelected?: EmitType<IItemSelectedEventArgs>;
 
     /**
      * Triggers after highlighting on the treemap item.
      *
-     * @event
+     * @event itemHighlight
      */
     itemHighlight?: EmitType<IItemHighlightEventArgs>;
 
     /**
      * Triggers on rendering of the tooltip in the treemap component.
      *
-     * @event
+     * @event tooltipRendering
      */
     tooltipRendering?: EmitType<ITreeMapTooltipRenderEventArgs>;
 
     /**
      * Triggers after clicking an item in the treemap.
      *
-     * @event
+     * @event itemClick
      */
     itemClick?: EmitType<IItemClickEventArgs>;
 
     /**
      * Triggers after mouse hover on the treemap item.
      *
-     * @event
+     * @event itemMove
      */
     itemMove?: EmitType<IItemMoveEventArgs>;
 
     /**
      * Triggers after clicking on the treemap.
      *
-     * @event
+     * @event click
      */
     click?: EmitType<IItemClickEventArgs>;
 
     /**
      * Triggers after double clicking on the treemap.
      *
-     * @event
+     * @event doubleClick
      */
     doubleClick?: EmitType<IDoubleClickEventArgs>;
 
     /**
      * Triggers after right clicking on the treemap.
      *
-     * @event
+     * @event rightClick
      */
     rightClick?: EmitType<IMouseMoveEventArgs>;
 
     /**
      * Triggers after mouse hover on the treemap.
      *
-     * @event
+     * @event mouseMove
      */
     mouseMove?: EmitType<IMouseMoveEventArgs>;
 
     /**
      * Triggers after resizing the treemap component.
      *
-     * @event
+     * @event resize
      */
     resize?: EmitType<IResizeEventArgs>;
 
     /**
      * Triggers before rendering each legend item in the treemap.
      *
-     * @event
+     * @event legendItemRendering
      */
     legendItemRendering?: EmitType<ILegendItemRenderingEventArgs>;
 
     /**
      * Triggers before rendering the legend items in the treemap.
      *
-     * @event
+     * @event legendRendering
      * @deprecated
      */
     legendRendering?: EmitType<ILegendRenderingEventArgs>;

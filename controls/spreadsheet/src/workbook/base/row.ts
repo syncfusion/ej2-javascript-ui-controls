@@ -84,7 +84,7 @@ export class Row extends ChildProperty<SheetModel> {
  * @returns {RowModel} - To get the row.
  */
 export function getRow(sheet: SheetModel, rowIndex: number): RowModel {
-    return sheet.rows[rowIndex];
+    return sheet.rows[rowIndex as number];
 }
 
 /**
@@ -95,11 +95,11 @@ export function getRow(sheet: SheetModel, rowIndex: number): RowModel {
  * @returns {void} - To set the row.
  */
 export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = {};
+    if (!sheet.rows[rowIndex as number]) {
+        sheet.rows[rowIndex as number] = {};
     }
     Object.keys(row).forEach((key: string): void => {
-        sheet.rows[rowIndex][key] = row[key];
+        sheet.rows[rowIndex as number][`${key}`] = row[`${key}`];
     });
 }
 /**
@@ -109,7 +109,7 @@ export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void
  * @returns {boolean} - To return the bool value.
  */
 export function isHiddenRow(sheet: SheetModel, index: number): boolean {
-    return sheet.rows[index] && sheet.rows[index].hidden;
+    return sheet.rows[index as number] && sheet.rows[index as number].hidden;
 }
 /**
  * @hidden
@@ -117,8 +117,8 @@ export function isHiddenRow(sheet: SheetModel, index: number): boolean {
  * @param {number} index - Specifies the index.
  * @returns {boolean} - To return the bool value.
  */
- export function isFilterHidden(sheet: SheetModel, index: number): boolean {
-    return sheet.rows[index] && (sheet.rows[index] as ExtendedRowModel).isFiltered;
+export function isFilterHidden(sheet: SheetModel, index: number): boolean {
+    return sheet.rows[index as number] && (sheet.rows[index as number] as ExtendedRowModel).isFiltered;
 }
 /**
  * @hidden
@@ -130,9 +130,9 @@ export function isHiddenRow(sheet: SheetModel, index: number): boolean {
  */
 export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boolean, addHidden?: boolean): number {
     let hgt: number;
-    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
-        if (!addHidden && sheet.rows[rowIndex].hidden) { return 0; }
-        hgt = sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
+    if (sheet && sheet.rows && sheet.rows[rowIndex as number]) {
+        if (!addHidden && sheet.rows[rowIndex as number].hidden) { return 0; }
+        hgt = sheet.rows[rowIndex as number].height === undefined ? 20 : sheet.rows[rowIndex as number].height;
     } else {
         hgt = 20;
     }
@@ -152,10 +152,10 @@ export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boo
  */
 export function setRowHeight(sheet: SheetModel, rowIndex: number, height: number): void {
     if (sheet && sheet.rows) {
-        if (!sheet.rows[rowIndex]) {
-            sheet.rows[rowIndex] = {};
+        if (!sheet.rows[rowIndex as number]) {
+            sheet.rows[rowIndex as number] = {};
         }
-        sheet.rows[rowIndex].height = height;
+        sheet.rows[rowIndex as number].height = height;
     }
 }
 /**

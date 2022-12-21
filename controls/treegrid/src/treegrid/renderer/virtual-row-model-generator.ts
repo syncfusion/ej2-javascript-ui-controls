@@ -56,7 +56,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
             }
             const rows: Row<Column>[] = super.generateRows(data, notifyArgs);
             for (let r: number = 0; r < rows.length; r++) {
-                rows[r].index = (<ITreeData[]>(this.visualData)).indexOf(rows[r].data);
+                rows[parseInt(r.toString(), 10)].index = (<ITreeData[]>(this.visualData)).indexOf(rows[parseInt(r.toString(), 10)].data);
             }
             return rows;
         }
@@ -67,16 +67,17 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
         && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             const model: string = 'model';
-            const currentPage: number = this[model].currentPage;
+            const currentPage: number = this[`${model}`].currentPage;
             if (clear) {
                 this.cache = {};
                 this.movableCache = {};
                 this.frozenRightCache = {};
                 this.data = {};
                 this.groups = {};
-            } else if (action === 'virtualscroll' && this.cache[currentPage] &&
-                    this.cache[currentPage].length > (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
-                delete this.cache[currentPage];
+            } else if (action === 'virtualscroll' && this.cache[parseInt(currentPage.toString(), 10)] &&
+                    this.cache[parseInt(currentPage.toString(), 10)].length >
+                     (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
+                delete this.cache[parseInt(currentPage.toString(), 10)];
             }
         } else {
             if (clear || action === 'virtualscroll') {

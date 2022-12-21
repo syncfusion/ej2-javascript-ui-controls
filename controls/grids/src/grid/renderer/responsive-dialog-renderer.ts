@@ -142,23 +142,24 @@ export class ResponsiveDialogRenderer implements IAction {
             const isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
             if (isFilter) {
                 for (let i: number = 0; i < gObj.filterSettings.columns.length; i++) {
-                    filteredCols.push(gObj.filterSettings.columns[i].field);
+                    filteredCols.push(gObj.filterSettings.columns[parseInt(i.toString(), 10)].field);
                 }
             }
             for (let i: number = 0; i < cols.length; i++) {
-                if (!cols[i].visible || (!cols[i].allowSorting && isSort) || (!cols[i].allowFiltering && isFilter)) {
+                if (!cols[parseInt(i.toString(), 10)].visible || (!cols[parseInt(i.toString(), 10)].allowSorting && isSort)
+                    || (!cols[parseInt(i.toString(), 10)].allowFiltering && isFilter)) {
                     continue;
                 }
                 const cDiv: HTMLElement = gObj.createElement('div', { className: 'e-responsivecoldiv' });
-                cDiv.setAttribute('data-e-mappingname', cols[i].field);
-                cDiv.setAttribute('data-e-mappinguid', cols[i].uid);
-                const span: HTMLElement = gObj.createElement('span', { innerHTML: cols[i].headerText, className: 'e-res-header-text' });
+                cDiv.setAttribute('data-e-mappingname', cols[parseInt(i.toString(), 10)].field);
+                cDiv.setAttribute('data-e-mappinguid', cols[parseInt(i.toString(), 10)].uid);
+                const span: HTMLElement = gObj.createElement('span', { innerHTML: cols[parseInt(i.toString(), 10)].headerText, className: 'e-res-header-text' });
                 cDiv.appendChild(span);
                 this.customColumnDiv.appendChild(cDiv);
                 if (isSort) {
                     const fields: string[] = this.getSortedFieldsAndDirections('field');
-                    const index: number = fields.indexOf(cols[i].field);
-                    const button: HTMLElement = gObj.createElement('button', { id: gObj.element.id + cols[i].field + 'sortbutton' });
+                    const index: number = fields.indexOf(cols[parseInt(i.toString(), 10)].field);
+                    const button: HTMLElement = gObj.createElement('button', { id: gObj.element.id + cols[parseInt(i.toString(), 10)].field + 'sortbutton' });
                     const clone: Element = sortBtnParent.cloneNode() as Element;
                     clone.appendChild(button);
                     cDiv.appendChild(clone);
@@ -167,8 +168,8 @@ export class ResponsiveDialogRenderer implements IAction {
                     });
                     btnObj.appendTo(button);
                     let buttonInnerText : string;
-                    if ((!isNullOrUndefined (this.parent.sortSettings.columns[index]))) {
-                        buttonInnerText = (this.parent.sortSettings.columns[index].direction === 'Ascending') ?
+                    if ((!isNullOrUndefined (this.parent.sortSettings.columns[parseInt(index.toString(), 10)]))) {
+                        buttonInnerText = (this.parent.sortSettings.columns[parseInt(index.toString(), 10)].direction === 'Ascending') ?
                             this.parent.localeObj.getConstant('AscendingText') : this.parent.localeObj.getConstant('DescendingText');
                     }
                     button.innerHTML = index > -1 ? buttonInnerText : this.parent.localeObj.getConstant('NoneText');
@@ -176,10 +177,10 @@ export class ResponsiveDialogRenderer implements IAction {
                         this.sortButtonClickHandler(e.target as Element);
                     };
                 }
-                if (isFilter && filteredCols.indexOf(cols[i].field) > -1) {
+                if (isFilter && filteredCols.indexOf(cols[parseInt(i.toString(), 10)].field) > -1) {
                     const divIcon: HTMLElement = gObj.createElement('div', { className: 'e-icons e-res-icon e-filtersetdiv' });
                     const iconSpan: HTMLElement = gObj.createElement('span', { className: 'e-icons e-res-icon e-filterset' });
-                    iconSpan.setAttribute('colType', cols[i].type);
+                    iconSpan.setAttribute('colType', cols[parseInt(i.toString(), 10)].type);
                     divIcon.appendChild(iconSpan);
                     cDiv.appendChild(divIcon);
                 }
@@ -192,7 +193,7 @@ export class ResponsiveDialogRenderer implements IAction {
     private getSortedFieldsAndDirections(name: string): string[] {
         const fields: string[] = [];
         for (let i: number = 0; i < this.parent.sortSettings.columns.length; i++) {
-            fields.push(this.parent.sortSettings.columns[i][name]);
+            fields.push(this.parent.sortSettings.columns[parseInt(i.toString(), 10)][`${name}`]);
         }
         return fields;
     }
@@ -219,8 +220,8 @@ export class ResponsiveDialogRenderer implements IAction {
     private resetSortButtons(target?: Element): void {
         const buttons: HTMLElement[] = [].slice.call(this.customColumnDiv.getElementsByClassName('e-ressortbutton'));
         for (let i: number = 0; i < buttons.length; i++) {
-            if (buttons[i] !== target) {
-                buttons[i].innerHTML = 'None';
+            if (buttons[parseInt(i.toString(), 10)] !== target) {
+                buttons[parseInt(i.toString(), 10)].innerHTML = 'None';
             }
         }
     }
@@ -242,7 +243,7 @@ export class ResponsiveDialogRenderer implements IAction {
     private getCurrentSortedFields(): string[] {
         const fields: string[] = [];
         for (let i: number = 0; i < this.sortedCols.length; i++) {
-            fields.push(this.sortedCols[i]);
+            fields.push(this.sortedCols[parseInt(i.toString(), 10)]);
         }
         return fields;
     }
@@ -358,7 +359,7 @@ export class ResponsiveDialogRenderer implements IAction {
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         const isStringTemplate: string = 'isStringTemplate';
-        options[isStringTemplate] = true;
+        options[`${isStringTemplate}`] = true;
         if (isCustomFilter) {
             options.header = this.renderResponsiveHeader(col, undefined, true);
             options.cssClass = 'e-customfilter';
@@ -394,9 +395,9 @@ export class ResponsiveDialogRenderer implements IAction {
     private dialogOpen(): void {
         if (this.action === ResponsiveDialogAction.isSort && this.parent.allowMultiSorting) {
             for (let i: number = 0; i < this.parent.sortSettings.columns.length; i++) {
-                this.sortedCols.push(this.parent.sortSettings.columns[i].field);
-                const sortField: string = this.parent.sortSettings.columns[i].field;
-                const sortDirection: SortDirection = this.parent.sortSettings.columns[i].direction;
+                this.sortedCols.push(this.parent.sortSettings.columns[parseInt(i.toString(), 10)].field);
+                const sortField: string = this.parent.sortSettings.columns[parseInt(i.toString(), 10)].field;
+                const sortDirection: SortDirection = this.parent.sortSettings.columns[parseInt(i.toString(), 10)].direction;
                 this.sortPredicate.push({ field: sortField, direction: sortDirection });
             }
         }
@@ -426,7 +427,9 @@ export class ResponsiveDialogRenderer implements IAction {
             this.parent.setProperties({ sortSettings: { columns: [] } }, true);
         }
         for (let i: number = 0; i < this.sortPredicate.length; i++) {
-            this.parent.sortColumn(this.sortPredicate[i].field, this.sortPredicate[i].direction, this.parent.allowMultiSorting);
+            this.parent.sortColumn(
+                this.sortPredicate[parseInt(i.toString(), 10)].field,
+                this.sortPredicate[parseInt(i.toString(), 10)].direction, this.parent.allowMultiSorting);
         }
         if (!this.sortPredicate.length) {
             this.parent.clearSorting();
@@ -601,7 +604,7 @@ export class ResponsiveDialogRenderer implements IAction {
         } else {
             const child: HTMLCollection = this.customColumnDiv.children;
             for (let i: number = 0; i < child.length; i++) {
-                target = child[i].querySelector('.e-filtersetdiv');
+                target = child[parseInt(i.toString(), 10)].querySelector('.e-filtersetdiv');
                 if (target) {
                     remove(target);
                     i--;

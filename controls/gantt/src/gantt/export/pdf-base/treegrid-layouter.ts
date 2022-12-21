@@ -107,7 +107,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         const layoutedPages: TemporaryDictionary<PdfPage, number[]> = new TemporaryDictionary<PdfPage, number[]>();
         const startPage: PdfPage = param.page;
         for (let index: number = 0; index < this.columnRanges.length; index++) {
-            const range: number[] = this.columnRanges[index];
+            const range: number[] = this.columnRanges[index as number];
             this.cellStartIndex = range[0];
             this.cellEndIndex = range[1];
             const rowsCount: number = this.treegrid.rows.count;
@@ -199,7 +199,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         const pages: PdfPage[] = [];
         const keys: PdfPage[] = layoutPages.keys();
         for (let i: number = 0; i < keys.length; i++) {
-            const page: PdfPage = keys[i];
+            const page: PdfPage = keys[i as number];
             page.section = null;
             pages.push(page);
             document.pages.remove(page);
@@ -207,7 +207,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         for (let i: number = 0; i < layoutPages.size(); i++) {
             const count: number = (layoutPages.size() / this.columnRanges.length);
             for (let j: number = i; j < layoutPages.size(); j += count) {
-                const page: PdfPage = pages[j];
+                const page: PdfPage = pages[j as number];
                 if (document.pages.indexOf(page) === -1) {
                     document.pages.add(page);
                 }

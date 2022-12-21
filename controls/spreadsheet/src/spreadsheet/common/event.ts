@@ -280,12 +280,6 @@ export const addChartEle: string = 'addChartEle';
 /** @hidden */
 export const undoRedoForChartDesign: string = 'undoRedoForChartDesign';
 /** @hidden */
-export const isReact: string = 'isReact';
-/** @hidden */
-export const renderReactTemplates: string = 'renderReactTemplates';
-/** @hidden */
-export const clearTemplate: string = 'clearTemplate';
-/** @hidden */
 export const protectWorkbook: string = 'protectWorkbook';
 /** @hidden */
 export const unProtectWorkbook: string = 'unProtectWorkbook';

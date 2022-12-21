@@ -399,10 +399,15 @@ export class Formula {
         const isSingleCell: boolean = sRange.length > 1 && sRange[0] === sRange[1];
         const name: DefineNameModel[] = this.parent.definedNames.filter(
             (name: DefineNameModel) => {
-                if (isSingleCell && name.refersTo === '=' + singleRange) {
+                let splitSheetName: string[] = name.refersTo.split('!');
+                if (splitSheetName[0].includes("'") && splitSheetName[0].match(/^='.*'$/)) {
+                    splitSheetName[0] = '=' + splitSheetName[0].slice(2, -1);
+                }
+                const referValue: string = splitSheetName[0] + '!' + splitSheetName[1].split('$').join('');
+                if (isSingleCell && referValue === '=' + singleRange) {
                     return true;
                 }
-                return name.refersTo === '=' + range;
+                return referValue === '=' + range;
             });
         return name && name[0];
     }

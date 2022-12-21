@@ -61,14 +61,14 @@ export class EventHandler {
         const event: string[] = eventName.split(' ');
         for (let i: number = 0; i < event.length; i++) {
             eventData.push({
-                name: event[i],
+                name: event[parseInt(i.toString(), 10)],
                 listener: listener,
                 debounce: debounceListener
             });
             if (Browser.isIE) {
-                element.addEventListener(event[i], <EventListener>debounceListener);
+                element.addEventListener(event[parseInt(i.toString(), 10)], <EventListener>debounceListener);
             } else {
-                element.addEventListener(event[i], <EventListener>debounceListener, { passive: false });
+                element.addEventListener(event[parseInt(i.toString(), 10)], <EventListener>debounceListener, { passive: false });
             }
         }
         return debounceListener;
@@ -90,7 +90,7 @@ export class EventHandler {
             let debounceListener: Function;
             if (eventData && eventData.length !== 0) {
                 eventData.some((x: EventOptions, i: number) => {
-                    return x.name === event[j] && x.listener === listener ?
+                    return x.name === event[parseInt(j.toString(), 10)] && x.listener === listener ?
                         (index = i, debounceListener = x.debounce, true) : false;
                 });
             }
@@ -98,7 +98,7 @@ export class EventHandler {
                 eventData.splice(index, 1);
             }
             if (debounceListener) {
-                element.removeEventListener(event[j], <EventListener>debounceListener);
+                element.removeEventListener(event[parseInt(j.toString(), 10)], <EventListener>debounceListener);
             }
         }
     }
@@ -117,7 +117,7 @@ export class EventHandler {
         // eslint-disable-next-line
         copyData = extend([], copyData, eventData) as EventOptions[];
         for (let i: number = 0; i < copyData.length; i++) {
-            element.removeEventListener(<string>copyData[i].name, <EventListener>copyData[i].debounce);
+            element.removeEventListener(<string>copyData[parseInt(i.toString(), 10)].name, <EventListener>copyData[parseInt(i.toString(), 10)].debounce);
             eventData.shift();
         }
     }

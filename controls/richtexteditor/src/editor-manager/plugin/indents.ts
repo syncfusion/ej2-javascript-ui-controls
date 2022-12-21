@@ -52,12 +52,12 @@ export class Indents {
         const parentNodes: Node[] = indentsNodes.slice();
         const listsNodes: Node[] = [];
         for (let i: number = 0; i < parentNodes.length; i++) {
-            if ((parentNodes[i] as Element).tagName !== 'LI' && 'LI' === (parentNodes[i].parentNode as Element).tagName) {
-                indentsNodes.splice(indentsNodes.indexOf(parentNodes[i]), 1);
-                listsNodes.push(parentNodes[i].parentNode);
-            } else if ((parentNodes[i] as Element).tagName === 'LI') {
-                indentsNodes.splice(indentsNodes.indexOf(parentNodes[i]), 1);
-                listsNodes.push(parentNodes[i]);
+            if ((parentNodes[i as number] as Element).tagName !== 'LI' && 'LI' === (parentNodes[i as number].parentNode as Element).tagName) {
+                indentsNodes.splice(indentsNodes.indexOf(parentNodes[i as number]), 1);
+                listsNodes.push(parentNodes[i as number].parentNode);
+            } else if ((parentNodes[i as number] as Element).tagName === 'LI') {
+                indentsNodes.splice(indentsNodes.indexOf(parentNodes[i as number]), 1);
+                listsNodes.push(parentNodes[i as number]);
             }
         }
         if (listsNodes.length > 0) {
@@ -77,7 +77,7 @@ export class Indents {
             });
         }
         for (let i: number = 0; i < indentsNodes.length; i++) {
-            const parentNode: HTMLElement = indentsNodes[i] as HTMLElement;
+            const parentNode: HTMLElement = indentsNodes[i as number] as HTMLElement;
             const marginLeftOrRight: string = isRtl ? parentNode.style.marginRight : parentNode.style.marginLeft;
             let indentsValue: string;
             if (e.subCommand === 'Indent') {

@@ -753,7 +753,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         const self: RecurrenceEditor = this;
         const dataSource: { [key: string]: string | number }[] = [];
         monthpos.forEach((data: string) => {
-            dataSource.push({ text: self.localeObj.getConstant(data), value: monthposValue[data] });
+            dataSource.push({ text: self.localeObj.getConstant(data), value: monthposValue[`${data}`] });
         });
         return dataSource;
     }
@@ -772,7 +772,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
         for (const obj of weekday) {
             const day: string = getValue(obj, cldrObj);
-            dayData.push({ text: format === 'narrow' ? day : capitalizeFirstWord(day, 'single'), value: valueData[obj] });
+            dayData.push({ text: format === 'narrow' ? day : capitalizeFirstWord(day, 'single'), value: valueData[`${obj}`] });
         }
         return dayData;
     }
@@ -861,7 +861,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         const weekday: string[] = [RULESUNDAY, RULEMONDAY, RULETUESDAY, RULEWEDNESDAY, RULETHURSDAY, RULEFRIDAY, RULESATURDAY];
         this.rotateArray(weekday, this.firstDayOfWeek);
         for (let index: number = 0; index < elements.length; index++) {
-            ruleData += weekday[parseInt(elements[index].getAttribute('data-index'), 10)] + (index === (elements.length - 1) ? '' : COMMA);
+            ruleData += weekday[parseInt(elements[parseInt(index.toString(), 10)].getAttribute('data-index'), 10)] + (index === (elements.length - 1) ? '' : COMMA);
         }
         return ruleData + SEMICOLON;
     }
@@ -889,7 +889,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.rotateArray(weekday, this.firstDayOfWeek);
         for (const obj of this.dayButtons) {
             const index: number = parseInt(obj.element.getAttribute('data-index'), 10);
-            if (keys.indexOf(weekday[index]) !== -1) {
+            if (keys.indexOf(weekday[parseInt(index.toString(), 10)]) !== -1) {
                 obj.setProperties({ isPrimary: true });
             } else {
                 obj.setProperties({ isPrimary: false });
@@ -904,7 +904,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             this.onWeekDay.setProperties({ checked: true });
             this.monthWeekPos.setProperties({ value: this.ruleObject.setPosition });
             for (const key of Object.keys(valueData)) {
-                if (valueData[key] === this.ruleObject.day[0]) {
+                if (valueData[`${key}`] === this.ruleObject.day[0]) {
                     this.monthWeekDays.setProperties({ value: this.ruleObject.day[0] });
                     break;
                 }

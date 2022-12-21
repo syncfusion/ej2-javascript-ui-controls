@@ -2,31 +2,7 @@
 
 ## [Unreleased]
 
-## 20.3.58 (2022-11-22)
-
-### Checkbox
-
-#### Bug Fixes
-
-- The Issue with the checkbox label size in the Fluent theme has been fixed.
-
-## 20.3.57 (2022-11-15)
-
-### Chips
-
-#### Bug Fixes
-
-- `#293361` - When setting `enabled` value as `false` in Chip component then the disabled chip item get focused issue has been resolved.
-
-## 20.3.50 (2022-10-18)
-
-### Checkbox
-
-#### Bug Fixes
-
-- `#I382543` - The issue with "Checkbox value not update properly while using edit template of grid" has been resolved.
-
-## 20.3.49 (2022-10-11)
+## 20.3.47 (2022-09-29)
 
 ### Floating Action Button `Preview`
 
@@ -60,7 +36,7 @@ The Speed Dial component is an extension of the floating action button that disp
 
 #### Bug Fixes
 
-- `#384387` - The issue with "Switch component click event trigger two times when we handling enable/disable dynamically" has been resolved.
+- `#I382543` - The issue with "Checkbox value not update properly while using edit template of grid" has been resolved.
 
 ### Checkbox
 

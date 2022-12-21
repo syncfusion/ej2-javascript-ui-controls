@@ -50,22 +50,22 @@ export type AppBarColor = 'Light' | 'Dark' | 'Primary' | 'Inherit';
 export class AppBar extends Component<HTMLElement> implements INotifyPropertyChanged {
 
     /**
-     *  Specifies the mode of the AppBar that defines the AppBar height. The possible values for this property are as follows:
-     *  * Regular
-     *  * Prominent
-     *  * Dense
+     * Specifies the mode of the AppBar that defines the AppBar height. The possible values for this property are as follows:
+     * * Regular
+     * * Prominent
+     * * Dense
      *
-     *  @default 'Regular'
+     * @default 'Regular'
      */
     @Property('Regular')
     public mode: AppBarMode;
 
     /**
-     *  Specifies the position of the AppBar. The possible values for this property are as follows:
-     *  * Top
-     *  * Bottom
+     * Specifies the position of the AppBar. The possible values for this property are as follows:
+     * * Top
+     * * Bottom
      *
-     *  @default 'Top'
+     * @default 'Top'
      */
     @Property('Top')
     public position: AppBarPosition;
@@ -96,13 +96,13 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
     public htmlAttributes: Record<string, string>;
 
     /**
-     *  Specifies the color mode that defines the color of the AppBar component. The possible values for this property are as follows:
-     *  * Light
-     *  * Dark
-     *  * Primary
-     *  * Inherit
+     * Specifies the color mode that defines the color of the AppBar component. The possible values for this property are as follows:
+     * * Light
+     * * Dark
+     * * Primary
+     * * Inherit
      *
-     *  @default 'Light'
+     * @default 'Light'
      */
     @Property('Light')
     public colorMode: AppBarColor;
@@ -215,7 +215,7 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
                         const keys: string[] = Object.keys(oldProp.htmlAttributes);
                         for (const key of keys) {
                             if (key === 'class') {
-                                removeClass([this.element], oldProp.htmlAttributes[key]);
+                                removeClass([this.element], oldProp.htmlAttributes[`${key}`]);
                             } else {
                                 this.element.removeAttribute(key);
                             }
@@ -243,9 +243,9 @@ export class AppBar extends Component<HTMLElement> implements INotifyPropertyCha
         const keys: string[] = Object.keys(attribute);
         for (const key of keys) {
             if (key === 'class') {
-                addClass([element], attribute[key]);
+                addClass([element], attribute[`${key}`]);
             } else {
-                element.setAttribute(key, attribute[key]);
+                element.setAttribute(key, attribute[`${key}`]);
             }
         }
     }

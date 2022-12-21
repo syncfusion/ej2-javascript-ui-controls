@@ -27,7 +27,7 @@ export class DayMarkers {
     private propertyChanged(property: Record<string, unknown>): void {
         const keys: string[] = Object.keys(getValue('properties', property));
         for (let i: number = 0; i < keys.length; i++) {
-            const key: string = keys[i];
+            const key: string = keys[i as number];
             switch (key) {
             case 'eventMarkers':
                 this.eventMarkerRender.renderEventMarkers();

@@ -49,11 +49,11 @@ export class AtrIndicator extends TechnicalAnalysis {
              * Current High less the previous Close (absolute value)
              * Current Low less the previous Close (absolute value)
              */
-            highLow = Number(validData[i].high) - Number(validData[i].low);
+            highLow = Number(validData[i as number].high) - Number(validData[i as number].low);
             if (i > 0) {
                 //
-                highClose = Math.abs(Number(validData[i].high) - Number(validData[i - 1].close));
-                lowClose = Math.abs(Number(validData[i].low) - Number(validData[i - 1].close));
+                highClose = Math.abs(Number(validData[i as number].high) - Number(validData[i - 1].close));
+                lowClose = Math.abs(Number(validData[i as number].low) - Number(validData[i - 1].close));
             }
             /**
              * To find the maximum of highLow, highClose, lowClose
@@ -64,17 +64,17 @@ export class AtrIndicator extends TechnicalAnalysis {
              * Push the x and y values for the Average true range indicator
              */
             if (i >= period) {
-                average = (Number(temp[i - 1][y]) * (period - 1) + trueRange) / period;
+                average = (Number(temp[i - 1][y as string]) * (period - 1) + trueRange) / period;
                 points.push(this.getDataPoint(
-                    validData[i].x, average, validData[i], signalSeries, points.length));
+                    validData[i as number].x, average, validData[i as number], signalSeries, points.length));
             } else {
                 average = sum / period;
                 if (i === period - 1) {
                     points.push(this.getDataPoint(
-                        validData[i].x, average, validData[i], signalSeries, points.length));
+                        validData[i as number].x, average, validData[i as number], signalSeries, points.length));
                 }
             }
-            temp[i] = { x: validData[i].x, y: average };
+            temp[i as number] = { x: validData[i as number].x, y: average };
         }
         this.setSeriesRange(points, indicator);
     }

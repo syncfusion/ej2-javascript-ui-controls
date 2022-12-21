@@ -114,12 +114,12 @@ export class DetailRow {
                     if (childGrid.query) {
                         childGrid.query = childGrid.query.clone();
                     }
-                    childGrid[parent] = {
+                    childGrid[`${parent}`] = {
                         parentID: gObj.element.id,
                         parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
                         parentKeyField: gObj.childGrid.queryString,
                         parentKeyFieldValue: gObj.childGrid.queryString && isComplexField(gObj.childGrid.queryString) ?
-                        getObject(gObj.childGrid.queryString, data) : data[gObj.childGrid.queryString],
+                            getObject(gObj.childGrid.queryString, data) : data[gObj.childGrid.queryString],
                         parentRowData: data
                     };
                     if (gObj.isReact) {
@@ -167,7 +167,7 @@ export class DetailRow {
             if (target.classList.contains('e-lastrowcell') && this.parent.getContent().clientHeight > table.scrollHeight) {
                 removeClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
                 const detailrowIdx: number = table.querySelector(literals.tbody).getElementsByClassName('e-detailrow').length - 1;
-                addClass(table.querySelector(literals.tbody).getElementsByClassName('e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
+                addClass(table.querySelector(literals.tbody).getElementsByClassName('e-detailrow')[parseInt(detailrowIdx.toString(), 10)].childNodes, ['e-lastrowcell']);
                 this.lastrowcell = true;
             }
             this.aria.setExpand(target as HTMLElement, true);
@@ -242,7 +242,7 @@ export class DetailRow {
     }
 
     private getTDfromIndex(index: number, className: string): Element {
-        const tr: Element = this.parent.getDataRows()[index];
+        const tr: Element = !isNullOrUndefined(index) ? this.parent.getDataRows()[parseInt(index.toString(), 10)] : undefined;
         if (tr && tr.querySelector(className)) {
             return tr.querySelector(className);
         }
@@ -303,7 +303,7 @@ export class DetailRow {
         let td: Element;
         const rows: Element[] = this.parent.getDataRows();
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            td = rows[i].querySelector('.e-detailrowcollapse, .e-detailrowexpand');
+            td = rows[parseInt(i.toString(), 10)].querySelector('.e-detailrowcollapse, .e-detailrowexpand');
             if (isExpand) {
                 this.expand(td);
             } else {
@@ -353,18 +353,18 @@ export class DetailRow {
         const detailrows: NodeListOf<Element> = (<Grid>this.parent).contentModule.getTable().querySelectorAll('tr.e-detailrow');
         const colSpan: number = (<Grid>this.parent).getVisibleColumns().length;
         for (let i: number = 0; i < detailrows.length; i++) {
-            (<HTMLElement>detailrows[i]).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
+            (<HTMLElement>detailrows[parseInt(i.toString(), 10)]).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
         }
     }
 
     private destroyChildGrids(): void {
         const rows: Row<Column>[] = this.parent.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
-            rows[i].childGrid = null;
+            rows[parseInt(i.toString(), 10)].childGrid = null;
         }
         for (let i: number = 0; i < this.childRefs.length; i++) {
-            if (!this.childRefs[i].isDestroyed) {
-                this.childRefs[i].destroy();
+            if (!this.childRefs[parseInt(i.toString(), 10)].isDestroyed) {
+                this.childRefs[parseInt(i.toString(), 10)].destroy();
             }
         }
         this.childRefs = [];

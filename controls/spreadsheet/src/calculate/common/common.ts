@@ -128,7 +128,7 @@ export function getSkeletonVal(value: string): string {
  */
  export function isExternalFileLink(formula: string): boolean {
     let isExternalFile: boolean = false;
-    for(let format in ExcelFileFormats) {
+    for(const format in ExcelFileFormats) {
         if (formula.indexOf('.' + format + ']') > -1) { isExternalFile = true; break; }
     }
     return isExternalFile;

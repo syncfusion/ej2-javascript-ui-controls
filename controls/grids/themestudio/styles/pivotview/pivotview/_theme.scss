@@ -23,6 +23,7 @@
 
     .e-valuescontent {
       padding-right: 8px;
+      text-align: right;
     }
 
     .e-grid .e-rowcell {
@@ -88,7 +89,7 @@
     .e-member-editor-dialog,
     .e-olap-editor-dialog {
       // sass-lint:disable-all
-      min-height: 385px !important;
+      min-height: 350px !important;
       min-width: 350px !important;
       visibility: hidden;
       // sass-lint:enable-all
@@ -843,6 +844,9 @@
               &.e-descend {
                 margin-top: 3px;
                 transform: rotateX(180deg);
+                @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'fabric') {
+                  margin-top: 4px !important;
+                }
               }
             }
     
@@ -926,7 +930,7 @@
     .e-expand,
     .e-collapse {
       cursor: pointer;
-      display: inline;
+      display: inline-block;
       height: 18px;
       margin-top: 5px;
       text-align: center;
@@ -1323,6 +1327,10 @@
         margin-right: 7px;
       }
 
+      .e-valuescontent {
+        text-align: left;
+      }
+
       .e-group-values,
       .e-group-columns,
       .e-group-filters,
@@ -1541,6 +1549,7 @@
   .e-pivottooltip {
     border-radius: $pivotgrid-default-border-radius;
     padding: $pivotgrid-tooltip-padding;
+    text-align: initial;
   }
 
   .e-pivottooltip p {

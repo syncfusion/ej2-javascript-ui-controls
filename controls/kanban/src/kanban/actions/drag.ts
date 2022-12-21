@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs, KeyboardEventArgs, detach } from '@syncfusion/ej2-base';
-import { removeClass, classList, remove, Browser, EventHandler, extend } from '@syncfusion/ej2-base';
+import { Draggable, formatUnit, createElement, isNullOrUndefined, addClass, closest, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { removeClass, classList, remove, EventHandler, extend } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
 import * as cls from '../base/css-constant';
@@ -306,7 +306,7 @@ export class DragAndDrop {
         let allowTransition: boolean = true;
         const targetKey: string[] = targetCardKey.split(',');
         for (let i: number = 0; i < targetKey.length; i++) {
-            if (currentCardKey === targetKey[i].trim()) {
+            if (currentCardKey === targetKey[i as number].trim()) {
                 return true;
             }
             if (allowedKey) {
@@ -314,7 +314,7 @@ export class DragAndDrop {
                     return true;
                 }
                 for (let j: number = 0; j < allowedKey.length; j++) {
-                    if (targetKey[i].trim() === allowedKey[j].trim()) {
+                    if (targetKey[i as number].trim() === allowedKey[j as number].trim()) {
                         return true;
                     } else {
                         allowTransition = false;
@@ -364,11 +364,11 @@ export class DragAndDrop {
     private updateDimension(dimensions: ClientRect, target?: HTMLElement): void {
         [].slice.call(this.borderElm).forEach((element: HTMLElement) => {
             addClass([element], cls.DROPPING_CLASS);
-            const hasAddButton = (element.previousElementSibling as HTMLElement);
-            element.style.height = parseInt(dimensions.height.toString()) - (hasAddButton &&
+            const hasAddButton : HTMLElement = (element.previousElementSibling as HTMLElement);
+            element.style.height = parseInt(dimensions.height.toString(), 10) - (hasAddButton &&
                 hasAddButton.classList.contains(cls.SHOW_ADD_BUTTON) ? hasAddButton.offsetHeight + hasAddButton.offsetTop : 0) + 'px';
             if (!target || target.tagName !== 'TABLE') {
-                element.style.width = parseInt(dimensions.width.toString()) + 'px';
+                element.style.width = parseInt(dimensions.width.toString(), 10) + 'px';
             }
             element.style.left = (element.parentElement.getBoundingClientRect().left - closest(element, '.e-kanban').getBoundingClientRect().left) + 'px';
         });
@@ -392,10 +392,10 @@ export class DragAndDrop {
             element.classList.remove(cls.DROPPING_CLASS);
         });
         if (this.dragObj.targetClone.parentElement) {
-            const isMultipleDrag: boolean = (this.dragObj.selectedCards && (this.dragObj.selectedCards as  Record<string, any>[]).length > 1 &&
-                this.parent.sortSettings.sortBy === 'Index');
+            const isMultipleDrag: boolean = (this.dragObj.selectedCards && (this.dragObj.selectedCards as  Record<string, any>[]).length > 1
+             && this.parent.sortSettings.sortBy === 'Index');
             const className: string = !isMultipleDrag ? '.' + cls.CARD_CLASS + ':not(.' + cls.DRAGGED_CARD_CLASS + '),.' + cls.DROPPED_CLONE_CLASS :
-            '.' + cls.CARD_CLASS + ',.' + cls.DROPPED_CLONE_CLASS;
+                '.' + cls.CARD_CLASS + ',.' + cls.DROPPED_CLONE_CLASS;
             const element: HTMLElement[] = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className));
             dropIndex = !isMultipleDrag ? element.indexOf(this.dragObj.targetClone) : element.indexOf(this.dragObj.targetClone) - 1;
         }
@@ -658,6 +658,9 @@ export class DragAndDrop {
             const xBounds: boolean = xScrollable && parent.scrollLeft >= 0 && parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
             if (yBounds && (this.dragEdges.top || this.dragEdges.bottom)) {
                 parent.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
+                if (this.parent.swimlaneSettings.enableFrozenRows) {
+                    this.dragObj.cloneElement.style.top = !this.dragEdges.top ? (parseInt(this.dragObj.cloneElement.style.top) + scrollSensitivity) + 'px' : (parseInt(this.dragObj.cloneElement.style.top) - scrollSensitivity) + 'px';
+                }
                 if (column) {
                     column.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
                 }

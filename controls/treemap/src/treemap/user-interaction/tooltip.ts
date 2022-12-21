@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/dot-notation */
 import { TreeMap } from '../treemap';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -17,7 +16,6 @@ export class TreeMapTooltip {
     private isTouch: boolean;
     private tooltipId: string;
     private clearTimeout: number;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(treeMap: TreeMap) {
         this.treemap = treeMap;
         this.tooltipSettings = this.treemap.tooltipSettings;
@@ -44,12 +42,11 @@ export class TreeMapTooltip {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let value: number; const targetId: string = target.id; let item: any = {}; let tooltipEle: HTMLElement;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let location: Location; let toolTipHeader: string; let toolTipData: any = {};
+        let location: Location; let toolTipData: any = {};
         let tooltipContent: string[] = []; let markerFill: string;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.treemap.layout.renderItems[parseFloat(targetId.split('_Item_Index_')[1])];
             if (!isNullOrUndefined(item)) {
-                toolTipHeader = item['name'];
                 value = item['weight'];
                 toolTipData = item['data'];
                 if (!isNullOrUndefined(item['options'])) {
@@ -67,9 +64,9 @@ export class TreeMapTooltip {
                 } else {
                     tooltipEle = createElement('div', {
                         id: this.treemap.element.id + '_TreeMapTooltip',
-                        className: 'EJ2-TreeMap-Tooltip',
-                        styles: 'position: absolute;pointer-events:none;'
+                        className: 'EJ2-TreeMap-Tooltip'
                     });
+                    tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
                     document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
@@ -89,6 +86,7 @@ export class TreeMapTooltip {
                     element: target, eventArgs: e
                 };
 
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 this.treemap.trigger(tooltipRendering, tootipArgs, (args?: ITreeMapTooltipRenderEventArgs) => {
                     this.addTooltip(tootipArgs, markerFill, tooltipEle);
                 });
@@ -191,7 +189,7 @@ export class TreeMapTooltip {
     }
     /**
      * To destroy the tooltip.
-     * 
+     *
      * @returns {void}
      * @private
      */

@@ -1,9 +1,9 @@
-import { createElement, isNullOrUndefined, addClass, removeClass, closest, select, remove } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass, removeClass, closest, select, remove, MouseEventArgs } from '@syncfusion/ej2-base';
 import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { Button, CheckBox, ChangeEventArgs, ClickEventArgs } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
@@ -28,18 +28,20 @@ export class DialogRenderer {
     private deferUpdateCancelButton: Button;
 
     /** Constructor for render module
+     *
      * @param {PivotFieldList} parent - Instance of field list.
      */
-    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
+    constructor(parent: PivotFieldList) {
         this.parent = parent;
     }
     /**
      * Initialize the field list layout rendering
+     *
      * @returns {void}
      * @private
      */
     public render(): void {
-        let fieldListWrappper: HTMLElement = createElement('div', {
+        const fieldListWrappper: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_Container',
             className: cls.WRAPPER_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_WRAPPER_CLASS : ''),
             styles: 'width:' + this.parent.element.style.width
@@ -79,10 +81,10 @@ export class DialogRenderer {
     }
     private renderStaticLayout(fieldListWrappper: HTMLElement): void {
         if (!this.parent.isAdaptive) {
-            let layoutHeader: HTMLElement = createElement('div', {
+            const layoutHeader: HTMLElement = createElement('div', {
                 className: cls.FIELD_LIST_TITLE_CLASS
             });
-            let headerContent: HTMLElement = createElement('div', {
+            const headerContent: HTMLElement = createElement('div', {
                 className: cls.FIELD_LIST_TITLE_CONTENT_CLASS,
                 innerHTML: this.parent.localeObj.getConstant('staticFieldList')
             });
@@ -138,30 +140,30 @@ export class DialogRenderer {
     }
 
     private createDeferUpdateButtons(): HTMLElement {
-        let layoutFooter: HTMLElement = createElement('div', {
+        const layoutFooter: HTMLElement = createElement('div', {
             className: cls.LAYOUT_FOOTER
         });
         if (this.parent.allowDeferLayoutUpdate) {
-            let checkBoxLayout: HTMLElement = createElement('div', {
+            const checkBoxLayout: HTMLElement = createElement('div', {
                 className: cls.CHECKBOX_LAYOUT,
                 attrs: { 'title': this.parent.localeObj.getConstant('deferLayoutUpdate') }
             });
-            let deferUpdateCheckBox: HTMLElement = createElement('input', {
+            const deferUpdateCheckBox: HTMLElement = createElement('input', {
                 id: this.parent.element.id + 'DeferUpdateCheckBox'
             });
             checkBoxLayout.appendChild(deferUpdateCheckBox);
             layoutFooter.appendChild(checkBoxLayout);
         }
-        let buttonLayout: HTMLElement = createElement('div', {
+        const buttonLayout: HTMLElement = createElement('div', {
             className: cls.BUTTON_LAYOUT
         });
         if (this.parent.allowDeferLayoutUpdate) {
-            let deferUpdateButton1: HTMLElement = createElement('button', {
+            const deferUpdateButton1: HTMLElement = createElement('button', {
                 id: this.parent.element.id + '_DeferUpdateButton1', attrs: { 'type': 'button', 'title': this.parent.localeObj.getConstant('apply') }
             });
             buttonLayout.appendChild(deferUpdateButton1);
         }
-        let deferUpdateButton2: HTMLElement = createElement('button', {
+        const deferUpdateButton2: HTMLElement = createElement('button', {
             id: this.parent.element.id + '_DeferUpdateButton2', attrs: { 'type': 'button', 'title': this.parent.localeObj.getConstant('cancel') }
         });
         buttonLayout.appendChild(deferUpdateButton2);
@@ -198,7 +200,7 @@ export class DialogRenderer {
             (this.parent as PivotFieldList).pivotChange = false;
         }
         this.parent.updateDataSource(false);
-        let parent: PivotFieldList = this.parent;
+        const parent: PivotFieldList = this.parent;
         parent.axisFieldModule.render();
         parent.clonedDataSource = extend({}, parent.dataSourceSettings, null, true) as IDataOptions;
         if (this.parent.dataType === 'olap') {
@@ -209,13 +211,12 @@ export class DialogRenderer {
     private cancelButtonClick(): void {
         this.parent.
             setProperties({
-                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
+                dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
             }, true);
-        /* eslint-enable @typescript-eslint/indent */
         if (this.parent.dataType === 'olap') {
             this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
-            for (let name of Object.keys(this.parent.clonedFieldList)) {
-                let item: IOlapField = this.parent.clonedFieldList[name];
+            for (const name of Object.keys(this.parent.clonedFieldList)) {
+                const item: IOlapField = this.parent.clonedFieldList[name as string];
                 this.parent.olapEngineModule.updateFieldlistData(item.id, item.isSelected);
             }
         } else {
@@ -224,7 +225,7 @@ export class DialogRenderer {
         this.parent.updateDataSource(false, true);
     }
     private renderFieldListDialog(fieldListWrappper: HTMLElement): void {
-        let toggleFieldList: HTMLElement = createElement('div', {
+        const toggleFieldList: HTMLElement = createElement('div', {
             className: cls.TOGGLE_FIELD_LIST_CLASS + ' ' + cls.ICON + ' ' + cls.TOGGLE_SELECT_CLASS,
             attrs: {
                 'tabindex': '0',
@@ -236,10 +237,10 @@ export class DialogRenderer {
         });
         this.parent.element.appendChild(toggleFieldList);
         if (this.parent.isAdaptive) {
-            let headerTemplate: string = '<div class=' + cls.TITLE_MOBILE_HEADER + '><span class="' + cls.ICON + ' ' +
+            const headerTemplate: string = '<div class=' + cls.TITLE_MOBILE_HEADER + '><span class="' + cls.ICON + ' ' +
                 cls.BACK_ICON + '"></span><div class=' + cls.TITLE_MOBILE_CONTENT + '>' + this.parent.localeObj.getConstant('fieldList') +
                 '</div></div>';
-            let buttons: ButtonPropsModel[] = [{
+            const buttons: ButtonPropsModel[] = [{
                 click: this.showFieldListDialog.bind(this),
                 buttonModel: {
                     cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
@@ -268,7 +269,7 @@ export class DialogRenderer {
                 locale: this.parent.locale,
                 width: '100%',
                 height: '100%',
-                position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
+                position: { X: 'center', Y: 'center' },
                 buttons: buttons,
                 target: document.body,
                 cssClass: this.parent.cssClass,
@@ -281,15 +282,15 @@ export class DialogRenderer {
             setStyleAttribute(select('#' + fieldListWrappper.id + '_dialog-content', fieldListWrappper) as HTMLElement, {
                 'padding': '0'
             });
-            let footer: Element = fieldListWrappper.querySelector('.' + cls.FOOTER_CONTENT_CLASS);
+            const footer: Element = fieldListWrappper.querySelector('.' + cls.FOOTER_CONTENT_CLASS);
             addClass([footer], cls.FIELD_LIST_FOOTER_CLASS);
             removeClass([footer.querySelector('.' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS) as Element], cls.BUTTON_FLAT_CLASS);
             removeClass([footer.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], cls.BUTTON_FLAT_CLASS);
             (this.fieldListDialog.element.querySelector('.' + cls.BACK_ICON) as HTMLElement).onclick =
                 this.parent.allowDeferLayoutUpdate ? this.onDeferUpdateClick.bind(this) : this.onCloseFieldList.bind(this);
         } else {
-            let template: string = this.createDeferUpdateButtons().outerHTML;
-            let headerTemplate: string = '<div class=' + cls.TITLE_HEADER_CLASS + '><div class=' +
+            const template: string = this.createDeferUpdateButtons().outerHTML;
+            const headerTemplate: string = '<div class=' + cls.TITLE_HEADER_CLASS + '><div class=' +
                 cls.TITLE_CONTENT_CLASS + '>' + this.parent.localeObj.getConstant('fieldList') + '</div></div>';
             this.fieldListDialog = new Dialog({
                 animationSettings: { effect: 'Zoom' },
@@ -302,7 +303,7 @@ export class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
                 width: this.parent.element.style.width,
-                position: { X: 'center', Y: this.parent.element.offsetTop },    /* eslint-disable-line */
+                position: { X: 'center', Y: this.parent.element.offsetTop },
                 footerTemplate: template,
                 closeOnEscape: false,
                 cssClass: this.parent.cssClass,
@@ -326,15 +327,16 @@ export class DialogRenderer {
 
     /**
      * Called internally if any of the field added to axis.
+     *
      * @param {string[]} selectedNodes - selectedNodes
      * @returns {void}
      * @hidden
      */
     public updateDataSource(selectedNodes: string[]): void {
-        let axis: string[] = ['filters', 'columns', 'rows', 'values'];
-        for (let field of selectedNodes) {
-            let fieldName: string = field;
-            let droppedClass: string = axis[this.adaptiveElement.selectedItem];
+        const axis: string[] = ['filters', 'columns', 'rows', 'values'];
+        for (const field of selectedNodes) {
+            const fieldName: string = field;
+            const droppedClass: string = axis[this.adaptiveElement.selectedItem];
             this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ?
                 this.parent : ((this.parent as PivotFieldList).pivotGridModule ?
                     (this.parent as PivotFieldList).pivotGridModule : this.parent);
@@ -352,11 +354,11 @@ export class DialogRenderer {
         this.parent.dialogRenderer.fieldListDialog.hide();
     }
     private renderAdaptiveLayout(fieldListWrappper: HTMLElement): void {
-        let layoutFooter: HTMLElement = createElement('div', {
+        const layoutFooter: HTMLElement = createElement('div', {
             className: cls.FIELD_LIST_FOOTER_CLASS
         });
         fieldListWrappper.appendChild(this.parentElement);
-        let items: TabItemModel[] = [
+        const items: TabItemModel[] = [
             {
                 header: { 'text': this.parent.localeObj.getConstant('filters') },
                 content: this.createAxisTable('filters')
@@ -402,7 +404,7 @@ export class DialogRenderer {
         }
     }
     private tabSelect(e: SelectEventArgs): void {
-        let fieldWrapper: HTMLElement = closest(this.parentElement, '.' + cls.WRAPPER_CLASS) as HTMLElement;
+        const fieldWrapper: HTMLElement = closest(this.parentElement, '.' + cls.WRAPPER_CLASS) as HTMLElement;
         if (fieldWrapper && fieldWrapper.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
             if (e.selectedIndex !== 4) {
                 addClass(
@@ -429,7 +431,7 @@ export class DialogRenderer {
         }
     }
     private createCalculatedButton(): HTMLElement {
-        let calculatedButton: HTMLElement = createElement('button', {
+        const calculatedButton: HTMLElement = createElement('button', {
             id: this.parent.element.id + '_CalculatedField',
             attrs: {
                 'type': 'button',
@@ -438,7 +440,7 @@ export class DialogRenderer {
                 'aria-label': this.parent.localeObj.getConstant('CalculatedField')
             }
         });
-        let calculateField: Button = new Button({
+        const calculateField: Button = new Button({
             cssClass: cls.CALCULATED_FIELD_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             content: this.parent.localeObj.getConstant('CalculatedField'),
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -452,18 +454,18 @@ export class DialogRenderer {
         return calculatedButton;
     }
     private createAddButton(): HTMLElement {
-        let footerContainer: HTMLElement = createElement('div', {
+        const footerContainer: HTMLElement = createElement('div', {
             className: cls.FIELD_LIST_FOOTER_CLASS + '-content'
         });
-        let fieldListButton: HTMLElement = createElement('div', {});
-        let calculatedButton: HTMLElement = createElement('div', {});
-        let calculateField: Button = new Button({
+        const fieldListButton: HTMLElement = createElement('div', {});
+        const calculatedButton: HTMLElement = createElement('div', {});
+        const calculateField: Button = new Button({
             cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
                 ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
-        let fieldList: Button = new Button({
+        const fieldList: Button = new Button({
             cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
@@ -480,11 +482,11 @@ export class DialogRenderer {
     }
 
     private createAxisTable(axis: string): HTMLElement {
-        let axisWrapper: HTMLElement = createElement('div', {
+        const axisWrapper: HTMLElement = createElement('div', {
             className: cls.FIELD_LIST_CLASS + '-' + axis
         });
-        let axisContent: HTMLElement = createElement('div', { className: cls.AXIS_CONTENT_CLASS + ' ' + 'e-' + axis });
-        let axisPrompt: HTMLElement = createElement('span', {
+        const axisContent: HTMLElement = createElement('div', { className: cls.AXIS_CONTENT_CLASS + ' ' + 'e-' + axis });
+        const axisPrompt: HTMLElement = createElement('span', {
             className: cls.AXIS_PROMPT_CLASS,
             innerHTML: this.parent.localeObj.getConstant('addPrompt')
         });
@@ -512,11 +514,12 @@ export class DialogRenderer {
     }
 
     private showFieldListDialog(event: Event): void {   /* eslint-disable-line */
-        let activeindex: number = this.adaptiveElement.selectedItem;
+        const activeindex: number = this.adaptiveElement.selectedItem;
         this.parent.treeViewModule.render(activeindex);
     }
 
     /**  @hidden */
+
     public onShowFieldList(): void {
         this.parent.actionObj.actionName = events.showFieldList;
         if (this.parent.actionBeginMethod()) {
@@ -544,16 +547,16 @@ export class DialogRenderer {
         }
     }
 
-    private onCloseFieldList(args: ClickEventArgs): void {
+    private onCloseFieldList(args: MouseEventArgs): void {
         if (this.parent.allowDeferLayoutUpdate) {
             this.parent.dataSourceSettings =
-                extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;   /* eslint-disable-line */
+                extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;
             if (this.parent.isPopupView && this.parent.pivotGridModule) {
                 this.parent.pivotGridModule.engineModule = this.parent.engineModule;
                 this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
                 this.parent.pivotGridModule.
                     setProperties({
-                        dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
+                        dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
                     }, true);
             }
             if (Object.keys(this.parent.clonedFieldList).length > 0) {
@@ -567,7 +570,7 @@ export class DialogRenderer {
             }
             if (this.parent.isPopupView && this.parent.pivotGridModule) {
                 this.parent.pivotGridModule.notify(events.uiUpdate, this);
-                if (!(args as any).currentTarget.classList.contains('e-defer-cancel-button')) {
+                if (!(args.currentTarget as Element).classList.contains('e-defer-cancel-button')) {
                     this.parent.pivotGridModule.notify(events.contentReady, this);
                 }
             } else {
@@ -585,10 +588,7 @@ export class DialogRenderer {
         if (this.parent.isAdaptive && this.parent.allowCalculatedField && this.parent.calculatedFieldModule) {
             if (this.adaptiveElement && this.adaptiveElement.selectedItem === 4) {
                 if (select('#' + this.parent.element.id + 'droppable', this.adaptiveElement.element)) {
-                    /* eslint-disable */
-                    (this.parent.calculatedFieldModule as any)
-                        .updateAdaptiveCalculatedField(false);
-                    /* eslint-enable */
+                    this.parent.calculatedFieldModule.updateAdaptiveCalculatedField(false);
                 } else {
                     this.parent.notify(events.initCalculatedField, { edit: false });
                 }
@@ -619,6 +619,7 @@ export class DialogRenderer {
 
     /**
      * Destroys the Field Table component.
+     *
      * @function destroy
      * @returns {void}
      */

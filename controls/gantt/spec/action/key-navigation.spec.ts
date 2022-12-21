@@ -576,8 +576,6 @@ describe('Gantt Selection support', () => {
                 ganttObj.keyboardModule.keyAction(args);
                 let duration:HTMLElement=ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
                 expect(duration.classList.contains('e-focused')).toBe(true);
-                let args2: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement };
-                ganttObj.keyboardModule.keyAction(args2);
                 let progress:HTMLElement=ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
                 expect(progress.classList.contains('e-editedbatchcell')).toBe(true);
             });

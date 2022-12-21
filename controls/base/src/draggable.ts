@@ -50,6 +50,7 @@ interface PageInfo {
 }
 /**
  * Coordinates for element position
+ *
  * @private
  */
 export interface Coordinates {
@@ -58,7 +59,7 @@ export interface Coordinates {
      */
     pageX: number;
     /**
-     * Defines the y Coordinate of page. 
+     * Defines the y Coordinate of page.
      */
     pageY: number;
     /**
@@ -66,7 +67,7 @@ export interface Coordinates {
      */
     clientX: number;
     /**
-     * Defines the y Coordinate of client. 
+     * Defines the y Coordinate of client.
      */
     clientY: number;
 }
@@ -79,7 +80,7 @@ export interface DropInfo {
      */
     draggable?: HTMLElement;
     /**
-     * Specifies the current helper element. 
+     * Specifies the current helper element.
      */
     helper?: HTMLElement;
     /**
@@ -95,6 +96,7 @@ export interface DropObject {
 
 /**
  * Used to access values
+ *
  * @private
  */
 export interface DragPosition {
@@ -104,16 +106,19 @@ export interface DragPosition {
 
 /**
  * Used for accessing the interface.
+ *
  * @private
  */
 export interface Instance extends HTMLElement {
     /**
      * Specifies current instance collection in element
      */
+    // eslint-disable-next-line
     ej2_instances: { [key: string]: Object }[];
 }
 /**
  * Droppable function to be invoked from draggable
+ *
  * @private
  */
 export interface DropOption {
@@ -158,6 +163,7 @@ export interface DragEventArgs {
 
 /**
  * Used for accessing the BlazorEventArgs.
+ *
  * @private
  */
 export interface BlazorDragEventArgs {
@@ -195,7 +201,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     @Complex<PositionModel>({}, Position)
     public cursorAt: PositionModel;
     /**
-     * If `clone` set to true, drag operations are performed in duplicate element of the draggable element. 
+     * If `clone` set to true, drag operations are performed in duplicate element of the draggable element.
+     *
      * @default true
      */
     @Property(true)
@@ -212,37 +219,42 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     public isDragScroll: boolean;
     /**
      * Defines wheather need to replace drag element by currentstateTarget.
+     *
      * @private
      */
     @Property()
     public isReplaceDragEle: boolean;
     /**
      * Defines wheather need to add prevent select class to body or not.
+     *
      * @private
      */
     @Property(true)
     public isPreventSelect: boolean;
     /**
      * Specifies the callback function for drag event.
-
-     * @event
+     *
+     * @event drag
      */
     @Event()
     public drag: Function;
     /**
      * Specifies the callback function for dragStart event.
-     * @event
+     *
+     * @event dragStart
      */
     @Event()
     public dragStart: Function;
     /**
      * Specifies the callback function for dragStop event.
-     * @event
+     *
+     * @event dragStop
      */
     @Event()
     public dragStop: Function;
     /**
      * Defines the minimum distance draggable element to be moved to trigger the drag operation.
+     *
      * @default 1
      */
     @Property(1)
@@ -263,38 +275,42 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     @Property()
     public helper: Function;
     /**
-     * Defines the scope value to group sets of draggable and droppable items. 
+     * Defines the scope value to group sets of draggable and droppable items.
      * A draggable with the same scope value will be accepted by the droppable.
      */
     @Property('default')
     public scope: string;
     /**
      * Specifies the dragTarget by which the clone element is positioned if not given current context element will be considered.
+     *
      * @private
      */
     @Property('')
     public dragTarget: string;
     /**
-     * Defines the axis to limit the draggable element drag path.The possible axis path values are   
-     * * `x` - Allows drag movement in horizontal direction only. 
+     * Defines the axis to limit the draggable element drag path.The possible axis path values are
+     * * `x` - Allows drag movement in horizontal direction only.
      * * `y` - Allows drag movement in vertical direction only.
      */
     @Property()
     public axis: DragDirection;
     /**
      * Defines the function to change the position value.
+     *
      * @private
      */
     @Property()
     public queryPositionInfo: Function;
     /**
      * Defines whether the drag clone element will be split form the cursor pointer.
+     *
      * @private
      */
     @Property(false)
     public enableTailMode: boolean;
     /**
      * Defines whether to skip the previous drag movement comparison.
+     *
      * @private
      */
     @Property(false)
@@ -307,6 +323,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     /**
      * Defines whether to enable autoscroll on drag movement of draggable element.
      * enableAutoScroll
+     *
      * @private
      */
     @Property(false)
@@ -314,18 +331,20 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     /**
      * Defines whether to enable taphold  on mobile devices.
      * enableAutoScroll
+     *
      * @private
      */
     @Property(false)
     public enableTapHold: boolean;
     /**
      * Specifies the time delay for tap hold.
+     *
      * @default 750
      *  @private
      */
     @Property(750)
     public tapHoldThreshold: number;
-     /**
+    /**
      * @private
      */
     @Property(false)
@@ -352,8 +371,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private prevLeft: number = 0;
     private prevTop: number = 0;
     private dragProcessStarted: boolean = false;
-    /* tslint:disable no-any */
     private eleTop: number = 0;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private tapHoldTimer: any = 0;
     private dragElePosition: any;
     public currentStateTarget: any;
@@ -387,7 +406,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (!isUndefined(this.handle)) {
             ele = select(this.handle, this.element);
         }
-        let handler: Function = (this.enableTapHold && Browser.isDevice && Browser.isTouch) ? this.mobileInitialize : this.initialize;
+        const handler: Function = (this.enableTapHold && Browser.isDevice && Browser.isTouch) ? this.mobileInitialize : this.initialize;
         if (isUnWire) {
             EventHandler.remove(ele || this.element, Browser.touchStartEvent, handler);
         } else {
@@ -396,7 +415,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     /* istanbul ignore next */
     private mobileInitialize(evt: MouseEvent & TouchEvent): void {
-        let target: EventTarget = evt.currentTarget;
+        const target: EventTarget = evt.currentTarget;
         this.tapHoldTimer = setTimeout(
             () => {
                 this.externalInitialize = true;
@@ -415,12 +434,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     /* istanbul ignore next */
     private getScrollableParent(element: HTMLElement, axis: string): HTMLElement {
-        let scroll: Object = { 'vertical': 'scrollHeight', 'horizontal': 'scrollWidth' };
-        let client: Object = { 'vertical': 'clientHeight', 'horizontal': 'clientWidth' };
+        const scroll: Object = { 'vertical': 'scrollHeight', 'horizontal': 'scrollWidth' };
+        const client: Object = { 'vertical': 'clientHeight', 'horizontal': 'clientWidth' };
         if (isNullOrUndefined(element)) {
             return null;
         }
-        if (element[scroll[axis]] > element[client[axis]]) {
+        if (element[scroll[`${axis}`]] > element[client[`${axis}`]]) {
             if (axis === 'vertical' ? element.scrollTop > 0 : element.scrollLeft > 0) {
                 if (axis === 'vertical') {
                     this.parentScrollY = this.parentScrollY +
@@ -446,9 +465,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private getScrollableValues(): void {
         this.parentScrollX = 0;
         this.parentScrollY = 0;
-        let isModalDialog: boolean = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
-        let verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
-        let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
+        const isModalDialog: boolean = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
+        const verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
+        const horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
     }
     private initialize(evt: MouseEvent & TouchEvent, curTarget?: EventTarget): void {
         this.currentStateTarget = evt.target;
@@ -467,7 +486,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 abortSelectors = [abortSelectors];
             }
             for (let i: number = 0; i < abortSelectors.length; i++) {
-                if (!isNullOrUndefined(closest((evt.target as Element), abortSelectors[i]))) {
+                if (!isNullOrUndefined(closest((evt.target as Element), abortSelectors[parseInt(i.toString(), 10)]))) {
                     /* istanbul ignore next */
                     if (this.isDragStarted()) {
                         this.isDragStarted(true);
@@ -480,10 +499,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             evt.preventDefault();
         }
         this.element.setAttribute('aria-grabbed', 'true');
-        let intCoord: Coordinates = this.getCoordinates(evt);
+        const intCoord: Coordinates = this.getCoordinates(evt);
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
-            let pos: PositionModel = this.element.getBoundingClientRect();
+            const pos: PositionModel = this.element.getBoundingClientRect();
             this.getScrollableValues();
             if (evt.clientX === evt.pageX) { this.parentScrollX = 0; }
             if (evt.clientY === evt.pageY) { this.parentScrollY = 0; }
@@ -505,22 +524,22 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     private intDragStart(evt: MouseEvent & TouchEvent): void {
         this.removeTapholdTimer();
-        let isChangeTouch: boolean = !isUndefined(evt.changedTouches);
+        const isChangeTouch: boolean = !isUndefined(evt.changedTouches);
         if (isChangeTouch && (evt.changedTouches.length !== 1)) {
             return;
         }
-        let intCordinate: Coordinates = this.getCoordinates(evt);
+        const intCordinate: Coordinates = this.getCoordinates(evt);
         let pos: PositionModel;
-        let styleProp: CSSStyleDeclaration = getComputedStyle(this.element);
+        const styleProp: CSSStyleDeclaration = getComputedStyle(this.element);
         this.margin = {
             left: parseInt(styleProp.marginLeft, 10),
             top: parseInt(styleProp.marginTop, 10),
             right: parseInt(styleProp.marginRight, 10),
-            bottom: parseInt(styleProp.marginBottom, 10),
+            bottom: parseInt(styleProp.marginBottom, 10)
         };
         let element: HTMLElement = this.element;
         if (this.clone && this.dragTarget) {
-            let intClosest: HTMLElement = <HTMLElement>closest(evt.target as Element, this.dragTarget);
+            const intClosest: HTMLElement = <HTMLElement>closest(evt.target as Element, this.dragTarget);
             if (!isNullOrUndefined(intClosest)) {
                 element = intClosest;
             }
@@ -531,22 +550,22 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
         this.offset = this.calculateParentPosition(element);
         this.position = this.getMousePosition(evt, this.isDragScroll);
-        let x: number = this.initialPosition.x - intCordinate.pageX;
-        let y: number = this.initialPosition.y - intCordinate.pageY;
-        let distance: number = Math.sqrt((x * x) + (y * y));
+        const x: number = this.initialPosition.x - intCordinate.pageX;
+        const y: number = this.initialPosition.y - intCordinate.pageY;
+        const distance: number = Math.sqrt((x * x) + (y * y));
         if ((distance >= this.distance || this.externalInitialize)) {
-            let ele: HTMLElement = this.getHelperElement(evt);
+            const ele: HTMLElement = this.getHelperElement(evt);
             if (!ele || isNullOrUndefined(ele)) {
                 return;
             }
             if (isChangeTouch) {
                 evt.preventDefault();
             }
-            let dragTargetElement: HTMLElement = this.helperElement = ele;
+            const dragTargetElement: HTMLElement = this.helperElement = ele;
             this.parentClientRect = this.calculateParentPosition(dragTargetElement.offsetParent);
             if (this.dragStart) {
-                let curTarget: Element = this.getProperTargetElement(evt);
-                let args: { [key: string]: object } = {
+                const curTarget: Element = this.getProperTargetElement(evt);
+                const args: { [key: string]: object } = {
                     event: evt,
                     element: element,
                     target: curTarget,
@@ -568,8 +587,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
             this.getScrollableValues();
             // when drag element has margin-top
-            let styles: CSSStyleDeclaration = getComputedStyle(element);
-            let marginTop: number = parseFloat(styles.marginTop);
+            const styles: CSSStyleDeclaration = getComputedStyle(element);
+            const marginTop: number = parseFloat(styles.marginTop);
             /* istanbul ignore next */
             if (this.clone && marginTop !== 0) {
                 pos.top += marginTop;
@@ -583,10 +602,13 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 pos.top -= this.parentScrollY;
                 pos.left -= this.parentScrollX;
             }
-            let posValue: DragPosition = this.getProcessedPositionValue({
+            const posValue: DragPosition = this.getProcessedPositionValue({
                 top: (pos.top - this.diffY) + 'px',
                 left: (pos.left - this.diffX) + 'px'
             });
+            if (this.dragArea && typeof this.dragArea !== 'string' && this.dragArea.classList.contains('e-kanban-content') && this.dragArea.style.position === 'relative') {
+                pos.top += this.dragArea.scrollTop;
+            }
             this.dragElePosition = { top: pos.top, left: pos.left };
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
             EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
@@ -639,8 +661,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(ele)) {
             return { left: 0, top: 0 };
         }
-        let rect: ClientRect = ele.getBoundingClientRect();
-        let style: CSSStyleDeclaration = getComputedStyle(ele);
+        const rect: ClientRect = ele.getBoundingClientRect();
+        const style: CSSStyleDeclaration = getComputedStyle(ele);
         return {
             left: (rect.left + window.pageXOffset) - parseInt(style.marginLeft, 10),
             top: (rect.top + window.pageYOffset) - parseInt(style.marginTop, 10)
@@ -657,22 +679,22 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let left: number;
         let top: number;
         this.position = this.getMousePosition(evt, this.isDragScroll);
-        let docHeight: number = this.getDocumentWidthHeight('Height');
+        const docHeight: number = this.getDocumentWidthHeight('Height');
         if (docHeight < this.position.top) {
             this.position.top = docHeight;
         }
-        let docWidth: number = this.getDocumentWidthHeight('Width');
+        const docWidth: number = this.getDocumentWidthHeight('Width');
         if (docWidth < this.position.left) {
             this.position.left = docWidth;
         }
         if (this.drag) {
-            let curTarget: HTMLElement = this.getProperTargetElement(evt);
+            const curTarget: HTMLElement = this.getProperTargetElement(evt);
             this.trigger('drag', { event: evt, element: this.element, target: curTarget });
         }
-        let eleObj: DropObject = this.checkTargetElement(evt);
+        const eleObj: DropObject = this.checkTargetElement(evt);
         if (eleObj.target && eleObj.instance) {
             /* tslint:disable no-any */
-            let flag: Boolean = true;
+            let flag: boolean = true;
             if (this.hoverObject) {
                 if (this.hoverObject.instance !== eleObj.instance) {
                     this.triggerOutFunction(evt, eleObj);
@@ -688,19 +710,19 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         } else if (this.hoverObject) {
             this.triggerOutFunction(evt, eleObj);
         }
-        let helperElement: HTMLElement = this.droppables[this.scope].helper;
+        const helperElement: HTMLElement = this.droppables[this.scope].helper;
         this.parentClientRect = this.calculateParentPosition(this.helperElement.offsetParent);
-        let tLeft: number = this.parentClientRect.left;
-        let tTop: number = this.parentClientRect.top;
-        let intCoord: Coordinates = this.getCoordinates(evt);
-        let pagex: number = intCoord.pageX;
-        let pagey: number = intCoord.pageY;
-        let dLeft: number = this.position.left - this.diffX;
-        let dTop: number = this.position.top - this.diffY;
-        let styles: CSSStyleDeclaration = getComputedStyle(helperElement);
+        const tLeft: number = this.parentClientRect.left;
+        const tTop: number = this.parentClientRect.top;
+        const intCoord: Coordinates = this.getCoordinates(evt);
+        const pagex: number = intCoord.pageX;
+        const pagey: number = intCoord.pageY;
+        const dLeft: number = this.position.left - this.diffX;
+        const dTop: number = this.position.top - this.diffY;
+        const styles: CSSStyleDeclaration = getComputedStyle(helperElement);
         if (this.dragArea) {
             if (this.pageX !== pagex || this.skipDistanceCheck) {
-                let helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
+                const helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
                     + parseFloat(styles.marginRight));
                 if (this.dragLimit.left > dLeft && dLeft > 0) {
                     left = this.dragLimit.left;
@@ -711,7 +733,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
             if (this.pageY !== pagey || this.skipDistanceCheck) {
-                let helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
+                const helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
                     + parseFloat(styles.marginBottom));
                 if (this.dragLimit.top > dTop && dTop > 0) {
                     top = this.dragLimit.top;
@@ -725,8 +747,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             left = dLeft;
             top = dTop;
         }
-        let iTop: number = tTop + this.borderWidth.top;
-        let iLeft: number = tLeft + this.borderWidth.left;
+        const iTop: number = tTop + this.borderWidth.top;
+        const iLeft: number = tLeft + this.borderWidth.left;
         if (this.dragProcessStarted) {
             if (isNullOrUndefined(top)) {
                 top = this.prevTop;
@@ -756,7 +778,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 draEleLeft = left - iLeft;
             }
         }
-        let marginTop: number = parseFloat(getComputedStyle(this.element).marginTop);
+        const marginTop: number = parseFloat(getComputedStyle(this.element).marginTop);
         // when drag-element has margin-top
         /* istanbul ignore next */
         if (marginTop > 0) {
@@ -773,7 +795,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             }
             if ((top - iTop) < 0) {
                 if (dTop + marginTop + (helperElement.offsetHeight - iTop) >= 0) {
-                    let tempDraEleTop: number = this.dragLimit.top + dTop - iTop;
+                    const tempDraEleTop: number = this.dragLimit.top + dTop - iTop;
                     if ((tempDraEleTop + marginTop + iTop) < 0) {
                         draEleTop -= marginTop + iTop;
                     } else {
@@ -786,11 +808,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
 
         if (this.dragArea && this.helperElement.classList.contains('e-treeview')) {
-            let helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
+            const helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
                     + parseFloat(styles.marginBottom));
             draEleTop = (draEleTop + helperHeight) > this.dragLimit.bottom ? (this.dragLimit.bottom - helperHeight) : draEleTop;
         }
-        
         /* istanbul ignore next */
         // if(this.eleTop > 0) {
         //      draEleTop += this.eleTop;
@@ -799,7 +820,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             draEleTop -= this.parentScrollY;
             draEleLeft -= this.parentScrollX;
         }
-        let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
+        if (this.dragArea && typeof this.dragArea !== 'string' && this.dragArea.classList.contains('e-kanban-content') && this.dragArea.style.position === 'relative') {
+            draEleTop += this.dragArea.scrollTop;
+        }
+        const dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
         setStyleAttribute(helperElement, this.getDragPosition(dragValue));
         if (!this.elementInViewport(helperElement) && this.enableAutoScroll && !this.helperElement.classList.contains('e-treeview')) {
             this.helperElement.scrollIntoView();
@@ -839,10 +863,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         const nodeEl: any = reverse ? node.reverse() : node;
         let hasScroll: string;
         for (let i: number = nodeEl.length - 1; i >= 0; i--) {
-            hasScroll = window.getComputedStyle(nodeEl[i])['overflow-y'];
+            hasScroll = window.getComputedStyle(nodeEl[parseInt(i.toString(), 10)])['overflow-y'];
             if ((hasScroll === 'auto' || hasScroll === 'scroll')
-                && nodeEl[i].scrollHeight > nodeEl[i].clientHeight) {
-                return nodeEl[i];
+                && nodeEl[parseInt(i.toString(), 10)].scrollHeight > nodeEl[parseInt(i.toString(), 10)].clientHeight) {
+                return nodeEl[parseInt(i.toString(), 10)];
             }
         }
         hasScroll = window.getComputedStyle(document.scrollingElement)['overflow-y'];
@@ -880,7 +904,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private getDragPosition(dragValue: DragPosition & { position?: string }): {
         [key: string]: Object;
     } {
-        let temp: {
+        const temp: {
             [key: string]: Object;
         } = extend({}, dragValue) as {
             [key: string]: Object;
@@ -895,9 +919,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         return temp;
     }
     private getDocumentWidthHeight(str: string): number {
-        let docBody: any = document.body;
-        let docEle: any = document.documentElement;
-        let returnValue: number = Math.max(
+        const docBody: any = document.body;
+        const docEle: any = document.documentElement;
+        const returnValue: number = Math.max(
             docBody['scroll' + str], docEle['scroll' + str],
             docBody['offset' + str], docEle['offset' + str], docEle['client' + str]);
         return returnValue;
@@ -907,17 +931,17 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         if (!isUndefined(evt.changedTouches) && (evt.changedTouches.length !== 1)) {
             return;
         }
-        let type: string[] = ['touchend', 'pointerup', 'mouseup'];
+        const type: string[] = ['touchend', 'pointerup', 'mouseup'];
         if (type.indexOf(evt.type) !== -1) {
             if (this.dragStop) {
-                let curTarget: Element = this.getProperTargetElement(evt);
+                const curTarget: Element = this.getProperTargetElement(evt);
                 this.trigger('dragStop', { event: evt, element: this.element, target: curTarget, helper: this.helperElement });
             }
             this.intDestroy(evt);
         } else {
             this.element.setAttribute('aria-grabbed', 'false');
         }
-        let eleObj: DropObject = this.checkTargetElement(evt);
+        const eleObj: DropObject = this.checkTargetElement(evt);
         if (eleObj.target && eleObj.instance) {
             eleObj.instance.dragStopCalled = true;
             (<any>eleObj).instance.dragData[this.scope] = this.droppables[this.scope];
@@ -961,25 +985,25 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let top: number = 0;
         let left: number = 0;
         let ele: HTMLElement;
-        let type: string = typeof this.dragArea;
+        const type: string = typeof this.dragArea;
         if (type === 'string') {
             ele = <HTMLElement>select(<string>this.dragArea);
         } else {
             ele = <HTMLElement>this.dragArea;
         }
         if (ele) {
-            let elementArea: ClientRect = ele.getBoundingClientRect();
+            const elementArea: ClientRect = ele.getBoundingClientRect();
             eleWidthBound = ele.scrollWidth ? ele.scrollWidth : elementArea.right - elementArea.left;
             eleHeightBound = ele.scrollHeight ? (this.dragArea && !isNullOrUndefined(this.helperElement) && this.helperElement.classList.contains('e-treeview')) ? ele.clientHeight : ele.scrollHeight : elementArea.bottom - elementArea.top;
-            let keys: string[] = ['Top', 'Left', 'Bottom', 'Right'];
-            let styles: any = getComputedStyle(ele);
+            const keys: string[] = ['Top', 'Left', 'Bottom', 'Right'];
+            const styles: any = getComputedStyle(ele);
             for (let i: number = 0; i < keys.length; i++) {
-                let key: string = keys[i];
-                let tborder: string = styles['border' + key + 'Width'];
-                let tpadding: string = styles['padding' + key];
-                let lowerKey: string = key.toLowerCase();
-                (<any>this.borderWidth)[lowerKey] = isNaN(parseFloat(tborder)) ? 0 : parseFloat(tborder);
-                (<any>this.padding)[lowerKey] = isNaN(parseFloat(tpadding)) ? 0 : parseFloat(tpadding);
+                const key: string = keys[parseInt(i.toString(), 10)];
+                const tborder: string = styles['border' + key + 'Width'];
+                const tpadding: string = styles['padding' + key];
+                const lowerKey: string = key.toLowerCase();
+                (<any>this.borderWidth)[`${lowerKey}`] = isNaN(parseFloat(tborder)) ? 0 : parseFloat(tborder);
+                (<any>this.padding)[`${lowerKey}`] = isNaN(parseFloat(tpadding)) ? 0 : parseFloat(tpadding);
             }
             if (this.dragArea && !isNullOrUndefined(this.helperElement) && this.helperElement.classList.contains('e-treeview')) {
                 top = elementArea.top + document.scrollingElement.scrollTop;
@@ -994,9 +1018,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
     private getProperTargetElement(evt: MouseEvent & TouchEvent): HTMLElement {
-        let intCoord: Coordinates = this.getCoordinates(evt);
+        const intCoord: Coordinates = this.getCoordinates(evt);
         let ele: HTMLElement;
-        let prevStyle: string = this.helperElement.style.pointerEvents || '';
+        const prevStyle: string = this.helperElement.style.pointerEvents || '';
         let isPointer: boolean = evt.type.indexOf('pointer') !== -1 && Browser.info.name === 'safari' && parseInt(Browser.info.version) > 12 ;
         if (compareElementParent(evt.target as Element, this.helperElement) || evt.type.indexOf('touch') !== -1 || isPointer) {
             this.helperElement.style.pointerEvents = 'none';
@@ -1019,11 +1043,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     private getMousePosition(evt: MouseEvent & TouchEvent, isdragscroll?: boolean): PositionModel {
         /* tslint:disable no-any */
-        let dragEle: any = evt.srcElement !== undefined ? evt.srcElement : evt.target;
-        let intCoord: Coordinates = this.getCoordinates(evt);
+        const dragEle: any = evt.srcElement !== undefined ? evt.srcElement : evt.target;
+        const intCoord: Coordinates = this.getCoordinates(evt);
         let pageX: number;
         let pageY: number;
-        let isOffsetParent: boolean = isNullOrUndefined(dragEle.offsetParent);
+        const isOffsetParent: boolean = isNullOrUndefined(dragEle.offsetParent);
         /* istanbul ignore next */
         if (isdragscroll) {
             pageX = this.clone ? intCoord.pageX :
@@ -1033,6 +1057,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         } else {
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        }
+        if (document.scrollingElement) {
+            let isVerticalScroll: boolean = document.scrollingElement.scrollHeight > 0 && document.scrollingElement.scrollHeight > document.scrollingElement.clientHeight && document.scrollingElement.scrollTop > 0;
+            let isHorrizontalScroll: boolean = document.scrollingElement.scrollWidth > 0 && document.scrollingElement.scrollWidth > document.scrollingElement.clientWidth && document.scrollingElement.scrollLeft > 0;
+            pageX = isHorrizontalScroll ? pageX - document.scrollingElement.scrollLeft : pageX;
+            pageY = isVerticalScroll ? pageY - document.scrollingElement.scrollTop : pageY;
         }
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),
@@ -1067,10 +1097,10 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         };
     }
     private checkTargetElement(evt: MouseEvent & TouchEvent): DropObject {
-        let target: Element = this.getProperTargetElement(evt);
+        const target: Element = this.getProperTargetElement(evt);
         let dropIns: DropOption = this.getDropInstance(target);
         if (!dropIns && target && !isNullOrUndefined(target.parentNode)) {
-            let parent: Element = closest(target.parentNode, '.e-droppable') || target.parentElement;
+            const parent: Element = closest(target.parentNode, '.e-droppable') || target.parentElement;
             if (parent) {
                 dropIns = this.getDropInstance(parent);
             }
@@ -1078,12 +1108,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         return { target: (<HTMLElement>target), instance: dropIns };
     }
     private getDropInstance(ele: Element): DropOption {
-        let name: string = 'getModuleName';
+        const name: string = 'getModuleName';
         let drop: Object;
-        let eleInst: { [key: string]: Object }[] = ele && (<Instance>ele).ej2_instances;
+        const eleInst: { [key: string]: Object }[] = ele && (<Instance>ele).ej2_instances;
         if (eleInst) {
-            for (let inst of eleInst) {
-                if ((<Function>inst[name])() === 'droppable') {
+            for (const inst of eleInst) {
+                if ((<Function>inst[`${name}`])() === 'droppable') {
                     drop = inst;
                     break;
                 }

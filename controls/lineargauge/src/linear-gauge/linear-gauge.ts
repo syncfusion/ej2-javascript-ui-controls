@@ -1,6 +1,6 @@
 /* eslint-disable valid-jsdoc */
 import { Component, Property, NotifyPropertyChanges, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
-import { EmitType, INotifyPropertyChanged, setCulture, Browser } from '@syncfusion/ej2-base';
+import { EmitType, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
 import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';
 import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';
@@ -11,7 +11,7 @@ import { LinearGaugeModel } from './linear-gauge-model';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';
 import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';
 import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs, IPointerDragEventArgs } from './model/interface';
-import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange, getExtraWidth, stringToNumberSize } from './utils/helper';
+import { Size, valueToCoefficient, calculateShapes, removeElement, getElement, VisibleRange, getExtraWidth, stringToNumberSize } from './utils/helper';
 import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';
 import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';
 import { Orientation, LinearGaugeTheme, LabelPlacement } from './utils/enum';
@@ -269,7 +269,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after the gauge gets rendered.
      *
-     * @event
+     * @event loaded
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
@@ -277,7 +277,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the gauge gets rendered.
      *
-     * @event
+     * @event load
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
@@ -285,7 +285,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after completing the animation for pointer.
      *
-     * @event
+     * @event animationComplete
      */
     @Event()
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
@@ -293,7 +293,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each axis label gets rendered.
      *
-     * @event
+     * @event axisLabelRender
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
@@ -301,7 +301,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the pointer is dragged.
      *
-     * @event
+     * @event dragStart
      */
 
     @Event()
@@ -310,7 +310,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while dragging the pointers.
      *
-     * @event
+     * @event dragMove
      */
 
     @Event()
@@ -319,7 +319,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after the pointer is dragged.
      *
-     * @event
+     * @event dragEnd
      */
     @Event()
     public dragEnd: EmitType<IPointerDragEventArgs>;
@@ -327,7 +327,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each annotation gets rendered.
      *
-     * @event
+     * @event annotationRender
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
@@ -335,7 +335,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the tooltip get rendered.
      *
-     * @event
+     * @event tooltipRender
      * @deprecated
      */
 
@@ -345,7 +345,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when performing the mouse move operation on gauge area.
      *
-     * @event
+     * @event gaugeMouseMove
      */
 
     @Event()
@@ -355,7 +355,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when performing the mouse leave operation from the gauge area.
      *
-     * @event
+     * @event gaugeMouseLeave
      */
 
     @Event()
@@ -364,7 +364,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when performing the mouse down operation on gauge area.
      *
-     * @event
+     * @event gaugeMouseDown
      */
 
     @Event()
@@ -373,7 +373,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when performing mouse up operation on gauge area.
      *
-     * @event
+     * @event gaugeMouseUp
      */
 
     @Event()
@@ -382,7 +382,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while changing the value of the pointer by UI interaction.
      *
-     * @event
+     * @event valueChange
      */
 
     @Event()
@@ -391,7 +391,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers after window resize.
      *
-     * @event
+     * @event resized
      */
 
     @Event()
@@ -400,7 +400,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before the prints gets started.
      *
-     * @event
+     * @event beforePrint
      */
 
     @Event()
@@ -429,14 +429,16 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public isPropertyChange: boolean;
     /**
-     * @private
      * Calculate the axes bounds for gauge.
+     *
+     * @private
      * @hidden
      */
     public gaugeAxisLayoutPanel: AxisLayoutPanel;
     /**
-     * @private
      * Render the axis elements for gauge.
+     *
+     * @private
      * @hidden
      */
     public axisRenderer: AxisRenderer;
@@ -477,12 +479,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public themeStyle: IThemeStyle;
 
     /**
-     * @private
      * Constructor for creating the widget
+     *
+     * @private
      * @hidden
      */
 
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(options?: LinearGaugeModel, element?: string | HTMLElement) {
         super(options, element);
     }
@@ -587,15 +589,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * To Initialize the control rendering
      */
     protected render(): void {
-       this.isPropertyChange = false;
-       this.isCheckPointerDrag = false;
-       this.renderElements();
+        this.isPropertyChange = false;
+        this.isCheckPointerDrag = false;
+        this.renderElements();
     }
 
     /**
-     * @private
      * To render the gauge elements
+     *
+     * @private
      */
+
     public renderGaugeElements(): void {
         this.appendSecondaryElement();
         this.renderBorder();
@@ -607,7 +611,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (isNullOrUndefined(getElement(this.element.id + '_Secondary_Element'))) {
             const secondaryElement: Element = createElement('div');
             secondaryElement.id = this.element.id + '_Secondary_Element';
-            secondaryElement.setAttribute('style', 'position: relative');
+            (secondaryElement as HTMLElement).style.position = 'relative';
             this.element.appendChild(secondaryElement);
         }
     }
@@ -624,16 +628,19 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
     }
     /**
-     * @private
      * To calculate axes bounds
+     *
+     * @private
      */
+
     public calculateBounds(): void {
         this.gaugeAxisLayoutPanel.calculateAxesBounds();
     }
 
     /**
-     * @private
      * To render axis elements
+     *
+     * @private
      */
     public renderAxisElements(): void {
         this.axisRenderer.renderAxes();
@@ -652,7 +659,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (width > 0 || (this.background || this.themeStyle.backgroundColor)) {
             const rect: RectOption = new RectOption(
                 this.element.id + '_LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1,
-                new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
+                new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(rect) as HTMLElement);
         }
     }
@@ -751,10 +758,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the gauge resize.
      *
-     * @return {boolean}
+     * @return {boolean} check whether the Linear Gauge is resized or not.
      * @private
      */
-    public gaugeResize(e: Event): boolean {
+
+    public gaugeResize(): boolean {
         if (!this.isDestroyed) {
             const args: IResizeEventArgs = {
                 gauge: this,
@@ -813,9 +821,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * @private
      * To render the gauge container
+     *
+     * @private
      */
+
     public renderContainer(): void {
         let width: number; let height: number; let x: number; let y: number;
         let options: PathOption;
@@ -830,8 +840,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const bottomRadius: number = radius + ((radius / 2) / Math.PI);
         const topRadius: number = radius / 2;
         let allowContainerRender: boolean = false;
-        for (let i = 0; i < this.axes.length; i++) {
-            if (this.axes[i].minimum !== this.axes[i].maximum) {
+        for (let i: number = 0; i < this.axes.length; i++) {
+            if (this.axes[i as number].minimum !== this.axes[i as number].maximum) {
                 allowContainerRender = true;
                 break;
             }
@@ -868,7 +878,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if ((this.containerBounds.width > 0 && this.orientation === 'Vertical') || (this.containerBounds.height > 0 && this.orientation === 'Horizontal')) {
             this.containerObject = this.renderer.createGroup({ id: this.element.id + '_Container_Group', transform: 'translate( 0, 0)' });
             if (this.container.type === 'Normal') {
-                let containerBorder: BorderModel = { color: this.container.border.color || this.themeStyle.containerBorderColor,
+                const containerBorder: BorderModel = { color: this.container.border.color || this.themeStyle.containerBorderColor,
                     width: this.container.border.width, dashArray: this.container.border.dashArray };
                 rect = new RectOption(
                     this.element.id + '_' + this.container.type + '_Layout', fill, containerBorder, 1,
@@ -880,7 +890,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     new Size(this.container.height, this.container.width), 'container', null, null, this.container.roundedCornerRadius);
                 options = new PathOption(
                     this.element.id + '_' + this.container.type + '_Layout', fill,
-                    this.container.border.width, this.container.border.color || this.themeStyle.containerBorderColor, 1, this.container.border.dashArray, path);
+                    this.container.border.width, this.container.border.color || this.themeStyle.containerBorderColor,
+                    1, this.container.border.dashArray, path);
                 this.containerObject.appendChild(this.renderer.drawPath(options) as SVGAElement);
             }
             this.svgObject.appendChild(this.containerObject);
@@ -890,6 +901,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Method to set mouse x, y from events
      */
+
     private setMouseXY(e: PointerEvent): void {
         let pageX: number;
         let pageY: number;
@@ -911,25 +923,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the mouse down on gauge.
      *
+     * @param {PointerEvent} e - Specifies the event argument.
      * @return {boolean}
      * @private
      */
-     public gaugeOnMouseDown(e: PointerEvent): boolean {
-        let pageX: number; let pageY: number;
-        let target: Element;
-        const element: Element = <Element>e.target;
-        const split: string[] = [];
-        const clientRect: ClientRect = this.element.getBoundingClientRect();
-        let axis: Axis; const isPointer: boolean = false;
-        let pointer: Pointer;
+
+    public gaugeOnMouseDown(e: PointerEvent): boolean {
         let current: IMoveCursor;
         let currentPointer: IVisiblePointer;
         this.setMouseXY(e);
-        let top: number; let left: number;
-        let pointerElement: Element; let svgPath: SVGPathElement;
-        const dragProcess: boolean = false;
         const args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger(gaugeMouseDown, args, (observedArgs: IMouseEventArgs) => {
+        this.trigger(gaugeMouseDown, args, () => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (args.target) {
@@ -944,8 +948,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     const pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
                     const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     if (currentPointer.pointer.enableDrag) {
-                        this.trigger(dragStart, 
-                        {
+                        this.trigger(dragStart, {
                             axis: this.activeAxis,
                             name: dragStart,
                             pointer: this.activePointer,
@@ -970,12 +973,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @return {boolean}
      * @private
      */
+
     public mouseMove(e: PointerEvent): boolean {
         let current: IMoveCursor;
-        let element: Element;
         this.setMouseXY(e);
         const args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger(gaugeMouseMove, args, (observedArgs: IMouseEventArgs) => {
+        this.trigger(gaugeMouseMove, args, () => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             let dragArgs: IPointerDragEventArgs;
@@ -984,7 +987,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     if (!isNullOrUndefined(this.activePointer.pathElement)) {
                         const pointerIndex: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
                         const axisIndex: number = parseInt(this.activePointer.pathElement[0].id.split('AxisIndex_')[1].match(/\d/g)[0], 10);
-                        if (this.axes[axisIndex].pointers[pointerIndex].enableDrag) {
+                        if (this.axes[axisIndex as number].pointers[pointerIndex as number].enableDrag) {
                             current = this.moveOnPointer(this.activePointer.pathElement[0] as HTMLElement);
                             if (!(isNullOrUndefined(current)) && current.pointer) {
                                 this.element.style.cursor = current.style;
@@ -1000,27 +1003,28 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                                 pointerIndex: pointerIndex
                             };
                             if (this.activePointer.pathElement[0].id.indexOf('MarkerPointer') > -1) {
-                                this.markerDrag(this.activeAxis, (this.activeAxis.pointers[pointerIndex]) as Pointer);
+                                this.markerDrag(this.activeAxis, (this.activeAxis.pointers[pointerIndex as number]) as Pointer);
                             } else {
-                                this.barDrag(this.activeAxis, (this.activeAxis.pointers[pointerIndex]) as Pointer);
+                                this.barDrag(this.activeAxis, (this.activeAxis.pointers[pointerIndex as number]) as Pointer);
                             }
-                            dragArgs.currentValue = this.axes[axisIndex].pointers[pointerIndex].value = this.activePointer.currentValue;
+                            dragArgs.currentValue = this.axes[axisIndex as number].pointers[pointerIndex as number].value =
+                                this.activePointer.currentValue;
                             this.trigger(dragMove, dragArgs);
                         }
                     }
                 } else {
                     if (args.target.id.indexOf('Pointer') > -1 && isNullOrUndefined(this.activePointer)) {
-                        var pointerIndex = parseInt(args.target.id.split('Pointer_')[1], 10)
-                        var axisIndex = parseInt(args.target.id.split('AxisIndex_')[1].match(/\d/g)[0], 10);
-                        if (this.axes[axisIndex].pointers[pointerIndex].enableDrag) {
+                        const pointerIndex: number = parseInt(args.target.id.split('Pointer_')[1], 10);
+                        const axisIndex: number = parseInt(args.target.id.split('AxisIndex_')[1].match(/\d/g)[0], 10);
+                        if (this.axes[axisIndex as number].pointers[pointerIndex as number].enableDrag) {
                             this.element.style.cursor = 'pointer';
                         }
                     }
                     else {
-                         this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
+                        this.element.style.cursor = (this.pointerDrag) ? this.element.style.cursor : 'auto';
                     }
                 }
-                this.gaugeOnMouseMove(e);
+                this.gaugeOnMouseMove();
             }
         });
         this.notify(Browser.touchMoveEvent, e);
@@ -1071,9 +1075,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * @private
      * Handle the right click
-     * @param event
+     *
+     * @param {PointerEvent | TouchEvent} event - Specifies the pointer event argument.
+     * @returns {boolean} - Specifies whether right click is performed on the Linear Gauge.
+     * @private
+     *
      */
 
     public gaugeRightClick(event: MouseEvent | PointerEvent): boolean {
@@ -1092,11 +1099,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @return {boolean}
      * @private
      */
+
     public mouseLeave(e: PointerEvent): boolean {
-        let parentNode: HTMLElement;
         this.activeAxis = null;
         this.activePointer = null;
-        const args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
+        this.getMouseArgs(e, 'touchmove', gaugeMouseLeave);
         if (!isNullOrUndefined(this.mouseElement)) {
             this.mouseElement = null;
             this.pointerDrag = false;
@@ -1107,10 +1114,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Handles the mouse move on gauge.
      *
+     * @param {PointerEvent | TouchEvent} e - Specifies the pointer event argument.
      * @return {boolean}
      * @private
      */
-    public gaugeOnMouseMove(e: PointerEvent | TouchEvent): boolean {
+
+    public gaugeOnMouseMove(): boolean {
         let current: IVisiblePointer;
         if (this.pointerDrag) {
             current = getPointer(this.mouseElement as HTMLElement, this);
@@ -1127,20 +1136,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @return {boolean}
      * @private
      */
+
     public mouseEnd(e: PointerEvent): boolean {
         this.setMouseXY(e);
-        let parentNode: HTMLElement;
-        let tooltipInterval: number;
         const isImage: boolean = isNullOrUndefined(this.activePointer) ? false : this.activePointer.markerType === 'Image';
-        const isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         const args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
         this.trigger(gaugeMouseUp, args);
         if (this.activeAxis && this.activePointer) {
             const pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
             const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
             if (this.activePointer.enableDrag) {
-                this.trigger(dragEnd, 
-                {
+                this.trigger(dragEnd, {
                     name: dragEnd,
                     axis: this.activeAxis,
                     pointer: this.activePointer,
@@ -1170,6 +1176,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      *
      * @param id - Specifies the element to print the linear gauge.
      */
+
     public print(id?: string[] | string | Element): void {
         if ((this.allowPrint) && (this.printModule)) {
             this.printModule.print(this, id);
@@ -1178,21 +1185,24 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * This method handles the export functionality for linear gauge.
      *
-     * @param type - Specifies the type of the export.
-     * @param fileName - Specifies the file name for the exported file.
-     * @param orientation - Specified the orientation for the exported pdf document.
+     * @param {ExportType} type - Specifies the extension type of the exported document.
+     * @param {string} fileName - Specifies file name for exporting the rendered Linear Gauge.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document.
+     * @param {boolean} allowDownload - Specifies whether the exported file should be downloaded or not.
+     * @returns {string} - Specifies the base64 string of the exported image which is returned when the allowDownload is set to false.
      */
+
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
         if (isNullOrUndefined(allowDownload)) {
             allowDownload = true;
         }
         if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
             return new Promise((resolve: any, reject: any) => {
                 resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
             });
         } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
             return new Promise((resolve: any, reject: any) => {
                 resolve(this.pdfExportModule.export(this, type, fileName, orientation, allowDownload));
             });
@@ -1206,6 +1216,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @return {IMouseEventArgs}
      * @private
      */
+
     private getMouseArgs(e: PointerEvent, type: string, name: string): IMouseEventArgs {
         const rect: ClientRect = this.element.getBoundingClientRect();
         const location: GaugeLocation = new GaugeLocation(-rect.left, -rect.top);
@@ -1230,7 +1241,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let options: PathOption;
         const value: number = convertPixelToValue(
             this.element, this.mouseElement, this.orientation, axis, 'drag', new GaugeLocation(this.mouseX, this.mouseY));
-        const process: boolean = withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer');
         if (withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer')) {
             options = new PathOption(
                 'pointerID', pointer.color || this.themeStyle.pointerColor,
@@ -1250,7 +1260,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             } else if (pointer.markerType === 'Circle') {
                 this.mouseElement.setAttribute('cx', (options.cx).toString());
                 this.mouseElement.setAttribute('cy', (options.cy).toString());
-                this.mouseElement.setAttribute('r',(options.r).toString());
+                this.mouseElement.setAttribute('r', (options.r).toString());
             } else {
                 this.mouseElement.setAttribute('d', options.d);
             }
@@ -1306,7 +1316,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             }
         }
         if (!isNullOrUndefined(this.mouseElement)) {
-            let value: number = convertPixelToValue(this.element, this.mouseElement, this.orientation, axis, 'drag', new GaugeLocation(this.mouseX, this.mouseY));
+            const value: number = convertPixelToValue(this.element, this.mouseElement, this.orientation, axis, 'drag', new GaugeLocation(this.mouseX, this.mouseY));
             pointer.currentValue = pointer.value = value;
         }
         if (isDrag && !isNullOrUndefined(this.mouseElement) && this.mouseElement.tagName === 'path') {
@@ -1327,7 +1337,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const active: IVisiblePointer = getPointer(activeElement as HTMLElement, this);
         const value: number = convertPixelToValue(
             this.element, activeElement, this.orientation, active.axis, 'tooltip', null);
-        let dragArgs: IValueChangeEventArgs = {
+        const dragArgs: IValueChangeEventArgs = {
             name: 'valueChange',
             gauge: this,
             element: activeElement,
@@ -1338,7 +1348,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             value: value
         };
         this.trigger(valueChange, dragArgs, (pointerArgs : IValueChangeEventArgs) => {
-            if (value != pointerArgs.value) {
+            if (value !== pointerArgs.value) {
                 this.setPointerValue(pointerArgs.axisIndex, pointerArgs.pointerIndex, pointerArgs.value);
             }
         });
@@ -1354,13 +1364,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     public setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
         if (!this.isDestroyed) {
-            const axis: Axis = <Axis>this.axes[axisIndex];
-            const pointer: Pointer = <Pointer>axis.pointers[pointerIndex];
+            const axis: Axis = <Axis>this.axes[axisIndex as number];
+            const pointer: Pointer = <Pointer>axis.pointers[pointerIndex as number];
             this.gaugeResized = false;
-            if (pointer.startValue != value) {
+            if (pointer.startValue !== value) {
                 const id: string = this.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + pointerIndex;
                 const pointerElement: Element = getElement(id);
-                value = (value < axis.visibleRange.min) ? axis.visibleRange.min : ((value > axis.visibleRange.max) ? axis.visibleRange.max : value);
+                value = (value < axis.visibleRange.min) ? axis.visibleRange.min : ((value > axis.visibleRange.max) ?
+                    axis.visibleRange.max : value);
                 pointer.currentValue = value;
                 pointer.isPointerAnimation = true;
                 this.isPropertyChange = true;
@@ -1370,7 +1381,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     )
                 ) {
                     pointer.value = this.pointerDrag ? value : pointer.value;
-                    this.gaugeAxisLayoutPanel['calculate' + pointer.type + 'Bounds'](axisIndex, axis, pointerIndex, pointer);
+                    this.gaugeAxisLayoutPanel['calculate' + pointer.type + 'Bounds'](axis, pointer);
                     this.axisRenderer['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointer, pointerIndex, pointerElement.parentElement);
                 }
                 this.isProtectedOnChange = true;
@@ -1396,7 +1407,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 createElement('div', {
                     id: this.element.id + '_AnnotationsGroup'
                 });
-            const annotation: Annotation = <Annotation>this.annotations[annotationIndex];
+            const annotation: Annotation = <Annotation>this.annotations[annotationIndex as number];
             if (content !== null) {
                 removeElement(this.element.id + '_Annotation_' + annotationIndex);
                 annotation.content = content;
@@ -1426,11 +1437,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @return {ModuleDeclaration[]}
      * @private
      */
+
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         let annotationEnable: boolean = false;
-        const tooltipEnable: boolean = false;
-        this.annotations.map((annotation: Annotation, index: number) => {
+        this.annotations.map((annotation: Annotation) => {
             annotationEnable = annotation.content != null;
         });
         if (annotationEnable) {
@@ -1475,6 +1486,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      *
      * @private
      */
+
     public getPersistData(): string {
         const keyEntity: string[] = ['loaded'];
         return this.addOnPersist(keyEntity);
@@ -1483,6 +1495,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Get component name
      */
+
     public getModuleName(): string {
         return 'lineargauge';
     }
@@ -1492,6 +1505,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      *
      * @private
      */
+
     public onPropertyChanged(newProp: LinearGaugeModel, oldProp: LinearGaugeModel): void {
         if (!this.isDestroyed) {
             let renderer: boolean = false;
@@ -1500,65 +1514,66 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.gaugeResized = false;
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
-                    case 'height':
-                    case 'width':
-                    case 'margin':
-                        this.createSvg();
+                case 'height':
+                case 'width':
+                case 'margin':
+                    this.createSvg();
+                    refreshBounds = true;
+                    break;
+                case 'title':
+                    refreshBounds = (newProp.title === '' || oldProp.title === '');
+                    renderer = !(newProp.title === '' || oldProp.title === '');
+                    break;
+                case 'titleStyle':
+                    if (newProp.titleStyle && newProp.titleStyle.size) {
                         refreshBounds = true;
-                        break;
-                    case 'title':
-                        refreshBounds = (newProp.title === '' || oldProp.title === '');
-                        renderer = !(newProp.title === '' || oldProp.title === '');
-                        break;
-                    case 'titleStyle':
-                        if (newProp.titleStyle && newProp.titleStyle.size) {
-                            refreshBounds = true;
-                        } else {
-                            renderer = true;
-                        }
-                        break;
-                    case 'border':
+                    } else {
                         renderer = true;
-                        break;
-                    case 'background':
-                        renderer = true;
-                        break;
-                    case 'container':
-                        refreshBounds = true;
-                        break;
-                    case 'orientation':
-                        for (let i: number = 0; i < this.axes.length; i++) {
-                            for (let j: number = 0; j < this.axes[i].pointers.length; j++) {
-                                this.axes[i].pointers[j]['startValue'] = this.axes[i].minimum;
-                                this.axes[i].pointers[j]['isPointerAnimation'] = true;
-                            }
+                    }
+                    break;
+                case 'border':
+                    renderer = true;
+                    break;
+                case 'background':
+                    renderer = true;
+                    break;
+                case 'container':
+                    refreshBounds = true;
+                    break;
+                case 'orientation':
+                    for (let i: number = 0; i < this.axes.length; i++) {
+                        for (let j: number = 0; j < this.axes[i as number].pointers.length; j++) {
+                            this.axes[i as number].pointers[j as number]['startValue'] = this.axes[i as number].minimum;
+                            this.axes[i as number].pointers[j as number]['isPointerAnimation'] = true;
                         }
-                        refreshBounds = true;
-                        break;
-                    case 'axes':
-                        const axesPropertyLength: number = Object.keys(newProp.axes).length;
-                        for (let x: number = 0; x < axesPropertyLength; x++) {
-                            if (!isNullOrUndefined(newProp.axes[x])) {
-                                const collection: string[] = Object.keys(newProp.axes[x]);
-                                for (const collectionProp of collection) {
-                                    if (collectionProp === 'pointers') {
-                                        const pointerPropertyLength: number = Object.keys(newProp.axes[x].pointers).length;
-                                        for (let y: number = 0; y < pointerPropertyLength; y++) {
-                                            let index: number = parseInt(Object.keys(newProp.axes[x].pointers)[y]);
-                                            if (!isNullOrUndefined(Object.keys(newProp.axes[x].pointers[index]))) {
-                                                this.axes[x].pointers[index]['startValue'] = this.axes[x].pointers[index]['currentValue'];
-                                                this.axes[x].pointers[index]['isPointerAnimation'] = Object.keys(newProp.axes[x].pointers[index]).indexOf('value') > -1;
-                                                if (this.pointerDrag) {
-                                                    this.axes[x].pointers[index]['isPointerAnimation'] = false;
-                                                }
+                    }
+                    refreshBounds = true;
+                    break;
+                case 'axes':
+                    // eslint-disable-next-line no-case-declarations
+                    const axesPropertyLength: number = Object.keys(newProp.axes).length;
+                    for (let x: number = 0; x < axesPropertyLength; x++) {
+                        if (!isNullOrUndefined(newProp.axes[x as number])) {
+                            const collection: string[] = Object.keys(newProp.axes[x as number]);
+                            for (const collectionProp of collection) {
+                                if (collectionProp === 'pointers') {
+                                    const pointerPropertyLength: number = Object.keys(newProp.axes[x as number].pointers).length;
+                                    for (let y: number = 0; y < pointerPropertyLength; y++) {
+                                        const index: number = parseInt(Object.keys(newProp.axes[x as number].pointers)[y as number], 10);
+                                        if (!isNullOrUndefined(Object.keys(newProp.axes[x as number].pointers[index as number]))) {
+                                            this.axes[x as number].pointers[index as number]['startValue'] = this.axes[x as number].pointers[index as number]['currentValue'];
+                                            this.axes[x as number].pointers[index as number]['isPointerAnimation'] = Object.keys(newProp.axes[x as number].pointers[index as number]).indexOf('value') > -1;
+                                            if (this.pointerDrag) {
+                                                this.axes[x as number].pointers[index as number]['isPointerAnimation'] = false;
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        refreshBounds = true;
-                        break;
+                    }
+                    refreshBounds = true;
+                    break;
                 }
             }
             if (!refreshBounds && renderer) {

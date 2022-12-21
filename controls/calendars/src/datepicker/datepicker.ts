@@ -805,7 +805,10 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     protected unBindEvents() : void {
+        if(!isNullOrUndefined(this.inputWrapper))
+        {
         EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler);
+        }
         EventHandler.remove(this.inputElement, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
@@ -942,10 +945,10 @@ export class DatePicker extends Calendar implements IInput {
     protected updateHtmlAttributeToWrapper(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
-                if (!isNullOrUndefined(this.htmlAttributes[key])) {
+                if (!isNullOrUndefined(this.htmlAttributes[`${key}`])) {
                     if (containerAttr.indexOf(key) > -1) {
                         if (key === 'class') {
-                            const updatedClassValues : string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                            const updatedClassValues : string = (this.htmlAttributes[`${key}`].replace(/\s+/g, ' ')).trim();
                             if (updatedClassValues !== '') {
                                 addClass([this.inputWrapper.container], updatedClassValues.split(' '));
                             }
@@ -953,16 +956,16 @@ export class DatePicker extends Calendar implements IInput {
                             let setStyle: string = this.inputWrapper.container.getAttribute(key);
                             if (!isNullOrUndefined(setStyle)) {
                                 if (setStyle.charAt(setStyle.length - 1) === ';') {
-                                    setStyle = setStyle + this.htmlAttributes[key];
+                                    setStyle = setStyle + this.htmlAttributes[`${key}`];
                                 } else {
-                                    setStyle = setStyle + ';' + this.htmlAttributes[key];
+                                    setStyle = setStyle + ';' + this.htmlAttributes[`${key}`];
                                 }
                             } else {
-                                setStyle = this.htmlAttributes[key];
+                                setStyle = this.htmlAttributes[`${key}`];
                             }
                             this.inputWrapper.container.setAttribute(key, setStyle);
                         } else {
-                            this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                            this.inputWrapper.container.setAttribute(key, this.htmlAttributes[`${key}`]);
                         }
                     }
                 }
@@ -974,7 +977,7 @@ export class DatePicker extends Calendar implements IInput {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) < 0 ) {
-                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                    this.inputElement.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }
@@ -1089,12 +1092,12 @@ export class DatePicker extends Calendar implements IInput {
         this.isPopupClicked = false;
     }
     private documentHandler(e: MouseEvent): void {
-        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(<HTMLElement>e.target) && e.type !== 'mousedown' ||
+        if ((!isNullOrUndefined(this.popupObj) && !isNullOrUndefined(this.inputWrapper) && (this.inputWrapper.container.contains(<HTMLElement>e.target) && e.type !== 'mousedown' ||
             (this.popupObj.element && this.popupObj.element.contains(<HTMLElement>e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         const target: HTMLElement = <HTMLElement>e.target;
-        if (!(closest(target, '.e-datepicker.e-popup-wrapper'))
+        if (!(closest(target, '.e-datepicker.e-popup-wrapper')) && !isNullOrUndefined(this.inputWrapper) 
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
             && (!target.classList.contains('e-day'))) {
             this.hide(e);
@@ -1718,7 +1721,10 @@ export class DatePicker extends Calendar implements IInput {
     public destroy(): void {
         this.unBindEvents();
         super.destroy();
+        if(!isNullOrUndefined(this.keyboardModules))
+        {
         this.keyboardModules.destroy();
+        }
         if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
             super.destroy();
         }
@@ -1747,33 +1753,41 @@ export class DatePicker extends Calendar implements IInput {
         }
         if (this.ngTag === null) {
             if (this.inputElement) {
+                if(!isNullOrUndefined(this.inputWrapper))
+                {
                 this.inputWrapper.container.insertAdjacentElement('afterend', this.inputElement);
+                }
                 removeClass([this.inputElement], [INPUTROOT]);
             }
             removeClass([this.element], [ROOT]);
+            if(!isNullOrUndefined(this.inputWrapper))
+            {
             detach(this.inputWrapper.container);
+            }
         }
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
         }
+        this.inputWrapper = null;
+        this.keyboardModules = null;
     }
 
     protected ensureInputAttribute(): void {
         const prop: string[] = [];
         for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
-            prop[i] = this.inputElement.attributes[i].name;
+            prop[i as number] = this.inputElement.attributes[i as  number].name;
         }
         for (let i: number = 0; i < prop.length; i++) {
-            if (isNullOrUndefined(this.inputElementCopy.getAttribute(prop[i]))) {
-                if (prop[i].toLowerCase() === 'value') {
+            if (isNullOrUndefined(this.inputElementCopy.getAttribute(prop[i as number]))) {
+                if (prop[i as number].toLowerCase() === 'value') {
                     this.inputElement.value = '';
                 }
-                this.inputElement.removeAttribute(prop[i]);
+                this.inputElement.removeAttribute(prop[i as number]);
             } else {
-                if (prop[i].toLowerCase() === 'value') {
-                    this.inputElement.value = this.inputElementCopy.getAttribute(prop[i]);
+                if (prop[i as number].toLowerCase() === 'value') {
+                    this.inputElement.value = this.inputElementCopy.getAttribute(prop[i as number]);
                 }
-                this.inputElement.setAttribute(prop[i], this.inputElementCopy.getAttribute(prop[i]));
+                this.inputElement.setAttribute(prop[i as number], this.inputElementCopy.getAttribute(prop[i as number]));
             }
         }
     }
@@ -1854,12 +1868,12 @@ export class DatePicker extends Calendar implements IInput {
         target.removeAttribute('name');
         const attribute: string[] = ['required', 'aria-required', 'form'];
         for (let i: number = 0; i < attribute.length; i++) {
-            if (isNullOrUndefined(target.getAttribute(attribute[i]))) {
+            if (isNullOrUndefined(target.getAttribute(attribute[i as number]))) {
                 continue;
             }
-            const attr: string = target.getAttribute(attribute[i]);
-            inputElement.setAttribute(attribute[i], attr);
-            target.removeAttribute(attribute[i]);
+            const attr: string = target.getAttribute(attribute[i as number]);
+            inputElement.setAttribute(attribute[i as number], attr);
+            target.removeAttribute(attribute[i as number]);
         }
     }
     protected checkFormat(): void {
@@ -2202,7 +2216,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 break;
             }
-            if (!this.isDynamicValueChanged && !this.isIconClicked) {
+            if (!this.isDynamicValueChanged) {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;

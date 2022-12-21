@@ -34,3 +34,5 @@ export * from './sort-settings';
 export * from './sort-settings-model';
 export * from './resource-fields';
 export * from './resource-fields-model';
+export * from './loading-indicator';
+export * from './loading-indicator-model';

@@ -63,14 +63,14 @@ export function getDropDownValue(items: IDropDownItemModel[], value: string, typ
     let data: IDropDownItemModel;
     let result: string;
     for (let k: number = 0; k < items.length; k++) {
-        if (type === 'value' && items[k].value.toLocaleLowerCase() === value.toLocaleLowerCase()) {
-            data = items[k];
+        if (type === 'value' && items[k as number].value.toLocaleLowerCase() === value.toLocaleLowerCase()) {
+            data = items[k as number];
             break;
-        } else if (type === 'text' && items[k].text.toLocaleLowerCase() === value.toLocaleLowerCase()) {
-            data = items[k];
+        } else if (type === 'text' && items[k as number].text.toLocaleLowerCase() === value.toLocaleLowerCase()) {
+            data = items[k as number];
             break;
-        } else if (type === 'subCommand' && items[k].subCommand.toLocaleLowerCase() === value.toLocaleLowerCase()) {
-            data = items[k];
+        } else if (type === 'subCommand' && items[k as number].subCommand.toLocaleLowerCase() === value.toLocaleLowerCase()) {
+            data = items[k as number];
             break;
         }
     }
@@ -139,7 +139,7 @@ export function pageYOffset(e: MouseEvent | Touch, parentElement: HTMLElement, i
  */
 export function getTooltipText(item: string, serviceLocator: ServiceLocator): string {
     const i10n: L10n = serviceLocator.getService<L10n>('rteLocale');
-    const itemLocale: string = toolsLocale[item];
+    const itemLocale: string = toolsLocale[`${item}`];
     const tooltipText: string = i10n.getConstant(itemLocale);
     return tooltipText;
 }
@@ -158,19 +158,19 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
     const keys: string[] = Object.keys(e.args);
     for (const key of keys) {
         for (let j: number = 0; j < e.tbItems.length; j++) {
-            const item: string = e.tbItems[j].subCommand;
+            const item: string = e.tbItems[j as number].subCommand;
             const itemStr: string = item && item.toLocaleLowerCase();
             if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') ||
             (itemStr === 'pre' && key === 'insertcode')) {
-                if (typeof data[key] === 'boolean') {
-                    if (data[key] === true) {
-                        addClass([e.tbElements[j]], [classes.CLS_ACTIVE]);
+                if (typeof data[`${key}`] === 'boolean') {
+                    if (data[`${key}`] === true) {
+                        addClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
                     } else {
-                        removeClass([e.tbElements[j]], [classes.CLS_ACTIVE]);
+                        removeClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
                     }
-                } else if ((typeof data[key] === 'string' || data[key] === null) &&
+                } else if ((typeof data[`${key}`] === 'string' || data[`${key}`] === null) &&
                     getIndex(key, e.parent.toolbarSettings.items) > -1) {
-                    const value: string = ((data[key]) ? data[key] : '') as string;
+                    const value: string = ((data[`${key}`]) ? data[`${key}`] : '') as string;
                     let result: string = '';
                     switch (key) {
                     case 'formats': {
@@ -184,7 +184,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         result = getDropDownValue(formatItems, value, 'subCommand', 'text');
                         dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
-                                '<span class="e-rte-dropdown-btn-text' + ' ' + e.parent.cssClass + '">'
+                                '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                                 + (isNOU(result) ? formatContent : result) +
                                 '</span></span>');
                         dropDown.formatDropDown.dataBind();
@@ -209,10 +209,10 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? fontNameItems[0].text :
                             e.parent.fontFamily.default;
                         const name: string = (isNOU(result) ? fontNameContent : result);
-                        e.tbElements[j].title = name;
+                        e.tbElements[j as number].title = name;
                         dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontFamily.width + '" >' +
-                            '<span class="e-rte-dropdown-btn-text' + ' ' + e.parent.cssClass + '">'
+                            '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                             + name + '</span></span>');
                         dropDown.fontNameDropDown.dataBind();
                         break; }
@@ -228,7 +228,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                         dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontSize.width + '" >' +
-                            '<span class="e-rte-dropdown-btn-text' + ' ' + e.parent.cssClass + '">'
+                            '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                             + getFormattedFontSize(result) + '</span></span>');
                         dropDown.fontSizeDropDown.dataBind();
                         break; }
@@ -262,25 +262,25 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
     const itemsIndex: number[] = [];
     for (let i: number = 0; i < items.length; i++) {
         for (let j: number = 0; j < toolbarItems.length; j++) {
-            if (toolbarItems[j].type === 'Separator') {
+            if (toolbarItems[j as number].type === 'Separator') {
                 continue;
             } else {
-                if (items[i] === 'OrderedList' && toolbarItems[j].subCommand === 'OL') {
+                if (items[i as number] === 'OrderedList' && toolbarItems[j as number].subCommand === 'OL') {
                     itemsIndex.push(j);
                     break;
-                } else if (items[i] === 'UnorderedList' && toolbarItems[j].subCommand === 'UL') {
+                } else if (items[i as number] === 'UnorderedList' && toolbarItems[j as number].subCommand === 'UL') {
                     itemsIndex.push(j);
                     break;
-                } else if (items[i] === 'InsertCode' && toolbarItems[j].subCommand === 'Pre') {
+                } else if (items[i as number] === 'InsertCode' && toolbarItems[j as number].subCommand === 'Pre') {
                     itemsIndex.push(j);
                     break;
-                } else if (items[i] === 'FileManager' && toolbarItems[j].subCommand === 'File') {
+                } else if (items[i as number] === 'FileManager' && toolbarItems[j as number].subCommand === 'File') {
                     itemsIndex.push(j);
                     break;
-                } else if (typeof (items[i]) === 'object' && (items[i] as IToolbarItems).command === 'Custom') {
+                } else if (typeof (items[i as number]) === 'object' && (items[i as number] as IToolbarItems).command === 'Custom') {
                     itemsIndex.push(i);
                     break;
-                } else if (items[i] === toolbarItems[j].subCommand) {
+                } else if (items[i as number] === toolbarItems[j as number].subCommand) {
                     itemsIndex.push(j);
                     break;
                 }
@@ -302,9 +302,9 @@ export function updateUndoRedoStatus(baseToolbar: BaseToolbar, undoRedoStatus: {
     const tbItems: HTMLElement[] = selectAll('.' + classes.CLS_TB_ITEM, baseToolbar.toolbarObj.element);
     const  keys: string[] = Object.keys(undoRedoStatus);
     for (const key of keys) {
-        const target: HTMLElement = tbItems[trgItems[i]];
+        const target: HTMLElement = tbItems[trgItems[i as number]];
         if (target) {
-            baseToolbar.toolbarObj.enableItems(target, undoRedoStatus[key]);
+            baseToolbar.toolbarObj.enableItems(target, undoRedoStatus[`${key}`]);
         }
         i++;
     }
@@ -366,7 +366,7 @@ export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { 
     const convertedValue: { [key: string]: IToolsItemConfigs } = {};
     const keys: string[] = Object.keys(obj);
     for (let i: number = 0; i < Object.keys(obj).length; i++) {
-        convertedValue[keys[i].toLocaleLowerCase()] = obj[keys[i]];
+        convertedValue[keys[i as number].toLocaleLowerCase()] = obj[keys[i as number]];
     }
     return convertedValue;
 }
@@ -411,11 +411,11 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
         while (tempNode.firstChild) {
             const emptyBlockElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.blockEmptyNodes);
             for (let i: number = 0; i < emptyBlockElem.length; i++) {
-                emptyBlockElem[i].innerHTML = '<br>';
+                emptyBlockElem[i as number].innerHTML = '<br>';
             }
             const emptyInlineElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.inlineEmptyNodes);
             for (let i: number = 0; i < emptyInlineElem.length; i++) {
-                emptyInlineElem[i].innerHTML = '&ZeroWidthSpace;';
+                emptyInlineElem[i as number].innerHTML = '&ZeroWidthSpace;';
             }
             if (rteObj.enterKey !== 'BR' && ((tempNode.firstChild.nodeName === '#text' &&
             (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
@@ -443,12 +443,12 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
         }
         const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
-            if (!imageElm[i].classList.contains(classes.CLS_RTE_IMAGE)) {
-                imageElm[i].classList.add(classes.CLS_RTE_IMAGE);
+            if (!imageElm[i as number].classList.contains(classes.CLS_RTE_IMAGE)) {
+                imageElm[i as number].classList.add(classes.CLS_RTE_IMAGE);
             }
-            if (!(imageElm[i].classList.contains(classes.CLS_IMGINLINE) ||
-            imageElm[i].classList.contains(classes.CLS_IMGBREAK))) {
-                imageElm[i].classList.add(classes.CLS_IMGINLINE);
+            if (!(imageElm[i as number].classList.contains(classes.CLS_IMGINLINE) ||
+            imageElm[i as number].classList.contains(classes.CLS_IMGBREAK))) {
+                imageElm[i as number].classList.add(classes.CLS_IMGINLINE);
             }
         }
     }
@@ -532,7 +532,7 @@ export function convertToBlob(dataUrl: string): Blob {
     let n: number = bstr.length;
     const u8arr: Uint8Array = new Uint8Array(n);
     while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
+        u8arr[n as number] = bstr.charCodeAt(n);
     }
     return new Blob([u8arr], { type: mime });
 }
@@ -546,8 +546,8 @@ export function convertToBlob(dataUrl: string): Blob {
  */
 export function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
     for (let i: number = 0; localeItems.length > i; i++) {
-        if (localeItems[i].value === item.value || localeItems[i].value === item.subCommand) {
-            return self.localeObj.getConstant(localeItems[i].locale);
+        if (localeItems[i as number].value === item.value || localeItems[i as number].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i as number].locale);
         }
     }
     return item.text;
@@ -560,15 +560,15 @@ export function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: 
  */
 export function updateDropDownFontFormatLocale(self: IRichTextEditor): void {
     model.fontFamily.forEach((item: IDropDownItemModel, i: number) => {
-        model.fontFamily[i].text = getLocaleFontFormat(self, fontNameLocale, model.fontFamily[i]);
+        model.fontFamily[i as number].text = getLocaleFontFormat(self, fontNameLocale, model.fontFamily[i as number]);
     });
     model.formatItems.forEach((item: IDropDownItemModel, i: number) => {
-        model.formatItems[i].text = getLocaleFontFormat(self, formatsLocale, model.formatItems[i]);
+        model.formatItems[i as number].text = getLocaleFontFormat(self, formatsLocale, model.formatItems[i as number]);
     });
     model.numberFormatList.forEach((item: IDropDownItemModel, i: number) => {
-        model.numberFormatList[i].text = getLocaleFontFormat(self, numberFormatListLocale, model.numberFormatList[i]);
+        model.numberFormatList[i as number].text = getLocaleFontFormat(self, numberFormatListLocale, model.numberFormatList[i as number]);
     });
     model.bulletFormatList.forEach((item: IDropDownItemModel, i: number) => {
-        model.bulletFormatList[i].text = getLocaleFontFormat(self, bulletFormatListLocale, model.bulletFormatList[i]);
+        model.bulletFormatList[i as number].text = getLocaleFontFormat(self, bulletFormatListLocale, model.bulletFormatList[i as number]);
     });
 }

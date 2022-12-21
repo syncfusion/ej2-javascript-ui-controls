@@ -54,7 +54,7 @@ export class InsertHtml {
         range.startContainer === range.endContainer) {
             const currentIndex: number = Array.prototype.slice.call(range.startContainer.parentElement.children).indexOf(
                 range.startContainer as HTMLElement);
-            nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).parentElement,(
+            nodeSelection.setSelectionText(docElement, (range.startContainer as HTMLElement).parentElement, (
                 range.startContainer as HTMLElement).parentElement,
                                            currentIndex + 1, currentIndex + 1);
             range = nodeSelection.getRange(docElement);
@@ -92,11 +92,11 @@ export class InsertHtml {
                 this.removeEmptyElements(editNode as HTMLElement);
             }
             for (let index: number = 0; index < nodes.length; index++) {
-                if (nodes[index].nodeType !== 3 && nodes[index].parentNode != null) {
-                    if (nodes[index].nodeName === 'IMG') {
+                if (nodes[index as number].nodeType !== 3 && nodes[index as number].parentNode != null) {
+                    if (nodes[index as number].nodeName === 'IMG') {
                         continue;
                     }
-                    nodes[index].parentNode.removeChild(nodes[index]);
+                    nodes[index as number].parentNode.removeChild(nodes[index as number]);
                 }
             }
             if (sibNode) {
@@ -201,7 +201,7 @@ export class InsertHtml {
         this.removingComments(node as HTMLElement);
         const allChildNodes: NodeListOf<Node> = node.childNodes;
         for (let i: number = 0; i < allChildNodes.length; i++) {
-            if (CONSTANT.BLOCK_TAGS.indexOf(allChildNodes[i].nodeName.toLocaleLowerCase()) >= 0) {
+            if (CONSTANT.BLOCK_TAGS.indexOf(allChildNodes[i as number].nodeName.toLocaleLowerCase()) >= 0) {
                 containsBlockNode = true; break;
             }
         }
@@ -441,8 +441,8 @@ export class InsertHtml {
     private static removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
-            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i].tagName.toLowerCase()) < 0) {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
+            if (CONSTANT.SELF_CLOSING_TAGS.indexOf(emptyElements[i as number].tagName.toLowerCase()) < 0) {
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);
                 }

@@ -104,7 +104,7 @@ export class Marker extends MarkerExplode {
             || series.type === 'SplineRangeArea') {
                 y = index ? point.low : point.high;
             } else if (isBoxPlot) {
-                y = point.outliers[index];
+                y = point.outliers[index as number];
             } else {
                 y = point.y;
             }
@@ -141,7 +141,7 @@ export class Marker extends MarkerExplode {
                     imageURL, shapeOption,
                     point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
-                if (markerElement) { markerElement.setAttribute('aria-label', (point.x + ": " + point.y + ', ' + series.name)); }
+                if (markerElement) { markerElement.setAttribute('aria-label', (point.x + ': ' + point.y + ', ' + series.name)); }
                 appendChildElement(
                     this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
                     previousLocation, previousPath, false, false, null, series.chart.duration
@@ -228,13 +228,14 @@ export class Marker extends MarkerExplode {
             let j: number = 1;
             const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.type === 'SplineRangeArea') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
-                if (series.points[i].symbolLocations) {
-                    if (!series.points[i].symbolLocations.length || !markerElements[j]) {
+                if (series.points[i as number].symbolLocations) {
+                    if (!series.points[i as number].symbolLocations.length || !markerElements[j as number]) {
                         continue;
                     }
-                    markerAnimate(markerElements[j] as HTMLElement, delay, duration, series, i, series.points[i].symbolLocations[0], false);
+                    markerAnimate(markerElements[j as number] as HTMLElement, delay, duration, series,
+                                  i, series.points[i as number].symbolLocations[0], false);
                     if (incFactor === 2) {
-                        const lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i].regions[0], series);
+                        const lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i as number].regions[0], series);
                         markerAnimate(markerElements[j + 1] as HTMLElement, delay, duration, series, i, lowPoint, false);
                     }
                     j += incFactor;

@@ -292,9 +292,6 @@ export function getDateFromString(date: string): Date {
         date.indexOf('T') !== -1 ? new Date(date) : new Date(date.replace(/-/g, '/'));
 }
 
-/** @private */
-let scrollWidth: number = null;
-
 /**
  * Method to get scrollbar width
  *
@@ -310,7 +307,7 @@ export function getScrollBarWidth(): number {
         Math.ceil(devicePixelRatio % 1) : Math.floor(devicePixelRatio % 1) : 0;
     value = (divNode.offsetWidth - divNode.clientWidth - ratio) | 0;
     document.body.removeChild(divNode);
-    return scrollWidth = value;
+    return value;
 }
 
 /**
@@ -326,12 +323,12 @@ export function getScrollBarWidth(): number {
 // eslint-disable-next-line max-len
 export function findIndexInData(data: Record<string, any>[], field: string, value: string, event?: Record<string, any>, resourceCollection?: Record<string, any>[]): number {
     for (let i: number = 0, length: number = data.length; i < length; i++) {
-        if (data[i][field] === value) {
+        if (data[parseInt(i.toString(), 10)][`${field}`] === value) {
             if (event) {
                 const field: string = resourceCollection.slice(-2)[0].field as string;
-                const res: string[] = (event[field] instanceof Array ? event[field] : [event[field]]) as string[];
+                const res: string[] = (event[`${field}`] instanceof Array ? event[`${field}`] : [event[`${field}`]]) as string[];
                 const resData: string = res.join(',');
-                if (resData.includes(data[i][(resourceCollection.slice(-1)[0] as any).groupIDField] as string)) {
+                if (resData.includes(data[parseInt(i.toString(), 10)][(resourceCollection.slice(-1)[0] as any).groupIDField] as string)) {
                     return i;
                 }
             } else {

@@ -109,13 +109,13 @@ export class Trendlines {
         let index: number = 0; let slope: number = 0; let intercept: number = 0;
         while (index < points.length) {
         // To fix trendline not rendered issue while Nan Value is provided for y values.
-            if (isNaN(yValues[index])) {
-                yValues[index] = ((yValues[index - 1] + yValues[index + 1]) / 2);
+            if (isNaN(yValues[index as number])) {
+                yValues[index as number] = ((yValues[index - 1] + yValues[index + 1]) / 2);
             }
-            xAvg += xValues[index];
-            yAvg += yValues[index];
-            xyAvg += xValues[index] * yValues[index];
-            xxAvg += xValues[index] * xValues[index];
+            xAvg += xValues[index as number];
+            yAvg += yValues[index as number];
+            xyAvg += xValues[index as number] * yValues[index as number];
+            xxAvg += xValues[index as number] * xValues[index as number];
             index++;
         }
         const type: TrendlineTypes = trendline.type;
@@ -183,7 +183,7 @@ export class Trendlines {
         const yValue: number[] = [];
         let index: number = 0;
         while (index < points.length) {
-            const point: Points = points[index];
+            const point: Points = points[index as number];
             const yDataValue: number = point.yValue ? Math.log(point.yValue) : 0;
             xValue.push(point.xValue);
             yValue.push(yDataValue);
@@ -202,7 +202,7 @@ export class Trendlines {
         const xPointsLgr: number[] = [];
         let index: number = 0;
         while (index < points.length) {
-            const point: Points = points[index];
+            const point: Points = points[index as number];
             const xDataValue: number = point.xValue ? Math.log(point.xValue) : 0;
             xPointsLgr.push(point.xValue);
             xLogValue.push(xDataValue);
@@ -221,7 +221,7 @@ export class Trendlines {
         const yPolyValues: number[] = [];
         let index: number = 0;
         while (index < points.length) {
-            const point: Points = points[index];
+            const point: Points = points[index as number];
             xPolyValues.push(point.xValue);
             yPolyValues.push(point.yValue);
             index++;
@@ -238,7 +238,7 @@ export class Trendlines {
         const powerPoints: number[] = [];
         let index: number = 0;
         while (index < points.length) {
-            const point: Points = points[index];
+            const point: Points = points[index as number];
             const xDataValue: number = point.xValue ? Math.log(point.xValue) : 0;
             const yDataValue: number = point.yValue ? Math.log(point.yValue) : 0;
             powerPoints.push(point.xValue);
@@ -258,7 +258,7 @@ export class Trendlines {
         const yValues: number[] = [];
         let index: number = 0;
         while (index < points.length) {
-            const point: Points = points[index];
+            const point: Points = points[index as number];
             xValues.push(point.xValue);
             yValues.push(point.yValue);
             index++;
@@ -276,7 +276,7 @@ export class Trendlines {
         const xAvgValues: number[] = [];
         let index: number = 0;
         while (index < points.length) {
-            const point: Points = points[index];
+            const point: Points = points[index as number];
             xAvgValues.push(point.xValue);
             xValues.push(index + 1);
             yValues.push(point.yValue);
@@ -347,14 +347,14 @@ export class Trendlines {
         trendline.polynomialSlopes.length = trendline.polynomialOrder + 1;
         let index: number = 0;
         while (index < xValues.length) {
-            const xVal: number = xValues[index];
-            const yVal: number = yValues[index];
+            const xVal: number = xValues[index as number];
+            const yVal: number = yValues[index as number];
             let subIndex: number = 0;
             while (subIndex <= trendline.polynomialOrder) {
-                if (!trendline.polynomialSlopes[subIndex]) {
-                    trendline.polynomialSlopes[subIndex] = 0;
+                if (!trendline.polynomialSlopes[subIndex as number]) {
+                    trendline.polynomialSlopes[subIndex as number] = 0;
                 }
-                trendline.polynomialSlopes[subIndex] += Math.pow(xVal, subIndex) * yVal;
+                trendline.polynomialSlopes[subIndex as number] += Math.pow(xVal, subIndex) * yVal;
                 ++subIndex;
             }
             index++;
@@ -365,20 +365,20 @@ export class Trendlines {
         matrix.length = trendline.polynomialOrder + 1;
         let newIndex: number = 0;
         while (newIndex < (trendline.polynomialOrder + 1)) {
-            matrix[newIndex] = [];
-            matrix[newIndex].length = 3;
+            matrix[newIndex as number] = [];
+            matrix[newIndex as number].length = 3;
             newIndex++;
         }
         let nIndex: number = 0;
         while (nIndex < xValues.length) {
-            const d: number = xValues[nIndex];
+            const d: number = xValues[nIndex as number];
             let num2: number = 1.0;
             let nIndex2: number = 0;
             while (nIndex2 < numArray.length) {
-                if (!numArray[nIndex2]) {
-                    numArray[nIndex2] = 0;
+                if (!numArray[nIndex2 as number]) {
+                    numArray[nIndex2 as number] = 0;
                 }
-                numArray[nIndex2] += num2;
+                numArray[nIndex2 as number] += num2;
                 num2 *= d;
                 ++nIndex2;
             }
@@ -388,7 +388,7 @@ export class Trendlines {
         while (nnIndex <= trendline.polynomialOrder) {
             let nnIndex2: number = 0;
             while (nnIndex2 <= trendline.polynomialOrder) {
-                matrix[nnIndex][nnIndex2] = numArray[nnIndex + nnIndex2];
+                matrix[nnIndex as number][nnIndex2 as number] = numArray[nnIndex + nnIndex2];
                 ++nnIndex2;
             }
             ++nnIndex;
@@ -415,10 +415,10 @@ export class Trendlines {
             y = count = nullCount = 0;
             for (let j: number = index; count < period; j++) {
                 count++;
-                if (!yValues[j]) {
+                if (!yValues[j as number]) {
                     nullCount++;
                 }
-                y += yValues[j];
+                y += yValues[j as number];
             }
             y = period - nullCount <= 0 ? null : y / (period - nullCount);
             if (y && !isNaN(y)) {
@@ -439,9 +439,9 @@ export class Trendlines {
         const pts: Points[] = [];
         const max: number = xValues.indexOf(Math.max.apply(null, xValues));
         const min: number = xValues.indexOf(Math.min.apply(null, xValues));
-        const x1Linear: number = xValues[min] - trendline.backwardForecast;
+        const x1Linear: number = xValues[min as number] - trendline.backwardForecast;
         const y1Linear: number = slopeInterceptLinear.slope * x1Linear + slopeInterceptLinear.intercept;
-        const x2Linear: number = xValues[max] + trendline.forwardForecast;
+        const x2Linear: number = xValues[max as number] + trendline.forwardForecast;
         const y2Linear: number = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
         pts.push(
             this.getDataPoint(x1Linear, y1Linear, series, pts.length));
@@ -512,7 +512,7 @@ export class Trendlines {
         let sum: number = 0;
         let index: number = 0;
         while (index < slopes.length) {
-            sum += slopes[index] * Math.pow(x, index);
+            sum += slopes[index as number] * Math.pow(x, index);
             index++;
         }
         return sum;
@@ -531,7 +531,7 @@ export class Trendlines {
         numArray3.length = length;
         let index: number = 0;
         while (index < length) {
-            numArray3[index] = 0;
+            numArray3[index as number] = 0;
             ++index;
         }
         let index1: number = 0;
@@ -539,11 +539,11 @@ export class Trendlines {
             let num1: number = 0; let index2: number = 0; let index3: number = 0;
             let index4: number = 0;
             while (index4 < length) {
-                if (numArray3[index4] !== 1) {
+                if (numArray3[index4 as number] !== 1) {
                     let index5: number = 0;
                     while (index5 < length) {
-                        if (numArray3[index5] === 0 && Math.abs(matrix[index4][index5]) >= num1) {
-                            num1 = Math.abs(matrix[index4][index5]);
+                        if (numArray3[index5 as number] === 0 && Math.abs(matrix[index4 as number][index5 as number]) >= num1) {
+                            num1 = Math.abs(matrix[index4 as number][index5 as number]);
                             index2 = index4;
                             index3 = index5;
                         }
@@ -552,43 +552,43 @@ export class Trendlines {
                 }
                 ++index4;
             }
-            ++numArray3[index3];
+            ++numArray3[index3 as number];
             if (index2 !== index3) {
                 let index4: number = 0;
                 while (index4 < length) {
-                    const num2: number = matrix[index2][index4];
-                    matrix[index2][index4] = matrix[index3][index4];
-                    matrix[index3][index4] = num2;
+                    const num2: number = matrix[index2 as number][index4 as number];
+                    matrix[index2 as number][index4 as number] = matrix[index3 as number][index4 as number];
+                    matrix[index3 as number][index4 as number] = num2;
                     ++index4;
                 }
-                const num3: number = polynomialSlopes[index2];
-                polynomialSlopes[index2] = polynomialSlopes[index3];
-                polynomialSlopes[index3] = num3;
+                const num3: number = polynomialSlopes[index2 as number];
+                polynomialSlopes[index2 as number] = polynomialSlopes[index3 as number];
+                polynomialSlopes[index3 as number] = num3;
             }
-            numArray2[index1] = index2;
-            numArray1[index1] = index3;
-            if (matrix[index3][index3] === 0.0) {
+            numArray2[index1 as number] = index2;
+            numArray1[index1 as number] = index3;
+            if (matrix[index3 as number][index3 as number] === 0.0) {
                 return false;
             }
-            const num4: number = 1.0 / matrix[index3][index3];
-            matrix[index3][index3] = 1.0;
+            const num4: number = 1.0 / matrix[index3 as number][index3 as number];
+            matrix[index3 as number][index3 as number] = 1.0;
             let iindex4: number = 0;
             while (iindex4 < length) {
-                matrix[index3][iindex4] *= num4;
+                matrix[index3 as number][iindex4 as number] *= num4;
                 ++iindex4;
             }
-            polynomialSlopes[index3] *= num4;
+            polynomialSlopes[index3 as number] *= num4;
             let iandex4: number = 0;
             while (iandex4 < length) {
                 if (iandex4 !== index3) {
-                    const num2: number = matrix[iandex4][index3];
-                    matrix[iandex4][index3] = 0.0;
+                    const num2: number = matrix[iandex4 as number][index3 as number];
+                    matrix[iandex4 as number][index3 as number] = 0.0;
                     let index5: number = 0;
                     while (index5 < length) {
-                        matrix[iandex4][index5] -= matrix[index3][index5] * num2;
+                        matrix[iandex4 as number][index5 as number] -= matrix[index3 as number][index5 as number] * num2;
                         ++index5;
                     }
-                    polynomialSlopes[iandex4] -= polynomialSlopes[index3] * num2;
+                    polynomialSlopes[iandex4 as number] -= polynomialSlopes[index3 as number] * num2;
                 }
                 ++iandex4;
             }
@@ -596,12 +596,12 @@ export class Trendlines {
         }
         let iindex1: number = length - 1;
         while (iindex1 >= 0) {
-            if (numArray2[iindex1] !== numArray1[iindex1]) {
+            if (numArray2[iindex1 as number] !== numArray1[iindex1 as number]) {
                 let iindex2: number = 0;
                 while (iindex2 < length) {
-                    const num: number = matrix[iindex2][numArray2[iindex1]];
-                    matrix[iindex2][numArray2[iindex1]] = matrix[iindex2][numArray1[iindex1]];
-                    matrix[iindex2][numArray1[iindex1]] = num;
+                    const num: number = matrix[iindex2 as number][numArray2[iindex1 as number]];
+                    matrix[iindex2 as number][numArray2[iindex1 as number]] = matrix[iindex2 as number][numArray1[iindex1 as number]];
+                    matrix[iindex2 as number][numArray1[iindex1 as number]] = num;
                     ++iindex2;
                 }
             }

@@ -2,7 +2,7 @@
  *
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventHandler, Internationalization } from '@syncfusion/ej2-base';
+import { EventHandler, Internationalization, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect } from '@syncfusion/ej2-base';
 import { removeClass, addClass, attributes, HijriParser } from '@syncfusion/ej2-base';
 import { getUniqueID } from '@syncfusion/ej2-base';
@@ -114,7 +114,7 @@ export class Islamic {
                             const localDateString: number = +new Date(this.calendarInstance.globalize.formatDate(
                                 argument.date, { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
                             const tempDateString: number = +new Date(this.calendarInstance.globalize.formatDate(
-                                this.calendarInstance.values[index], { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
+                                this.calendarInstance.values[index as number], { type: 'date', skeleton: 'yMd', calendar: 'islamic' }));
                             if (localDateString === tempDateString) {
                                 this.calendarInstance.values.splice(index, 1);
                                 index = -1;
@@ -144,9 +144,9 @@ export class Islamic {
                     const localDateString: string = this.calendarInstance.globalize.formatDate(
                         localDate, { type: 'date', skeleton: 'short', calendar: 'islamic' });
                     const tempDateString: string = this.calendarInstance.globalize.formatDate(
-                        this.calendarInstance.values[tempValue], { type: 'date', skeleton: 'short', calendar: 'islamic' });
+                        this.calendarInstance.values[tempValue as number], { type: 'date', skeleton: 'short', calendar: 'islamic' });
                     if (localDateString === tempDateString &&
-                        this.calendarInstance.getDateVal(localDate, this.calendarInstance.values[tempValue])) {
+                        this.calendarInstance.getDateVal(localDate, this.calendarInstance.values[tempValue as number])) {
                         addClass([tdEle], SELECTED);
                     } else {
                         this.calendarInstance.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
@@ -195,10 +195,13 @@ export class Islamic {
         }
             break;
         case 'Decade': {
-            const prevDecadeCompare: boolean =
+            let startIslamicYear = 1361;
+            let gregorianValue = HijriParser.toGregorian(startIslamicYear, 1, 1);
+            let prevDecadeCompare: boolean =
                     this.hijriCompareDecade(date, this.calendarInstance.min) < 1;
             const nextDecadeCompare: boolean =
                     this.hijriCompareDecade(date, this.calendarInstance.max) > -1;
+            prevDecadeCompare = HijriParser.toGregorian(this.calendarInstance.headerTitleElement.textContent.split('-')[0].trim(), 1, 1).getFullYear() === gregorianValue.getFullYear() ? true : prevDecadeCompare;
             this.calendarInstance.previousIconHandler(prevDecadeCompare);
             this.calendarInstance.nextIconHandler(nextDecadeCompare);
         }
@@ -219,7 +222,9 @@ export class Islamic {
             break;
         case 'Decade':
             this.calendarInstance.nextIconClicked = true;
-            islamicDate.year = islamicDate.year - this.calendarInstance.headerElement.textContent.split('-')[0].trim() === 1 ? islamicDate.year + 1 : islamicDate.year;
+            if (islamicDate.year - this.calendarInstance.headerElement.textContent.split('-')[0].trim() === 1) {
+                islamicDate.year = islamicDate.year - this.calendarInstance.headerElement.textContent.split('-')[0].trim() === 1 ? islamicDate.year + 1 : islamicDate.year;
+            }
             this.calendarInstance.currentDate = this.toGregorian(islamicDate.year + 10, islamicDate.month, 1);
             this.calendarInstance.switchView(view);
             break;
@@ -311,36 +316,54 @@ export class Islamic {
         let startHdrYr: any = this.calendarInstance.globalize.formatDate(
             startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
         let endHdrYr: any = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        let splityear = this.calendarInstance.headerElement.textContent.split('-');
+        if ((!isNullOrUndefined(e) && (splityear[0] !== startHdrYr) && (e as KeyboardEventArgs).action === 'home') || (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action === 'end')) {
+                startHdrYr = this.calendarInstance.headerElement.textContent.split('-')[0].trim();
+                endHdrYr = this.calendarInstance.headerElement.textContent.split('-')[1].trim();
+        }
         if (this.calendarInstance.islamicPreviousHeader) {
             startHdrYr = this.calendarInstance.islamicPreviousHeader.split('-')[0].trim();
             endHdrYr = this.calendarInstance.islamicPreviousHeader.split('-')[1].trim();
             this.calendarInstance.islamicPreviousHeader = null;
         }
-        let splityear = this.calendarInstance.headerElement.textContent.split('-');
         if (this.calendarInstance.previousIconClicked) {
             for (var i = 0; i <= splityear.length; i++) {
-                endHdrYr = endHdrYr - splityear[i] === 2 || splityear[i] - endHdrYr === 2 ? (parseInt(endHdrYr) + 1).toString() : endHdrYr - splityear[i] === 3 || splityear[i] - endHdrYr === 3 ? (parseInt(endHdrYr) + 2).toString() : endHdrYr - splityear[i] === 4 || splityear[i] - endHdrYr === 4 ? (parseInt(endHdrYr) + 3).toString() : endHdrYr - splityear[i] === 5 || splityear[i] - endHdrYr === 5 ? (parseInt(endHdrYr) + 4).toString() : endHdrYr;
-                if (endHdrYr - splityear[i] === 0 || splityear[i] - endHdrYr === 0) {
+                endHdrYr = endHdrYr - splityear[i as number] === 2 || splityear[i as number] - endHdrYr === 2 ? (parseInt(endHdrYr) + 1).toString() : endHdrYr - splityear[i as number] === 3 || splityear[i as number] - endHdrYr === 3 ? (parseInt(endHdrYr) + 2).toString() : endHdrYr - splityear[i as number] === 4 || splityear[i as number] - endHdrYr === 4 ? (parseInt(endHdrYr) + 3).toString() : endHdrYr - splityear[i as number] === 5 || splityear[i as number] - endHdrYr === 5 ? (parseInt(endHdrYr) + 4).toString() : endHdrYr;
+                if (endHdrYr - splityear[i as number] === 0 || splityear[i as number] - endHdrYr === 0) {
                     endHdrYr = (parseInt(endHdrYr) - 1).toString();
                 }
+            }
+            if (endHdrYr - splityear[i as number] === 8 || splityear[i as number] - endHdrYr === 8) {
+                endHdrYr = (parseInt(endHdrYr) - 9).toString();
+                startHdrYr = (parseInt(endHdrYr) - 9).toString();
+            }
+            if (endHdrYr - splityear[i as number] === 7 || splityear[i as number] - endHdrYr === 7) {
+                endHdrYr = (parseInt(endHdrYr) - 8).toString();
+                startHdrYr = (parseInt(endHdrYr) - 9).toString();
             }
             startHdrYr = endHdrYr - startHdrYr === 10
                 ? (parseInt(startHdrYr) + 1).toString() : endHdrYr - startHdrYr === 11
                 ? (parseInt(startHdrYr) + 2).toString() : endHdrYr - startHdrYr === 12
                 ? (parseInt(startHdrYr) + 3).toString() : startHdrYr;
-            startHdrYr = endHdrYr - startHdrYr === 8 ? (parseInt(startHdrYr) - 1).toString() : startHdrYr;
+            if (endHdrYr - startHdrYr === 8) {
+                startHdrYr = (parseInt(startHdrYr) - 1).toString();
+            }
         }
         if (this.calendarInstance.nextIconClicked) {
             for (var i = 0; i <= splityear.length; i++) {
-                if (startHdrYr - splityear[i] === 0 || splityear[i] - startHdrYr === 0) {
+                if (startHdrYr - splityear[i as number] === 0 || splityear[i as number] - startHdrYr === 0) {
                     startHdrYr = (parseInt(startHdrYr) + 1).toString();
                 }
-                if (startHdrYr - splityear[i] === 2 && startHdrYr > splityear[i].trim()) {
+                if (startHdrYr - splityear[i as number] === 2 && startHdrYr > splityear[i as number].trim()) {
                     startHdrYr = (parseInt(startHdrYr) - 1).toString();
                 }
-                if (splityear[i] - startHdrYr === 1 && startHdrYr < splityear[i].trim()) {
+                if (splityear[i as number] - startHdrYr === 1 && startHdrYr < splityear[i as number].trim()) {
                     startHdrYr = (parseInt(startHdrYr) + 2).toString();
                 }
+            }
+            if (startHdrYr - this.calendarInstance.headerTitleElement.textContent.split('-')[1].trim() > 1) {
+                startHdrYr = (parseInt(this.calendarInstance.headerTitleElement.textContent.split('-')[1].trim()) + 1).toString();
+                endHdrYr = (parseInt(startHdrYr) + 9).toString();
             }
             endHdrYr = endHdrYr - startHdrYr === 10 ? (parseInt(endHdrYr) - 1).toString() : endHdrYr;
             endHdrYr = endHdrYr - startHdrYr === 7
@@ -377,9 +400,6 @@ export class Islamic {
             } else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
                 || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);
-                if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
-                || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
-                addClass([tdEle], DISABLED); }
             } else if (!isNullOrUndefined(value) &&
                 (<any>(this.getIslamicDate(localDate))).year ===
                 (<any>(this.getIslamicDate(value))).year) {
@@ -393,6 +413,9 @@ export class Islamic {
                 EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
             }
             tdEle.appendChild(dayLink);
+            if ((!isNullOrUndefined(e) && (e as KeyboardEventArgs).action === 'home' && islamicDate.year.toString() === startHdrYr) || (!isNullOrUndefined(e) && (e as KeyboardEventArgs).action === 'end' && islamicDate.year.toString() === endHdrYr)) {
+                    addClass([tdEle], FOCUSEDDATE);
+            }
             tdEles.push(tdEle); }
         }
         this.islamicRenderTemplate(tdEles, numCells, 'e-decade', e, value);
@@ -423,28 +446,28 @@ export class Islamic {
         for (let dayCell: number = 0; dayCell < Math.round(elements.length / count); ++dayCell) {
             trEle = this.calendarInstance.createElement('tr', { attrs: { 'role': 'row' } });
             for (rowCount = 0 + rowCount; rowCount < row; rowCount++) {
-                if (!elements[rowCount].classList.contains('e-week-number') && !isNullOrUndefined(elements[rowCount].children[0])) {
-                    addClass([elements[rowCount].children[0]], [LINK]);
-                    rippleEffect(<HTMLElement>elements[rowCount].children[0], {
+                if (!elements[rowCount as number].classList.contains('e-week-number') && !isNullOrUndefined(elements[rowCount as number].children[0])) {
+                    addClass([elements[rowCount as number].children[0]], [LINK]);
+                    rippleEffect(<HTMLElement>elements[rowCount as number].children[0], {
                         duration: 600,
                         isCenterRipple: true
                     });
                 }
-                trEle.appendChild(elements[rowCount]);
+                trEle.appendChild(elements[rowCount as number]);
                 if (this.calendarInstance.weekNumber &&
                     rowCount === otherMonthCell + 1 && elements[otherMonthCell + 1].classList.contains(OTHERMONTH)) {
                     addClass([trEle], OTHERMONTHROW);
                 }
                 if (!this.calendarInstance.weekNumber
-                    && rowCount === otherMonthCell && elements[otherMonthCell].classList.contains(OTHERMONTH)) {
+                    && rowCount === otherMonthCell && elements[otherMonthCell as number].classList.contains(OTHERMONTH)) {
                     addClass([trEle], OTHERMONTHROW);
                 }
                 if (this.calendarInstance.weekNumber) {
-                    if (rowCount === weekNumCell && elements[weekNumCell].classList.contains(OTHERMONTH)) {
+                    if (rowCount === weekNumCell && elements[weekNumCell as number].classList.contains(OTHERMONTH)) {
                         addClass([trEle], OTHERMONTHROW);
                     }
                 } else {
-                    if (rowCount === numberCell && elements[numberCell].classList.contains(OTHERMONTH)) {
+                    if (rowCount === numberCell && elements[numberCell as number].classList.contains(OTHERMONTH)) {
                         addClass([trEle], OTHERMONTHROW);
                     }
                 }

@@ -433,12 +433,19 @@
       @if $skin-name == 'FluentUI' {
         border-radius: 2px;
       }
-
       box-shadow: $ddt-box-shadow;
       position: absolute;
+      
+      .e-active .e-checkbox-wrapper {
+        .e-frame:not(.e-check):not(.e-stop) {
+          @if$ddt-skin-name == 'bootstrap5' {
+            background-color: $ddt-readonly-input-bg-color;
+          }
+        }
+      }
 
       .e-checkbox-wrapper {
-        .e-frame {
+        .e-frame:not(.e-check):not(.e-stop) {
           @if$ddt-skin-name == 'bootstrap5' {
             background-color: transparent;
           }

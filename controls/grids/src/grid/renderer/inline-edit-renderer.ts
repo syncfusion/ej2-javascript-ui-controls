@@ -263,9 +263,9 @@ export class InlineEditRender {
         const cols: Column[] = this.parent.getColumns();
         let k: number = 0;
         for (let i: number = 0; i < cols.length; i++ , k++) {
-            if (cols[i].getFreezeTableName() === literals.frozenRight) {
+            if (cols[parseInt(i.toString(), 10)].getFreezeTableName() === literals.frozenRight) {
                 const index: number = k - this.parent.getMovableColumnsCount();
-                frEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[index]));
+                frEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[parseInt(index.toString(), 10)]));
                 k--;
             }
         }
@@ -276,8 +276,9 @@ export class InlineEditRender {
         const cols: Column[] = this.parent.getColumns();
         let k: number = this.parent.isRowDragable() ? 1 : 0;
         for (let i: number = 0; i < cols.length; i++, k++) {
-            if (cols[i].getFreezeTableName() === 'movable') {
-                mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[k]));
+            if (cols[parseInt(i.toString(), 10)].getFreezeTableName() === 'movable') {
+                mEle.querySelector('tr').appendChild(ele.querySelector('tr')
+                    .removeChild(ele.querySelector('tr').children[parseInt(k.toString(), 10)]));
                 k--;
             }
         }
@@ -326,8 +327,8 @@ export class InlineEditRender {
         const isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         const cols: Column[] = args.isCustomFormValidation ? (<{ columnModel?: Column[] }>this.parent).columnModel : gObj.getColumns();
         while ((isEdit && m < tdElement.length && i < cols.length) || i < cols.length) {
-            const span: string = isEdit ? tdElement[m].getAttribute('colspan') : null;
-            const col: Column = cols[i] as Column;
+            const span: string = isEdit ? tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
+            const col: Column = cols[parseInt(i.toString(), 10)] as Column;
             if ((isVirtualFrozen && col.getFreezeTableName() !== 'movable')
                 || (args.isCustomFormValidation && (col.commands || col.commandsTemplate || !col.field))) {
                 i++;
@@ -383,9 +384,9 @@ export class InlineEditRender {
         const setRules: Function = () => {
             const cols: Column[] = this.parent.getColumns();
             for (let i: number = 0; i < cols.length; i++) {
-                if ((cols[i] as Column).validationRules) {
-                    this.parent.editModule.formObj.rules[(cols[i] as Column).field] =
-                    (cols[i] as Column).validationRules as {[rule: string]: Object};
+                if ((cols[parseInt(i.toString(), 10)] as Column).validationRules) {
+                    this.parent.editModule.formObj.rules[(cols[parseInt(i.toString(), 10)] as Column).field] =
+                    (cols[parseInt(i.toString(), 10)] as Column).validationRules as {[rule: string]: Object};
                 }
             }
         };

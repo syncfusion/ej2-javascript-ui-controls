@@ -1,4 +1,3 @@
-/* eslint-disable valid-jsdoc */
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { LinearGauge} from '../../index';
 import { triggerDownload } from '../utils/helper';
@@ -14,9 +13,9 @@ export class ImageExport {
     /**
      * Constructor for gauge
      *
-     * @param control
+     * @param {LinearGauge} control - Specifies the Linear Gauge instance.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: LinearGauge) {
     }
 
@@ -27,9 +26,10 @@ export class ImageExport {
      * @param fileName
      * @private
      */
+
     public export(gauge: LinearGauge, type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+        const promise: Promise<string> = new Promise((resolve: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
@@ -86,6 +86,7 @@ export class ImageExport {
     /**
      * Get module name.
      */
+
     protected getModuleName(): string {
         return 'ImageExport';
     }
@@ -96,6 +97,7 @@ export class ImageExport {
      * @return {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void {
     }
 }

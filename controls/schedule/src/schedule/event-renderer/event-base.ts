@@ -52,8 +52,8 @@ export class EventBase {
                 event = this.processTimezone(event);
             }
             for (let level: number = 0; level < resourceCollection.length; level++) {
-                if (event[resourceCollection[level].field] === null || event[resourceCollection[level].field] === 0) {
-                    event[resourceCollection[level].field] = undefined;
+                if (event[resourceCollection[parseInt(level.toString(), 10)].field] === null || event[resourceCollection[parseInt(level.toString(), 10)].field] === 0) {
+                    event[resourceCollection[parseInt(level.toString(), 10)].field] = undefined;
                 }
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
@@ -205,7 +205,7 @@ export class EventBase {
         let resourceData: TdData;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             const data: number = this.getGroupIndexFromEvent(eventObj);
-            resourceData = this.parent.resourceBase.lastResourceLevel[data];
+            resourceData = this.parent.resourceBase.lastResourceLevel[parseInt(data.toString(), 10)];
         }
         const blockEvents: Record<string, any>[] = <Record<string, any>[]>extend([], this.parent.blockProcessed, null, true);
         for (const eventObj of blockEvents) {
@@ -253,14 +253,14 @@ export class EventBase {
         const predicate: Record<string, number | string> = {};
         const resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
         for (let level: number = 0; level < resourceCollection.length; level++) {
-            predicate[resourceCollection[level].field] = resourceTdData.groupOrder[level];
+            predicate[resourceCollection[parseInt(level.toString(), 10)].field] = resourceTdData.groupOrder[parseInt(level.toString(), 10)];
         }
         const keys: string[] = Object.keys(predicate);
         const filteredCollection: Record<string, any>[] = appointments.filter((eventObj: Record<string, any>) => keys.every((key: string) => {
-            if (eventObj[key] instanceof Array) {
-                return (<(string | number)[]>eventObj[key]).indexOf(predicate[key]) > -1;
+            if (eventObj[`${key}`] instanceof Array) {
+                return (<(string | number)[]>eventObj[`${key}`]).indexOf(predicate[`${key}`]) > -1;
             } else {
-                return eventObj[key] === predicate[key];
+                return eventObj[`${key}`] === predicate[`${key}`];
             }
         }));
         return filteredCollection;
@@ -364,7 +364,7 @@ export class EventBase {
             }
             let cStart: number = start;
             for (let level: number = 0; level < this.slots.length; level++) {
-                let slot: number[] = <[number]><unknown>this.slots[level];
+                let slot: number[] = <[number]><unknown>this.slots[parseInt(level.toString(), 10)];
                 if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek'
                     || this.parent.activeViewOptions.group.byDate || this.parent.activeViewOptions.showWeekend) {
                     const slotDates: Date[] = [];
@@ -397,9 +397,9 @@ export class EventBase {
                         const hasBreak: boolean = endIndex !== -1;
                         endIndex = hasBreak ? endIndex : slot.length - 1;
                         const count: number = ((endIndex - startIndex) + 1);
-                        const isLeft: boolean = (slot[startIndex] !== orgStart);
-                        const isRight: boolean = (slot[endIndex] !== orgEnd);
-                        ranges.push(this.cloneEventObject(event, slot[startIndex], slot[endIndex], count, isLeft, isRight));
+                        const isLeft: boolean = (slot[parseInt(startIndex.toString(), 10)] !== orgStart);
+                        const isRight: boolean = (slot[parseInt(endIndex.toString(), 10)] !== orgEnd);
+                        ranges.push(this.cloneEventObject(event, slot[parseInt(startIndex.toString(), 10)], slot[parseInt(endIndex.toString(), 10)], count, isLeft, isRight));
                         if (hasBreak) {
                             break;
                         }
@@ -408,8 +408,8 @@ export class EventBase {
                     if (this.dateInRange(cStart, slot[0], slot[slot.length - 1])) {
                         const availSlot: number[] = [];
                         for (let i: number = 0; i < slot.length; i++) {
-                            if (this.dateInRange(<number>slot[i], orgStart, orgEnd)) {
-                                availSlot.push(slot[i]);
+                            if (this.dateInRange(<number>slot[parseInt(i.toString(), 10)], orgStart, orgEnd)) {
+                                availSlot.push(slot[parseInt(i.toString(), 10)]);
                             }
                         }
                         if (availSlot.length > 0) {
@@ -584,9 +584,9 @@ export class EventBase {
         let levelName: string;
         let idField: string;
         for (let i: number = this.parent.resourceBase.resourceCollection.length - 1; i >= 0; i--) {
-            const resourceData: Record<string, any> | string | number = eventData[this.parent.resourceBase.resourceCollection[i].field] as Record<string, any>;
+            const resourceData: Record<string, any> | string | number = eventData[this.parent.resourceBase.resourceCollection[parseInt(i.toString(), 10)].field] as Record<string, any>;
             if (!isNullOrUndefined(resourceData)) {
-                resource = this.parent.resourceBase.resourceCollection[i];
+                resource = this.parent.resourceBase.resourceCollection[parseInt(i.toString(), 10)];
                 levelIndex = i;
                 levelName = resource.name;
                 idField = resource.field;
@@ -605,8 +605,8 @@ export class EventBase {
                 return null;
             })[0];
         }
-        const id: number = ((eventData[idField] instanceof Array) ?
-            (eventData[idField] as Record<string, any>)[0] : eventData[idField]) as number;
+        const id: number = ((eventData[`${idField}`] instanceof Array) ?
+            (eventData[`${idField}`] as Record<string, any>)[0] : eventData[`${idField}`]) as number;
         if (levelIndex > 0) {
             const parentField: string = this.parent.resourceCollection[levelIndex - 1].field;
             return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource, eventData, parentField);
@@ -981,7 +981,7 @@ export class EventBase {
         const idField: string = isGuid ? 'Guid' : (isFollowing) ? this.parent.eventFields.followingID : this.parent.eventFields.recurrenceID;
         const fieldKey: string = isGuid ? 'Guid' : this.parent.eventFields.id;
         const dataSource: Record<string, any>[] = isGuid ? this.parent.eventsProcessed : this.parent.eventsData;
-        return dataSource.filter((data: Record<string, any>) => data[idField] === eventObj[fieldKey]);
+        return dataSource.filter((data: Record<string, any>) => data[`${idField}`] === eventObj[`${fieldKey}`]);
     }
 
     public getOccurrencesByID(id: number | string): Record<string, any>[] {
@@ -1023,13 +1023,13 @@ export class EventBase {
             const exDateString: string[] = (<string>parentObject[fields.recurrenceException]).split(',');
             for (let i: number = 0, len: number = exDateString.length; i < len; i++) {
                 const edited: Record<string, any>[] = this.parent.eventsData.filter((eventObj: Record<string, any>) =>
-                    eventObj[fields.recurrenceID] === parentObject[fields.id] && eventObj[fields.recurrenceException] === exDateString[i]);
+                    eventObj[fields.recurrenceID] === parentObject[fields.id] && eventObj[fields.recurrenceException] === exDateString[parseInt(i.toString(), 10)]);
                 if (edited.length === 0) {
-                    const exDate: Date = getDateFromRecurrenceDateString(exDateString[i]);
+                    const exDate: Date = getDateFromRecurrenceDateString(exDateString[parseInt(i.toString(), 10)]);
                     const childObject: Record<string, any> = extend({}, recurrenceData, null, true) as Record<string, any>;
                     childObject[fields.recurrenceID] = parentObject[fields.id];
                     delete childObject[fields.followingID];
-                    childObject[fields.recurrenceException] = exDateString[i];
+                    childObject[fields.recurrenceException] = exDateString[parseInt(i.toString(), 10)];
                     const startDate: Date = new Date(exDate.getTime());
                     const time: number = (<Date>parentObject[fields.endTime]).getTime() - (<Date>parentObject[fields.startTime]).getTime();
                     const endDate: Date = new Date(startDate.getTime());
@@ -1178,14 +1178,14 @@ export class EventBase {
         let filteredDates: Date[];
         if (dateRender[0] < this.parent.minDate && dateRender[dateRender.length - 1] > this.parent.maxDate) {
             for (let i: number = 0; i < dateRender.length; i++) {
-                if (util.resetTime(dateRender[i]).getTime() === util.resetTime(new Date(this.parent.minDate)).getTime()) {
+                if (util.resetTime(dateRender[parseInt(i.toString(), 10)]).getTime() === util.resetTime(new Date(this.parent.minDate)).getTime()) {
                     firstDate = i;
                 }
-                if (util.resetTime(dateRender[i]).getTime() === util.resetTime(new Date(this.parent.maxDate)).getTime()) {
+                if (util.resetTime(dateRender[parseInt(i.toString(), 10)]).getTime() === util.resetTime(new Date(this.parent.maxDate)).getTime()) {
                     lastDate = i;
                 }
             }
-            filteredDates = dateRender.filter((date: Date) => date >= dateRender[firstDate] && date <= dateRender[lastDate]);
+            filteredDates = dateRender.filter((date: Date) => date >= dateRender[parseInt(firstDate.toString(), 10)] && date <= dateRender[parseInt(lastDate.toString(), 10)]);
         }
         return filteredDates;
     }
@@ -1237,7 +1237,7 @@ export class EventBase {
         const tr: HTMLElement = createElement('tr');
         const levels: TdData[] = this.parent.activeView.colLevels.slice(-1)[0];
         for (let i: number = 0, len: number = levels.length; i < len; i++) {
-            const col: TdData = levels[i];
+            const col: TdData = levels[parseInt(i.toString(), 10)];
             const appointmentWrap: HTMLElement = createElement('td', {
                 className: (type === 'allDay') ? cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS : (type === 'timeIndicator') ?
                     cls.TIMELINE_WRAPPER_CLASS : cls.DAY_WRAPPER_CLASS, attrs: { 'data-date': col.date.getTime().toString() }

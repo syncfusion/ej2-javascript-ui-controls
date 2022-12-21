@@ -37,7 +37,7 @@ export class ScatterSeries {
         const getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         let startLocation: ChartLocation;
         const redraw: boolean = series.chart.redraw;
-        let scatterBorder: BorderModel = {
+        const scatterBorder: BorderModel = {
             width: this.isLineShapeMarker(marker.shape) ? series.width : series.border.width,
             color: this.isLineShapeMarker(marker.shape) ? series.interior : series.border.color };
         for (const point of visiblePoints) {
@@ -101,7 +101,7 @@ export class ScatterSeries {
         }
         let currentTempPoint: Points;
         for (let i: number = 0; i < tempPoints.length; i++) {
-            currentTempPoint = tempPoints[i];
+            currentTempPoint = tempPoints[i as number];
             if (isNullOrUndefined(currentTempPoint.x) || currentTempPoint.x === '') {
                 continue;
             } else {
@@ -124,7 +124,7 @@ export class ScatterSeries {
         let circlePath: String;
         let previousPath: string;
         const marker: MarkerSettingsModel = series.marker;
-        const imageURL : string = argsData.point.marker.imageUrl || marker.imageUrl; 
+        const imageURL : string = argsData.point.marker.imageUrl || marker.imageUrl;
         const shapeOption: PathOption = new PathOption(
             chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill,
             argsData.border.width, argsData.border.color, series.opacity, null
@@ -167,11 +167,11 @@ export class ScatterSeries {
         const rectElements: NodeList = series.seriesElement.childNodes;
         let count: number = 1;
         for (const point of series.points) {
-            if (!point.symbolLocations.length || !rectElements[count]) {
+            if (!point.symbolLocations.length || !rectElements[count as number]) {
                 continue;
             }
             markerAnimate(
-                <HTMLElement>rectElements[count], delay, duration, series,
+                <HTMLElement>rectElements[count as number], delay, duration, series,
                 point.index, point.symbolLocations[0], false
             );
             count++;

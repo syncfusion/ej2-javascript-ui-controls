@@ -115,7 +115,7 @@ export class DialogEditRender {
         ));
         args.dialog = this.dialogObj;
         const isStringTemplate: string = 'isStringTemplate';
-        this.dialogObj[isStringTemplate] = true;
+        this.dialogObj[`${isStringTemplate}`] = true;
         this.renderResponsiveDialog();
         this.dialogObj.appendTo(this.dialog);
         applyBiggerTheme(this.parent.element, this.dialogObj.element.parentElement);
@@ -159,8 +159,9 @@ export class DialogEditRender {
     private destroy(args?: { requestType: string }): void {
         const dialogEditTemplates: string[] = ['template', 'headerTemplate', 'footerTemplate'];
         for (let i: number = 0; i < dialogEditTemplates.length; i++) {
-            if (this.parent.editSettings[dialogEditTemplates[i]]) {
-                const templateName: string = dialogEditTemplates[i].charAt(0).toUpperCase() + dialogEditTemplates[i].slice(1);
+            if (this.parent.editSettings[dialogEditTemplates[parseInt(i.toString(), 10)]]) {
+                const templateName: string = dialogEditTemplates[parseInt(i.toString(), 10)].charAt(0).toUpperCase()
+                + dialogEditTemplates[parseInt(i.toString(), 10)].slice(1);
                 const editTemplateID: string = this.parent.element.id + 'editSettings' + templateName;
                 updateBlazorTemplate(editTemplateID, templateName, this.parent.editSettings);
             }
@@ -204,9 +205,9 @@ export class DialogEditRender {
             const setRules: Function = () => {
                 const columns: Column[] = this.parent.getColumns();
                 for (let i: number = 0; i < columns.length; i++) {
-                    if ((columns[i] as Column).validationRules) {
-                        this.parent.editModule.formObj.rules[(columns[i] as Column).field] =
-                        (columns[i] as Column).validationRules as {[rule: string]: Object};
+                    if ((columns[parseInt(i.toString(), 10)] as Column).validationRules) {
+                        this.parent.editModule.formObj.rules[(columns[parseInt(i.toString(), 10)] as Column).field] =
+                        (columns[parseInt(i.toString(), 10)] as Column).validationRules as {[rule: string]: Object};
                     }
                 }
             };
@@ -218,8 +219,8 @@ export class DialogEditRender {
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
         const cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
-            if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate ||
-                cols[i].type === 'checkbox') {
+            if (this.parent.editModule.checkColumnIsGrouped(cols[parseInt(i.toString(), 10)]) || cols[parseInt(i.toString(), 10)].commands
+                || cols[parseInt(i.toString(), 10)].commandsTemplate || cols[parseInt(i.toString(), 10)].type === 'checkbox') {
                 continue;
             }
             const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
@@ -228,8 +229,8 @@ export class DialogEditRender {
                     style: 'text-align:' + (this.parent.enableRtl ? 'right' : 'left') + ';width:190px'
                 }
             });
-            elements[cols[i].uid].classList.remove('e-input');
-            dataCell.appendChild(elements[cols[i].uid]);
+            elements[cols[parseInt(i.toString(), 10)].uid].classList.remove('e-input');
+            dataCell.appendChild(elements[cols[parseInt(i.toString(), 10)].uid]);
             tr.appendChild(dataCell);
             tbody.appendChild(tr);
         }

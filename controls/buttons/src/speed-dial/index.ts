@@ -1,6 +1,5 @@
 /**
  * SpeedDial modules
  */
- export * from './speed-dial';
- export * from './speed-dial-model';
- 
+export * from './speed-dial';
+export * from './speed-dial-model';

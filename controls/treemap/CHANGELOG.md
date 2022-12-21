@@ -8,14 +8,6 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
-
-### TreeMap
-
-#### Bug Fixes
-
-- `#F178496` - The legend items now render in the same order as the color mapping objects.
-
 ## 18.2.44 (2020-07-07)
 
 ### TreeMap

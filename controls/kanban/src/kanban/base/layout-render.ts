@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined, removeClass, closest, setStyleAttribute
+    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined,
+    removeClass, closest, setStyleAttribute
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs, ScrollOffset } from '../base/interface';
@@ -163,7 +164,6 @@ export class LayoutRender extends MobileLayout {
         this.renderColGroup(contentTable);
         const tBody: HTMLElement = createElement('tbody');
         contentTable.appendChild(tBody);
-        let className: string;
         let isCollaspsed: boolean = false;
         this.swimlaneRow = this.kanbanRows;
         this.initializeSwimlaneTree();
@@ -180,7 +180,7 @@ export class LayoutRender extends MobileLayout {
     }
 
     private renderSingleContent(tBody: HTMLElement, row: HeaderArgs, isCollaspsed: boolean): void {
-        let className: string = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
+        const className: string = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
         const tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
         for (const column of this.parent.columns) {
             if (this.isColumnVisible(column)) {
@@ -297,7 +297,8 @@ export class LayoutRender extends MobileLayout {
             for (const column of this.parent.columns) {
                 if (this.isColumnVisible(column)) {
                     const columnData: Record<string, any>[] = this.parent.swimlaneSettings.keyField ?
-                        this.getColumnData(column.keyField, this.swimlaneData[rows[index].keyField]) : this.columnData[column.keyField];
+                        this.getColumnData(column.keyField, this.swimlaneData[rows[index as number].keyField]) :
+                        this.columnData[column.keyField];
                     dataCount += columnData.length;
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     const cardWrapper: HTMLElement = createElement('div', {
@@ -335,7 +336,7 @@ export class LayoutRender extends MobileLayout {
             if (dataCount === 0) {
                 removeTrs.push(tr);
                 if (swimlaneRows.length > 0) {
-                    removeTrs.push(swimlaneRows[index]);
+                    removeTrs.push(swimlaneRows[index as number]);
                 }
             }
         });
@@ -497,13 +498,13 @@ export class LayoutRender extends MobileLayout {
         for (let h: number = 0; h < stackedHeaders.length; h++) {
             let colSpan: number = 1;
             for (let j: number = h + 1; j < stackedHeaders.length; j++) {
-                if ((stackedHeaders[h] !== '') && (stackedHeaders[j] !== '') && stackedHeaders[h] === stackedHeaders[j]) {
+                if ((stackedHeaders[h as number] !== '') && (stackedHeaders[j as number] !== '') && stackedHeaders[h as number] === stackedHeaders[j as number]) {
                     colSpan++;
                 } else {
                     break;
                 }
             }
-            const div: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h] });
+            const div: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h as number] });
             const th: HTMLElement = createElement('th', {
                 className: cls.HEADER_CELLS_CLASS + ' ' + cls.STACKED_HEADER_CELL_CLASS,
                 attrs: { 'colspan': colSpan.toString() }
@@ -571,27 +572,27 @@ export class LayoutRender extends MobileLayout {
     }
 
     public frozenRows(e?: Event): void {
-        let firstSwimlane: HTMLElement =  this.parent.element.querySelector('.' + cls.SWIMLANE_ROW_CLASS) as HTMLElement;
+        const firstSwimlane: HTMLElement =  this.parent.element.querySelector('.' + cls.SWIMLANE_ROW_CLASS) as HTMLElement;
         const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
         const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         if (isNullOrUndefined(this.frozenSwimlaneRow)) {
             this.frozenSwimlaneRow = createElement('div', { className: cls.FROZEN_SWIMLANE_ROW_CLASS });
-            let frozenRow: HTMLElement = createElement('div', { className: cls.FROZEN_ROW_CLASS });
+            const frozenRow: HTMLElement = createElement('div', { className: cls.FROZEN_ROW_CLASS });
             this.frozenSwimlaneRow.appendChild(frozenRow);
             this.parent.element.insertBefore(this.frozenSwimlaneRow, this.parent.element.firstElementChild);
             frozenRow.appendChild(firstSwimlane.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
             this.addFrozenSwimlaneDataKey(firstSwimlane);
-            setStyleAttribute(this.frozenSwimlaneRow, { height: formatUnit(firstSwimlane.getBoundingClientRect().height), 
+            setStyleAttribute(this.frozenSwimlaneRow, { height: formatUnit(firstSwimlane.getBoundingClientRect().height),
                 width: formatUnit(content.querySelector('.e-swimlane').getBoundingClientRect().width),
                 top: formatUnit(header.getBoundingClientRect().height.toString())
-             });
+            });
             setStyleAttribute(header, { position: 'relative', top: formatUnit((-this.frozenSwimlaneRow.getBoundingClientRect().height)) });
             setStyleAttribute(content, { position: 'relative', top: formatUnit((-this.frozenSwimlaneRow.getBoundingClientRect().height)) });
         } else {
             const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_CLASS));
-            let curSwim: HTMLElement = swimlaneRows[this.frozenOrder];
-            let prevSwim: HTMLElement = swimlaneRows[this.frozenOrder - 1];
-            let nextSwim: HTMLElement = swimlaneRows[this.frozenOrder + 1];
+            const curSwim: HTMLElement = swimlaneRows[this.frozenOrder];
+            const prevSwim: HTMLElement = swimlaneRows[this.frozenOrder - 1];
+            const nextSwim: HTMLElement = swimlaneRows[this.frozenOrder + 1];
             let curSwimHeight: number;
             let prevSwimHeight: number;
             let nextSwimHeight: number;
@@ -599,13 +600,13 @@ export class LayoutRender extends MobileLayout {
                 curSwimHeight = curSwim.getBoundingClientRect().top + curSwim.getBoundingClientRect().height;
             }
             if (prevSwim) {
-                prevSwimHeight = prevSwim.getBoundingClientRect().top + prevSwim.getBoundingClientRect().height    
+                prevSwimHeight = prevSwim.getBoundingClientRect().top + prevSwim.getBoundingClientRect().height;
             }
             if (nextSwim) {
-                nextSwimHeight = nextSwim.getBoundingClientRect().top + nextSwim.getBoundingClientRect().height    
+                nextSwimHeight = nextSwim.getBoundingClientRect().top + nextSwim.getBoundingClientRect().height;
             }
-            let frozenSwimHeight: number = content.getBoundingClientRect().top + this.frozenSwimlaneRow.getBoundingClientRect().height;
-            let frozenRowsElement: HTMLElement = this.frozenSwimlaneRow.querySelector('.' + cls.FROZEN_ROW_CLASS);
+            const frozenSwimHeight: number = content.getBoundingClientRect().top + this.frozenSwimlaneRow.getBoundingClientRect().height;
+            const frozenRowsElement: HTMLElement = this.frozenSwimlaneRow.querySelector('.' + cls.FROZEN_ROW_CLASS);
             if (nextSwimHeight && frozenSwimHeight >= nextSwimHeight && this.frozenOrder < swimlaneRows.length - 1) {
                 if (frozenRowsElement) {
                     remove(frozenRowsElement.querySelector('.' + cls.SWIMLANE_HEADER_CLASS));
@@ -623,7 +624,7 @@ export class LayoutRender extends MobileLayout {
                 --this.frozenOrder;
             }
         }
-        if (e && (e.target as HTMLElement).scrollTop == 0) {
+        if (e && (e.target as HTMLElement).scrollTop === 0) {
             this.removeFrozenRows();
         }
     }
@@ -643,7 +644,7 @@ export class LayoutRender extends MobileLayout {
         const target: HTMLElement = e.target as HTMLElement;
         if (target.offsetParent) {
             const columnKey: string = target.offsetParent.getAttribute('data-key');
-            this.parent.scrollPosition.column[columnKey] = { left: target.scrollLeft, top: target.scrollTop };
+            this.parent.scrollPosition.column[`${columnKey}`] = { left: target.scrollLeft, top: target.scrollTop };
         }
     }
 
@@ -661,6 +662,7 @@ export class LayoutRender extends MobileLayout {
      * @private
      * @hidden
      */
+
     public isColumnVisible(column: ColumnsModel): boolean {
         let isVisible: boolean = false;
         const isNumeric: boolean = typeof column.keyField === 'number';
@@ -706,12 +708,12 @@ export class LayoutRender extends MobileLayout {
             const rowCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(`.${cls.CONTENT_CELLS_CLASS + keySelector}`));
             if (this.parent.constraintType === 'Swimlane' && this.parent.swimlaneSettings.keyField) {
                 this.swimlaneRow.forEach((row: HeaderArgs, index: number) => {
-                    this.renderLimits(column, rowCells[index]);
+                    this.renderLimits(column, rowCells[index as number]);
                     const rowCards: Record<string, any>[] = cardData.filter((card: Record<string, any>) =>
                         card[this.parent.swimlaneSettings.keyField] === row.keyField);
                     const colorClass: string = this.getValidationClass(column, rowCards.length);
                     if (colorClass) {
-                        addClass([rowCells[index]], colorClass);
+                        addClass([rowCells[index as number]], colorClass);
                     }
                 });
             } else {
@@ -749,8 +751,8 @@ export class LayoutRender extends MobileLayout {
         const isNumeric: boolean = typeof columnValue === 'number';
         if (isNumeric) {
             const keyData: Record<string, any>[] = dataSource.filter((cardObj: Record<string, any>) =>
-                    cardObj[this.parent.keyField] === columnValue);
-                cardData = cardData.concat(keyData);
+                cardObj[this.parent.keyField] === columnValue);
+            cardData = cardData.concat(keyData);
         } else {
             const columnKeys: string[] = (columnValue as string).split(',');
             for (const key of columnKeys) {
@@ -784,7 +786,7 @@ export class LayoutRender extends MobileLayout {
     public sortOrder(key: string, direction: string, cardData: Record<string, any>[]): Record<string, any>[] {
         let isNumeric: boolean = true;
         if (this.parent.kanbanData.length > 0) {
-            isNumeric = typeof (this.parent.kanbanData[0])[key] === 'number';
+            isNumeric = typeof (this.parent.kanbanData[0])[`${key}`] === 'number';
         }
         if (!isNumeric && this.parent.sortSettings.sortBy === 'Index') {
             return cardData;
@@ -793,11 +795,11 @@ export class LayoutRender extends MobileLayout {
         let second: string | number;
         cardData = cardData.sort((firstData: { [key: string]: string | number }, secondData: { [key: string]: string | number }) => {
             if (!isNumeric) {
-                first = (firstData[key] as string).toLowerCase();
-                second = (secondData[key] as string).toLowerCase();
+                first = (firstData[`${key}`] as string).toLowerCase();
+                second = (secondData[`${key}`] as string).toLowerCase();
             } else {
-                first = (firstData[key] as number);
-                second = (secondData[key] as number);
+                first = (firstData[`${key}`] as number);
+                second = (secondData[`${key}`] as number);
             }
             return (first > second) ? 1 : ((second > first) ? -1 : 0);
         });
@@ -850,7 +852,8 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: Record<string, any>) =>
-                !isNullOrUndefined(obj[this.parent.keyField]) && this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
+                    !isNullOrUndefined(obj[this.parent.keyField]) &&
+                     this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
                         '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }
@@ -886,15 +889,17 @@ export class LayoutRender extends MobileLayout {
                     const isNumeric: boolean = typeof column.keyField === 'number';
                     let cardLength: number = 0;
                     if (isNumeric) {
-                        cardLength = ([].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=\"' + column.keyField + '\"]'))).length;
+                        // eslint-disable-next-line no-useless-escape
+                        cardLength = ([].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=\"' + column.keyField + '\"]'))).length;
                     } else {
                         const keys: string[] = (column.keyField as string).split(',');
                         for (const key of keys) {
-                            const cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=\"' + key.trim() + '\"]'));
+                            // eslint-disable-next-line no-useless-escape
+                            const cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=\"' + key.trim() + '\"]'));
                             cardLength = cards.length + cardLength;
                         }
                     }
-                    itemCount.innerHTML = '- ' + cardLength + ' ' + this.parent.localeObj.getConstant('items');
+                    itemCount.innerHTML = '- ' + cardLength + ' ' + this.parent.localeObj.getConstant('items');
                 }
             }
         });
@@ -904,8 +909,8 @@ export class LayoutRender extends MobileLayout {
                 const swimlaneKey: string = swimlane.getAttribute('data-key');
                 const itemCount: Element = swimlane.querySelector(`.${cls.CARD_ITEM_COUNT_CLASS}`);
                 if (itemCount && swimlaneKey) {
-                    const cards: HTMLElement[] = [].slice.call(swimlane.nextElementSibling.querySelectorAll('.' + cls.CARD_CLASS));
-                    itemCount.innerHTML = '- ' + cards.length + ' ' + this.parent.localeObj.getConstant('items');
+                    const cards : HTMLElement[] = [].slice.call(swimlane.nextElementSibling.querySelectorAll('.' + cls.CARD_CLASS));
+                    itemCount.innerHTML = '- ' + cards.length + ' ' + this.parent.localeObj.getConstant('items');
                 }
             });
         }
@@ -946,17 +951,17 @@ export class LayoutRender extends MobileLayout {
             if (this.parent.element.querySelector(rowSelector)) {
                 cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
             } else {
-                let columnIndex: number = this.columnKeys.indexOf(key);
+                const columnIndex: number = this.columnKeys.indexOf(key);
                 if (columnIndex !== -1 && this.parent.actionModule.hideColumnKeys.indexOf(key) === -1) {
-                    let index: number = (this.kanbanRows as Record<string, any>[]).findIndex(
+                    const index: number = (this.kanbanRows as Record<string, any>[]).findIndex(
                         (rowData: Record<string, any>) => rowData['keyField'] === data[this.parent.swimlaneSettings.keyField]);
-                    let swim: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-swimlane-row'));
+                    const swim: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-swimlane-row'));
                     let swimRow: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
-                    if (swim[index]) {
-                       swimRow = swim[index];
+                    if (swim[index as number]) {
+                        swimRow = swim[index as number];
                     }
-                    this.renderSwimlaneRow(swimRow, this.kanbanRows[index], false);
-                    this.renderSingleContent(swimRow, this.kanbanRows[index], false);
+                    this.renderSwimlaneRow(swimRow, this.kanbanRows[index as number], false);
+                    this.renderSingleContent(swimRow, this.kanbanRows[index as number], false);
                 }
                 cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
                 [].slice.call(cardRow.children).forEach((cell: HTMLElement) => {
@@ -974,12 +979,12 @@ export class LayoutRender extends MobileLayout {
             if (isNullOrUndefined(this.parent.swimlaneSettings.keyField)) {
                 index = (this.getColumnData(key, this.parent.kanbanData) as Record<string, any>[]).findIndex(
                     (colData: Record<string, any>) =>
-                        colData[field] === data[field]);
+                        colData[`${field}`] === data[`${field}`]);
             } else {
                 const swimlaneDatas: Record<string, any>[] =
                     this.parent.getSwimlaneData(data[this.parent.swimlaneSettings.keyField] as string);
                 index = (this.getColumnData(key, swimlaneDatas) as Record<string, any>[]).findIndex(
-                    (colData: Record<string, any>) => colData[field] === data[field]);
+                    (colData: Record<string, any>) => colData[`${field}`] === data[`${field}`]);
             }
         } else if (this.parent.sortSettings.sortBy === 'Index' &&
             this.parent.sortSettings.field && this.parent.sortSettings.direction === 'Ascending') {
@@ -1004,7 +1009,7 @@ export class LayoutRender extends MobileLayout {
                     if (isNullOrUndefined(index) || cardWrapper.children.length === 0) {
                         cardWrapper.appendChild(cardElement);
                     } else {
-                        cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index]);
+                        cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index as number]);
                     }
                 }
             });
@@ -1019,7 +1024,7 @@ export class LayoutRender extends MobileLayout {
         if (cardElement) {
             remove(cardElement);
         }
-        if (cardContainer.querySelectorAll('.' + cls.CARD_CLASS +':not(.' + cls.CLONED_CARD_CLASS +')').length === 0) {
+        if (cardContainer.querySelectorAll('.' + cls.CARD_CLASS + ':not(.' + cls.CLONED_CARD_CLASS + ')').length === 0) {
             cardContainer.appendChild(this.renderEmptyCard());
         }
     }

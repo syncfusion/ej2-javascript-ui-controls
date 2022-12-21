@@ -109,14 +109,14 @@ export class ClearFormat {
         nodeSelection: NodeSelection): void {
         let parentNodes: Node[] = [];
         for (let index: number = 0; index < nodes.length; index++) {
-            if ( this.BLOCK_TAGS.indexOf(nodes[index].nodeName.toLocaleLowerCase()) > -1
-            && parentNodes.indexOf(nodes[index]) === -1 ) {
-                parentNodes.push(nodes[index]);
+            if ( this.BLOCK_TAGS.indexOf(nodes[index as number].nodeName.toLocaleLowerCase()) > -1
+            && parentNodes.indexOf(nodes[index as number]) === -1 ) {
+                parentNodes.push(nodes[index as number]);
             } else if (
-                ( this.BLOCK_TAGS.indexOf(nodes[index].parentNode.nodeName.toLocaleLowerCase()) > -1 )
-                && parentNodes.indexOf(nodes[index].parentNode) === -1
-                && endNode !== nodes[index].parentNode ) {
-                parentNodes.push(nodes[index].parentNode);
+                ( this.BLOCK_TAGS.indexOf(nodes[index as number].parentNode.nodeName.toLocaleLowerCase()) > -1 )
+                && parentNodes.indexOf(nodes[index as number].parentNode) === -1
+                && endNode !== nodes[index as number].parentNode ) {
+                parentNodes.push(nodes[index as number].parentNode);
             }
         }
         parentNodes = this.spliceParent(parentNodes, nodes)[0];
@@ -126,29 +126,29 @@ export class ClearFormat {
 
     private static spliceParent(parentNodes: Node[], nodes: Node[]): Node[][] {
         for (let index1: number = 0; index1 < parentNodes.length; index1++) {
-            const len: number = parentNodes[index1].childNodes.length;
+            const len: number = parentNodes[index1 as number].childNodes.length;
             for (let index2: number = 0; index2 < len; index2++) {
-                if ( (nodes.indexOf(parentNodes[index1].childNodes[index2]) > 0)
-                && (parentNodes[index1].childNodes[index2].childNodes.length > 0)) {
-                    nodes = this.spliceParent([parentNodes[index1].childNodes[index2]], nodes)[1];
+                if ( (nodes.indexOf(parentNodes[index1 as number].childNodes[index2 as number]) > 0)
+                && (parentNodes[index1 as number].childNodes[index2 as number].childNodes.length > 0)) {
+                    nodes = this.spliceParent([parentNodes[index1 as number].childNodes[index2 as number]], nodes)[1];
                 }
-                if ((nodes.indexOf(parentNodes[index1].childNodes[index2]) <= -1) &&
-                    (parentNodes[index1].childNodes[index2].textContent.trim() !== '') ) {
+                if ((nodes.indexOf(parentNodes[index1 as number].childNodes[index2 as number]) <= -1) &&
+                    (parentNodes[index1 as number].childNodes[index2 as number].textContent.trim() !== '') ) {
                     for (let index3: number = 0; index3 < len; index3++) {
-                        if (nodes.indexOf(parentNodes[index1].childNodes[index3]) > -1) {
-                            nodes.splice(nodes.indexOf(parentNodes[index1].childNodes[index3]) , 1);
+                        if (nodes.indexOf(parentNodes[index1 as number].childNodes[index3 as number]) > -1) {
+                            nodes.splice(nodes.indexOf(parentNodes[index1 as number].childNodes[index3 as number]) , 1);
                         }
                     }
-                    index2 = parentNodes[index1].childNodes.length;
-                    const parentIndex: number = parentNodes.indexOf(parentNodes[index1].parentNode);
-                    const nodeIndex: number = nodes.indexOf(parentNodes[index1].parentNode);
+                    index2 = parentNodes[index1 as number].childNodes.length;
+                    const parentIndex: number = parentNodes.indexOf(parentNodes[index1 as number].parentNode);
+                    const nodeIndex: number = nodes.indexOf(parentNodes[index1 as number].parentNode);
                     if (parentIndex > -1) {
                         parentNodes.splice(parentIndex, 1);
                     }
                     if (nodeIndex > -1) {
                         nodes.splice(nodeIndex, 1);
                     }
-                    const elementIndex: number = nodes.indexOf(parentNodes[index1]);
+                    const elementIndex: number = nodes.indexOf(parentNodes[index1 as number]);
                     if (elementIndex > -1) {
                         nodes.splice(elementIndex, 1);
                     }
@@ -164,9 +164,9 @@ export class ClearFormat {
         const count: number = parentNode.childNodes.length;
         if (count > 0) {
             for (let index: number = 0; index < count; index++) {
-                if (parentNodes.indexOf(parentNode.childNodes[index]) > -1) {
-                    parentNodes = this.removeChild(parentNodes, parentNode.childNodes[index]);
-                    parentNodes.splice(parentNodes.indexOf(parentNode.childNodes[index]), 1);
+                if (parentNodes.indexOf(parentNode.childNodes[index as number]) > -1) {
+                    parentNodes = this.removeChild(parentNodes, parentNode.childNodes[index as number]);
+                    parentNodes.splice(parentNodes.indexOf(parentNode.childNodes[index as number]), 1);
                 }
             }
         }
@@ -175,8 +175,8 @@ export class ClearFormat {
 
     private static removeParent(parentNodes: Node[]): Node[] {
         for (let index: number = 0; index < parentNodes.length; index++) {
-            if (parentNodes.indexOf(parentNodes[index].parentNode) > -1) {
-                parentNodes = this.removeChild(parentNodes, parentNodes[index]);
+            if (parentNodes.indexOf(parentNodes[index as number].parentNode) > -1) {
+                parentNodes = this.removeChild(parentNodes, parentNodes[index as number]);
                 parentNodes.splice(index, 1);
                 index--;
             }
@@ -186,55 +186,56 @@ export class ClearFormat {
 
     private static unWrap(docElement: Document, parentNodes: Node[], nodeCutter: NodeCutter, nodeSelection: NodeSelection): void {
         for (let index1: number = 0; index1 < parentNodes.length; index1++) {
-            if (this.NONVALID_TAGS.indexOf(parentNodes[index1].nodeName.toLowerCase()) > -1
-            && parentNodes[index1].parentNode
-            && this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1].parentNode.nodeName.toLowerCase()) > -1) {
+            if (this.NONVALID_TAGS.indexOf(parentNodes[index1 as number].nodeName.toLowerCase()) > -1
+            && parentNodes[index1 as number].parentNode
+            && this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1 as number].parentNode.nodeName.toLowerCase()) > -1) {
                 nodeSelection.setSelectionText(
                     docElement,
-                    parentNodes[index1],
-                    parentNodes[index1],
+                    parentNodes[index1 as number],
+                    parentNodes[index1 as number],
                     0,
-                    parentNodes[index1].childNodes.length);
+                    parentNodes[index1 as number].childNodes.length);
                 InsertMethods.unwrap(
                     nodeCutter.GetSpliceNode(
                         nodeSelection.getRange(docElement),
-                        parentNodes[index1].parentNode as HTMLElement));
+                        parentNodes[index1 as number].parentNode as HTMLElement));
             }
-            if (parentNodes[index1].nodeName.toLocaleLowerCase() !== 'p') {
-                if (this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1].nodeName.toLowerCase()) < 0
-                    && parentNodes[index1].parentNode.nodeName.toLocaleLowerCase() !== 'p'
-                    && !((parentNodes[index1].nodeName.toLocaleLowerCase() === 'blockquote'
-                        || parentNodes[index1].nodeName.toLocaleLowerCase() === 'li')
-                        && this.IGNORE_PARENT_TAGS.indexOf(parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase()) > -1)
-                    && !(parentNodes[index1].childNodes.length === 1
-                        && parentNodes[index1].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
-                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement(this.defaultTag));
+            if (parentNodes[index1 as number].nodeName.toLocaleLowerCase() !== 'p') {
+                if (this.NONVALID_PARENT_TAGS.indexOf(parentNodes[index1 as number].nodeName.toLowerCase()) < 0
+                    && parentNodes[index1 as number].parentNode.nodeName.toLocaleLowerCase() !== 'p'
+                    && !((parentNodes[index1 as number].nodeName.toLocaleLowerCase() === 'blockquote'
+                        || parentNodes[index1 as number].nodeName.toLocaleLowerCase() === 'li')
+                        && this.IGNORE_PARENT_TAGS.indexOf(parentNodes[index1 as number].childNodes[0].nodeName.toLocaleLowerCase()) > -1)
+                    && !(parentNodes[index1 as number].childNodes.length === 1
+                        && parentNodes[index1 as number].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
+                    InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));
                 }
-                const childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1]);
+                const childNodes: Node[] = InsertMethods.unwrap(parentNodes[index1 as number]);
                 if ( childNodes.length === 1
                     && childNodes[0].parentNode.nodeName.toLocaleLowerCase() === 'p') {
-                    InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement(this.defaultTag));
-                    InsertMethods.unwrap(parentNodes[index1]);
+                    InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));
+                    InsertMethods.unwrap(parentNodes[index1 as number]);
                 }
                 for (let index2: number = 0; index2 < childNodes.length; index2++) {
-                    if (this.NONVALID_TAGS.indexOf(childNodes[index2].nodeName.toLowerCase()) > -1) {
-                        this.unWrap(docElement, [childNodes[index2]], nodeCutter, nodeSelection);
-                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
-                    childNodes[index2].nodeName.toLocaleLowerCase() !== 'p') {
-                        const blockNodes: Node[] = this.removeParent([childNodes[index2]]);
+                    if (this.NONVALID_TAGS.indexOf(childNodes[index2 as number].nodeName.toLowerCase()) > -1) {
+                        this.unWrap(docElement, [childNodes[index2 as number]], nodeCutter, nodeSelection);
+                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2 as number].nodeName.toLocaleLowerCase()) > -1 &&
+                    childNodes[index2 as number].nodeName.toLocaleLowerCase() !== 'p') {
+                        const blockNodes: Node[] = this.removeParent([childNodes[index2 as number]]);
                         this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
-                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
-                        childNodes[index2].parentNode.nodeName.toLocaleLowerCase() === childNodes[index2].nodeName.toLocaleLowerCase()) {
-                        InsertMethods.unwrap(childNodes[index2]);
-                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
-                        childNodes[index2].nodeName.toLocaleLowerCase() === 'p') {
-                        InsertMethods.Wrap(childNodes[index2] as HTMLElement, docElement.createElement(this.defaultTag));
-                        InsertMethods.unwrap(childNodes[index2]);
+                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2 as number].nodeName.toLocaleLowerCase()) > -1 &&
+                        childNodes[index2 as number].parentNode.nodeName.toLocaleLowerCase() ===
+                    childNodes[index2 as number].nodeName.toLocaleLowerCase()) {
+                        InsertMethods.unwrap(childNodes[index2 as number]);
+                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2 as number].nodeName.toLocaleLowerCase()) > -1 &&
+                        childNodes[index2 as number].nodeName.toLocaleLowerCase() === 'p') {
+                        InsertMethods.Wrap(childNodes[index2 as number] as HTMLElement, docElement.createElement(this.defaultTag));
+                        InsertMethods.unwrap(childNodes[index2 as number]);
                     }
                 }
             } else {
-                InsertMethods.Wrap(parentNodes[index1] as HTMLElement, docElement.createElement(this.defaultTag));
-                InsertMethods.unwrap(parentNodes[index1]);
+                InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));
+                InsertMethods.unwrap(parentNodes[index1 as number]);
             }
         }
     }
@@ -247,7 +248,7 @@ export class ClearFormat {
         // eslint-disable-next-line
         endNode: Node): void {
         for (let index: number = 0; index < textNodes.length; index++) {
-            let currentInlineNode: Node = textNodes[index];
+            let currentInlineNode: Node = textNodes[index as number];
             let currentNode: Node;
             while (!this.domNode.isBlockNode(currentInlineNode as Element) &&
             (currentInlineNode.parentElement && !currentInlineNode.parentElement.classList.contains('e-img-inner'))) {
@@ -265,11 +266,11 @@ export class ClearFormat {
     private static removeInlineParent(textNodes: Node): void {
         const nodes: Node[] = InsertMethods.unwrap( textNodes );
         for (let index: number = 0; index < nodes.length; index++) {
-            if (nodes[index].parentNode.childNodes.length === 1 && !(nodes[index].parentNode as HTMLElement).classList.contains('e-img-inner')
-                && IsFormatted.inlineTags.indexOf(nodes[index].parentNode.nodeName.toLocaleLowerCase()) > -1 ) {
-                this.removeInlineParent(nodes[index].parentNode);
-            } else if (IsFormatted.inlineTags.indexOf(nodes[index].nodeName.toLocaleLowerCase()) > -1) {
-                this.removeInlineParent(nodes[index]);
+            if (nodes[index as number].parentNode.childNodes.length === 1 && !(nodes[index as number].parentNode as HTMLElement).classList.contains('e-img-inner')
+                && IsFormatted.inlineTags.indexOf(nodes[index as number].parentNode.nodeName.toLocaleLowerCase()) > -1 ) {
+                this.removeInlineParent(nodes[index as number].parentNode);
+            } else if (IsFormatted.inlineTags.indexOf(nodes[index as number].nodeName.toLocaleLowerCase()) > -1) {
+                this.removeInlineParent(nodes[index as number]);
             }
         }
     }

@@ -211,7 +211,7 @@ export class TimelineViews extends VerticalView {
     }
 
     private getResourceTdData(i: number, tdData: TdData): TdData {
-        const resLevel: TdData = this.parent.resourceBase.renderedResources[i];
+        const resLevel: TdData = this.parent.resourceBase.renderedResources[parseInt(i.toString(), 10)];
         const resSHr: string = (resLevel.resourceData[resLevel.resource.startHourField] as string) || this.parent.workHours.start;
         const resEHr: string = (resLevel.resourceData[resLevel.resource.endHourField] as string) || this.parent.workHours.end;
         tdData.startHour = this.parent.getStartEndTime(resSHr);
@@ -264,7 +264,7 @@ export class TimelineViews extends VerticalView {
         } else {
             const timeSlots: TdData[] = this.colLevels[this.colLevels.length - 1];
             for (let i: number = 0; i < timeSlots.length; i++) {
-                if (timeSlots[i].date.getTime() > date.getTime()) {
+                if (timeSlots[parseInt(i.toString(), 10)].date.getTime() > date.getTime()) {
                     return timeSlots[i - 1].date;
                 }
             }

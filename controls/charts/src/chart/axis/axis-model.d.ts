@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection, extend } from '@syncfusion/ej2-base';import { FontModel, BorderModel } from '../../common/model/base-model';import { Font, Border } from '../../common/model/base';import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle } from '../../common/utils/helper';import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';import { DoubleRange } from '../utils/double-range';import { Chart } from '../chart';import { Series } from '../series/chart-series';import { Double } from '../axis/double-axis';import { DateTime } from '../axis/date-time-axis';import { Category } from '../axis/category-axis';import { DateTimeCategory } from '../axis/date-time-category-axis';import { Theme } from '../../common/model/theme';import { TextAlignment } from '../../common/utils/enum';import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';import { axisRangeCalculated } from '../../common/model/constants';import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';import { textWrap } from '../../common/utils/helper';import { ScrollBar } from '../../common/scrollbar/scrollbar';import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';import { FontModel, BorderModel } from '../../common/model/base-model';import { Font, Border } from '../../common/model/base';import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle } from '../../common/utils/helper';import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';import { DoubleRange } from '../utils/double-range';import { Chart } from '../chart';import { Series } from '../series/chart-series';import { Double } from '../axis/double-axis';import { DateTime } from '../axis/date-time-axis';import { Category } from '../axis/category-axis';import { DateTimeCategory } from '../axis/date-time-category-axis';import { Theme } from '../../common/model/theme';import { TextAlignment } from '../../common/utils/enum';import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';import { axisRangeCalculated } from '../../common/model/constants';import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel} from '../model/chart-base-model';import { textWrap } from '../../common/utils/helper';import { ScrollBar } from '../../common/scrollbar/scrollbar';import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class Row
@@ -573,6 +573,14 @@ export interface AxisModel {
      */
 
     labelRotation?: number;
+
+    /**
+     * Defines an angle to rotate axis title. By default, angle auto calculated based on position and orientation of axis.
+     *
+     * @default null
+     */
+
+    titleRotation?: number;
 
     /**
      * Specifies the value at which the axis line has to be intersect with the vertical axis or vice versa.

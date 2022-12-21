@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/tslint/config */
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
@@ -51,10 +53,10 @@ export class ColumnBase {
         if (!(isNaN(doubleRange.start) || isNaN(doubleRange.end))) {
             if (series.groupName && series.type.indexOf('Stacking') === -1) {
                 let mainColumnWidth: number = 0.7;
-                series.chart.series.filter(function(series) { if(series.columnWidth > mainColumnWidth) {mainColumnWidth = series.columnWidth} });
-                let mainWidth: number = minimumPointDelta * mainColumnWidth;
-                let mainDoubleRange: DoubleRange = new DoubleRange(doubleRange.start * mainWidth, doubleRange.end * mainWidth);
-                let difference: number = ((mainDoubleRange.delta) - (doubleRange.end * width - doubleRange.start * width)) / 2;
+                series.chart.series.filter(function(series) { if (series.columnWidth > mainColumnWidth) {mainColumnWidth = series.columnWidth; } });
+                const mainWidth: number = minimumPointDelta * mainColumnWidth;
+                const mainDoubleRange: DoubleRange = new DoubleRange(doubleRange.start * mainWidth, doubleRange.end * mainWidth);
+                const difference: number = ((mainDoubleRange.delta) - (doubleRange.end * width - doubleRange.start * width)) / 2;
                 doubleRange = new DoubleRange(mainDoubleRange.start + difference, mainDoubleRange.end - difference);
             } else {
                 doubleRange = new DoubleRange(doubleRange.start * width, doubleRange.end * width);
@@ -97,15 +99,15 @@ export class ColumnBase {
         const groupingValues: string[] = [];
         const vSeries: RectPosition = { rectCount: 0, position: null };
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            const value: Series = seriesCollection[i];
+            const value: Series = seriesCollection[i as number];
             if (value.type.indexOf('Stacking') !== -1 || value.groupName !== '') {
-                const groupName = value.type.indexOf('Stacking') !== -1 ? value.stackingGroup : value.type + value.groupName;
+                const groupName: string = value.type.indexOf('Stacking') !== -1 ? value.stackingGroup : value.type + value.groupName;
                 if (groupName) {
-                    if (groupingValues[groupName] === undefined) {
+                    if (groupingValues[groupName as string] === undefined) {
                         value.position = vSeries.rectCount;
-                        groupingValues[groupName] = vSeries.rectCount++;
+                        groupingValues[groupName as string] = vSeries.rectCount++;
                     } else {
-                        value.position = groupingValues[groupName];
+                        value.position = groupingValues[groupName as string];
                     }
                 } else {
                     if (vSeries.position === null) {
@@ -120,7 +122,7 @@ export class ColumnBase {
             }
         }
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            const value: Series = seriesCollection[i];
+            const value: Series = seriesCollection[i as number];
             value.rectCount = vSeries.rectCount;
         }
     }
@@ -265,12 +267,12 @@ export class ColumnBase {
             options, new Int32Array([series.clipRect.x, series.clipRect.y])
         ) as HTMLElement;
         switch (series.seriesType) {
-            case 'XY':
-                element.setAttribute('aria-label', point.x + ':' + point.yValue + ', ' + series.name);
-                break;
-            case 'HighLow':
-                element.setAttribute('aria-label', point.x + ':' + point.high + ', ' + point.low + ', ' + series.name);
-                break;
+        case 'XY':
+            element.setAttribute('aria-label', point.x + ':' + point.yValue + ', ' + series.name);
+            break;
+        case 'HighLow':
+            element.setAttribute('aria-label', point.x + ':' + point.high + ', ' + point.low + ', ' + series.name);
+            break;
         }
         appendChildElement(series.chart.enableCanvas, series.seriesElement, element, chart.redraw);
         if (!series.chart.enableCanvas) {
@@ -291,7 +293,7 @@ export class ColumnBase {
             if (!point.symbolLocations.length && !(series.type === 'BoxAndWhisker' && point.regions.length)) {
                 continue;
             }
-            this.animateRect(<HTMLElement>rectElements[count], series, point);
+            this.animateRect(<HTMLElement>rectElements[count as number], series, point);
             count++;
         }
     }
@@ -369,9 +371,9 @@ export class ColumnBase {
                         if (series.type === 'Waterfall') {
                             const rectElements: NodeList = seriesElement.childNodes;
                             for (let i: number = 0; i < rectElements.length; i++) {
-                                if ((rectElements[i] as HTMLElement).id.indexOf('Connector') !== -1) {
-                                    (rectElements[i] as HTMLElement).style.visibility = 'visible';
-                                    (rectElements[i] as HTMLElement).setAttribute('transform', 'translate(0,0)');
+                                if ((rectElements[i as number] as HTMLElement).id.indexOf('Connector') !== -1) {
+                                    (rectElements[i as number] as HTMLElement).style.visibility = 'visible';
+                                    (rectElements[i as number] as HTMLElement).setAttribute('transform', 'translate(0,0)');
                                 }
                             }
                         }

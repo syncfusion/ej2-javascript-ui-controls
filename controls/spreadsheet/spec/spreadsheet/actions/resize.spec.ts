@@ -30,6 +30,187 @@ describe('Resize ->', () => {
         //     helper.getInstance().sheets[0].columns[1].width = 64;
         //     done();
         // });
+    });
+
+    describe('UI Interaction', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ hidden: true }], columns: [{ hidden: true }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply autofit on hidden Row which is the first Row', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].hidden).toBeFalsy();
+                done();
+            });
+        });
+        it('Apply autofit on hidden Column which is the first Column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const colHdr: HTMLElement = helper.invoke('getCell', [null, 1, helper.invoke('getColHeaderTable').rows[0]]);
+            const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].columns[0].hidden).toBeFalsy();
+                done();
+            });
+        });
+        it('Apply autofit on Row with Protected Sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Price Details',{ selectCells: true, formatRows: true});
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                done();
+            });
+        });
+        it('Apply autofit on Column with Protected Sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                spreadsheet.protectSheet('Price Details',{ selectCells: true, formatColumns: true});
+                const colHdr: HTMLElement = helper.invoke('getCell', [null, 3, helper.invoke('getColHeaderTable').rows[0]]);
+                const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                    done();
+                });
+            });
+        });
+        it('Apply Mousedown on hidden Row which is the first Row', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unprotectSheet('Price Details');
+            setTimeout(() => {
+                helper.invoke('hideRow', [0]);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+                    const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+                    const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+                    helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+                    helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+                    helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, spreadsheet.element, rowHdr);
+                    helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, document, rowHdr);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[0].hidden).toBeFalsy();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Apply autofit on Column which having Font Style and Font Family', (done: Function) => {
+            helper.invoke('selectRange', ['E1']);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ fontFamily: 'Arial Black', fontSize: '14pt' }, 'E1');
+            spreadsheet.autoFit('E');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].columns[4].width).toBe(44);
+                done();
+            });
+        });
+        it('Apply autofit on Row which having Font Family', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ fontFamily: 'Arial Black' }, 'A4');
+            spreadsheet.autoFit('4');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[3].height).toBe(20);
+                done();
+            });
+        });
+        it('Apply autofit on Hidden Column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['F1']);
+            spreadsheet.hideColumn(5, 5, true);
+            setTimeout(() => {
+                const colHdr: HTMLElement = helper.invoke('getCell', [null, 6, helper.invoke('getColHeaderTable').rows[0]]);
+                const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[5].width).toBe(54);
+                    done();
+                });
+            });
+        });
+        it('Apply autofit on Hidden Column with Copy Indicator', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['D1']);
+            helper.invoke('copy', ['D1']);
+            spreadsheet.hideColumn(3, 3, true);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
+                spreadsheet.autoFit('D');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[3].width).toBe(57);
+                    expect(helper.getElement().querySelector('.e-copy-indicator').style.width).toBe('65px');
+                    done();
+                });
+            });
+        });
+        it('Apply autofit on Hidden Column by Selecting whole Column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['F1:F200']);
+            spreadsheet.hideColumn(5, 5, true);
+            setTimeout(() => {
+                spreadsheet.autoFit('F');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[5].width).toBe(54);
+                    done();
+                });
+            });
+        });
+        it('Apply autofit on Hidden Column increasing Width', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['F1:F200']);
+            spreadsheet.hideColumn(5, 5, true);
+            setTimeout(() => {
+                spreadsheet.setColWidth('30', 6, 0);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[5].width).toBe(54);
+                    done();
+                });
+            });
+        });
+        it('Apply undo after increasing Width in Hidden Column ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['H1']);
+            spreadsheet.hideColumn(7, 7, true);
+            setTimeout(() => {
+                const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+                const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[6];
+                const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top + 1, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousemove', { x: offset.left + 50, y: offset.top + 1, offsetX: 3 }, spreadsheet.element, colHdr);
+                helper.triggerMouseAction('mouseup', { x: offset.left + 50, y: offset.top + 1, offsetX: 3 }, document, colHdr);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].columns[7].hidden).toBeFalsy();
+                    helper.click('#spreadsheet_undo');
+                    helper.click('#spreadsheet_undo');
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].columns[7].hidden).toBeTruthy();
+                        done();
+                    });
+                });
+            });
+        });
         it('Apply autofit on rows and columns which contains wrap cell', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.setColWidth(30, 3, 0);
@@ -49,6 +230,7 @@ describe('Resize ->', () => {
             done();
         });
     });
+
     describe('CR-Issues ->', () => {
         describe('I274109 ->', () => {
             beforeEach((done: Function) => {

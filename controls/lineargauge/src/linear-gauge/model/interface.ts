@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
 import { LinearGauge } from '../linear-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { Annotation, TooltipSettings } from '../model/base';
@@ -6,10 +5,10 @@ import { FontModel } from '../model/base-model';
 import { Size, GaugeLocation } from '../utils/helper';
 
 /**
- * @private
  * Specifies the event arguments of linear gauge.
+ *
+ * @private
  */
-/** @private */
 export interface ILinearGaugeEventArgs {
     /**
      * Specifies the name of the event.

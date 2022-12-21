@@ -336,7 +336,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Greater than';
+                ddlElement.ej2_instances[0].value = 'Greater Than';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -401,7 +401,7 @@ describe('Data validation ->', () => {
             helper.triggerKeyEvent('keyup', 110, null, null, null, helper.getElements('.e-datavalidation-dlg .e-input')[2]);
             helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
             helper.click('.e-datavalidation-dlg .e-primary');
-            expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The list values allows only upto 256 charcters');
+            expect(helper.getElements('.e-dlg-error')[0].textContent).toBe('The list values allows only upto 256 characters');
             done();
         });
 
@@ -509,6 +509,53 @@ describe('Data validation ->', () => {
         });
         afterAll(() => {
             helper.invoke('destroy');
+        });
+        it('Apply undo & redo after Highlight the invalid Data', (done: Function) => {
+            helper.invoke('selectRange', ['H1']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-primary');
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                helper.switchRibbonTab(1);
+                helper.click('#spreadsheet_undo');
+                expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+                helper.click('#spreadsheet_redo');
+                expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                done();
+            });
+        });
+        it('Apply undo & redo after remove the Highlight', (done: Function) => {
+            helper.invoke('selectRange', ['H1']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(3)');
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            helper.click('#spreadsheet_redo');
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            done();
+        });
+        it('Apply undo & redo after remove Validation', (done: Function) => {
+            helper.invoke('selectRange', ['H1']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(2)');
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(4)');
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+            helper.click('#spreadsheet_redo');
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toBe('rgb(255, 255, 255)');
+            done();
         });
         it('Add list validation and remove list validation', (done: Function) => {
             helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'D2']);
@@ -626,7 +673,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Equal to';
+                ddlElement.ej2_instances[0].value = 'Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -645,7 +692,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Not equal to';
+                ddlElement.ej2_instances[0].value = 'Not Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -664,7 +711,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Greater than';
+                ddlElement.ej2_instances[0].value = 'Greater Than';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '8';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -683,7 +730,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Less than';
+                ddlElement.ej2_instances[0].value = 'Less Than';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '15';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -702,7 +749,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Greater than or equal to';
+                ddlElement.ej2_instances[0].value = 'Greater Than Or Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -721,7 +768,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Less than or equal to';
+                ddlElement.ej2_instances[0].value = 'Less Than Or Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '10';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -740,7 +787,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Not between';
+                ddlElement.ej2_instances[0].value = 'Not Between';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '15';
                 helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '25';
@@ -780,7 +827,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Equal to';
+                ddlElement.ej2_instances[0].value = 'Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '41';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -799,7 +846,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Greater than';
+                ddlElement.ej2_instances[0].value = 'Greater Than';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '45';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -818,7 +865,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Less than';
+                ddlElement.ej2_instances[0].value = 'Less Than';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '35';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -837,7 +884,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Greater than or equal to';
+                ddlElement.ej2_instances[0].value = 'Greater Than Or Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -856,7 +903,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                ddlElement.ej2_instances[0].value = 'Less than or equal to';
+                ddlElement.ej2_instances[0].value = 'Less Than Or Equal To';
                 ddlElement.ej2_instances[0].dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '50';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -895,7 +942,7 @@ describe('Data validation ->', () => {
             helper.click('.e-datavalidation-ddb li:nth-child(1)');
             setTimeout(() => {
                 const ddlObj: any = getComponent(helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0], 'dropdownlist');
-                ddlObj.value = 'Not between';
+                ddlObj.value = 'Not Between';
                 ddlObj.dataBind();
                 helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '30';
                 helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '45';
@@ -1557,7 +1604,7 @@ describe('Data validation ->', () => {
                             'Ok': 'OK',
                             'Close': 'Schließen',
                             'Cancel': 'Abbrechen',
-                            'Apply': 'Anwenden',
+                            'Apply': 'Sich bewerben',
                             'MoreColors': 'Mehr Farben',
                             'StandardColors': 'Standard farben',
                             'General': 'Allgemeines',
@@ -1621,8 +1668,9 @@ describe('Data validation ->', () => {
                             'MATCH': 'Gibt die relative Position eines angegebenen Wertes im angegebenen Bereich zurück.',
                             'DefineNameExists': 'Dieser Name ist bereits vorhanden, versuchen Sie es mit einem anderen Namen.',
                             'CircularReference': 'Wenn eine Formel auf einen oder mehrere Zirkelverweise verweist, kann dies zu einer falschen Berechnung führen.',
-                            'CustomFormat': 'Geben Sie das Format ein',
-                            'APPLY':'vorgehen',                           
+                            'CustomFormat': 'Formats de nombre personnalisés',
+                            'CustomFormatPlaceholder': 'Geben Sie ein benutzerdefiniertes Format ein oder wählen Sie es aus',
+                            'APPLY':'Sich bewerben',                           
                         }
                     }
                 });
@@ -1636,7 +1684,7 @@ describe('Data validation ->', () => {
                 helper.getElement('#'+helper.id+'_datavalidation').click();
                 helper.getElement('#'+helper.id+'_datavalidation-popup li:nth-child(1)').click();
                 var footer:HTMLElement = helper.getElement('.e-footer-content button:nth-child(2)');
-                expect(footer.textContent).toBe('vorgehen');
+                expect(footer.textContent).toBe('Sich bewerben');
                 done();
             });
         });
@@ -1663,7 +1711,7 @@ describe('Data validation ->', () => {
                     ddlElem.ej2_instances[0].value = 'Date';
                     ddlElem.ej2_instances[0].dataBind();
                     let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Equal to';
+                    ddlElement.ej2_instances[0].value = 'Equal To';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '6/23/2014';
                     helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -1688,7 +1736,7 @@ describe('Data validation ->', () => {
                     ddlElem.ej2_instances[0].value = 'Time';
                     ddlElem.ej2_instances[0].dataBind();
                     let ddlElement: any = helper.getElements('.e-datavalidation-dlg .e-data .e-dropdownlist')[0];
-                    ddlElement.ej2_instances[0].value = 'Equal to';
+                    ddlElement.ej2_instances[0].value = 'Equal To';
                     ddlElement.ej2_instances[0].dataBind();
                     helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '12:43:59 AM';
                     helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
@@ -1758,6 +1806,25 @@ describe('Data validation ->', () => {
                     done();
                 });
             });  
+            it('EJ2-56561 - inaccurate "isHighlighted" property value In datavalidation->', (done: Function) => {
+                helper.invoke('selectRange', ['H2:H11']);
+                helper.getElement('#'+helper.id+'_datavalidation').click();
+                helper.getElement('#'+helper.id+'_datavalidation-popup li:nth-child(1)').click();
+                setTimeout(() => {
+                    helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '50';
+                    helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '100';
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.getElements('.e-datavalidation-dlg .e-footer-content')[0].children[1].click();
+                    helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                    helper.click('.e-datavalidation-ddb li:nth-child(2)');
+                    expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(255, 255, 0)');
+                    expect(helper.invoke('getCell', [1, 7]).style.color).toBe('rgb(255, 0, 0)');
+                    expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBeNull;
+                    expect(helper.invoke('getCell', [2, 7]).style.color).toBeNull;
+                    expect(helper.invoke('getCell', [2, 7]).isValidCell).toBeFalsy();
+                    done();
+                });
+            }); 
         });
     });
     describe('EJ2-65124->', () => {
@@ -1765,64 +1832,64 @@ describe('Data validation ->', () => {
             helper.initializeSpreadsheet({
                 sheets: [{
                     ranges: [{
-                        dataSource: [ {
+                        dataSource: [{
                             "Rate Card Country": "USA",
                             "Rate Card Currency": "CHF",
                             "Level": "1",
-                            "Age":"21",
+                            "Age": "21",
                             "Start Date": "11/11/2022",
                             "End Date": "11/11/2022",
-                            "decimal":"17.23",
-                            "Octane":"17.23",
-                            "Name":"Seenu",
-                            "City":"THJAJ",
-                            "Time1":"8:00 AM",
-                            "Time2":"8:00 AM"
+                            "decimal": "17.23",
+                            "Octane": "17.23",
+                            "Name": "Seenu",
+                            "City": "THJAJ",
+                            "Time1": "8:00 AM",
+                            "Time2": "8:00 AM"
                         },
                         {
                             "Rate Card Country": "",
                             "Rate Card Currency": "",
                             "Level": "",
-                            "Age":"",
+                            "Age": "",
                             "Start Date": "",
                             "End Date": "",
-                            "decimal":"",
-                            "Octane":"",
-                            "Name":"",
-                            "City":"",
-                            "Time1":"",
-                            "Time2":""
+                            "decimal": "",
+                            "Octane": "",
+                            "Name": "",
+                            "City": "",
+                            "Time1": "",
+                            "Time2": ""
                         },
                         {
                             "Rate Card Country": "CD",
                             "Rate Card Currency": "GP-British-Pound",
                             "Level": "22",
-                            "Age":"30",
+                            "Age": "30",
                             "Start Date": "09/09/2022",
                             "End Date": "09/09/2022",
-                            "decimal":"1.2",
-                            "Octane":"1.2",
-                            "Name":"Pa",
-                            "City":"VK",
-                            "Time1":"6:00 AM",
-                            "Time2":"6:00 AM"
+                            "decimal": "1.2",
+                            "Octane": "1.2",
+                            "Name": "Pa",
+                            "City": "VK",
+                            "Time1": "6:00 AM",
+                            "Time2": "6:00 AM"
                         }]
                     }], selectedRange: 'A1:A10'
                 }],
                 created: (): void => {
                     const spreadsheet: Spreadsheet = helper.getInstance();
-                    spreadsheet.addDataValidation({ type: 'List', value1: 'Brazil,Canada,India,Italy,Japan,Philippines,Slovakia,Spain,UK,USA' ,ignoreBlank: true}, `A2:A5`);
-                    spreadsheet.addDataValidation({ type: 'List', value1:'AED,AUD,CAD,CHF,EUR,GBP,HKD,INR,JPY,NOK,NZD,PHP,SAR,SEK,USD,ZAR,SGD',ignoreBlank: false }, `B2:B5`);
-                    spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '1',value2: '12',ignoreBlank: true}, `C2:C5`);
-                    spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '1',value2: '22',ignoreBlank: false}, `D2:D5`);
-                    spreadsheet.addDataValidation({ type: 'Date', operator: 'GreaterThan', value1: '10/10/2022', ignoreBlank: true}, `E2:E5`);  
-                    spreadsheet.addDataValidation({ type: 'Date', operator: 'GreaterThan', value1: '10/10/2022', ignoreBlank: false}, `F2:F5`);
-                    spreadsheet.addDataValidation({ type: 'Decimal', operator: 'GreaterThan', value1: '15.15' ,ignoreBlank: true}, `G2:G5`);
-                    spreadsheet.addDataValidation({ type: 'Decimal', operator: 'GreaterThan', value1: '15.15' ,ignoreBlank: false}, `H2:H5`);
+                    spreadsheet.addDataValidation({ type: 'List', value1: 'Brazil,Canada,India,Italy,Japan,Philippines,Slovakia,Spain,UK,USA', ignoreBlank: true }, `A2:A5`);
+                    spreadsheet.addDataValidation({ type: 'List', value1: 'AED,AUD,CAD,CHF,EUR,GBP,HKD,INR,JPY,NOK,NZD,PHP,SAR,SEK,USD,ZAR,SGD', ignoreBlank: false }, `B2:B5`);
+                    spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '1', value2: '12', ignoreBlank: true }, `C2:C5`);
+                    spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'Between', value1: '1', value2: '22', ignoreBlank: false }, `D2:D5`);
+                    spreadsheet.addDataValidation({ type: 'Date', operator: 'GreaterThan', value1: '10/10/2022', ignoreBlank: true }, `E2:E5`);
+                    spreadsheet.addDataValidation({ type: 'Date', operator: 'GreaterThan', value1: '10/10/2022', ignoreBlank: false }, `F2:F5`);
+                    spreadsheet.addDataValidation({ type: 'Decimal', operator: 'GreaterThan', value1: '15.15', ignoreBlank: true }, `G2:G5`);
+                    spreadsheet.addDataValidation({ type: 'Decimal', operator: 'GreaterThan', value1: '15.15', ignoreBlank: false }, `H2:H5`);
                     spreadsheet.addDataValidation({ type: 'TextLength', operator: 'GreaterThan', value1: '3', ignoreBlank: true }, 'I2:I5');
-                    spreadsheet.addDataValidation({ type: 'TextLength', operator: 'GreaterThan', value1: '3', ignoreBlank: false }, 'J2:J5');     
-                    spreadsheet.addDataValidation({ type: 'Time', operator: 'GreaterThan', value1: '7:00:00 AM', ignoreBlank: true  }, 'K2:K5');
-                    spreadsheet.addDataValidation({ type: 'Time', operator: 'GreaterThan', value1: '7:00:00 AM', ignoreBlank: false  }, 'L2:L5');
+                    spreadsheet.addDataValidation({ type: 'TextLength', operator: 'GreaterThan', value1: '3', ignoreBlank: false }, 'J2:J5');
+                    spreadsheet.addDataValidation({ type: 'Time', operator: 'GreaterThan', value1: '7:00:00 AM', ignoreBlank: true }, 'K2:K5');
+                    spreadsheet.addDataValidation({ type: 'Time', operator: 'GreaterThan', value1: '7:00:00 AM', ignoreBlank: false }, 'L2:L5');
                     spreadsheet.addInvalidHighlight('A2:A5');
                     spreadsheet.addInvalidHighlight('B2:B5');
                     spreadsheet.addInvalidHighlight('C2:C5');

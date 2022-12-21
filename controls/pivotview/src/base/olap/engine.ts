@@ -106,14 +106,16 @@ export class OlapEngine {
     /** @hidden */
     public drilledSets: { [key: string]: HTMLElement } = {};
     /** @hidden */
+    private showSubTotalsAtTop: boolean;
+    private showSubTotalsAtBottom: boolean;
     public aggregatedValueMatrix: IMatrix2D = [];
     private localeObj: L10n;
     private measureReportItems: string[];
     private locale: string;
     private olapRowValueIndex: number;
-    private mappingFields: { [key: string]: IFieldOptions } = {};
+    private mappingFields: { [key: string]: IFieldOptions } = {};   /* eslint-disable security/detect-unsafe-regex */
     private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
-    private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
+    private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;   /* eslint-enable security/detect-unsafe-regex */
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /** @hidden */
@@ -147,9 +149,7 @@ export class OlapEngine {
     private parentObjCollection: IParentObjCollection = {};
     private colMeasures: { [key: string]: Element };
     private curDrillEndPos: number = -1;
-    /* eslint-disable */
-    private headerGrouping: { [key: number]: { UName: { [key: number]: string }, Caption: { [key: number]: string } } } = {};
-    /* eslint-enable */
+    private headerGrouping: { [key: number]: { UName: { [key: number]: string }; Caption: { [key: number]: string } } } = {};
     private lastLevel: number[] = [];
     private xmlDoc: Document;
     private request: Ajax;
@@ -190,10 +190,8 @@ export class OlapEngine {
         this.pageColStartPos = 0;
         this.enableValueSorting = false;
         this.sortObject = {};
-        this.globalize = new Internationalization();
-        /* eslint-disable @typescript-eslint/no-explicit-any */
+        this.globalize = new Internationalization();    // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.locale = (this.globalize as any).getCulture();
-        /* eslint-enable @typescript-eslint/no-explicit-any */
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         if (dataSourceSettings.url) {
@@ -237,7 +235,7 @@ export class OlapEngine {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public generateGridData(dataSourceSettings: IDataOptions, action?: string): void {
-        let refPaging: boolean = (action && action === 'navPaging' &&
+        const refPaging: boolean = (action && action === 'navPaging' &&
             this.isPaging && this.pageSettings !== undefined ? true : false);
         if (this.rows.length > 0 || this.columns.length > 0 || this.values.length > 0 || this.filters.length > 0) {
             MDXQuery.getCellSets(dataSourceSettings, this, refPaging);
@@ -247,27 +245,24 @@ export class OlapEngine {
         }
     }
     public generatePagingData(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
-        let xmlaCellSet: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axes, CellData'));
+        const xmlaCellSet: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axes, CellData'));
         // this.rowCount =
         //     (xmlaCellSet.length > 0 && [].slice.call(xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')).length > 0 ?
         //         [].slice.call(xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')).length : 0);
         // this.columnCount =
         //     (xmlaCellSet.length > 0 && [].slice.call(xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')).length > 0 ?
         //         [].slice.call(xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')).length : 0);
-        let countCells: NodeListOf<Element> = xmlaCellSet[1] ? xmlaCellSet[1].querySelectorAll('FmtValue') : null;
+        const countCells: NodeListOf<Element> = xmlaCellSet[1] ? xmlaCellSet[1].querySelectorAll('FmtValue') : null;
         if (countCells && countCells.length > 0) {
             this.columnCount = Number(countCells[0].textContent);
             this.rowCount = Number(countCells[1].textContent);
         }
-        let dataSourceSettings: IDataOptions = customArgs.dataSourceSettings;
+        const dataSourceSettings: IDataOptions = customArgs.dataSourceSettings;
         MDXQuery.getCellSets(dataSourceSettings, this, true);
     }
-    /* eslint-disable */
-    public scrollPage(direction: string, newPage?: number, prevPage?: number): void {
+    public scrollPage(): void {
         MDXQuery.getCellSets(this.dataSourceSettings, this, true);
     }
-    /* eslint-enable */
-
     public generateEngine(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
         if (customArgs.action !== 'down') {
             this.pivotValues = [];
@@ -299,7 +294,7 @@ export class OlapEngine {
             [].slice.call(this.xmlaCellSet[1].querySelectorAll('Cell')) : [];
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
-            let measureInfo: IMeasureInfo = this.getMeasureInfo();
+            const measureInfo: IMeasureInfo = this.getMeasureInfo();
             let orderedInfo: IOrderedInfo;
             orderedInfo = this.frameMeasureOrder(measureInfo, 'column', columnTuples, valCollection, columnTuples.length);
             columnTuples = orderedInfo.orderedHeaderTuples;
@@ -330,7 +325,7 @@ export class OlapEngine {
         this.performColumnSpanning();
         if (!this.isPaging && this.enableSort) {
             for (let i: number = 0; i < this.headerContent.length; i++) {
-                this.headerContent[i] = this.pivotValues[i] as IAxisSet[];
+                this.headerContent[i as number] = this.pivotValues[i as number] as IAxisSet[];
             }
         }
         this.isEngineUpdated = true;
@@ -341,6 +336,8 @@ export class OlapEngine {
     private getSubTotalsVisibility(): void {
         this.showRowSubTotals = this.dataSourceSettings.showRowSubTotals && this.dataSourceSettings.showSubTotals;
         this.showColumnSubTotals = this.dataSourceSettings.showColumnSubTotals && this.dataSourceSettings.showSubTotals;
+        this.showSubTotalsAtTop = this.showColumnSubTotals && this.dataSourceSettings.subTotalsPosition === 'Top';
+        this.showSubTotalsAtBottom = this.showRowSubTotals && this.dataSourceSettings.subTotalsPosition === 'Bottom';
         this.hideRowTotalsObject = {};
         this.hideColumnTotalsObject = {};
         let axisCount: number = 1;
@@ -348,16 +345,16 @@ export class OlapEngine {
             if (axisCount === 1) {
                 if (this.showColumnSubTotals) {
                     for (let cCnt: number = 0; cCnt < this.dataSourceSettings.columns.length; cCnt++) {
-                        if (this.dataSourceSettings.columns[cCnt].showSubTotals === false) {
-                            this.hideColumnTotalsObject[this.dataSourceSettings.columns[cCnt].name] = cCnt;
+                        if (this.dataSourceSettings.columns[cCnt as number].showSubTotals === false) {
+                            this.hideColumnTotalsObject[this.dataSourceSettings.columns[cCnt as number].name] = cCnt;
                         }
                     }
                 }
             } else {
                 if (this.showRowSubTotals) {
                     for (let rCnt: number = 0; rCnt < this.dataSourceSettings.rows.length; rCnt++) {
-                        if (this.dataSourceSettings.rows[rCnt].showSubTotals === false) {
-                            this.hideRowTotalsObject[this.dataSourceSettings.rows[rCnt].name] = rCnt;
+                        if (this.dataSourceSettings.rows[rCnt as number].showSubTotals === false) {
+                            this.hideRowTotalsObject[this.dataSourceSettings.rows[rCnt as number].name] = rCnt;
                         }
                     }
                 }
@@ -366,7 +363,6 @@ export class OlapEngine {
         } while (axisCount < 3);
     }
 
-    /* eslint-disable  */
     private frameRowHeader(tuples: Element[]): void {
         this.headerGrouping = {};
         this.lastLevel = [];
@@ -384,13 +380,13 @@ export class OlapEngine {
         let tupPos: number = 0;
         let lastAllStartPos: number;
         let lastAllCount: number;
-        let prevUNArray: string[] = [];
-        let allType: { [key: number]: number } = {};
-        let rowMembers: string[] = [];
+        const prevUNArray: string[] = [];
+        const allType: { [key: number]: number } = {};
+        const rowMembers: string[] = [];
         let availAllMember: boolean = false;
         let withoutAllStartPos: number = -1;
         let withoutAllEndPos: number = -1;
-        let minLevel: number[] = [];
+        const minLevel: number[] = [];
         let gTotals: IAxisSet[] = [{
             axis: 'row',
             colIndex: 0,
@@ -409,10 +405,10 @@ export class OlapEngine {
         }];
         let maxLevel: number[] = [];
         let measurePos: number;
-        let newTupPosition: number = (this.customArgs.drillInfo && this.customArgs.drillInfo.axis === 'row') ?
+        const newTupPosition: number = (this.customArgs.drillInfo && this.customArgs.drillInfo.axis === 'row') ?
             (this.customArgs.drillInfo.currentCell.ordinal + 1) : 0;
         while (tupPos < tuples.length) {
-            let members: NodeListOf<Element> = tuples[tupPos].querySelectorAll('Member');
+            const members: NodeListOf<Element> = tuples[tupPos as number].querySelectorAll('Member');
             maxLevel = this.frameTupCollection(
                 members, maxLevel, (tupPos + newTupPosition), this.tupRowInfo, this.showRowSubTotals,
                 this.hideRowTotalsObject, 'row');
@@ -422,50 +418,50 @@ export class OlapEngine {
         let prevTupInfo: ITupInfo;
         let tuplesLength: number = tuples.length;
         if (this.customArgs.action === 'down') {
-            let ordinal: number = this.customArgs.drillInfo.currentCell.ordinal + 1;
+            const ordinal: number = this.customArgs.drillInfo.currentCell.ordinal + 1;
             tupPos = ordinal;
             tuplesLength += ordinal;
             lastAllCount = this.tupRowInfo[ordinal - 1].allCount;
             lastAllStartPos = this.tupRowInfo[ordinal - 1].allStartPos;
             prevTupInfo = this.tupRowInfo[ordinal - 1];
         }
-        let startTupPos: number = tupPos;
-        let pagingAllowFlag: boolean = true;
+        const startTupPos: number = tupPos;
+        const pagingAllowFlag: boolean = true;
         let lastMesPos: number = 0;
         let isGrandTotalTop: boolean = false;
+        const subTotals: IAxisSet[] = [];
         while (tupPos < tuplesLength && pagingAllowFlag) {
-            let members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
+            const members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
                 (tupPos - (this.customArgs.drillInfo.currentCell.ordinal + 1)) : tupPos].querySelectorAll('Member');
             let memPos: number = 0;
             let prevParent: IAxisSet;
-            let allCount: number = this.tupRowInfo[tupPos].allCount;
-            let allStartPos: number = this.tupRowInfo[tupPos].allStartPos;
-            let measure: Element = this.tupRowInfo[tupPos].measure;
-            let typeColl: string[] = this.tupRowInfo[tupPos].typeCollection;
-            let drillInfo: IDrillInfo[] = this.tupRowInfo[tupPos].drillInfo;
-            let drillStartPos: number = this.tupRowInfo[tupPos].drillStartPos;
-            let startDrillUniquename: string = this.tupRowInfo[tupPos].startDrillUniquename;
-            let drillEndPos: number = this.tupRowInfo[tupPos].drillEndPos;
-            let levelColl: number[] = this.tupRowInfo[tupPos].levelCollection;
-
+            const allCount: number = this.tupRowInfo[tupPos as number].allCount;
+            const allStartPos: number = this.tupRowInfo[tupPos as number].allStartPos;
+            const measure: Element = this.tupRowInfo[tupPos as number].measure;
+            const typeColl: string[] = this.tupRowInfo[tupPos as number].typeCollection;
+            // let drillInfo: IDrillInfo[] = this.tupRowInfo[tupPos].drillInfo;
+            const drillStartPos: number = this.tupRowInfo[tupPos as number].drillStartPos;
+            const startDrillUniquename: string = this.tupRowInfo[tupPos as number].startDrillUniquename;
+            // let drillEndPos: number = this.tupRowInfo[tupPos].drillEndPos;
+            // let levelColl: number[] = this.tupRowInfo[tupPos].levelCollection;
             if (tupPos === 0 || tupPos === startTupPos) {
-                let firstTupMembers: NodeListOf<Element> = this.customArgs.action === 'down' ? this.tupRowInfo[0].members : members;
+                const firstTupMembers: NodeListOf<Element> = this.customArgs.action === 'down' ? this.tupRowInfo[0].members : members;
                 while (memPos < firstTupMembers.length) {
-                    if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
-                        Number(firstTupMembers[memPos].querySelector('LNum').textContent) === 0) {
-                        minLevel[memPos] = 0;
+                    if (firstTupMembers[memPos as number].querySelector('MEMBER_TYPE').textContent === '1' &&
+                        Number(firstTupMembers[memPos as number].querySelector('LNum').textContent) === 0) {
+                        minLevel[memPos as number] = 0;
                     } else {
-                        minLevel[memPos] = Number(firstTupMembers[memPos].querySelector('LNum').textContent);
+                        minLevel[memPos as number] = Number(firstTupMembers[memPos as number].querySelector('LNum').textContent);
                     }
                     // if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
                     //   (this.isPaging || Number(firstTupMembers[memPos].querySelector('LNum').textContent) === 0)) {
-                    if (firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '1') {
-                        allType[memPos] = 0;
+                    if (firstTupMembers[memPos as number].querySelector('MEMBER_TYPE').textContent === '1') {
+                        allType[memPos as number] = 0;
                         withoutAllStartPos = withoutAllStartPos === -1 ? memPos : withoutAllStartPos;
                         withoutAllEndPos = memPos;
                     } else {
-                        allType[memPos] = 1;
-                        availAllMember = firstTupMembers[memPos].querySelector('MEMBER_TYPE').textContent === '3' ? availAllMember : true;
+                        allType[memPos as number] = 1;
+                        availAllMember = firstTupMembers[memPos as number].querySelector('MEMBER_TYPE').textContent === '3' ? availAllMember : true;
                     }
                     memPos++;
                 }
@@ -478,61 +474,92 @@ export class OlapEngine {
             }
             if ((tupPos === 0 && this.isPaging) ? gTotals.length === 0 :
                 (!availAllMember || allCount === lastAllCount || allStartPos !== lastAllStartPos || (members.length === 1 && measure))) {
-                let attrDrill: boolean = this.checkAttributeDrill(this.tupRowInfo[tupPos].drillInfo, 'rows');
+                const attrDrill: boolean = this.checkAttributeDrill(this.tupRowInfo[tupPos as number].drillInfo, 'rows');
                 let drillAllow: boolean = drillStartPos > -1 ? (allCount > 0 ? (attrDrill || allStartPos > drillStartPos) : true) : true;
                 drillAllow = (prevTupInfo && drillAllow && drillStartPos > -1) ?
                     (prevTupInfo.startDrillUniquename !== startDrillUniquename ? true :
                         ((withoutAllEndPos > prevTupInfo.measurePosition ? false :
-                            prevTupInfo.measureName !== this.tupRowInfo[tupPos].measureName) &&
-                            (allStartPos === (drillStartPos + 1) || this.tupRowInfo[tupPos].measurePosition === (drillStartPos + 1))))
+                            prevTupInfo.measureName !== this.tupRowInfo[tupPos as number].measureName) &&
+                            (allStartPos === (drillStartPos + 1) ||
+                            this.tupRowInfo[tupPos as number].measurePosition === (drillStartPos + 1))))
                     : drillAllow;
-                let withoutAllAllow: boolean = (withoutAllStartPos > -1 && allCount > 0) ? (attrDrill || allStartPos > withoutAllEndPos) : true;
-                isGrandTotalTop = this.dataSourceSettings.grandTotalsPosition === 'Top' && this.olapRowValueIndex === 0 && this.olapValueAxis === 'row'
-                    && this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals && (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true);
+                const withoutAllAllow: boolean = (withoutAllStartPos > -1 && allCount > 0) ?
+                    (attrDrill || allStartPos > withoutAllEndPos) : true;
+                isGrandTotalTop = this.dataSourceSettings.grandTotalsPosition === 'Top' && this.olapRowValueIndex === 0 &&
+                    this.olapValueAxis === 'row'
+                    && this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals &&
+                    (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true);
                 if (isGrandTotalTop && gTotals.length === 1) {
                     gTotals = this.frameGrandTotalValues(tuples, gTotals, typeColl, measurePos);
                 }
                 if (members.length === allCount + (measure ? 1 : 0) && measure && !isGrandTotalTop) {
-                    let levelName: string = 'Grand Total.' + members[measurePos].querySelector('Caption').textContent;
-                    let formattedText: string = (typeColl[measurePos] === '3' && this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)] &&
-                        this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption) ? this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption :
-                        members[measurePos].querySelector('Caption').textContent;
-                    gTotals = this.frameGrandTotalAxisSet(gTotals, this.getUniqueName(members[measurePos].querySelector('UName').textContent), formattedText, position, tupPos, Number(typeColl[measurePos]),
-                        members[measurePos].querySelector('PARENT_UNIQUE_NAME') ? members[measurePos].querySelector('PARENT_UNIQUE_NAME').textContent : undefined, members[measurePos].querySelector('LName').textContent,
-                        members[measurePos].getAttribute('Hierarchy'), { levelName: levelName, axis: members[measurePos].getAttribute('Hierarchy') });
-                    gTotals[gTotals.length - 1].valueSort['Grand Total.' + members[measurePos].querySelector('Caption').textContent] = 1;
+                    const levelName: string = 'Grand Total.' + members[measurePos as number].querySelector('Caption').textContent;
+                    const formattedText: string = (typeColl[measurePos as number] === '3' &&
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)] &&
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)].caption) ?
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)].caption :
+                        members[measurePos as number].querySelector('Caption').textContent;
+                    gTotals = this.frameGrandTotalAxisSet(
+                        gTotals, this.getUniqueName(members[measurePos as number].querySelector('UName').textContent), formattedText,
+                        position, tupPos, Number(typeColl[measurePos as number]), members[measurePos as number].querySelector('PARENT_UNIQUE_NAME') ?
+                            members[measurePos as number].querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                        members[measurePos as number].querySelector('LName').textContent,
+                        members[measurePos as number].getAttribute('Hierarchy'), {
+                            levelName: levelName, axis: members[measurePos as number].getAttribute('Hierarchy')
+                        });
+                    gTotals[gTotals.length - 1].valueSort['Grand Total.' +
+                        members[measurePos as number].querySelector('Caption').textContent] = 1;
                 } else if (!(allStartPos === 0 || (measurePos === 0 && allStartPos === 1)) && drillAllow && withoutAllAllow) {
-                    if (this.dataSourceSettings.grandTotalsPosition === 'Top' && isGrandTotalAdd && this.dataSourceSettings.showGrandTotals && (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true)) {
+                    if (this.dataSourceSettings.grandTotalsPosition === 'Top' && isGrandTotalAdd && this.dataSourceSettings.showGrandTotals &&
+                        (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true)) {
                         this.insertRowGrandTotal(gTotals, valueContent, pivotValues, tuples, position);
                         position = this.pivotValues.length;
                         isGrandTotalAdd = false;
                     }
-                    prevTupInfo = this.tupRowInfo[tupPos];
+                    prevTupInfo = this.tupRowInfo[tupPos as number];
                     let lastPos: number = position;
                     let lastMemPos: number = memPos;
                     prevParent = {};
                     let withoutAllDrilled: boolean = false;
                     while (memPos < members.length && pagingAllowFlag) {
-                        let member: Element = members[memPos];
-                        if (member.querySelector('UName').textContent !== prevUNArray[memPos] && typeColl[memPos] !== '2'
-                            && ((Object.keys(prevParent).length > 0 ? (prevParent.isDrilled && !this.fieldList[prevParent.hierarchy].isHierarchy) : withoutAllDrilled) ?
-                                (typeColl[memPos] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
-                            let lvl: number = Number(member.querySelector('LNum').textContent) -
-                                ((allType[memPos] && typeColl[memPos] !== '3') ? 1 : minLevel[memPos]);
-                            let isNamedSet: boolean = this.namedSetsPosition['row'][memPos] ? true : false;
-                            let uniqueName: string = this.getUniqueName(member.querySelector('UName').textContent);
-                            let depth: number = this.getDepth(this.tupRowInfo[tupPos], uniqueName, Number(typeColl[memPos]));
-                            if (!(this.isPaging && pivotValues[lastMesPos][0] && this.fieldList[(pivotValues[lastMesPos][0] as IAxisSet).hierarchy] && this.fieldList[(pivotValues[lastMesPos][0] as IAxisSet).hierarchy].isHierarchy &&
-                                (pivotValues[lastMesPos][0] as IAxisSet).hasChild && !(pivotValues[lastMesPos][0] as IAxisSet).isDrilled && !this.rows[memPos].isNamedSet && (this.rows[memPos].name.indexOf('[Measures]') === 0 || (this.fieldList[member.getAttribute('Hierarchy')] && (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy || this.fieldList[member.getAttribute('Hierarchy')].hasAllMember))) &&
-                                (pivotValues[lastMesPos][0] as IAxisSet).depth < depth)) {
-                                (pivotValues[position] as IAxisSet[]) = [{
+                        const member: Element = members[memPos as number];
+                        if (member.querySelector('UName').textContent !== prevUNArray[memPos as number] && typeColl[memPos as number] !== '2'
+                            && ((Object.keys(prevParent).length > 0 ? (prevParent.isDrilled &&
+                                !this.fieldList[prevParent.hierarchy].isHierarchy) : withoutAllDrilled) ?
+                                (typeColl[memPos as number] === '3' && (allType[memPos - 1] && allType[memPos + 1] !== 0)) : true)) {
+                            const lvl: number = Number(member.querySelector('LNum').textContent) -
+                                ((allType[memPos as number] && typeColl[memPos as number] !== '3') ? 1 : minLevel[memPos as number]);
+                            const isNamedSet: boolean = this.namedSetsPosition['row'][memPos as number] ? true : false;
+                            const uniqueName: string = this.getUniqueName(member.querySelector('UName').textContent);
+                            const depth: number =
+                                this.getDepth(this.tupRowInfo[tupPos as number], uniqueName, Number(typeColl[memPos as number]));
+                            const levelName: string = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos as number]);
+                            if (this.showSubTotalsAtBottom && position > this.rowStartPos) {
+                                lastPos = position = this.insertRowSubTotal(pivotValues, valueContent, subTotals, position, lvl, levelName);
+                            }
+                            if (!(this.isPaging && pivotValues[lastMesPos as number][0] &&
+                                this.fieldList[(pivotValues[lastMesPos as number][0] as IAxisSet).hierarchy] &&
+                                this.fieldList[(pivotValues[lastMesPos as number][0] as IAxisSet).hierarchy].isHierarchy &&
+                                (pivotValues[lastMesPos as number][0] as IAxisSet).hasChild &&
+                                !(pivotValues[lastMesPos as number][0] as IAxisSet).isDrilled &&
+                                !this.rows[memPos as number].isNamedSet && (this.rows[memPos as number].name.indexOf('[Measures]') === 0 ||
+                                    (this.fieldList[member.getAttribute('Hierarchy')] &&
+                                        (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy ||
+                                            this.fieldList[member.getAttribute('Hierarchy')].hasAllMember))) &&
+                                (pivotValues[lastMesPos as number][0] as IAxisSet).depth < depth)) {
+                                (pivotValues[position as number] as IAxisSet[]) = [{
                                     axis: 'row',
                                     actualText: uniqueName,
                                     colIndex: 0,
-                                    formattedText: (typeColl[memPos] === '3' && this.dataFields[uniqueName] &&
-                                        this.dataFields[uniqueName].caption) ? this.dataFields[uniqueName].caption :
+                                    formattedText: (typeColl[memPos as number] === '3' && this.dataFields[uniqueName as string] &&
+                                        this.dataFields[uniqueName as string].caption) ? this.dataFields[uniqueName as string].caption :
                                         member.querySelector('Caption').textContent,
-                                    hasChild: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.rows.length - 1 && !this.rows[memPos + 1].isNamedSet && this.rows[memPos + 1].name.indexOf('[Measures]') < 0 && this.fieldList[this.rows[memPos + 1].name] && this.fieldList[this.rows[memPos + 1].name].hasAllMember) ? true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
+                                    hasChild: (this.fieldList[member.getAttribute('Hierarchy')] &&
+                                        this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.rows.length - 1 &&
+                                        !this.rows[memPos + 1].isNamedSet && this.rows[memPos + 1].name.indexOf('[Measures]') < 0 &&
+                                        this.fieldList[this.rows[memPos + 1].name] &&
+                                        this.fieldList[this.rows[memPos + 1].name].hasAllMember) ? true :
+                                        Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
                                     level: lvl,
                                     depth: depth,
                                     rowIndex: position,
@@ -541,8 +568,12 @@ export class OlapEngine {
                                     type: 'header',
                                     colSpan: 1,
                                     rowSpan: 1,
-                                    memberType: Number(typeColl[memPos]),
-                                    isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && !this.isAttributeDrill(member.getAttribute('Hierarchy'), this.tupRowInfo[tupPos].drillInfo, 'rows')) ? true : this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled,
+                                    memberType: Number(typeColl[memPos as number]),
+                                    isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] &&
+                                        this.fieldList[member.getAttribute('Hierarchy')].isHierarchy &&
+                                        !this.isAttributeDrill(member.getAttribute('Hierarchy'),
+                                                               this.tupRowInfo[tupPos as number].drillInfo, 'rows')) ? true :
+                                        this.tupRowInfo[tupPos as number].drillInfo[memPos as number].isDrilled,
                                     parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
                                         member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
                                     levelUniqueName: member.querySelector('LName').textContent,
@@ -550,36 +581,38 @@ export class OlapEngine {
                                     isNamedSet: isNamedSet,
                                     valueSort: { levelName: '', axis: member.getAttribute('Hierarchy') }
                                 }];
-                                prevParent = typeColl[memPos] !== '3' ? (pivotValues[position] as IAxisSet[])[0] : prevParent;
+                                prevParent = typeColl[memPos as number] !== '3' ? (pivotValues[position as number] as IAxisSet[])[0] : prevParent;
                                 if (!prevParent) {
                                     rowMembers.push(member.querySelector('Caption').textContent);
                                 }
-                                let levelName: string = this.getCaptionCollectionWithMeasure(this.tupRowInfo[tupPos]);
-                                (pivotValues[position] as IAxisSet[])[0].valueSort.levelName = levelName;
-                                (pivotValues[position] as IAxisSet[])[0].valueSort[levelName] = 1;
+                                (pivotValues[position as number] as IAxisSet[])[0].valueSort.levelName = levelName;
+                                (pivotValues[position as number] as IAxisSet[])[0].valueSort[levelName as string] = 1;
                                 valueContent[position - this.rowStartPos] = {} as IAxisSet[];
-                                valueContent[position - this.rowStartPos][0] = pivotValues[position][0] as IAxisSet;
+                                valueContent[position - this.rowStartPos][0] = pivotValues[position as number][0] as IAxisSet;
                                 if (measure && measurePos > memPos) {
-                                    prevUNArray[measurePos] = '';
+                                    prevUNArray[measurePos as number] = '';
                                 }
                                 for (let pos: number = memPos + 1; pos < members.length; pos++) {
-                                    prevUNArray[pos] = '';
+                                    prevUNArray[pos as number] = '';
                                 }
-                                prevUNArray[memPos] = member.querySelector('UName').textContent;
-                                lastMesPos = Number(typeColl[memPos]) !== 3 ? position : lastMesPos;
+                                prevUNArray[memPos as number] = member.querySelector('UName').textContent;
+                                lastMesPos = Number(typeColl[memPos as number]) !== 3 ? position : lastMesPos;
                                 position++;
                                 lastMemPos = memPos;
                             }
-                        } else if (typeColl[memPos] === '2') {
+                        } else if (typeColl[memPos as number] === '2') {
                             lastMemPos = memPos;
                         } else {
-                            if (this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled && allType[memPos] === 0) {
+                            if (this.tupRowInfo[tupPos as number].drillInfo[memPos as number].isDrilled &&
+                                allType[memPos as number] === 0) {
                                 withoutAllDrilled = true;
                             }
                         }
-                        if (this.tupRowInfo[tupPos].drillInfo[memPos].isDrilled && this.tupRowInfo[tupPos].showTotals) {
-                            this.tupRowInfo[tupPos].showTotals = !this.showRowSubTotals ? false :
-                                this.hideRowTotalsObject[this.tupRowInfo[tupPos].drillInfo[memPos].hierarchy] === undefined;
+                        if (this.tupRowInfo[tupPos as number].drillInfo[memPos as number].isDrilled &&
+                            this.tupRowInfo[tupPos as number].showTotals) {
+                            this.tupRowInfo[tupPos as number].showTotals = !this.showRowSubTotals ? false :
+                                this.hideRowTotalsObject[this.tupRowInfo[tupPos as number].drillInfo[memPos as number].hierarchy] ===
+                                 undefined;
                         }
                         memPos++;
                     }
@@ -595,11 +628,78 @@ export class OlapEngine {
             }
             tupPos++;
         }
-        if (!(this.dataSourceSettings.grandTotalsPosition === 'Top') || (this.olapValueAxis === 'row' && this.dataSourceSettings.rows.length === 1 && this.dataSourceSettings.grandTotalsPosition === 'Top') || this.dataSourceSettings.rows.length === 0) {
+        if (this.showSubTotalsAtBottom && subTotals.length > 0) {
+            subTotals.reverse();
+            (subTotals as IAxisSet[]).forEach((axis: IAxisSet) => {
+                pivotValues[position as number] = [axis as IAxisSet];
+                valueContent[position - this.rowStartPos] = {} as IAxisSet[];
+                valueContent[position - this.rowStartPos][0] = pivotValues[position as number][0] as IAxisSet;
+                position++;
+            });
+        }
+        if (!(this.dataSourceSettings.grandTotalsPosition === 'Top') || (this.olapValueAxis === 'row' &&
+            this.dataSourceSettings.rows.length === 1 && this.dataSourceSettings.grandTotalsPosition === 'Top') ||
+            this.dataSourceSettings.rows.length === 0) {
             this.insertRowGrandTotal(gTotals, valueContent, pivotValues, tuples, position);
         }
     }
-    private insertRowGrandTotal(gTotals: IAxisSet[], valueContent: IGridValues, pivotValues: IPivotValues, tuples: Element[], position: number): IAxisSet[] {
+
+    private insertRowSubTotal(
+        pivotValues: IPivotValues, valueContent: IGridValues, subTotals: IAxisSet[], position: number, lvl: number,
+        levelName: string): number {
+        const prevRowParent: IAxisSet = PivotUtil.frameHeaderWithKeys(pivotValues[position - 1][0] as IAxisSet);
+        if (prevRowParent.level < lvl && prevRowParent.type !== 'grand sum' && (prevRowParent.isDrilled ||
+            prevRowParent.memberType === 3)) {
+            if (prevRowParent.memberType === 3) {
+                const valueCells: IAxisSet[] = [];
+                let index: number = 1;
+                while ((pivotValues[position - index][0] as IAxisSet).memberType === 3) {
+                    valueCells[valueCells.length] = (pivotValues[position - index][0] as IAxisSet);
+                    index++;
+                }
+                if ((pivotValues[position - index][0] as IAxisSet).isDrilled && valueCells.length !== 0) {
+                    for (let i: number = 0, axislength: number = valueCells.length; i < axislength; i++) {
+                        valueCells[i as number].formattedText =
+                            (pivotValues[position - index][0] as IAxisSet).formattedText + ' ' + valueCells[i as number].formattedText;
+                        valueCells[i as number].isSum = true;
+                        valueCells[i as number].parentUniqueName = (pivotValues[position - index][0] as IAxisSet).levelUniqueName;
+                        subTotals[subTotals.length] = valueCells[i as number] as IAxisSet;
+                    }
+                    index--;
+                    position -= index;
+                }
+            } else {
+                prevRowParent.hasChild = false;
+                prevRowParent.isDrilled = false;
+                prevRowParent.isSum = true;
+                prevRowParent.formattedText = prevRowParent.formattedText + ' Total';
+                subTotals[Object.keys(subTotals).length] = prevRowParent;
+            }
+        }
+        if (subTotals.length > 0) {
+            let j: number = subTotals.length - 1;
+            let subTotalLevel: number = (subTotals[j as number].valueSort.levelName as string).split('.').length;
+            const nextLevels: number = levelName.split('.').length;
+            while (subTotalLevel >= nextLevels) {
+                pivotValues[position as number] = [subTotals[j as number]];
+                valueContent[position - this.rowStartPos] = {} as IAxisSet[];
+                valueContent[position - this.rowStartPos][0] = pivotValues[position as number][0] as IAxisSet;
+                position++;
+                subTotals.splice(subTotals.length - 1, 1);
+                if (Object.keys(subTotals).length > 0) {
+                    j--;
+                    subTotalLevel = (subTotals[j as number].valueSort.levelName as string).split('.').length;
+                } else {
+                    break;
+                }
+            }
+        }
+        return position;
+    }
+
+    private insertRowGrandTotal(
+        gTotals: IAxisSet[], valueContent: IGridValues, pivotValues: IPivotValues, tuples: Element[],
+        position: number): IAxisSet[] {
         if (gTotals.length > 1 && gTotals[0].memberType !== 3) {
             gTotals[0].ordinal = -1;
         }
@@ -613,10 +713,10 @@ export class OlapEngine {
         if (this.customArgs.action !== 'down') {
             if (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) {
                 for (let totPos: number = 0; totPos < gTotals.length; totPos++) {
-                    gTotals[totPos].rowIndex = position;
-                    (pivotValues[position] as IAxisSet[]) = [gTotals[totPos]];
+                    gTotals[totPos as number].rowIndex = position;
+                    (pivotValues[position as number] as IAxisSet[]) = [gTotals[totPos as number]];
                     valueContent[position - this.rowStartPos] = {} as IAxisSet[];
-                    valueContent[position - this.rowStartPos][0] = pivotValues[position][0] as IAxisSet;
+                    valueContent[position - this.rowStartPos][0] = pivotValues[position as number][0] as IAxisSet;
                     position++;
                 }
             }
@@ -629,7 +729,7 @@ export class OlapEngine {
     private getValueAxis(valueAxis: string, valueIndex: number): string {
         this.olapValueAxis = valueAxis; this.olapRowValueIndex = valueIndex;
         for (let i: number = 0; i < this.dataSourceSettings.rows.length; i++) {
-            if (this.dataSourceSettings.rows[i].name === '[Measures]') {
+            if (this.dataSourceSettings.rows[i as number].name === '[Measures]') {
                 this.olapValueAxis = 'row';
                 this.olapRowValueIndex = i;
                 break;
@@ -637,8 +737,10 @@ export class OlapEngine {
         }
         return this.olapValueAxis;
     }
-    private frameGrandTotalAxisSet(gTotals: IAxisSet[], actualText: string | number, formattedText: string,
-        rowIndex: number, ordinal: number, memberType: number, parentUniqueName: string, levelUniqueName: string, hierarchy: string, valueSort: IDataSet): IAxisSet[] {
+    private frameGrandTotalAxisSet(
+        gTotals: IAxisSet[], actualText: string | number, formattedText: string,
+        rowIndex: number, ordinal: number, memberType: number, parentUniqueName: string, levelUniqueName: string,
+        hierarchy: string, valueSort: IDataSet): IAxisSet[] {
         gTotals.push({
             axis: 'row',
             actualText: actualText,
@@ -661,10 +763,10 @@ export class OlapEngine {
         return gTotals;
     }
     private getDepth(tupInfo: ITupInfo, uniqueName: string, memberType: number): number {
-        let memberPosition: number = tupInfo.uNameCollection.indexOf(uniqueName);
-        let cropUName: string = tupInfo.uNameCollection.substring(0, memberPosition) +
+        const memberPosition: number = tupInfo.uNameCollection.indexOf(uniqueName);
+        const cropUName: string = tupInfo.uNameCollection.substring(0, memberPosition) +
             (memberType === 3 ? '' : uniqueName);
-        let fieldSep: string[] = cropUName.split('::[').map((item: string) => {
+        const fieldSep: string[] = cropUName.split('::[').map((item: string) => {
             return item[0] === '[' ? item : ('[' + item);
         });
         if (memberType === 3 && this.rowMeasurePos === fieldSep.length) {
@@ -672,16 +774,16 @@ export class OlapEngine {
         }
         let nxtIndextCount: number = -1;
         for (let fPos: number = 0; fPos < fieldSep.length; fPos++) {
-            let fieldMembers: string = fieldSep[fPos];
-            let membersCount: number = fieldMembers.split('~~').length;
+            const fieldMembers: string = fieldSep[fPos as number];
+            const membersCount: number = fieldMembers.split('~~').length;
             nxtIndextCount += membersCount;
         }
         return nxtIndextCount;
     }
-    private checkAttributeDrill(drillInfo: IDrillInfo[], axis: string) {
+    private checkAttributeDrill(drillInfo: IDrillInfo[], axis: string): boolean {
         let isDrill: boolean = false;
         for (let i: number = 0; i < drillInfo.length; i++) {
-            isDrill = this.isAttributeDrill(drillInfo[i].hierarchy, drillInfo, axis);
+            isDrill = this.isAttributeDrill(drillInfo[i as number].hierarchy, drillInfo, axis);
             if (isDrill) {
                 break;
             }
@@ -697,31 +799,30 @@ export class OlapEngine {
         let measure: Element;
         let measureName: string;
         let measurePosition: number;
-        let typeColl: string[] = [];
-        let levelColl: number[] = [];
-        let drillState: IDrillInfo[] = [];
+        const typeColl: string[] = [];
+        const levelColl: number[] = [];
+        const drillState: IDrillInfo[] = [];
         let uNameCollection: string = '';
         let captionCollection: string = '';
         let showTotals: boolean = true;
         let hideFieldPos: number = -1;
         while (memPos < members.length) {
-            let member: Element = members[memPos];
-            let memberlevel: number = Number(member.querySelector('LNum').textContent);
-            let memberUName: string = member.querySelector('UName').textContent;
-            /* eslint-disable @typescript-eslint/no-explicit-any */
+            const member: Element = members[memPos as number];
+            const memberlevel: number = Number(member.querySelector('LNum').textContent);
+            const memberUName: string = member.querySelector('UName').textContent;  /* eslint-disable @typescript-eslint/no-explicit-any */
             if (Number(member.querySelector('MEMBER_TYPE').textContent) > 3) {
                 member.querySelector('MEMBER_TYPE').textContent = (memberUName as any).indexOf('[Measures]') === 0 ? '3' : '1';
             }
-            let memberType: string = (memberUName as any).indexOf('[Measures]') === 0 ? '3' :
+            const memberType: string = (memberUName as any).indexOf('[Measures]') === 0 ? '3' :
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            let memberCaption: string = member.querySelector('Caption').textContent;
-            if (this.fieldList[memberCaption] && this.fieldList[memberCaption].type === 'CalculatedField') {
-                memberCaption = this.fieldList[memberCaption].caption;
+            let memberCaption: string = member.querySelector('Caption').textContent;    /* eslint-enable @typescript-eslint/no-explicit-any */
+            if (this.fieldList[memberCaption as string] && this.fieldList[memberCaption as string].type === 'CalculatedField') {
+                memberCaption = this.fieldList[memberCaption as string].caption;
                 member.querySelector('Caption').textContent = memberCaption;
             }
-            let hierarchy: string = member.getAttribute('Hierarchy');
-            let parentUName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
+            const hierarchy: string = member.getAttribute('Hierarchy');
+            const parentUName: string = member.querySelector('PARENT_UNIQUE_NAME') ?
+                member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
             if (memberType === '2') {
                 if (!this.isPaging) {
                     allCount++;
@@ -732,70 +833,71 @@ export class OlapEngine {
                 measureName = memberUName;
                 measurePosition = memPos;
                 if (axis === 'column') {
-                    this.colMeasures[memberUName] = member;
+                    this.colMeasures[memberUName as string] = member;
                     this.colMeasurePos = memPos;
                 } else {
                     this.rowMeasurePos = memPos;
                 }
             } else {
-                hideFieldPos = hideTotalsObject[hierarchy];
+                hideFieldPos = hideTotalsObject[hierarchy as string];
             }
             if (memberType !== '2') {
-                if (this.headerGrouping[memPos]) {
-                    if (memberlevel > this.lastLevel[memPos]) {
-                        this.lastLevel[memPos] = memberlevel;
-                    } else if (memberlevel < this.lastLevel[memPos]) {
-                        let levelPos: number = this.lastLevel[memPos];
+                if (this.headerGrouping[memPos as number]) {
+                    if (memberlevel > this.lastLevel[memPos as number]) {
+                        this.lastLevel[memPos as number] = memberlevel;
+                    } else if (memberlevel < this.lastLevel[memPos as number]) {
+                        let levelPos: number = this.lastLevel[memPos as number];
                         while (levelPos >= memberlevel) {
-                            delete this.headerGrouping[memPos].UName[levelPos];
-                            delete this.headerGrouping[memPos].Caption[levelPos];
+                            delete this.headerGrouping[memPos as number].UName[levelPos as number];
+                            delete this.headerGrouping[memPos as number].Caption[levelPos as number];
                             levelPos--;
                         }
-                        this.lastLevel[memPos] = memberlevel;
+                        this.lastLevel[memPos as number] = memberlevel;
                     }
-                    this.headerGrouping[memPos].UName[memberlevel] = memberUName;
-                    this.headerGrouping[memPos].Caption[memberlevel] = memberCaption;
+                    this.headerGrouping[memPos as number].UName[memberlevel as number] = memberUName;
+                    this.headerGrouping[memPos as number].Caption[memberlevel as number] = memberCaption;
                 } else {
-                    this.lastLevel[memPos] = memberlevel;
-                    this.headerGrouping[memPos] = { UName: { [memberlevel]: memberUName }, Caption: { [memberlevel]: memberCaption } };
+                    this.lastLevel[memPos as number] = memberlevel;
+                    this.headerGrouping[memPos as number] = {
+                        UName: { [memberlevel as number]: memberUName },
+                        Caption: { [memberlevel as number]: memberCaption }
+                    };
                 }
                 if (this.isPaging) {
                     let currUName: string = parentUName;
-                    while (this.drilledSets[currUName]) {
-                        let currCaption: string = this.drilledSets[currUName].querySelector('Caption').textContent;
-                        let currLevel: number = Number(this.drilledSets[currUName].querySelector('LNum').textContent);
-                        this.headerGrouping[memPos].UName[currLevel] = currUName;
-                        this.headerGrouping[memPos].Caption[currLevel] = currCaption;
-                        currUName = this.drilledSets[currUName].querySelector('PARENT_UNIQUE_NAME') === null ? '' :
-                            this.drilledSets[currUName].querySelector('PARENT_UNIQUE_NAME').textContent;
+                    while (this.drilledSets[currUName as string]) {
+                        const currCaption: string = this.drilledSets[currUName as string].querySelector('Caption').textContent;
+                        const currLevel: number = Number(this.drilledSets[currUName as string].querySelector('LNum').textContent);
+                        this.headerGrouping[memPos as number].UName[currLevel as number] = currUName;
+                        this.headerGrouping[memPos as number].Caption[currLevel as number] = currCaption;
+                        currUName = this.drilledSets[currUName as string].querySelector('PARENT_UNIQUE_NAME') === null ? '' :
+                            this.drilledSets[currUName as string].querySelector('PARENT_UNIQUE_NAME').textContent;
                     }
-                }
-                /* eslint-disable @typescript-eslint/no-explicit-any */
+                }   /* eslint-disable @typescript-eslint/no-explicit-any */
                 let uNames: string = '';
-                let uNamesKeys: any = Object.keys(this.headerGrouping[memPos].UName);
+                const uNamesKeys: any = Object.keys(this.headerGrouping[memPos as number].UName);
                 for (let i: number = 0; i < uNamesKeys.length; i++) {
-                    let j: any = uNamesKeys[i];
+                    const j: any = uNamesKeys[i as number];
                     if (i === 0) {
-                        uNames = this.headerGrouping[memPos].UName[j];
+                        uNames = this.headerGrouping[memPos as number].UName[j as number];
                     }
                     else {
-                        uNames = uNames + '~~' + this.headerGrouping[memPos].UName[j];
+                        uNames = uNames + '~~' + this.headerGrouping[memPos as number].UName[j as number];
                     }
                 }
                 uNameCollection = uNameCollection === '' ? uNames :
                     (uNameCollection + '::' + uNames);
                 let captions: string = '';
-                let captionsKeys: any = Object.keys(this.headerGrouping[memPos].Caption);
+                const captionsKeys: any = Object.keys(this.headerGrouping[memPos as number].Caption);
                 for (let i: number = 0; i < captionsKeys.length; i++) {
-                    let j: any = captionsKeys[i];
+                    const j: any = captionsKeys[i as number];   /* eslint-enable @typescript-eslint/no-explicit-any */
                     if (i === 0) {
-                        captions = this.headerGrouping[memPos].Caption[j]
+                        captions = this.headerGrouping[memPos as number].Caption[j as number];
                     }
                     else {
-                        captions = captions + '~~' + this.headerGrouping[memPos].Caption[j]
+                        captions = captions + '~~' + this.headerGrouping[memPos as number].Caption[j as number];
                     }
                 }
-                /* eslint-enable @typescript-eslint/no-explicit-any */
                 if (memPos !== measurePosition) {
                     captionCollection = captionCollection === '' ? captions :
                         (captionCollection + '::' + captions);
@@ -803,17 +905,17 @@ export class OlapEngine {
             }
             typeColl.push(memberType);
             levelColl.push(memberlevel);
-            if (isNullOrUndefined(maxLevel[memPos]) || maxLevel[memPos] < memberlevel) {
-                maxLevel[memPos] = memberlevel;
+            if (isNullOrUndefined(maxLevel[memPos as number]) || maxLevel[memPos as number] < memberlevel) {
+                maxLevel[memPos as number] = memberlevel;
             }
             drillState.push({ level: memberlevel, uName: memberUName, hierarchy: hierarchy, isDrilled: false });
-            if (tupInfo[tupPos - 1] && tupInfo[tupPos - 1].typeCollection[memPos] === '1' &&
-                drillState[memPos].level > tupInfo[tupPos - 1].drillInfo[memPos].level) {
-                let uCollection: string[] = uNameCollection.split(/~~|::\[/).map((item: string) => {
+            if (tupInfo[tupPos - 1] && tupInfo[tupPos - 1].typeCollection[memPos as number] === '1' &&
+                drillState[memPos as number].level > tupInfo[tupPos - 1].drillInfo[memPos as number].level) {
+                const uCollection: string[] = uNameCollection.split(/~~|::\[/).map((item: string) => {
                     return item[0] === '[' ? item : ('[' + item);
                 });
                 uCollection.pop();
-                let parentLevel: string = uCollection.join('~~');
+                const parentLevel: string = uCollection.join('~~');
                 this.setDrillInfo(parentUName, parentLevel, memPos, tupPos, tupInfo);
             }
             memPos++;
@@ -821,7 +923,7 @@ export class OlapEngine {
         if (hideFieldPos > -1) {
             showTotals = typeColl[hideFieldPos + 1] !== '2';
         }
-        tupInfo[tupPos] = {
+        tupInfo[tupPos as number] = {
             allCount: allCount,
             allStartPos: allStartPos,
             measure: measure,
@@ -843,28 +945,33 @@ export class OlapEngine {
     private getCaptionCollectionWithMeasure(tuple: ITupInfo): string {
         let captionColection: string = tuple.captionCollection;
         if (tuple.measure) {
-            let measureName: string = tuple.measure.querySelector('Caption').textContent;
-            let measurePosition: number = tuple.uNameCollection.split(/[~~,::]+/g).indexOf(tuple.measureName);
-            let captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
+            const measureName: string = tuple.measure.querySelector('Caption').textContent;
+            const measurePosition: number = tuple.uNameCollection.split(/[~~,::]+/g).indexOf(tuple.measureName);
+            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
             captionCollectionArray.splice(measurePosition, 0, measureName);
             captionColection = captionCollectionArray.join('.');
         } else {
-            let captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
+            const captionCollectionArray: string[] = tuple.captionCollection.split(/[~~,::]+/g);
             captionColection = captionCollectionArray.join('.');
         }
         return captionColection;
     }
 
-    /** hidden */
+    /**
+     * It performs the set named sets position.
+     *
+     * @returns {void}
+     * @hidden
+     */
     public setNamedSetsPosition(): void {
         this.namedSetsPosition = {};
         let axis: number = 0;
         do {
-            let setsPositions: { [key: number]: string } = {};
-            let axisFields: IFieldOptions[] = axis ? this.dataSourceSettings.rows : this.dataSourceSettings.columns;
+            const setsPositions: { [key: number]: string } = {};
+            const axisFields: IFieldOptions[] = axis ? this.dataSourceSettings.rows : this.dataSourceSettings.columns;
             for (let fPos: number = 0; fPos < axisFields.length; fPos++) {
-                if (axisFields[fPos].isNamedSet) {
-                    setsPositions[fPos] = axisFields[fPos].name;
+                if (axisFields[fPos as number].isNamedSet) {
+                    setsPositions[fPos as number] = axisFields[fPos as number].name;
                 }
             }
             this.namedSetsPosition[axis ? 'row' : 'column'] = setsPositions;
@@ -874,28 +981,29 @@ export class OlapEngine {
 
     private updateRowEngine(pivotValues: IPivotValues, valueContent: IGridValues, tuplesLength: number): void {
         let currEngineCount: number = this.pivotValues.length - 1;
-        let newEngineCount: number = Object.keys(pivotValues).length;
+        const newEngineCount: number = Object.keys(pivotValues).length;
         while (currEngineCount > this.customArgs.drillInfo.currentCell.rowIndex) {
-            this.pivotValues[currEngineCount + newEngineCount] = this.pivotValues[currEngineCount];
+            this.pivotValues[currEngineCount + newEngineCount] = this.pivotValues[currEngineCount as number];
             (this.pivotValues[currEngineCount + newEngineCount][0] as IAxisSet).ordinal += tuplesLength;
             (this.pivotValues[currEngineCount + newEngineCount][0] as IAxisSet).rowIndex += newEngineCount;
-            this.valueContent[(currEngineCount + newEngineCount) - this.rowStartPos] = this.valueContent[currEngineCount - this.rowStartPos];
+            this.valueContent[(currEngineCount + newEngineCount) - this.rowStartPos] =
+                this.valueContent[currEngineCount - this.rowStartPos];
             currEngineCount--;
         }
 
         // for (let key in pivotValues) {
         for (let key: number = 0; key < pivotValues.length; key++) {
-            this.pivotValues[key] = pivotValues[key];
+            this.pivotValues[key as number] = pivotValues[key as number];
             this.valueContent[Number(key) - this.rowStartPos] = valueContent[Number(key) - this.rowStartPos];
         }
         (this.pivotValues[this.customArgs.drillInfo.currentCell.rowIndex][0] as IAxisSet).isDrilled = true;
     }
 
     private updateTupCollection(newTuplesCount: number): void {
-        let tupCollection: ITupInfo[] = this.customArgs.drillInfo.axis === 'row' ? this.tupRowInfo : this.tupColumnInfo;
+        const tupCollection: ITupInfo[] = this.customArgs.drillInfo.axis === 'row' ? this.tupRowInfo : this.tupColumnInfo;
         let currTupCount: number = tupCollection.length - 1;
         while (currTupCount > this.customArgs.drillInfo.currentCell.ordinal) {
-            tupCollection[currTupCount + newTuplesCount] = tupCollection[currTupCount];
+            tupCollection[currTupCount + newTuplesCount] = tupCollection[currTupCount as number];
             currTupCount--;
         }
     }
@@ -904,44 +1012,53 @@ export class OlapEngine {
         let tupPos: number = 0;
         let lastAllStartPos: number;
         let lastAllCount: number;
-        let availAllMember: boolean = false;
-        let withoutAllEndPos: number = -1;
+        const availAllMember: boolean = false;
+        const withoutAllEndPos: number = -1;
         let isGrandtoalDataAdd: boolean = false;
         let prevTupInfo: ITupInfo;
-        let isGrandTotalTop: boolean = false;
+        const isGrandTotalTop: boolean = false;
         while (tupPos < tuples.length && !isGrandtoalDataAdd) {
-            let members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
+            const members: NodeListOf<Element> = tuples[this.customArgs.action === 'down' ?
                 (tupPos - (this.customArgs.drillInfo.currentCell.ordinal + 1)) : tupPos].querySelectorAll('Member');
-            let memPos: number = 0;
-            let allCount: number = this.tupRowInfo[tupPos].allCount;
-            let allStartPos: number = this.tupRowInfo[tupPos].allStartPos;
-            let measure: Element = this.tupRowInfo[tupPos].measure;
-            let typeColl: string[] = this.tupRowInfo[tupPos].typeCollection;
-            let drillStartPos: number = this.tupRowInfo[tupPos].drillStartPos;
-            let startDrillUniquename: string = this.tupRowInfo[tupPos].startDrillUniquename;
-            memPos = 0;
+            // let memPos: number = 0;
+            const allCount: number = this.tupRowInfo[tupPos as number].allCount;
+            const allStartPos: number = this.tupRowInfo[tupPos as number].allStartPos;
+            const measure: Element = this.tupRowInfo[tupPos as number].measure;
+            const typeColl: string[] = this.tupRowInfo[tupPos as number].typeCollection;
+            const drillStartPos: number = this.tupRowInfo[tupPos as number].drillStartPos;
+            const startDrillUniquename: string = this.tupRowInfo[tupPos as number].startDrillUniquename;
+            // memPos = 0;
             if (tupPos === 0 && (members.length > (allCount + (measure ? 1 : 0)) || (members.length === 1 && measure))) {
                 gTotals.pop();
             }
             if ((tupPos === 0 && this.isPaging) ? gTotals.length === 0 :
                 (!availAllMember || allCount === lastAllCount || allStartPos !== lastAllStartPos || (members.length === 1 && measure))) {
-                let attrDrill: boolean = this.checkAttributeDrill(this.tupRowInfo[tupPos].drillInfo, 'rows');
+                const attrDrill: boolean = this.checkAttributeDrill(this.tupRowInfo[tupPos as number].drillInfo, 'rows');
                 let drillAllow: boolean = drillStartPos > -1 ? (allCount > 0 ? (attrDrill || allStartPos > drillStartPos) : true) : true;
                 drillAllow = (prevTupInfo && drillAllow && drillStartPos > -1) ?
                     (prevTupInfo.startDrillUniquename !== startDrillUniquename ? true :
                         ((withoutAllEndPos > prevTupInfo.measurePosition ? false :
-                            prevTupInfo.measureName !== this.tupRowInfo[tupPos].measureName) &&
-                            (allStartPos === (drillStartPos + 1) || this.tupRowInfo[tupPos].measurePosition === (drillStartPos + 1))))
+                            prevTupInfo.measureName !== this.tupRowInfo[tupPos as number].measureName) &&
+                            (allStartPos === (drillStartPos + 1) ||
+                            this.tupRowInfo[tupPos as number].measurePosition === (drillStartPos + 1))))
                     : drillAllow;
                 if (members.length === allCount + (measure ? 1 : 0) && measure && !isGrandTotalTop) {
-                    let levelName: string = 'Grand Total.' + members[measurePos].querySelector('Caption').textContent;
-                    let formattedText: string = (typeColl[measurePos] === '3' && this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)] &&
-                        this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption) ? this.dataFields[this.getUniqueName(members[measurePos].querySelector('UName').textContent)].caption :
-                        members[measurePos].querySelector('Caption').textContent;
-                    gTotals = this.frameGrandTotalAxisSet(gTotals, this.getUniqueName(members[measurePos].querySelector('UName').textContent), formattedText, this.pivotValues.length, tupPos, Number(typeColl[measurePos]),
-                        members[measurePos].querySelector('PARENT_UNIQUE_NAME') ? members[measurePos].querySelector('PARENT_UNIQUE_NAME').textContent : undefined, members[measurePos].querySelector('LName').textContent,
-                        members[measurePos].getAttribute('Hierarchy'), { levelName: levelName, axis: members[measurePos].getAttribute('Hierarchy') });
-                    gTotals[gTotals.length - 1].valueSort['Grand Total.' + members[measurePos].querySelector('Caption').textContent] = 1;
+                    const levelName: string = 'Grand Total.' + members[measurePos as number].querySelector('Caption').textContent;
+                    const formattedText: string = (typeColl[measurePos as number] === '3' &&
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)] &&
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)].caption) ?
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)].caption :
+                        members[measurePos as number].querySelector('Caption').textContent;
+                    gTotals = this.frameGrandTotalAxisSet(
+                        gTotals, this.getUniqueName(
+                            members[measurePos as number].querySelector('UName').textContent), formattedText, this.pivotValues.length, tupPos,
+                        Number(typeColl[measurePos as number]), members[measurePos as number].querySelector('PARENT_UNIQUE_NAME') ?
+                            members[measurePos as number].querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                        members[measurePos as number].querySelector('LName').textContent,
+                        members[measurePos as number].getAttribute('Hierarchy'), {
+                            levelName: levelName, axis: members[measurePos as number].getAttribute('Hierarchy')
+                        });
+                    gTotals[gTotals.length - 1].valueSort['Grand Total.' + members[measurePos as number].querySelector('Caption').textContent] = 1;
                 }
                 lastAllCount = allCount;
                 lastAllStartPos = allStartPos;
@@ -957,74 +1074,77 @@ export class OlapEngine {
         this.lastLevel = [];
         let tupPos: number = 0;
         let maxLevel: number[] = [];
-        let allType: number[] = [];
-        let minLevel: number[] = [];
+        const allType: number[] = [];
+        const minLevel: number[] = [];
         let withoutAllStartPos: number = -1;
         let withoutAllEndPos: number = -1;
-        let newTupPosition: number = (this.customArgs.drillInfo && this.customArgs.drillInfo.axis === 'column') ?
+        const newTupPosition: number = (this.customArgs.drillInfo && this.customArgs.drillInfo.axis === 'column') ?
             (this.customArgs.drillInfo.currentCell.ordinal + 1) : 0;
         while (tupPos < tuples.length) {
-            let members: NodeListOf<Element> = tuples[tupPos].querySelectorAll('Member');
+            const members: NodeListOf<Element> = tuples[tupPos as number].querySelectorAll('Member');
             maxLevel = this.frameTupCollection(
                 members, maxLevel, (tupPos + newTupPosition),
                 this.tupColumnInfo, this.showColumnSubTotals, this.hideColumnTotalsObject, 'column');
             tupPos++;
         }
         if (tuples.length > 0) {
-            let members: NodeListOf<Element> = tuples[0].querySelectorAll('Member');
+            const members: NodeListOf<Element> = tuples[0].querySelectorAll('Member');
             let memPos: number = 0;
             while (memPos < members.length) {
-                minLevel[memPos] = (members[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
-                    Number(members[memPos].querySelector('LNum').textContent) === 0) ? 0 :
-                    Number(members[memPos].querySelector('LNum').textContent);
-                if (members[memPos].querySelector('MEMBER_TYPE').textContent === '1' &&
-                    (this.isPaging || Number(members[memPos].querySelector('LNum').textContent) === 0)) {
-                    allType[memPos] = 0;
+                minLevel[memPos as number] = (members[memPos as number].querySelector('MEMBER_TYPE').textContent === '1' &&
+                    Number(members[memPos as number].querySelector('LNum').textContent) === 0) ? 0 :
+                    Number(members[memPos as number].querySelector('LNum').textContent);
+                if (members[memPos as number].querySelector('MEMBER_TYPE').textContent === '1' &&
+                    (this.isPaging || Number(members[memPos as number].querySelector('LNum').textContent) === 0)) {
+                    allType[memPos as number] = 0;
                     withoutAllStartPos = withoutAllStartPos === -1 ? memPos : withoutAllStartPos;
                     withoutAllEndPos = memPos;
                 } else {
-                    allType[memPos] = 1;
+                    allType[memPos as number] = 1;
                 }
                 memPos++;
             }
         }
         tupPos = 0;
         let position: number = 1;
-        let lastSavedInfo: ILastSavedInfo = {};
+        const lastSavedInfo: ILastSavedInfo = {};
         let isSubTotIncluded: boolean = true;
         let withoutAllAvail: boolean = false;
         let lastRealTup: ITupInfo;
         while (tupPos < tuples.length) {
-            let members: NodeListOf<Element> = tuples[tupPos].querySelectorAll('Member');
-            let allCount: number = this.tupColumnInfo[tupPos].allCount;
-            let allStartPos: number = this.tupColumnInfo[tupPos].allStartPos;
-            let measure: Element = this.tupColumnInfo[tupPos].measure;
-            let typeColl: string[] = this.tupColumnInfo[tupPos].typeCollection;
-            let drillInfo: IDrillInfo[] = this.tupColumnInfo[tupPos].drillInfo;
-            let drillStartPos: number = this.tupColumnInfo[tupPos].drillStartPos;
-            let startDrillUniquename: string = this.tupColumnInfo[tupPos].startDrillUniquename;
-            let endDrillUniquename: string = this.tupColumnInfo[tupPos].endDrillUniquename;
-            let drillEndPos: number = this.tupColumnInfo[tupPos].drillEndPos;
-            let levelColl: number[] = this.tupColumnInfo[tupPos].levelCollection;
+            const members: NodeListOf<Element> = tuples[tupPos as number].querySelectorAll('Member');
+            const allCount: number = this.tupColumnInfo[tupPos as number].allCount;
+            const allStartPos: number = this.tupColumnInfo[tupPos as number].allStartPos;
+            const measure: Element = this.tupColumnInfo[tupPos as number].measure;
+            const typeColl: string[] = this.tupColumnInfo[tupPos as number].typeCollection;
+            const drillInfo: IDrillInfo[] = this.tupColumnInfo[tupPos as number].drillInfo;
+            const drillStartPos: number = this.tupColumnInfo[tupPos as number].drillStartPos;
+            const startDrillUniquename: string = this.tupColumnInfo[tupPos as number].startDrillUniquename;
+            const endDrillUniquename: string = this.tupColumnInfo[tupPos as number].endDrillUniquename;
+            const drillEndPos: number = this.tupColumnInfo[tupPos as number].drillEndPos;
+            const levelColl: number[] = this.tupColumnInfo[tupPos as number].levelCollection;
             let isStartCol: boolean = typeColl[0] === '2' ? false : (typeColl[0] === '3' ? typeColl[1] !== '2' : true);
             let depth: number = 0;
-            /* eslint-disable */
-            maxLevel.map((item: number, pos: number) => { depth = depth + (allType[pos] === 0 ? (item + (1 - (minLevel[pos] > 1 ? 1 : minLevel[pos]))) : (item === 0 ? ((this.isPaging && typeColl[pos] === '2') ? 0 : 1) : item)); });
-            /* eslint-enable */
+            maxLevel.map((item: number, pos: number) => {
+                depth = depth + (allType[pos as number] === 0 ? (item + (1 - (minLevel[pos as number] > 1 ? 1 : minLevel[pos as number]))) :
+                    (item === 0 ? ((this.isPaging && typeColl[pos as number] === '2') ? 0 : 1) : item));
+            });
             this.colDepth = this.colDepth > depth ? this.colDepth : depth;
             if (tupPos === 0 && members.length > (allCount + (measure ? 1 : 0))) {
                 withoutAllAvail = true;
                 isStartCol = (allCount > 0 && isStartCol) ? (allStartPos > withoutAllStartPos) : isStartCol;
             }
             let isGrandTotalTop: boolean = false;
-            if (this.dataSourceSettings.grandTotalsPosition === 'Top' && this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) {
+            if (this.dataSourceSettings.grandTotalsPosition === 'Top' && this.dataSourceSettings.showGrandTotals &&
+                this.dataSourceSettings.showColumnGrandTotals) {
                 let count: number = 0;
                 for (let i: number = 0; i < members.length; i++) {
-                    if ((members[i].querySelector('Caption').textContent).indexOf('All') === 0) {
+                    if ((members[i as number].querySelector('Caption').textContent).indexOf('All') === 0) {
                         count++;
                     }
                 }
-                isGrandTotalTop = count === (this.olapValueAxis === 'column' ? this.dataSourceSettings.columns.length - 1 : this.dataSourceSettings.columns.length);
+                isGrandTotalTop = count === (this.olapValueAxis === 'column' ? this.dataSourceSettings.columns.length - 1 :
+                    this.dataSourceSettings.columns.length);
             }
             if (isStartCol || isGrandTotalTop) {
                 if (allCount === 0 || isGrandTotalTop) {
@@ -1034,14 +1154,14 @@ export class OlapEngine {
                     } else if (withoutAllAvail && lastRealTup) {
                         levelComp = this.levelCompare(levelColl, lastRealTup.levelCollection);
                     }
-                    if (this.tupColumnInfo[tupPos].drillStartPos < 0) {
+                    if (this.tupColumnInfo[tupPos as number].drillStartPos < 0 || this.showSubTotalsAtTop) {
                         if (!isSubTotIncluded && levelComp[0] > -1 && levelComp[2] > -1) {
                             position = this.mergeTotCollection(
                                 position, allCount, maxLevel, minLevel, allType, allStartPos, drillInfo, levelComp);
                         }
                         this.setParentCollection(members);
                         this.frameCommonColumnLoop(members, tupPos, position, maxLevel, allType, minLevel);
-                        if (!this.tupColumnInfo[tupPos].showTotals) {
+                        if (!this.tupColumnInfo[tupPos as number].showTotals) {
                             position--;
                         }
                         if (!isSubTotIncluded && levelComp[0] > -1 && levelComp[2] > -1) {
@@ -1075,15 +1195,15 @@ export class OlapEngine {
                             (lastSavedInfo as ITupInfo).endDrillUniquename = endDrillUniquename;
                         }
                     }
-                    lastRealTup = this.tupColumnInfo[tupPos];
+                    lastRealTup = this.tupColumnInfo[tupPos as number];
                 }
             }
-            let attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
+            const attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[tupPos as number].drillInfo, 'columns');
             if (allCount > 0 && (withoutAllAvail ? (isStartCol && (attrDrill || withoutAllEndPos < allStartPos)) : true)) {
                 if (allCount === (lastSavedInfo as ITupInfo).allCount || allStartPos !== (lastSavedInfo as ITupInfo).allStartPos) {
-                    let endAllow: boolean = drillEndPos !== drillStartPos ?
+                    const endAllow: boolean = drillEndPos !== drillStartPos ?
                         ((lastSavedInfo as ITupInfo).endDrillUniquename === endDrillUniquename) : true;
-                    let allow: boolean = allStartPos !== (lastSavedInfo as ITupInfo).allStartPos ?
+                    const allow: boolean = allStartPos !== (lastSavedInfo as ITupInfo).allStartPos ?
                         ((lastSavedInfo as ITupInfo).startDrillUniquename !== startDrillUniquename) : endAllow;
                     if (drillStartPos > -1 ? (allow) : true) {
                         if (!isSubTotIncluded) {
@@ -1095,7 +1215,8 @@ export class OlapEngine {
                             if (!isGrandTotalTop) {
                                 this.totalCollection[this.totalCollection.length] =
                                     ({
-                                        allCount: allCount, ordinal: tupPos, members: members, allStartPos: allStartPos, drillInfo: drillInfo
+                                        allCount: allCount, ordinal: tupPos, members: members,
+                                        allStartPos: allStartPos, drillInfo: drillInfo
                                     });
                             }
                             (lastSavedInfo as ITupInfo).allCount = allCount;
@@ -1114,13 +1235,13 @@ export class OlapEngine {
                 this.orderTotals(position, maxLevel, allType, minLevel);
             } else {
                 this.totalCollection = this.totalCollection.reverse();
-                for (let coll of this.totalCollection) {
-                    let isGrandTotal: boolean = this.tupColumnInfo[coll.ordinal].measurePosition === 0 ?
+                for (const coll of this.totalCollection) {
+                    const isGrandTotal: boolean = this.tupColumnInfo[coll.ordinal].measurePosition === 0 ?
                         this.tupColumnInfo[coll.ordinal].allStartPos === 1 : this.tupColumnInfo[coll.ordinal].allStartPos === 0;
                     if (isGrandTotal ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) : true) {
                         this.frameCommonColumnLoop(
                             coll.members, coll.ordinal, position, maxLevel, minLevel, allType);
-                        let attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[coll.ordinal].drillInfo, 'columns');
+                        const attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[coll.ordinal].drillInfo, 'columns');
                         if (this.tupColumnInfo[coll.ordinal].showTotals || attrDrill) {
                             position++;
                         }
@@ -1131,27 +1252,27 @@ export class OlapEngine {
     }
 
     private orderTotals(position: number, maxLevel: number[], allType: number[], minLevel: number[]): void {
-        let groupColl: { [key: string]: { coll: ITotCollection[]; count: number } } = {};
+        const groupColl: { [key: string]: { coll: ITotCollection[]; count: number } } = {};
         let maxCnt: number = 1;
-        for (let coll of this.totalCollection) {
-            let isGrandTotal: boolean = this.tupColumnInfo[coll.ordinal].measurePosition === 0 ?
+        for (const coll of this.totalCollection) {
+            const isGrandTotal: boolean = this.tupColumnInfo[coll.ordinal].measurePosition === 0 ?
                 this.tupColumnInfo[coll.ordinal].allStartPos === 1 : this.tupColumnInfo[coll.ordinal].allStartPos === 0;
             if (isGrandTotal ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) : true) {
-                let measureName: string = this.tupColumnInfo[coll.ordinal].measure.querySelector('UName').textContent;
-                if (groupColl[measureName]) {
-                    groupColl[measureName].coll.push(coll);
-                    groupColl[measureName].count++;
-                    maxCnt = maxCnt < groupColl[measureName].count ? groupColl[measureName].count : maxCnt;
+                const measureName: string = this.tupColumnInfo[coll.ordinal].measure.querySelector('UName').textContent;
+                if (groupColl[measureName as string]) {
+                    groupColl[measureName as string].coll.push(coll);
+                    groupColl[measureName as string].count++;
+                    maxCnt = maxCnt < groupColl[measureName as string].count ? groupColl[measureName as string].count : maxCnt;
                 } else {
-                    groupColl[measureName] = { coll: [coll], count: 1 };
+                    groupColl[measureName as string] = { coll: [coll], count: 1 };
                 }
             }
         }
-        let keys: string[] = Object.keys(groupColl);
+        const keys: string[] = Object.keys(groupColl);
         let collLength: number = maxCnt - 1;
         while (collLength > -1) {
-            for (let key of keys) {
-                let coll: ITotCollection = groupColl[key].coll[collLength];
+            for (const key of keys) {
+                const coll: ITotCollection = groupColl[key as string].coll[collLength as number];
                 if (coll) {
                     this.frameCommonColumnLoop(
                         coll.members, coll.ordinal, position, maxLevel, allType, minLevel);
@@ -1167,34 +1288,34 @@ export class OlapEngine {
     private setParentCollection(members: NodeListOf<Element>): void {
         let memPos: number = 0;
         while (members.length > memPos) {
-            let member: Element = members[memPos];
-            let memberType: string = Number(member.querySelector('MEMBER_TYPE').textContent) > 2 ? '3' :
+            const member: Element = members[memPos as number];
+            const memberType: string = Number(member.querySelector('MEMBER_TYPE').textContent) > 2 ? '3' :
                 member.querySelector('MEMBER_TYPE').textContent;
-            let memberlevel: number = Number(member.querySelector('LNum').textContent);
-            let memberUName: string = member.querySelector('UName').textContent;
-            let parentUName: string = member.querySelector('PARENT_UNIQUE_NAME') ?
+            const memberlevel: number = Number(member.querySelector('LNum').textContent);
+            const memberUName: string = member.querySelector('UName').textContent;
+            const parentUName: string = member.querySelector('PARENT_UNIQUE_NAME') ?
                 member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
             let isSameParent: boolean = true;
             let isWithoutAllMember: boolean = false;
-            if (this.parentObjCollection[memPos]) {
-                let levelCollection: string[] = Object.keys(this.parentObjCollection[memPos]);
-                let parentMember: Element = this.parentObjCollection[memPos][memberlevel - 1];
+            if (this.parentObjCollection[memPos as number]) {
+                const levelCollection: string[] = Object.keys(this.parentObjCollection[memPos as number]);
+                const parentMember: Element = this.parentObjCollection[memPos as number][memberlevel - 1];
                 isSameParent = parentMember ? parentUName === parentMember.querySelector('UName').textContent :
                     levelCollection.length === 0;
-                isWithoutAllMember = this.tupColumnInfo[0].typeCollection[memPos] === '1';
+                isWithoutAllMember = this.tupColumnInfo[0].typeCollection[memPos as number] === '1';
             }
             if (memberType === '2') {
-                delete this.parentObjCollection[memPos];
+                delete this.parentObjCollection[memPos as number];
             } else {
                 if ((this.isPaging || isWithoutAllMember) ? !isSameParent : false) {
-                    delete this.parentObjCollection[memPos];
+                    delete this.parentObjCollection[memPos as number];
                 }
-                if (!this.parentObjCollection[memPos]) {
-                    this.parentObjCollection[memPos] = {};
-                    this.parentObjCollection[memPos][memberlevel] = member;
-                } else if (!this.parentObjCollection[memPos][memberlevel] ||
-                    this.parentObjCollection[memPos][memberlevel].querySelector('UName').textContent !== memberUName) {
-                    this.parentObjCollection[memPos][memberlevel] = member;
+                if (!this.parentObjCollection[memPos as number]) {
+                    this.parentObjCollection[memPos as number] = {};
+                    this.parentObjCollection[memPos as number][memberlevel as number] = member;
+                } else if (!this.parentObjCollection[memPos as number][memberlevel as number] ||
+                    this.parentObjCollection[memPos as number][memberlevel as number].querySelector('UName').textContent !== memberUName) {
+                    this.parentObjCollection[memPos as number][memberlevel as number] = member;
                 }
             }
             memPos++;
@@ -1203,23 +1324,23 @@ export class OlapEngine {
 
     private setDrillInfo(pUName: string, parentLvlCollection: string, memPos: number, tupPos: number, tupInfo: ITupInfo[]): void {
         tupPos--;
-        while (tupInfo[tupPos] && tupInfo[tupPos].drillInfo[memPos].uName === pUName) {
-            let prevUcollection: string[] =
-                tupInfo[tupPos].uNameCollection.split(/~~|::\[/).map((item: string) => {
+        while (tupInfo[tupPos as number] && tupInfo[tupPos as number].drillInfo[memPos as number].uName === pUName) {
+            const prevUcollection: string[] =
+                tupInfo[tupPos as number].uNameCollection.split(/~~|::\[/).map((item: string) => {
                     return item[0] === '[' ? item : ('[' + item);
                 });
             if (prevUcollection.join('~~').indexOf(parentLvlCollection) < 0) {
                 break;
             }
-            tupInfo[tupPos].drillInfo[memPos].isDrilled = true;
+            tupInfo[tupPos as number].drillInfo[memPos as number].isDrilled = true;
             if (this.curDrillEndPos <= memPos) {
-                tupInfo[tupPos].drillEndPos = this.curDrillEndPos = memPos;
-                tupInfo[tupPos].endDrillUniquename = pUName;
+                tupInfo[tupPos as number].drillEndPos = this.curDrillEndPos = memPos;
+                tupInfo[tupPos as number].endDrillUniquename = pUName;
             }
-            if (tupInfo[tupPos].drillStartPos > memPos || tupInfo[tupPos].drillStartPos === -1) {
-                tupInfo[tupPos].drillStartPos = memPos;
+            if (tupInfo[tupPos as number].drillStartPos > memPos || tupInfo[tupPos as number].drillStartPos === -1) {
+                tupInfo[tupPos as number].drillStartPos = memPos;
             }
-            tupInfo[tupPos].startDrillUniquename = pUName;
+            tupInfo[tupPos as number].startDrillUniquename = pUName;
             tupPos--;
         }
     }
@@ -1227,44 +1348,47 @@ export class OlapEngine {
     private levelCompare(newLevels: number[], oldLevels: number[]): number[] {
         let changePos: number[] = [-1, 0];
         for (let lPos: number = 0; lPos < oldLevels.length; lPos++) {
-            if (newLevels[lPos] !== oldLevels[lPos]) {
-                changePos = [lPos, newLevels[lPos], (oldLevels[lPos] - newLevels[lPos])];
+            if (newLevels[lPos as number] !== oldLevels[lPos as number]) {
+                changePos = [lPos, newLevels[lPos as number], (oldLevels[lPos as number] - newLevels[lPos as number])];
                 break;
             }
         }
         return changePos;
     }
 
-    private mergeTotCollection(position: number, allCount: number, maxLevel: number[], allType: number[], minLevel: number[], allStartPos: number, drillInfo: IDrillInfo[], levelComp?: number[]): number { /* eslint-disable-line */
-        let prevHdrPos: number =
-            isNullOrUndefined(allStartPos) ? levelComp[0] : (allStartPos - ((this.colMeasurePos === (allStartPos - 1)) ? 2 : 1));
-        let flagLevel: number = drillInfo[prevHdrPos] && drillInfo[prevHdrPos].level;
-        let flagLevelString: string = this.getLevelsAsString(prevHdrPos - 1, drillInfo);
-        let groupColl: { [key: string]: { coll: ITotCollection[]; count: number } } = {};
+    private mergeTotCollection(
+        position: number, allCount: number, maxLevel: number[], allType: number[], minLevel: number[], allStartPos: number,
+        drillInfo: IDrillInfo[], levelComp?: number[]): number {
+        const prevHdrPos: number = isNullOrUndefined(
+            allStartPos) ? levelComp[0] : (allStartPos - ((this.colMeasurePos === (allStartPos - 1)) ? 2 : 1));
+        const flagLevel: number = drillInfo[prevHdrPos as number] && drillInfo[prevHdrPos as number].level;
+        const flagLevelString: string = this.getLevelsAsString(prevHdrPos - 1, drillInfo);
+        const groupColl: { [key: string]: { coll: ITotCollection[]; count: number } } = {};
         let maxCnt: number = 1;
         let enterFlag: boolean = false;
-        for (let coll of this.totalCollection) {
+        for (const coll of this.totalCollection) {
             if (enterFlag || (coll.allCount <= allCount &&
-                ((flagLevel > -1 && coll.drillInfo[prevHdrPos]) ? ((coll.drillInfo[prevHdrPos].level >= flagLevel) &&
+                ((flagLevel > -1 && coll.drillInfo[prevHdrPos as number]) ? ((coll.drillInfo[prevHdrPos as number].level >= flagLevel) &&
                     (this.getLevelsAsString(prevHdrPos - 1, coll.drillInfo)) === flagLevelString) : true))) {
-                let measureName: string = this.tupColumnInfo[coll.ordinal].measure ? this.tupColumnInfo[coll.ordinal].measure.querySelector('UName').textContent : 'measure';
-                if (groupColl[measureName]) {
-                    groupColl[measureName].coll.push(coll);
-                    groupColl[measureName].count++;
-                    maxCnt = maxCnt < groupColl[measureName].count ? groupColl[measureName].count : maxCnt;
+                const measureName: string = this.tupColumnInfo[coll.ordinal].measure ?
+                    this.tupColumnInfo[coll.ordinal].measure.querySelector('UName').textContent : 'measure';
+                if (groupColl[measureName as string]) {
+                    groupColl[measureName as string].coll.push(coll);
+                    groupColl[measureName as string].count++;
+                    maxCnt = maxCnt < groupColl[measureName as string].count ? groupColl[measureName as string].count : maxCnt;
                 } else {
-                    groupColl[measureName] = { coll: [coll], count: 1 };
+                    groupColl[measureName as string] = { coll: [coll], count: 1 };
                 }
                 enterFlag = false;
             }
         }
-        let keys: string[] = Object.keys(groupColl);
+        const keys: string[] = Object.keys(groupColl);
         let collLength: number = maxCnt - 1;
         while (collLength > -1) {
-            for (let key of keys) {
-                let coll1: ITotCollection = groupColl[key].coll[collLength];
+            for (const key of keys) {
+                const coll1: ITotCollection = groupColl[key as string].coll[collLength as number];
                 if (coll1) {
-                    let isGrandTotal: boolean = this.tupColumnInfo[coll1.ordinal].measurePosition === 0 ?
+                    const isGrandTotal: boolean = this.tupColumnInfo[coll1.ordinal].measurePosition === 0 ?
                         this.tupColumnInfo[coll1.ordinal].allStartPos === 1 : this.tupColumnInfo[coll1.ordinal].allStartPos === 0;
                     if (isGrandTotal ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) : true) {
                         this.frameCommonColumnLoop(
@@ -1282,106 +1406,128 @@ export class OlapEngine {
     }
 
     private getLevelsAsString(prevHdrPos: number, drillInfo: IDrillInfo[]): string {
-        let lvlCollection: number[] = [];
+        const lvlCollection: number[] = [];
         for (let pos: number = 0; pos < prevHdrPos; pos++) {
-            lvlCollection[pos] = drillInfo[pos].level;
+            lvlCollection[pos as number] = drillInfo[pos as number].level;
         }
         return lvlCollection.length > 0 ? lvlCollection.toString() : '';
     }
 
-    private frameCommonColumnLoop(members: NodeListOf<Element>, tupPos: number, position: number, maxLevel: number[], minLevel: number[], allType: number[]): void {    /* eslint-disable-line */
+    private frameCommonColumnLoop(
+        members: NodeListOf<Element>, tupPos: number, position: number, maxLevel: number[], minLevel: number[],
+        allType: number[]): void {
         let drillMemberPosition: number = -1;
-        if (this.tupColumnInfo[tupPos].showTotals) {
+        if (this.tupColumnInfo[tupPos as number].showTotals) {
             let memberPos: number = 0;
             let memberDepth: number = 0;
             while (memberPos < members.length) {
-                memberDepth += (allType[memberPos] > 0 && this.getMeasurePosition(this.tupColumnInfo[tupPos].uNameCollection, this.tupColumnInfo[tupPos].measurePosition) !== memberPos) ?  /* eslint-disable-line */
-                    maxLevel[memberPos] :
-                    (maxLevel[memberPos] + (1 - minLevel[memberPos]));
-                if (this.tupColumnInfo[tupPos].drillInfo[memberPos].isDrilled && this.tupColumnInfo[tupPos].showTotals) {
-                    this.tupColumnInfo[tupPos].showTotals = !this.showColumnSubTotals ? false :
-                        this.hideColumnTotalsObject[this.tupColumnInfo[tupPos].drillInfo[memberPos].hierarchy] === undefined;
-                    memberDepth -= maxLevel[memberPos] -
-                        this.tupColumnInfo[tupPos].levelCollection[memberPos];
-                    drillMemberPosition = this.tupColumnInfo[tupPos].showTotals ? -1 : (memberDepth - 1);
+                memberDepth += (allType[memberPos as number] > 0 &&
+                    this.getMeasurePosition(this.tupColumnInfo[tupPos as number].uNameCollection,
+                                            this.tupColumnInfo[tupPos as number].measurePosition) !== memberPos) ?
+                    maxLevel[memberPos as number] :
+                    (maxLevel[memberPos as number] + (1 - minLevel[memberPos as number]));
+                if (this.tupColumnInfo[tupPos as number].drillInfo[memberPos as number].isDrilled &&
+                    this.tupColumnInfo[tupPos as number].showTotals) {
+                    this.tupColumnInfo[tupPos as number].showTotals = !this.showColumnSubTotals ? false :
+                        this.hideColumnTotalsObject[this.tupColumnInfo[tupPos as number].drillInfo[memberPos as number].hierarchy] ===
+                        undefined;
+                    memberDepth -= maxLevel[memberPos as number] -
+                        this.tupColumnInfo[tupPos as number].levelCollection[memberPos as number];
+                    drillMemberPosition = this.tupColumnInfo[tupPos as number].showTotals ? -1 : (memberDepth - 1);
                 }
                 memberPos++;
             }
         }
-        let attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
-        if (this.tupColumnInfo[tupPos].showTotals || attrDrill) {
+        const attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[tupPos as number].drillInfo, 'columns');
+        if (this.tupColumnInfo[tupPos as number].showTotals || attrDrill) {
             let memPos: number = 0;
             let spanMemPos: number = 0;
-            let colMembers: { [key: string]: string } = {};
+            const colMembers: { [key: string]: string } = {};
             while (memPos < members.length) {
-                let member: Element = members[memPos];
-                let memberType: string = Number(member.querySelector('MEMBER_TYPE').textContent) > 2 ? '3' :
+                let member: Element = members[memPos as number];
+                const memberType: string = Number(member.querySelector('MEMBER_TYPE').textContent) > 2 ? '3' :
                     member.querySelector('MEMBER_TYPE').textContent;
                 let memDup: number = 0;
-                for (let rowDepthPos: number = memberType !== '2' ? (allType[memPos] ? 1 : minLevel[memPos]) : 1;
-                    rowDepthPos <= (memberType === '3' ? 1 : maxLevel[memPos]); rowDepthPos++) {
+                for (let rowDepthPos: number = memberType !== '2' ? (allType[memPos as number] ? 1 : minLevel[memPos as number]) : 1;
+                    rowDepthPos <= (memberType === '3' ? 1 : maxLevel[memPos as number]); rowDepthPos++) {
                     let isDrilled: boolean = false;
-                    if (!this.pivotValues[spanMemPos]) {
-                        (this.pivotValues[spanMemPos] as IAxisSet[]) = [];
+                    if (!this.pivotValues[spanMemPos as number]) {
+                        (this.pivotValues[spanMemPos as number] as IAxisSet[]) = [];
                     }
-                    if (Number(members[memPos].querySelector('LNum').textContent) > rowDepthPos && memberType !== '2') {
-                        if (!this.parentObjCollection[memPos][rowDepthPos]) {
-                            this.getDrilledParent(members[memPos], rowDepthPos, this.parentObjCollection[memPos]);
+                    if (Number(members[memPos as number].querySelector('LNum').textContent) > rowDepthPos && memberType !== '2') {
+                        if (!this.parentObjCollection[memPos as number][rowDepthPos as number]) {
+                            this.getDrilledParent(members[memPos as number], rowDepthPos, this.parentObjCollection[memPos as number]);
                         }
-                        if (this.parentObjCollection[memPos][rowDepthPos]) {
-                            member = this.parentObjCollection[memPos][rowDepthPos];
+                        if (this.parentObjCollection[memPos as number][rowDepthPos as number]) {
+                            member = this.parentObjCollection[memPos as number][rowDepthPos as number];
                         }
                         isDrilled = true;
                     } else {
-                        member = members[memPos];
+                        member = members[memPos as number];
                         memDup++;
                     }
                     if (memberType !== '2') {
                         colMembers[member.querySelector('UName').textContent] = member.querySelector('Caption').textContent;
                     }
-                    /* eslint-disable */
-                    let levelName: string = '';
-                    let levelNameKeys: any = Object.keys(colMembers);
+                    let levelName: string = ''; /* eslint-disable @typescript-eslint/no-explicit-any */
+                    const levelNameKeys: any = Object.keys(colMembers);
                     for (let i: number = 0; i < levelNameKeys.length; i++) {
-                        let j: any = levelNameKeys[i];
+                        const j: any = levelNameKeys[i as number];
                         if (i === 0) {
                             levelName = colMembers[j as any];
                         }
                         else {
                             levelName = levelName + '.' + colMembers[j as any];
                         }
-                    }
-                    let isNamedSet: boolean = this.namedSetsPosition['column'][memPos] ? true : false;
-                    let uName: string = this.getUniqueName(member.querySelector('UName').textContent);
-                    let depth: number = this.getDepth(this.tupColumnInfo[tupPos], uName, Number(memberType));
-                    if (!(this.isPaging && this.pivotValues[spanMemPos - 1] && this.pivotValues[spanMemPos - 1][position] && this.fieldList[(this.pivotValues[spanMemPos - 1][position] as IAxisSet).hierarchy] && this.fieldList[(this.pivotValues[spanMemPos - 1][position] as IAxisSet).hierarchy].isHierarchy &&
-                        (this.pivotValues[spanMemPos - 1][position] as IAxisSet).hasChild && !(this.pivotValues[spanMemPos - 1][position] as IAxisSet).isDrilled && !this.columns[memPos].isNamedSet && this.fieldList[member.getAttribute('Hierarchy')] && (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy || this.fieldList[member.getAttribute('Hierarchy')].hasAllMember) &&
-                        (this.pivotValues[spanMemPos - 1][position] as IAxisSet).depth < depth)) {
-                        (this.pivotValues[spanMemPos] as IAxisSet[])[position] = {
+                    }   /* eslint-enable @typescript-eslint/no-explicit-any */
+                    const isNamedSet: boolean = this.namedSetsPosition['column'][memPos as number] ? true : false;
+                    const uName: string = this.getUniqueName(member.querySelector('UName').textContent);
+                    const depth: number = this.getDepth(this.tupColumnInfo[tupPos as number], uName, Number(memberType));
+                    if (!(this.isPaging && this.pivotValues[spanMemPos - 1] && this.pivotValues[spanMemPos - 1][position as number] &&
+                        this.fieldList[(this.pivotValues[spanMemPos - 1][position as number] as IAxisSet).hierarchy] &&
+                        this.fieldList[(this.pivotValues[spanMemPos - 1][position as number] as IAxisSet).hierarchy].isHierarchy &&
+                        (this.pivotValues[spanMemPos - 1][position as number] as IAxisSet).hasChild &&
+                        !(this.pivotValues[spanMemPos - 1][position as number] as IAxisSet).isDrilled &&
+                        !this.columns[memPos as number].isNamedSet && this.fieldList[member.getAttribute('Hierarchy')] &&
+                        (this.fieldList[member.getAttribute('Hierarchy')].isHierarchy ||
+                            this.fieldList[member.getAttribute('Hierarchy')].hasAllMember) &&
+                        (this.pivotValues[spanMemPos - 1][position as number] as IAxisSet).depth < depth)) {
+                        (this.pivotValues[spanMemPos as number] as IAxisSet[])[position as number] = {
                             axis: 'column',
                             actualText: uName,
                             colIndex: position,
-                            formattedText: (memberType === '3' && this.dataFields[uName] &&
-                                this.dataFields[uName].caption) ? this.dataFields[uName].caption :
+                            formattedText: (memberType === '3' && this.dataFields[uName as string] &&
+                                this.dataFields[uName as string].caption) ? this.dataFields[uName as string].caption :
                                 member.querySelector('Caption').textContent,
-                            hasChild: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.columns.length - 1 && !this.columns[memPos + 1].isNamedSet && this.columns[memPos + 1].name.indexOf('[Measures]') < 0 && this.fieldList[this.columns[memPos + 1].name] && this.fieldList[this.columns[memPos + 1].name].hasAllMember) ? true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
-                            level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) - ((allType[memPos] && memberType !== '3') ? 1 : 0)),
+                            hasChild: (this.fieldList[member.getAttribute('Hierarchy')] &&
+                                this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && memPos < this.columns.length - 1 &&
+                                !this.columns[memPos + 1].isNamedSet && this.columns[memPos + 1].name.indexOf('[Measures]') < 0 &&
+                                this.fieldList[this.columns[memPos + 1].name] &&
+                                this.fieldList[this.columns[memPos + 1].name].hasAllMember) ?
+                                true : Number(member.querySelector('CHILDREN_CARDINALITY').textContent) > 0 ? true : false,
+                            level: memDup > 1 ? -1 : (Number(member.querySelector('LNum').textContent) -
+                                ((allType[memPos as number] && memberType !== '3') ? 1 : 0)),
                             rowIndex: spanMemPos,
                             ordinal: tupPos,
                             memberType: Number(memberType),
                             depth: depth,
-                            isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] && this.fieldList[member.getAttribute('Hierarchy')].isHierarchy && !this.isAttributeDrill(member.getAttribute('Hierarchy'), this.tupColumnInfo[tupPos].drillInfo, 'columns')) ? true : (isDrilled || this.tupColumnInfo[tupPos].drillInfo[memPos].isDrilled),
-                            parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
+                            isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] &&
+                                this.fieldList[member.getAttribute('Hierarchy')].isHierarchy &&
+                                !this.isAttributeDrill(member.getAttribute('Hierarchy'),
+                                                       this.tupColumnInfo[tupPos as number].drillInfo, 'columns')) ? true :
+                                (isDrilled || this.tupColumnInfo[tupPos as number].drillInfo[memPos as number].isDrilled),
+                            parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
+                                member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
                             levelUniqueName: member.querySelector('LName').textContent,
                             hierarchy: member.getAttribute('Hierarchy'),
                             isNamedSet: isNamedSet,
-                            valueSort: { levelName: levelName, [levelName]: 1, axis: member.getAttribute('Hierarchy') }
-                            /* eslint-enable */
+                            valueSort: { levelName: levelName, [levelName as string]: 1, axis: member.getAttribute('Hierarchy') }
                         };
-                        if (!this.headerContent[spanMemPos]) {
-                            this.headerContent[spanMemPos] = {} as IAxisSet[];
+                        if (!this.headerContent[spanMemPos as number]) {
+                            this.headerContent[spanMemPos as number] = {} as IAxisSet[];
                         }
-                        this.headerContent[spanMemPos][position] = (this.pivotValues[spanMemPos] as IAxisSet[])[position];
+                        this.headerContent[spanMemPos as number][position as number] =
+                            (this.pivotValues[spanMemPos as number] as IAxisSet[])[position as number];
                         spanMemPos++;
                     } else {
                         this.isColDrill = true;
@@ -1392,43 +1538,49 @@ export class OlapEngine {
             }
         } else {
             if (drillMemberPosition > -1) {
-                (this.pivotValues[drillMemberPosition] as IAxisSet[])[position - 1].ordinal = tupPos;
-            } else if (this.tupColumnInfo[tupPos].allCount > 0) {
+                (this.pivotValues[drillMemberPosition as number] as IAxisSet[])[position - 1].ordinal = tupPos;
+            } else if (this.tupColumnInfo[tupPos as number].allCount > 0) {
                 let memberPos: number = 0;
                 let memberDepth: number = 0;
-                while (memberPos < this.tupColumnInfo[tupPos].allStartPos) {
-                    memberDepth += (allType[memberPos] > 0 && this.getMeasurePosition(this.tupColumnInfo[tupPos].uNameCollection, this.tupColumnInfo[tupPos].measurePosition) !== memberPos) ?  /* eslint-disable-line */
-                        maxLevel[memberPos] :
-                        (maxLevel[memberPos] + (1 - minLevel[memberPos]));
+                while (memberPos < this.tupColumnInfo[tupPos as number].allStartPos) {
+                    memberDepth += (allType[memberPos as number] > 0 &&
+                        this.getMeasurePosition(this.tupColumnInfo[tupPos as number].uNameCollection,
+                                                this.tupColumnInfo[tupPos as number].measurePosition) !== memberPos) ?
+                        maxLevel[memberPos as number] :
+                        (maxLevel[memberPos as number] + (1 - minLevel[memberPos as number]));
                     memberPos++;
                 }
-                if (this.tupColumnInfo[tupPos].allStartPos === (this.tupColumnInfo[tupPos].measurePosition + 1)) {
-                    memberDepth -= maxLevel[this.tupColumnInfo[tupPos].allStartPos - 2] -
-                        this.tupColumnInfo[tupPos].levelCollection[this.tupColumnInfo[tupPos].allStartPos - 2] + 1;
+                if (this.tupColumnInfo[tupPos as number].allStartPos === (this.tupColumnInfo[tupPos as number].measurePosition + 1)) {
+                    memberDepth -= maxLevel[this.tupColumnInfo[tupPos as number].allStartPos - 2] -
+                        this.tupColumnInfo[tupPos as number].levelCollection[this.tupColumnInfo[tupPos as number].allStartPos - 2] + 1;
                 } else {
-                    memberDepth -= maxLevel[this.tupColumnInfo[tupPos].allStartPos - 1] -
-                        this.tupColumnInfo[tupPos].levelCollection[this.tupColumnInfo[tupPos].allStartPos - 1];
+                    memberDepth -= maxLevel[this.tupColumnInfo[tupPos as number].allStartPos - 1] -
+                        this.tupColumnInfo[tupPos as number].levelCollection[this.tupColumnInfo[tupPos as number].allStartPos - 1];
                 }
-                (this.pivotValues[memberDepth - 1] as IAxisSet[])[position - 1].ordinal = tupPos;
+                if (this.pivotValues[memberDepth - 1]) {
+                    (this.pivotValues[memberDepth - 1] as IAxisSet[])[position - 1].ordinal = tupPos;
+                }
             }
         }
     }
 
     private isAttributeDrill(hierarchy: string, drillInfo: IDrillInfo[], axis: string): boolean {
         let isDrill: boolean = false;
-        let isAdjacent: boolean = this.isAdjacentToMeasure(hierarchy, axis);
+        const isAdjacent: boolean = this.isAdjacentToMeasure(hierarchy, axis);
         if (!isAdjacent) {
             for (let i: number = 0; i < this.drilledMembers.length; i++) {
-                if (this.drilledMembers[i].name === hierarchy) {
-                    for (let j: number = 0; j < this.drilledMembers[i].items.length; j++) {
-                        let drillItems: string[] = this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter);
+                if (this.drilledMembers[i as number].name === hierarchy) {
+                    for (let j: number = 0; j < this.drilledMembers[i as number].items.length; j++) {
+                        const delimiter: string = this.drilledMembers[i as number].delimiter;
+                        const drillItems: string[] = this.drilledMembers[i as number].items[j as number].split(delimiter);
                         let levelName: string = '';
                         for (let k: number = 0; k < drillItems.length; k++) {
-                            if (drillInfo[k] && drillInfo[k].uName) {
-                                levelName = levelName + (levelName === '' ? '' : this.drilledMembers[i].delimiter) + drillInfo[k].uName;
+                            if (drillInfo[k as number] && drillInfo[k as number].uName) {
+                                levelName = levelName + (levelName === '' ? '' : this.drilledMembers[i as number].delimiter) +
+                                    drillInfo[k as number].uName;
                             }
                         }
-                        if (levelName === this.drilledMembers[i].items[j]) {
+                        if (levelName === this.drilledMembers[i as number].items[j as number]) {
                             isDrill = true;
                             break;
                         }
@@ -1441,9 +1593,11 @@ export class OlapEngine {
 
     private isAdjacentToMeasure(hierarchy: string, axis: string): boolean {
         let isAdjacent: boolean = false;
-        let fields: IFieldOptions[] = axis === 'rows' ? this.rows : this.columns;
+        const fields: IFieldOptions[] = axis === 'rows' ? this.rows : this.columns;
         for (let i: number = 0; i < fields.length; i++) {
-            if (fields[i].name === hierarchy && fields[i + 1] && (fields[i + 1].name === '[Measures]' || fields[i + 1].isNamedSet || (this.fieldList[fields[i + 1].name] && !this.fieldList[fields[i + 1].name].hasAllMember))) {
+            if (fields[i as number].name === hierarchy && fields[i + 1] && (fields[i + 1].name === '[Measures]' ||
+                fields[i + 1].isNamedSet || (this.fieldList[fields[i + 1].name] &&
+                    !this.fieldList[fields[i + 1].name].hasAllMember))) {
                 isAdjacent = true;
                 break;
             }
@@ -1452,12 +1606,12 @@ export class OlapEngine {
     }
 
     private getDrilledParent(childMember: Element, parentLevel: number, savedCollection: { [key: number]: Element }): void {
-        let childlevel: number = Number(childMember.querySelector('LNum').textContent);
+        const childlevel: number = Number(childMember.querySelector('LNum').textContent);
         let currentChild: Element = childMember;
         for (let lvl: number = childlevel - 1; lvl >= parentLevel; lvl--) {
-            let currentParent: Element = this.drilledSets[currentChild.querySelector('PARENT_UNIQUE_NAME').textContent];
+            const currentParent: Element = this.drilledSets[currentChild.querySelector('PARENT_UNIQUE_NAME').textContent];
             if (currentParent) {
-                savedCollection[lvl] = currentParent;
+                savedCollection[lvl as number] = currentParent;
                 currentChild = currentParent;
             } else {
                 break;
@@ -1467,33 +1621,37 @@ export class OlapEngine {
 
     private performRowSorting(): void {
         if (this.enableSort && this.tupRowInfo.length > 0) {
-            let rowCount: number = this.pivotValues.length;
-            let lvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
-            let measureObjects: { [key: string]: IAxisSet[] } = {};
+            const rowCount: number = this.pivotValues.length;
+            const lvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
+            const measureObjects: { [key: string]: IAxisSet[] } = {};
             let gSumGrouping: IAxisSet[] = [];
             let gSumFlag: boolean = false;
-            let withoutAllLastPos: number = this.tupRowInfo[0].typeCollection.lastIndexOf('1');
+            const withoutAllLastPos: number = this.tupRowInfo[0].typeCollection.lastIndexOf('1');
+            let isDrilled: boolean;
             for (let rPos: number = this.colDepth; rPos < rowCount; rPos++) {
-                let currentCell: IAxisSet = (this.pivotValues[rPos] as IAxisSet[])[0];
-                let currentTuple: ITupInfo = this.tupRowInfo[currentCell.ordinal];
+                const currentCell: IAxisSet = (this.pivotValues[rPos as number] as IAxisSet[])[0];
+                if (this.showSubTotalsAtBottom && currentCell.isSum && currentCell.memberType !== 3) {
+                    continue;
+                }
+                const currentTuple: ITupInfo = this.tupRowInfo[currentCell.ordinal];
                 let uniqueName: string = currentTuple ? (currentTuple.measurePosition === 0 && currentCell.memberType === 3 ?
                     currentTuple.measureName : currentTuple.uNameCollection) : '';
                 if (uniqueName !== '') {
                     if (withoutAllLastPos > -1) {
                         uniqueName = this.frameUniqueName(uniqueName, currentCell, currentTuple);
                     }
-                    let level: number = uniqueName.split(/~~|::\[/).length;
+                    const level: number = uniqueName.split(/~~|::\[/).length;
                     if (currentCell.memberType === 3 && this.tupRowInfo[0].measurePosition > 0) {
-                        let parentUName: string = this.getParentUname(uniqueName, currentCell, true, true);
-                        if (measureObjects[parentUName]) {
-                            measureObjects[parentUName].push(currentCell);
+                        const parentUName: string = this.getParentUname(uniqueName, currentCell, true, true);
+                        if (measureObjects[parentUName as string]) {
+                            measureObjects[parentUName as string].push(currentCell);
                         } else {
-                            measureObjects[parentUName] = [currentCell];
+                            measureObjects[parentUName as string] = [currentCell];
                         }
-                    } else if (lvlGrouping[level]) {
-                        lvlGrouping[level][uniqueName] = [currentCell];
+                    } else if (lvlGrouping[level as number]) {
+                        lvlGrouping[level as number][uniqueName as string] = [currentCell];
                     } else {
-                        lvlGrouping[level] = { [uniqueName]: [currentCell] };
+                        lvlGrouping[level as number] = { [uniqueName]: [currentCell] };
                     }
                 }
                 if (gSumFlag) {
@@ -1503,93 +1661,122 @@ export class OlapEngine {
                     gSumFlag = true;
                 }
             }
-            let isMeasureAvail: boolean = Object.keys(measureObjects).length > 0 && this.tupRowInfo[0].measurePosition > 0;
-            let levels: number[] = Object.keys(lvlGrouping).map((item: string) => {
+            const isMeasureAvail: boolean = Object.keys(measureObjects).length > 0 && this.tupRowInfo[0].measurePosition > 0;
+            const levels: number[] = Object.keys(lvlGrouping).map((item: string) => {
                 return Number(item);
-            }).sort((a, b) => (a > b) ? 1 : ((b > a) ? -1 : 0));    /* eslint-disable-line */
-            let sortLvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
+            }).sort((a: number, b: number) => (a > b) ? 1 : ((b > a) ? -1 : 0));
+            const sortLvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
             for (let lPos: number = levels.length - 1; lPos >= 0; lPos--) {
-                let parentGrouping: { [key: string]: IAxisSet[] } = {};
-                let objCollection: { [key: string]: IAxisSet[] } = lvlGrouping[levels[lPos]];
-                let objKeys: string[] = Object.keys(objCollection);
+                const parentGrouping: { [key: string]: IAxisSet[] } = {};
+                const objCollection: { [key: string]: IAxisSet[] } = lvlGrouping[levels[lPos as number]];
+                const objKeys: string[] = Object.keys(objCollection);
                 for (let oPos: number = 0; oPos < objKeys.length; oPos++) {
-                    let parentUName: string = lPos === 0 ? 'parent' :
-                        this.getParentUname(objKeys[oPos], objCollection[objKeys[oPos]][0], isMeasureAvail, false);
-                    if (parentGrouping[parentUName]) {
-                        parentGrouping[parentUName].push(objCollection[objKeys[oPos]][0]);
+                    const parentUName: string = lPos === 0 ? 'parent' :
+                        this.getParentUname(objKeys[oPos as number], objCollection[objKeys[oPos as number]][0], isMeasureAvail, false);
+                    if (parentGrouping[parentUName as string]) {
+                        parentGrouping[parentUName as string].push(objCollection[objKeys[oPos as number]][0]);
                     } else {
-                        parentGrouping[parentUName] = [objCollection[objKeys[oPos]]][0];
+                        parentGrouping[parentUName as string] = [objCollection[objKeys[oPos as number]]][0];
                     }
                 }
-                let pKeys: string[] = Object.keys(parentGrouping);
+                const pKeys: string[] = Object.keys(parentGrouping);
                 for (let kPos: number = 0; kPos < pKeys.length; kPos++) {
-                    parentGrouping[pKeys[kPos]] = this.sortRowHeaders(parentGrouping[pKeys[kPos]]);
+                    parentGrouping[pKeys[kPos as number]] = this.sortRowHeaders(parentGrouping[pKeys[kPos as number]]);
                 }
                 if (sortLvlGrouping[levels[lPos + 1]]) {
                     for (let kPos: number = 0; kPos < pKeys.length; kPos++) {
                         let groupSets: IAxisSet[] = [];
-                        let axisSets: IAxisSet[] = parentGrouping[pKeys[kPos]];
+                        const axisSets: IAxisSet[] = parentGrouping[pKeys[kPos as number]];
                         for (let aPos: number = 0; aPos < axisSets.length; aPos++) {
-                            let tupInfo: ITupInfo = this.tupRowInfo[axisSets[aPos].ordinal];
-                            let uName: string = (tupInfo.measurePosition === 0 && axisSets[aPos].memberType === 3) ?
+                            const tupInfo: ITupInfo = this.tupRowInfo[axisSets[aPos as number].ordinal];
+                            let uName: string = (tupInfo.measurePosition === 0 && axisSets[aPos as number].memberType === 3) ?
                                 tupInfo.measureName : tupInfo.uNameCollection;
-                            groupSets.push(axisSets[aPos]);
+                            groupSets.push(axisSets[aPos as number]);
                             if (withoutAllLastPos > -1) {
-                                uName = this.frameUniqueName(uName, axisSets[aPos], tupInfo);
+                                uName = this.frameUniqueName(uName, axisSets[aPos as number], tupInfo);
                             }
                             let isMembersIncluded: boolean = false;
                             if (isMeasureAvail) {
-                                let parentUName: string = this.getParentUname(uName, axisSets[aPos], isMeasureAvail, true);
-                                if (measureObjects[parentUName]) {
-                                    measureObjects[parentUName] = this.sortRowHeaders(measureObjects[parentUName]);
-                                    let isLastMeasure: boolean = uName.lastIndexOf('::[') === uName.indexOf('::[Measures]');
-                                    let isFullLength: boolean = uName.split('::[').length - 1 === tupInfo.measurePosition;
-                                    let isLastNotDrilledMember: boolean = !tupInfo.drillInfo[tupInfo.measurePosition - 1].isDrilled;
-                                    let isActualLastMember: boolean = tupInfo.members.length > (tupInfo.measurePosition + 1);
+                                const parentUName: string = this.getParentUname(uName, axisSets[aPos as number], isMeasureAvail, true);
+                                if (measureObjects[parentUName as string]) {
+                                    measureObjects[parentUName as string] = this.sortRowHeaders(measureObjects[parentUName as string]);
+                                    const isLastMeasure: boolean = uName.lastIndexOf('::[') === uName.indexOf('::[Measures]');
+                                    const isFullLength: boolean = uName.split('::[').length - 1 === tupInfo.measurePosition;
+                                    const isLastNotDrilledMember: boolean = !tupInfo.drillInfo[tupInfo.measurePosition - 1].isDrilled;
+                                    const isActualLastMember: boolean = tupInfo.members.length > (tupInfo.measurePosition + 1);
                                     if (isLastMeasure && isFullLength && isLastNotDrilledMember && isActualLastMember) {
                                         isMembersIncluded = true;
-                                        for (let mPos: number = 0; mPos < measureObjects[parentUName].length; mPos++) {
-                                            groupSets.push(measureObjects[parentUName][mPos]);
-                                            let matchParent: string = (uName.substring(
+                                        for (let mPos: number = 0; mPos < measureObjects[parentUName as string].length; mPos++) {
+                                            groupSets.push(measureObjects[parentUName as string][mPos as number]);
+                                            const matchParent: string = (uName.substring(
                                                 0, uName.indexOf(
-                                                    '::[Measures]')) + '::' + measureObjects[parentUName][mPos].actualText);
-                                            if (sortLvlGrouping[levels[lPos + 1]][matchParent]) {
-                                                groupSets = groupSets.concat(sortLvlGrouping[levels[lPos + 1]][matchParent]);
+                                                    '::[Measures]')) + '::' + measureObjects[parentUName as string][mPos as number].actualText);
+                                            if (sortLvlGrouping[levels[lPos + 1]][matchParent as string]) {
+                                                groupSets = groupSets.concat(sortLvlGrouping[levels[lPos + 1]][matchParent as string]);
                                             }
                                         }
                                     } else {
-                                        groupSets = groupSets.concat(measureObjects[parentUName]);
+                                        isDrilled = this.showSubTotalsAtBottom && groupSets[groupSets.length - 1].isDrilled;
+                                        groupSets = groupSets.concat(measureObjects[parentUName as string]);
                                     }
                                 }
                             }
                             if (!isMembersIncluded &&
-                                sortLvlGrouping[levels[lPos + 1]][uName]) {
-                                groupSets = groupSets.concat(sortLvlGrouping[levels[lPos + 1]][uName]);
+                                sortLvlGrouping[levels[lPos + 1]][uName as string]) {
+                                if (this.showSubTotalsAtBottom && groupSets[groupSets.length - 1].memberType === 3 &&
+                                    groupSets[groupSets.length - 1].level > -1 && isDrilled) {
+                                    let valueColl: IAxisSet[] = [];
+                                    let sliceIndex: number = 0;
+                                    for (let i: number = groupSets.length - 1; i >= 0; i--) {
+                                        if (groupSets[i as number].memberType === 3) {
+                                            valueColl[valueColl.length] = groupSets[i as number];
+                                        } else {
+                                            valueColl = valueColl.reverse();
+                                            sliceIndex = i + 1;
+                                            break;
+                                        }
+                                    }
+                                    groupSets = groupSets.slice(0, sliceIndex).concat(
+                                        sortLvlGrouping[levels[lPos + 1]][uName as string]).concat(valueColl);
+                                } else {
+                                    const currentCell: IAxisSet = groupSets[groupSets.length - 1];
+                                    let subTotal: IAxisSet;
+                                    if (this.showSubTotalsAtBottom && currentCell.isDrilled) {
+                                        subTotal = PivotUtil.frameHeaderWithKeys(currentCell);
+                                        subTotal.hasChild = false; subTotal.isDrilled = false; subTotal.isSum = true;
+                                        subTotal.formattedText = subTotal.formattedText + ' Total';
+                                    }
+                                    groupSets = groupSets.concat(sortLvlGrouping[levels[lPos + 1]][uName as string]);
+                                    if (subTotal) {
+                                        groupSets[groupSets.length] = subTotal;
+                                    }
+                                }
                             }
                         }
-                        parentGrouping[pKeys[kPos]] = groupSets;
+                        parentGrouping[pKeys[kPos as number]] = groupSets;
                     }
                 } else if (isMeasureAvail) {
                     for (let kPos: number = 0; kPos < pKeys.length; kPos++) {
-                        let axisSets: IAxisSet[] = parentGrouping[pKeys[kPos]];
+                        const axisSets: IAxisSet[] = parentGrouping[pKeys[kPos as number]];
                         let groupSets: IAxisSet[] = [];
                         for (let aPos: number = 0; aPos < axisSets.length; aPos++) {
-                            groupSets.push(axisSets[aPos]);
-                            let uName: string = this.tupRowInfo[axisSets[aPos].ordinal].uNameCollection;
+                            groupSets.push(axisSets[aPos as number]);
+                            let uName: string = this.tupRowInfo[axisSets[aPos as number].ordinal].uNameCollection;
                             if (withoutAllLastPos > -1) {
-                                uName = this.frameUniqueName(uName, axisSets[aPos], this.tupRowInfo[axisSets[aPos].ordinal]);
+                                uName = this.frameUniqueName(
+                                    uName, axisSets[aPos as number], this.tupRowInfo[axisSets[aPos as number].ordinal]);
                             }
-                            let parentUName: string =
-                                this.getParentUname(uName, axisSets[aPos], true, true);
-                            if (measureObjects[parentUName]) {
-                                measureObjects[parentUName] = this.sortRowHeaders(measureObjects[parentUName]);
-                                groupSets = groupSets.concat(measureObjects[parentUName]);
+                            const parentUName: string =
+                                this.getParentUname(uName, axisSets[aPos as number], true, true);
+                            if (measureObjects[parentUName as string]) {
+                                measureObjects[parentUName as string] = this.sortRowHeaders(measureObjects[parentUName as string]);
+                                groupSets = groupSets.concat(measureObjects[parentUName as string]);
                             }
                         }
-                        parentGrouping[pKeys[kPos]] = groupSets;
+                        parentGrouping[pKeys[kPos as number]] = groupSets;
                     }
                 }
-                sortLvlGrouping[levels[lPos]] = parentGrouping;
+                sortLvlGrouping[levels[lPos as number]] = parentGrouping;
             }
             let newPos: number = 0;
             let totPos: number = 0;
@@ -1597,156 +1784,161 @@ export class OlapEngine {
             gSumFlag = false;
             gSumGrouping = this.sortRowHeaders(gSumGrouping);
             for (let rPos: number = this.colDepth; rPos < rowCount; rPos++) {
-                /* eslint-disable @typescript-eslint/dot-notation */
                 if (this.dataSourceSettings.grandTotalsPosition === 'Top' && (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) &&
                     ((this.olapValueAxis === 'column' && this.colDepth + 1 === rPos) || (this.olapValueAxis === 'row' && this.colDepth + this.dataSourceSettings.values.length + 1 === rPos))) {
                     newPos = 0;
                     gSumFlag = false;
                 }
-                let cell: IAxisSet[] = gSumFlag ? gSumGrouping : sortLvlGrouping[levels[0]]['parent'];
-                /* eslint-enable @typescript-eslint/dot-notation */
-                let currPos: number = (this.dataSourceSettings.grandTotalsPosition === 'Top' && (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) && this.colDepth === rPos) ? cell.length : gSumFlag ? (newPos - totPos) : newPos;
-                if (cell[currPos]) {
-                    this.pivotValues[rPos] = [cell[currPos]];
-                    (this.pivotValues[rPos][0] as IAxisSet).rowIndex = rPos;
-                    this.valueContent[valuePos][0] = this.pivotValues[rPos][0] as IAxisSet;
+                const cell: IAxisSet[] = gSumFlag ? gSumGrouping : sortLvlGrouping[levels[0]]['parent'];
+                const currPos: number = (this.dataSourceSettings.grandTotalsPosition === 'Top' && (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals) && this.colDepth === rPos) ? cell.length : gSumFlag ? (newPos - totPos) : newPos;
+                if (cell[currPos as number]) {
+                    this.pivotValues[rPos as number] = [cell[currPos as number]];
+                    (this.pivotValues[rPos as number][0] as IAxisSet).rowIndex = rPos;
+                    this.valueContent[valuePos as number][0] = this.pivotValues[rPos as number][0] as IAxisSet;
                 }
                 newPos++;
                 valuePos++;
-                if ((this.pivotValues[rPos][0] as IAxisSet).type === 'grand sum') {
+                if ((this.pivotValues[rPos as number][0] as IAxisSet).type === 'grand sum') {
                     gSumFlag = true;
                     totPos = newPos;
                 }
             }
         }
     }
-    /* eslint-disable */
     private performColumnSorting(): void {
         if (this.enableSort) {
             for (let i: number = 0; i < this.dataSourceSettings.columns.length; i++) {
-                let temporary: Object[] = [];
+                const temporary: Object[] = [];
                 let index: number = 0;
-                let grandTotal: Object[] = [];
+                const grandTotal: Object[] = [];
                 for (let j: number = 0; j < this.pivotValues.length; j++) {
-                    let header: IAxisSet[] = this.pivotValues[j] as IAxisSet[];
+                    const header: IAxisSet[] = this.pivotValues[j as number] as IAxisSet[];
                     let key: string[];
                     let keys: string[];
                     let arrange: { [key: string]: IAxisSet[] } = {};
                     let value: number = 1;
-                    grandTotal[index] = [];
-                    temporary[index] = [];
+                    grandTotal[index as number] = [];
+                    temporary[index as number] = [];
                     let k: number = 1;
-                    let fieldName: string = header[k].hierarchy;
-                    let levelName: string = header[k].levelUniqueName;
-                    for (k = k; k < header.length; k++) {
-                        if (!header[k].isNamedSet) {
-                            if ((header[k] as IAxisSet).memberType != 2 && header[k].hierarchy
-                                != '[Measures]' && (header[k] as IAxisSet).level != -1) {
-                                if (isNullOrUndefined(arrange[header[k].formattedText]) || isNullOrUndefined(this.pivotValues[j - 1])) {
-                                    arrange[header[k].formattedText] = arrange[header[k].formattedText] ? arrange[header[k].formattedText] : [];
-                                    arrange[header[k].formattedText][header[k].colIndex] = header[k];
-                                } else if (arrange[header[k].formattedText] && this.pivotValues[j - 1]) {
-                                    let prevRowCell: any = this.pivotValues[j - 1][header[k].colIndex];
-                                    let prevColValue: number = Number(Object.keys(arrange[header[k].formattedText])[0]);
-                                    let prevColIndex: number = ((arrange[header[k].formattedText])[prevColValue]).colIndex;
-                                    let prevColRowCell: any = this.pivotValues[j - 1][prevColIndex];
+                    const fieldName: string = header[k as number].hierarchy;
+                    const levelName: string = header[k as number].levelUniqueName;
+                    for (k; k < header.length; k++) {
+                        if (!header[k as number].isNamedSet) {
+                            if ((header[k as number] as IAxisSet).memberType !== 2 && header[k as number].hierarchy
+                                !== '[Measures]' && (header[k as number] as IAxisSet).level !== -1) {
+                                if (isNullOrUndefined(arrange[header[k as number].formattedText]) ||
+                                    isNullOrUndefined(this.pivotValues[j - 1])) {
+                                    arrange[header[k as number].formattedText] = arrange[header[k as number].formattedText] ?
+                                        arrange[header[k as number].formattedText] : [];
+                                    arrange[header[k as number].formattedText][header[k as number].colIndex] = header[k as number];
+                                } else if (arrange[header[k as number].formattedText] && this.pivotValues[j - 1]) {     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    const prevRowCell: any = this.pivotValues[j - 1][header[k as number].colIndex];
+                                    const prevColValue: number = Number(Object.keys(arrange[header[k as number].formattedText])[0]);
+                                    const prevColIndex: number =
+                                        ((arrange[header[k as number].formattedText])[prevColValue as number]).colIndex;    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    const prevColRowCell: any = this.pivotValues[j - 1][prevColIndex as number];
                                     if (prevRowCell.formattedText !== prevColRowCell.formattedText) {
                                         let key: string[] = Object.keys(arrange);
                                         key = this.sortColumnHeaders(key, this.sortObject[header[k - 1].levelUniqueName] ||
-                                            this.sortObject[header[k].hierarchy], fieldName, levelName);
-                                        isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
+                                            this.sortObject[header[k as number].hierarchy], fieldName, levelName);
+                                        temporary[index as number] = isNullOrUndefined(temporary[index as number]) ? [] :
+                                            temporary[index as number];
                                         for (let keyPos: number = 0; keyPos < key.length; keyPos++) {
-                                            let length: number = Object.keys(arrange[key[keyPos]]).length;
+                                            const length: number = Object.keys(arrange[key[keyPos as number]]).length;
                                             for (let cellPos: number = 0; cellPos < length; cellPos++) {
-                                                value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
-                                                (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                                    arrange[key[keyPos]][Number(Object.keys(arrange[key[keyPos]])[cellPos])];
+                                                value = (temporary[index as number] as Object[]).length === 0 ? 1 : 0;
+                                                (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] = arrange[key[keyPos as number]][Number(Object.keys(arrange[key[keyPos as number]])[cellPos as number])];   /* eslint-disable-line */
                                             }
                                         }
                                         arrange = {};
-                                        arrange[header[k].formattedText] = [];
-                                        arrange[header[k].formattedText][header[k].colIndex] = header[k];
+                                        arrange[header[k as number].formattedText] = [];
+                                        arrange[header[k as number].formattedText][header[k as number].colIndex] = header[k as number];
                                     } else {
-                                        arrange[header[k].formattedText][header[k].colIndex] = header[k];
+                                        arrange[header[k as number].formattedText][header[k as number].colIndex] = header[k as number];
                                     }
                                 }
                             } else if (Object.keys(arrange).length > 0) {
-                                (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
+                                (grandTotal[index as number] as Object[])[(grandTotal[index as number] as Object[]).length + value]
+                                    = header[k as number];
                                 key = Object.keys(arrange);
                                 key = this.sortColumnHeaders(key, this.sortObject[header[k - 1].levelUniqueName] ||
-                                    this.sortObject[header[k].hierarchy], fieldName, levelName);
-                                isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
+                                    this.sortObject[header[k as number].hierarchy], fieldName, levelName);
+                                temporary[index as number] = isNullOrUndefined(temporary[index as number]) ? [] :
+                                    temporary[index as number];
                                 for (let l: number = 0; l < key.length; l++) {
-                                    let length: number = Object.keys(arrange[key[l]]).length;
+                                    const length: number = Object.keys(arrange[key[l as number]]).length;
                                     for (let q: number = 0; q < length; q++) {
-                                        value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
-                                        (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                            arrange[key[l]][Number(Object.keys(arrange[key[l]])[q])];
+                                        value = (temporary[index as number] as Object[]).length === 0 ? 1 : 0;
+                                        (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] =
+                                            arrange[key[l as number]][Number(Object.keys(arrange[key[l as number]])[q as number])];
                                     }
                                 }
-                            } else if (((header[k] as IAxisSet).level === -1 || (header[k] as IAxisSet).level === 0) &&
-                                Object.keys(arrange).length >= 0 && header[k].hierarchy != '[Measures]') {
-                                (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
+                            } else if (((header[k as number] as IAxisSet).level === -1 || (header[k as number] as IAxisSet).level === 0) &&
+                                Object.keys(arrange).length >= 0 && header[k as number].hierarchy !== '[Measures]') {
+                                (grandTotal[index as number] as Object[])[(grandTotal[index as number] as Object[]).length + value]
+                                    = header[k as number];
                             }
-                            if ((header[k] as IAxisSet).level != -1 && Object.keys(arrange).length === 1 &&
-                                header[k].hierarchy != '[Measures]' && !isNullOrUndefined(header[k + 1]) &&
+                            if ((header[k as number] as IAxisSet).level !== -1 && Object.keys(arrange).length === 1 &&
+                                header[k as number].hierarchy !== '[Measures]' && !isNullOrUndefined(header[k + 1]) &&
                                 (header[k + 1] as IAxisSet).level === -1) {
-                                let height: number = Object.keys(arrange[(header[k] as IAxisSet).formattedText]).length;
-                                let weight: string[] = Object.keys(arrange[(header[k] as IAxisSet).formattedText]);
+                                const height: number = Object.keys(arrange[(header[k as number] as IAxisSet).formattedText]).length;
+                                const weight: string[] = Object.keys(arrange[(header[k as number] as IAxisSet).formattedText]);
                                 if (height > 1) {
                                     for (let hgt: number = 0; hgt < height; hgt++) {
-                                        value = (grandTotal[index] as Object[]).length === 0 ? 1 : 0;
-                                        (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] =
-                                            arrange[(header[k] as IAxisSet).formattedText][Number(weight[hgt])];
+                                        value = (grandTotal[index as number] as Object[]).length === 0 ? 1 : 0;
+                                        (grandTotal[index as number] as Object[])[(grandTotal[index as number] as Object[]).length + value]
+                                            = arrange[(header[k as number] as IAxisSet).formattedText][Number(weight[hgt as number])];
                                     }
                                 } else {
-                                    (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
+                                    (grandTotal[index as number] as Object[])[(grandTotal[index as number] as Object[]).length + value]
+                                        = header[k as number];
                                 }
                             }
-                            if (Object.keys(grandTotal[index]).length > 0) {
-                                value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
-                                let height1: number = (grandTotal[index] as Object[]).length;
+                            if (Object.keys(grandTotal[index as number]).length > 0) {
+                                value = (temporary[index as number] as Object[]).length === 0 ? 1 : 0;
+                                const height1: number = (grandTotal[index as number] as Object[]).length;
                                 if (height1 > 2) {
                                     for (let hgt1: number = 1; hgt1 < height1; hgt1++) {
-                                        value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
-                                        (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                            (grandTotal[index] as Object[])[hgt1];
+                                        value = (temporary[index as number] as Object[]).length === 0 ? 1 : 0;
+                                        (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] =
+                                            (grandTotal[index as number] as Object[])[hgt1 as number];
                                     }
                                 } else {
-                                    (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                        (grandTotal[index] as Object[])[1] || (grandTotal[index] as Object[])[0];
+                                    (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] =
+                                        (grandTotal[index as number] as Object[])[1] || (grandTotal[index as number] as Object[])[0];
                                 }
                                 arrange = {};
-                                grandTotal[index] = [];
+                                grandTotal[index as number] = [];
                             }
                         }
                     }
                     if (Object.keys(arrange).length > 0) {
-                        (grandTotal[index] as Object[])[(grandTotal[index] as Object[]).length + value] = header[k];
+                        (grandTotal[index as number] as Object[])[(grandTotal[index as number] as Object[]).length + value]
+                            = header[k as number];
                         keys = Object.keys(arrange);
-                        let order: string = this.sortObject[header[k - 1].levelUniqueName] || this.sortObject[header[k - 1].hierarchy];
+                        const order: string = this.sortObject[header[k - 1].levelUniqueName] || this.sortObject[header[k - 1].hierarchy];
                         key = this.sortColumnHeaders(keys, order, fieldName, levelName);
-                        isNullOrUndefined(temporary[index]) ? temporary[index] = [] : temporary[index];
+                        temporary[index as number] = isNullOrUndefined(temporary[index as number]) ? [] : temporary[index as number];
                         for (let len: number = 0; len < keys.length; len++) {
-                            let leng: number = Object.keys(arrange[keys[len]]).length;
+                            const leng: number = Object.keys(arrange[keys[len as number]]).length;
                             for (let q: number = 0; q < leng; q++) {
-                                value = (temporary[index] as Object[]).length === 0 ? 1 : 0;
-                                (temporary[index] as Object[])[(temporary[index] as Object[]).length + value] =
-                                    arrange[key[len]][Number(Object.keys(arrange[keys[len]])[q])];
+                                value = (temporary[index as number] as Object[]).length === 0 ? 1 : 0;
+                                (temporary[index as number] as Object[])[(temporary[index as number] as Object[]).length + value] =
+                                    arrange[key[len as number]][Number(Object.keys(arrange[keys[len as number]])[q as number])];
                             }
                         }
                     }
-                    for (let m: number = 1; m < (temporary[index] as Object[]).length; m++) {
-                        this.pivotValues[index][m] = (temporary[index] as Object[])[m];
-                    }
+                    for (let m: number = 1; m < (temporary[index as number] as Object[]).length; m++) {
+                        this.pivotValues[index as number][m as number] = (temporary[index as number] as Object[])[m as number];
+                    }   /* eslint-enable @typescript-eslint/ban-types */
                     for (let n: number = j; n < this.pivotValues.length; n++) {
-                        let pElement: IPivotRows = extend({}, this.pivotValues[n + 1], null, true) as IPivotValues;
-                        let cElement: IPivotRows = extend({}, this.pivotValues[n], null, true) as IPivotValues;
+                        const pElement: IPivotRows = extend({}, this.pivotValues[n + 1], null, true) as IPivotValues;
+                        const cElement: IPivotRows = extend({}, this.pivotValues[n as number], null, true) as IPivotValues;
                         if (Object.keys(pElement).length === Object.keys(cElement).length && Object.keys(pElement).length > 2) {
-                            for (let o: number = 1; o < this.pivotValues[j].length; o++) {
-                                if (Object.keys(pElement).length > 0 && (cElement[o] as IAxisSet).colIndex
-                                    != (pElement[o] as IAxisSet).colIndex) {
-                                    this.pivotValues[n + 1][o] = pElement[(cElement[o] as IAxisSet).colIndex];
+                            for (let o: number = 1; o < this.pivotValues[j as number].length; o++) {
+                                if (Object.keys(pElement).length > 0 && (cElement[o as number] as IAxisSet).colIndex
+                                    !== (pElement[o as number] as IAxisSet).colIndex) {
+                                    this.pivotValues[n + 1][o as number] = pElement[(cElement[o as number] as IAxisSet).colIndex];
                                 }
                             }
                             break;
@@ -1756,27 +1948,27 @@ export class OlapEngine {
                     arrange = {};
                 }
                 for (let i: number = 0; i < this.pivotValues.length; i++) {
-                    let header: IPivotRows = this.pivotValues[i];
+                    const header: IPivotRows = this.pivotValues[i as number];
                     for (let j: number = 1; j < header.length; j++) {
-                        (header[j] as IAxisSet).colIndex = j;
+                        (header[j as number] as IAxisSet).colIndex = j;
                     }
                 }
             }
         }
     }
     private frameUniqueName(uniqueName: string, currentCell: IAxisSet, currentTuple: ITupInfo): string {
-        let hasLastMeasure: boolean = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
+        const hasLastMeasure: boolean = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
         uniqueName = uniqueName.substring(0, uniqueName.indexOf(currentCell.actualText.toString())) +
             currentCell.actualText.toString();
-        let measureAvail: boolean = uniqueName.split('::[').length <= this.getMeasurePosition(uniqueName, currentTuple.measurePosition);
+        const measureAvail: boolean = uniqueName.split('::[').length <= this.getMeasurePosition(uniqueName, currentTuple.measurePosition);
         uniqueName = uniqueName + ((hasLastMeasure || measureAvail) ? ('::' + currentTuple.measureName) : '');
         return uniqueName;
     }
     private getMeasurePosition(uniqueName: string, measurePosition: number): number {
         let position: number = measurePosition;
-        let collection: string[] = uniqueName.split('::[');
+        const collection: string[] = uniqueName.split('::[');
         for (let i: number = 0; i < collection.length; i++) {
-            if (collection[i] && collection[i].indexOf('Measures') > -1) {
+            if (collection[i as number] && collection[i as number].indexOf('Measures') > -1) {
                 position = i;
                 break;
             }
@@ -1785,14 +1977,16 @@ export class OlapEngine {
     }
     private sortRowHeaders(headers: IAxisSet[]): IAxisSet[] {
         if (headers.length > 0 && headers[0].memberType !== 3 && !headers[0].isNamedSet) {
-            let sortMembers: string[] = [];
-            for (let i = 0; i < headers.length; i++) {
-                sortMembers[i] = headers[i].actualText as string;
+            const sortMembers: string[] = [];
+            for (let i: number = 0; i < headers.length; i++) {
+                sortMembers[i as number] = headers[i as number].actualText as string;
             }
             let isHeaderSortByDefault: boolean = false;
-            let fieldName: string = headers[0].actualText !== 'Grand Total' ? headers[0].hierarchy : headers[1].hierarchy;
-            let membersInfo: string[] | number[] = this.fieldList[fieldName] && this.fieldList[fieldName].membersOrder ? [...this.fieldList[fieldName].membersOrder] as string[] | number[] : [];
-            let sortDetails: HeadersSortEventArgs = {
+            const fieldName: string = headers[0].actualText !== 'Grand Total' ? headers[0].hierarchy : headers[1].hierarchy;
+            const membersInfo: string[] | number[] =
+                this.fieldList[fieldName as string] && this.fieldList[fieldName as string].membersOrder ?
+                    [...this.fieldList[fieldName as string].membersOrder] as string[] | number[] : [];
+            const sortDetails: HeadersSortEventArgs = {
                 fieldName: fieldName,
                 levelName: headers[0].levelUniqueName,
                 sortOrder: (this.sortObject[headers[0].hierarchy] || this.sortObject[headers[0].levelUniqueName]) as Sorting,
@@ -1804,21 +1998,19 @@ export class OlapEngine {
             }
             else {
                 if (sortDetails.sortOrder === 'Ascending' || sortDetails.sortOrder === undefined) {
-                    headers === headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText > b.formattedText) ? 1 :
+                    headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText > b.formattedText) ? 1 :
                         ((b.formattedText > a.formattedText) ? -1 : 0));
                 } else if (sortDetails.sortOrder === 'Descending') {
-                    headers === headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText < b.formattedText) ? 1 :
+                    headers.sort((a: IAxisSet, b: IAxisSet) => (a.formattedText < b.formattedText) ? 1 :
                         ((b.formattedText < a.formattedText) ? -1 : 0));
-                } else {
-                    headers;
                 }
                 isHeaderSortByDefault = true;
             }
             if (isHeaderSortByDefault && this.getHeaderSortInfo) {
-                let copyOrder: string[] = [];
+                const copyOrder: string[] = [];
                 for (let m: number = 0, n: number = 0; m < headers.length; m++) {
-                    if (headers[m].actualText !== 'Grand Total') {
-                        copyOrder[n++] = headers[m].formattedText;
+                    if (headers[m as number].actualText !== 'Grand Total') {
+                        copyOrder[n++] = headers[m as number].formattedText;
                     }
                 }
                 sortDetails.members = copyOrder as string[];
@@ -1835,8 +2027,9 @@ export class OlapEngine {
     }
     private sortColumnHeaders(keys: string[], order: string, header?: string, levelName?: string): string[] {
         let isHeaderSortByDefault: boolean = false;
-        let membersInfo: string[] | number[] = this.fieldList[header] && this.fieldList[header].membersOrder ? [...this.fieldList[header].membersOrder] as string[] | number[] : [];
-        let sortDetails: HeadersSortEventArgs = {
+        const membersInfo: string[] | number[] = this.fieldList[header as string] && this.fieldList[header as string].membersOrder ?
+            [...this.fieldList[header as string].membersOrder] as string[] | number[] : [];
+        const sortDetails: HeadersSortEventArgs = {
             fieldName: header,
             levelName: levelName,
             sortOrder: order as Sorting,
@@ -1848,17 +2041,17 @@ export class OlapEngine {
         }
         else {
             if (sortDetails.sortOrder === 'Ascending' || sortDetails.sortOrder === undefined) {
-                keys.sort((a, b) => (a > b) ? 1 : ((b > a) ? -1 : 0));
+                keys.sort((a: string, b: string): number => (a > b) ? 1 : ((b > a) ? -1 : 0));
             } else if (sortDetails.sortOrder === 'Descending') {
-                keys.sort((a, b) => (a < b) ? 1 : ((b < a) ? -1 : 0));
+                keys.sort((a: string, b: string): number => (a < b) ? 1 : ((b < a) ? -1 : 0));
             }
             isHeaderSortByDefault = true;
         }
         if (isHeaderSortByDefault && this.getHeaderSortInfo) {
-            let copyOrder: string[] = [];
+            const copyOrder: string[] = [];
             for (let m: number = 0, n: number = 0; m < keys.length; m++) {
-                if (keys[m] !== 'Grand Total') {
-                    copyOrder[n++] = keys[m];
+                if (keys[m as number] !== 'Grand Total') {
+                    copyOrder[n++] = keys[m as number];
                 }
             }
             sortDetails.members = copyOrder as string[];
@@ -1873,7 +2066,7 @@ export class OlapEngine {
     }
     private applyCustomSort(headers: string[], sortDetails: HeadersSortEventArgs, hasMembersOrder?: boolean): string[] {
         let order: string[] | number[] = [];
-        let updatedMembers: string[] = [];
+        const updatedMembers: string[] = [];
         let grandTotal: string;
         if (sortDetails.IsOrderChanged) {
             order = sortDetails.members;
@@ -1886,8 +2079,8 @@ export class OlapEngine {
             headers.shift();
         }
         for (let i: number = 0, j: number = 0; i < headers.length; i++) {
-            let sortText: string = headers[i];
-            if (order[j] === sortText) {
+            const sortText: string = headers[i as number];
+            if (order[j as number] === sortText) {
                 headers.splice(j++, 0, sortText);
                 headers.splice(++i, 1);
                 if (j < order.length) {
@@ -1901,12 +2094,12 @@ export class OlapEngine {
                 }
             }
             if (i >= 0 && !hasMembersOrder) {
-                updatedMembers[i] = headers[i];
+                updatedMembers[i as number] = headers[i as number];
             }
         }
         if (!hasMembersOrder) {
             for (let i: number = updatedMembers.length; i < headers.length; i++) {
-                updatedMembers[i] = headers[i];
+                updatedMembers[i as number] = headers[i as number];
             }
             if (updatedMembers[updatedMembers.length - 1] === 'Grand Total') {
                 updatedMembers.pop();
@@ -1918,24 +2111,23 @@ export class OlapEngine {
         }
         return headers;
     }
-    /* eslint-enable */
     private frameSortObject(): void {
         if (this.enableSort) {
             for (let fPos: number = 0; fPos < this.sortSettings.length; fPos++) {
-                this.sortObject[this.sortSettings[fPos].name] = this.sortSettings[fPos].order;
+                this.sortObject[this.sortSettings[fPos as number].name] = this.sortSettings[fPos as number].order;
             }
         }
     }
     private getParentUname(uniqueNameColl: string, cell: IAxisSet, isMeasureAvail: boolean, isLastMeasure: boolean): string {
         let parentString: string = '';
         if (isMeasureAvail && !isLastMeasure) {
-            let tuple: ITupInfo = this.tupRowInfo[cell.ordinal];
-            let sepPos: number[] = [];
-            let sepObjects: { [key: number]: string } = {};
+            const tuple: ITupInfo = this.tupRowInfo[cell.ordinal];
+            const sepPos: number[] = [];
+            const sepObjects: { [key: number]: string } = {};
             for (let i: number = 0; i < uniqueNameColl.length; i++) {
-                if (uniqueNameColl[i] === '~' || uniqueNameColl[i] === ':') {
+                if (uniqueNameColl[i as number] === '~' || uniqueNameColl[i as number] === ':') {
                     sepPos.push(i);
-                    sepObjects[i] = uniqueNameColl[i] + uniqueNameColl[i];
+                    sepObjects[i as number] = uniqueNameColl[i as number] + uniqueNameColl[i as number];
                     i++;
                 }
             }
@@ -1947,12 +2139,12 @@ export class OlapEngine {
                     parentString = 'parent';
                 }
             } else {
-                let lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                const lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
                     uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
                 parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
             }
         } else {
-            let lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+            const lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
                 uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
             parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
         }
@@ -1960,22 +2152,27 @@ export class OlapEngine {
     }
 
     private performColumnSpanning(): void {
-        let spanCollection: { [key: number]: { [key: number]: number } } = {};
+        const spanCollection: { [key: number]: { [key: number]: number } } = {};
         let rowPos: number = this.rowStartPos - 1;
-        let colMeasureCount: number = Object.keys(this.colMeasures).length;
+        const colMeasureCount: number = Object.keys(this.colMeasures).length;
         while (rowPos > -1) {
-            spanCollection[rowPos] = {};
-            let colPos: number = (this.pivotValues[rowPos] as IAxisSet[]).length - 1;
+            spanCollection[rowPos as number] = {};
+            let colPos: number = (this.pivotValues[rowPos as number] as IAxisSet[]).length - 1;
             while (colPos > 0) {
-                spanCollection[rowPos][colPos] = 1;
-                let nextColCell: IAxisSet = (this.pivotValues[rowPos] as IAxisSet[])[colPos + 1];
-                let nextRowCell: IAxisSet = ((this.pivotValues[rowPos + 1] as IAxisSet[]) && this.rowStartPos - rowPos > 1) ? (this.pivotValues[rowPos + 1] as IAxisSet[])[colPos] : undefined; /* eslint-disable-line */
-                let currCell: IAxisSet = (this.pivotValues[rowPos] as IAxisSet[])[colPos];
+                spanCollection[rowPos as number][colPos as number] = 1;
+                const nextColCell: IAxisSet = (this.pivotValues[rowPos as number] as IAxisSet[])[colPos + 1];
+                const nextRowCell: IAxisSet = ((this.pivotValues[rowPos + 1] as IAxisSet[]) && this.rowStartPos - rowPos > 1) ?
+                    (this.pivotValues[rowPos + 1] as IAxisSet[])[colPos as number] : undefined;
+                const currCell: IAxisSet = (this.pivotValues[rowPos as number] as IAxisSet[])[colPos as number];
                 let colflag: boolean = false;
                 let rowflag: boolean = false;
-                let tupColInfo: ITupInfo = this.tupColumnInfo[currCell.ordinal];
-                let isSubTot: boolean = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
-                let attrDrill: boolean = this.checkAttributeDrill(tupColInfo.drillInfo, 'columns');
+                const tupColInfo: ITupInfo = this.tupColumnInfo[currCell.ordinal];
+                const isSubTot: boolean = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
+                const attrDrill: boolean = this.checkAttributeDrill(tupColInfo.drillInfo, 'columns');
+                if (this.showSubTotalsAtTop && currCell.isDrilled && nextColCell &&
+                    (nextColCell.actualText !== currCell.actualText) && currCell.level > -1) {
+                    currCell.ordinal = this.getOrdinal(currCell, this.pivotValues[rowPos + 1] as IAxisSet[]);
+                }
                 if (nextRowCell && nextColCell && ((currCell.memberType === 2 || currCell.level === -1) ?
                     (nextColCell.actualText === currCell.actualText) :
                     ((currCell.memberType === 3 && currCell.actualText === nextColCell.actualText) ||
@@ -1998,7 +2195,7 @@ export class OlapEngine {
                         if (!attrDrill) {
                             currCell.type = 'sum';
                         }
-                        //currCell.formattedText = (this.pivotValues[tupColInfo.allStartPos - 1] as IAxisSet[])[colPos].formattedText + ' Total';
+                        //currCell.formattedText = (this.pivotValues[tupColInfo.allStartPos - 1] as IAxisSet[])[colPos as number].formattedText + ' Total';
                         currCell.formattedText = 'Total';
                         currCell.valueSort[currCell.valueSort.levelName.toString()] = 1;
                     } else {
@@ -2022,10 +2219,16 @@ export class OlapEngine {
                 }
                 if (nextRowCell) {
                     if ((currCell.memberType === 2 && nextRowCell.memberType === 2) || nextRowCell.actualText === currCell.actualText) {
-                        spanCollection[rowPos][colPos] = spanCollection[rowPos + 1] ? (spanCollection[rowPos + 1][colPos] + 1) : 1;
-                        if (rowPos === 0 || (currCell.memberType === 1 && currCell.level > -1 && nextRowCell.memberType === 1 && nextRowCell.level === -1)) {   /* eslint-disable-line */
-                            currCell.rowSpan = (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] && this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true)) ? 1 : (spanCollection[rowPos + 1][colPos] + 1);  /* eslint-disable-line */
-                            nextRowCell.rowSpan = (nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true) && nextRowCell.level === -1) ? spanCollection[rowPos + 1][colPos] : nextRowCell.rowSpan;   /* eslint-disable-line */
+                        spanCollection[rowPos as number][colPos as number] = spanCollection[rowPos + 1] ?
+                            (spanCollection[rowPos + 1][colPos as number] + 1) : 1;
+                        if (rowPos === 0 || (currCell.memberType === 1 && currCell.level > -1 &&
+                            nextRowCell.memberType === 1 && nextRowCell.level === -1)) {
+                            currCell.rowSpan = (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] &&
+                                this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true)) ? 1 :
+                                (spanCollection[rowPos + 1][colPos as number] + 1);
+                            nextRowCell.rowSpan = (nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] &&
+                                this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true) &&
+                                nextRowCell.level === -1) ? spanCollection[rowPos + 1][colPos as number] : nextRowCell.rowSpan;
                         } else {
                             if (currCell.memberType === 3) {
                                 currCell.rowSpan = 1;
@@ -2034,24 +2237,29 @@ export class OlapEngine {
                             }
                         }
                         rowflag = true;
-                    } else if (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] && this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true) && currCell.level === -1 && nextRowCell.memberType === 2) {    /* eslint-disable-line */
-                        spanCollection[rowPos][colPos] = spanCollection[rowPos + 1] ? (spanCollection[rowPos + 1][colPos] + 1) : 1;
+                    } else if (currCell.isDrilled && ((this.fieldList[currCell.hierarchy] &&
+                        this.fieldList[currCell.hierarchy].isHierarchy) ? currCell.hasChild : true) && currCell.level === -1 &&
+                        nextRowCell.memberType === 2) {
+                        spanCollection[rowPos as number][colPos as number] = spanCollection[rowPos + 1] ?
+                            (spanCollection[rowPos + 1][colPos as number] + 1) : 1;
                         currCell.rowSpan = -1;
                         rowflag = true;
                     } else {
-                        /* eslint-disable */
-                        currCell.rowSpan = rowPos === 0 ? spanCollection[rowPos][colPos] : -1;
-                        nextRowCell.rowSpan = ((nextRowCell.level > -1 && !(nextRowCell.isDrilled && ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ? nextRowCell.hasChild : true))) || (currCell.memberType !== 2 && nextRowCell.memberType === 2)) ? spanCollection[rowPos + 1][colPos] : 1;
-                        /* eslint-enable */
+                        currCell.rowSpan = rowPos === 0 ? spanCollection[rowPos as number][colPos as number] : -1;
+                        nextRowCell.rowSpan = ((nextRowCell.level > -1 && !(nextRowCell.isDrilled &&
+                            ((this.fieldList[nextRowCell.hierarchy] && this.fieldList[nextRowCell.hierarchy].isHierarchy) ?
+                                nextRowCell.hasChild : true))) || (currCell.memberType !== 2 && nextRowCell.memberType === 2)) ?
+                            spanCollection[rowPos + 1][colPos as number] : 1;
                     }
                 } else {
-                    currCell.rowSpan = (currCell.level > -1 || this.rowStartPos === 1) ? spanCollection[rowPos][colPos] : -1;
+                    currCell.rowSpan = (currCell.level > -1 || this.rowStartPos === 1) ?
+                        spanCollection[rowPos as number][colPos as number] : -1;
                 }
                 if (!colflag) {
                     currCell.colSpan = 1;
                 }
                 if (!rowflag) {
-                    spanCollection[rowPos][colPos] = 1;
+                    spanCollection[rowPos as number][colPos as number] = 1;
                 }
                 colPos--;
             }
@@ -2059,33 +2267,44 @@ export class OlapEngine {
         }
     }
 
+    private getOrdinal(currCell: IAxisSet, nextRow: IAxisSet[]): number {
+        let newOrdinal: number = 0;
+        for (let cellIndex: number = currCell.colIndex; cellIndex > 0; cellIndex--) {
+            if (nextRow[cellIndex as number].level === -1) {
+                newOrdinal = nextRow[cellIndex as number].ordinal;
+                break;
+            }
+        }
+        return newOrdinal;
+    }
+
     private frameValues(tuples: Element[], colLength: number): void {
         let rowStartPos: number = this.colDepth;
         let rowEndPos: number = this.pivotValues.length;
         let startRowOrdinal: number = 0;
         if (this.customArgs.action === 'down') {
-            let keys: string[] = Object.keys(this.onDemandDrillEngine);
+            const keys: string[] = Object.keys(this.onDemandDrillEngine);
             rowStartPos = Number(keys[0]);
             rowEndPos = Number(keys[keys.length - 1]) + 1;
-            startRowOrdinal = (this.onDemandDrillEngine[rowStartPos][0] as IAxisSet).ordinal;
+            startRowOrdinal = (this.onDemandDrillEngine[rowStartPos as number][0] as IAxisSet).ordinal;
         }
-        let valCollection: { [key: string]: Element } = {};
+        const valCollection: { [key: string]: Element } = {};
         for (let colPos: number = 0; colPos < tuples.length; colPos++) {
-            valCollection[Number(tuples[colPos].getAttribute('CellOrdinal'))] = tuples[colPos];
+            valCollection[Number(tuples[colPos as number].getAttribute('CellOrdinal'))] = tuples[colPos as number];
         }
         for (let rowPos: number = rowStartPos; rowPos < rowEndPos; rowPos++) {
-            let columns: IAxisSet[] = this.pivotValues[rowPos] as IAxisSet[];
-            let rowOrdinal: number = columns[0].ordinal;
+            const columns: IAxisSet[] = this.pivotValues[rowPos as number] as IAxisSet[];
+            const rowOrdinal: number = columns[0].ordinal;
             for (let colPos: number = 1; colPos < (this.pivotValues[0] as IAxisSet[]).length; colPos++) {
-                if ((this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos]) {
-                    let colOrdinal: number = (this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos].ordinal;
-                    let lastColCell: IAxisSet = (this.pivotValues[this.colDepth - 1][colPos] as IAxisSet);
-                    let measure: string | number = columns[0].memberType === 3 ? columns[0].actualText.toString() :
+                if ((this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos as number]) {
+                    const colOrdinal: number = (this.pivotValues[this.colDepth - 1] as IAxisSet[])[colPos as number].ordinal;
+                    const lastColCell: IAxisSet = (this.pivotValues[this.colDepth - 1][colPos as number] as IAxisSet);
+                    const measure: string | number = columns[0].memberType === 3 ? columns[0].actualText.toString() :
                         ((this.tupColumnInfo[lastColCell.ordinal] && this.tupColumnInfo[lastColCell.ordinal].measure) ?
                             this.tupColumnInfo[lastColCell.ordinal].measure.querySelector('UName').textContent :
                             columns[0].actualText);
                     if (columns[0].type === 'header') {
-                        columns[colPos] = {
+                        columns[colPos as number] = {
                             axis: 'value',
                             actualText: this.getUniqueName(measure as string),
                             formattedText: '',
@@ -2094,42 +2313,47 @@ export class OlapEngine {
                             rowIndex: rowPos
                         };
                     } else {
-                        let valElement: Element;
                         let formattedText: string;
                         let value: string = '0';
-                        let measureName: string = this.getUniqueName(measure as string);
+                        const measureName: string = this.getUniqueName(measure as string);
                         let showTotals: boolean = true;
-                        let attrDrill: boolean =
-                            (this.fieldList[columns[0].hierarchy] && this.fieldList[columns[0].hierarchy].isHierarchy) ? columns[0].isDrilled : true; /* eslint-disable-line */
-                        if (this.tupRowInfo[rowOrdinal]) {
-                            showTotals = this.tupRowInfo[rowOrdinal].showTotals;
+                        const attrDrill: boolean = (this.fieldList[columns[0].hierarchy] &&
+                            this.fieldList[columns[0].hierarchy].isHierarchy) ? columns[0].isDrilled : true;
+                        if (this.tupRowInfo[rowOrdinal as number]) {
+                            showTotals = this.tupRowInfo[rowOrdinal as number].showTotals;
                         } else {
                             showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
                         }
-                        valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                        formattedText = (!showTotals && attrDrill) ? '' :
+                        const valElement: Element = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
+                        formattedText = this.showSubTotalsAtBottom && columns[0].isDrilled ? '' : (!showTotals && attrDrill) ? '' :
                             ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
                                 valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
                         value = (!showTotals && attrDrill) ? '0' :
                             ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
                                 valElement.querySelector('Value').textContent : null);
-                        formattedText = showTotals && !isNullOrUndefined(value) ?
-                            this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) :
-                            formattedText;
-                        let isSum: boolean = (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].allCount > 0 ||
-                            this.tupColumnInfo[colOrdinal].drillStartPos > -1) : true) ||
-                            (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].allCount > 0 ||
-                                this.tupRowInfo[rowOrdinal].drillStartPos > -1) : true);
-                        let isGrand: boolean = (this.tupRowInfo[rowOrdinal] ? (this.tupRowInfo[rowOrdinal].measurePosition === 0 ? this.tupRowInfo[rowOrdinal].allStartPos === 1 : this.tupRowInfo[rowOrdinal].allStartPos === 0) : false) ||   /* eslint-disable-line */
-                            (this.tupColumnInfo[colOrdinal] ? (this.tupColumnInfo[colOrdinal].measurePosition === 0 ? this.tupColumnInfo[colOrdinal].allStartPos === 1 : this.tupColumnInfo[colOrdinal].allStartPos === 0) : false);    /* eslint-disable-line */
-                        columns[colPos] = {
+                        formattedText = this.showSubTotalsAtBottom && columns[0].isDrilled ? '' : showTotals && !isNullOrUndefined(value) ?
+                            this.getFormattedValue(Number(value), measureName, (formattedText !== '' ? formattedText : value)) : formattedText;
+                        const isSum: boolean = (this.tupColumnInfo[colOrdinal as number] ?
+                            (this.tupColumnInfo[colOrdinal as number].allCount > 0 ||
+                                this.tupColumnInfo[colOrdinal as number].drillStartPos > -1) : true) ||
+                            (this.tupRowInfo[rowOrdinal as number] ? (this.tupRowInfo[rowOrdinal as number].allCount > 0 ||
+                                this.tupRowInfo[rowOrdinal as number].drillStartPos > -1) : true);
+                        const isGrand: boolean = (this.tupRowInfo[rowOrdinal as number] ?
+                            (this.tupRowInfo[rowOrdinal as number].measurePosition === 0 ?
+                                this.tupRowInfo[rowOrdinal as number].allStartPos === 1 :
+                                this.tupRowInfo[rowOrdinal as number].allStartPos === 0) : false) ||
+                                (this.tupColumnInfo[colOrdinal as number] ?
+                                    (this.tupColumnInfo[colOrdinal as number].measurePosition === 0 ?
+                                        this.tupColumnInfo[colOrdinal as number].allStartPos === 1 :
+                                        this.tupColumnInfo[colOrdinal as number].allStartPos === 0) : false);
+                        columns[colPos as number] = {
                             axis: 'value',
                             actualText: measureName,
                             formattedText: formattedText,
                             colOrdinal: colOrdinal,
                             rowOrdinal: rowOrdinal,
-                            columnHeaders: this.tupColumnInfo[colOrdinal] ? this.tupColumnInfo[colOrdinal].captionCollection : '',
-                            rowHeaders: this.tupRowInfo[rowOrdinal] ? this.tupRowInfo[rowOrdinal].captionCollection : '',
+                            columnHeaders: this.tupColumnInfo[colOrdinal as number] ? this.tupColumnInfo[colOrdinal as number].captionCollection : '',
+                            rowHeaders: this.tupRowInfo[rowOrdinal as number] ? this.tupRowInfo[rowOrdinal as number].captionCollection : '',
                             value: !isNullOrUndefined(value) ? Number(value) : null,
                             colIndex: colPos,
                             rowIndex: rowPos,
@@ -2137,21 +2361,27 @@ export class OlapEngine {
                             isGrandSum: isGrand
                         };
                     }
-                    this.valueContent[rowPos - this.rowStartPos][colPos] = columns[colPos];
+                    this.valueContent[rowPos - this.rowStartPos][colPos as number] = columns[colPos as number];
                 }
             }
         }
     }
 
-    /* eslint-disable */
-    /** hidden */
+    /**
+     * It performs to returns the formatted value.
+     *
+     * @param {number} value - It Defines the value of formatting data.
+     * @param {string} fieldName - It contains the value of the field name.
+     * @param {string} formattedText - It contains the value of the formatted text.
+     * @returns {string} - It returns formatted Value as string.
+     * @hidden
+     */
     public getFormattedValue(value: number, fieldName: string, formattedText: string): string {
         let formattedValue: string = formattedText;
-        if (this.formatFields[fieldName] && !isNullOrUndefined(value)) {
-            let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
-                (<{ [key: string]: Object }>this.formatFields[fieldName]).properties : this.formatFields[fieldName]);
-            let formatObj: IFormatSettings = extend({}, formatField, null, true) as IFormatSettings;
-            /* eslint-enable */
+        if (this.formatFields[fieldName as string] && !isNullOrUndefined(value)) {
+            const formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName as string]).properties ?
+                (<{ [key: string]: Object }>this.formatFields[fieldName as string]).properties : this.formatFields[fieldName as string]);
+            const formatObj: IFormatSettings = extend({}, formatField, null, true) as IFormatSettings;
             delete formatObj.name;
             if (!formatObj.minimumSignificantDigits && formatObj.minimumSignificantDigits < 1) {
                 delete formatObj.minimumSignificantDigits;
@@ -2164,8 +2394,8 @@ export class OlapEngine {
             } else {
                 delete formatObj.type;
                 if ((formatObj.format) && !(this.formatRegex.test(formatObj.format))) {
-                    let pattern: string[] = formatObj.format.match(this.customRegex);
-                    let integerPart: string = pattern[6];
+                    const pattern: string[] = formatObj.format.match(this.customRegex);
+                    const integerPart: string = pattern[6];
                     formatObj.useGrouping = integerPart.indexOf(',') !== -1;
                 }
                 formattedValue = this.globalize.formatNumber(value, formatObj);
@@ -2178,15 +2408,15 @@ export class OlapEngine {
     private getMeasureInfo(): IMeasureInfo {
         let mAxis: string = 'column';
         let mIndex: number;
-        let values: string[] = [];
-        for (let field of this.values) {
+        const values: string[] = [];
+        for (const field of this.values) {
             values[values.length] = (field.isCalculatedField ? this.fieldList[field.name].tag : field.name);
         }
         if (values.length > 1) {
             if (this.isMeasureAvail) {
                 let isAvail: boolean = false;
                 for (let i: number = 0, cnt: number = this.rows.length; i < cnt; i++) {
-                    if (this.rows[i].name.toLowerCase() === '[measures]') {
+                    if (this.rows[i as number].name.toLowerCase() === '[measures]') {
                         mAxis = 'row';
                         mIndex = i;
                         isAvail = true;
@@ -2195,7 +2425,7 @@ export class OlapEngine {
                 }
                 if (!isAvail) {
                     for (let i: number = 0, cnt: number = this.columns.length; i < cnt; i++) {
-                        if (this.columns[i].name.toLowerCase() === '[measures]') {
+                        if (this.columns[i as number].name.toLowerCase() === '[measures]') {
                             mAxis = 'column';
                             mIndex = i;
                             isAvail = true;
@@ -2213,27 +2443,26 @@ export class OlapEngine {
         }
     }
 
-    /* eslint-disable  */
     private frameMeasureOrder(measureInfo: IMeasureInfo, axis: string, tuples: Element[], vTuples: Element[], cLen: number): IOrderedInfo {
-        let orderedTuples: Element[] = [];
-        let orderedVTuples: Element[] = [];
-        let orderedIndex: number[] = [];
-        let levels: { [key: string]: { index: number, node: Element } } = {};
-        let cLevels: string[] = [];
-        let measureAxis: string = measureInfo.measureAxis;
-        let measureIndex: number = measureInfo.measureIndex;
-        let values: string[] = measureInfo.valueInfo;
+        const orderedTuples: Element[] = [];
+        const orderedVTuples: Element[] = [];
+        const orderedIndex: number[] = [];
+        const levels: { [key: string]: { index: number; node: Element } } = {};
+        const cLevels: string[] = [];
+        const measureAxis: string = measureInfo.measureAxis;
+        const measureIndex: number = measureInfo.measureIndex;
+        const values: string[] = measureInfo.valueInfo;
         if (measureAxis === axis && values.length > 0) {
-            let levelCollection: { [key: string]: string[] } = {};
-            let uniqueLevels: string[] = [];
+            const levelCollection: { [key: string]: string[] } = {};
+            const uniqueLevels: string[] = [];
             for (let j: number = 0, lnt: number = tuples.length; j < lnt; j++) {
-                let node: Element = tuples[j];
-                let members: HTMLElement[] = [].slice.call(node.querySelectorAll('Member'));
+                const node: Element = tuples[j as number];
+                const members: HTMLElement[] = [].slice.call(node.querySelectorAll('Member'));
                 let level: string = '';
                 let cLevel: string = '';
                 let i: number = 0;
                 while (i < members.length) {
-                    level = level + (level !== '' ? '~~' : '') + members[i].querySelector('UName').textContent;
+                    level = level + (level !== '' ? '~~' : '') + members[i as number].querySelector('UName').textContent;
                     if (i === measureIndex && measureIndex === 0) {
                         cLevel = level;
                     } else if (i === (measureIndex - 1)) {
@@ -2241,36 +2470,36 @@ export class OlapEngine {
                     }
                     i++;
                 }
-                if (levelCollection[cLevel]) {
-                    levelCollection[cLevel][levelCollection[cLevel].length] = level;
+                if (levelCollection[cLevel as string]) {
+                    levelCollection[cLevel as string][levelCollection[cLevel as string].length] = level;
                 } else {
-                    levelCollection[cLevel] = [level];
+                    levelCollection[cLevel as string] = [level as string];
                     uniqueLevels[uniqueLevels.length] = cLevel;
                 }
-                levels[level] = { index: j, node: node };
+                levels[level as string] = { index: j, node: node };
                 cLevels[cLevels.length] = level;
             }
             if (cLevels.length > 0) {
                 if (uniqueLevels.length > 0) {
                     if (measureIndex === 0) {
-                        for (let name of values) {
-                            for (let key of uniqueLevels) {
+                        for (const name of values) {
+                            for (const key of uniqueLevels) {
                                 if (key === name) {
-                                    for (let level of levelCollection[key]) {
-                                        orderedIndex[orderedIndex.length] = levels[level].index;
-                                        orderedTuples[orderedTuples.length] = levels[level].node;
+                                    for (const level of levelCollection[key as string]) {
+                                        orderedIndex[orderedIndex.length] = levels[level as string].index;
+                                        orderedTuples[orderedTuples.length] = levels[level as string].node;
                                     }
                                 }
                             }
                         }
                     } else {
-                        for (let key of uniqueLevels) {
-                            for (let name of values) {
-                                for (let level of levelCollection[key]) {
-                                    let levelInfo: string[] = level.split('~~');
-                                    if (levelInfo[measureIndex] === name) {
-                                        orderedIndex[orderedIndex.length] = levels[level].index;
-                                        orderedTuples[orderedTuples.length] = levels[level].node;
+                        for (const key of uniqueLevels) {
+                            for (const name of values) {
+                                for (const level of levelCollection[key as string]) {
+                                    const levelInfo: string[] = level.split('~~');
+                                    if (levelInfo[measureIndex as number] === name) {
+                                        orderedIndex[orderedIndex.length] = levels[level as string].index;
+                                        orderedTuples[orderedTuples.length] = levels[level as string].node;
                                     }
                                 }
                             }
@@ -2279,38 +2508,38 @@ export class OlapEngine {
                 }
             }
             if (vTuples.length > 0) {
-                let valueIndex: IPivotValues = [];
-                let vOrdinalIndex: number[] = [];
+                const valueIndex: IPivotValues = [];
+                const vOrdinalIndex: number[] = [];
                 let len: number = 0;
                 let cRow: number = 0;
                 for (let j: number = 0, cnt: number = vTuples.length; j < cnt; j++) {
                     if (len > (cLen - 1)) {
                         cRow++;
                         len = 0;
-                        if (!valueIndex[cRow]) {
-                            valueIndex[cRow] = [];
+                        if (!valueIndex[cRow as number]) {
+                            valueIndex[cRow as number] = [];
                         }
-                        valueIndex[cRow][len] = j;
+                        valueIndex[cRow as number][len as number] = j;
                         len++;
                     } else {
-                        if (!valueIndex[cRow]) {
-                            valueIndex[cRow] = [];
+                        if (!valueIndex[cRow as number]) {
+                            valueIndex[cRow as number] = [];
                         }
-                        valueIndex[cRow][len] = j;
+                        valueIndex[cRow as number][len as number] = j;
                         len++;
                     }
-                    vOrdinalIndex[vOrdinalIndex.length] = Number(vTuples[j].getAttribute('CellOrdinal'));
+                    vOrdinalIndex[vOrdinalIndex.length] = Number(vTuples[j as number].getAttribute('CellOrdinal'));
                 }
                 if (measureAxis === 'column') {
                     if (valueIndex.length > 0 && valueIndex[0].length === orderedIndex.length) {
                         for (let i: number = 0, cnt: number = orderedIndex.length; i < cnt; i++) {
                             let j: number = 0;
                             while (j < valueIndex.length) {
-                                let index: number = (j * cLen) + i;
-                                let ordinalValue: string = vOrdinalIndex[index].toString();
-                                let tuple: Element = vTuples[Number(valueIndex[j][orderedIndex[i]])];
+                                const index: number = (j * cLen) + i;
+                                const ordinalValue: string = vOrdinalIndex[index as number].toString();
+                                const tuple: Element = vTuples[Number(valueIndex[j as number][orderedIndex[i as number]])];
                                 tuple.setAttribute('CellOrdinal', ordinalValue.toString());
-                                orderedVTuples[index] = tuple;
+                                orderedVTuples[index as number] = tuple;
                                 j++;
                             }
                         }
@@ -2319,10 +2548,10 @@ export class OlapEngine {
                     if (valueIndex.length === orderedIndex.length) {
                         for (let i: number = 0, cnt: number = orderedIndex.length; i < cnt; i++) {
                             let j: number = 0;
-                            while (j < valueIndex[orderedIndex[i]].length) {
-                                let index: number = (i * cLen) + j;
-                                let ordinalValue: string = vOrdinalIndex[index].toString();
-                                let tuple: Element = vTuples[Number(valueIndex[orderedIndex[i]][j])];
+                            while (j < valueIndex[orderedIndex[i as number]].length) {
+                                const index: number = (i * cLen) + j;
+                                const ordinalValue: string = vOrdinalIndex[index as number].toString();
+                                const tuple: Element = vTuples[Number(valueIndex[orderedIndex[i as number]][j as number])];
                                 tuple.setAttribute('CellOrdinal', ordinalValue.toString());
                                 orderedVTuples[orderedVTuples.length] = tuple;
                                 j++;
@@ -2337,87 +2566,87 @@ export class OlapEngine {
         }
     }
 
-    /* eslint-disable  */
     public getDrilledSets(uNameCollection: string, currentCell: IAxisSet, fieldPos: number, axis: string): { [key: string]: string } {
-        let levels: string[] = [];
-        let memberName: string = currentCell.actualText.toString();
-        let tupCollection: ITupInfo[] = axis === 'row' ? this.tupRowInfo : this.tupColumnInfo;
-        let currTuple: ITupInfo = tupCollection[currentCell.ordinal];
-        let measurePos: number = tupCollection[0].typeCollection.indexOf('3');
-        let allStartPos: number = measurePos === 0 ? 1 : 0;
+        const levels: string[] = [];
+        const memberName: string = currentCell.actualText.toString();
+        const tupCollection: ITupInfo[] = axis === 'row' ? this.tupRowInfo : this.tupColumnInfo;
+        const currTuple: ITupInfo = tupCollection[currentCell.ordinal];
+        const measurePos: number = tupCollection[0].typeCollection.indexOf('3');
+        const allStartPos: number = measurePos === 0 ? 1 : 0;
         let tupPos: number = 0;
-        let isWithoutAllMember: boolean = tupCollection[0].typeCollection[fieldPos] === '1';
+        const isWithoutAllMember: boolean = tupCollection[0].typeCollection[fieldPos as number] === '1';
         while (tupPos < tupCollection.length) {
-            if (isNullOrUndefined(tupCollection[tupPos].allStartPos) || tupCollection[tupPos].allStartPos > allStartPos) {
-                levels[levels.length] = tupCollection[tupPos].uNameCollection;
+            if (isNullOrUndefined(tupCollection[tupPos as number].allStartPos) ||
+                tupCollection[tupPos as number].allStartPos > allStartPos) {
+                levels[levels.length] = tupCollection[tupPos as number].uNameCollection;
             }
             tupPos++;
         }
-        let memberArray: string[] = uNameCollection.split('::[').map((item: string) => {
+        const memberArray: string[] = uNameCollection.split('::[').map((item: string) => {
             return item[0] === '[' ? item : ('[' + item);
         });
-        let joinArray: string[] = [];
+        const joinArray: string[] = [];
         for (let memPos: number = 0; memPos <= fieldPos; memPos++) {
-            if (memberArray[memPos]) {
+            if (memberArray[memPos as number]) {
                 if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
-                    let splitLevels: string[] = memberArray[memPos].split('~~');
-                    let drillLevel: number = splitLevels.indexOf(memberName);
-                    let cropLevels: string[] = [];
+                    const splitLevels: string[] = memberArray[memPos as number].split('~~');
+                    const drillLevel: number = splitLevels.indexOf(memberName);
+                    const cropLevels: string[] = [];
                     for (let lPos: number = 0; lPos <= drillLevel; lPos++) {
-                        cropLevels.push(splitLevels[lPos]);
+                        cropLevels.push(splitLevels[lPos as number]);
                     }
-                    joinArray[joinArray.length] = cropLevels.length > 0 ? cropLevels.join('~~') : memberArray[memPos];
+                    joinArray[joinArray.length] = cropLevels.length > 0 ? cropLevels.join('~~') : memberArray[memPos as number];
                 } else {
-                    joinArray[joinArray.length] = memberArray[memPos];
+                    joinArray[joinArray.length] = memberArray[memPos as number];
                 }
             }
         }
         uNameCollection = joinArray.join('::');
-        let childSets: string[] = [];
-        let memberObj: { [key: string]: string } = {};
-        for (let item of levels) {
+        const childSets: string[] = [];
+        const memberObj: { [key: string]: string } = {};
+        for (const item of levels) {
             if (item.indexOf(uNameCollection) === 0) {
                 childSets.push(item);
                 if (this.isPaging) {
-                    let drillField: string = item.split('::[')[fieldPos];
+                    let drillField: string = item.split('::[')[fieldPos as number];
                     drillField = drillField[0] === '[' ? drillField : ('[' + drillField);
-                    let drillFieldSep: string[] = drillField.split('~~');
+                    const drillFieldSep: string[] = drillField.split('~~');
                     for (let fPos: number = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
-                        memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];
+                        memberObj[drillFieldSep[fPos as number]] = drillFieldSep[fPos as number];
                     }
                 }
             }
         }
         if (this.isPaging) {
-            let fieldSep: string[] = currTuple.uNameCollection.split('::[').map((item: string) => {
+            const fieldSep: string[] = currTuple.uNameCollection.split('::[').map((item: string) => {
                 return item[0] === '[' ? item : ('[' + item);
             });
-            let cropArray: string[] = [];
+            const cropArray: string[] = [];
             for (let fPos: number = 0; fPos < fieldSep.length; fPos++) {
                 if (fPos !== fieldPos) {
-                    cropArray[fPos] = fieldSep[fPos];
+                    cropArray[fPos as number] = fieldSep[fPos as number];
                 }
             }
-            let drillFieldSep: string[] = Object.keys(memberObj);
+            const drillFieldSep: string[] = Object.keys(memberObj);
             for (let fPos: number = 0; fPos < drillFieldSep.length; fPos++) {
-                cropArray[fieldPos] = drillFieldSep[fPos];
+                cropArray[fieldPos as number] = drillFieldSep[fPos as number];
                 childSets.push(cropArray.join('::'));
             }
         }
-        let drillSets: { [key: string]: string } = {};
-        for (let level of childSets) {
-            let fields: string[] = level.split('::[').map((item: string) => {
+        const drillSets: { [key: string]: string } = {};
+        for (const level of childSets) {
+            const fields: string[] = level.split('::[').map((item: string) => {
                 return item[0] === '[' ? item : ('[' + item);
             });
             let set: string = '';
             for (let pos: number = 0; pos <= fieldPos; pos++) {
-                let field: string = fields[pos];
+                const field: string = fields[pos as number];
                 if (field) {
-                    let members: string[] = field.split('~~');
+                    const members: string[] = field.split('~~');
                     set = set + (set !== '' ? '~~' : '') + members[members.length - 1];
                 }
             }
-            drillSets[set] = set;
+            drillSets[set as string] = set;
         }
         return drillSets;
     }
@@ -2454,75 +2683,91 @@ export class OlapEngine {
     private updateFieldlist(isInit?: boolean): void {
         let i: number = 0;
         while (i < this.savedFieldListData.length) {
-            let fieldName: string = this.savedFieldListData[i].id;
-            let parentID: string = this.savedFieldListData[i].pid;
+            const fieldName: string = this.savedFieldListData[i as number].id;
+            const parentID: string = this.savedFieldListData[i as number].pid;
             // let aggregateType: string = this.getAggregateType(fieldName);
-            // this.savedFieldListData[i].aggregateType = aggregateType;
-            if (this.savedFieldList[fieldName]) {
-                let sortOrder: string = (this.enableSort ? this.sortObject[fieldName] ? this.sortObject[fieldName] : 'Ascending' : 'None');
-                this.savedFieldList[fieldName].isSelected = false;
-                this.savedFieldList[fieldName].isExcelFilter = false;
-                // this.savedFieldList[fieldName].aggregateType = aggregateType;
-                this.savedFieldList[fieldName].sort = sortOrder;
-                this.savedFieldList[fieldName].allowDragAndDrop = true;
-                this.savedFieldList[fieldName].showFilterIcon = true;
-                this.savedFieldList[fieldName].showSortIcon = true;
-                this.savedFieldList[fieldName].showEditIcon = true;
-                this.savedFieldList[fieldName].showRemoveIcon = true;
-                this.savedFieldList[fieldName].showValueTypeIcon = true;
-                this.savedFieldList[fieldName].showSubTotals = true;
-                this.savedFieldListData[i].sort = sortOrder;
-                this.savedFieldListData[i].allowDragAndDrop = true;
-                this.savedFieldListData[i].showFilterIcon = true;
-                this.savedFieldListData[i].showSortIcon = true;
-                this.savedFieldListData[i].showEditIcon = true;
-                this.savedFieldListData[i].showRemoveIcon = true;
-                this.savedFieldListData[i].showValueTypeIcon = true;
-                this.savedFieldListData[i].showSubTotals = true;
+            // this.savedFieldListData[i as number].aggregateType = aggregateType;
+            if (this.savedFieldList[fieldName as string]) {
+                const sortOrder: string = (this.enableSort ? this.sortObject[fieldName as string] ?
+                    this.sortObject[fieldName as string] : 'Ascending' : 'None');
+                this.savedFieldList[fieldName as string].isSelected = false;
+                this.savedFieldList[fieldName as string].isExcelFilter = false;
+                // this.savedFieldList[fieldName as string].aggregateType = aggregateType;
+                this.savedFieldList[fieldName as string].sort = sortOrder;
+                this.savedFieldList[fieldName as string].allowDragAndDrop = true;
+                this.savedFieldList[fieldName as string].showFilterIcon = true;
+                this.savedFieldList[fieldName as string].showSortIcon = true;
+                this.savedFieldList[fieldName as string].showEditIcon = true;
+                this.savedFieldList[fieldName as string].showRemoveIcon = true;
+                this.savedFieldList[fieldName as string].showValueTypeIcon = true;
+                this.savedFieldList[fieldName as string].showSubTotals = true;
+                this.savedFieldListData[i as number].sort = sortOrder;
+                this.savedFieldListData[i as number].allowDragAndDrop = true;
+                this.savedFieldListData[i as number].showFilterIcon = true;
+                this.savedFieldListData[i as number].showSortIcon = true;
+                this.savedFieldListData[i as number].showEditIcon = true;
+                this.savedFieldListData[i as number].showRemoveIcon = true;
+                this.savedFieldListData[i as number].showValueTypeIcon = true;
+                this.savedFieldListData[i as number].showSubTotals = true;
                 if (isInit) {
-                    this.savedFieldList[fieldName].filter = [];
-                    this.savedFieldList[fieldName].actualFilter = [];
+                    this.savedFieldList[fieldName as string].filter = [];
+                    this.savedFieldList[fieldName as string].actualFilter = [];
                 }
             }
-            if (this.dataFields[fieldName] && this.savedFieldList[fieldName] && this.selectedItems.indexOf(fieldName) > -1) {
-                this.savedFieldList[fieldName].isSelected = true;
-                this.savedFieldList[fieldName].allowDragAndDrop = (this.dataFields[fieldName] ? this.dataFields[fieldName].allowDragAndDrop : true);
-                this.savedFieldList[fieldName].showFilterIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showFilterIcon : true);
-                this.savedFieldList[fieldName].showSortIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showSortIcon : true);
-                this.savedFieldList[fieldName].showEditIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showEditIcon : true);
-                this.savedFieldList[fieldName].showRemoveIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showRemoveIcon : true);
-                this.savedFieldList[fieldName].showValueTypeIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showValueTypeIcon : true);
-                this.savedFieldList[fieldName].showSubTotals = (this.dataFields[fieldName] ? this.dataFields[fieldName].showSubTotals : true);
-                this.savedFieldListData[i].isSelected = true;
-                this.savedFieldListData[i].allowDragAndDrop = (this.dataFields[fieldName] ? this.dataFields[fieldName].allowDragAndDrop : true);
-                this.savedFieldListData[i].showFilterIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showFilterIcon : true);
-                this.savedFieldListData[i].showSortIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showSortIcon : true);
-                this.savedFieldListData[i].showEditIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showEditIcon : true);
-                this.savedFieldListData[i].showRemoveIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showRemoveIcon : true);
-                this.savedFieldListData[i].showValueTypeIcon = (this.dataFields[fieldName] ? this.dataFields[fieldName].showValueTypeIcon : true);
-                this.savedFieldListData[i].showSubTotals = (this.dataFields[fieldName] ? this.dataFields[fieldName].showSubTotals : true);
+            if (this.dataFields[fieldName as string] && this.savedFieldList[fieldName as string] &&
+                this.selectedItems.indexOf(fieldName) > -1) {
+                this.savedFieldList[fieldName as string].isSelected = true;
+                this.savedFieldList[fieldName as string].allowDragAndDrop = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].allowDragAndDrop : true);
+                this.savedFieldList[fieldName as string].showFilterIcon = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showFilterIcon : true);
+                this.savedFieldList[fieldName as string].showSortIcon = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showSortIcon : true);
+                this.savedFieldList[fieldName as string].showEditIcon = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showEditIcon : true);
+                this.savedFieldList[fieldName as string].showRemoveIcon = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showRemoveIcon : true);
+                this.savedFieldList[fieldName as string].showValueTypeIcon = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showValueTypeIcon : true);
+                this.savedFieldList[fieldName as string].showSubTotals = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showSubTotals : true);
+                this.savedFieldListData[i as number].isSelected = true;
+                this.savedFieldListData[i as number].allowDragAndDrop = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].allowDragAndDrop : true);
+                this.savedFieldListData[i as number].showFilterIcon = (this.dataFields[fieldName as string] ?
+                    this.dataFields[fieldName as string].showFilterIcon : true);
+                this.savedFieldListData[i as number].showSortIcon =
+                    (this.dataFields[fieldName as string] ? this.dataFields[fieldName as string].showSortIcon : true);
+                this.savedFieldListData[i as number].showEditIcon =
+                    (this.dataFields[fieldName as string] ? this.dataFields[fieldName as string].showEditIcon : true);
+                this.savedFieldListData[i as number].showRemoveIcon =
+                    (this.dataFields[fieldName as string] ? this.dataFields[fieldName as string].showRemoveIcon : true);
+                this.savedFieldListData[i as number].showValueTypeIcon =
+                    (this.dataFields[fieldName as string] ? this.dataFields[fieldName as string].showValueTypeIcon : true);
+                this.savedFieldListData[i as number].showSubTotals =
+                    (this.dataFields[fieldName as string] ? this.dataFields[fieldName as string].showSubTotals : true);
             } else {
-                if (this.dataFields[parentID] && this.savedFieldList[parentID] && this.selectedItems.indexOf(parentID) > -1) {
-                    this.savedFieldListData[i].isSelected = true;
+                if (this.dataFields[parentID as string] && this.savedFieldList[parentID as string] &&
+                    this.selectedItems.indexOf(parentID) > -1) {
+                    this.savedFieldListData[i as number].isSelected = true;
                 } else {
-                    this.savedFieldListData[i].isSelected = false;
+                    this.savedFieldListData[i as number].isSelected = false;
                 }
             }
-            /* eslint-enable max-len */
-            if ((this.savedFieldList[fieldName] && this.savedFieldList[fieldName].isCalculatedField) ||
+            if ((this.savedFieldList[fieldName as string] && this.savedFieldList[fieldName as string].isCalculatedField) ||
                 fieldName.toLowerCase() === '[calculated members].[_0]') {
                 let isAvail: boolean = false;
-                for (let field of this.calculatedFieldSettings) {
+                for (const field of this.calculatedFieldSettings) {
                     if (fieldName === field.name) {
-                        let expression: string = field.formula;
-                        let formatString: string = field.formatString;
-                        this.savedFieldListData[i].formula = expression;
-                        this.savedFieldListData[i].formatString = formatString;
-                        this.savedFieldListData[i].parentHierarchy = (expression.toLowerCase().indexOf('measure') > -1 ?
+                        const expression: string = field.formula;
+                        const formatString: string = field.formatString;
+                        this.savedFieldListData[i as number].formula = expression;
+                        this.savedFieldListData[i as number].formatString = formatString;
+                        this.savedFieldListData[i as number].parentHierarchy = (expression.toLowerCase().indexOf('measure') > -1 ?
                             undefined : field.hierarchyUniqueName);
-                        this.savedFieldList[fieldName].formula = expression;
-                        this.savedFieldList[fieldName].formatString = formatString;
-                        this.savedFieldList[fieldName].parentHierarchy = this.savedFieldListData[i].parentHierarchy;
+                        this.savedFieldList[fieldName as string].formula = expression;
+                        this.savedFieldList[fieldName as string].formatString = formatString;
+                        this.savedFieldList[fieldName as string].parentHierarchy = this.savedFieldListData[i as number].parentHierarchy;
                         isAvail = true;
                     }
                 }
@@ -2530,8 +2775,8 @@ export class OlapEngine {
                     this.calculatedFieldSettings.length === 0)) {
                     this.savedFieldListData.splice(i, 1);
                     i--;
-                    if (this.savedFieldList[fieldName]) {
-                        delete this.savedFieldList[fieldName];
+                    if (this.savedFieldList[fieldName as string]) {
+                        delete this.savedFieldList[fieldName as string];
                     }
                 }
             }
@@ -2541,7 +2786,7 @@ export class OlapEngine {
         this.fieldListData = this.savedFieldListData;
     }
     public updateFieldlistData(name: string, isSelect?: boolean): void {
-        for (let item of this.fieldListData) {
+        for (const item of this.fieldListData) {
             if (item.id === name) {
                 item.isSelected = isSelect ? true : false;
                 break;
@@ -2552,11 +2797,11 @@ export class OlapEngine {
         this.formatFields = {};
         let cnt: number = formats.length;
         while (cnt--) {
-            this.formatFields[formats[cnt].name] = formats[cnt];
+            this.formatFields[formats[cnt as number].name] = formats[cnt as number];
         }
     }
     private getFieldList(dataSourceSettings: IDataOptions): void {
-        let args: ConnectionInfo = {
+        const args: ConnectionInfo = {
             catalog: dataSourceSettings.catalog,
             cube: dataSourceSettings.cube,
             url: dataSourceSettings.url,
@@ -2566,14 +2811,13 @@ export class OlapEngine {
         this.getTreeData(args, this.getFieldListItems.bind(this), { dataSourceSettings: dataSourceSettings, action: 'loadFieldElements' });
     }
     public getTreeData(args: ConnectionInfo, successMethod: Function, customArgs: object): void {
-        let connectionString: ConnectionInfo = this.getConnectionInfo(args.url, args.LCID);
-        let soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body><Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><RequestType>' +
+        const connectionString: ConnectionInfo = this.getConnectionInfo(args.url, args.LCID); // eslint-disable-next-line no-useless-escape
+        const soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body><Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><RequestType>' +
             args.request + '</RequestType><Restrictions><RestrictionList><CATALOG_NAME>' + args.catalog +
             '</CATALOG_NAME><CUBE_NAME>' + args.cube + '</CUBE_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + args.catalog +
             '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier></PropertyList></Properties></Discover></Body></Envelope>';
         this.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
     }
-    /* eslint-enable max-len */
     private getAxisFields(): void {
         this.rows = this.dataSourceSettings.rows ? this.dataSourceSettings.rows : [];
         this.columns = this.dataSourceSettings.columns ? this.dataSourceSettings.columns : [];
@@ -2583,21 +2827,21 @@ export class OlapEngine {
         dataFields = dataFields.concat(this.columns, this.values, this.filters);
         let len: number = dataFields.length;
         while (len--) {
-            this.dataFields[dataFields[len].name] = dataFields[len];
-            if (dataFields[len].name.toLowerCase() === '[measures]') {
+            this.dataFields[dataFields[len as number].name] = dataFields[len as number];
+            if (dataFields[len as number].name.toLowerCase() === '[measures]') {
                 this.isMeasureAvail = true;
             } else {
-                this.selectedItems.push(dataFields[len].name);
+                this.selectedItems.push(dataFields[len as number].name);
             }
         }
         this.mappingFields = {};
         if (this.dataSourceSettings.fieldMapping) {
-            for (let field of this.dataSourceSettings.fieldMapping) {
+            for (const field of this.dataSourceSettings.fieldMapping) {
                 this.mappingFields[field.name] = field;
             }
         }
         if (!this.isMeasureAvail && this.values.length > 0) {
-            let measureField: IFieldOptions = {
+            const measureField: IFieldOptions = {
                 name: '[Measures]', caption: 'Measures', showRemoveIcon: true, allowDragAndDrop: true
             };
             if (this.valueAxis === 'row') {
@@ -2611,33 +2855,33 @@ export class OlapEngine {
     private getAggregateType(fieldName: string, aggregateType: string): string {
         let type: SummaryTypes;
         switch (aggregateType) {
-            case '1':
-                type = 'Sum';
-                break;
-            case '2':
-                type = 'Count';
-                break;
-            case '3':
-                type = 'Min';
-                break;
-            case '4':
-                type = 'Max';
-                break;
-            case '5':
-                type = 'Avg';
-                break;
-            case '8':
-                type = 'DistinctCount';
-                break;
-            case '127':
-                type = 'CalculatedField';
-                break;
-            default:
-                type = undefined;
-                break;
+        case '1':
+            type = 'Sum';
+            break;
+        case '2':
+            type = 'Count';
+            break;
+        case '3':
+            type = 'Min';
+            break;
+        case '4':
+            type = 'Max';
+            break;
+        case '5':
+            type = 'Avg';
+            break;
+        case '8':
+            type = 'DistinctCount';
+            break;
+        case '127':
+            type = 'CalculatedField';
+            break;
+        default:
+            type = undefined;
+            break;
         }
-        // if (this.dataFields[fieldName]) {
-        //     return this.dataFields[fieldName].type;
+        // if (this.dataFields[fieldName as string]) {
+        //     return this.dataFields[fieldName as string].type;
         // } else {
         //     return undefined;
         // }
@@ -2649,10 +2893,10 @@ export class OlapEngine {
     }
     public getUniqueName(name: string): string {
         let uName: string = name;
-        for (let item of this.calculatedFieldSettings) {
-            let expression: string = item.formula;
-            let prefixName: string = (expression.toLowerCase().indexOf('measure') > -1 ? '[Measures].' : item.hierarchyUniqueName + '.');
-            let uniqueName: string = prefixName + '[' + item.name + ']';
+        for (const item of this.calculatedFieldSettings) {
+            const expression: string = item.formula;
+            const prefixName: string = (expression.toLowerCase().indexOf('measure') > -1 ? '[Measures].' : item.hierarchyUniqueName + '.');
+            const uniqueName: string = prefixName + '[' + item.name + ']';
             if (name === uniqueName) {
                 uName = item.name;
                 break;
@@ -2663,19 +2907,19 @@ export class OlapEngine {
     private updateFilterItems(filterItems: IFilter[]): void {
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.columns);
-        for (let filter of filterItems) {
+        for (const filter of filterItems) {
             if (filter.type === 'Include' && this.allowMemberFilter) {
-                let members: IMembers = this.fieldList[filter.name].members;
-                let isMembersAvail: boolean = (members && Object.keys(members).length > 0);
+                const members: IMembers = this.fieldList[filter.name].members;
+                const isMembersAvail: boolean = (members && Object.keys(members).length > 0);
                 this.fieldList[filter.name].actualFilter = [...filter.items];
-                let selectedElements: string[] = extend([], filter.items, null, true) as string[];
+                const selectedElements: string[] = extend([], filter.items, null, true) as string[];
                 if (isMembersAvail) {
                     let i: number = 0;
                     while (i < selectedElements.length) {
                         let parentNodes: string[] = [];
-                        parentNodes = this.getParentNode(selectedElements[i], members, parentNodes);
-                        for (let node of parentNodes) {
-                            let index: number = PivotUtil.inArray(node, filter.items);
+                        parentNodes = this.getParentNode(selectedElements[i as number], members, parentNodes);
+                        for (const node of parentNodes) {
+                            const index: number = PivotUtil.inArray(node, filter.items);
                             if (index !== -1) {
                                 filter.items.splice(index, 1);
                             }
@@ -2683,12 +2927,12 @@ export class OlapEngine {
                         i++;
                     }
                 }
-                let currentItems: string[] = [];
-                for (let selectedElement of filter.items) {
+                const currentItems: string[] = [];
+                for (const selectedElement of filter.items) {
                     // currentItems.push(selectedElement.replace(/\&/g, '&amp;'));
                     currentItems.push(selectedElement);
                     if (isMembersAvail) {
-                        this.fieldList[filter.name].filter.push(members[selectedElement].caption);
+                        this.fieldList[filter.name].filter.push(members[selectedElement as string].caption);
                     } else {
                         this.fieldList[filter.name].filter.push(selectedElement);
                     }
@@ -2697,9 +2941,9 @@ export class OlapEngine {
                 this.fieldList[filter.name].isExcelFilter = false;
             } else if ((this.allowValueFilter || this.allowLabelFilter) &&
                 ['Date', 'Label', 'Number', 'Value'].indexOf(filter.type) !== -1) {
-                for (let item of dataFields) {
+                for (const item of dataFields) {
                     if (item.name === filter.name) {
-                        let filterMembers: IFilter[] = this.filterMembers[filter.name] as IFilter[];
+                        const filterMembers: IFilter[] = this.filterMembers[filter.name] as IFilter[];
                         if (filterMembers && (typeof filterMembers[0] === 'object' && filterMembers[0].type === filter.type)) {
                             filterMembers[filterMembers.length] = filter;
                         } else {
@@ -2713,19 +2957,19 @@ export class OlapEngine {
         }
     }
     private getParentNode(name: string, members: IMembers, items: string[]): string[] {
-        if (members[name].parent && name !== members[name].parent) {
-            let parentItem: string = members[name].parent;
+        if (members[name as string].parent && name !== members[name as string].parent) {
+            const parentItem: string = members[name as string].parent;
             items.push(parentItem);
             this.getParentNode(parentItem, members, items);
         }
         return items;
     }
     public updateDrilledItems(drilledMembers: IDrillOptions[]): IDrillOptions[] {
-        let drilledItems: IDrillOptions[] = [];
+        const drilledItems: IDrillOptions[] = [];
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.columns);
-        for (let item of drilledMembers) {
-            for (let field of dataFields) {
+        for (const item of drilledMembers) {
+            for (const field of dataFields) {
                 if (item.name === field.name) {
                     drilledItems.push(item);
                     break;
@@ -2755,59 +2999,64 @@ export class OlapEngine {
     //     let mdxQuery: string = 'SELECT (' + query + ')' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
     //     let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
     //     let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
-    //     this.doAjaxPost('POST', connectionString.url, xmla, this.generateAllMembers.bind(this), 
+    //     this.doAjaxPost('POST', connectionString.url, xmla, this.generateAllMembers.bind(this),
     // { dataSourceSettings: dataSourceSettings, action: 'fetchAllMembers' });
     // }
 
     /**
+     * It performs to returns the drill through data.
+     *
+     * @param {IAxisSet} pivotValue - It cotains the pivotValues data.
+     * @param {number} maxRows - It cotains the maximum number of row data.
+     * @returns {void}
      * @hidden
      */
     public getDrillThroughData(pivotValue: IAxisSet, maxRows: number): void {
-        let column: string[] = this.tupColumnInfo[pivotValue.colOrdinal] &&
+        const column: string[] = this.tupColumnInfo[pivotValue.colOrdinal] &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection !== '' ?
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::[').map((item: string) => {
                 return item[0] === '[' ? item : ('[' + item);
             }) : [];
-        let row: string[] = this.tupRowInfo[pivotValue.rowOrdinal] &&
+        const row: string[] = this.tupRowInfo[pivotValue.rowOrdinal] &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection !== '' ?
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map((item: string) => {
                 return item[0] === '[' ? item : ('[' + item);
             }) : [];
         let filters: IFilter[] | string[];
-        let filteritems: string[] = [];
+        const filteritems: string[] = [];
         let filterQuery: string = '';
         for (let i: number = 0; i < this.filters.length; i++) {
-            filters = this.filterMembers[this.filters[i].name];
+            filters = this.filterMembers[this.filters[i as number].name];
             if (filters) {
                 for (let j: number = 0; j < filters.length; j++) {
-                    filterQuery = filterQuery + filters[j];
+                    filterQuery = filterQuery + filters[j as number];
                     filterQuery = j < filters.length - 1 ? filterQuery + ',' : filterQuery + '';
                 }
-                filteritems[i] = filterQuery;
+                filteritems[i as number] = filterQuery;
                 filterQuery = '';
             }
         }
         for (let i: number = 0; i < filteritems.length; i++) {
-            filterQuery = filterQuery === '' ? '{' + filteritems[i] + '}' : (filterQuery + ',' + '{' + filteritems[i] + '}');
+            filterQuery = filterQuery === '' ? '{' + filteritems[i as number] + '}' : (filterQuery + ',' + '{' + filteritems[i as number] + '}');
         }
         let columnQuery: string = ''; let rowQuery: string = '';
         for (let i: number = 0; i < column.length; i++) {
-            columnQuery = (columnQuery.length > 0 ? (columnQuery + ',') : '') + (column[i].split('~~').length > 1 ?
-                column[i].split('~~')[column[i].split('~~').length - 1] : column[i]);
+            columnQuery = (columnQuery.length > 0 ? (columnQuery + ',') : '') + (column[i as number].split('~~').length > 1 ?
+                column[i as number].split('~~')[column[i as number].split('~~').length - 1] : column[i as number]);
         }
         for (let i: number = 0; i < row.length; i++) {
-            rowQuery = (rowQuery.length > 0 ? (rowQuery + ',') : '') + (row[i].split('~~').length > 1 ?
-                row[i].split('~~')[row[i].split('~~').length - 1] : row[i]);
+            rowQuery = (rowQuery.length > 0 ? (rowQuery + ',') : '') + (row[i as number].split('~~').length > 1 ?
+                row[i as number].split('~~')[row[i as number].split('~~').length - 1] : row[i as number]);
         }
         let drillQuery: string = 'DRILLTHROUGH MAXROWS ' + maxRows + ' Select(' + (columnQuery.length > 0 ? columnQuery : '') +
             (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
             (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
                 this.dataSourceSettings.cube + '])');
         drillQuery = drillQuery.replace(/&/g, '&amp;');
-        let xmla: string = this.getSoapMsg(this.dataSourceSettings, drillQuery);
-        let connectionString: ConnectionInfo =
+        const xmla: string = this.getSoapMsg(this.dataSourceSettings, drillQuery);
+        const connectionString: ConnectionInfo =
             this.getConnectionInfo(this.dataSourceSettings.url, this.dataSourceSettings.localeIdentifier);
         this.doAjaxPost(
             'POST', connectionString.url, xmla, this.drillThroughSuccess.bind(this),
@@ -2815,66 +3064,68 @@ export class OlapEngine {
     }
 
     private drillThroughSuccess(xmlDoc: Document): void {
-        let tag: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        const tag: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
         let gridJSON: string = '';
         if (tag.length > 0) {
-            let json: string[] = [];
+            const json: string[] = [];
             let i: number = 0;
             while (i < tag.length) {
-                let child: HTMLElement[] = [].slice.call(tag[i].children);
+                const child: HTMLElement[] = [].slice.call(tag[i as number].children);
                 let j: number = 0;
                 while (j < child.length) {
-                    json.push('"' + child[j].tagName + '"' + ':' + '"' + child[j].textContent + '"');
+                    json.push('"' + child[j as number].tagName + '"' + ':' + '"' + child[j as number].textContent + '"');
                     j++;
                 }
                 i++;
             }
-            let value: string = json[0];
+            const value: string = json[0];
             let k: number = 0;
             while (k < json.length) {
-                if (Object.keys(JSON.parse('[{' + json[k] + '}]')[0])[0] === Object.keys(JSON.parse('[{' + value + '}]')[0])[0]) {
-                    gridJSON += gridJSON === '' ? '[{' + json[k] : '}, {' + json[k];
+                if (Object.keys(JSON.parse('[{' + json[k as number] + '}]')[0])[0] === Object.keys(JSON.parse('[{' + value + '}]')[0])[0]) {
+                    gridJSON += gridJSON === '' ? '[{' + json[k as number] : '}, {' + json[k as number];
                     k++;
                     continue;
                 }
-                gridJSON += ',' + json[k];
+                gridJSON += ',' + json[k as number];
                 k++;
             }
             gridJSON += '}]';
         } else {
-            let tag: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('faultstring'));
+            const tag: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('faultstring'));
             let i: number = 0;
             while (i < tag.length) {
-                gridJSON += tag[i].textContent;
+                gridJSON += tag[i as number].textContent;
                 i++;
             }
         }
         this.gridJSON = gridJSON;
     }
 
-    public getFilterMembers(dataSourceSettings: IDataOptions, fieldName: string, levelCount: number, isSearchFilter?: boolean, loadLevelMember?: boolean): string { /* eslint-disable-line */
+    public getFilterMembers(dataSourceSettings: IDataOptions, fieldName: string, levelCount: number,
+                            isSearchFilter?: boolean, loadLevelMember?: boolean): string {
         // let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE';
-        let levels: IOlapField[] = this.fieldList[fieldName].levels;
-        let cLevel: number = this.fieldList[fieldName].levelCount;
+        const levels: IOlapField[] = this.fieldList[fieldName as string].levels;
+        const cLevel: number = this.fieldList[fieldName as string].levelCount;
         let filterQuery: string;
         if (loadLevelMember) {
-            filterQuery = 'Descendants({' + levels[cLevel].id + '}, ' +
+            filterQuery = 'Descendants({' + levels[cLevel as number].id + '}, ' +
                 levels[levelCount - 1].id + ', ' + ((levelCount - cLevel) === 1 ? 'SELF)' : 'SELF_AND_BEFORE)');
         } else {
             filterQuery = fieldName + ', Descendants({' + levels[0].id + '}, ' + levels[levelCount - 1].id + ', SELF_AND_BEFORE)';
         }
-        this.fieldList[fieldName].levelCount = levelCount;
+        this.fieldList[fieldName as string].levelCount = levelCount;
         if (!isSearchFilter) {
             this.getMembers(dataSourceSettings, fieldName, false, filterQuery, loadLevelMember);
         }
         return filterQuery;
     }
-    public getMembers(dataSourceSettings: IDataOptions, fieldName: string, isAllFilterData?: boolean, filterParentQuery?: string, loadLevelMember?: boolean): void {    /* eslint-disable-line */
+    public getMembers(dataSourceSettings: IDataOptions, fieldName: string, isAllFilterData?: boolean,
+                      filterParentQuery?: string, loadLevelMember?: boolean): void {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
-        let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
+        const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let mdxQuery: string;
-        let hasAllMember: boolean = this.fieldList[fieldName].hasAllMember;
-        let hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/\&/g, '&amp;');
+        const hasAllMember: boolean = this.fieldList[fieldName as string].hasAllMember;
+        const hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/\&/g, '&amp;');  /* eslint-disable-line no-useless-escape */
         if (!isAllFilterData) {
             mdxQuery = 'SELECT ({' + (filterParentQuery ?
                 filterParentQuery : (hasAllMember ? hierarchy + ', ' + hierarchy + '.CHILDREN' : hierarchy + '.ALLMEMBERS')) + '})' +
@@ -2882,70 +3133,74 @@ export class OlapEngine {
         } else {
             mdxQuery = 'SELECT ({' + hierarchy + '.ALLMEMBERS})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         }
-        let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
-        let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
+        const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
+        const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         if (!loadLevelMember) {
-            this.fieldList[fieldName].filterMembers = [];
-            this.fieldList[fieldName].childMembers = [];
-            this.fieldList[fieldName].searchMembers = [];
-            // this.fieldList[fieldName].isHierarchy = true;
-            this.fieldList[fieldName].members = {};
-            this.fieldList[fieldName].currrentMembers = {};
+            this.fieldList[fieldName as string].filterMembers = [];
+            this.fieldList[fieldName as string].childMembers = [];
+            this.fieldList[fieldName as string].searchMembers = [];
+            // this.fieldList[fieldName as string].isHierarchy = true;
+            this.fieldList[fieldName as string].members = {};
+            this.fieldList[fieldName as string].currrentMembers = {};
         }
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, loadLevelMembers: loadLevelMember, action: 'fetchMembers' });
     }
     public getChildMembers(dataSourceSettings: IDataOptions, memberUQName: string, fieldName: string): void {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
-        let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
+        const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         // var mdxQuery = 'SELECT SUBSET({' + memberUQName + '.CHILDREN}, 0, 5000)' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-        let mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-        let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
-        let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
+        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.CHILDREN})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';   /* eslint-disable-line no-useless-escape */
+        const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
+        const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchChildMembers' });
     }
     public getCalcChildMembers(dataSourceSettings: IDataOptions, memberUQName: string): void {
         this.calcChildMembers = [];
-        let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-        let mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.MEMBERS})' +
+        const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
+        const mdxQuery: string = 'SELECT ({' + memberUQName.replace(/\&/g, '&amp;') + '.MEMBERS})' +   /* eslint-disable-line no-useless-escape */
             dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-        let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
-        let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
+        const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
+        const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, action: 'fetchCalcChildMembers' });
     }
-    public getSearchMembers(dataSourceSettings: IDataOptions, fieldName: string, searchString: string, maxNodeLimit: number, isAllFilterData?: boolean, levelCount?: number): void {    /* eslint-disable-line */
-        this.fieldList[fieldName].searchMembers = [];
-        this.fieldList[fieldName].currrentMembers = {};
+    public getSearchMembers(dataSourceSettings: IDataOptions, fieldName: string, searchString: string, maxNodeLimit: number,
+                            isAllFilterData?: boolean, levelCount?: number): void {
+        this.fieldList[fieldName as string].searchMembers = [];
+        this.fieldList[fieldName as string].currrentMembers = {};
         if (searchString !== '') {
             // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
-            let dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
-            let hierarchy: string = fieldName.replace(/\&/g, '&amp;');
-            let mdxQuery: string = 'WITH SET [SearchMembersSet] AS &#39;FILTER(' + (isAllFilterData ? hierarchy + '.ALLMEMBERS, ' :
+            const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
+            const hierarchy: string = fieldName.replace(/\&/g, '&amp;');   /* eslint-disable-line no-useless-escape */
+            const mdxQuery: string = 'WITH SET [SearchMembersSet] AS &#39;FILTER(' + (isAllFilterData ? hierarchy + '.ALLMEMBERS, ' :
                 '{' + (levelCount > 1 ? this.getFilterMembers(dataSourceSettings, fieldName, levelCount, true) :
                     hierarchy + ', ' + hierarchy + '.CHILDREN') + '},') +
                 '(INSTR(1, ' + hierarchy + '.CurrentMember.member_caption, "' + searchString + '") > 0))&#39;' +
                 'SET [SearchParentsSet] AS &#39;GENERATE([SearchMembersSet], ASCENDANTS([SearchMembersSet].Current))&#39;' +
                 'SET [SearchSet] AS &#39;HIERARCHIZE(DISTINCT({[SearchMembersSet], [SearchParentsSet]}))&#39;' +
                 'SELECT SUBSET([SearchSet], 0, ' + maxNodeLimit + ')' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
-            let xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
-            let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
-            this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchSearchMembers' });
+            const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
+            const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
+            this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), {
+                dataSourceSettings: dataSourceSettings,
+                fieldName: fieldName, action: 'fetchSearchMembers'
+            });
         } else {
             return;
         }
     }
     private generateMembers(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
-        let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axis[name="Axis0"] Tuple'));
-        let fieldName: string = customArgs.fieldName;
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axis[name="Axis0"] Tuple'));
+        const fieldName: string = customArgs.fieldName;
         let allMember: string;
         let filterMembers: IOlapField = {};
-        for (let field of fields) {
+        for (const field of fields) {
             // let hierarchyUqName: string = fields[0].querySelector('Member HIERARCHY_UNIQUE_NAME').textContent;
-            let member: HTMLElement = field.querySelector('Member');
-            let memberType: string = member.querySelector('MEMBER_TYPE').textContent;
-            let memberUqName: string = member.querySelector('UName').textContent;
-            let caption: string = member.querySelector('Caption').textContent;
-            let parentUqName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
-            let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': memberUqName };
+            const member: HTMLElement = field.querySelector('Member');
+            const memberType: string = member.querySelector('MEMBER_TYPE').textContent;
+            const memberUqName: string = member.querySelector('UName').textContent;
+            const caption: string = member.querySelector('Caption').textContent;
+            const parentUqName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
+            const nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': memberUqName };
             if (parentUqName === '' && memberType === '1') {
                 filterMembers = {
                     hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ? (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),
@@ -2957,14 +3212,14 @@ export class OlapEngine {
                     htmlAttributes: nodeAttr
                 };
                 if (customArgs.action === 'fetchMembers' || customArgs.action === 'fetchChildMembers') {
-                    this.fieldList[fieldName].members[memberUqName] =
+                    this.fieldList[fieldName as string].members[memberUqName as string] =
                         { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
-                    this.fieldList[fieldName].filterMembers.push(filterMembers);
-                    this.fieldList[fieldName].childMembers.push(filterMembers);
+                    this.fieldList[fieldName as string].filterMembers.push(filterMembers);
+                    this.fieldList[fieldName as string].childMembers.push(filterMembers);
                 } else if (customArgs.action === 'fetchSearchMembers') {
-                    this.fieldList[fieldName].currrentMembers[memberUqName] =
+                    this.fieldList[fieldName as string].currrentMembers[memberUqName as string] =
                         { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
-                    this.fieldList[fieldName].searchMembers.push(filterMembers);
+                    this.fieldList[fieldName as string].searchMembers.push(filterMembers);
                     filterMembers.expanded = true;
                 } else {
                     this.calcChildMembers.push(filterMembers);
@@ -2981,26 +3236,27 @@ export class OlapEngine {
                         tag: memberUqName
                     };
                     if (customArgs.action === 'fetchMembers' || customArgs.action === 'fetchChildMembers') {
-                        this.fieldList[fieldName].filterMembers.push(filterMembers);
-                        this.fieldList[fieldName].childMembers.push(filterMembers);
-                        this.fieldList[fieldName].members[memberUqName] =
+                        this.fieldList[fieldName as string].filterMembers.push(filterMembers);
+                        this.fieldList[fieldName as string].childMembers.push(filterMembers);
+                        this.fieldList[fieldName as string].members[memberUqName as string] =
                             { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
                     } else if (customArgs.action === 'fetchSearchMembers') {
                         filterMembers.expanded = true;
-                        this.fieldList[fieldName].searchMembers.push(filterMembers);
-                        this.fieldList[fieldName].currrentMembers[memberUqName] =
+                        this.fieldList[fieldName as string].searchMembers.push(filterMembers);
+                        this.fieldList[fieldName as string].currrentMembers[memberUqName as string] =
                             { name: memberUqName, caption: caption, parent: undefined, isNodeExpand: false, isSelected: false };
                     } else {
                         this.calcChildMembers.push(filterMembers);
                     }
                 } else {
-                    if (customArgs.action === 'fetchMembers' && this.fieldList[fieldName].members[memberUqName]) {
+                    if (customArgs.action === 'fetchMembers' && this.fieldList[fieldName as string].members[memberUqName as string]) {
                         continue;
                     }
-                    let nodeSelect: boolean =
-                        (customArgs.loadLevelMembers ? this.fieldList[fieldName].members[parentUqName].isSelected : false);
+                    const nodeSelect: boolean = (customArgs.loadLevelMembers ?
+                        this.fieldList[fieldName as string].members[parentUqName as string].isSelected : false);
                     filterMembers = {
-                        hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ? (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),
+                        hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ?
+                            (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),
                         htmlAttributes: nodeAttr,
                         isSelected: false,
                         id: memberUqName,
@@ -3010,15 +3266,15 @@ export class OlapEngine {
                         tag: memberUqName
                     };
                     if (customArgs.action === 'fetchMembers' || customArgs.action === 'fetchChildMembers') {
-                        this.fieldList[fieldName].isHierarchy = false;
-                        this.fieldList[fieldName].filterMembers.push(filterMembers);
-                        this.fieldList[fieldName].childMembers.push(filterMembers);
-                        this.fieldList[fieldName].members[memberUqName] =
+                        this.fieldList[fieldName as string].isHierarchy = false;
+                        this.fieldList[fieldName as string].filterMembers.push(filterMembers);
+                        this.fieldList[fieldName as string].childMembers.push(filterMembers);
+                        this.fieldList[fieldName as string].members[memberUqName as string] =
                             { name: memberUqName, caption: caption, parent: parentUqName, isNodeExpand: false, isSelected: nodeSelect };
                     } else if (customArgs.action === 'fetchSearchMembers') {
-                        this.fieldList[fieldName].searchMembers.push(filterMembers);
+                        this.fieldList[fieldName as string].searchMembers.push(filterMembers);
                         filterMembers.expanded = true;
-                        this.fieldList[fieldName].currrentMembers[memberUqName] =
+                        this.fieldList[fieldName as string].currrentMembers[memberUqName as string] =
                             { name: memberUqName, caption: caption, parent: parentUqName, isNodeExpand: false, isSelected: false };
                     } else {
                         this.calcChildMembers.push(filterMembers);
@@ -3029,24 +3285,23 @@ export class OlapEngine {
             }
         }
     }
-    /* eslint-enable max-len */
     // private generateAllMembers(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
     //     let members: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axis[name="Axis0"] Member'));
     //     for (let member of members) {
     //         let caption: string = member.querySelector('Caption').textContent;
     //         let fieldName: string = member.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
-    //         this.fieldList[fieldName].allMember = caption;
+    //         this.fieldList[fieldName as string].allMember = caption;
     //     }
     // }
     private getFieldListItems(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
         let fieldDate: FieldData = {};
-        let hierarchyElements: IOlapField[] = [];
-        let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
-        for (let field of fields) {
-            let isAllMemberAvail: boolean = [].slice.call(field.querySelectorAll('ALL_MEMBER')).length > 0;
-            let dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
-            let hierarchyName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
-            let isSameDim: boolean = dimensionName === hierarchyName && dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]';
+        const hierarchyElements: IOlapField[] = [];
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        for (const field of fields) {
+            const isAllMemberAvail: boolean = [].slice.call(field.querySelectorAll('ALL_MEMBER')).length > 0;
+            const dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
+            const hierarchyName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
+            const isSameDim: boolean = dimensionName === hierarchyName && dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]';
             hierarchyElements.push({
                 pid: ((this.isMondrian || isSameDim) ? dimensionName + '~#^Dim' : dimensionName),
                 id: hierarchyName,
@@ -3065,7 +3320,7 @@ export class OlapEngine {
             measures: []
         };
         this.fieldListObj = fieldDate;
-        let args: ConnectionInfo = {
+        const args: ConnectionInfo = {
             catalog: customArgs.dataSourceSettings.catalog,
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
@@ -3076,9 +3331,9 @@ export class OlapEngine {
     }
     private loadCalculatedMemberElements(calcMembers: ICalculatedFieldSettings[]): void {
         if (calcMembers.length > 0) {
-            let fieldListElements: IOlapField[] = this.fieldListData;
+            const fieldListElements: IOlapField[] = this.fieldListData;
             // let calcElements: IOlapField[] = [];
-            let calcObj: IOlapField = {
+            const calcObj: IOlapField = {
                 hasChildren: true,
                 isSelected: false,
                 id: '[Calculated Members].[_0]',
@@ -3092,18 +3347,18 @@ export class OlapEngine {
             if (fieldListElements.length > 0 && fieldListElements[0].id.toLowerCase() === '[measures]') {
                 fieldListElements.splice(0, 0, calcObj);
             }
-            for (let field of calcMembers) {
+            for (const field of calcMembers) {
                 if (!this.fieldList[field.name]) {
-                    let expression: string = field.formula;
-                    let prefixName: string = (expression.toLowerCase().indexOf('measure') > -1 ? '[Measures].' :
+                    const expression: string = field.formula;
+                    const prefixName: string = (expression.toLowerCase().indexOf('measure') > -1 ? '[Measures].' :
                         field.hierarchyUniqueName + '.');
-                    let uniqueName: string = prefixName + '[' + field.name + ']';
-                    let caption: string = (this.dataFields[field.name] && this.dataFields[field.name].caption ?
+                    const uniqueName: string = prefixName + '[' + field.name + ']';
+                    const caption: string = (this.dataFields[field.name] && this.dataFields[field.name].caption ?
                         this.dataFields[field.name].caption :
                         this.mappingFields[field.name] && this.mappingFields[field.name].caption ?
                             this.mappingFields[field.name].caption : field.name);
-                    let formatString: string = field.formatString;
-                    let calcField: IOlapField = {
+                    const formatString: string = field.formatString;
+                    const calcField: IOlapField = {
                         hasChildren: false,
                         isSelected: false,
                         id: field.name,
@@ -3129,17 +3384,22 @@ export class OlapEngine {
                         isHierarchy: true,
                         isExcelFilter: false,
                         isCalculatedField: true,
-                        /* eslint-disable */
-                        allowDragAndDrop: (this.dataFields[field.name] ? this.dataFields[field.name].allowDragAndDrop : this.mappingFields[field.name] ? this.mappingFields[field.name].allowDragAndDrop : true),
-                        showFilterIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showFilterIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showFilterIcon : true),
-                        showSortIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showSortIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showSortIcon : true),
-                        showEditIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showEditIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showEditIcon : true),
-                        showRemoveIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showRemoveIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showRemoveIcon : true),
-                        showValueTypeIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showValueTypeIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showValueTypeIcon : true),
-                        showSubTotals: (this.dataFields[field.name] ? this.dataFields[field.name].showSubTotals : this.mappingFields[field.name] ? this.mappingFields[field.name].showSubTotals : true),
+                        allowDragAndDrop: (this.dataFields[field.name] ? this.dataFields[field.name].allowDragAndDrop :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].allowDragAndDrop : true),
+                        showFilterIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showFilterIcon :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].showFilterIcon : true),
+                        showSortIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showSortIcon :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].showSortIcon : true),
+                        showEditIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showEditIcon :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].showEditIcon : true),
+                        showRemoveIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showRemoveIcon :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].showRemoveIcon : true),
+                        showValueTypeIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showValueTypeIcon :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].showValueTypeIcon : true),
+                        showSubTotals: (this.dataFields[field.name] ? this.dataFields[field.name].showSubTotals :
+                            this.mappingFields[field.name] ? this.mappingFields[field.name].showSubTotals : true),
                         fieldType: (expression.toLowerCase().indexOf('measure') > -1 ? 'Measure' : 'Dimension'),
                         parentHierarchy: (expression.toLowerCase().indexOf('measure') > -1 ? undefined : field.hierarchyUniqueName)
-                        /* eslint-enable */
                     };
                     fieldListElements.push(calcField);
                     this.fieldList[calcField.id] = calcField;
@@ -3151,14 +3411,14 @@ export class OlapEngine {
         }
     }
     private loadDimensionElements(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
-        let hierarchyElements: IOlapField[] = [];
-        let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        const hierarchyElements: IOlapField[] = [];
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
         let measure: IOlapField = {};
-        for (let field of fields) {
-            let dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
-            let defaultHierarchy: string = field.querySelector('DEFAULT_HIERARCHY').textContent;
-            let dimensionCaption: string = field.querySelector('DIMENSION_CAPTION').textContent;
-            let isSameDim: boolean = dimensionName === defaultHierarchy;
+        for (const field of fields) {
+            const dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
+            const defaultHierarchy: string = field.querySelector('DEFAULT_HIERARCHY').textContent;
+            const dimensionCaption: string = field.querySelector('DIMENSION_CAPTION').textContent;
+            const isSameDim: boolean = dimensionName === defaultHierarchy;
             if (dimensionName.toLowerCase().indexOf('[measure') >= 0) {
                 measure = {
                     hasChildren: true,
@@ -3191,7 +3451,7 @@ export class OlapEngine {
         // customArgs.hierarchy = this.fieldListData;
         // customArgs.hierarchySuccess = this.fieldListObj.hierarchySuccess;
         // this.loadHierarchyElements(customArgs);
-        let args: ConnectionInfo = {
+        const args: ConnectionInfo = {
             catalog: customArgs.dataSourceSettings.catalog,
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
@@ -3203,14 +3463,14 @@ export class OlapEngine {
     private loadNamedSetElements(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.columns, this.filters);
-        let dimensionElements: IOlapField[] = this.fieldListData;
-        let reportElement: string[] = [];
-        for (let field of dataFields) {
+        const dimensionElements: IOlapField[] = this.fieldListData;
+        const reportElement: string[] = [];
+        for (const field of dataFields) {
             reportElement.push(field.name);
         }
-        let measureGroupItems: string[] = [];
-        let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
-        for (let field of fields) {
+        const measureGroupItems: string[] = [];
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        for (const field of fields) {
             if (!(measureGroupItems.indexOf(field.querySelector('DIMENSIONS').textContent.split('.')[0]) >= 0)) {
                 dimensionElements.push({
                     hasChildren: true,
@@ -3225,15 +3485,15 @@ export class OlapEngine {
                 });
                 measureGroupItems.push(field.querySelector('DIMENSIONS').textContent.split('.')[0]);
             }
-            let id: string = '[' + field.querySelector('SET_NAME').textContent.trim() + ']';
-            let fieldObj: IOlapField = {
+            const id: string = '[' + field.querySelector('SET_NAME').textContent.trim() + ']';
+            const fieldObj: IOlapField = {
                 hasChildren: true,
                 isNamedSets: true,
                 isSelected: (reportElement.indexOf('[' + field.querySelector('SET_NAME').textContent + ']') >= 0),
                 pid: field.querySelector('SET_DISPLAY_FOLDER').textContent + '_' + field.querySelector('DIMENSIONS').textContent.split('.')[0],
                 id: id,
                 name: field.querySelector('SET_CAPTION').textContent,
-                caption: this.dataFields[id] && this.dataFields[id].caption ? this.dataFields[id].caption : this.mappingFields[id] && this.mappingFields[id].caption ? this.mappingFields[id].caption : field.querySelector('SET_CAPTION').textContent,
+                caption: this.dataFields[id as string] && this.dataFields[id as string].caption ? this.dataFields[id as string].caption : this.mappingFields[id as string] && this.mappingFields[id as string].caption ? this.mappingFields[id as string].caption : field.querySelector('SET_CAPTION').textContent,
                 spriteCssClass: 'e-namedSetCDB-icon' + ' ' + cls.ICON,
                 tag: field.querySelector('EXPRESSION').textContent,
                 // aggregateType: this.getAggregateType(id),
@@ -3249,18 +3509,23 @@ export class OlapEngine {
                 currrentMembers: {},
                 isHierarchy: true,
                 isExcelFilter: false,
-                /* eslint-disable */
-                allowDragAndDrop: (this.dataFields[id] ? this.dataFields[id].allowDragAndDrop : this.mappingFields[id] ? this.mappingFields[id].allowDragAndDrop : true),
-                showFilterIcon: (this.dataFields[id] ? this.dataFields[id].showFilterIcon : this.mappingFields[id] ? this.mappingFields[id].showFilterIcon : true),
-                showSortIcon: (this.dataFields[id] ? this.dataFields[id].showSortIcon : this.mappingFields[id] ? this.mappingFields[id].showSortIcon : true),
-                showEditIcon: (this.dataFields[id] ? this.dataFields[id].showEditIcon : this.mappingFields[id] ? this.mappingFields[id].showEditIcon : true),
-                showRemoveIcon: (this.dataFields[id] ? this.dataFields[id].showRemoveIcon : this.mappingFields[id] ? this.mappingFields[id].showRemoveIcon : true),
-                showValueTypeIcon: (this.dataFields[id] ? this.dataFields[id].showValueTypeIcon : this.mappingFields[id] ? this.mappingFields[id].showValueTypeIcon : true),
-                showSubTotals: (this.dataFields[id] ? this.dataFields[id].showSubTotals : this.mappingFields[id] ? this.mappingFields[id].showSubTotals : true)
-                /* eslint-enable */
+                allowDragAndDrop: (this.dataFields[id as string] ? this.dataFields[id as string].allowDragAndDrop :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].allowDragAndDrop : true),
+                showFilterIcon: (this.dataFields[id as string] ? this.dataFields[id as string].showFilterIcon :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].showFilterIcon : true),
+                showSortIcon: (this.dataFields[id as string] ? this.dataFields[id as string].showSortIcon :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].showSortIcon : true),
+                showEditIcon: (this.dataFields[id as string] ? this.dataFields[id as string].showEditIcon :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].showEditIcon : true),
+                showRemoveIcon: (this.dataFields[id as string] ? this.dataFields[id as string].showRemoveIcon :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].showRemoveIcon : true),
+                showValueTypeIcon: (this.dataFields[id as string] ? this.dataFields[id as string].showValueTypeIcon :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].showValueTypeIcon : true),
+                showSubTotals: (this.dataFields[id as string] ? this.dataFields[id as string].showSubTotals :
+                    this.mappingFields[id as string] ? this.mappingFields[id as string].showSubTotals : true)
             };
             dimensionElements.push(fieldObj);
-            this.fieldList[id] = fieldObj;
+            this.fieldList[id as string] = fieldObj;
             this.updateMembersOrder(id);
         }
         // let args: ConnectionInfo = {
@@ -3277,47 +3542,47 @@ export class OlapEngine {
     }
 
     private loadHierarchyElements(customArgs: FieldData): void {
-        let data: Document = customArgs.hierarchySuccess;
-        let dimensionElements: IOlapField[] = customArgs.hierarchy;
+        const data: Document = customArgs.hierarchySuccess;
+        const dimensionElements: IOlapField[] = customArgs.hierarchy;
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.columns, this.filters);
-        let reportElement: string[] = [];
-        for (let field of dataFields) {
+        const reportElement: string[] = [];
+        for (const field of dataFields) {
             reportElement.push(field.name);
         }
-        let fields: HTMLElement[] = [].slice.call(data.querySelectorAll('row'));
-        for (let field of fields) {
-            let dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
-            let hierarchyName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
-            let isAllMemberAvail: boolean = [].slice.call(field.querySelectorAll('ALL_MEMBER')).length > 0;
+        const fields: HTMLElement[] = [].slice.call(data.querySelectorAll('row'));
+        for (const field of fields) {
+            const dimensionName: string = field.querySelector('DIMENSION_UNIQUE_NAME').textContent;
+            const hierarchyName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
+            const isAllMemberAvail: boolean = [].slice.call(field.querySelectorAll('ALL_MEMBER')).length > 0;
             let allMember: string;
             if (isAllMemberAvail) {
-                let stringCollection: string[] = field.querySelectorAll('ALL_MEMBER')[0].textContent.replace(/[\[\]\&']+/g, '').split('.');
+                const stringCollection: string[] = field.querySelectorAll('ALL_MEMBER')[0].textContent.replace(/[\]']+/g, '').split('.');
                 allMember = stringCollection[stringCollection.length - 1].trim();
             } else {
                 allMember = undefined;
             }
-            let hierarchyFolderName: string = ((field.querySelector('HIERARCHY_DISPLAY_FOLDER')) ? (field.querySelector('HIERARCHY_DISPLAY_FOLDER').textContent) : '');
-            let curElement: IOlapField[] = [];
-            for (let item of dimensionElements) {
+            const hierarchyFolderName: string = ((field.querySelector('HIERARCHY_DISPLAY_FOLDER')) ? (field.querySelector('HIERARCHY_DISPLAY_FOLDER').textContent) : '');
+            const curElement: IOlapField[] = [];
+            for (const item of dimensionElements) {
                 if (item.tag === dimensionName) {
                     curElement.push(item);
                 }
             }
             if (curElement.length > 0) {
-                let isSameDim: boolean = dimensionName === hierarchyName && dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]';
+                const isSameDim: boolean = dimensionName === hierarchyName && dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]';
                 if (dimensionName.toLowerCase() !== '[measures]' && hierarchyName.toLowerCase() !== '[measures]') {
                     let parentID: string = dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : '');
                     if (hierarchyFolderName !== '') {
-                        let folderName: string = dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : '') + '_' + hierarchyFolderName;
-                        let curParentElement: IOlapField[] = [];
-                        for (let item of dimensionElements) {
+                        const folderName: string = dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : '') + '_' + hierarchyFolderName;
+                        const curParentElement: IOlapField[] = [];
+                        for (const item of dimensionElements) {
                             if (item.tag === folderName && item.pid === parentID) {
                                 curParentElement.push(item);
                             }
                         }
                         if (curParentElement.length === 0) {
-                            let fieldObj: IOlapField = {
+                            const fieldObj: IOlapField = {
                                 hasChildren: true,
                                 isSelected: false,
                                 pid: dimensionName + ((this.isMondrian || isSameDim) ? '~#^Dim' : ''),
@@ -3333,7 +3598,7 @@ export class OlapEngine {
                         }
                         parentID = folderName;
                     }
-                    let fieldObj: IOlapField = {
+                    const fieldObj: IOlapField = {
                         hasChildren: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? true : false : true),
                         // hasChildren: true,
                         isSelected: (reportElement.indexOf(hierarchyName) >= 0),
@@ -3344,12 +3609,12 @@ export class OlapEngine {
                         hasAllMember: isAllMemberAvail,
                         allMember: allMember,
                         tag: hierarchyName,
-                        caption: this.dataFields[hierarchyName] && this.dataFields[hierarchyName].caption ? this.dataFields[hierarchyName].caption : this.mappingFields[hierarchyName] && this.mappingFields[hierarchyName].caption ? this.mappingFields[hierarchyName].caption : field.querySelector('HIERARCHY_CAPTION').textContent,
+                        caption: this.dataFields[hierarchyName as string] && this.dataFields[hierarchyName as string].caption ? this.dataFields[hierarchyName as string].caption : this.mappingFields[hierarchyName as string] && this.mappingFields[hierarchyName as string].caption ? this.mappingFields[hierarchyName as string].caption : field.querySelector('HIERARCHY_CAPTION').textContent,
                         // aggregateType: this.getAggregateType(hierarchyName),
                         type: 'string',
                         filter: [],
                         dateMember: [],
-                        sort: (this.enableSort ? this.sortObject[hierarchyName] ? this.sortObject[hierarchyName] : 'Ascending' : 'None'),
+                        sort: (this.enableSort ? this.sortObject[hierarchyName as string] ? this.sortObject[hierarchyName as string] : 'Ascending' : 'None'),
                         actualFilter: [],
                         filterMembers: [],
                         childMembers: [],
@@ -3358,25 +3623,37 @@ export class OlapEngine {
                         currrentMembers: {},
                         levels: [],
                         levelCount: 1,
-                        isHierarchy: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? false : true : false),
+                        isHierarchy: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') &&
+                            field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? false : true : false),
                         isExcelFilter: false,
-                        /* eslint-disable */
-                        allowDragAndDrop: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].allowDragAndDrop : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].allowDragAndDrop : true),
-                        showFilterIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showFilterIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showFilterIcon : true),
-                        showSortIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSortIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSortIcon : true),
-                        showEditIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showEditIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showEditIcon : true),
-                        showRemoveIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showRemoveIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showRemoveIcon : true),
-                        showValueTypeIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showValueTypeIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showValueTypeIcon : true),
-                        showSubTotals: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSubTotals : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSubTotals : true)
-                        /* eslint-enable */
+                        allowDragAndDrop: (this.dataFields[hierarchyName as string] ?
+                            this.dataFields[hierarchyName as string].allowDragAndDrop : this.mappingFields[hierarchyName as string] ?
+                                this.mappingFields[hierarchyName as string].allowDragAndDrop : true),
+                        showFilterIcon: (this.dataFields[hierarchyName as string] ?
+                            this.dataFields[hierarchyName as string].showFilterIcon : this.mappingFields[hierarchyName as string] ?
+                                this.mappingFields[hierarchyName as string].showFilterIcon : true),
+                        showSortIcon: (this.dataFields[hierarchyName as string] ?
+                            this.dataFields[hierarchyName as string].showSortIcon : this.mappingFields[hierarchyName as string] ?
+                                this.mappingFields[hierarchyName as string].showSortIcon : true),
+                        showEditIcon: (this.dataFields[hierarchyName as string] ?
+                            this.dataFields[hierarchyName as string].showEditIcon : this.mappingFields[hierarchyName as string] ?
+                                this.mappingFields[hierarchyName as string].showEditIcon : true),
+                        showRemoveIcon: (this.dataFields[hierarchyName as string] ?
+                            this.dataFields[hierarchyName as string].showRemoveIcon : this.mappingFields[hierarchyName as string] ?
+                                this.mappingFields[hierarchyName as string].showRemoveIcon : true),
+                        showValueTypeIcon: (this.dataFields[hierarchyName as string] ?
+                            this.dataFields[hierarchyName as string].showValueTypeIcon : this.mappingFields[hierarchyName as string] ?
+                                this.mappingFields[hierarchyName as string].showValueTypeIcon : true),
+                        showSubTotals: (this.dataFields[hierarchyName as string] ? this.dataFields[hierarchyName as string].showSubTotals :
+                            this.mappingFields[hierarchyName as string] ? this.mappingFields[hierarchyName as string].showSubTotals : true)
                     };
                     dimensionElements.push(fieldObj);
-                    this.fieldList[hierarchyName] = fieldObj;
+                    this.fieldList[hierarchyName as string] = fieldObj;
                     this.updateMembersOrder(hierarchyName);
                 }
             }
         }
-        let args: ConnectionInfo = {
+        const args: ConnectionInfo = {
             catalog: customArgs.dataSourceSettings.catalog,
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
@@ -3386,10 +3663,10 @@ export class OlapEngine {
         this.getTreeData(args, this.loadLevelElements.bind(this), customArgs);
     }
 
-    private updateMembersOrder(key: string) {
-        for (let sortInfo of this.sortSettings) {
+    private updateMembersOrder(key: string): void {
+        for (const sortInfo of this.sortSettings) {
             if (key === sortInfo.name && sortInfo.membersOrder) {
-                this.fieldList[key].membersOrder = sortInfo.membersOrder;
+                this.fieldList[key as string].membersOrder = sortInfo.membersOrder;
                 break;
             }
         }
@@ -3399,16 +3676,16 @@ export class OlapEngine {
         let newDataSource: IOlapField[] = [];
         let dimensionElements: IOlapField[] = this.fieldListData;
         newDataSource = [];
-        let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
-        for (let field of fields) {
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        for (const field of fields) {
             if (parseInt(field.querySelector('LEVEL_TYPE').textContent, 10) !== 1 && field.querySelector('HIERARCHY_UNIQUE_NAME').textContent.toLowerCase() !== '[measures]') {
-                let dimensionName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
-                let levelName: string = field.querySelector('LEVEL_UNIQUE_NAME').textContent;
-                let levelCaption: string = field.querySelector('LEVEL_CAPTION').textContent;
-                let levelObj: IOlapField = {
+                const dimensionName: string = field.querySelector('HIERARCHY_UNIQUE_NAME').textContent;
+                const levelName: string = field.querySelector('LEVEL_UNIQUE_NAME').textContent;
+                const levelCaption: string = field.querySelector('LEVEL_CAPTION').textContent;
+                const levelObj: IOlapField = {
                     hasChildren: false,
                     isChecked: false,
-                    isSelected: this.fieldList[dimensionName].isSelected,
+                    isSelected: this.fieldList[dimensionName as string].isSelected,
                     pid: dimensionName,
                     id: levelName,
                     name: levelCaption,
@@ -3419,17 +3696,17 @@ export class OlapEngine {
                     type: 'string'
                 };
                 newDataSource.push(levelObj);
-                if (this.fieldList[dimensionName] && this.fieldList[dimensionName].spriteCssClass &&
-                    this.fieldList[dimensionName].spriteCssClass.indexOf('e-attributeCDB-icon') === -1) {
-                    this.fieldList[dimensionName].levels.push(levelObj);
-                    this.fieldList[dimensionName].isHierarchy = false;
+                if (this.fieldList[dimensionName as string] && this.fieldList[dimensionName as string].spriteCssClass &&
+                    this.fieldList[dimensionName as string].spriteCssClass.indexOf('e-attributeCDB-icon') === -1) {
+                    this.fieldList[dimensionName as string].levels.push(levelObj);
+                    this.fieldList[dimensionName as string].isHierarchy = false;
                 } else {
-                    this.fieldList[dimensionName].isHierarchy = true;
+                    this.fieldList[dimensionName as string].isHierarchy = true;
                 }
             }
         }
         this.fieldListData = dimensionElements = dimensionElements.concat(newDataSource);
-        let args: ConnectionInfo = {
+        const args: ConnectionInfo = {
             catalog: customArgs.dataSourceSettings.catalog,
             cube: customArgs.dataSourceSettings.cube,
             url: customArgs.dataSourceSettings.url,
@@ -3439,16 +3716,16 @@ export class OlapEngine {
         this.getTreeData(args, this.loadMeasureElements.bind(this), customArgs);
     }
     private loadMeasureElements(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
-        let dimensionElements: IOlapField[] = this.fieldListData;
-        let measureGroupItems: string[] = [];
+        const dimensionElements: IOlapField[] = this.fieldListData;
+        const measureGroupItems: string[] = [];
         let caption: string;
-        let dataFields: IFieldOptions[] = extend([], this.values, null, true) as IFieldOptions[];
-        let reportElement: string[] = [];
-        for (let field of dataFields) {
+        const dataFields: IFieldOptions[] = extend([], this.values, null, true) as IFieldOptions[];
+        const reportElement: string[] = [];
+        for (const field of dataFields) {
             reportElement.push(field.name);
         }
         if (this.locale !== 'en-US') {
-            let args: ConnectionInfo = {
+            const args: ConnectionInfo = {
                 catalog: customArgs.dataSourceSettings.catalog,
                 cube: customArgs.dataSourceSettings.cube,
                 url: customArgs.dataSourceSettings.url,
@@ -3457,18 +3734,18 @@ export class OlapEngine {
             };
             this.getTreeData(args, this.loadMeasureGroups.bind(this), customArgs);
         }
-        let fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
-        for (let field of fields) {
-            let measureGRPName: string = isNullOrUndefined(field.querySelector('MEASUREGROUP_NAME')) ? '' : field.querySelector('MEASUREGROUP_NAME').textContent;
-            let measureName: string = field.querySelector('MEASURE_UNIQUE_NAME').textContent;
-            let formatString: string = field.querySelector('DEFAULT_FORMAT_STRING') ?
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        for (const field of fields) {
+            const measureGRPName: string = isNullOrUndefined(field.querySelector('MEASUREGROUP_NAME')) ? '' : field.querySelector('MEASUREGROUP_NAME').textContent;
+            const measureName: string = field.querySelector('MEASURE_UNIQUE_NAME').textContent;
+            const formatString: string = field.querySelector('DEFAULT_FORMAT_STRING') ?
                 field.querySelector('DEFAULT_FORMAT_STRING').textContent : '#,#';
-            let aggregateType: string = field.querySelector('MEASURE_AGGREGATOR') ?
+            const aggregateType: string = field.querySelector('MEASURE_AGGREGATOR') ?
                 field.querySelector('MEASURE_AGGREGATOR').textContent : '1';
             if (!(measureGroupItems.indexOf(measureGRPName) >= 0)) {
                 if (this.locale !== 'en-US') {
-                    let measureInfo: HTMLElement[] = [];
-                    for (let item of this.fieldListObj.measuresGroups) {
+                    const measureInfo: HTMLElement[] = [];
+                    for (const item of this.fieldListObj.measuresGroups) {
                         if (item.querySelector('MEASUREGROUP_NAME').textContent === measureGRPName) {
                             measureInfo.push(item);
                         }
@@ -3494,7 +3771,7 @@ export class OlapEngine {
                     measureGroupItems.push(measureGRPName);
                 }
             }
-            let fieldObj: IOlapField = {
+            const fieldObj: IOlapField = {
                 hasChildren: false,
                 isSelected: (reportElement.indexOf(measureName) >= 0),
                 pid: measureGRPName === '' ? '[Measures]' : measureGRPName,
@@ -3502,7 +3779,10 @@ export class OlapEngine {
                 name: field.querySelector('MEASURE_CAPTION').textContent,
                 spriteCssClass: 'e-measure-icon' + ' ' + cls.ICON,
                 tag: measureName,
-                caption: this.dataFields[measureName] && this.dataFields[measureName].caption ? this.dataFields[measureName].caption : this.mappingFields[measureName] && this.mappingFields[measureName].caption ? this.mappingFields[measureName].caption : field.querySelector('MEASURE_CAPTION').textContent,
+                caption: this.dataFields[measureName as string] && this.dataFields[measureName as string].caption ?
+                    this.dataFields[measureName as string].caption : this.mappingFields[measureName as string] &&
+                        this.mappingFields[measureName as string].caption ? this.mappingFields[measureName as string].caption :
+                        field.querySelector('MEASURE_CAPTION').textContent,
                 aggregateType: this.getAggregateType(measureName, aggregateType),
                 type: 'number',
                 filter: [],
@@ -3513,19 +3793,24 @@ export class OlapEngine {
                 searchMembers: [],
                 members: {},
                 currrentMembers: {},
-                /* eslint-disable */
                 formatString: formatString,
-                allowDragAndDrop: (this.dataFields[measureName] ? this.dataFields[measureName].allowDragAndDrop : this.mappingFields[measureName] ? this.mappingFields[measureName].allowDragAndDrop : true),
-                showFilterIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showFilterIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showFilterIcon : true),
-                showSortIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showSortIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showSortIcon : true),
-                showEditIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showEditIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showEditIcon : true),
-                showRemoveIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showRemoveIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showRemoveIcon : true),
-                showValueTypeIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showValueTypeIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showValueTypeIcon : true),
-                showSubTotals: (this.dataFields[measureName] ? this.dataFields[measureName].showSubTotals : this.mappingFields[measureName] ? this.mappingFields[measureName].showSubTotals : true)
-                /* eslint-enable */
+                allowDragAndDrop: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].allowDragAndDrop :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].allowDragAndDrop : true),
+                showFilterIcon: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].showFilterIcon :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].showFilterIcon : true),
+                showSortIcon: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].showSortIcon :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].showSortIcon : true),
+                showEditIcon: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].showEditIcon :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].showEditIcon : true),
+                showRemoveIcon: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].showRemoveIcon :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].showRemoveIcon : true),
+                showValueTypeIcon: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].showValueTypeIcon :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].showValueTypeIcon : true),
+                showSubTotals: (this.dataFields[measureName as string] ? this.dataFields[measureName as string].showSubTotals :
+                    this.mappingFields[measureName as string] ? this.mappingFields[measureName as string].showSubTotals : true)
             };
             dimensionElements.push(fieldObj);
-            this.fieldList[measureName] = fieldObj;
+            this.fieldList[measureName as string] = fieldObj;
             if ((reportElement.indexOf(measureName) >= 0)) {
                 reportElement.splice(reportElement.indexOf(measureName), 1);
             }
@@ -3541,7 +3826,7 @@ export class OlapEngine {
         // customArgs.reportElement = this.measureReportItems;
         // this.getTreeData(args, this.loadKPIElements.bind(this), customArgs);
     }
-    private loadMeasureGroups(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
+    private loadMeasureGroups(xmlDoc: Document): void {
         if (isNullOrUndefined(this.fieldListObj)) {
             this.fieldListObj = {};
         }
@@ -3618,8 +3903,9 @@ export class OlapEngine {
     //         }
     //     }
     // }
+
     public doAjaxPost(type: string, url: string, data: string, success: Function, customArgs?: Object): void {
-        let ajax: Ajax = new Ajax(
+        const ajax: Ajax = new Ajax(
             {
                 mode: false,
                 contentType: 'text/xml',
@@ -3629,9 +3915,9 @@ export class OlapEngine {
                 type: type,
                 beforeSend: this.beforeSend.bind(this),
                 onSuccess: (args: string | Object, request: Ajax) => {
-                    let parser: DOMParser = new DOMParser();
+                    const parser: DOMParser = new DOMParser();
                     // parsing string type result as XML
-                    let xmlDoc: Document = parser.parseFromString(args as string, 'text/xml');
+                    const xmlDoc: Document = parser.parseFromString(args as string, 'text/xml');
                     success(xmlDoc, request, customArgs);
                 },
                 onFailure: (e: string) => {
@@ -3643,22 +3929,20 @@ export class OlapEngine {
     }
     private beforeSend(args: string | Object): void {
         if (this.dataSourceSettings.authentication.userName && this.dataSourceSettings.authentication.password) {
-            /* eslint-disable */
-            (args as any).httpRequest.setRequestHeader("Authorization",
-                "Basic " + btoa(this.dataSourceSettings.authentication.userName + ":" +
-                    this.dataSourceSettings.authentication.password));
+            (args as any).httpRequest.setRequestHeader('Authorization', 'Basic ' + btoa(this.dataSourceSettings.authentication.userName +   // eslint-disable-line @typescript-eslint/no-explicit-any
+                ':' + this.dataSourceSettings.authentication.password));
         }
     }
     private getSoapMsg(dataSourceSettings: IDataOptions, query: string): string {
         let xmlMsg: string = '';
         let sourceInfo: string = '';
-        let connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
+        const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         if (this.isMondrian) {
-            sourceInfo = '';
+            sourceInfo = ''; // eslint-disable-next-line no-useless-escape
             xmlMsg = '<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"><SOAP-ENV:Body><Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"><Command><Statement><![CDATA[' +
                 query + ']]></Statement></Command><Properties><PropertyList><DataSourceInfo>' + sourceInfo +
                 '</DataSourceInfo><Catalog>' + dataSourceSettings.catalog + '</Catalog><AxisFormat>TupleFormat</AxisFormat><Content>Data</Content><Format>Multidimensional</Format></PropertyList></Properties></Execute></SOAP-ENV:Body></SOAP-ENV:Envelope>';
-        } else {
+        } else {    // eslint-disable-next-line no-useless-escape
             xmlMsg = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"> <Header></Header> <Body> <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\"> <Command> <Statement> ' +
                 query + ' </Statement> </Command> <Properties> <PropertyList> <Catalog>' + dataSourceSettings.catalog +
                 '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier></PropertyList> </Properties> </Execute> </Body> </Envelope>';
@@ -3666,10 +3950,9 @@ export class OlapEngine {
         return xmlMsg;
     }
     public getConnectionInfo(connectionString: string, locale: string | number): ConnectionInfo {
-        let connectionInfo: ConnectionInfo = { url: '', LCID: !isNullOrUndefined(locale) ? locale.toString() : '1033' };
+        const connectionInfo: ConnectionInfo = { url: '', LCID: !isNullOrUndefined(locale) ? locale.toString() : '1033' };
         if (connectionString !== '') {
-            /* eslint-enable */
-            for (let obj of connectionString.split(';')) {
+            for (const obj of connectionString.split(';')) {
                 if (obj.toLowerCase().indexOf('locale') < 0 && connectionInfo.url.length === 0) {
                     connectionInfo.url = obj;
                 } else if (obj.toLowerCase().indexOf('locale') >= 0) {
@@ -3725,9 +4008,7 @@ export interface IOlapField extends IField {
  */
 export interface ConnectionInfo {
     url?: string;
-    /* eslint-disable */
     LCID?: string;
-    /* eslint-enable */
     catalog?: string;
     cube?: string;
     request?: string;
@@ -3738,9 +4019,7 @@ export interface ConnectionInfo {
 export interface FieldData {
     hierarchy?: IOlapField[];
     hierarchySuccess?: Document;
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    measures?: any;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    measures?: any;     // eslint-disable-line @typescript-eslint/no-explicit-any
     dataSourceSettings?: IDataOptions;
     action?: string;
     reportElement?: string[];

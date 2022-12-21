@@ -64,6 +64,11 @@ export class PdfExport {
             cancel: false
         };
         this.parent.trigger('beforePdfExport', args);
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+            this.parent.showMaskRow();
+        } else {
+            this.parent.showSpinner();
+        }
         if (getValue('cancel', args)) {
             /* eslint-disable-next-line */
             return new Promise((resolve: Function, reject: Function) => {
@@ -94,6 +99,11 @@ export class PdfExport {
         }
         this.processExport(data, pdfExportProperties, isMultipleExport).then(() => {
             this.parent.trigger('pdfExportComplete', {});
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+                this.parent.hideMaskRow();
+            } else {
+                this.parent.hideSpinner();
+            }
             resolve(this.pdfDocument);
         });
     }

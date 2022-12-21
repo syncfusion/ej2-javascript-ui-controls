@@ -59,29 +59,29 @@ export class TwoDimensional {
                 tempIndex++;
             }
             if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
-                tempVariable = <number[]>extend([], tempCloneData[cloneDataIndex], null, true);
+                tempVariable = <number[]>extend([], tempCloneData[cloneDataIndex as number], null, true);
                 for (let i: number = 0; i < tempVariable.length; i++) {
-                    if (typeof (tempVariable[i]) === 'object' && (tempVariable[i]) !== null || undefined || '') {
-                        tempVariable[i] = tempVariable[i][0];
+                    if (typeof (tempVariable[i as number]) === 'object' && (tempVariable[i as number]) !== null || undefined || '') {
+                        tempVariable[i as number] = tempVariable[i as number][0];
                     }
                 }
             } else {
-                tempVariable = <number[]>extend([], this.completeDataSource[cloneDataIndex], null, true);
+                tempVariable = <number[]>extend([], this.completeDataSource[cloneDataIndex as number], null, true);
 
             }
             const minMaxVal: number[] = this.getMinMaxValue(minVal, maxVal, tempVariable);
             if ((this.heatMap.paletteSettings.colorGradientMode === 'Column' ||
                 this.heatMap.paletteSettings.colorGradientMode === 'Row') && this.heatMap.paletteSettings.type === 'Gradient') {
-                this.heatMap.dataMax[z] = minMaxVal[1];
-                this.heatMap.dataMin[z] = minMaxVal[0];
+                this.heatMap.dataMax[z as number] = minMaxVal[1];
+                this.heatMap.dataMin[z as number] = minMaxVal[0];
             }
             minVal = minMaxVal[0];
             maxVal = minMaxVal[1];
             if (this.heatMap.xAxis.isInversed) {
-                this.completeDataSource[cloneDataIndex] = this.completeDataSource[cloneDataIndex].reverse();
+                this.completeDataSource[cloneDataIndex as number] = this.completeDataSource[cloneDataIndex as number].reverse();
             }
             if (z >= this.heatMap.axisCollections[1].min && z <= this.heatMap.axisCollections[1].max) {
-                minMaxDatasource.push(this.completeDataSource[cloneDataIndex]);
+                minMaxDatasource.push(this.completeDataSource[cloneDataIndex as number]);
             }
             cloneDataIndex++;
         }
@@ -118,47 +118,48 @@ export class TwoDimensional {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processDataArray(tempCloneData: any, tempIndex: number, z: number, cloneDataIndex: number): void {
         if (this.heatMap.bubbleSizeWithColor) {
-            if (tempCloneData[tempIndex] && !isNullOrUndefined(tempCloneData[tempIndex][z])
-                && typeof (tempCloneData[tempIndex][z]) === 'object') {
+            if (tempCloneData[tempIndex as number] && !isNullOrUndefined(tempCloneData[tempIndex as number][z as number])
+                && typeof (tempCloneData[tempIndex as number][z as number]) === 'object') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const internalArray: any[] = tempCloneData[tempIndex][z];
+                const internalArray: any[] = tempCloneData[tempIndex as number][z as number];
                 for (let tempx: number = 0; tempx < internalArray.length; tempx++) {
-                    if (isNullOrUndefined(internalArray[tempx])  || isNaN(internalArray[tempx])) {
-                        internalArray[tempx] = '';
+                    if (isNullOrUndefined(internalArray[tempx as number])  || isNaN(internalArray[tempx as number])) {
+                        internalArray[tempx as number] = '';
                     }
                     if (tempx === 0) {
-                        this.tempSizeArray.push(internalArray[tempx]);
+                        this.tempSizeArray.push(internalArray[tempx as number]);
                     } else if (tempx === 1) {
-                        this.tempColorArray.push(internalArray[tempx]);
+                        this.tempColorArray.push(internalArray[tempx as number]);
                         break;
                     }
                 }
-                this.completeDataSource[cloneDataIndex].push(internalArray);
+                this.completeDataSource[cloneDataIndex as number].push(internalArray);
             } else {
-                if (!isNullOrUndefined(tempCloneData[tempIndex]) && (tempCloneData[tempIndex][z] ||
-                    (tempCloneData[tempIndex][z] === 0 &&
-                        tempCloneData[tempIndex][z].toString() !== ''))) {
-                    this.completeDataSource[cloneDataIndex].push([tempCloneData[tempIndex][z]]);
-                    this.tempSizeArray.push(tempCloneData[tempIndex][z]);
+                if (!isNullOrUndefined(tempCloneData[tempIndex as number]) && (tempCloneData[tempIndex as number][z as number] ||
+                    (tempCloneData[tempIndex as number][z as number] === 0 &&
+                        tempCloneData[tempIndex as number][z as number].toString() !== ''))) {
+                    this.completeDataSource[cloneDataIndex as number].push([tempCloneData[tempIndex as number][z as number]]);
+                    this.tempSizeArray.push(tempCloneData[tempIndex as number][z as number]);
                 } else {
-                    this.completeDataSource[cloneDataIndex].push('');
+                    this.completeDataSource[cloneDataIndex as number].push('');
                 }
             }
         } else {
-            if (tempCloneData[tempIndex] && (tempCloneData[tempIndex][z] ||
-                (tempCloneData[tempIndex][z] === 0 &&
-                    tempCloneData[tempIndex][z].toString() !== ''))) {
-                if (typeof (tempCloneData[tempIndex][z]) === 'object') {
-                    if (tempCloneData[tempIndex][z].length > 0 && !isNullOrUndefined(tempCloneData[tempIndex][z][0])) {
-                        this.completeDataSource[cloneDataIndex].push(tempCloneData[tempIndex][z][0]);
+            if (tempCloneData[tempIndex as number] && (tempCloneData[tempIndex as number][z as number] ||
+                (tempCloneData[tempIndex as number][z as number] === 0 &&
+                    tempCloneData[tempIndex as number][z as number].toString() !== ''))) {
+                if (typeof (tempCloneData[tempIndex as number][z as number]) === 'object') {
+                    if (tempCloneData[tempIndex as number][z as number].length > 0 &&
+                        !isNullOrUndefined(tempCloneData[tempIndex as number][z as number][0])) {
+                        this.completeDataSource[cloneDataIndex as number].push(tempCloneData[tempIndex as number][z as number][0]);
                     } else {
-                        this.completeDataSource[cloneDataIndex].push('');
+                        this.completeDataSource[cloneDataIndex as number].push('');
                     }
                 } else {
-                    this.completeDataSource[cloneDataIndex].push(tempCloneData[tempIndex][z]);
+                    this.completeDataSource[cloneDataIndex as number].push(tempCloneData[tempIndex as number][z as number]);
                 }
             } else {
-                this.completeDataSource[cloneDataIndex].push('');
+                this.completeDataSource[cloneDataIndex as number].push('');
             }
         }
     }

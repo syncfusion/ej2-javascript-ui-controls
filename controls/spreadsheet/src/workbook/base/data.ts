@@ -31,7 +31,7 @@ export function getData(
         resolve((() => {
             let sheetIdx: number;
             if (address.indexOf('!') > -1) {
-                sheetIdx = getSheetIndex(context, address.split('!')[0]);
+                sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
                 address = address.slice(address.indexOf('!') + 1, address.length);
             } else {
                 sheetIdx = context.activeSheetIndex;
@@ -58,13 +58,13 @@ export function getData(
                     data = [];
                     let index: number;
                     let cells: { [key: string]: CellModel | string | Date | number };
-                    let key: string;
+                    let key: string; let cellProp: CellModel | string | Date | number;
                     address.split(',').forEach((addr: string, addrIdx: number): void => {
                         indexes = getRangeIndexes(addr);
                         index = 0;
                         sRow = indexes[0];
                         while (sRow <= indexes[2]) {
-                            cells = data[index] || {};
+                            cells = data[index as number] || {};
                             row = getRow(sheet, sRow);
                             i = indexes[1];
                             while (i <= indexes[3]) {
@@ -75,26 +75,29 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                 if (valueOnly) {
-                                    cells[key] = row ? getValueFromFormat(context, getCell(sRow, i, sheet), sRow, i) : '';
-                                    if (typeof cells[key] === 'string' && isNumber(<string>cells[key]) && !(cell.format && cell.format === '@')) {
-                                        cells[key] = parseFloat(<string>cells[key]);
+                                    cellProp = row ? getValueFromFormat(context, getCell(sRow, i, sheet), sRow, i) : '';
+                                    if (typeof cellProp === 'string' && isNumber(<string>cellProp) && !(cell.format && cell.format === '@')) {
+                                        cellProp = parseFloat(<string>cellProp);
                                     }
+                                    cells[`${key}`] = cellProp;
                                 } else {
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
-                                            cells[key] = extend({}, cell, { value: getValueFromFormat(context, cell, sRow, i, true) });
-                                            if (typeof (cells[key] as CellModel).value === 'string' &&
-                                                isNumber((cells[key] as CellModel).value) && !(cell.format && cell.format === '@')) {
-                                                cells[key]['value'] = parseFloat((cells[key] as CellModel).value);
+                                            cellProp = extend(
+                                                {}, cell, { value: getValueFromFormat(context, cell, sRow, i, true) });
+                                            if (typeof cellProp.value === 'string' && isNumber(cellProp.value) &&
+                                                !(cell.format && cell.format === '@')) {
+                                                (cellProp as unknown as { value?: number }).value = parseFloat(cellProp.value);
                                             }
+                                            cells[`${key}`] = cellProp;
                                         } else {
-                                            cells[key] = cell;
+                                            cells[`${key}`] = cell;
                                         }
                                     }
                                 }
                                 if (i === indexes[3] && Object.keys(cells).length) {
                                     cells['__rowIndex'] = (sRow + 1).toString();
-                                    data[index] = cells;
+                                    data[index as number] = cells;
                                     if (isDateCol && addrIdx === 0 && !isFilterHidden(sheet, sRow)) {
                                         dateColData.push(cells);
                                     }
@@ -132,8 +135,10 @@ export function getData(
                                         cell = new Object();
                                         if (j !== sRow) { cell.rowSpan = sRow - j; }
                                         if (k !== i) { cell.colSpan = i - k; }
-                                        if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[k]) {
-                                            delete sheet.rows[j].cells[k].value; delete sheet.rows[j].cells[k].formula;
+                                        if (sheet.rows[j as number] && sheet.rows[j as number].cells &&
+                                            sheet.rows[j as number].cells[k as number]) {
+                                            delete sheet.rows[j as number].cells[k as number].value;
+                                            delete sheet.rows[j as number].cells[k as number].formula;
                                         }
                                         setCell(j, k, sheet, cell, true);
                                     }
@@ -141,15 +146,19 @@ export function getData(
                             } else if (cellObj.colSpan > 1) {
                                 for (let j: number = i + 1, len: number = i + cellObj.colSpan; j < len; j++) {
                                     setCell(sRow, j, sheet, { colSpan: i - j }, true);
-                                    if (sheet.rows[sRow] && sheet.rows[sRow].cells && sheet.rows[sRow].cells[j]) {
-                                        delete sheet.rows[sRow].cells[j].value; delete sheet.rows[sRow].cells[j].formula;
+                                    if (sheet.rows[sRow as number] && sheet.rows[sRow as number].cells &&
+                                        sheet.rows[sRow as number].cells[j as number]) {
+                                        delete sheet.rows[sRow as number].cells[j as number].value;
+                                        delete sheet.rows[sRow as number].cells[j as number].formula;
                                     }
                                 }
                             } else if (cellObj.rowSpan > 1) {
                                 for (let j: number = sRow + 1, len: number = sRow + cellObj.rowSpan; j < len; j++) {
                                     setCell(j, i, sheet, { rowSpan: sRow - j }, true);
-                                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[i]) {
-                                        delete sheet.rows[j].cells[i].value; delete sheet.rows[j].cells[i].formula;
+                                    if (sheet.rows[j as number] && sheet.rows[j as number].cells &&
+                                        sheet.rows[j as number].cells[i as number]) {
+                                        delete sheet.rows[j as number].cells[i as number].value;
+                                        delete sheet.rows[j as number].cells[i as number].formula;
                                     }
                                 }
                             }
@@ -215,10 +224,10 @@ export function getModel(model: (SheetModel | RowModel | CellModel)[], idx: numb
     let diff: number;
     let j: number;
     let prevIdx: number;
-    if (isUndefined(model[idx]) || !(model[idx] && model[idx].index === idx)) {
+    if (isUndefined(model[idx as number]) || !(model[idx as number] && model[idx as number].index === idx)) {
         for (let i: number = 0; i <= idx; i++) {
-            if (model && model[i]) {
-                diff = model[i].index - i;
+            if (model && model[i as number]) {
+                diff = model[i as number].index - i;
                 if (diff > 0) {
                     model.forEach((value: SheetModel | RowModel | CellModel, index: number) => {
                         if (value && value.index) {
@@ -236,13 +245,13 @@ export function getModel(model: (SheetModel | RowModel | CellModel)[], idx: numb
                     i += diff;
                 }
             } else if (model) {
-                model[i] = null;
+                model[i as number] = null;
             } else {
                 model = [];
             }
         }
     }
-    return model[idx];
+    return model[idx as number];
 }
 
 
@@ -259,9 +268,9 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
     let cnt: number;
     let len: number = model.length;
     for (let i: number = 0; i < len; i++) {
-        if (!isNullOrUndefined(model[i]) && !isUndefined(model[i].index)) {
-            cnt = diff = model[i].index - i;
-            delete model[i].index;
+        if (!isNullOrUndefined(model[i as number]) && !isUndefined(model[i as number].index)) {
+            cnt = diff = model[i as number].index - i;
+            delete model[i as number].index;
         }
         if (diff > 0) {
             j = 0;
@@ -277,23 +286,23 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
             len += cnt;
         }
         if (isSheet) {
-            if ((model[i] as SheetModel).id < 1) {
-                (model[i] as SheetModel).id = getMaxSheetId(context.sheets);
-                if ((model[i] as { properties: {} }).properties) {
-                    (model[i] as { properties: { id: number } }).properties.id = (model[i] as SheetModel).id;
+            if ((model[i as number] as SheetModel).id < 1) {
+                (model[i as number] as SheetModel).id = getMaxSheetId(context.sheets);
+                if ((model[i as number] as { properties: {} }).properties) {
+                    (model[i as number] as { properties: { id: number } }).properties.id = (model[i as number] as SheetModel).id;
                 }
             }
-            if (!(model[i] as SheetModel).name) {
-                context.setSheetPropertyOnMute(model[i], 'name', 'Sheet' + getSheetNameCount(context));
+            if (!(model[i as number] as SheetModel).name) {
+                context.setSheetPropertyOnMute(model[i as number], 'name', 'Sheet' + getSheetNameCount(context));
             }
             let cellCnt: number = 0;
-            (model[i] as SheetModel).rows.forEach((row: RowModel) => {
+            (model[i as number] as SheetModel).rows.forEach((row: RowModel) => {
                 cellCnt = Math.max(cellCnt, (row && row.cells && row.cells.length - 1) || 0);
             });
             context.setSheetPropertyOnMute(
-                model[i], 'usedRange',
-                { rowIndex: (model[i] as SheetModel).rows.length ? (model[i] as SheetModel).rows.length - 1 : 0, colIndex: cellCnt }
-            );
+                model[i as number], 'usedRange',
+                { rowIndex: (model[i as number] as SheetModel).rows.length ? (model[i as number] as SheetModel).rows.length - 1 : 0,
+                    colIndex: cellCnt });
         }
     }
 }

@@ -40,26 +40,27 @@ export class ToolbarStatus {
         let isNodeChanged: boolean = false;
         const range: Range = nodeSelection.getRange(docElement);
         for (let index: number = 0; index < nodes.length; index++) {
-            while (nodes[index].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index].parentNode &&
-                nodes[index].parentNode.lastElementChild && nodes[index].parentNode.lastElementChild.nodeName !== 'BR' &&
-                (this.getImmediateBlockNode(nodes[index].parentNode as Node)).textContent.replace(/\u200B/g, '').length === 0 &&
+            while (nodes[index as number].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index as number].parentNode &&
+                nodes[index as number].parentNode.lastElementChild && nodes[index as number].parentNode.lastElementChild.nodeName !== 'BR' &&
+                (this.getImmediateBlockNode(nodes[index as number].parentNode as Node)).textContent.replace(/\u200B/g, '').length === 0 &&
                 range.startContainer.textContent.replace(/\u200B/g, '').length === 0 &&
                 nodeSelection.get(docElement).toString().replace(/\u200B/g, '').length === 0) {
-                nodes[index] = nodes[index].parentNode.lastElementChild.firstChild;
+                nodes[index as number] = nodes[index as number].parentNode.lastElementChild.firstChild;
                 isNodeChanged = true;
             }
-            if (isNodeChanged && nodes[index]) {
-                nodeSelection.setCursorPoint(docElement, (nodes[index] as Element), nodes[index].textContent.length);
+            if (isNodeChanged && nodes[index as number]) {
+                nodeSelection.setCursorPoint(docElement, (nodes[index as number] as Element), nodes[index as number].textContent.length);
                 isNodeChanged = false;
             }
-            if ((nodes[index].nodeName !== 'BR' && nodes[index].nodeType !== 3) ||
-            (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
+            if ((nodes[index as number].nodeName !== 'BR' && nodes[index as number].nodeType !== 3) ||
+            (nodesLength > 1 && nodes[index as number].nodeType === 3 && nodes[index as number].textContent.trim() === '')) {
                 nodes.splice(index, 1);
                 index--;
             }
         }
         for (let index: number = 0; index < nodes.length; index++) {
-            formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index], targetNode, formatNode, fontSize, fontName);
+            // eslint-disable-next-line max-len
+            formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index as number], targetNode, formatNode, fontSize, fontName);
             if ((index === 0 && formatCollection.bold) || !formatCollection.bold) {
                 nodeCollection.bold = formatCollection.bold;
             }
@@ -256,12 +257,14 @@ export class ToolbarStatus {
         let index: number = null;
         if ((name !== null && name !== '' && name !== undefined)
             && (fontName === null || fontName === undefined || (fontName.filter((value: string, pos: number) => {
+                // eslint-disable-next-line
                 const pattern: RegExp = new RegExp(name, 'i');
                 if ((value.replace(/"/g, '').replace(/ /g, '').toLowerCase() === name.replace(/"/g, '').replace(/ /g, '').toLowerCase()) ||
                     (value.split(',')[0] && value.split(',')[0].search(pattern) > -1)) {
                     index = pos;
                 }
             }) && (index !== null)))) {
+            // eslint-disable-next-line
             return (index !== null) ? fontName[index] : name.replace(/"/g, '');
         } else {
             return null;

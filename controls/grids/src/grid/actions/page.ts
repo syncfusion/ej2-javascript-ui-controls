@@ -110,19 +110,19 @@ export class Page implements IAction {
             const links: NodeList = numericContainer.querySelectorAll('a');
             for (let i: number = 0; i < links.length; i++) {
                 if (this.parent.getContentTable()) {
-                    (<Element>links[i]).setAttribute('aria-owns', this.parent.getContentTable().id);
+                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.getContentTable().id);
                 } else {
-                    (<Element>links[i]).setAttribute('aria-owns', this.parent.element.getAttribute('id') + '_content_table');
+                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.element.getAttribute('id') + '_content_table');
                 }
                 const numericContainerDiv: Element = this.parent.createElement('div');
-                numericContainerDiv.appendChild(links[i]);
+                numericContainerDiv.appendChild(links[parseInt(i.toString(), 10)]);
                 frag.appendChild(numericContainerDiv);
             }
             numericContainerNew.appendChild(frag);
             pagerContainer.replaceChild(numericContainerNew, numericContainer);
             const classList: string[] = ['.e-mfirst', '.e-mprev', '.e-first', '.e-prev', '.e-next', '.e-last', '.e-mnext', '.e-mlast'];
             for (let j: number = 0; j < classList.length; j++) {
-                const element: Element = this.element.querySelector(classList[j]);
+                const element: Element = this.element.querySelector(classList[parseInt(j.toString(), 10)]);
                 if (this.parent.getContentTable()) {
                     element.setAttribute('aria-owns', this.parent.getContentTable().id);
                 }
@@ -199,7 +199,7 @@ export class Page implements IAction {
         }
         const newProp: Object = e.properties;
         for (const prop of Object.keys(newProp)) {
-            this.pagerObj[prop] = newProp[prop];
+            this.pagerObj[`${prop}`] = newProp[`${prop}`];
         }
         this.pagerObj.dataBind();
     }

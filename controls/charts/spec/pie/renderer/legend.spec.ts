@@ -630,7 +630,7 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '692.4797803156889' || xValue === '692.9797803156889').toBe(true);
+                expect(xValue === '697.4797803156889' || xValue === '692.9797803156889' || xValue === '697.9797803156889').toBe(true);
                 yValue = titleElement.getAttribute('y');
                 expect(yValue === '143' || yValue === '145').toBe(true);
                 legendGroup = getElement('container_chart_legend_translate_g');
@@ -647,7 +647,7 @@ describe('Legend checking for the pie series', () => {
                 titleElement = getElement('container_chart_legend_title');
                 expect(titleElement.textContent === 'Countries').toBe(true);
                 xValue = titleElement.getAttribute('x');
-                expect(xValue === '104.71712842495415').toBe(true);
+                expect(xValue === '99.71712842495415').toBe(true);
                 yValue = titleElement.getAttribute('y');
                 expect(yValue === '143' || yValue === '145').toBe(true);
                 legendGroup = getElement('container_chart_legend_translate_g');

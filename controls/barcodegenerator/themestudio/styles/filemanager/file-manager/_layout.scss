@@ -1,31 +1,36 @@
-// sass-lint:disable no-vendor-prefixes
+/* stylelint-disable property-no-vendor-prefix */
 @mixin user-select {
   -moz-user-select: none;
   -ms-user-select: none;
   -webkit-user-select: none;
   user-select: none;
 }
+
 @mixin visibility($value) {
   .e-checkbox-wrapper {
     visibility: $value;
   }
 }
+
 @mixin grid-no-border {
   .e-rowcell.e-lastrowcell {
     border-bottom-width: 0;
   }
 }
+
 @mixin popup-active-icon {
   .e-fe-dot,
   .e-fe-tick {
     font-size: $fe-ddl-icon-font-size;
   }
 }
+
 @mixin ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 @mixin checkbox($value) {
   .e-checkbox-wrapper {
 
@@ -78,7 +83,7 @@
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
         border: 0;
         box-shadow: none;
-        font-weight: 400;
+        font-weight: normal;
         height: $fe-tb-ddb-height;
         padding: $fe-tb-ddb-btn-padding;
 
@@ -407,7 +412,7 @@
       }
 
       .e-content {
-        overflow-y: auto !important; // sass-lint:disable-line no-important
+        overflow-y: auto !important; /* stylelint-disable-line declaration-no-important */
 
         .e-table {
           border-spacing: 0;
@@ -498,7 +503,7 @@
       }
 
       .e-gridpopup {
-        display: none !important; // sass-lint:disable-line no-important
+        display: none !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-gridheader,
@@ -523,8 +528,8 @@
             text-overflow: unset;
           }
 
-          &+.e-rowcell,
-          &+.e-headercell {
+          & + .e-rowcell,
+          & + .e-headercell {
             padding-left: 0;
 
             &.e-fe-grid-name {
@@ -586,7 +591,7 @@
     .e-view-container {
       .e-grid {
         .e-gridheader {
-          padding-right: 0 !important; // sass-lint:disable-line no-important
+          padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
         }
       }
     }
@@ -594,7 +599,7 @@
     &.e-rtl .e-view-container {
       .e-grid {
         .e-gridheader {
-          padding-left: 0 !important; // sass-lint:disable-line no-important
+          padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
         }
       }
     }
@@ -896,8 +901,8 @@
             padding-left: 0;
             padding-right: 12px;
 
-            &+.e-rowcell,
-            &+.e-headercell {
+            & + .e-rowcell,
+            & + .e-headercell {
               padding-left: 21px;
               padding-right: 0;
 
@@ -1059,7 +1064,6 @@
         .e-fe-icon {
           margin: 0 0 -2px 8px;
         }
-
       }
     }
 
@@ -1504,8 +1508,8 @@
           line-height: 22px;
           width: 24px;
         }
-     }
-   }
+      }
+    }
 
     .e-treeview {
 
@@ -1728,7 +1732,7 @@
 
       .e-empty {
         min-width: $fe-big-lg-icon-empty-min-width;
-    }
+      }
 
       .e-empty-content {
         font-size: $fe-big-lg-icon-empty-content-font-size;
@@ -1808,6 +1812,15 @@
     }
   }
 
+  @media (min-width: 360px) and (max-width: 500px) {
+    @if $skin-name == 'FluentUI' {
+      .e-bigger .e-filemanager .e-grid .e-checkbox-wrapper .e-frame {
+        position: relative;
+        right: 10px;
+      }
+    }
+  }
+  
   .e-content-placeholder.e-filemanager.e-placeholder-filemanager {
     height: 100%;
     width: 100%;

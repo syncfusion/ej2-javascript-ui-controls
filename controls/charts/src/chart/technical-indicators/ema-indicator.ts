@@ -36,13 +36,13 @@ export class EmaIndicator extends TechnicalAnalysis {
             const k: number = (2 / (indicator.period + 1));
 
             for (let i: number = 0; i < indicator.period; i++) {
-                sum += validData[i][field];
+                sum += validData[i as number][field as string];
             }
 
             average = sum / indicator.period;
 
             emaPoints.push(this.getDataPoint(
-                validData[indicator.period - 1][xField], average,
+                validData[indicator.period - 1][xField as string], average,
                 validData[indicator.period - 1], signalSeries, emaPoints.length));
 
             let index: number = indicator.period;
@@ -50,11 +50,11 @@ export class EmaIndicator extends TechnicalAnalysis {
                 //previous average
                 const prevAverage: number = emaPoints[index - indicator.period][signalSeries.yName];
 
-                const yValue: number = (validData[index][field] - prevAverage) * k + prevAverage;
+                const yValue: number = (validData[index as number][field as string] - prevAverage) * k + prevAverage;
 
                 emaPoints.push(this.getDataPoint(
-                    validData[index][xField], yValue,
-                    validData[index], signalSeries, emaPoints.length));
+                    validData[index as number][xField as string], yValue,
+                    validData[index as number], signalSeries, emaPoints.length));
 
                 index++;
             }

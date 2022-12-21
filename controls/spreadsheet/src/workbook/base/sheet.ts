@@ -81,36 +81,31 @@ export class Range extends ChildProperty<Sheet> {
 
 
     protected setProperties(prop: object, muteOnChange: boolean): void {
-        const name: string = 'name';
-        const instance: string = 'instance';
-        const parentObj: string = 'parentObj';
-        const currRangeIdx: string = 'currRangeIdx';
-        const controlParent: string = 'controlParent';
-        if (this[parentObj].isComplexArraySetter && this[controlParent] && this[controlParent].isAngular) {
+        if (this['parentObj'].isComplexArraySetter && this['controlParent'] && this['controlParent'].isAngular) {
             if (Object.keys(prop).length) {
-                if (this[parentObj][currRangeIdx] === undefined) {
-                    this[parentObj][currRangeIdx] = 0;
+                if (this['parentObj']['currRangeIdx'] === undefined) {
+                    this['parentObj']['currRangeIdx'] = 0;
                 } else {
-                    this[parentObj][currRangeIdx] += 1;
+                    this['parentObj']['currRangeIdx'] += 1;
                 }
-                const range: ExtendedRange = this[parentObj].ranges[this[parentObj][currRangeIdx]];
+                const range: ExtendedRange = this['parentObj'].ranges[this['parentObj']['currRangeIdx']];
                 if (range && range.info) {
                     (this as ExtendedRange).info = range.info;
                 }
                 setTimeout(() => {
-                    if (this[parentObj][currRangeIdx] !== undefined) {
-                        delete this[parentObj][currRangeIdx];
+                    if (this['parentObj']['currRangeIdx'] !== undefined) {
+                        delete this['parentObj']['currRangeIdx'];
                     }
                 });
-            } else if (this[controlParent].tagObjects[0].instance && this[controlParent].tagObjects[0].instance.hasChanges
-                && !this[controlParent].tagObjects[0].instance.isInitChanges) {
-                const sheetIdx: number = this[controlParent].sheets.indexOf(this[parentObj]);
-                if (this[parentObj].changedRangeIdx === undefined) {
+            } else if (this['controlParent'].tagObjects[0].instance && this['controlParent'].tagObjects[0].instance.hasChanges
+                && !this['controlParent'].tagObjects[0].instance.isInitChanges) {
+                const sheetIdx: number = this['controlParent'].sheets.indexOf(this['parentObj']);
+                if (this['parentObj'].changedRangeIdx === undefined) {
                     let rangeIdx: number;
-                    const tagObjects: Object[] = this[controlParent].tagObjects[0].instance.list[sheetIdx].tagObjects;
+                    const tagObjects: Object[] = this['controlParent'].tagObjects[0].instance.list[sheetIdx as number].tagObjects;
                     for (let i: number = 0; i < tagObjects.length; i++) {
-                        if (tagObjects[i][name] === 'ranges') {
-                            tagObjects[i][instance].list
+                        if (tagObjects[i as number]['name'] === 'ranges') {
+                            tagObjects[i as number]['instance'].list
                                 .forEach((range: { hasChanges: boolean }, idx: number) => {
                                     if (range.hasChanges) {
                                         rangeIdx = idx;
@@ -119,7 +114,7 @@ export class Range extends ChildProperty<Sheet> {
                             break;
                         }
                     }
-                    this[parentObj].changedRangeIdx = rangeIdx;
+                    this['parentObj'].changedRangeIdx = rangeIdx;
                 }
             }
         }
@@ -370,7 +365,7 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 export function getSheetIndex(context: Workbook, name: string): number {
     let idx: number;
     for (let i: number = 0; i < context.sheets.length; i++) {
-        if (context.sheets[i].name.toLowerCase() === name.toLowerCase()) {
+        if (context.sheets[i as number].name.toLowerCase() === name.toLowerCase()) {
             idx = i;
             break;
         }
@@ -389,7 +384,7 @@ export function getSheetIndex(context: Workbook, name: string): number {
 export function getSheetIndexFromId(context: Workbook, id: number): number {
     let idx: number;
     for (let i: number = 0; i < context.sheets.length; i++) {
-        if (context.sheets[i].id === id) {
+        if (context.sheets[i as number].id === id) {
             idx = i;
             break;
         }
@@ -422,8 +417,8 @@ export function getSheetIndexByName
 (context: Workbook, name: string, info: { visibleName: string, sheet: string, index: number }[]): number {
     const len: number = info.length;
     for (let i: number = 0; i < len; i++) {
-        if (info[i].sheet.toUpperCase() === name.toUpperCase()) {
-            return info[i].index;
+        if (info[i as number].sheet.toUpperCase() === name.toUpperCase()) {
+            return info[i as number].index;
         }
     }
     return -1;
@@ -471,7 +466,7 @@ export function getSingleSelectedRange(sheet: SheetModel): string {
  * @returns {SheetModel} - To get sheet.
  */
 export function getSheet(context: Workbook, idx: number): SheetModel {
-    return context.sheets[idx];
+    return context.sheets[idx as number];
 }
 
 /**
@@ -591,15 +586,14 @@ export function getSheetName(context: Workbook, idx: number = context.activeShee
  * @returns {void}
  * @hidden
  */
-export function moveSheet(context: Workbook, position: number, sheetIndexes?: number[], action?: boolean, isFromUpdateAction?: boolean): void {
+export function moveSheet(
+    context: Workbook, position: number, sheetIndexes?: number[], action?: boolean, isFromUpdateAction?: boolean): void {
     const needRefresh: boolean = !!sheetIndexes;
     sheetIndexes = sheetIndexes || [context.activeSheetIndex];
     const sheetName: string = getSheetName(context);
     position = getNextPrevVisibleSheetIndex(context.sheets, position, context.activeSheetIndex > position);
     const args: { action: string, eventArgs: { position: number, sheetIndexes: number[], cancel: boolean } } = {
-        action: 'moveSheet', eventArgs: { position: position,
-        sheetIndexes: sheetIndexes, cancel: false }
-    };
+        action: 'moveSheet', eventArgs: { position: position, sheetIndexes: sheetIndexes, cancel: false } };
     if (action) {
         context.trigger('actionBegin', args);
     }
@@ -676,7 +670,7 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
  */
 function getNextPrevVisibleSheetIndex(sheets: SheetModel[], startIndex: number, isPrevious: boolean): number {
     for (let i: number = startIndex; isPrevious ? i >= 0 : i < sheets.length; isPrevious ? i-- : i++) {
-        if (!(sheets[i].state === 'Hidden' || sheets[i].state === 'VeryHidden')) {
+        if (!(sheets[i as number].state === 'Hidden' || sheets[i as number].state === 'VeryHidden')) {
             startIndex = i;
             break;
         }

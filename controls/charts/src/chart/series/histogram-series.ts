@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
@@ -54,8 +55,8 @@ export class HistogramSeries extends ColumnSeries {
         const yValues: number[] = [];
         const keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
-            const key: string = keys[i];
-            yValues.push(data[key][series.yName]);
+            const key: string = keys[i as number];
+            yValues.push(data[key as string][series.yName]);
         }
         series.histogramValues = {
             yValues: yValues
@@ -79,6 +80,7 @@ export class HistogramSeries extends ColumnSeries {
         }
         return updatedData;
     }
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Calculates bin values.
      *
@@ -86,17 +88,17 @@ export class HistogramSeries extends ColumnSeries {
      * @private
      */
     public calculateBinValues(series: Series): void {
-        let yValuesCount: number = series.histogramValues.yValues.length;
-        let binWidth: number = series.histogramValues.binWidth;
-        let mean: number = series.histogramValues.mean;
-        let sDValue: number = series.histogramValues.sDValue;
-        let pointsCount: number = 500;
-        let min: number = series.xAxis.minimum ? parseInt(series.xAxis.minimum.toString()) : series.xMin;
-        let max: number = series.xAxis.maximum ? parseInt(series.xAxis.maximum.toString()) : series.xMax;
-        let points: number = series.points.length;
+        const yValuesCount: number = series.histogramValues.yValues.length;
+        const binWidth: number = series.histogramValues.binWidth;
+        const mean: number = series.histogramValues.mean;
+        const sDValue: number = series.histogramValues.sDValue;
+        const pointsCount: number = 500;
+        const min: number = series.xAxis.minimum ? parseInt(series.xAxis.minimum.toString()) : series.xMin;
+        const max: number = series.xAxis.maximum ? parseInt(series.xAxis.maximum.toString()) : series.xMax;
+        const points: number = series.points.length;
         let xValue: number;
         let yValue: number;
-        let del: number = (max - min) / (pointsCount - 1);
+        const del: number = (max - min) / (pointsCount - 1);
         if (points) {
             for (let i: number = 0; i < pointsCount; i++) {
                 xValue = min + i * del;

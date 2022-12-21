@@ -253,6 +253,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
+    defaultBackdropDiv: any;
     /* eslint-enable */
 
     constructor(options?: SidebarModel, element?: string | HTMLElement) {
@@ -398,7 +399,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private destroyBackDrop(): void {
         const sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) || this.targetEle;
         if (this.target && this.showBackdrop && sibling) {
-            removeClass([sibling], CONTEXTBACKDROP);
+            removeClass([this.defaultBackdropDiv], DEFAULTBACKDROP);
         } else if (this.showBackdrop && this.modal) {
             this.modal.style.display = 'none';
             this.modal.outerHTML = '';
@@ -532,8 +533,12 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private createBackDrop(): void {
         if (this.target && this.showBackdrop && this.getState()) {
+            const targetString: HTMLElement = <HTMLElement>this.target;
             const sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
-            addClass([sibling], CONTEXTBACKDROP);
+            this.defaultBackdropDiv = this.createElement('div');
+            addClass([this.defaultBackdropDiv], DEFAULTBACKDROP);
+            setStyle(this.defaultBackdropDiv, {height: targetString.style.height});
+            sibling.appendChild(this.defaultBackdropDiv);
         } else if (this.showBackdrop && !this.modal && this.getState()) {
             this.modal = this.createElement('div');
             this.modal.className = DEFAULTBACKDROP;

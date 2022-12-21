@@ -5,7 +5,7 @@ import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs, OpenArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
 import { sheetCreated, protectSheetWorkBook, getRangeAddress, beginAction } from '../common/index';
-import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel } from '../base/index';
+import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel, getSheet } from '../base/index';
 
 export class WorkbookOpen {
     private parent: Workbook;
@@ -114,7 +114,7 @@ export class WorkbookOpen {
             return;
         }
         this.updateModel(impData, isOpenFromJson);
-        this.parent.notify(openSuccess, { context: this, data: <string>impData, isOpenFromJson: isOpenFromJson });
+        this.parent.notify(openSuccess, { context: this, data: <string>impData, isOpenFromJson: isOpenFromJson, eventArgs: eventArgs });
         this.parent.isOpen = false;
         if (eventArgs && eventArgs.password && eventArgs.password.length > 0) {
             if (this.parent.showSheetTabs) {
@@ -173,11 +173,11 @@ export class WorkbookOpen {
             // eslint-disable-next-line
             if (isOpenFromJson && (this.parent as any).isAngular) {
                 for (let i: number = 0; i < this.parent.sheets.length; i++) {
-                    curSheet = this.parent.sheets[i];
+                    curSheet = getSheet(this.parent, i);
                     if (sheet.name === curSheet.name) {
                         if (sheet.ranges) {
                             sheet.ranges.forEach((range: RangeModel, index: number): void => {
-                                curRange = curSheet.ranges[index];
+                                curRange = curSheet.ranges[index as number];
                                 if (curRange && curRange.template) { range.template = curRange.template; }
                             });
                         }

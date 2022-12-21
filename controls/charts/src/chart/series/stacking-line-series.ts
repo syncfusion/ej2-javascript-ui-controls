@@ -29,27 +29,27 @@ export class StackingLineSeries extends LineBase {
         const visiblePts: Points[] = this.enableComplexProperty(series);
         const pointsLength: number = visiblePts.length;
         const stackedvalue: StackValues = series.stackedValues;
-        let pointIndex: number, nextPointIndex: number;
+        let pointIndex: number; let nextPointIndex: number;
         let point1: ChartLocation;
         let point2: ChartLocation;
         for (let i: number = 0; i < pointsLength; i++) {
-            visiblePts[i].regions = []; visiblePts[i].symbolLocations = [];
-            pointIndex = visiblePts[i].index;
-            if (visiblePts[i].visible && withInRange(visiblePts[i - 1], visiblePts[i], visiblePts[i + 1], series)) {
+            visiblePts[i as number].regions = []; visiblePts[i as number].symbolLocations = [];
+            pointIndex = visiblePts[i as number].index;
+            if (visiblePts[i as number].visible && withInRange(visiblePts[i - 1], visiblePts[i as number], visiblePts[i + 1], series)) {
                 point1 = getCoordinate(
-                    visiblePts[i].xValue, stackedvalue.endValues[pointIndex],
+                    visiblePts[i as number].xValue, stackedvalue.endValues[pointIndex as number],
                     xAxis, yAxis, isInverted, series
                 );
                 direction = direction.concat((i ? 'L' : 'M') + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
-                visiblePts[i].symbolLocations.push(
+                visiblePts[i as number].symbolLocations.push(
                     getCoordinate(
-                        visiblePts[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis,
+                        visiblePts[i as number].xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis,
                         isInverted, series
                     )
                 );
-                visiblePts[i].regions.push(new Rect(
-                    visiblePts[i].symbolLocations[0].x - series.marker.width,
-                    visiblePts[i].symbolLocations[0].y - series.marker.height,
+                visiblePts[i as number].regions.push(new Rect(
+                    visiblePts[i as number].symbolLocations[0].x - series.marker.width,
+                    visiblePts[i as number].symbolLocations[0].y - series.marker.height,
                     2 * series.marker.width, 2 * series.marker.height
                 ));
             } else {
@@ -57,7 +57,7 @@ export class StackingLineSeries extends LineBase {
                     if (visiblePts[i + 1] && visiblePts[i + 1].visible) {
                         nextPointIndex = visiblePts[i + 1].index;
                         point1 = getCoordinate(
-                            visiblePts[i + 1].xValue, stackedvalue.endValues[nextPointIndex],
+                            visiblePts[i + 1].xValue, stackedvalue.endValues[nextPointIndex as number],
                             xAxis, yAxis, isInverted, series
                         );
                         direction = direction.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');

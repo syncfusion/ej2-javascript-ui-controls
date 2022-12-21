@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /**
  * Selection src file
@@ -46,13 +47,20 @@ export class BaseSelection {
                     (selectionPattern !== 'None' || highlightPattern !== 'None')) {
                     const patternName: SelectionPattern = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
                     if (visibleSeries.type as AccumulationType === 'Pie' || visibleSeries.type as AccumulationType === 'Funnel' ||
-                    visibleSeries.type as AccumulationType === 'Pyramid') {
+                    visibleSeries.type as AccumulationType === 'Pyramid'&& (this.control as AccumulationChart).highlightColor !== 'transparent') {
                         for (let i: number = 0; i < visibleSeries.points.length; i++) {
                             opacity = visibleSeries.opacity;
-                            fill = this.pattern(this.control, (visibleSeries.points[i]).color, series.index, patternName, opacity);
+                            fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i]).color, series.points[i].index, patternName, opacity);
                             pattern = '{ fill:' + fill + '}';
+                            seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + '_point_' + series.points[i].index + ',' + '.' +
+                                this.styleId + '_series_' + series.index + '_point_' + series.points[i].index + '> *';
+                            if ((this.control as AccumulationChart).highlightMode === 'None' && (this.control as AccumulationChart).legendSettings.enableHighlight) {
+                                style.innerHTML += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
+                            }
+                            pattern = (pattern.indexOf('None') > -1) ? '{fill:' + this.control.highlightColor + '!important}' : pattern;
+                            style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
                         }
-                    } else if (visibleSeries.type as ChartSeriesType) {
+                    } else if (visibleSeries.type as ChartSeriesType && (this.control as Chart).highlightColor !== 'transparent') {
                         opacity = visibleSeries.opacity;
                         fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as Chart).highlightColor !== '') ? (this.control as Chart).highlightColor :
                             (visibleSeries.pointColorMapping !== '' || ((this.control as Chart).rangeColorSettings && (this.control as Chart).rangeColorSettings.length > 1)) ? ((visibleSeries as Series).points[0]).color
@@ -69,7 +77,7 @@ export class BaseSelection {
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
                 style.innerHTML += series.selectionStyle ? '' : '.' + seriesclass + pattern;
             }
-            let unSelectOpacity: number = 0.3;
+            let unSelectOpacity: number =(this.control).highlightColor !== 'transparent' ? 0.3 : opacity;
             if (isNullOrUndefined((this.control as Chart).selectionModule) && (this.control as Chart).selectionMode === 'None' && (this.control as Chart).highlightColor !== '') {
                 unSelectOpacity = 1;
             }
@@ -127,8 +135,8 @@ export class BaseSelection {
         const bubNum: number = 20;
         switch (patternName) {
         case 'Dots':
-            patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
-            patternGroup[widthStr] = patternNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = patternNum;
+            patternGroup[widthStr as string] = patternNum;
             pathOptions[0] = {
                 'x': 0, 'y': 0, 'width': 7, 'height': 7, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
@@ -143,8 +151,8 @@ export class BaseSelection {
             };
             break;
         case 'Pacman':
-            patternGroup[heightStr] = '18.384';
-            patternGroup[widthStr] = '17.917';
+            patternGroup[heightStr as string] = '18.384';
+            patternGroup[widthStr as string] = '17.917';
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': 17.917, 'height': 18.384,
                 'transform': 'translate(0,0)', 'fill': backgroundColor, 'opacity': opacity
@@ -154,7 +162,7 @@ export class BaseSelection {
             };
             break;
         case 'Chessboard':
-            patternGroup[heightStr] = patternGroup[widthStr] = width;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = width;
             pathOptions[0] = {
                 'x': 0, 'y': 0, 'width': width, 'height': width, 'fill': backgroundColor, 'opacity': opacity,
                 'name': 'rect'
@@ -163,7 +171,7 @@ export class BaseSelection {
             pathOptions[2] = { 'x': 5, 'y': 5, 'width': 5, 'height': 5, 'fill': color, 'opacity': opacity, 'name': 'rect' };
             break;
         case 'Crosshatch':
-            patternGroup[heightStr] = patternGroup[widthStr] = '8';
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = '8';
             pathOptions[0] = {
                 'x': 0, 'y': 0, 'width': 8, 'height': 8, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
@@ -176,7 +184,7 @@ export class BaseSelection {
             };
             break;
         case 'DiagonalForward':
-            patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = patternNum;
             pathOptions[0] = {
                 'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
@@ -190,7 +198,7 @@ export class BaseSelection {
             break;
 
         case 'DiagonalBackward':
-            patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = patternNum;
             pathOptions[0] = {
                 'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity, 'name': 'rect'
@@ -203,7 +211,7 @@ export class BaseSelection {
             };
             break;
         case 'Grid':
-            patternGroup[heightStr] = patternGroup[widthStr] = patternNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = patternNum;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': patternNum, 'height': patternNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -216,7 +224,7 @@ export class BaseSelection {
             };
             break;
         case 'Turquoise':
-            patternGroup[heightStr] = patternGroup[widthStr] = turquoiseNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = turquoiseNum;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': turquoiseNum, 'height': turquoiseNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -251,7 +259,7 @@ export class BaseSelection {
             };
             break;
         case 'Star':
-            patternGroup[heightStr] = patternGroup[widthStr] = starNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = starNum;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': starNum, 'height': starNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -265,7 +273,7 @@ export class BaseSelection {
             };
             break;
         case 'Triangle':
-            patternGroup[heightStr] = patternGroup[widthStr] = width;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = width;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': width, 'height': width, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -279,7 +287,7 @@ export class BaseSelection {
             };
             break;
         case 'Circle':
-            patternGroup[heightStr] = patternGroup[widthStr] = circleNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = circleNum;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': circleNum, 'height': circleNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -294,7 +302,7 @@ export class BaseSelection {
             };
             break;
         case 'Tile':
-            patternGroup[heightStr] = patternGroup[widthStr] = tileNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = tileNum;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': tileNum, 'height': tileNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -305,7 +313,7 @@ export class BaseSelection {
             pathOptions[4] = { 'name': 'path', 'd': 'M9,18L9 9 18 9 z', 'stroke-width': strokeWidth, 'stroke': color, 'fill': color };
             break;
         case 'HorizontalDash':
-            patternGroup[heightStr] = patternGroup[widthStr] = height;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = height;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': height, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -316,7 +324,7 @@ export class BaseSelection {
             };
             break;
         case 'VerticalDash':
-            patternGroup[heightStr] = patternGroup[widthStr] = height;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = height;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': height, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -328,13 +336,13 @@ export class BaseSelection {
             };
             break;
         case 'Rectangle':
-            patternGroup[heightStr] = patternGroup[widthStr] = height;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = height;
             pathOptions[0] = { 'name': 'rect', 'width': height, 'height': height, 'fill': backgroundColor, 'opacity': opacity };
             pathOptions[1] = { 'name': 'rect', 'x': 1, 'y': 2, 'width': 4, 'height': 9, 'fill': color, 'opacity': opacity };
             pathOptions[2] = { 'name': 'rect', 'x': 7, 'y': 2, 'width': 4, 'height': 9, 'fill': color, 'opacity': opacity };
             break;
         case 'Box':
-            patternGroup[heightStr] = patternGroup[widthStr] = width;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = width;
             pathOptions[0] = { 'name': 'rect', 'width': 13, 'height': 13, 'fill': backgroundColor, 'opacity': opacity };
             pathOptions[1] = {
                 'name': 'rect', 'x': 1.5, 'y': 1.5, 'width': width, 'height': 9, 'fill': color,
@@ -342,8 +350,8 @@ export class BaseSelection {
             };
             break;
         case 'HorizontalStripe':
-            patternGroup[heightStr] = height;
-            patternGroup[widthStr] = width;
+            patternGroup[heightStr as string] = height;
+            patternGroup[widthStr as string] = width;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': width, 'height': height,
                 'transform': 'translate(0,0)', 'fill': backgroundColor, 'opacity': opacity
@@ -354,8 +362,8 @@ export class BaseSelection {
             };
             break;
         case 'VerticalStripe':
-            patternGroup[heightStr] = width;
-            patternGroup[widthStr] = height;
+            patternGroup[heightStr as string] = width;
+            patternGroup[widthStr as string] = height;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': height, 'height': width, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -366,7 +374,7 @@ export class BaseSelection {
             };
             break;
         case 'Bubble':
-            patternGroup[heightStr] = patternGroup[widthStr] = bubNum;
+            patternGroup[heightStr as string] = patternGroup[widthStr as string] = bubNum;
             pathOptions[0] = {
                 'name': 'rect', 'x': 0, 'y': 0, 'width': bubNum, 'height': bubNum, 'transform': 'translate(0,0)',
                 'fill': backgroundColor, 'opacity': opacity
@@ -411,7 +419,7 @@ export class BaseSelection {
         let i: number;
         for (i = 0; i < options.length; i++) {
             // eslint-disable-next-line @typescript-eslint/ban-types
-            const path: Element = svgRenderer.createPattern(options[i], (<object>options)[i].name);
+            const path: Element = svgRenderer.createPattern(options[i as number], (<object>options)[i as number].name);
             pattern.appendChild(path);
         }
     }
@@ -446,14 +454,15 @@ export class BaseSelection {
             }
         }
         for (const index of uniqueSeries) {
-            if (chart != null && chart.rangeColorSettings && chart.rangeColorSettings.length > 0 && chart.rangeColorSettings[0].colors.length > 0 ) {
+            if (chart != null && chart.rangeColorSettings && chart.rangeColorSettings.length > 0 &&
+                 chart.rangeColorSettings[0].colors.length > 0 ) {
                 if (this.control.series[0].visible) {
                     visible = true;
                     break;
                 }
             }
             else {
-                if (this.control.series[index].visible) {
+                if (this.control.series[index as number].visible) {
                     visible = true;
                     break;
                 }
@@ -503,8 +512,8 @@ export class BaseSelection {
     protected getChildren(parent: Element): Element[] {
         const children: Element[] = [];
         for (let i: number = 0; i < parent.childNodes.length; i++) {
-            if ((<Element>parent.childNodes[i]).tagName !== 'defs') {
-                children.push((<Element>parent.childNodes[i]));
+            if ((<Element>parent.childNodes[i as number]).tagName !== 'defs') {
+                children.push((<Element>parent.childNodes[i as number]));
             }
         }
         return children;

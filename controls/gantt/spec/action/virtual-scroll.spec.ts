@@ -184,4 +184,167 @@ describe('Gantt virtual scroll', () => {
             expect(ganttObj.ganttChartModule.getChartRows().length).toBe(22);
         });
     });
+    describe('Collapse/Expand search actions with virtualization shimmer effect', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: virtualData,
+                    enableVirtualization: true,
+                    collapseAllParentTasks: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks'
+                    },
+                    height: '550px',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: false
+                    },
+                    allowSelection: true,
+                    loadingIndicator: { indicatorType: 'Shimmer' },
+                    allowSorting: true,
+                    allowFiltering: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('search shimmer effect', () => {
+            ganttObj.expanding = (args: any): void => {
+                if (args.name === "collapsed") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(2);
+                }
+            } 
+            let searchbar: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbar'));
+            searchbar.value = 'Task';
+            let searchButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbutton') as HTMLElement;
+            triggerMouseEvent(searchButton, 'click');
+        });
+    });
+    describe('Virtual Scrolling Shimmer effect', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: virtualData,
+                    enableVirtualization: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks'
+                    },
+                    height: '550px',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: false
+                    },
+                    allowSelection: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Vertical scroll shimmer effect', () => {
+            ganttObj.actionBegin = (args: any): void => {
+                if (args.requestType === "scroll") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(3);
+                }
+            };
+            ganttObj.ganttChartModule.scrollObject.setScrollTop(2000);
+        });
+        it('Horizontal scroll shimmer effect', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "scroll") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(0);
+                }
+            };
+            ganttObj.ganttChartModule.scrollObject.setScrollLeft(2000);
+        });
+    });
+    describe('Virtual scroll shimmer with RTL', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: virtualData,
+                    enableVirtualization: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks'
+                    },
+                    height: '550px',
+                    enableRtl: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: false
+                    },
+                    allowSelection: true,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search']
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Vertical scroll shimmer effect', () => {
+            ganttObj.actionBegin = (args: any): void => {
+                if (args.requestType === "scroll") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(3);
+                }
+            };
+            ganttObj.ganttChartModule.scrollObject.setScrollTop(2000);
+        });
+        it('Horizontal scroll shimmer effect', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "scroll") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(0);
+                }
+            };
+            ganttObj.ganttChartModule.scrollObject.setScrollLeft(2000);
+        });
+    });
 });

@@ -104,7 +104,7 @@ export class MindMap {
     private checkRoot(nodes: INode[], layoutProp: Layout, uniqueId?: string, root?: string, nameTable?: Object): string {
         for (const node of nodes) {
             if (!node.excludeFromLayout) {
-                if (node.data && (node.data[uniqueId].toString() === root || node.data[uniqueId].toString()
+                if (node.data && (node.data[`${uniqueId}`].toString() === root || node.data[`${uniqueId}`].toString()
                     === layoutProp.root)) {
                     return node.id;
                 } else if (!node.data && node.id === layoutProp.root) {
@@ -124,6 +124,7 @@ export class MindMap {
             verticalAlignment: layoutProp.verticalAlignment, horizontalAlignment: layoutProp.horizontalAlignment,
             fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo),
             layoutInfo: layoutProp.layoutInfo, margin: layoutProp.margin,
+            orientation: layoutProp.orientation,
             root: layoutProp.fixedNode
         };
         (layout as Layout).orientation = (side === 'Left') ? 'LeftToRight' : 'RightToLeft';
@@ -157,7 +158,7 @@ export class MindMap {
         const fistLevelNodes: INode[] = [];
         if (node && node.outEdges.length) {
             for (const outEdge of node.outEdges) {
-                fistLevelNodes.push(nameTable[nameTable[outEdge].targetID]);
+                fistLevelNodes.push(nameTable[nameTable[`${outEdge}`].targetID]);
             }
         }
         return fistLevelNodes;

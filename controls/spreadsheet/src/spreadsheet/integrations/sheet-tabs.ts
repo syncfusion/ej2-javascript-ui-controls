@@ -119,7 +119,7 @@ export class SheetTabs {
         this.parent.notify(protectSheet, null);
     }
 
-    private goToSheet(args: SelectEventArgs, cancelSelect?: boolean, triggerEvent?:boolean): void {
+    private goToSheet(args: SelectEventArgs, cancelSelect?: boolean, triggerEvent?: boolean): void {
         if (args.selectedIndex === args.previousIndex) { return; }
         if (cancelSelect) {
             this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
@@ -153,8 +153,8 @@ export class SheetTabs {
     }
 
     private updateDropDownItems(curIdx: number, prevIdx?: number): void {
-        if (prevIdx > -1) { this.dropDownInstance.items[prevIdx].iconCss = ''; }
-        this.dropDownInstance.items[curIdx].iconCss = 'e-selected-icon e-icons';
+        if (prevIdx > -1) { this.dropDownInstance.items[prevIdx as number].iconCss = ''; }
+        this.dropDownInstance.items[curIdx as number].iconCss = 'e-selected-icon e-icons';
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
     }
 
@@ -217,7 +217,7 @@ export class SheetTabs {
             this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
         }
         for (let i: number = args.startIdx; i <= args.endIdx; i++) {
-            const sheetName: string = this.parent.sheets[i].name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const sheetName: string = this.parent.sheets[i as number].name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             this.dropDownInstance.items.splice(i, 0, <ItemModel>{ text: sheetName });
             this.tabInstance.addTab(<TabItemModel[]>[{ header: { text: sheetName }, content: '' }], i);
         }
@@ -265,7 +265,7 @@ export class SheetTabs {
         const disableItems: string[] = [];
         const id: string = `${this.parent.element.id}_cmenu`;
         for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
-            if (this.parent.sheets[i].name === name) {
+            if (this.parent.sheets[i as number].name === name) {
                 if (this.parent.activeSheetIndex !== i) {
                     this.updateSheetTab({ idx: i });
                 }
@@ -358,17 +358,18 @@ export class SheetTabs {
             const idx: number = this.tabInstance.selectedItem;
             // eslint-disable-next-line no-useless-escape
             if (!value.match(new RegExp('.*[\\[\\]\\*\\\\\/\\?].*'))) {
-                if (this.parent.sheets[idx].name !== value) {
+                if (this.parent.sheets[idx as number].name !== value) {
                     for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
-                        if (i !== this.parent.activeSheetIndex && this.parent.sheets[i].name.toLowerCase() === value.toLowerCase()) {
+                        if (i !== this.parent.activeSheetIndex && this.parent.sheets[i as number].name.toLowerCase() ===
+                            value.toLowerCase()) {
                             this.showRenameDialog(target, l10n.getConstant('SheetRenameAlreadyExistsAlert'));
                             return;
                         }
                     }
                 }
                 const items: Element = this.removeRenameInput(target);
-                if (this.parent.sheets[idx].name !== value) {
-                    this.parent.setSheetPropertyOnMute(this.parent.sheets[idx], 'name', value);
+                if (this.parent.sheets[idx as number].name !== value) {
+                    this.parent.setSheetPropertyOnMute(this.parent.sheets[idx as number], 'name', value);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
                 if (e.type === 'keydown') {
@@ -395,8 +396,9 @@ export class SheetTabs {
         this.tabInstance.items[args.idx].header.text = name;
         this.dropDownInstance.items[args.idx].text = name;
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        args.items.children[args.idx + 1].querySelector('.e-tab-text').textContent = '';
-        args.items.children[args.idx + 1].querySelector('.e-tab-text').appendChild(document.createTextNode(args.value));
+        const sheetTabText: HTMLElement = args.items.querySelectorAll('.e-toolbar-item')[args.idx].querySelector('.e-tab-text');
+        sheetTabText.textContent = '';
+        sheetTabText.appendChild(document.createTextNode(args.value));
         if (args.value.indexOf('  ') > -1) {
             this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
         } else {
@@ -418,7 +420,8 @@ export class SheetTabs {
     }
 
     private hideSheet(args: { sheetIndex: number, triggerEvent?: boolean }): void {
-        const actionArgs = { action: 'hideSheet', eventArgs: { sheetIndex: args.sheetIndex, cancel: false } };
+        const actionArgs: { action: string, eventArgs: { cancel?: boolean, sheetIndex?: number } } = {
+            action: 'hideSheet', eventArgs: { sheetIndex: args.sheetIndex, cancel: false } };
         if (args.triggerEvent) {
             this.parent.notify(beginAction, actionArgs);
             if (actionArgs.eventArgs.cancel) {
@@ -593,7 +596,7 @@ export class SheetTabs {
                 : 'e-aggregate-list e-flat';
             delete eventArgs.countOnly;
             const key: string = this.aggregateContent;
-            const content: string = `${key}: ${eventArgs[key]}`;
+            const content: string = `${key}: ${eventArgs[key.toString()]}`;
             if (!this.aggregateDropDown) {
                 const aggregateEle: HTMLElement = this.parent.createElement('button', { id: this.parent.element.id + '_aggregate', attrs: { 'type': 'button' } });
                 document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
@@ -625,9 +628,11 @@ export class SheetTabs {
 
     private getAggregateItems(args: AggregateArgs): ItemModel[] {
         const items: ItemModel[] = []; let text: string; let iconCss: string;
+        let argsKey: string;
         Object.keys(args).forEach((key: string): void => {
-            if (args[key] !== aggregateComputation) {
-                text = `${key}: ${args[key]}`; iconCss = key === this.aggregateContent ? 'e-selected-icon e-icons' : '';
+            argsKey = args[`${key}`];
+            if (argsKey !== aggregateComputation) {
+                text = `${key}: ${argsKey}`; iconCss = key === this.aggregateContent ? 'e-selected-icon e-icons' : '';
                 items.push({ text: text, iconCss: iconCss });
             }
         });

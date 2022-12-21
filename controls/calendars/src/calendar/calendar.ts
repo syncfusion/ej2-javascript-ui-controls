@@ -620,8 +620,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             cldrObj = <string[]>(this.getCultureObjects(cldrData, '' + this.locale));
         }
-        for (const obj of Object.keys(cldrObj)) {
-            culShortNames.push(getValue(obj, cldrObj));
+        if (!isNullOrUndefined(cldrObj)) {
+            for (const obj of Object.keys(cldrObj)) {
+                culShortNames.push(getValue(obj, cldrObj));
+            }
         }
         return culShortNames;
     }
@@ -653,9 +655,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         // eslint-disable-next-line max-len
-        const shortNames: string[] = this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek);
-        for (let days: number = 0; days <= daysCount; days++) {
-            html += '<th  class="">' + this.toCapitalize(shortNames[days]) + '</th>';
+        const shortNames: string[] = this.getCultureValues().length > 0 && this.getCultureValues() ? this.shiftArray(((this.getCultureValues().length > 0 && this.getCultureValues())), this.firstDayOfWeek) : null;
+        if (!isNullOrUndefined(shortNames)) {
+            for (let days: number = 0; days <= daysCount; days++) {
+                html += '<th  class="">' + this.toCapitalize(shortNames[days as number]) + '</th>';
+            }
         }
         html = '<tr>' + html + '</tr>';
         this.tableHeadElement.innerHTML = html;
@@ -831,7 +835,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             e.preventDefault();
             break;
         case 'controlDown':
-            if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
+            if (!isNullOrUndefined(focusedDate) && !levelRestrict || !isNullOrUndefined(selectedDate) && !levelRestrict) {
                 this.contentClick(null, --view, (focusedDate || selectedDate), value);
             }
             e.preventDefault();
@@ -1045,7 +1049,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                             const localDateString: number =
                                 +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd' }));
                             const tempDateString: number =
-                                +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: 'yMd' }));
+                                +new Date(this.globalize.formatDate(values[index as number], { type: 'date', skeleton: 'yMd' }));
                             if (localDateString === tempDateString) {
                                 values.splice(index, 1);
                                 index = -1;
@@ -1080,8 +1084,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                     const formatOptions: object = { format: null, type: 'date', skeleton: 'short', calendar: type };
                     const localDateString: string = this.globalize.formatDate(localDate, formatOptions);
-                    const tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
-                    if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
+                    const tempDateString: string = this.globalize.formatDate(values[tempValue as number], formatOptions);
+                    if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue as number]))
                         || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
                     } if (!isNullOrUndefined(currentTarget) && currentTarget.innerText === tdEle.innerText && this.previousDates && tdEle.classList.contains(SELECTED) && currentTarget.classList.contains(SELECTED)) {
@@ -1092,9 +1096,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                             const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                             const formatOptions: object = { format: null, type: 'date', skeleton: 'short', calendar: type };
                             const localDateString: string = this.globalize.formatDate(date, formatOptions);
-                            const tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
+                            const tempDateString: string = this.globalize.formatDate(copyValues[i as number], formatOptions);
                             if (localDateString === tempDateString) {
-                                const index: number = copyValues.indexOf(copyValues[i]);
+                                const index: number = copyValues.indexOf(copyValues[i as number]);
                                 copyValues.splice(index, 1);
                                 values.splice(index, 1);
                             }
@@ -1252,9 +1256,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '');
         if (collection.length) {
             for (let i: number = 0; i < collection.length; i++) {
-                if (!collection[i].classList.contains(DISABLED)) {
+                if (!collection[i as number].classList.contains(DISABLED)) {
                     // eslint-disable-next-line radix
-                    date = new Date(parseInt(collection[i].id, 0));
+                    date = new Date(parseInt(collection[i as number].id, 0));
                     break;
                 }
             }
@@ -1283,9 +1287,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
         if (collection.length) {
             for (let i: number = collection.length - 1; i >= 0; i--) {
-                if (!collection[i].classList.contains(DISABLED)) {
+                if (!collection[i as number].classList.contains(DISABLED)) {
                     // eslint-disable-next-line radix
-                    date = new Date(parseInt(collection[i].id, 0));
+                    date = new Date(parseInt(collection[i as number].id, 0));
                     break;
                 }
             }
@@ -1320,26 +1324,26 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         for (let dayCell: number = 0; dayCell < elements.length / count; ++dayCell) {
             trEle = this.createElement('tr');
             for (rowIterator = 0 + rowIterator; rowIterator < row; rowIterator++) {
-                if (!elements[rowIterator].classList.contains('e-week-number') && !isNullOrUndefined(elements[rowIterator].children[0])) {
-                    addClass([elements[rowIterator].children[0]], [LINK]);
-                    rippleEffect(<HTMLElement>elements[rowIterator].children[0], {
+                if (!elements[rowIterator as number].classList.contains('e-week-number') && !isNullOrUndefined(elements[rowIterator as number].children[0])) {
+                    addClass([elements[rowIterator as number].children[0]], [LINK]);
+                    rippleEffect(<HTMLElement>elements[rowIterator as number].children[0], {
                         duration: 600,
                         isCenterRipple: true
                     });
                 }
-                trEle.appendChild(elements[rowIterator]);
+                trEle.appendChild(elements[rowIterator as number]);
                 if (this.weekNumber && rowIterator === otherMonthCell + 1 && elements[otherMonthCell + 1].classList.contains(OTHERMONTH)) {
                     addClass([trEle], OTHERMONTHROW);
                 }
-                if (!this.weekNumber && rowIterator === otherMonthCell && elements[otherMonthCell].classList.contains(OTHERMONTH)) {
+                if (!this.weekNumber && rowIterator === otherMonthCell && elements[otherMonthCell as number].classList.contains(OTHERMONTH)) {
                     addClass([trEle], OTHERMONTHROW);
                 }
                 if (this.weekNumber) {
-                    if (rowIterator === weekNumCell && elements[weekNumCell].classList.contains(OTHERMONTH)) {
+                    if (rowIterator === weekNumCell && elements[weekNumCell as number].classList.contains(OTHERMONTH)) {
                         addClass([trEle], OTHERMONTHROW);
                     }
                 } else {
-                    if (rowIterator === numberCell && elements[numberCell].classList.contains(OTHERMONTH)) {
+                    if (rowIterator === numberCell && elements[numberCell as number].classList.contains(OTHERMONTH)) {
                         addClass([trEle], OTHERMONTHROW);
                     }
                 }
@@ -1434,9 +1438,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         case 0:
             detach(this.tableBodyElement);
             this.renderMonths(e, null, isCustomDate);
-            if (multiSelection && !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
-                this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
-            }
             break;
         case 1:
             detach(this.tableBodyElement);
@@ -1607,7 +1608,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (multiSelection && !isNullOrUndefined(values) && values.length > 0) {
             const copyValues: Date[] = this.copyValues(values);
             for (let skipIndex: number = 0; skipIndex < copyValues.length; skipIndex++) {
-                const tempValue: Date = copyValues[skipIndex];
+                const tempValue: Date = copyValues[skipIndex as number];
                 const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 let tempValueString: string;
                 if (this.calendarMode === 'Gregorian') {
@@ -1641,7 +1642,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const copyValues: Date[] = [];
         if (!isNullOrUndefined(values) && values.length > 0) {
             for (let index: number = 0; index < values.length; index++) {
-                copyValues.push(new Date(+values[index]));
+                copyValues.push(new Date(+values[index as number]));
             }
         }
         return copyValues;
@@ -1729,7 +1730,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         if (this.getModuleName() === 'calendar' && this.element) {
-            EventHandler.remove(this.headerTitleElement, 'click', this.navigateTitle);
+            if (!isNullOrUndefined(this.headerTitleElement)) {
+                EventHandler.remove(this.headerTitleElement, 'click', this.navigateTitle);
+            }
             if (this.todayElement) {
                 EventHandler.remove(this.todayElement, 'click', this.todayButtonClick);
             }
@@ -1746,6 +1749,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (this.element) {
             this.element.innerHTML = '';
         }
+        this.todayElement = null;
+        this.tableBodyElement = null;
+        this.renderDayCellArgs = null;
+        this.headerElement = null;
+        this.nextIcon = null;
+        this.table = null;
+        this.tableHeadElement = null;
+        this.previousIcon = null;
+        this.headerTitleElement = null;
+        this.footer = null;
+        this.contentElement = null;
         super.destroy();
     }
     protected title(e?: Event): void {
@@ -1980,12 +1994,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             for (let index: number = 0; index < collection.length; index++) {
                 const tempElement: Element = tableBodyElement.querySelectorAll('td' + '.' + FOCUSEDDATE)[0];
                 const selectedElement: Element = tableBodyElement.querySelectorAll('td' + '.' + SELECTED)[0];
-                if (collection[index] === tempElement) {
-                    removeClass([collection[index]], FOCUSEDDATE);
+                if (collection[index as number] === tempElement) {
+                    removeClass([collection[index as number]], FOCUSEDDATE);
                 }
-                if (collection[index] === selectedElement &&
+                if (collection[index as number] === selectedElement &&
                     !this.checkPresentDate(new Date(parseInt(selectedElement.getAttribute('id').split('_')[0], 10)), values)) {
-                    removeClass([collection[index]], SELECTED);
+                    removeClass([collection[index as number]], SELECTED);
                 }
             }
             if (element.classList.contains(SELECTED)) {
@@ -1994,9 +2008,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                     const formatOptions: object = { format: null, type: 'date', skeleton: 'short', calendar: type };
                     const localDateString: string = this.globalize.formatDate(date, formatOptions);
-                    const tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
+                    const tempDateString: string = this.globalize.formatDate(copyValues[i as number], formatOptions);
                     if (localDateString === tempDateString) {
-                        const index: number = copyValues.indexOf(copyValues[i]);
+                        const index: number = copyValues.indexOf(copyValues[i as number]);
                         copyValues.splice(index, 1);
                         addClass([element], FOCUSEDDATE);
                     }
@@ -2018,7 +2032,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 const localDateString: string = this.globalize.formatDate(dates, {
                     format: null, type: 'date', skeleton: 'short', calendar: type
                 });
-                const tempDateString: string = this.globalize.formatDate(values[checkPrevious], {
+                const tempDateString: string = this.globalize.formatDate(values[checkPrevious as number], {
                     format: null, type: 'date', skeleton: 'short', calendar: type
                 });
                 if (localDateString === tempDateString) {
@@ -2036,10 +2050,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected previousIconHandler(disabled: boolean): void {
         if (disabled) {
-            EventHandler.remove(this.previousIcon, 'click', this.navigatePreviousHandler);
-            addClass([this.previousIcon], '' + DISABLED);
-            addClass([this.previousIcon], '' + OVERLAY);
-            this.previousIcon.setAttribute('aria-disabled', 'true');
+            if (!isNullOrUndefined(this.previousIcon)) {
+                EventHandler.remove(this.previousIcon, 'click', this.navigatePreviousHandler);
+
+                addClass([this.previousIcon], '' + DISABLED);
+                addClass([this.previousIcon], '' + OVERLAY);
+                this.previousIcon.setAttribute('aria-disabled', 'true');
+            }
         } else {
             EventHandler.add(this.previousIcon, 'click', this.navigatePreviousHandler);
             removeClass([this.previousIcon], '' + DISABLED);
@@ -2062,10 +2079,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
 
     protected nextIconHandler(disabled: boolean): void {
         if (disabled) {
-            EventHandler.remove(this.nextIcon, 'click', this.navigateNextHandler);
-            addClass([this.nextIcon], DISABLED);
-            addClass([this.nextIcon], OVERLAY);
-            this.nextIcon.setAttribute('aria-disabled', 'true');
+            if (!isNullOrUndefined(this.previousIcon)) {
+                EventHandler.remove(this.nextIcon, 'click', this.navigateNextHandler);
+                addClass([this.nextIcon], DISABLED);
+                addClass([this.nextIcon], OVERLAY);
+                this.nextIcon.setAttribute('aria-disabled', 'true');
+            }
         } else {
             EventHandler.add(this.nextIcon, 'click', this.navigateNextHandler);
             removeClass([this.nextIcon], DISABLED);
@@ -2153,7 +2172,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (collection.length) {
                 for (let i: number = 0; i < collection.length; i++) {
                     // eslint-disable-next-line radix
-                    isDisabled = (+value === +new Date(parseInt(collection[i].id, 0))) ? true : false;
+                    isDisabled = (+value === +new Date(parseInt(collection[i as number].id, 0))) ? true : false;
                     if (isDisabled) {
                         break;
                     }
@@ -2299,16 +2318,16 @@ export class Calendar extends CalendarBase {
             const tempValues: number[] = [];
             const copyValues: Date[] = [];
             for (let limit: number = 0; limit < this.values.length; limit++) {
-                if (tempValues.indexOf(+this.values[limit]) === -1) {
-                    tempValues.push(+this.values[limit]);
-                    copyValues.push(this.values[limit]);
+                if (tempValues.indexOf(+this.values[limit as number]) === -1) {
+                    tempValues.push(+this.values[limit as number]);
+                    copyValues.push(this.values[limit as number]);
                 }
             }
             this.setProperties({ values: copyValues }, true);
             for (let index: number = 0; index < this.values.length; index++) {
-                if (!this.checkDateValue(this.values[index])) {
-                    if (typeof (this.values[index]) === 'string' && this.checkDateValue(new Date(this.checkValue(this.values[index])))) {
-                        const copyDate: Date = new Date(this.checkValue(this.values[index]));
+                if (!this.checkDateValue(this.values[index as number])) {
+                    if (typeof (this.values[index as number]) === 'string' && this.checkDateValue(new Date(this.checkValue(this.values[index as number])))) {
+                        const copyDate: Date = new Date(this.checkValue(this.values[index as number]));
                         this.values.splice(index, 1);
                         this.values.splice(index, 0, copyDate);
                     } else {
@@ -2588,7 +2607,7 @@ export class Calendar extends CalendarBase {
                     } else {
                         const copyValues: Date[] = this.copyValues(this.values);
                         for (let index: number = 0; index < copyValues.length; index++) {
-                            const tempDate: Date = copyValues[index];
+                            const tempDate: Date = copyValues[index as number];
                             if (this.checkDateValue(tempDate) && !super.checkPresentDate(tempDate, copyValues)) {
                                 copyValues.push(tempDate);
                             }
@@ -2674,11 +2693,11 @@ export class Calendar extends CalendarBase {
             if (typeof dates === 'object' && (<Date[]>(dates)).length > 0) {
                 const tempDates: Date[] = <Date[]>dates;
                 for (let i: number = 0; i < tempDates.length; i++) {
-                    if (this.checkDateValue(tempDates[i]) && !super.checkPresentDate(tempDates[i], copyValues)) {
+                    if (this.checkDateValue(tempDates[i as number]) && !super.checkPresentDate(tempDates[i as number], copyValues)) {
                         if (!isNullOrUndefined(copyValues) && copyValues.length > 0) {
-                            copyValues.push(tempDates[i]);
+                            copyValues.push(tempDates[i as number]);
                         } else {
-                            copyValues = [new Date(+tempDates[i])];
+                            copyValues = [new Date(+tempDates[i as number])];
                         }
                     }
                 }
@@ -2715,14 +2734,14 @@ export class Calendar extends CalendarBase {
                 const tempDates: Date[] = <Date[]>dates;
                 for (let index: number = 0; index < tempDates.length; index++) {
                     for (let i: number = 0; i < copyValues.length; i++) {
-                        if (+copyValues[i] === +tempDates[index]) {
+                        if (+copyValues[i as number] === +tempDates[index as number]) {
                             copyValues.splice(i, 1);
                         }
                     }
                 }
             } else {
                 for (let i: number = 0; i < copyValues.length; i++) {
-                    if (+copyValues[i] === +dates) {
+                    if (+copyValues[i as number] === +dates) {
                         copyValues.splice(i, 1);
                     }
                 }

@@ -2,15 +2,37 @@
 
 ## [Unreleased]
 
+## 20.4.38 (2022-12-21)
+
+### Chart
+
+#### New Features
+
+- `#I346292`, `#I347892` - Provided support to wrap data labels in the accumulation charts.
+- `#I401851` - Provided support to rotate the axis title from 0 to 360 degree.
+- Provided support for dashed legends for dashed line series.
+
+#### Bug Fixes
+
+- `#I420456` - Now cancel argument in legend click event working properly.
+- `#I423376` - Console error thrown when rendering the tooltip in trendlines has been fixed.
+- `#I422475` - Accumulation chart height is now proper with respect to its parent container.
+
+### Bullet Chart
+
+#### Bug Fixes
+
+- `#I422321` - Now label alignment property is working properly in bullet chart.
+
 ## 20.3.60 (2022-12-06)
 
 ### Chart
 
 #### Bug Fixes
 
-- `#I421349` - Now chart axis is removing properly on dynamic update.
-- `#I421251` - Now Pie chart render properly when the width is less than 20% for the parent div.
-- `#I421251` - Pie chart gets crashed when setting the datalabel has been fixed.
+- `#I421349` - Now chart axis is removed properly on dynamic update.
+- `#I421251` - Now Pie chart render When set the width to less than 20% for the parent div.
+- `#I421251` - Pie chart gets crashed when setting the datalabel issue has been fixed.
 
 ### RangeNavigator
 

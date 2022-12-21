@@ -369,7 +369,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
                 font.size = this.themeStyle.fontSize || title.textStyle.size;
                 const element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
-                element.setAttribute('tabindex', "0");
+                element.setAttribute('tabindex', '0');
                 const titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
                 this.svgObject.appendChild(groupEle);
                 if (title.subtitle.text !== '' && title.subtitle.visible) {
@@ -432,7 +432,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 border.width / 2, border.width / 2,
                 this.availableSize.width - border.width,
                 this.availableSize.height - border.width));
-        let element: Element = this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
+        const element: Element = this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
         element.setAttribute('aria-hidden', 'true');
     }
     /**
@@ -489,7 +489,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     private initPrivateVariable(): void {
         this.animateSeries = true;
         this.element.setAttribute('aria-label', this.title.description || this.title.text);
-        this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute('tabindex', '0');
     }
     /**
      * To Initialize the control rendering.
@@ -621,9 +621,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             let seriesIndex: number;
             let fill: string;
             for (let i: number = 0; i < this.smithchartLegendModule.legendSeries.length; i++) {
-                if (legendText === this.smithchartLegendModule.legendSeries[i]['text']) {
-                    seriesIndex = this.smithchartLegendModule.legendSeries[i].seriesIndex;
-                    fill = this.smithchartLegendModule.legendSeries[i].fill;
+                if (legendText === this.smithchartLegendModule.legendSeries[i as number]['text']) {
+                    seriesIndex = this.smithchartLegendModule.legendSeries[i as number].seriesIndex;
+                    fill = this.smithchartLegendModule.legendSeries[i as number].fill;
                 }
             }
             const seriesElement: HTMLElement = <HTMLElement>document.getElementById(
@@ -631,11 +631,11 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             if (seriesElement.getAttribute('visibility') === 'visible') {
                 circleElement.setAttribute('fill', 'gray');
                 seriesElement.setAttribute('visibility', 'hidden');
-                this.series[seriesIndex].visibility = 'hidden';
+                this.series[seriesIndex as number].visibility = 'hidden';
             } else {
                 circleElement.setAttribute('fill', fill);
                 seriesElement.setAttribute('visibility', 'visible');
-                this.series[seriesIndex].visibility = 'visible';
+                this.series[seriesIndex as number].visibility = 'visible';
             }
         }
     }
@@ -693,7 +693,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             });
         }
         for (let i: number = 0; i < this.series.length; i++) {
-            if (this.series[i].tooltip.visible) {
+            if (this.series[i as number].tooltip.visible) {
                 modules.push({
                     member: 'TooltipRender',
                     args: [this]

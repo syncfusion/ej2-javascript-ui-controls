@@ -101,6 +101,8 @@ $range-icon-normal-padding: 0 !default;
 $range-preset-normal-list-height: 36px !default;
 $range-preset-bigger-list-height: 48px !default;
 $range-calendar-bigger-max: 296px !default;
+$range-calendar-landscape-height: 130px !default;
+
 // new variable
 $range-icon: '\e245' !default;
 $range-icon-font-size: 16px !default;
@@ -111,6 +113,7 @@ $range-change-icon: '\e85f' !default;
 $range-rtl-icon-next: '\e921' !default;
 $range-rtl-icon-prev: '\e913' !default;
 $range-rtl-icon-change: '\e85b' !default;
+
 // Mouse small size
 $range-small-header-label-size: 16px !default;
 $range-small-font-size: 12px !default;
@@ -152,10 +155,13 @@ $range-text-nowrap: nowrap !default;
 $range-direction-left: ltr !default;
 $range-text-overflow: ellipsis !default;
 $range-calendar-other-normal-border: none !default;
+
 // mouse small icon
 $range-small-icon-font-size: 14px !default;
+
 // touch small icon
 $range-bigger-small-icon-font-size: 18px !default;
+
 // color variables
 $range-bg-color: $flyout-bg-color !default;
 $range-primary-color: $primary !default;
@@ -196,6 +202,8 @@ $range-today-border-color: $range-calendar-active-border !default;
 $range-calendar-today-color: $content-text-color !default;
 $range-calendar-today-start-color: $range-calendar-active-border !default;
 $range-active-font-color: $primary-text-color !default;
+$range-button-font-color: $blue !default;
+
 // apply and cancel button styles
 $range-apply-disabled-background-style: $primary-bg-color-disabled !default;
 $range-apply-disabled-border-style: $primary-border-color-disabled !default;

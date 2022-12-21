@@ -281,7 +281,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.angularTagName = this.element.tagName;
             const input: HTMLElement = this.createElement('input');
             for (let i: number = 0; i < this.element.attributes.length; i++) {
-                input.setAttribute(this.element.attributes[i].nodeName, this.element.attributes[i].nodeValue);
+                input.setAttribute(this.element.attributes[i as number].nodeName, this.element.attributes[i as number].nodeValue);
                 input.innerHTML = this.element.innerHTML;
             }
             if (this.element.hasAttribute('id')) {
@@ -351,7 +351,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) < 0 ) {
-                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                    this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }
@@ -371,17 +371,17 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        const updatedClassValues : string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        const updatedClassValues : string = (this.htmlAttributes[`${key}`].replace(/\s+/g, ' ')).trim();
                         if (updatedClassValues !== '') {
                             addClass([this.inputObj.container], updatedClassValues.split(' '));
                         }
                     } else if (key === 'style') {
                         let maskStyle: string = this.inputObj.container.getAttribute(key);
-                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
+                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[`${key}`]) :
+                            this.htmlAttributes[`${key}`];
                         this.inputObj.container.setAttribute(key, maskStyle);
                     } else {
-                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                        this.inputObj.container.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }
             }
@@ -560,10 +560,13 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 } else {
                     this.promptChar = '_';
                 }
+                // eslint-disable-next-line detect-non-literal-regexp
                 let value: string = this.element.value.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
                 if (this.promptMask === this.element.value) {
+                // eslint-disable-next-line detect-non-literal-regexp
                     value = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
                 }
+                // eslint-disable-next-line detect-non-literal-regexp
                 this.promptMask = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
                 this.undoCollec = this.redoCollec = [];
                 setElementValue.call(this, value);
@@ -625,11 +628,18 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
             'aria-disabled','autocapitalize','spellcheck', 'aria-autocomplete', 'aria-live', 'aria-invalid'];
         for (let i: number = 0; i < attrArray.length; i++) {
-            this.element.removeAttribute(attrArray[i]);
+            this.element.removeAttribute(attrArray[i as number]);
         }
         this.element.classList.remove('e-input');
+        if(this.inputObj)
+        {
         this.inputObj.container.insertAdjacentElement('afterend', this.element);
         detach(this.inputObj.container);
+        }
+        this.blurEventArgs = null;
+        Input.destroy();
+        this.changeEventArgs = null;
+        this.inputObj = null;
         super.destroy();
     }
 }

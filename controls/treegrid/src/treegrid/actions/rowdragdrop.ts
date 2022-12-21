@@ -104,11 +104,11 @@ export class RowDD {
             if (position === 'child') {
                 this.dropPosition = 'middleSegment';
             }
-            this.parent[dropPosition] = this.dropPosition;
+            this.parent[`${dropPosition}`] = this.dropPosition;
             const data: ITreeData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
-                const index: number = (this.parent.getRowByIndex(fromIndexes[i]) as HTMLTableRowElement).rowIndex;
-                data[i] = this.parent.getCurrentViewRecords()[index];
+                const index: number = (this.parent.getRowByIndex(fromIndexes[parseInt(i.toString(), 10)]) as HTMLTableRowElement).rowIndex;
+                data[parseInt(i.toString(), 10)] = this.parent.getCurrentViewRecords()[parseInt(index.toString(), 10)];
             }
             const isByMethod: boolean = true;
             const args: RowDropEventArgs = {
@@ -122,7 +122,7 @@ export class RowDD {
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
-            if (this.parent[action] === 'outdenting') {
+            if (this.parent[`${action}`] === 'outdenting') {
                 if (!isNullOrUndefined(data[0].parentItem)) {
                     data[0].level = data[0].parentItem.level + 1;
                 }
@@ -133,7 +133,7 @@ export class RowDD {
                 if (this.parent.allowRowDragAndDrop) {
                     index = this.parent.treeColumnIndex + 1;
                 }
-                else if ( this.parent[action] === 'indenting') {
+                else if ( this.parent[`${action}`] === 'indenting') {
                     index = this.parent.treeColumnIndex;
                 }
                 const row: HTMLTableRowElement = this.parent.getRows()[fromIndexes[0]];
@@ -141,24 +141,24 @@ export class RowDD {
                 const totalRecord: Object[] = []; const rows: HTMLTableRowElement[] = [];
                 totalRecord.push(dropData); rows.push(row);
                 const parentUniqueID: string = 'parentUniqueID';
-                const parentData: Object = getParentData(this.parent, args.data[0][parentUniqueID]);
-                const parentrow: HTMLTableRowElement = this.parent.getRows()[toIndex];
+                const parentData: Object = getParentData(this.parent, args.data[0][`${parentUniqueID}`]);
+                const parentrow: HTMLTableRowElement = this.parent.getRows()[parseInt(toIndex.toString(), 10)];
                 totalRecord.push(parentData); rows.push(parentrow);
-                this.parent[updateRowAndCellElements](totalRecord, rows, index);
+                this.parent[`${updateRowAndCellElements}`](totalRecord, rows, index);
             }
-            if (this.parent.enableImmutableMode && this.parent[action] === 'outdenting') {
+            if (this.parent.enableImmutableMode && this.parent[`${action}`] === 'outdenting') {
                 let index: number;
                 if (this.parent.allowRowDragAndDrop) {
                     index = this.parent.treeColumnIndex + 1;
                 }
-                else if ( this.parent[action] === 'outdenting') {
+                else if ( this.parent[`${action}`] === 'outdenting') {
                     index = this.parent.treeColumnIndex;
                 }
                 const record: Object = args.data[0];
                 const row: HTMLTableRowElement = this.parent.getRows()[fromIndexes[0]];
                 const totalRecord: Object[] = []; const rows: HTMLTableRowElement[] = [];
                 totalRecord.push(record); rows.push(row);
-                this.parent[updateRowAndCellElements](totalRecord, rows, index);
+                this.parent[`${updateRowAndCellElements}`](totalRecord, rows, index);
             }
         } else {
             return;
@@ -177,14 +177,14 @@ export class RowDD {
                 selectedItemIndex = this.parent.selectedRowIndex;
             }
             this.selectedItem = isNullOrUndefined(record) ?
-                tObj.getCurrentViewRecords()[selectedItemIndex] as ITreeData : record as ITreeData;
+                tObj.getCurrentViewRecords()[parseInt(selectedItemIndex.toString(), 10)] as ITreeData : record as ITreeData;
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-            const rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(this.selectedItem[primaryKeyField]);
+            const rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(this.selectedItem[`${primaryKeyField}`]);
             this.selectedRow = this.parent[this.selectedRows] = selectedItemIndex !== -1 ?
                 this.parent.getSelectedRows()[0] as HTMLTableRowElement
                 : this.parent.grid.getRowByIndex(rowIndex) as HTMLTableRowElement;
             this.selectedRecord = this.parent[this.selectedRecords] = selectedItemIndex !== -1 ?
-                tObj.getCurrentViewRecords()[selectedItemIndex] as ITreeData
+                tObj.getCurrentViewRecords()[parseInt(selectedItemIndex.toString(), 10)] as ITreeData
                 : this.selectedItem as ITreeData;
             if (request === 'indent') {
                 const record: ITreeData = tObj.getCurrentViewRecords()[this.selectedRow.rowIndex - 1];
@@ -195,10 +195,11 @@ export class RowDD {
                 }
                 if (record.level > this.selectedRecord.level) {
                     for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
-                        if ((tObj.getCurrentViewRecords()[i] as ITreeData).taskData === record.parentItem.taskData) {
+                        if ((tObj.getCurrentViewRecords()[parseInt(i.toString(), 10)] as ITreeData).taskData ===
+                             record.parentItem.taskData) {
                             dropIndex = i;
                             if (tObj.enableVirtualization) {
-                                dropIndex = parseInt(tObj.getRows()[i].getAttribute('data-rowindex'), 10);
+                                dropIndex = parseInt(tObj.getRows()[parseInt(i.toString(), 10)].getAttribute('data-rowindex'), 10);
                             }
                         }
                     }
@@ -209,7 +210,7 @@ export class RowDD {
                 if (this.parent.enableVirtualization && this.selectedRecord && !(record.level > this.selectedRecord.level)) {
                     dropIndex = parseInt(this.selectedRow.getAttribute('data-rowindex'), 10) - 1;
                 }
-                tObj[action] = 'indenting'; tObj[droppedIndex] = dropIndex;
+                tObj[`${action}`] = 'indenting'; tObj[`${droppedIndex}`] = dropIndex;
                 this.eventTrigger('indenting', dropIndex);
             } else if (request === 'outdent') {
                 if (this.selectedRow.rowIndex === -1 || this.selectedRow.rowIndex === 0  ||
@@ -218,14 +219,14 @@ export class RowDD {
                 }
                 let dropIndex: number; const parentItem: ITreeData = this.selectedRecord.parentItem;
                 for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
-                    if ((tObj.getCurrentViewRecords()[i] as ITreeData).uniqueID === parentItem.uniqueID) {
+                    if ((tObj.getCurrentViewRecords()[parseInt(i.toString(), 10)] as ITreeData).uniqueID === parentItem.uniqueID) {
                         dropIndex = i;
                     }
                 }
                 if (this.parent.enableVirtualization && this.selectedRecord) {
-                    dropIndex = parseInt(this.parent.getRows()[dropIndex].getAttribute('data-rowindex'), 10);
+                    dropIndex = parseInt(this.parent.getRows()[parseInt(dropIndex.toString(), 10)].getAttribute('data-rowindex'), 10);
                 }
-                tObj[action] = 'outdenting'; tObj[droppedIndex] = dropIndex;
+                tObj[`${action}`] = 'outdenting'; tObj[`${droppedIndex}`] = dropIndex;
                 this.eventTrigger('outdenting', dropIndex);
             }
         }
@@ -261,10 +262,10 @@ export class RowDD {
 
     private orderToIndex(currentData: ITreeData[]): ITreeData[] {
         for (let i: number = 0; i < currentData.length; i++) {
-            currentData[i].index = i;
-            if (!isNullOrUndefined(currentData[i].parentItem)) {
-                const updatedParent: ITreeData = getValue('uniqueIDCollection.' + currentData[i].parentUniqueID, this.parent);
-                currentData[i].parentItem.index = updatedParent.index;
+            currentData[parseInt(i.toString(), 10)].index = i;
+            if (!isNullOrUndefined(currentData[parseInt(i.toString(), 10)].parentItem)) {
+                const updatedParent: ITreeData = getValue('uniqueIDCollection.' + currentData[parseInt(i.toString(), 10)].parentUniqueID, this.parent);
+                currentData[parseInt(i.toString(), 10)].parentItem.index = updatedParent.index;
             }
         }
         return currentData;
@@ -274,7 +275,7 @@ export class RowDD {
         let draggedRecord: ITreeData;
         const dragRecords: ITreeData[] = e.records;
         for (let i: number = e.records.length - 1; i > -1; i--) {
-            draggedRecord = dragRecords[i];
+            draggedRecord = dragRecords[parseInt(i.toString(), 10)];
             if (draggedRecord.parentUniqueID) {
                 const record: ITreeData[] = dragRecords.filter((data: ITreeData) => {
                     return data.uniqueID === draggedRecord.parentUniqueID;
@@ -301,7 +302,7 @@ export class RowDD {
             const dragRecords: ITreeData[] = e.records;
             const dragLength: number = e.records.length;
             for (let i: number = dragLength - 1; i > -1; i--) {
-                draggedRecord = dragRecords[i];
+                draggedRecord = dragRecords[parseInt(i.toString(), 10)];
                 if (!i && draggedRecord.hasChildRecords) {
                     draggedRecord.taskData[this.parent.parentIdMapping] = null;
                 }
@@ -318,9 +319,9 @@ export class RowDD {
                     !isNullOrUndefined(tObj.parentIdMapping)) {
                     const childData: ITreeData[] = (draggedRecord[tObj.childMapping]) as ITreeData[];
                     for (let j: number = 0; j < childData.length; j++) {
-                        if (dragRecords.indexOf(childData[j]) === -1) {
-                            dragRecords.splice(j, 0, childData[j]);
-                            childData[j].taskData = extend({}, childData[j]);
+                        if (dragRecords.indexOf(childData[parseInt(j.toString(), 10)]) === -1) {
+                            dragRecords.splice(j, 0, childData[parseInt(j.toString(), 10)]);
+                            childData[parseInt(j.toString(), 10)].taskData = extend({}, childData[parseInt(j.toString(), 10)]);
                             i += 1;
                         }
                     }
@@ -340,7 +341,7 @@ export class RowDD {
             tObj.setProperties({ dataSource: tObj.dataSource }, false);
         } else {
             for (let i: number = 0; i < dragRecords.length; i++) {
-                setValue ('uniqueIDCollection.' + dragRecords[i].uniqueID, dragRecords[i], this.parent);
+                setValue ('uniqueIDCollection.' + dragRecords[parseInt(i.toString(), 10)].uniqueID, dragRecords[parseInt(i.toString(), 10)], this.parent);
             }
             const args: RowDropEventArgs = { data: e.records, dropIndex: e.toIndex };
             if (this.parent.dataSource instanceof DataManager) {
@@ -373,7 +374,7 @@ export class RowDD {
 
     private rowsRemoved(e: { indexes: number[], records: Object[] }): void {
         for (let i: number = 0; i < e.records.length; i++) {
-            this.draggedRecord = e.records[i];
+            this.draggedRecord = e.records[parseInt(i.toString(), 10)];
             if (this.draggedRecord.hasChildRecords || this.draggedRecord.parentItem &&
                 (this.parent.grid.dataSource as ITreeData[]).
                     indexOf(this.getChildrecordsByParentID(this.draggedRecord.parentUniqueID)[0]) !== -1 ||
@@ -397,7 +398,8 @@ export class RowDD {
         if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem) && !isNullOrUndefined(droppedRecord.taskData)) {
             const keys: string[] = Object.keys(tempDataSource);
             for (let i: number = 0; i < keys.length; i++) {
-                if (tempDataSource[i][this.parent.childMapping] === droppedRecord.taskData[this.parent.childMapping]) {
+                if (tempDataSource[parseInt(i.toString(), 10)][this.parent.childMapping] ===
+                 droppedRecord.taskData[this.parent.childMapping]) {
                     idx = i;
                 }
             }
@@ -416,7 +418,8 @@ export class RowDD {
                 const record: ITreeData = (this.getChildrecordsByParentID(droppedRecord.parentUniqueID) as ITreeData)[0];
                 const childRecords: ITreeData[] = record.childRecords;
                 for (let i: number = 0; i < childRecords.length; i++) {
-                    droppedRecord.parentItem.taskData[this.parent.childMapping][i] = childRecords[i].taskData;
+                    droppedRecord.parentItem.taskData[this.parent.childMapping][parseInt(i.toString(), 10)]
+                     = childRecords[parseInt(i.toString(), 10)].taskData;
                 }
             }
         }
@@ -473,7 +476,7 @@ export class RowDD {
         this.removeFirstrowBorder(rowEle as HTMLTableRowElement);
         this.removeLastrowBorder(rowEle as HTMLTableRowElement);
         for (let i: number = 0; i < args.rows.length; i++) {
-            if (!isNullOrUndefined(rowEle) && rowEle.getAttribute('data-uid') === args.rows[i].getAttribute('data-uid')
+            if (!isNullOrUndefined(rowEle) && rowEle.getAttribute('data-uid') === args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid')
               || !parentsUntil(args.target, 'e-gridcontent')) {
                 this.dropPosition = 'Invalid';
                 this.addErrorElem();
@@ -681,9 +684,9 @@ export class RowDD {
     private addRemoveClasses(cells: Element[], add: boolean, className: string): void {
         for (let i: number = 0, len: number = cells.length; i < len; i++) {
             if (add) {
-                cells[i].classList.add(className);
+                cells[parseInt(i.toString(), 10)].classList.add(className);
             } else {
-                cells[i].classList.remove(className);
+                cells[parseInt(i.toString(), 10)].classList.remove(className);
             }
         }
     }
@@ -708,7 +711,7 @@ export class RowDD {
         const rowEle: Element = args.target ? closest(args.target, 'tr') : null;
         const rowIdx: number = rowEle ? (rowEle as HTMLTableRowElement).rowIndex : -1;
         let dragRecords: ITreeData[] = [];
-        const droppedRecord: ITreeData = tObj.getCurrentViewRecords()[rowIdx];
+        const droppedRecord: ITreeData = tObj.getCurrentViewRecords()[parseInt(rowIdx.toString(), 10)];
         this.removeErrorElem();
         this.canDrop = true;
         if (!args.data[0]) {
@@ -784,24 +787,25 @@ export class RowDD {
         } else if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-lastrow-border')[0])) {
             this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
         }
-        if (this.parent.enableImmutableMode && !this.parent.allowPaging && !isNullOrUndefined(args.data[0][parentItem])) {
+        if (this.parent.enableImmutableMode && !this.parent.allowPaging && !isNullOrUndefined(args.data[0][`${parentItem}`])) {
             let index: number = this.parent.treeColumnIndex;
             index = index + 1;
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-            let rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(args.data[0][primaryKeyField]);
-            const row: HTMLTableRowElement = this.parent.getRows()[rowIndex];
+            let rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(args.data[0][`${primaryKeyField}`]);
+            const row: HTMLTableRowElement = this.parent.getRows()[parseInt(rowIndex.toString(), 10)];
             let data: Object = args.data[0];
             if (this.dropPosition === 'middleSegment') {
                 const record: Object[] = []; const rows: HTMLTableRowElement[] = [];
                 record.push(data); rows.push(row);
                 const parentUniqueID: string = 'parentUniqueID';
-                data = getParentData(this.parent, args.data[0][parentUniqueID]);
-                rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[primaryKeyField]);
-                const parentrow: HTMLTableRowElement = this.parent.getRows()[rowIndex];
+                data = getParentData(this.parent, args.data[0][`${parentUniqueID}`]);
+                rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[`${primaryKeyField}`]);
+                const parentrow: HTMLTableRowElement = this.parent.getRows()[parseInt(rowIndex.toString(), 10)];
                 record.push(data); rows.push(parentrow);
                 for (let i: number = 0; i < record.length; i++) {
                     this.parent.renderModule.cellRender({
-                        data: record[i], cell: rows[i].cells[index] ,
+                        data: record[parseInt(i.toString(), 10)],
+                        cell: rows[parseInt(i.toString(), 10)].cells[parseInt(index.toString(), 10)],
                         column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
                         requestType: 'rowDragAndDrop'
                     });
@@ -813,7 +817,7 @@ export class RowDD {
                 }
             } else {
                 this.parent.renderModule.cellRender({
-                    data: data, cell: row.cells[index] ,
+                    data: data, cell: row.cells[parseInt(index.toString(), 10)] ,
                     column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
                     requestType: 'rowDragAndDrop'
                 });
@@ -833,17 +837,17 @@ export class RowDD {
             let records: ITreeData[] = tObj.getSelectedRecords();
             const indexes: number[] = [];
             for (let i: number = 0; i < records.length; i++) {
-                indexes[i] = records[i].index;
+                indexes[parseInt(i.toString(), 10)] = records[parseInt(i.toString(), 10)].index;
             }
             const data: ITreeData[] = srcControl.dataSource as ITreeData[];
             if (this.parent.idMapping !== null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment' || this.dropPosition === 'Invalid') && !(data.length)) {
                 const actualData: ITreeData[] = [];
                 for (let i: number = 0; i < records.length; i++) {
-                    if (records[i].hasChildRecords) {
-                        actualData.push(records[i]);
-                        const child: ITreeData[] = findChildrenRecords(records[i]);
+                    if (records[parseInt(i.toString(), 10)].hasChildRecords) {
+                        actualData.push(records[parseInt(i.toString(), 10)]);
+                        const child: ITreeData[] = findChildrenRecords(records[parseInt(i.toString(), 10)]);
                         for (let i: number = 0; i < child.length; i++) {
-                            actualData.push(child[i]); // push child records to drop the parent record along with its child records
+                            actualData.push(child[parseInt(i.toString(), 10)]); // push child records to drop the parent record along with its child records
                         }
                     }
                 }
@@ -856,11 +860,11 @@ export class RowDD {
             const srcControlFlatData: ITreeData[] = srcControl.rowDragAndDropModule.treeGridData;
             if (!isNullOrUndefined(srcControlFlatData)) {
                 for (let i: number = 0; i < srcControlFlatData.length; i++) {
-                    srcControlFlatData[i].index = i;
-                    if (!isNullOrUndefined(srcControlFlatData[i].parentItem)) {
+                    srcControlFlatData[parseInt(i.toString(), 10)].index = i;
+                    if (!isNullOrUndefined(srcControlFlatData[parseInt(i.toString(), 10)].parentItem)) {
                         const actualIndex: number =
-                        <number>getValue('uniqueIDCollection.' + srcControlFlatData[i].parentUniqueID + '.index', srcControl);
-                        srcControlFlatData[i].parentItem.index = actualIndex;
+                        <number>getValue('uniqueIDCollection.' + srcControlFlatData[parseInt(i.toString(), 10)].parentUniqueID + '.index', srcControl);
+                        srcControlFlatData[parseInt(i.toString(), 10)].parentItem.index = actualIndex;
                     }
                 }
             }
@@ -897,13 +901,13 @@ export class RowDD {
         if (this.dropPosition === 'bottomSegment') {
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
             const rowIndex: number = selectedItemIndex === -1 ?
-                (this.parent.grid.getRowIndexByPrimaryKey(data[0][primaryKeyField]))
+                (this.parent.grid.getRowIndexByPrimaryKey(data[0][`${primaryKeyField}`]))
                 : this.parent.getSelectedRowIndexes()[0];
-            const selectedRecord: ITreeData = this.parent.getCurrentViewRecords()[rowIndex];
+            const selectedRecord: ITreeData = this.parent.getCurrentViewRecords()[parseInt(rowIndex.toString(), 10)];
             this.droppedRecord = getParentData(this.parent, selectedRecord.parentItem.uniqueID);
         }
         if (this.dropPosition === 'middleSegment') {
-            const level: number = (this.parent.getCurrentViewRecords()[selectedItemIndex] as ITreeData).level;
+            const level: number = (this.parent.getCurrentViewRecords()[parseInt(selectedItemIndex.toString(), 10)] as ITreeData).level;
             if (level === parentItem.level) {
                 this.droppedRecord = getParentData(this.parent, parentItem.uniqueID);
             } else {
@@ -919,15 +923,15 @@ export class RowDD {
             if (isNullOrUndefined(args.dropIndex)) {
                 const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
                 const rowIndex: number = tObj.selectedRowIndex === -1 ?
-                    (this.parent.grid.getRowIndexByPrimaryKey(args.data[0][primaryKeyField])) - 1
+                    (this.parent.grid.getRowIndexByPrimaryKey(args.data[0][`${primaryKeyField}`])) - 1
                     : tObj.getSelectedRowIndexes()[0] - 1;
-                const record: ITreeData = (tObj.getCurrentViewRecords()[rowIndex] as ITreeData);
+                const record: ITreeData = (tObj.getCurrentViewRecords()[parseInt(rowIndex.toString(), 10)] as ITreeData);
                 this.getParentData(record, args.data);
             } else {
                 args.dropIndex = args.dropIndex === args.fromIndex ? this.getTargetIdx(args.target.parentElement) : args.dropIndex;
                 if (this.parent.enableVirtualization) {
                     const index: number = (this.parent.getRowByIndex(args.dropIndex) as HTMLTableRowElement).rowIndex;
-                    this.droppedRecord = tObj.getCurrentViewRecords()[index];
+                    this.droppedRecord = tObj.getCurrentViewRecords()[parseInt(index.toString(), 10)];
                 }
                 else {
                     this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
@@ -954,7 +958,7 @@ export class RowDD {
                 dragRecords.reverse();
             }
             for (let i: number = 0; i < dragLength; i++) {
-                draggedRecord = dragRecords[i];
+                draggedRecord = dragRecords[parseInt(i.toString(), 10)];
                 this.draggedRecord = draggedRecord;
                 if (this.dropPosition !== 'Invalid') {
                     if (!tObj.rowDropSettings.targetID || isByMethod) {
@@ -1065,10 +1069,10 @@ export class RowDD {
             if (tObj.parentIdMapping) {
                 this.treeData.splice(recordIndex1, 0, this.draggedRecord.taskData);
             }
-            this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-            this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-            this.draggedRecord.level = this.treeGridData[recordIndex1].level;
-            this.treeGridData.splice(recordIndex1, 0, this.draggedRecord);
+            this.draggedRecord.parentItem = this.treeGridData[parseInt(recordIndex1.toString(), 10)].parentItem;
+            this.draggedRecord.parentUniqueID = this.treeGridData[parseInt(recordIndex1.toString(), 10)].parentUniqueID;
+            this.draggedRecord.level = this.treeGridData[parseInt(recordIndex1.toString(), 10)].level;
+            this.treeGridData.splice(parseInt(recordIndex1.toString(), 10), 0, this.draggedRecord);
             if (this.draggedRecord.hasChildRecords) {
                 const level: number = 1;
                 this.updateChildRecord(this.draggedRecord, recordIndex1);
@@ -1092,8 +1096,8 @@ export class RowDD {
             droppedRecord.hasFilteredChildRecords = true;
             if (isNullOrUndefined(droppedRecord.childRecords) || droppedRecord.childRecords.length === 0) {
                 droppedRecord.childRecords = [];
-                if (!tObj.parentIdMapping && isNullOrUndefined(droppedRecord.taskData[childItem])) {
-                    droppedRecord.taskData[childItem] = [];
+                if (!tObj.parentIdMapping && isNullOrUndefined(droppedRecord.taskData[`${childItem}`])) {
+                    droppedRecord.taskData[`${childItem}`] = [];
                 }
             }
         }
@@ -1104,11 +1108,11 @@ export class RowDD {
             draggedRecord.parentUniqueID = droppedRecord.uniqueID;
             droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
             const isSelfReference: string = 'isSelfReference';
-            if (tObj[isSelfReference]) {
+            if (tObj[`${isSelfReference}`]) {
                 droppedRecord[tObj.childMapping] = [];
                 droppedRecord[tObj.childMapping].splice(droppedRecord[tObj.childMapping].length, 0, draggedRecord);
             }
-            if (!isNullOrUndefined(draggedRecord) && !tObj.parentIdMapping && !isNullOrUndefined(droppedRecord.taskData[childItem])) {
+            if (!isNullOrUndefined(draggedRecord) && !tObj.parentIdMapping && !isNullOrUndefined(droppedRecord.taskData[`${childItem}`])) {
                 droppedRecord.taskData[tObj.childMapping].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
             }
             if (!draggedRecord.hasChildRecords) {
@@ -1147,9 +1151,9 @@ export class RowDD {
         length = record.childRecords.length;
         for (let i: number = 0; i < length; i++) {
             if (!this.isMultipleGrid) {
-                currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, tObj);
+                currentRecord = getValue('uniqueIDCollection.' + record.childRecords[parseInt(i.toString(), 10)].uniqueID, tObj);
             } else {
-                currentRecord = record.childRecords[i];
+                currentRecord = record.childRecords[parseInt(i.toString(), 10)];
             }
             count++;
             tObj.flatData.splice(count, 0, currentRecord);
@@ -1173,9 +1177,9 @@ export class RowDD {
         length = record.childRecords.length;
         for (let i: number = 0; i < length; i++) {
             if (!this.isMultipleGrid) {
-                currentRecord = getValue('uniqueIDCollection.' + record.childRecords[i].uniqueID, this.parent);
+                currentRecord = getValue('uniqueIDCollection.' + record.childRecords[parseInt(i.toString(), 10)].uniqueID, this.parent);
             } else {
-                currentRecord = record.childRecords[i];
+                currentRecord = record.childRecords[parseInt(i.toString(), 10)];
             }
             let parentData: ITreeData;
             if (record.parentItem) {
@@ -1222,12 +1226,13 @@ export class RowDD {
                 let idx: number; let idz: number;
                 const treeGridData: ITreeData[] = dataSource as ITreeData[];
                 for (let i: number = 0; i < treeGridData.length; i++) {
-                    if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                    if (treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
                 for (let i: number = 0; i < this.treeGridData.length; i++) {
-                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                    if (this.treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping]
+                        === deletedRow.taskData[this.parent.idMapping]) {
                         idz = i;
                     }
                 }
@@ -1249,7 +1254,7 @@ export class RowDD {
             if (recordIndex === -1 && !tObj.parentIdMapping) {
                 const primaryKeyField: string = tObj.getPrimaryKeyFieldNames()[0];
                 for (let j: number = 0; j < this.treeGridData.length; j++) {
-                    if (this.treeGridData[j][primaryKeyField] === deletedRow[primaryKeyField]) {
+                    if (this.treeGridData[parseInt(j.toString(), 10)][`${primaryKeyField}`] === deletedRow[`${primaryKeyField}`]) {
                         recordIndex = j;
                     }
                 }
@@ -1291,7 +1296,7 @@ export class RowDD {
             dataSource = this.parent.dataSource;
         }
         for (let i: number = 0; i < record.childRecords.length; i++) {
-            currentRecord = record.childRecords[i];
+            currentRecord = record.childRecords[parseInt(i.toString(), 10)];
             if (!isNullOrUndefined(currentRecord.childRecords) && currentRecord.childRecords.length) {
                 currentRecord.hasChildRecords = true;
             }
@@ -1302,12 +1307,13 @@ export class RowDD {
                 treeGridData = this.parent.dataSource;
             }
             for (let i: number = 0; i < (< ITreeData[]>treeGridData).length; i++) {
-                if (treeGridData[i][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                if (treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
                     idx = i;
                 }
             }
             for (let i: number = 0; i < this.treeGridData.length; i++) {
-                if (this.treeGridData[i][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                if (this.treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping]
+                    === currentRecord.taskData[this.parent.idMapping]) {
                     idz = i;
                     break;
                 }
@@ -1329,7 +1335,7 @@ export class RowDD {
             return 0;
         }
         for (let i: number = 0; i < record.childRecords.length; i++) {
-            currentRecord = record.childRecords[i];
+            currentRecord = record.childRecords[parseInt(i.toString(), 10)];
             count++;
             if (currentRecord.hasChildRecords) {
                 count = this.getChildCount(currentRecord, count);

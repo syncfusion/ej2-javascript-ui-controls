@@ -572,24 +572,24 @@ export const imageRemoving: string = 'imageRemoving';
  */
 export const fileSelected: string = 'fileSelected';
 /**
-  * @hidden
-  * @deprecated
-  */
+ * @hidden
+ * @deprecated
+ */
 export const fileUploading: string = 'fileUploading';
 /**
-  * @hidden
-  * @deprecated
-  */
+ * @hidden
+ * @deprecated
+ */
 export const fileUploadSuccess: string = 'fileUploadSuccess';
 /**
-  * @hidden
-  * @deprecated
-  */
+ * @hidden
+ * @deprecated
+ */
 export const fileUploadFailed: string = 'fileUploadFailed';
 /**
-  * @hidden
-  * @deprecated
-  */
+ * @hidden
+ * @deprecated
+ */
 export const fileRemoving: string = 'fileRemoving';
 /**
  * @hidden

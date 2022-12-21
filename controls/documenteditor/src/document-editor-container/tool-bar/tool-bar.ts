@@ -34,6 +34,7 @@ const CLIPBOARD_ID: string = '_use_local_clipboard';
 const RESTRICT_EDITING_ID: string = '_restrict_edit';
 const PAGE_BREAK: string = '_page_break';
 const SECTION_BREAK: string = '_section_break';
+const COLUMN_BREAK: string = '_column_break';
 const READ_ONLY: string = '_read_only';
 const PROTECTIONS: string = '_protections';
 const FORM_FIELDS_ID: string = '_form_fields';
@@ -43,6 +44,8 @@ const CHECKBOX: string = '_checkbox';
 const DROPDOWN: string = '_dropdown';
 const FOOTNOTE_ID: string = '_footnote';
 const ENDNOTE_ID: string = '_endnote';
+const COLUMNS_ID: string = '_columns';
+const PAGE_SET_UP: string = '_page_set';
 
 /**
  * Toolbar Module
@@ -83,6 +86,7 @@ export class Toolbar {
     private toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     private toolbarTimer: number;
     private buttonElement: HTMLButtonElement;
+    private PageSetUpDropDwn: DropDownButton;
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -132,8 +136,9 @@ export class Toolbar {
         toolbarContainer.appendChild(toolbarWrapper);
 
         // Show hide pane button initialization
-        const propertiesPaneDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
-        this.buttonElement = createElement('button', { attrs: { type: 'button' } }) as HTMLButtonElement;
+        const locale: L10n = this.container.localObj;
+        const propertiesPaneDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-properties-pane-btn'});
+        this.buttonElement = createElement('button', { attrs: { type: 'button', 'aria-label': locale.getConstant('Hide properties pane'), 'aria-pressed': 'true' } }) as HTMLButtonElement;
         propertiesPaneDiv.appendChild(this.buttonElement);
         let cssClassName: string = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
         let iconCss: string = 'e-icons e-de-ctnr-showhide';
@@ -145,13 +150,12 @@ export class Toolbar {
             cssClass: cssClassName,
             iconCss: iconCss
         });
-        const locale: L10n = this.container.localObj;
         if (this.container.showPropertiesPane)
             this.buttonElement.title = locale.getConstant('Hide properties pane');
         else {
             this.buttonElement.title = locale.getConstant('Show properties pane');
             propertiesPaneDiv.classList.add('e-de-pane-disable-clr');
-        } 
+        }
         this.propertiesPaneButton.appendTo(this.buttonElement);
         EventHandler.add(this.buttonElement, 'click', this.showHidePropertiesPane, this);
         toolbarContainer.appendChild(propertiesPaneDiv);
@@ -176,11 +180,22 @@ export class Toolbar {
                 this.imgDropDwn.appendTo('#' + id + INSERT_IMAGE_ID);
             }
 
+            if (this.toolbarItems.indexOf('PageSetup') >= 0){
+                this.PageSetUpDropDwn = new DropDownButton({
+                    items : [
+                        { text : locale.getConstant('Page Setup'), iconCss: 'e-icons e-de-ctnr-page-size', id: id + PAGE_SET_UP },
+                        { text : locale.getConstant('Columns'), iconCss: 'e-icons e-de-ctnr-columns', id: id + COLUMNS_ID }],
+                        cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                        select: this.onDropDownButtonSelect.bind(this)
+                });
+                this.PageSetUpDropDwn.appendTo('#' + id + PAGE_SET_UP_ID);
+            }
             if (this.toolbarItems.indexOf('Break') >= 0) {
                 this.breakDropDwn = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
-                        { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
+                        { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK },
+                        { text: locale.getConstant('Column Break'), iconCss: 'e-icons e-de-ctnr-page-break-column', id: id + COLUMN_BREAK }],
                     cssClass: 'e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
@@ -265,7 +280,9 @@ export class Toolbar {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
             paneDiv.classList.remove('e-de-pane-disable-clr');
-            this.buttonElement.title = locale.getConstant('Hide properties pane');
+            this.buttonElement.title = locale.getConstant('Hide properties pane');  
+            this.buttonElement.setAttribute('aria-label',locale.getConstant('Hide properties pane'));
+            this.buttonElement.setAttribute('aria-pressed','true');
             classList(paneDiv, ['e-de-pane-enable-clr'], []);
             this.container.trigger(beforePaneSwitchEvent, { type: 'PropertiesPane' });
         } else if (this.container.previousContext.indexOf('Header') >= 0
@@ -275,6 +292,8 @@ export class Toolbar {
             this.container.showPropertiesPane = false;
             paneDiv.classList.remove('e-de-pane-enable-clr');
             this.buttonElement.title = locale.getConstant('Show properties pane');
+            this.buttonElement.setAttribute('aria-label',locale.getConstant('Show properties pane'));
+            this.buttonElement.setAttribute('aria-pressed','false');
             classList(paneDiv, ['e-de-pane-disable-clr'], []);
         }
         this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
@@ -312,7 +331,7 @@ export class Toolbar {
      */
     public reInitToolbarItems(items: (CustomToolbarItemModel | ToolbarItem)[]): void {
         for (let i: number = 0; i < items.length; i++) {
-            switch (items[i]) {
+            switch (items[parseInt(i.toString(), 10)]) {
                 case 'RestrictEditing':
                     if (!isNullOrUndefined(this.restrictDropDwn)) {
                         this.restrictDropDwn.destroy();
@@ -321,6 +340,11 @@ export class Toolbar {
                 case 'Break':
                     if (!isNullOrUndefined(this.breakDropDwn)) {
                         this.breakDropDwn.destroy();
+                    }
+                    break;
+                case 'PageSetup':
+                    if (!isNullOrUndefined(this.PageSetUpDropDwn)) {
+                        this.PageSetUpDropDwn.destroy();
                     }
                     break;
                 case 'Image':
@@ -373,7 +397,7 @@ export class Toolbar {
             } else {
                 className = 'e-de-toolbar-btn-middle';
             }
-            switch (tItem[i]) {
+            switch (tItem[parseInt(i.toString(), 10)]) {
                 case 'Separator':
                     toolbarItems.push({
                         type: 'Separator', cssClass: 'e-de-separator'
@@ -395,46 +419,46 @@ export class Toolbar {
                 case 'Undo':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
-                        id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className
+                        id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Undo Tooltip')}
                     });
                     break;
                 case 'Redo':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
-                        id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className
+                        id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className,htmlAttributes:{'aria-label':locale.getConstant('Redo Tooltip')}
                     });
                     break;
                 case 'Comments':
                     toolbarItems.push({
                         prefixIcon: 'e-de-cnt-cmt-add',
                         tooltipText: locale.getConstant('Show comments'),
-                        id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className
+                        id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Show comments')}
                     });
                     break;
                 case 'TrackChanges':
                     toolbarItems.push({
                         prefixIcon: 'e-de-cnt-track',
                         tooltipText: locale.getConstant('Track Changes'),
-                        id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className
+                        id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className, htmlAttributes: { 'aria-label': locale.getConstant('Track Changes'), 'aria-pressed': this.container.enableTrackChanges }
                     });
                     break;
                 case 'Image':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Insert inline picture from a file.') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id: id + INSERT_IMAGE_ID
+                        id: id + INSERT_IMAGE_ID,htmlAttributes:{'aria-label':locale.getConstant('Image'),'aria-haspopup':false}
                     });
                     break;
                 case 'Table':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
-                        id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: className
+                        id: id + INSERT_TABLE_ID, text: locale.getConstant('Table'), cssClass: className,htmlAttributes:{'aria-label':locale.getConstant('Insert a table into the document'),'aria-haspopup':true}
                     });
                     break;
                 case 'Hyperlink':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-link',
                         tooltipText: locale.getConstant('Create Hyperlink'),
-                        id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className
+                        id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className,htmlAttributes:{'aria-label':locale.getConstant('Create Hyperlink'),'aria-haspopup':true}
                     });
                     break;
                 case 'Bookmark':
@@ -449,45 +473,45 @@ export class Toolbar {
                         prefixIcon: 'e-de-ctnr-tableofcontent',
                         tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
                         id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
-                        cssClass: className
+                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Provide an overview of your document by adding a table of contents')}
                     });
                     break;
                 case 'Header':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
-                        id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: className
+                        id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: className,
+                        htmlAttributes:{'aria-label':locale.getConstant('Add or edit the header')}
                     });
                     break;
                 case 'Footer':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
-                        id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className
+                        id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className,htmlAttributes:{'aria-label': locale.getConstant('Add or edit the footer')}
                     });
                     break;
                 case 'PageSetup':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog'),
-                        id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
-                        cssClass: className
+                        template: '<button title="' + locale.getConstant('Page Setup') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + PAGE_SET_UP_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-pagesetup e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Page Setup')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        id: id + PAGE_SET_UP_ID, htmlAttributes:{'aria-label':locale.getConstant('Page Setup'),'aria-haspopup':true}
                     });
                     break;
                 case 'PageNumber':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                         id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
-                        cssClass: className
+                        cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Add page numbers')}
                     });
                     break;
                 case 'Break':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id: id + BREAK_ID
+                        id: id + BREAK_ID, htmlAttributes:{'aria-label':locale.getConstant('Break')}
                     });
                     break;
                 case 'Find':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
-                        id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className
+                        id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className, htmlAttributes:{'aria-label':locale.getConstant('Find Text')}
                     });
                     break;
                 case 'LocalClipboard':
@@ -495,25 +519,29 @@ export class Toolbar {
                         prefixIcon: 'e-de-ctnr-paste',
                         tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
                         id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
-                        cssClass: className
+                        cssClass: className,
+                        htmlAttributes:{'aria-label':locale.getConstant('Toggle between the internal clipboard and system clipboard'),'aria-pressed':this.container.enableLocalPaste}
                     });
                     break;
                 case 'RestrictEditing':
                     toolbarItems.push({
-                        template: '<button title="' + locale.getConstant('Restrict editing') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + RESTRICT_EDITING_ID + '"><span class="e-btn-icon e-de-ctnr-lock e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Restrict Editing')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
+                        template: '<button title="' + locale.getConstant('Restrict editing') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + RESTRICT_EDITING_ID + '"><span class="e-btn-icon e-de-ctnr-lock e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Restrict Editing')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
+                        htmlAttributes:{'aria-label':locale.getConstant('Restrict editing')}
                     });
                     break;
                 case 'FormFields':
                     toolbarItems.push({
                         template: '<button title="' + locale.getConstant('Form Fields') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + FORM_FIELDS_ID + '"><span class="e-btn-icon e-de-formfield e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Form Fields')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>',
-                        id : id + FORM_FIELDS_ID
+                        id : id + FORM_FIELDS_ID,
+                        htmlAttributes:{'aria-label':locale.getConstant('Form Fields')}
                     });
                     break;
                 case 'UpdateFields':
                     toolbarItems.push({
                         prefixIcon: 'e-de-update-field', tooltipText: locale.getConstant('Update cross reference fields'),
                         id: id + UPDATE_FIELDS_ID, text: this.onWrapText(locale.getConstant('Update Fields')),
-                        cssClass: className + ' e-de-formfields'
+                        cssClass: className + ' e-de-formfields',
+                        htmlAttributes:{'aria-label':locale.getConstant('Update cross reference fields')}
                     });
                     break;
                 case 'InsertFootnote':
@@ -532,7 +560,7 @@ export class Toolbar {
                     break;
                 default:
                     //Here we need to process the items
-                    toolbarItems.push(tItem[i]);
+                    toolbarItems.push(tItem[parseInt(i.toString(), 10)]);
                     break;
             }
         }
@@ -582,9 +610,9 @@ export class Toolbar {
                 this.container.documentEditor.selection.goToFooter();
                 this.container.statusBar.toggleWebLayout();
                 break;
-            case id + PAGE_SET_UP_ID:
-                this.container.documentEditor.showDialog('PageSetup');
-                break;
+            // case id + PAGE_SET_UP_ID:
+            //     this.container.documentEditor.showDialog('PageSetup');
+            //     break;
             case id + PAGE_NUMBER_ID:
                 this.container.documentEditor.editor.insertPageNumber();
                 break;
@@ -635,8 +663,10 @@ export class Toolbar {
         const element: HTMLElement = document.getElementById(id);
         if (toggle) {
             classList(element, ['e-btn-toggle'], []);
+            element.setAttribute('aria-pressed', 'true');
         } else {
             classList(element, [], ['e-btn-toggle']);
+            element.setAttribute('aria-pressed', 'false');
         }
     }
     private toggleTrackChangesInternal(id: string, enable?: boolean): void {
@@ -656,9 +686,15 @@ export class Toolbar {
             this.container.documentEditor.editorModule.insertPageBreak();
         } else if (id === parentId + SECTION_BREAK) {
             this.container.documentEditor.editorModule.insertSectionBreak();
+        } else if (id === parentId + COLUMN_BREAK) {
+            this.container.documentEditor.editorModule.insertColumnBreak();
         } else if (id === parentId + INSERT_IMAGE_LOCAL_ID) {
             this.imagePicker.value = '';
             this.imagePicker.click();
+        } else if(id === parentId + PAGE_SET_UP){
+            this.container.documentEditor.showDialog('PageSetup');
+        } else if(id === parentId + COLUMNS_ID){
+            this.container.documentEditor.showDialog('Columns'); 
         } else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         } else if (id === parentId + READ_ONLY) {
@@ -690,6 +726,7 @@ export class Toolbar {
             if (formatType === '.sfdt') {
                 const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
+                    /* eslint-disable-next-line security/detect-non-literal-fs-filename */
                     this.container.documentEditor.open(fileReader.result as string);
                 };
                 fileReader.readAsText(file);
@@ -758,6 +795,7 @@ export class Toolbar {
         hideSpinner(this.container.containerTarget);
     }
     private successHandler(result: any): void {
+        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
         this.container.documentEditor.open(result.data as string);
         hideSpinner(this.container.containerTarget);
     }
@@ -956,6 +994,10 @@ export class Toolbar {
         if (this.imgDropDwn) {
             this.imgDropDwn.destroy();
             this.imgDropDwn = undefined;
+        }
+        if(this.PageSetUpDropDwn){
+            this.PageSetUpDropDwn.destroy();
+            this.PageSetUpDropDwn = undefined;
         }
         if (this.breakDropDwn) {
             this.breakDropDwn.destroy();

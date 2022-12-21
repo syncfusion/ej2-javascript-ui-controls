@@ -136,7 +136,7 @@ export class RangeTooltip {
                 {
                     location: { x: pointX, y: control.rangeSlider.sliderY },
                     content: argsData.text, marginX: 2,
-                    enableShadow: (this.control.theme === "Fluent" || this.control.theme === 'FluentDark') ? true : false,
+                    enableShadow: (this.control.theme === 'Fluent' || this.control.theme === 'FluentDark') ? true : false,
                     marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
                     inverted: control.series.length > 0,
                     areaBounds: bounds, fill: tooltip.fill ? tooltip.fill : this.control.themeStyle.tooltipBackground,

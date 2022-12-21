@@ -442,7 +442,6 @@ export class CommentReviewPane {
         }
         return false;
     }
-
     public clear(): void {
         this.previousSelectedCommentInt = undefined;
         this.isUserClosed = false;
@@ -497,8 +496,20 @@ export class CommentReviewPane {
             this.previousSelectedCommentInt.destroy();
         }
         this.previousSelectedCommentInt = undefined;
-        this.reviewPane.innerHTML = '';
+        if (this.reviewPane) {
+            this.reviewPane.innerHTML = '';
+            if (this.reviewPane.parentElement) {
+                this.reviewPane.parentElement.removeChild(this.reviewPane);
+            }     
+        }
         this.reviewPane = undefined;
+        if (this.parentPaneElement) {
+            this.parentPaneElement.innerHTML = '';
+            if (this.parentPaneElement.parentElement) {
+                this.parentPaneElement.parentElement.removeChild(this.parentPaneElement);
+            }     
+        }
+        this.parentPaneElement = undefined;
         this.owner = undefined;
     }
 }
@@ -750,11 +761,22 @@ export class CommentPane {
             this.noCommentIndicator.parentElement.removeChild(this.noCommentIndicator);
         }
         this.noCommentIndicator = undefined;
-        if (this.commentPane && this.commentPane.parentElement) {
-            this.commentPane.parentElement.removeChild(this.commentPane);
+        if (this.commentPane) {
+            this.commentPane.innerHTML = '';
+            if (this.commentPane.parentElement) {
+                this.commentPane.parentElement.removeChild(this.commentPane);
+            }
         }
-        this.commentPane.innerHTML = '';
+        this.commentPane = undefined;
+        if (this.parent) {
+            this.parent.innerHTML = '';
+            if (this.parent.parentElement) {
+                this.parent.parentElement.removeChild(this.parent);
+            }
+        }
+        this.parent = undefined;
         this.parentPane = undefined;
+        this.currentEditingComment = undefined;
         this.owner = undefined;
     }
 }
@@ -1297,28 +1319,35 @@ export class CommentView {
         if (this.deleteButton) {
             this.deleteButton.destroy();
             this.deleteButton = undefined;
+        }     
+        if (this.parentElement) {
+            this.parentElement.innerHTML = '';
+            if (this.parentElement.parentElement) {
+                this.parentElement.parentElement.removeChild(this.parentElement);
+            }
         }
+        this.parentElement = undefined;
+        if (this.commentView) {
+            this.commentView.innerHTML = '';
+            if (this.commentView.parentElement) {
+                this.commentView.parentElement.removeChild(this.commentView);
+            }
+        }
+        this.commentView = undefined;
         this.replyViewContainer = undefined;
         this.replyViewTextBox = undefined;
         this.replyFooter = undefined;
-        if (this.parentElement && this.parentElement.parentElement) {
-            this.parentElement.parentElement.removeChild(this.parentElement);
-        }
         this.resolveView = undefined;
-        this.commentPane = undefined;
-        this.parentElement.innerHTML = '';
-        this.cancelButton = undefined;
-        this.owner = undefined;
         this.menuBar = undefined;
-        this.commentView = undefined;
         this.drawerAction = undefined;
         this.commentText = undefined;
         this.commentDate = undefined;
         this.textAreaContainer = undefined;
         this.textArea = undefined;
         this.drawerElement = undefined;
-        this.drawerSpanElement = undefined;
-        this.parentElement = null;
+        this.drawerSpanElement = undefined; 
+        this.commentPane = undefined;
+        this.owner = undefined;
     }
 
 }

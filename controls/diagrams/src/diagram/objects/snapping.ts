@@ -51,10 +51,10 @@ export class Snapping {
             && (this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines || this.diagram.snapSettings.constraints
                 & SnapConstraints.SnapToObject)) {
             for (let i: number = 0; i < selectedObject.nodes.length; i++) {
-                if (((selectedObject.nodes[i].shape.type === "SwimLane" || (selectedObject.nodes[i] as Node).isLane)
-                    || (selectedObject.nodes[i] as Node).parentId !== ''
-                    && nameTable[((selectedObject.nodes[i] as Node).parentId)]
-                    && nameTable[((selectedObject.nodes[i] as Node).parentId)].isLane) && nameTable['helper']) {
+                if (((selectedObject.nodes[parseInt(i.toString(), 10)].shape.type === 'SwimLane' || (selectedObject.nodes[parseInt(i.toString(), 10)] as Node).isLane)
+                    || (selectedObject.nodes[parseInt(i.toString(), 10)] as Node).parentId !== ''
+                    && nameTable[((selectedObject.nodes[parseInt(i.toString(), 10)] as Node).parentId)]
+                    && nameTable[((selectedObject.nodes[parseInt(i.toString(), 10)] as Node).parentId)].isLane) && nameTable['helper']) {
                     return nameTable['helper'].wrapper;
                 } else {
                     return selectedObject.wrapper;
@@ -173,7 +173,7 @@ export class Snapping {
         let cutoff: number = 0;
         let i: number = 0;
         for (i = 0; i < snapIntervals.length; i++) {
-            cutoff += snapIntervals[i];
+            cutoff += snapIntervals[parseInt(i.toString(), 10)];
         }
         cutoff /= scale;
         const quotient: number = Math.floor(Math.abs(value) / cutoff);
@@ -182,21 +182,21 @@ export class Snapping {
         if (prev !== value) {
             if (value >= 0) {
                 for (i = 0; i < snapIntervals.length; i++) {
-                    if (bal <= snapIntervals[i] / scale) {
-                        return prev + (bal < (snapIntervals[i] / (2 * scale)) ? 0 : snapIntervals[i] / scale);
+                    if (bal <= snapIntervals[parseInt(i.toString(), 10)] / scale) {
+                        return prev + (bal < (snapIntervals[parseInt(i.toString(), 10)] / (2 * scale)) ? 0 : snapIntervals[parseInt(i.toString(), 10)] / scale);
                     } else {
-                        prev += snapIntervals[i] / scale;
-                        bal -= snapIntervals[i] / scale;
+                        prev += snapIntervals[parseInt(i.toString(), 10)] / scale;
+                        bal -= snapIntervals[parseInt(i.toString(), 10)] / scale;
                     }
                 }
             } else {
                 prev = prev * -1;
                 for (i = snapIntervals.length - 1; i >= 0; i--) {
-                    if (Math.abs(bal) <= snapIntervals[i] / scale) {
-                        return prev - (Math.abs(bal) < (snapIntervals[i] / (2 * scale)) ? 0 : snapIntervals[i] / scale);
+                    if (Math.abs(bal) <= snapIntervals[parseInt(i.toString(), 10)] / scale) {
+                        return prev - (Math.abs(bal) < (snapIntervals[parseInt(i.toString(), 10)] / (2 * scale)) ? 0 : snapIntervals[parseInt(i.toString(), 10)] / scale);
                     } else {
-                        prev -= snapIntervals[i] / scale;
-                        bal += snapIntervals[i] / scale;
+                        prev -= snapIntervals[parseInt(i.toString(), 10)] / scale;
+                        bal += snapIntervals[parseInt(i.toString(), 10)] / scale;
                     }
                 }
             }
@@ -228,7 +228,7 @@ export class Snapping {
         let nodes: DiagramElement[] = this.findNodes(diagram.spatialSearch, selectedObject, vIntersectRect, viewPort);
         let i: number; let target: DiagramElement; let targetBounds: Rect; const nameTable: NodeModel = diagram.nameTable;
         for (i = 0; i < nodes.length; i++) {
-            target = nodes[i];
+            target = nodes[parseInt(i.toString(), 10)];
             if (this.canBeTarget(diagram, target)) {
                 if (!(this.diagram.nameTable[target.id] instanceof Connector) && this.canConsider(nameTable, selectedObject, target)) {
                     targetBounds = target.bounds;
@@ -263,7 +263,7 @@ export class Snapping {
         }
         nodes = this.findNodes(diagram.spatialSearch, selectedObject, hIntersectRect, viewPort);
         for (let j: number = 0; j < nodes.length; j++) {
-            target = nodes[j];
+            target = nodes[parseInt(j.toString(), 10)];
             if (this.canBeTarget(diagram, target)) {
                 if (!(this.diagram.nameTable[target.id] instanceof Connector) && this.canConsider(nameTable, selectedObject, target)) {
                     targetBounds = target.bounds;
@@ -352,7 +352,7 @@ export class Snapping {
         let nodes: DiagramElement[] = this.findNodes(diagram.spatialSearch, selectedObject, vintersectedrect, viewPort, nodesInView);
         let i: number; let target: DiagramElement; let targetBounds: Rect;
         for (i = 0; i < nodes.length; i++) {
-            target = nodes[i];
+            target = nodes[parseInt(i.toString(), 10)];
             if (this.canConsider(nameTable, selectedObject, target) && !(this.diagram.nameTable[target.id] instanceof Connector)) {
                 targetBounds = target.bounds;
                 if (lengthX == null || lengthX > Math.abs(targetBounds.y - bounds.y)) {
@@ -378,7 +378,7 @@ export class Snapping {
         }
         nodes = this.findNodes(diagram.spatialSearch, selectedObject, hintersectedrect, viewPort);
         for (let i: number = 0; i < nodes.length; i++) {
-            const target: DiagramElement = nodes[i];
+            const target: DiagramElement = nodes[parseInt(i.toString(), 10)];
             if (this.canConsider(nameTable, selectedObject, target) && !(this.diagram.nameTable[target.id] instanceof Connector)) {
                 const targetBounds: Rect = target.bounds;
                 if (lengthY == null || lengthY > Math.abs(targetBounds.x - bounds.x)) {
@@ -403,7 +403,7 @@ export class Snapping {
             }
         }
         for (i = 0; i < nodesInView.length; i++) {
-            target = nodesInView[i];
+            target = nodesInView[parseInt(i.toString(), 10)];
             if (this.canConsider(nameTable, selectedObject, target)) {
                 const targetBounds: Rect = target.bounds;
                 let delta: number = horizontalSnap.left ? -deltaX : deltaX;
@@ -783,8 +783,8 @@ export class Snapping {
         let end: PointModel;
         if (!ended) {
             for (i = 0; i < equallySpaced.length - 1; i++) {
-                const crnt: Rect = equallySpaced[i].obj instanceof Selector ?
-                    getBounds(((equallySpaced[i].obj) as SelectorModel).wrapper) : ((equallySpaced[i].obj).bounds);
+                const crnt: Rect = equallySpaced[parseInt(i.toString(), 10)].obj instanceof Selector ?
+                    getBounds(((equallySpaced[parseInt(i.toString(), 10)].obj) as SelectorModel).wrapper) : ((equallySpaced[parseInt(i.toString(), 10)].obj).bounds);
                 const next: Rect = equallySpaced[i + 1].obj instanceof Selector ?
                     getBounds(((equallySpaced[i + 1].obj) as SelectorModel).wrapper) : ((equallySpaced[i + 1].obj).bounds);
                 start = { x: crnt.x + crnt.width, y: top - 15 };
@@ -800,8 +800,8 @@ export class Snapping {
         let end: PointModel;
         if (!ended) {
             for (let i: number = 0; i < equallySpacedObjects.length - 1; i++) {
-                const crnt: Rect = equallySpacedObjects[i].obj instanceof Selector ?
-                    getBounds(((equallySpacedObjects[i].obj) as SelectorModel).wrapper) : ((equallySpacedObjects[i].obj).bounds);
+                const crnt: Rect = equallySpacedObjects[parseInt(i.toString(), 10)].obj instanceof Selector ?
+                    getBounds(((equallySpacedObjects[parseInt(i.toString(), 10)].obj) as SelectorModel).wrapper) : ((equallySpacedObjects[parseInt(i.toString(), 10)].obj).bounds);
                 const next: Rect = equallySpacedObjects[i + 1].obj instanceof Selector ?
                     getBounds(((equallySpacedObjects[i + 1].obj) as SelectorModel).wrapper) :
                     ((equallySpacedObjects[i + 1].obj).bounds);
@@ -826,9 +826,9 @@ export class Snapping {
         sameSizes.push(sameWidths[0]);
         let i: number; let crntbounds: Rect;
         for (i = 1; i < sameWidths.length; i++) {
-            crntbounds = ((sameWidths[i].source) as DiagramElement).bounds;
+            crntbounds = ((sameWidths[parseInt(i.toString(), 10)].source) as DiagramElement).bounds;
             if (crntbounds.width === targetBounds.width) {
-                sameSizes.push(sameWidths[i]);
+                sameSizes.push(sameWidths[parseInt(i.toString(), 10)]);
             }
         }
         if (!ended) {
@@ -837,7 +837,7 @@ export class Snapping {
             this.renderSpacingLines(
                 startPt, endPt, snapLine, this.getAdornerLayerSvg(), diagram.scroller.transform);
             for (i = 0; i < sameSizes.length; i++) {
-                bounds = ((sameSizes[i].source) as DiagramElement).bounds;
+                bounds = ((sameSizes[parseInt(i.toString(), 10)].source) as DiagramElement).bounds;
                 startPt = { x: bounds.x, y: bounds.y - 15 };
                 endPt = { x: bounds.x + bounds.width, y: bounds.y - 15 };
                 this.renderSpacingLines(
@@ -863,9 +863,9 @@ export class Snapping {
         let i: number;
         let crntbounds: Rect;
         for (i = 0; i < sameHeights.length; i++) {
-            crntbounds = ((sameHeights[i].source) as DiagramElement).bounds;
+            crntbounds = ((sameHeights[parseInt(i.toString(), 10)].source) as DiagramElement).bounds;
             if (crntbounds.height === targetBounds.height) {
-                sameSizes.push(sameHeights[i]);
+                sameSizes.push(sameHeights[parseInt(i.toString(), 10)]);
             }
         }
         if (!ended) {
@@ -874,7 +874,7 @@ export class Snapping {
             this.renderSpacingLines(
                 start, end, snapLine, this.getAdornerLayerSvg(), diagram.scroller.transform);
             for (i = 0; i < sameSizes.length; i++) {
-                bounds = ((sameSizes[i].source) as DiagramElement).bounds;
+                bounds = ((sameSizes[parseInt(i.toString(), 10)].source) as DiagramElement).bounds;
                 start = { x: bounds.x + bounds.width + 15, y: bounds.y };
                 end = { x: bounds.x + bounds.width + 15, y: bounds.y + bounds.height };
                 this.renderSpacingLines(
@@ -1127,10 +1127,10 @@ export class Snapping {
         let bounds: Rect;
         const quads: Quad[] = spatialSearch.findQuads(nodesInView ? viewPort : child);
         for (let i: number = 0; i < quads.length; i++) {
-            const quad: Quad = quads[i];
+            const quad: Quad = quads[parseInt(i.toString(), 10)];
             if (quad.objects.length > 0) {
                 for (let j: number = 0; j < quad.objects.length; j++) {
-                    nd = quad.objects[j] as DiagramElement;
+                    nd = quad.objects[parseInt(j.toString(), 10)] as DiagramElement;
                     if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible
                         && !(this.diagram.nameTable[nd.id].shape.type === 'SwimLane') && !(this.diagram.nameTable[nd.id].isLane) &&
                         !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader) && nd.id != 'helper') {
@@ -1183,20 +1183,20 @@ export class Snapping {
         if (ascending) {
             for (i = 0; i < obj.length; i++) {
                 for (j = i + 1; j < obj.length; j++) {
-                    if (obj[i][value] > obj[j][value]) {
-                        temp = obj[i];
-                        obj[i] = obj[j];
-                        obj[j] = temp;
+                    if (obj[parseInt(i.toString(), 10)][`${value}`] > obj[parseInt(j.toString(), 10)][`${value}`]) {
+                        temp = obj[parseInt(i.toString(), 10)];
+                        obj[parseInt(i.toString(), 10)] = obj[parseInt(j.toString(), 10)];
+                        obj[parseInt(j.toString(), 10)] = temp;
                     }
                 }
             }
         } else {
             for (i = 0; i < obj.length; i++) {
                 for (j = i + 1; j < obj.length; j++) {
-                    if (obj[i][value] < obj[j][value]) {
-                        temp = obj[i];
-                        obj[i] = obj[j];
-                        obj[j] = temp;
+                    if (obj[parseInt(i.toString(), 10)][`${value}`] < obj[parseInt(j.toString(), 10)][`${value}`]) {
+                        temp = obj[parseInt(i.toString(), 10)];
+                        obj[parseInt(i.toString(), 10)] = obj[parseInt(j.toString(), 10)];
+                        obj[parseInt(j.toString(), 10)] = temp;
                     }
                 }
             }
@@ -1211,10 +1211,10 @@ export class Snapping {
         let i: number;
         for (i = 1; i < objectsAtLeft.length; i++) {
             prevBounds = ((objectsAtLeft[i - 1].obj).bounds);
-            targetBounds = ((objectsAtLeft[i].obj).bounds);
+            targetBounds = ((objectsAtLeft[parseInt(i.toString(), 10)].obj).bounds);
             dist = prevBounds.x - targetBounds.x - targetBounds.width;
             if (Math.abs(dist - equalDistance) <= 1) {
-                equallySpaced[equallySpaced.length] = objectsAtLeft[i];
+                equallySpaced[equallySpaced.length] = objectsAtLeft[parseInt(i.toString(), 10)];
                 if (targetBounds.y < top) {
                     top = targetBounds.y;
                 }
@@ -1236,7 +1236,7 @@ export class Snapping {
         let dist: number;
         if (Math.abs(equalDistance - actualDistance) <= snapObjDistance) {
             for (let i: number = 0; i < objectsAtRight.length - 1; i++) {
-                target = objectsAtRight[i].obj;
+                target = objectsAtRight[parseInt(i.toString(), 10)].obj;
                 targetBounds = ((objectsAtRight[i + 1].obj).bounds);
                 prevBounds = (target.bounds);
                 dist = targetBounds.x - prevBounds.x - prevBounds.width;
@@ -1259,10 +1259,10 @@ export class Snapping {
         let dist: number;
         for (let i: number = 1; i < objectsAtTop.length; i++) {
             prevBounds = ((objectsAtTop[i - 1].obj).bounds);
-            targetBounds = ((objectsAtTop[i].obj).bounds);
+            targetBounds = ((objectsAtTop[parseInt(i.toString(), 10)].obj).bounds);
             dist = prevBounds.y - targetBounds.y - targetBounds.height;
             if (Math.abs(dist - equalDistance) <= 1) {
-                equallySpaced[equallySpaced.length] = objectsAtTop[i];
+                equallySpaced[equallySpaced.length] = objectsAtTop[parseInt(i.toString(), 10)];
                 if (targetBounds.x + targetBounds.width > right) {
                     right = targetBounds.x + targetBounds.width;
                 }
@@ -1283,7 +1283,7 @@ export class Snapping {
         let dist: number;
         if (Math.abs(equalDistance - actualDistance) <= snapObjDistance) {
             for (let i: number = 0; i < objectsAtBottom.length - 1; i++) {
-                target = objectsAtBottom[i].obj;
+                target = objectsAtBottom[parseInt(i.toString(), 10)].obj;
                 targetBounds = ((objectsAtBottom[i + 1].obj).bounds);
                 prevBounds = (target.bounds);
                 dist = targetBounds.y - prevBounds.y - prevBounds.height;

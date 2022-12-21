@@ -597,7 +597,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.expandItem(true, this.initExpand[len - 1]);
         } else {
             for (let i: number = 0; i < len; i++) {
-                this.expandItem(true, this.initExpand[i]);
+                this.expandItem(true, this.initExpand[parseInt(i.toString(), 10)]);
             }
         }
         if ((this as any).isReact) {
@@ -944,13 +944,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             if ((this as any).isReact) {
                 this.renderReactTemplates();
             }
-            append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
+            append(this.getItemTemplate()(this.dataSource[parseInt(index.toString(), 10)], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
             itemcnt.appendChild(ctn);
         } else {
-            if (this.enableHtmlSanitizer && typeof (this.items[index].content)) {
-                this.items[index].content = SanitizeHtmlHelper.sanitize(this.items[index].content);
+            if (this.enableHtmlSanitizer && typeof (this.items[parseInt(index.toString(), 10)].content)) {
+                this.items[parseInt(index.toString(), 10)].content =
+                    SanitizeHtmlHelper.sanitize(this.items[parseInt(index.toString(), 10)].content);
             }
-            itemcnt.appendChild(this.fetchElement(ctn, this.items[index].content, index, false));
+            itemcnt.appendChild(this.fetchElement(ctn, this.items[parseInt(index.toString(), 10)].content, index, false));
         }
         return itemcnt;
     }
@@ -1028,7 +1029,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (progress === 'end') {
             this.add(trgtItemEle, CLS_ACTIVE);
             trgt.setAttribute('aria-hidden', 'false');
-            attributes(trgt.previousElementSibling, { 'aria-expanded': 'true' });
+            attributes(trgt.previousElementSibling, { 'aria-expanded': 'true'  });
             icon.classList.remove(CLS_TOGANIMATE);
             this.trigger('expanded', eventArgs);
         }
@@ -1186,7 +1187,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 if (ele.childElementCount === itemIndex) {
                     ele.appendChild(innerItemEle);
                 } else {
-                    ele.insertBefore(innerItemEle, itemEle[itemIndex]);
+                    ele.insertBefore(innerItemEle, itemEle[parseInt(itemIndex.toString(), 10)]);
                 }
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
                 EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -1221,7 +1222,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             this.clearTemplate(['headerTemplate', 'itemTemplate'], index);
         }
         const itemEle: HTEle[] = this.getItemElements();
-        const ele: HTEle = <HTEle>itemEle[index];
+        const ele: HTEle = <HTEle>itemEle[parseInt(index.toString(), 10)];
         const items: Object[] = this.getItems();
         if (isNOU(ele)) {
             return;
@@ -1240,7 +1241,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public select(index: number): void {
         const itemEle: HTEle[] = this.getItemElements();
-        const ele: HTEle = <HTEle>itemEle[index];
+        const ele: HTEle = <HTEle>itemEle[parseInt(index.toString(), 10)];
         if (isNOU(ele) || isNOU(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -1256,7 +1257,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public hideItem(index: number, isHidden?: boolean): void {
         const itemEle: HTEle[] = this.getItemElements();
-        const ele: HTEle = <HTEle>itemEle[index];
+        const ele: HTEle = <HTEle>itemEle[parseInt(index.toString(), 10)];
         if (isNOU(ele)) {
             return;
         }
@@ -1279,7 +1280,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public enableItem(index: number, isEnable: boolean): void {
         const itemEle: HTEle[] = this.getItemElements();
-        const ele: HTEle = <HTEle>itemEle[index];
+        const ele: HTEle = <HTEle>itemEle[parseInt(index.toString(), 10)];
         if (isNOU(ele)) {
             return;
         }
@@ -1327,7 +1328,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 }
             }
         } else {
-            const ele: HTEle = <HTEle>itemEle[index];
+            const ele: HTEle = <HTEle>itemEle[parseInt(index.toString(), 10)];
             if (isNOU(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             } else {
@@ -1373,7 +1374,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (isNOU(index)) {
             ctnElePos = this.element;
         } else {
-            ctnElePos = <HTMLElement>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+            ctnElePos = <HTMLElement>this.element.querySelectorAll('.' + CLS_ITEM)[parseInt(index.toString(), 10)];
         }
         this.templateEle.forEach((eleStr: Str): void => {
             if (!isNOU(ctnElePos.querySelector(eleStr))) {
@@ -1384,7 +1385,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private updateItem(item: HTEle, index: number): void {
         if (!isNOU(item)) {
             const items: Object[] = this.getItems();
-            const itemObj: Object = items[index];
+            const itemObj: Object = items[parseInt(index.toString(), 10)];
             items.splice(index, 1);
             this.restoreContent(index);
             detach(item);
@@ -1428,11 +1429,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
                     const changedProp: Object[] = Object.keys(newProp.items);
                     for (let j: number = 0; j < changedProp.length; j++) {
-                        const index: number = parseInt(Object.keys(newProp.items)[j], 10);
-                        const property: Str = Object.keys(newProp.items[index])[0];
-                        const item: HTEle = <HTEle>selectAll('.' + CLS_ITEM, this.element)[index];
-                        const oldVal: Str = Object(oldProp.items[index])[property];
-                        const newVal: Str = Object(newProp.items[index])[property];
+                        const index: number = parseInt(Object.keys(newProp.items)[parseInt(j.toString(), 10)], 10);
+                        const property: Str = Object.keys(newProp.items[parseInt(index.toString(), 10)])[0];
+                        const item: HTEle = <HTEle>selectAll('.' + CLS_ITEM, this.element)[parseInt(index.toString(), 10)];
+                        const oldVal: Str = Object(oldProp.items[parseInt(index.toString(), 10)])[`${property}`];
+                        const newVal: Str = Object(newProp.items[parseInt(index.toString(), 10)])[`${property}`];
                         const temp: Str = property;
                         if (temp === 'header' || temp === 'iconCss' || temp === 'expanded' || ((temp === 'content') && (oldVal === ''))) {
                             this.updateItem(item, index);
@@ -1442,7 +1443,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                             if (newVal) { addClass([item], newVal.split(' ')); }
                         }
                         if (property === 'visible' && !isNOU(item)) {
-                            if (Object(newProp.items[index])[property] === false) {
+                            if (Object(newProp.items[parseInt(index.toString(), 10)])[`${property}`] === false) {
                                 item.classList.add(CLS_ITEMHIDE);
                             } else {
                                 item.classList.remove(CLS_ITEMHIDE);

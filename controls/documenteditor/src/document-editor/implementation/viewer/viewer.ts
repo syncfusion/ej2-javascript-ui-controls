@@ -4,7 +4,7 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WLevelOverride } from '../list/level-override';
-import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles } from '../format/index';
+import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WColumnFormat } from '../format/index';
 import { Layout } from './layout';
 import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
@@ -847,9 +847,16 @@ export class DocumentHelper {
         this.comments = [];
         this.bookmarks.clear();
         this.styles.clear();
+        if (this.pages && this.pages.length > 0) {
+            for (let i: number = 0; i < this.pages.length; i++) {
+                let page: Page = this.pages[i] as Page;
+                page.componentDestroy();
+            }
+            this.pages = [];
+        }
         this.authors.clear();
         this.revisionsInternal.clear();
-        this.owner.revisions.destroy();
+        this.owner.revisions.clear();
         this.characterFormat.clearFormat();
         this.themeFontLanguage.clearFormat();
         this.paragraphFormat.clearFormat();
@@ -878,8 +885,14 @@ export class DocumentHelper {
         this.footnotes.clear();
         this.footnoteCollection = [];
         this.endnoteCollection = [];
-        this.abstractLists = [];
+        if (this.lists && this.lists.length > 0) {
+            for (let i: number = 0; i < this.lists.length; i++) {
+                let list: WList = this.lists[i] as WList;
+                list.clear();
+            }
+        }
         this.lists = [];
+        this.abstractLists = [];
         this.themes = new Themes();
         this.hasThemes = false;
     }
@@ -1148,15 +1161,15 @@ export class DocumentHelper {
         this.viewerContainer.addEventListener('mouseup', this.onMouseUpInternal);
         window.addEventListener('resize', this.onWindowResize);
         window.addEventListener('keyup', this.onKeyUpInternal);
-        window.addEventListener('mouseup', this.onImageResizer.bind(this));
-        window.addEventListener('touchend', this.onImageResizer.bind(this));
+        window.addEventListener('mouseup', this.onImageResizer);
+        window.addEventListener('touchend', this.onImageResizer);
         this.viewerContainer.addEventListener('touchstart', this.onTouchStartInternal);
         this.viewerContainer.addEventListener('touchmove', this.onTouchMoveInternal);
         this.viewerContainer.addEventListener('touchend', this.onTouchUpInternal);
         if (navigator.userAgent.match('Firefox')) {
-            this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal.bind(this));
+            this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }
-        this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal.bind(this));
+        this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
     }
     private wireInputEvents(): void {
         if (isNullOrUndefined(this.editableDiv)) {
@@ -1356,7 +1369,7 @@ export class DocumentHelper {
         this.editableDiv.setAttribute('style', style);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    private onImageResizer(args: any): void {
+    private onImageResizer = (args: any): void => {
         if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.imageResizerModule) &&
             this.owner.imageResizerModule.isImageResizerVisible && this.owner.imageResizerModule.isImageResizing) {
             if (args instanceof MouseEvent) {
@@ -1581,10 +1594,13 @@ export class DocumentHelper {
         }
         this.heightInfoCollection = {};
         this.owner.isDocumentLoaded = false;
+        this.viewer.columnLayoutArea.clear();
         this.layout.isDocumentContainsRtl = false;
         this.updateAuthorIdentity();
         for (let i: number = 0; i < this.pages.length; i++) {
-            this.pages[i].bodyWidgets[0].destroy();
+            for (let j: number = 0; j < this.pages[i].bodyWidgets.length; j++) {
+                this.pages[i].bodyWidgets[j].destroy();
+            }
         }
         this.pages = [];
         if (!isNullOrUndefined(this.renderedLists)) {
@@ -2712,6 +2728,7 @@ export class DocumentHelper {
         if (!isNullOrUndefined(widget)) {
             this.selection.updateTextPosition(widget, cursorPoint);
         }
+
         if (tapCount > 1) {
             this.isMouseDown = false;
             this.useTouchSelectionMark = false;
@@ -2869,15 +2886,35 @@ export class DocumentHelper {
                         }
                     } else {
                         for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
-                            let bodyWidgets: BodyWidget = this.currentPage.bodyWidgets[i];
-                            widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
-                            if (!isNullOrUndefined(widget)) {
-                                this.isFootnoteWidget = false;
-                                break;
+                            let bodyWidget: BodyWidget = this.currentPage.bodyWidgets[i];
+                            if (i < this.currentPage.bodyWidgets.length - 1) {
+                                if (cursorPoint.x <= bodyWidget.x + bodyWidget.width) {
+                                    //let isGetFirstChild: boolean = i === this.currentPage.bodyWidgets.length - 1;
+                                    widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                    if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                    && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                        this.isFootnoteWidget = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (i == this.currentPage.bodyWidgets.length - 1) {
+                                widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                    this.isFootnoteWidget = false;
+                                    break;
+                                }
+                            }
+                            if (cursorPoint.x < bodyWidget.x && i < this.currentPage.bodyWidgets.length - 1) {
+                                widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                if (!isNullOrUndefined(widget)) {
+                                    this.isFootnoteWidget = false;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
                 let inlineShapeInfo: ShapeInfo = this.checkInlineShapeItems(widget, cursorPoint, isMouseDragged);
                 if (inlineShapeInfo.isShapeSelected) {
                     if (inlineShapeInfo.isInShapeBorder) {
@@ -2896,6 +2933,7 @@ export class DocumentHelper {
                 }
             }
         }
+    }
         return widget;
     }
     private checkInlineShapeItems(widget: LineWidget, cursorPoint: Point, isMouseDragged: boolean): ShapeInfo {
@@ -3115,14 +3153,23 @@ export class DocumentHelper {
         let scrollToLastPage: boolean = false;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
-            if (page.bodyWidgets.length === 0 || page.bodyWidgets[0].childWidgets.length === 0) {
-
+            for (let i = 0; i < page.bodyWidgets.length; i++) {
+                if (page.bodyWidgets.length === 0 || page.bodyWidgets[i].childWidgets.length === 0) {
+                    if (page.bodyWidgets.length >= 1) {
+                        let startindex: number = page.bodyWidgets.indexOf(page.bodyWidgets[i]);
+                        page.bodyWidgets.splice(startindex, 1);
+                        i--;
+                    }
+                }
+            }
+            if (page.bodyWidgets.length <= 0) {
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
-                this.removePage(this.pages[j]);
-                j--;
+               this.removePage(this.pages[j]);
+               j--;
             }
+            
         }
         if (scrollToLastPage) {
             this.scrollToBottom();
@@ -3238,9 +3285,45 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.owner)) {
             this.unWireEvent();
         }
-
-        this.pages = [];
+        if (this.styles) {
+            this.styles.destroy();
+            this.styles = undefined;
+        }
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        if (this.themeFontLanguage) {
+            this.themeFontLanguage.destroy();
+            this.themeFontLanguage = undefined;
+        }
+        if (this.paragraphFormat) {
+            this.paragraphFormat.destroy();
+            this.paragraphFormat = undefined;
+        }
+        if (this.pages && this.pages.length > 0) {
+            for (let i: number = 0; i < this.pages.length; i++) {
+                let page: Page = this.pages[i];
+                page.componentDestroy();
+            }
+            this.pages = [];
+        }
         this.pages = undefined;
+        if (this.lists && this.lists.length > 0) {
+            for (let i: number = 0; i < this.lists.length; i++) {
+                let list: WList = this.lists[i];
+                list.destroy();
+            }
+            this.lists = [];
+        }
+        this.lists = undefined;
+        if (this.formFillPopup) {
+            this.formFillPopup.destroy();
+            this.formFillPopup = undefined;
+        }
+        this.currentPage = undefined;
+        this.selectionStartPageIn = undefined;
+        this.selectionEndPageIn = undefined;
         this.fieldStacks = [];
         this.fieldStacks = undefined;
         this.splittedCellWidgets = [];
@@ -3252,45 +3335,51 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.owner)) {
         this.renderedLists.destroy();
         }
+        this.renderedLists = undefined;
         if (!isNullOrUndefined(this.owner)) {
         this.authors.destroy();
         }
+        this.authors = undefined;
         if (!isNullOrUndefined(this.owner)) {
         this.revisionsInternal.destroy();
         }
+        this.revisionsInternal = undefined;
         if (!isNullOrUndefined(this.owner)) {
         this.preDefinedStyles.destroy();
         }
+        this.preDefinedStyles = undefined;
         if (!isNullOrUndefined(this.owner)) {
         this.bookmarks.destroy();
         }
+        this.bookmarks = undefined;
         if (!isNullOrUndefined(this.owner)) {
         this.editRanges.destroy();
         }
+        this.editRanges = undefined;
         if (!isNullOrUndefined(this.owner)) {
         this.customXmlData.destroy();
         }
+        this.customXmlData = undefined;
         this.blockToShift = undefined;
         this.cachedPages = [];
         this.cachedPages = undefined;
-        this.characterFormat = undefined;
-        this.comments = [];
+        if (this.comments && this.comments.length > 0) {
+            for (let i: number = 0; i < this.comments.length; i++) {
+                let comment: CommentElementBox = this.comments[i];
+                comment.destroy();
+            }
+            this.comments = [];
+        }
         this.comments = undefined;
         this.compositionEnd = undefined;
         this.compositionStart = undefined;
         this.compositionUpdated = undefined;
         this.contentControlCollection = [];
         this.contentControlCollection = undefined;
-        this.fieldCollection = [];
-        this.fieldCollection = undefined;
         this.renderedLevelOverrides = [];
         this.renderedLevelOverrides = undefined;
         this.headersFooters = [];
-        this.headersFooters = undefined; 
-        this.lists = [];
-        this.lists = undefined;
-        this.comments = [];
-        this.comments = undefined;
+        this.headersFooters = undefined;
         this.listParagraphs = [];
         this.listParagraphs = undefined;
         this.formFields = [];
@@ -3299,8 +3388,18 @@ export class DocumentHelper {
         this.fieldCollection = undefined;
         this.userCollection = [];
         this.userCollection = undefined;
-        this.cachedPages = [];
-        this.cachedPages = undefined;
+        if (this.footnotes) {
+            this.footnotes.componentDestroy();
+            this.footnotes = undefined;
+        }
+        if (this.endnotes) {
+            this.endnotes.componentDestroy();
+            this.endnotes = undefined;
+        }
+        if (this.zoomModule) {
+            this.zoomModule.destroy();
+            this.zoomModule = undefined;
+        }
         this.footnoteCollection = [];
         this.footnoteCollection = undefined;
         this.endnoteCollection = [];
@@ -3345,22 +3444,34 @@ export class DocumentHelper {
         this.dialogTarget3 = undefined;
         if (!isNullOrUndefined(this.touchStart)) {
             this.touchStart.innerHTML = '';
+            if (!isNullOrUndefined(this.touchStart.parentElement)) {
+                this.touchStart.parentElement.removeChild(this.touchStart);
+            }
         }
+        this.touchStart = undefined;
         if (this.textHelper) {
             this.textHelper.destroy();
         }
         this.textHelper = undefined;
-        this.touchStart = undefined;
         if (!isNullOrUndefined(this.touchEnd)) {
             this.touchEnd.innerHTML = '';
+            if (!isNullOrUndefined(this.touchEnd.parentElement)) {
+                this.touchEnd.parentElement.removeChild(this.touchEnd);
+            }
         }
         this.touchEnd = undefined;
         if (!isNullOrUndefined(this.containerCanvasIn)) {
             this.containerCanvasIn.innerHTML = '';
+            if (!isNullOrUndefined(this.containerCanvasIn.parentElement)) {
+                this.containerCanvasIn.parentElement.removeChild(this.containerCanvasIn);
+            }
         }
         this.containerCanvasIn = undefined;
         if (!isNullOrUndefined(this.selectionCanvasIn)) {
             this.selectionCanvasIn.innerHTML = '';
+            if (!isNullOrUndefined(this.selectionCanvasIn.parentElement)) {
+                this.selectionCanvasIn.parentElement.removeChild(this.selectionCanvasIn);
+            }
         }
         this.selectionCanvasIn = undefined;
         if (!isNullOrUndefined(this.editableDiv)) {
@@ -3372,16 +3483,40 @@ export class DocumentHelper {
         this.editableDiv = undefined;
         if (!isNullOrUndefined(this.pageContainer)) {
             this.pageContainer.innerHTML = '';
+            if (!isNullOrUndefined(this.pageContainer.parentElement)) {
+                this.pageContainer.parentElement.removeChild(this.pageContainer);
+            }
         }
         this.pageContainer = undefined;
         if (!isNullOrUndefined(this.viewerContainer)) {
             this.viewerContainer.innerHTML = '';
+            if (!isNullOrUndefined(this.viewerContainer.parentElement)) {
+                this.viewerContainer.parentElement.removeChild(this.viewerContainer);
+            }
+            
         }
         if(!isNullOrUndefined(this.iframe)){
             this.iframe.innerHTML = '';
+            if (!isNullOrUndefined(this.iframe.parentElement)) {
+                this.iframe.parentElement.removeChild(this.iframe);
+            }
             this.iframe = undefined;
         }
+        if (this.optionsPaneContainer) {
+            this.optionsPaneContainer.innerHTML = '';
+            if (!isNullOrUndefined(this.optionsPaneContainer.parentElement)) {
+                this.optionsPaneContainer.parentElement.removeChild(this.optionsPaneContainer);
+            }
+        }
+        this.optionsPaneContainer = undefined;
+        this.visibleBoundsIn = undefined;
+        this.mouseDownOffset = undefined;
         this.viewerContainer = undefined;
+        this.currentPage = undefined;
+        this.selectionStartPageIn = undefined;
+        this.selectionEndPageIn = undefined;
+        this.currentSelectedCommentInternal = undefined;
+        this.currentSelectedRevisionInternal = undefined;
         this.owner = undefined;
         this.heightInfoCollection = undefined;
     }
@@ -3416,8 +3551,12 @@ export class DocumentHelper {
         this.viewerContainer.removeEventListener('dblclick', this.onDoubleTap);
         window.removeEventListener('resize', this.onWindowResize);
         window.removeEventListener('keyup', this.onKeyUpInternal);
-        window.removeEventListener('mouseup', this.onImageResizer.bind(this));
-        window.removeEventListener('touchend', this.onImageResizer.bind(this));
+        window.removeEventListener('mouseup', this.onImageResizer);
+        window.removeEventListener('touchend', this.onImageResizer);
+        if (navigator.userAgent.match('Firefox')) {
+            this.viewerContainer.removeEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
+        }
+        this.viewerContainer.removeEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
     }
     public updateCursor(event: MouseEvent): void {
         let hyperlinkField: FieldElementBox = undefined;
@@ -3775,6 +3914,7 @@ export abstract class LayoutViewer {
     public owner: DocumentEditor;
     constructor(owner: DocumentEditor) {
         this.owner = owner;
+        this.columnLayoutArea = new ColumnLayout(this);
     }
     get documentHelper(): DocumentHelper {
         return this.owner.documentHelper;
@@ -3795,6 +3935,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public clientArea: Rect;
+    /**
+     * @private
+     */
+     public columnLayoutArea: ColumnLayout;
     /**
      * @private
      */
@@ -3826,7 +3970,12 @@ export abstract class LayoutViewer {
         this.pageFitTypeIn = value;
         this.onPageFitTypeChanged(this.pageFitTypeIn);
     }
-    public updateClientArea(sectionFormat: WSectionFormat, page: Page, isReLayout?: boolean): void {
+    public updateClientArea(bodyWidget: BodyWidget, page: Page, isReLayout?: boolean): void {
+        let sectionFormat: WSectionFormat;
+        if (!isNullOrUndefined(bodyWidget)) {
+            sectionFormat = bodyWidget.sectionFormat;
+            this.columnLayoutArea.setColumns(sectionFormat);
+        }
         let width: number = 0; let height: number = 0;
         if (this instanceof WebLayoutViewer) {
             let top: number = 0;
@@ -3872,15 +4021,21 @@ export abstract class LayoutViewer {
             if (width < 0) {
                 width = 0;
             }
-            this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
+            let clientArea: Rect = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
             if (page.footnoteWidget && isReLayout && !this.documentHelper.owner.editor.isFootNote) {
                 if (page.footnoteWidget.y !== 0 && this.clientArea.y + this.clientArea.height > page.footnoteWidget.y) {
                     let sub: number = (this.clientArea.y + this.clientArea.height - page.footnoteWidget.y);
                     this.clientArea.height -= sub / 2;
                 }
             }
+            this.setClientArea(bodyWidget, clientArea);
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         }
+    }
+    public setClientArea(bodyWidget: BodyWidget, clientArea: Rect) {
+        this.clientArea = this.columnLayoutArea.getColumnBoundsByBodyWidget(bodyWidget, clientArea);
+        bodyWidget.x = this.clientArea.x;
+        bodyWidget.width = this.clientArea.width;
     }
     public updateClientAreaTopOrLeft(tableWidget: TableWidget, beforeLayout: boolean): void {
         if (beforeLayout) {
@@ -3988,8 +4143,10 @@ export abstract class LayoutViewer {
         if (beforeLayout) {
             if (block instanceof TableWidget && tableCollection) {
                 let tableWidget: TableWidget = tableCollection[0];
-                this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
-                this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
+                if (block.bodyWidget.sectionFormat.columns.length <= 1) {
+                    this.clientActiveArea.x = this.clientArea.x = tableWidget.x;
+                    this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
+                }
                 //Updates the location of last item.
                 tableWidget = tableCollection[tableCollection.length - 1] as TableWidget;
                 tableWidget.x = this.clientActiveArea.x;
@@ -4034,9 +4191,11 @@ export abstract class LayoutViewer {
                 }
 
                 width = this.clientArea.width - (leftIndent + HelperMethods.convertPointToPixel(block.rightIndent));
-                this.clientActiveArea.x = this.clientArea.x = this.clientArea.x + (bidi ? rightIndent : leftIndent);
-                this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
-                if (updateYPosition) {
+                let x: number = this.clientArea.x + (bidi ? rightIndent : leftIndent);
+                width = width > 0 ? width : 0;
+                this.clientActiveArea.x = this.clientArea.x = x;
+                this.clientActiveArea.width = this.clientArea.width = width;
+                if(updateYPosition){
                     this.updateParagraphYPositionBasedonTextWrap(block as ParagraphWidget, new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height));
                 }
             }
@@ -4056,12 +4215,15 @@ export abstract class LayoutViewer {
                 }
             }
             width = this.clientArea.width + leftIndent + HelperMethods.convertPointToPixel(block.rightIndent);
-            this.clientActiveArea.width = this.clientArea.width = width > 0 ? width : 0;
-            this.clientActiveArea.x = this.clientArea.x = this.clientArea.x - (bidi ? rightIndent : leftIndent);
+            let x: number = this.clientArea.x - (bidi ? rightIndent : leftIndent);
+            width = width > 0 ? width : 0;
+            this.clientActiveArea.x = this.clientArea.x = x;
+            this.clientActiveArea.width = this.clientArea.width = width;
         }
         this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
     }
+
     private updateParagraphYPositionBasedonTextWrap(block: BlockWidget, rect: Rect): void {
         let bodyWidget: BlockContainer = block.bodyWidget;
         let clientLayoutArea: Rect = this.clientActiveArea;
@@ -4199,6 +4361,7 @@ export abstract class LayoutViewer {
                             && textWrappingStyle === 'TopAndBottom')) {
                             //Skip to wrap the immediate paragraph of floating table based on corresponding floating table. 
                             if (isWord2013 || !((floatingItem instanceof TableWidget) && previousItem === floatingItem)) {
+
                                 this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
                                 // Sets true to update bottom position of first inline item in page
                                 // when this item's bottom position already updated based on previous floating item.
@@ -4211,6 +4374,8 @@ export abstract class LayoutViewer {
                             }
                         }
                     }
+                    // //Reset the floating item bounds to original position
+                    // ResetXPositionForRTLLayouting(i, ref textWrappingBounds, floatingItemXPosition);
                 }
                 //Update the wrapping difference value.
                 // if (isFirstItem && yValue < rect.Y) {
@@ -4293,6 +4458,7 @@ export abstract class LayoutViewer {
             floatingItem.height + distanceTop + distanceBottom);
         return textWrappingBounds;
     }
+
     private tableAlignmentForBidi(block: TableWidget, bidi: boolean): TableAlignment {
         let tableAlignment: TableAlignment = block.tableFormat.tableAlignment;
         if (bidi) {
@@ -4593,7 +4759,15 @@ export abstract class LayoutViewer {
     public destroy(): void {
         this.clientArea = undefined;
         this.clientActiveArea = undefined;
-
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        this.clientArea = undefined;
+        this.clientActiveArea = undefined;
+        this.owner = undefined;
     }
 }
 /** 
@@ -4633,11 +4807,11 @@ export class PageLayoutViewer extends LayoutViewer {
         } else {
             this.documentHelper.pages.splice(index, 0, page);
         }
-        this.updateClientArea(section.sectionFormat, page);
         page.bodyWidgets.push(section);
         page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
+        this.updateClientArea(section, page);
         this.documentHelper.layout.layoutHeaderFooter(section, viewer, page);
-        this.updateClientArea(section.sectionFormat, page);
+        this.updateClientArea(section, page);
         this.documentHelper.layout.footnoteHeight = 0;
         return page;
     }
@@ -5024,4 +5198,139 @@ export class WebLayoutViewer extends LayoutViewer {
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
     }
 
+}
+/**
+ * @private
+ */
+ export class ColumnLayout {
+    private currentIndexIn: number;
+    private numberOfColumnsIn: number;
+    private columnIn: WColumnFormat[];
+    private viewerIn: LayoutViewer;
+    private defaultSpaceIn: number;
+    private pageWidth: number;
+    get currentIndex(): number {
+        return this.currentIndexIn;
+    }
+    set currentIndex(value: number) {
+        if (value >= 0) {
+            this.currentIndexIn = value;
+        }
+    }
+    /**
+     * Initialize the constructor of Column Layout Settings
+     */
+    constructor(viewer: LayoutViewer) {
+        this.viewerIn = viewer;
+        this.clear();
+    }
+    private get columnCount(): number {
+        let colCount: number;
+        if (!isNullOrUndefined(this.columnIn)) {
+            colCount = this.numberOfColumnsIn;
+        }
+        colCount = colCount > 0 ? colCount : 1;
+        return colCount;
+    }
+    /**
+     * @private
+     * @param sectionFormat 
+     */
+    public setColumns(sectionFormat: WSectionFormat) {
+        this.pageWidth = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
+        this.numberOfColumnsIn = sectionFormat.numberOfColumns;
+        if (!isNullOrUndefined(sectionFormat.columns)) {
+            let columns: WColumnFormat[] = sectionFormat.columns;
+            let columnList: WColumnFormat[] = [];
+            for (let i: number = 0; i < sectionFormat.numberOfColumns; i++) {
+                let space: number = this.defaultSpaceIn;
+                let width: number = 0;
+                if (!isNullOrUndefined(columns) && columns.length > 0) {
+                    space = columns[i].space;
+                    width = columns[i].width;
+                }
+                let col: WColumnFormat = this.getColumnObj(width, space, sectionFormat.numberOfColumns, sectionFormat.equalWidth);
+                col.index = i;
+                columnList.push(col);
+            }
+            this.columnIn = columnList;
+        }
+    }
+    /**
+     * @private
+     */
+    public clear() {
+        this.currentIndexIn = 0;
+        this.defaultSpaceIn = 36;
+        this.columnIn = null;
+        this.pageWidth = 0;
+    }
+    reset() {
+        this.currentIndex = 0;
+    }
+    /**
+     * @private
+     * @param bodyWidget 
+     * @param clientArea 
+     * @returns 
+     */
+    public getColumnBounds(bodyWidget: BodyWidget, clientArea: Rect): Rect {
+        let colIndex: number = this.currentIndexIn;
+        return this.getColumnBoundsByIndex(colIndex, clientArea);
+    }
+    /**
+     * @private
+     * @param bodyWidget 
+     * @param clientArea 
+     * @returns 
+     */
+    public getColumnBoundsByBodyWidget(bodyWidget: BodyWidget, clientArea: Rect) {
+        let colIndex: number = bodyWidget.page.bodyWidgets.indexOf(bodyWidget);
+        return this.getColumnBoundsByIndex(colIndex, clientArea);
+    }
+    /**
+     * @private
+     * @param bodyWidget 
+     * @param clientArea 
+     * @returns 
+     */
+    public getNextColumnByBodyWidget(bodyWidget: BodyWidget): WColumnFormat {
+        let colIndex: number = bodyWidget.page.bodyWidgets.indexOf(bodyWidget);
+        let nextColumn: WColumnFormat = this.getColumnByIndex(colIndex + 1);
+        return nextColumn;
+    }
+    private getColumnByIndex(index: number): WColumnFormat {
+        if (index >= 0 && index < this.columnCount && !isNullOrUndefined(this.columnIn) && this.columnIn.length > 0) {
+            return this.columnIn[index];
+        }
+        return undefined;
+    }
+    private getColumnObj(colWidth: number, colSpace: number, noOfCols: number, isEqualWidth: boolean): WColumnFormat {
+        let totalSpace = (noOfCols-1) * colSpace;
+        let colObj: WColumnFormat = new WColumnFormat();
+        if ((isEqualWidth || colWidth === 0) && !isNullOrUndefined(this.pageWidth)) {
+            colWidth = (this.pageWidth - totalSpace) / noOfCols;
+        }
+        colObj.width = colWidth;
+        colObj.space = colSpace;
+        return colObj;
+    }
+
+    private getColumnBoundsByIndex(colIndex: number, clientArea: Rect): Rect {
+        let colRect: Rect = new Rect(clientArea.x, clientArea.y, clientArea.width, clientArea.height);
+        if (colIndex >= 0 && this.columnIn.length > 0) {
+            let curColumn: WColumnFormat;
+            let prevColumn: WColumnFormat;
+            if (!isNullOrUndefined(this.columnIn[colIndex])) {
+                curColumn = this.getColumnByIndex(colIndex);
+                colRect.width = curColumn.width;
+                for (let i: number = 0; i < colIndex; i++) {
+                    prevColumn = this.columnIn[i];
+                    colRect.x += prevColumn.width;
+                    colRect.x += prevColumn.space;
+                }
+            }
+        }
+        return colRect;
+    }
 }

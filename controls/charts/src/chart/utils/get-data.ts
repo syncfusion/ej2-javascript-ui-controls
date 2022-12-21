@@ -46,7 +46,7 @@ export class ChartData {
         let width: number; let height: number;
         let mouseX: number; let mouseY: number;
         for (let len: number = chart.visibleSeries.length, i: number = len - 1; i >= 0; i--) {
-            series = chart.visibleSeries[i];
+            series = chart.visibleSeries[i as number];
             width = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
                 ? (series.marker.height + 5) / 2 : 0;
             height = (series.type === 'Scatter' || series.drawType === 'Scatter' || (series.marker.visible))
@@ -214,7 +214,7 @@ export class ChartData {
         const xLength: number = xData.length;
         if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {
             for (let i: number = 0; i < xLength; i++) {
-                data = xData[i];
+                data = xData[i as number];
                 if (closest == null || Math.abs(data - value) < Math.abs(closest - value)) {
                     closest = data;
                 }
@@ -235,18 +235,18 @@ export class ChartData {
         let found: boolean = false;
         let middle: number;
 
-        while(found == false && first <= last) {
+        while (found === false && first <= last) {
             middle = Math.floor((first + last) / 2);
-            if (list[middle].xValue == target){
+            if (list[middle as number].xValue === target){
                 found = true;
                 position = middle;
-            } else if (list[middle].xValue > target) {
+            } else if (list[middle as number].xValue > target) {
                 last = middle - 1;
             } else {
                 first = middle + 1;
             }
         }
-        return position !==-1 ? list[position] : null;
+        return position !== -1 ? list[position as number] : null;
     }
 
     public getClosestX(chart: Chart, series: Series, xvalues?: number[]): PointData {
@@ -259,7 +259,7 @@ export class ChartData {
         }
 
         const closest: number = this.getClosest(series, value, xvalues);
-        let point: Points = (closest || closest === 0) ? this.binarySearch(closest, sort(series.points, ['xValue']) as Points[]) : null;
+        const point: Points = (closest || closest === 0) ? this.binarySearch(closest, sort(series.points, ['xValue']) as Points[]) : null;
         if (point && point.visible) {
             return new PointData(point, series);
         }
@@ -276,17 +276,17 @@ export class ChartData {
         if (visibleSeries.length && (!this.commonXvalues.length || (this.commonXvalues.length !== visibleSeries[0].xData.length))) {
             this.commonXvalues = visibleSeries[0].xData;
             for (let index: number = 1; index < visibleSeries.length; index++) {
-                this.commonXvalues = this.getDistinctValues(this.commonXvalues, visibleSeries[index].xData);
+                this.commonXvalues = this.getDistinctValues(this.commonXvalues, visibleSeries[index as number].xData);
             }
         }
         return this.commonXvalues;
     }
 
     public commonXValue(series: Series): number[] {
-        let commonXValues: number[] = [];
+        const commonXValues: number[] = [];
         for (let i: number = 0; i < series.points.length; i++) {
-            let point: Points = series.points[i];
-            if (point && (point.index == 0 || point.index == series.points.length - 1 || (point.symbolLocations.length > 0))) {
+            const point: Points = series.points[i as number];
+            if (point && (point.index === 0 || point.index === series.points.length - 1 || (point.symbolLocations && point.symbolLocations.length > 0))) {
                 commonXValues.push(point.xValue);
             }
         }
@@ -295,24 +295,24 @@ export class ChartData {
 
 
     private getDistinctValues(first: number[] = [], second: number[] = []): number[] {
-            let intial: object = {};
-            let result: number[] = [];
-            let index: number;
-            
-            for (index = 0; index < first.length; index++) {
-                let temp: number = first[index];
-                if (!intial[temp]){
-                    intial[temp] = true;
-                    result.push(temp);
-                }
+        const intial: object = {};
+        const result: number[] = [];
+        let index: number;
+
+        for (index = 0; index < first.length; index++) {
+            const temp: number = first[index as number];
+            if (!intial[temp as number]) {
+                intial[temp as number] = true;
+                result.push(temp);
             }
-            for (index = 0; index < second.length; index++) {
-                let temp: number = second[index];
-                if (!intial[temp]){
-                    intial[temp] = true;
-                    result.push(temp);
-                }
+        }
+        for (index = 0; index < second.length; index++) {
+            const temp: number = second[index as number];
+            if (!intial[temp as number]) {
+                intial[temp as number] = true;
+                result.push(temp);
             }
-            return result;
+        }
+        return result;
     }
 }

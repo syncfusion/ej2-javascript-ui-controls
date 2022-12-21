@@ -103,8 +103,10 @@ export class WorkbookDelete {
             const curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             if (args.model.rows[args.start] && args.model.rows[args.start].cells) {
                 for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
-                    if (args.model.rows[args.start].cells[i] && args.model.rows[args.start].cells[i].rowSpan !== undefined &&
-                        args.model.rows[args.start].cells[i].rowSpan < 0 && args.model.rows[args.start].cells[i].colSpan === undefined) {
+                    if (args.model.rows[args.start as number].cells[i as number] &&
+                        args.model.rows[args.start as number].cells[i as number].rowSpan !== undefined &&
+                        args.model.rows[args.start as number].cells[i as number].rowSpan < 0 &&
+                        args.model.rows[args.start as number].cells[i as number].colSpan === undefined) {
                         mergeArgs = { range: [args.start, i, args.start, i] };
                         this.parent.notify(activeCellMergedRange, mergeArgs); mergeArgs.range = mergeArgs.range as number[];
                         if (mergeArgs.range[2] <= args.end) {
@@ -115,15 +117,16 @@ export class WorkbookDelete {
                                         mergeArgs.range[0], i, args.model,
                                         { colSpan: prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) }, true);
                                 } else {
-                                    delete args.model.rows[mergeArgs.range[0]].cells[i].rowSpan;
+                                    delete args.model.rows[mergeArgs.range[0]].cells[i as number].rowSpan;
                                 }
                             }
                             mergeArgs = null;
                         }
                     }
-                    if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
-                        args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
-                        args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                    if (args.model.rows[curIdx as number] && args.model.rows[curIdx as number].cells &&
+                        args.model.rows[curIdx as number].cells[i as number] && args.model.rows[curIdx as number].cells[i as number].rowSpan
+                        !== undefined && args.model.rows[curIdx as number].cells[i as number].rowSpan < 0 &&
+                        args.model.rows[curIdx as number].cells[i as number].colSpan === undefined) {
                         if (!mergeArgs) {
                             mergeArgs = { range: [curIdx, i, curIdx, i] }; this.parent.notify(activeCellMergedRange, mergeArgs);
                         }
@@ -190,9 +193,10 @@ export class WorkbookDelete {
             deletedCells = []; const curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 deletedCells.push({});
-                if (args.model.rows[i] && args.model.rows[i].cells) {
-                    if (args.model.rows[i].cells[args.start] && args.model.rows[i].cells[args.start].colSpan !== undefined &&
-                        args.model.rows[i].cells[args.start].colSpan < 0 && args.model.rows[i].cells[args.start].rowSpan === undefined) {
+                if (args.model.rows[i as number] && args.model.rows[i as number].cells) {
+                    if (args.model.rows[i as number].cells[args.start] && args.model.rows[i as number].cells[args.start].colSpan !==
+                        undefined && args.model.rows[i as number].cells[args.start].colSpan < 0 &&
+                        args.model.rows[i as number].cells[args.start].rowSpan === undefined) {
                         mergeArgs = { range: [i, args.start, i, args.start] };
                         this.parent.notify(activeCellMergedRange, mergeArgs); mergeArgs.range = mergeArgs.range as number[];
                         if (mergeArgs.range[3] <= args.end) {
@@ -203,14 +207,15 @@ export class WorkbookDelete {
                                         i, mergeArgs.range[1], args.model,
                                         { colSpan: prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1) }, true);
                                 } else {
-                                    delete args.model.rows[i].cells[mergeArgs.range[1]].colSpan;
+                                    delete args.model.rows[i as number].cells[mergeArgs.range[1]].colSpan;
                                 }
                             }
                             mergeArgs = null;
                         }
                     }
-                    if (args.model.rows[i].cells[curIdx] && args.model.rows[i].cells[curIdx].colSpan !== undefined &&
-                        args.model.rows[i].cells[curIdx].colSpan < 0 && args.model.rows[i].cells[curIdx].rowSpan === undefined) {
+                    if (args.model.rows[i as number].cells[curIdx as number] && args.model.rows[i as number].cells[curIdx as number].colSpan
+                        !== undefined && args.model.rows[i as number].cells[curIdx as number].colSpan < 0 &&
+                        args.model.rows[i as number].cells[curIdx as number].rowSpan === undefined) {
                         if (!mergeArgs) {
                             mergeArgs = { range: [i, curIdx, i, curIdx] };
                             this.parent.notify(activeCellMergedRange, mergeArgs);
@@ -236,7 +241,7 @@ export class WorkbookDelete {
                             });
                         }
                     }
-                    deletedCells[i].cells = args.model.rows[i].cells.splice(args.start, count);
+                    deletedCells[i as number].cells = args.model.rows[i as number].cells.splice(args.start, count);
                     mergeArgs = null;
                 }
             }
@@ -253,12 +258,13 @@ export class WorkbookDelete {
         const deletedModel: RowModel[] = [];
         const deleteMaxHgt: boolean = args.modelType === 'Row' && args.start < args.model.maxHgts.length;
         for (let i: number = args.start; i <= args.end; i++) {
-            if (args.modelType === 'Sheet' && args.model[modelName][i]) {
-                this.parent.notify(workbookFormulaOperation, { action: 'deleteSheetTab', sheetId: args.model[modelName][i].id });
+            const sheetsModel: SheetModel[] = args.model[`${modelName}`];
+            if (args.modelType === 'Sheet' && sheetsModel[i as number]) {
+                this.parent.notify(workbookFormulaOperation, { action: 'deleteSheetTab', sheetId: sheetsModel[i as number].id });
             }
-            if (args.model[modelName][args.start] || args.start < args.model[modelName].length) {
-                deletedModel.push(args.model[modelName][args.start] || {});
-                args.model[modelName].splice(args.start, 1);
+            if (sheetsModel[args.start] || args.start < sheetsModel.length) {
+                deletedModel.push(sheetsModel[args.start] || {});
+                sheetsModel.splice(args.start, 1);
             } else {
                 deletedModel.push({});
             }
@@ -275,7 +281,7 @@ export class WorkbookDelete {
             this.parent.notify(refreshClipboard, args);
             eventArgs.refreshSheet = args.refreshSheet;
             eventArgs.activeSheetIndex = getSheetIndex(this.parent, args.model.name);
-            eventArgs["conditionalFormats"]  = [];
+            eventArgs['conditionalFormats']  = [];
             this.deleteConditionalFormats(args, eventArgs);
         }
         eventArgs.definedNames = insertArgs.definedNames;
@@ -286,23 +292,24 @@ export class WorkbookDelete {
     }
     private setRowColCount(startIdx: number, endIdx: number, sheet: SheetModel, layout: string): void {
         const prop: string = layout + 'Count';
-        if (endIdx >= sheet[prop]) { endIdx = sheet[prop] - 1; }
+        const curCount: number = sheet[`${prop}`];
+        if (endIdx >= curCount) { endIdx = curCount - 1; }
         if (endIdx < startIdx) { return; }
-        this.parent.setSheetPropertyOnMute(sheet, prop, sheet[prop] - ((endIdx - startIdx) + 1));
+        this.parent.setSheetPropertyOnMute(sheet, prop, curCount - ((endIdx - startIdx) + 1));
         if (sheet.id === this.parent.getActiveSheet().id) {
-            this.parent.notify(updateRowColCount, { index: sheet[prop] - 1, update: layout, isDelete: true, start: startIdx, end: endIdx });
+            this.parent.notify(updateRowColCount, { index: curCount - 1, update: layout, isDelete: true, start: startIdx, end: endIdx });
         }
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {
         const total: number = (endIndex - startIndex) + 1; const newRange: number[] = [];
         this.parent.getActiveSheet().ranges.forEach((range: ExtendedRange): void => {
-            if (range.info && startIndex < range.info[totalKey]) {
+            if (range.info && startIndex < range.info[`${totalKey}`]) {
                 if (range.info[`delete${modelType}Range`]) {
                     range.info[`delete${modelType}Range`].push([startIndex, endIndex]);
                 } else {
                     range.info[`delete${modelType}Range`] = [[startIndex, endIndex]];
                 }
-                range.info[totalKey] -= total;
+                range.info[`${totalKey}`] -= total;
                 if (range.info[`insert${modelType}Range`]) {
                     range.info[`insert${modelType}Range`] = newRange;
                 }
@@ -310,17 +317,17 @@ export class WorkbookDelete {
         });
     }
     private deleteConditionalFormats(args: InsertDeleteModelArgs, eventArgs: InsertDeleteEventArgs): void {
-        let cfCollection: ConditionalFormatModel[] = args.model.conditionalFormats;
+        const cfCollection: ConditionalFormatModel[] = args.model.conditionalFormats;
         if (cfCollection) {
             for (let i: number = 0; i < cfCollection.length; i++) {
-                eventArgs["conditionalFormats"].push(extend({},cfCollection[i], null, true));
-                let cfRange: number[] = getRangeIndexes(cfCollection[i].range);
-                let sltRangeIndex: number[] = getRangeIndexes(args.model.selectedRange);
-                if ((args.modelType === "Column" && sltRangeIndex[1] <= cfRange[1] && sltRangeIndex[3] >= cfRange[3]) || (args.modelType === "Row" && sltRangeIndex[0] <= cfRange[0] && sltRangeIndex[2] >= cfRange[2])) {
-                    cfCollection.splice(cfCollection.indexOf(cfCollection[i]), 1);
+                eventArgs['conditionalFormats'].push(extend({}, cfCollection[i as number], null, true));
+                const cfRange: number[] = getRangeIndexes(cfCollection[i as number].range);
+                const sltRangeIndex: number[] = getRangeIndexes(args.model.selectedRange);
+                if ((args.modelType === 'Column' && sltRangeIndex[1] <= cfRange[1] && sltRangeIndex[3] >= cfRange[3]) || (args.modelType === 'Row' && sltRangeIndex[0] <= cfRange[0] && sltRangeIndex[2] >= cfRange[2])) {
+                    cfCollection.splice(cfCollection.indexOf(cfCollection[i as number]), 1);
                     i--;
                 } else {
-                    cfCollection[i].range = getRangeAddress(deleteFormatRange(args, cfRange));
+                    cfCollection[i as number].range = getRangeAddress(deleteFormatRange(args, cfRange));
                 }
             }
         }

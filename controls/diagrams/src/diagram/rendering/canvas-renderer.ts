@@ -54,8 +54,8 @@ export class CanvasRenderer implements IRenderer {
         let grd: CanvasGradient;
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                max = max !== undefined ? options.gradient.stops[i].offset : Math.max(max, options.gradient.stops[i].offset);
-                min = min !== undefined ? options.gradient.stops[i].offset : Math.min(min, options.gradient.stops[i].offset);
+                max = max !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
+                min = min !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
             }
             if (options.gradient.type === 'Linear') {
                 const linear: LinearGradientModel = options.gradient;
@@ -65,7 +65,7 @@ export class CanvasRenderer implements IRenderer {
                 grd = ctx.createRadialGradient(x + radial.fx, y + radial.fy, 0, x + radial.cx, y + radial.cy, radial.r);
             }
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                const stop: StopModel = options.gradient.stops[i];
+                const stop: StopModel = options.gradient.stops[parseInt(i.toString(), 10)];
                 const offset: number = min < 0 ? (max + stop.offset) / (2 * max) : stop.offset / max;
                 grd.addColorStop(offset, stop.color);
             }
@@ -353,7 +353,7 @@ export class CanvasRenderer implements IRenderer {
             let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
             let x: number; let y: number; let length: number; let i: number; const segs: Object[] = collection;
             for (x = 0, y = 0, i = 0, length = segs.length; i < length; ++i) {
-                const obj: Object = segs[i]; const seg: PathSegment = obj; const char: string = seg.command;
+                const obj: Object = segs[parseInt(i.toString(), 10)]; const seg: PathSegment = obj; const char: string = seg.command;
                 if ('x1' in seg) { x1 = seg.x1; }
                 if ('x2' in seg) { x2 = seg.x2; }
                 if ('y1' in seg) { y1 = seg.y1; }
@@ -490,7 +490,7 @@ export class CanvasRenderer implements IRenderer {
             if (wrapBounds) {
                 const position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
-                    const child: SubTextElement = childNodes[i];
+                    const child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
                     child.x = setChildPosition(child, childNodes, i, options);
                     const offsetX: number = position.x + (scaleValue ? child.x * scaleValue : child.x) - wrapBounds.x;
                     const offsetY: number = position.y + (scaleValue ? child.dy * scaleValue : child.dy) * i + ((options.fontSize) * 0.8);

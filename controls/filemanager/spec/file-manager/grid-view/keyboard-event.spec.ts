@@ -504,7 +504,9 @@ describe('FileManager control Grid view', () => {
             expect(li[li.length - 1].classList.contains('e-focused')).toBe(false);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
             keyboardEventArgs.action = 'csEnd';
+            // feObj.detailsviewModule.gridObj.selectRow(0);
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+            // feObj.detailsviewModule.gridObj.selectRow(null);
             expect(li[li.length - 1].classList.contains('e-focused')).toBe(true);
             expect(li[0].getAttribute('aria-selected')).toBe('true');
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');

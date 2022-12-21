@@ -25,8 +25,8 @@ export function wrapperInitialize(
         input = createElement('input', { attrs: { 'type': type } }) as HTMLInputElement;
         const props: string[] = ['change', 'cssClass', 'label', 'labelPosition', 'id'];
         for (let index: number = 0, len: number = element.attributes.length; index < len; index++) {
-            if (props.indexOf(element.attributes[index].nodeName) === -1) {
-                input.setAttribute(element.attributes[index].nodeName, element.attributes[index].nodeValue);
+            if (props.indexOf(element.attributes[index as number].nodeName) === -1) {
+                input.setAttribute(element.attributes[index as number].nodeName, element.attributes[index as number].nodeValue);
             }
         }
         attributes(element, { 'class': WRAPPER });
@@ -48,7 +48,7 @@ export function getTextNode(element: HTMLElement): Node {
     let node: Node;
     const childnode: NodeList = element.childNodes;
     for (let i: number = 0; i < childnode.length; i++) {
-        node = childnode[i];
+        node = childnode[i as number];
         if (node.nodeType === 3) {
             return node;
         }

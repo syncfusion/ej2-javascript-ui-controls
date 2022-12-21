@@ -67,7 +67,7 @@ export class DateFilterUI implements IFilterMUI {
                 args.column.filter.params)
             );
         }
-        this.datePickerObj.addEventListener(literals.open, this.dpOpen);
+        this.datePickerObj.addEventListener(literals['open'], this.dpOpen);
         this.datePickerObj.appendTo(this.inputElem);
     }
 
@@ -91,7 +91,7 @@ export class DateFilterUI implements IFilterMUI {
         this.parent.off(events.filterMenuClose, this.destroy);
         this.parent.off(events.destroy, this.destroy);
         if (isNullOrUndefined(this.datePickerObj) || this.datePickerObj.isDestroyed) { return; }
-        this.datePickerObj.removeEventListener(literals.open, this.dpOpen);
+        this.datePickerObj.removeEventListener(literals['open'], this.dpOpen);
         this.datePickerObj.destroy();
     }
 }

@@ -35,6 +35,7 @@ export class Animation extends ChildProperty<Animation> {
 
     /**
      * Allow the chart series gets animated on initial loading.
+     *
      * @default true
      */
     @Property(true)
@@ -42,6 +43,7 @@ export class Animation extends ChildProperty<Animation> {
 
     /**
      * Allows to set the duration of animation in milliseconds.
+     *
      * @default 1000
      */
     @Property(1000)
@@ -49,6 +51,7 @@ export class Animation extends ChildProperty<Animation> {
 
     /**
      * Allows to delay the animation of the chart series.
+     *
      * @default 0
      */
     @Property(0)
@@ -61,13 +64,15 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Allows to set the starting point of region.
+     *
      * @default null
      */
     @Property(null)
-    public value: Object;   /* eslint-disable-line */
+    public value: object;
 
     /**
      * Allows to set the color of a region.
+     *
      * @default null
      */
     @Property(null)
@@ -75,6 +80,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
     /**
      * Allows to set the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
     @Property('0')
@@ -94,6 +100,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to set the font style to the text in the chart.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -101,6 +108,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to set the font size to the text in the chart.
+     *
      * @default '16px'
      */
     @Property('16px')
@@ -108,6 +116,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to set the font weight to the text in the chart.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -115,6 +124,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to set color to the text in the chart.
+     *
      * @default ''
      */
     @Property('')
@@ -122,6 +132,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to set text alignment in the chart
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -129,12 +140,14 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to set font family to the text in the chart.
+     *
      */
     @Property('Segoe UI')
     public fontFamily: string;
 
     /**
      * Allows to set opacity to the text in the chart.
+     *
      * @default 1
      */
     @Property(1)
@@ -142,6 +155,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Allows to specify the chart title text overflow
+     *
      * @default 'Trim'
      */
     @Property('Trim')
@@ -155,6 +169,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Allows to set the left margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -162,6 +177,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Allows to set the right margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -169,6 +185,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Allows to set the top margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -176,6 +193,7 @@ export class Margin extends ChildProperty<Margin> {
 
     /**
      * Allows to set the bottom margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -192,6 +210,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -199,6 +218,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * Allows to set the width of the border in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -213,6 +233,7 @@ export class Offset extends ChildProperty<Offset> {
 
     /**
      * Allows to set the x(left) value of the marker position
+     *
      * @default 0
      */
     @Property(0)
@@ -220,6 +241,7 @@ export class Offset extends ChildProperty<Offset> {
 
     /**
      * Allows to set the y(top) value of the marker position
+     *
      * @default 0
      */
     @Property(0)
@@ -230,11 +252,13 @@ export class Offset extends ChildProperty<Offset> {
 /**
  * Allows you to highlight a specific point of the series while rendering the pivot chart.
  * For example, to highlight first point in the first series, set the properties series to 0 and points to 1. To use this option, it requires the property `selectionMode` to be **Point** or **Series**.
+ *
  * @public
  */
 export class Indexes extends ChildProperty<Indexes> {
     /**
      * Allows to specify the series index
+     *
      * @default 0
      * @aspType int
      */
@@ -243,6 +267,7 @@ export class Indexes extends ChildProperty<Indexes> {
 
     /**
      * Allows to specify the point index
+     *
      * @default 0
      * @aspType int
      */
@@ -265,6 +290,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
 
     /**
      * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -272,6 +298,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
 
     /**
      * Allows to set the opacity to the background of the chart area.
+     *
      * @default 1
      */
     @Property(1)
@@ -279,6 +306,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
 
     /**
      * Allows to set the background image of the chart area that accepts value in string as url link or location of an image.
+     *
      * @default null
      */
     @Property(null)
@@ -294,6 +322,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
 export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
     /**
      * Allows to show the crosshair lines in the chart.
+     *
      * @default false
      */
     @Property(false)
@@ -301,6 +330,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
 
     /**
      * Allows to set the pattern of dashes and gaps to crosshair.
+     *
      * @default ''
      */
     @Property('')
@@ -318,6 +348,7 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      * * Both: Shows both vertical and horizontal crosshair lines.
      * * Vertical: Shows the vertical line.
      * * Horizontal: Shows the horizontal line.
+     *
      * @default Both
      */
     @Property('Both')
@@ -333,6 +364,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set the visibility of data label to the series renders.
+     *
      * @default false
      */
     @Property(false)
@@ -340,6 +372,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set the data source field that contains the data label value.
+     *
      * @default null
      */
     @Property(null)
@@ -347,6 +380,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set the background color of the data label accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -354,6 +388,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set the opacity to the background.
+     *
      * @default 1
      */
     @Property(1)
@@ -361,6 +396,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to specify the rotation angle to data label.
+     *
      * @default 0
      */
     @Property(0)
@@ -368,6 +404,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set whether rotation to data label is enable or not.
+     *
      * @default false
      */
     @Property(false)
@@ -380,6 +417,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * * Bottom: Positions the label at the bottom of the point.
      * * Middle: Positions the label to the middle of the point.
      * * Auto: Positions the label based on series.
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -387,6 +425,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set the roundedCornerX for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -394,6 +433,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     /**
      * Allows to set the roundedCornerY for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -404,6 +444,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * * Near: Aligns the label to the left of the point.
      * * Center: Aligns the label to the center of the point.
      * * Far: Aligns the label to the right of the point.
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -430,6 +471,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     /**
      * Allows custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
+     *
      * @default null
      */
     @Property(null)
@@ -446,6 +488,7 @@ export class PivotChartConnectorStyle extends ChildProperty<PivotChartConnectorS
      * specifies the type of the connector line for pie, funnel, doughnut and pyramid chart. They are
      * * curve
      * * Line
+     *
      * @default 'Line'
      */
     @Property('Line')
@@ -453,6 +496,7 @@ export class PivotChartConnectorStyle extends ChildProperty<PivotChartConnectorS
 
     /**
      * Specifies the color of the connector line for pie, funnel, doughnut and pyramid chart.
+     *
      * @default null
      */
     @Property(null)
@@ -460,6 +504,7 @@ export class PivotChartConnectorStyle extends ChildProperty<PivotChartConnectorS
 
     /**
      * Width of the connector line in pixels for pie, funnel, doughnut and pyramid chart.
+     *
      * @default 1
      */
     @Property(1)
@@ -467,6 +512,7 @@ export class PivotChartConnectorStyle extends ChildProperty<PivotChartConnectorS
 
     /**
      * Length of the connector line in pixels for pie, funnel, doughnut and pyramid chart.
+     *
      * @default 'null'
      */
     @Property(null)
@@ -474,6 +520,7 @@ export class PivotChartConnectorStyle extends ChildProperty<PivotChartConnectorS
 
     /**
      * dashArray of the connector line for pie, funnel, doughnut and pyramid chart.
+     *
      * @default ''
      */
     @Property('')
@@ -487,14 +534,15 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows to set the visibility of data label to the series renders.
+     *
      * @default true
      */
     @Property(true)
     public visible: boolean;
 
     /**
-    * Allows to set the border to data labels.
-    */
+     * Allows to set the border to data labels.
+     */
     @Complex<PivotChartBorderModel>({ width: null, color: null }, Border)
     public border: PivotChartBorderModel;
 
@@ -506,6 +554,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows to set the background color of the data label accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -513,6 +562,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows to specify the rotation angle to data label.
+     *
      * @default 0
      */
     @Property(0)
@@ -520,6 +570,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows to set whether rotation to data label is enable or not.
+     *
      * @default false
      */
     @Property(false)
@@ -529,6 +580,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
      * Allows to specify the position of the data label. They are,
      * * Outside: Positions the label outside the point.
      * * Inside: Positions the label on top of the point.
+     *
      * @default 'Outside'
      */
     @Property('Outside')
@@ -536,6 +588,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows to set the roundedCornerX for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -543,6 +596,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows to set the roundedCornerY for the data label. It requires `border` values not to be null.
+     *
      * @default 5
      */
     @Property(5)
@@ -551,6 +605,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
     /**
      * Allows custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
      * text to display the corresponding data point.
+     *
      * @default null
      */
     @Property(null)
@@ -558,6 +613,7 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
 
     /**
      * Allows custom connector of the pie, funnel, pyramid and doughnut chart data label.
+     *
      * @default null
      */
     @Complex<PivotChartConnectorStyleModel>({}, PivotChartConnectorStyle)
@@ -572,6 +628,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     /**
      * Allows the visibility of the marker for chart series.
      * > This is applicable only for line and area type series.
+     *
      * @default false
      */
     @Property(false)
@@ -589,6 +646,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      * * Pentagon- Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * Image - Renders a image.
+     *
      * @default 'Circle'
      */
     @Property('Circle')
@@ -596,6 +654,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * Allows to set the URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+     *
      * @default ''
      */
     @Property('')
@@ -603,6 +662,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * Allows to set the width of the marker in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -610,6 +670,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * Allows to set the height of the marker in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -630,6 +691,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     /**
      *  Allows to set the fill color of the marker that accepts value in hex and rgba as a valid CSS color string.
      *  By default, it will take series' color.
+     *
      * @default null
      */
     @Property(null)
@@ -637,6 +699,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
      * Allows to set the opacity of the marker.
+     *
      * @default 1
      */
     @Property(1)
@@ -656,6 +719,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * Allows to set the width of the error bar in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -663,6 +727,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * Allows to set the length of the error bar in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -670,6 +735,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      *  Allows to set the stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -677,6 +743,7 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
     /**
      * Allows to set the opacity of the cap.
+     *
      * @default 1
      */
     @Property(1)
@@ -685,12 +752,14 @@ export class ErrorBarCapSettings extends ChildProperty<ErrorBarCapSettings> {
 
 /**
  * Allows options for customize the error bar chart with diffent settings such as type, direction, mode, color, width, etc.
+ *
  * @public
  */
 export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the visibility of the error bar gets rendered.
+     *
      * @default false
      */
     @Property(false)
@@ -703,6 +772,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * StandardDeviation - Renders a standard deviation type error bar.
      * * StandardError -Renders a standard error type error bar.
      * * Custom -Renders a custom type error bar.
+     *
      * @default 'Fixed'
      */
     @Property('Fixed')
@@ -713,6 +783,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * both -  Renders both direction of error bar.
      * * minus - Renders minus direction of error bar.
      * * plus - Renders plus direction error bar.
+     *
      * @default 'Both'
      */
     @Property('Both')
@@ -723,6 +794,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
      * * Both - Renders both side error bar.
+     *
      * @default 'Vertical'
      */
     @Property('Vertical')
@@ -730,6 +802,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the vertical error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -737,6 +810,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      *  Allows to set the color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -744,6 +818,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the stroke width of the error bar..
+     *
      * @default 1
      */
     @Property(1)
@@ -751,6 +826,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the horizontal error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -758,6 +834,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the vertical negative error of the error bar.
+     *
      * @default 3
      */
     @Property(3)
@@ -765,6 +842,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the vertical positive error of the error bar.
+     *
      * @default 3
      */
     @Property(3)
@@ -772,6 +850,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the horizontal negative error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -779,6 +858,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * Allows to set the horizontal positive error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -797,6 +877,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 export class Trendline extends ChildProperty<Trendline> {
     /**
      * Allows to set the name of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -804,6 +885,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
     @Property('0')
@@ -811,6 +893,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to specify the visibility of trendline.
+     *
      * @default true
      */
     @Property(true)
@@ -818,6 +901,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the period, the price changes over which will be considered to predict moving average trend line
+     *
      * @default 2
      */
     @Property(2)
@@ -825,6 +909,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the type of the trendline
+     *
      * @default 'Linear'
      */
     @Property('Linear')
@@ -832,6 +917,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the period, by which the trend has to backward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -839,6 +925,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the period, by which the trend has to forward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -846,6 +933,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the polynomial order of the polynomial trendline
+     *
      * @default 2
      */
     @Property(2)
@@ -853,6 +941,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows options to customize the marker for trendlines
+     *
      * @deprecated
      */
     @Complex<PivotChartMarkerSettingsModel>({}, MarkerSettings)
@@ -860,6 +949,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the visibility of the tooltip for trendlines
+     *
      * @default true
      */
     @Property(true)
@@ -873,6 +963,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the fill color of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -880,6 +971,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the width of the trendline
+     *
      * @default 1
      */
     @Property(1)
@@ -887,6 +979,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the intercept of the trendline
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -895,6 +988,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
     /**
      * Allows to set the legend shape of the trendline
+     *
      * @default 'SeriesType'
      */
     @Property('SeriesType')
@@ -908,6 +1002,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 
     /**
      * Allows you to customize the fill color of empty points.
+     *
      * @default null
      */
     @Property(null)
@@ -915,6 +1010,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 
     /**
      * Allows options to customize the border of empty points.
+     *
      * @default "{color: 'transparent', width: 0}"
      */
     @Complex<PivotChartBorderModel>({ color: 'transparent', width: 0 }, Border)
@@ -922,6 +1018,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 
     /**
      * Allows you To customize the mode of empty points.
+     *
      * @default Zero
      */
     @Property('Zero')
@@ -934,24 +1031,28 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 export class CornerRadius extends ChildProperty<CornerRadius> {
     /**
      * Allows to set the top left corner radius value
+     *
      * @default 0
      */
     @Property(0)
     public topLeft: number;
     /**
      * Allows to set the top right corner radius value
+     *
      * @default 0
      */
     @Property(0)
     public topRight: number;
     /**
      * Allows to set the bottom left corner radius value
+     *
      * @default 0
      */
     @Property(0)
     public bottomLeft: number;
     /**
      * Allows to set the bottom right corner radius value
+     *
      * @default 0
      */
     @Property(0)
@@ -965,6 +1066,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 
     /**
      * Allows to set the visibility of the crosshair tooltip.
+     *
      *  @default false
      */
     @Property(false)
@@ -972,6 +1074,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 
     /**
      * Allows to set the fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -992,6 +1095,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the visibility of the strip line for axis to be rendered.
+     *
      * @default true
      */
     @Property(true)
@@ -999,6 +1103,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      *  Allows the strip line to be rendered from axis origin.
+     *
      *  @default false
      */
     @Property(false)
@@ -1006,6 +1111,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the start value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1014,6 +1120,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the end value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1022,6 +1129,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the size of the strip line, when it starts from the origin.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1030,6 +1138,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the color of the strip line.
+     *
      * @default '#808080'
      */
     @Property('#808080')
@@ -1037,6 +1146,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the dash array of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1045,6 +1155,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the size type of the strip line
+     *
      * @default Auto
      */
     @Property('Auto')
@@ -1052,6 +1163,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set repeated value of the strip line.
+     *
      * @default false
      * @aspDefaultValueIgnore
      */
@@ -1060,6 +1172,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the repeatEvery value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1068,6 +1181,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the repeatUntil value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1076,6 +1190,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the isSegmented value of the strip line
+     *
      * @default false
      * @aspDefaultValueIgnore
      */
@@ -1084,6 +1199,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the segmentStart value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1092,6 +1208,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the segmentEnd value of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1100,6 +1217,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the segmentAxisName of the strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1114,6 +1232,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the strip line text.
+     *
      * @default ''
      */
     @Property('')
@@ -1121,6 +1240,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the angle to which the strip line text gets rotated.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1132,6 +1252,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     *
      * @default 'Middle'
      */
     @Property('Middle')
@@ -1142,6 +1263,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     *
      * @default 'Middle'
      */
     @Property('Middle')
@@ -1157,6 +1279,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * Allows to set the order of the strip line. They are,
      * * Behind: Places the strip line behind the series elements.
      * * Over: Places the strip line over the series elements.
+     *
      * @default 'Behind'
      */
     @Property('Behind')
@@ -1164,6 +1287,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
 
     /**
      * Allows to set the opacity of the strip line
+     *
      * @default 1
      */
     @Property(1)
@@ -1177,6 +1301,7 @@ export class LabelBorder extends ChildProperty<LabelBorder> {
 
     /**
      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -1184,6 +1309,7 @@ export class LabelBorder extends ChildProperty<LabelBorder> {
 
     /**
      * Allows to set the width of the border in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1197,6 +1323,7 @@ export class LabelBorder extends ChildProperty<LabelBorder> {
      * * Without Border
      * * Brace
      * * CurlyBrace
+     *
      * @default 'Rectangle'
      */
     @Property('Rectangle')
@@ -1211,6 +1338,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
     /**
      * Allows to set the width of the line in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1218,6 +1346,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
     /**
      * Allows to set the dash array of the grid lines.
+     *
      * @default ''
      */
     @Property('')
@@ -1225,6 +1354,7 @@ export class MajorGridLines extends ChildProperty<MajorGridLines> {
 
     /**
      * Allows to set the color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1237,6 +1367,7 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
     /**
      * Allows to set the width of the line in pixels.
+     *
      * @default 0.7
      */
     @Property(0.7)
@@ -1244,6 +1375,7 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
     /**
      * Allows to set the dash array of grid lines.
+     *
      * @default ''
      */
     @Property('')
@@ -1251,6 +1383,7 @@ export class MinorGridLines extends ChildProperty<MinorGridLines> {
 
     /**
      * Allows to set the color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1263,6 +1396,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
 
     /**
      * Allows to set the width of the line in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1270,6 +1404,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
 
     /**
      * Allows to set the dash array of the axis line.
+     *
      * @default ''
      */
     @Property('')
@@ -1277,6 +1412,7 @@ export class AxisLine extends ChildProperty<AxisLine> {
 
     /**
      * Allows to set the color of the axis line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1289,6 +1425,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
     /**
      * Allows to set the width of the tick lines in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1296,6 +1433,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
     /**
      * Allows to set the height of the ticks in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -1303,6 +1441,7 @@ export class MajorTickLines extends ChildProperty<MajorTickLines> {
 
     /**
      * Allows to set the color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1315,6 +1454,7 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
 
     /**
      * Allows to set the width of the tick line in pixels.
+     *
      * @default 0.7
      */
     @Property(0.7)
@@ -1322,6 +1462,7 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
 
     /**
      * Allows to set the height of the ticks in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -1329,6 +1470,7 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
 
     /**
      * Allows to set the color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1342,6 +1484,7 @@ export class ChartLocation extends ChildProperty<ChartLocation> {
 
     /**
      * Allows to set the x(left) value of the legend position
+     *
      * @default 0
      */
     @Property(0)
@@ -1349,6 +1492,7 @@ export class ChartLocation extends ChildProperty<ChartLocation> {
 
     /**
      * Allows to set the y(top) value of the legend position
+     *
      * @default 0
      */
     @Property(0)
@@ -1363,6 +1507,7 @@ export class ChartLocation extends ChildProperty<ChartLocation> {
 export class PivotChartSeriesBorder {
     /**
      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -1370,6 +1515,7 @@ export class PivotChartSeriesBorder {
 
     /**
      * Allows to set the width of the border in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1381,6 +1527,7 @@ export class PivotChartSeriesBorder {
 export class PivotChartSeriesAnimation {
     /**
      * Allows to set the visibility of the series to be animated on initial loading.
+     *
      * @default true
      */
     @Property(true)
@@ -1388,6 +1535,7 @@ export class PivotChartSeriesAnimation {
 
     /**
      * Allows to set the duration of animation in milliseconds.
+     *
      * @default 1000
      */
     @Property(1000)
@@ -1395,6 +1543,7 @@ export class PivotChartSeriesAnimation {
 
     /**
      * Allows to set the option to delay animation of the series.
+     *
      * @default 0
      */
     @Property(0)
@@ -1406,13 +1555,15 @@ export class PivotChartSeriesAnimation {
 export class PivotChartSeriesSegment {
     /**
      * Allows to set the starting point of region.
+     *
      * @default null
      */
     @Property(null)
-    public value: Object;   /* eslint-disable-line */
+    public value: object;
 
     /**
      * Allows to set the color of a region.
+     *
      * @default null
      */
     @Property(null)
@@ -1420,6 +1571,7 @@ export class PivotChartSeriesSegment {
 
     /**
      * Allows to set the pattern of dashes and gaps to stroke.
+     *
      * @default '0'
      */
     @Property('0')
@@ -1437,6 +1589,7 @@ export class PivotChartSeriesSegment {
 export class PivotChartSeriesMarkerSettings {
     /**
      * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     *
      * @default false
      */
     @Property(false)
@@ -1454,6 +1607,7 @@ export class PivotChartSeriesMarkerSettings {
      * * pentagon- Renders the marker shaper as pentagon.
      * * invertedTriangle - Renders the marker shaper as invertedTriangle.
      * * image - Renders the marker shaper as image.
+     *
      * @default 'Circle'
      */
     @Property('Circle')
@@ -1462,6 +1616,7 @@ export class PivotChartSeriesMarkerSettings {
 
     /**
      * Allows to set the URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+     *
      * @default ''
      */
     @Property('')
@@ -1469,6 +1624,7 @@ export class PivotChartSeriesMarkerSettings {
 
     /**
      * Allows to set the height of the marker in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -1476,6 +1632,7 @@ export class PivotChartSeriesMarkerSettings {
 
     /**
      * Allows to set the width of the marker in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -1490,6 +1647,7 @@ export class PivotChartSeriesMarkerSettings {
     /**
      * Allows to set the fill color of the marker that accepts value in hex and rgba as a valid CSS color string.
      * By default, it will take series' color.
+     *
      * @default null
      */
     @Property(null)
@@ -1497,6 +1655,7 @@ export class PivotChartSeriesMarkerSettings {
 
     /**
      * Allows to set the opacity of the marker.
+     *
      * @default 1
      */
     @Property(1)
@@ -1514,6 +1673,7 @@ export class PivotChartSeriesMarkerSettings {
 export class PivotChartSeriesErrorSettings {
     /**
      * If set true, error bar for data gets rendered.
+     *
      * @default false
      */
     @Property(false)
@@ -1526,6 +1686,7 @@ export class PivotChartSeriesErrorSettings {
      * * StandardDeviation - Renders a standard deviation type error bar.
      * * StandardError -Renders a standard error type error bar.
      * * Custom -Renders a custom type error bar.
+     *
      * @default 'Fixed'
      */
     @Property('Fixed')
@@ -1536,6 +1697,7 @@ export class PivotChartSeriesErrorSettings {
      * * both -  Renders both direction of error bar.
      * * minus - Renders minus direction of error bar.
      * * plus - Renders plus direction error bar.
+     *
      * @default 'Both'
      */
     @Property('Both')
@@ -1546,6 +1708,7 @@ export class PivotChartSeriesErrorSettings {
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
      * * Both - Renders both side error bar.
+     *
      * @default 'Vertical'
      */
     @Property('Vertical')
@@ -1553,6 +1716,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      *  Allows to set the color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1560,6 +1724,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the vertical error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -1567,6 +1732,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the stroke width of the error bar..
+     *
      * @default 1
      */
     @Property(1)
@@ -1574,6 +1740,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the horizontal error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -1581,6 +1748,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the vertical positive error of the error bar.
+     *
      * @default 3
      */
     @Property(3)
@@ -1588,6 +1756,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the vertical negative error of the error bar.
+     *
      * @default 3
      */
     @Property(3)
@@ -1595,6 +1764,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the horizontal positive error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -1602,6 +1772,7 @@ export class PivotChartSeriesErrorSettings {
 
     /**
      * Allows to set the horizontal negative error of the error bar.
+     *
      * @default 1
      */
     @Property(1)
@@ -1619,6 +1790,7 @@ export class PivotChartSeriesErrorSettings {
 export class PivotChartSeriesTrendline {
     /**
      * Allows to set the name of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -1626,6 +1798,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the type of the trendline
+     *
      * @default 'Linear'
      */
     @Property('Linear')
@@ -1633,6 +1806,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the period, the price changes over which will be considered to predict moving average trend line
+     *
      * @default 2
      */
     @Property(2)
@@ -1640,6 +1814,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the polynomial order of the polynomial trendline
+     *
      * @default 2
      */
     @Property(2)
@@ -1647,6 +1822,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the period, by which the trend has to backward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -1654,6 +1830,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the period, by which the trend has to forward forecast
+     *
      * @default 0
      */
     @Property(0)
@@ -1673,6 +1850,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Enables/disables tooltip for trendlines
+     *
      * @default true
      */
     @Property(true)
@@ -1681,6 +1859,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the intercept of the trendline
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -1689,6 +1868,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the fill color of trendline
+     *
      * @default ''
      */
     @Property('')
@@ -1696,6 +1876,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the width of the trendline
+     *
      * @default 1
      */
     @Property(1)
@@ -1703,6 +1884,7 @@ export class PivotChartSeriesTrendline {
 
     /**
      * Allows to set the legend shape of the trendline
+     *
      * @default 'SeriesType'
      */
     @Property('SeriesType')
@@ -1714,6 +1896,7 @@ export class PivotChartSeriesTrendline {
 export class PivotChartSeriesEmptyPointSettings {
     /**
      * Allows to customize the fill color of empty points.
+     *
      * @default null
      */
     @Property(null)
@@ -1721,6 +1904,7 @@ export class PivotChartSeriesEmptyPointSettings {
 
     /**
      * Allows options to customize the border of empty points.
+     *
      * @default "{color: 'transparent', width: 0}"
      */
     @Complex<PivotChartBorderModel>({ color: 'transparent', width: 0 }, Border)
@@ -1728,6 +1912,7 @@ export class PivotChartSeriesEmptyPointSettings {
 
     /**
      * To customize the mode of empty points.
+     *
      * @default Zero
      */
     @Property('Zero')
@@ -1739,6 +1924,7 @@ export class PivotChartSeriesEmptyPointSettings {
 export class PivotChartSeriesCornerRadius {
     /**
      * Allows to set the top left corner radius value
+     *
      * @default 0
      */
     @Property(0)
@@ -1746,6 +1932,7 @@ export class PivotChartSeriesCornerRadius {
 
     /**
      * Allows to set the top right corner radius value
+     *
      * @default 0
      */
     @Property(0)
@@ -1753,6 +1940,7 @@ export class PivotChartSeriesCornerRadius {
 
     /**
      * Allows to set the bottom left corner radius value
+     *
      * @default 0
      */
     @Property(0)
@@ -1760,6 +1948,7 @@ export class PivotChartSeriesCornerRadius {
 
     /**
      * Allows to set the bottom right corner radius value
+     *
      * @default 0
      */
     @Property(0)
@@ -1772,6 +1961,7 @@ export class PivotChartSeriesCornerRadius {
 export class PivotChartAxisFont {
     /**
      * Allows to set the font style for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -1779,6 +1969,7 @@ export class PivotChartAxisFont {
 
     /**
      * Allows to set the font size for the text.
+     *
      * @default '16px'
      */
     @Property('16px')
@@ -1786,6 +1977,7 @@ export class PivotChartAxisFont {
 
     /**
      * Allows to set the font weight for the text.
+     *
      * @default 'Normal'
      */
     @Property('Normal')
@@ -1793,6 +1985,7 @@ export class PivotChartAxisFont {
 
     /**
      * Allows to set the color for the text.
+     *
      * @default ''
      */
     @Property('')
@@ -1800,6 +1993,7 @@ export class PivotChartAxisFont {
 
     /**
      * Allows to set the text alignment
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -1813,6 +2007,7 @@ export class PivotChartAxisFont {
 
     /**
      * Allows to set the opacity for the text.
+     *
      * @default 1
      */
     @Property(1)
@@ -1820,6 +2015,7 @@ export class PivotChartAxisFont {
 
     /**
      * Allows to set the chart title text overflow
+     *
      * @default 'Trim'
      */
     @Property('Trim')
@@ -1831,6 +2027,7 @@ export class PivotChartAxisFont {
 export class PivotChartAxisCrosshairTooltip {
     /**
      * If set to true, crosshair ToolTip will be visible.
+     *
      *  @default false
      */
     @Property(false)
@@ -1838,6 +2035,7 @@ export class PivotChartAxisCrosshairTooltip {
 
     /**
      * Allows to set the fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1855,6 +2053,7 @@ export class PivotChartAxisCrosshairTooltip {
 export class PivotChartAxisMajorTickLines {
     /**
      * Allows to set the width of the tick lines in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1862,6 +2061,7 @@ export class PivotChartAxisMajorTickLines {
 
     /**
      * Allows to set the height of the ticks in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -1869,6 +2069,7 @@ export class PivotChartAxisMajorTickLines {
 
     /**
      * Allows to set the color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1880,6 +2081,7 @@ export class PivotChartAxisMajorTickLines {
 export class PivotChartAxisMajorGridLines {
     /**
      * Allows to set the width of the line in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1887,6 +2089,7 @@ export class PivotChartAxisMajorGridLines {
 
     /**
      * Allows to set the dash array of the grid lines.
+     *
      * @default ''
      */
     @Property('')
@@ -1894,6 +2097,7 @@ export class PivotChartAxisMajorGridLines {
 
     /**
      * Allows to set the color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1905,6 +2109,7 @@ export class PivotChartAxisMajorGridLines {
 export class PivotChartAxisMinorTickLines {
     /**
      * Allows to set the width of the tick line in pixels.
+     *
      * @default 0.7
      */
     @Property(0.7)
@@ -1912,6 +2117,7 @@ export class PivotChartAxisMinorTickLines {
 
     /**
      * Allows to set the height of the ticks in pixels.
+     *
      * @default 5
      */
     @Property(5)
@@ -1919,6 +2125,7 @@ export class PivotChartAxisMinorTickLines {
 
     /**
      * Allows to set the color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1930,6 +2137,7 @@ export class PivotChartAxisMinorTickLines {
 export class PivotChartAxisMinorGridLines {
     /**
      * Allows to set the width of the line in pixels.
+     *
      * @default 0.7
      */
     @Property(0.7)
@@ -1937,6 +2145,7 @@ export class PivotChartAxisMinorGridLines {
 
     /**
      * Allows to set the dash array of grid lines.
+     *
      * @default ''
      */
     @Property('')
@@ -1944,6 +2153,7 @@ export class PivotChartAxisMinorGridLines {
 
     /**
      * Allows to set the color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1955,6 +2165,7 @@ export class PivotChartAxisMinorGridLines {
 export class PivotChartAxisAxisLine {
     /**
      * Allows to set the width of the line in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -1962,6 +2173,7 @@ export class PivotChartAxisAxisLine {
 
     /**
      * Allows to set the dash array of the axis line.
+     *
      * @default ''
      */
     @Property('')
@@ -1969,6 +2181,7 @@ export class PivotChartAxisAxisLine {
 
     /**
      * Allows to set the color of the axis line that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -1980,6 +2193,7 @@ export class PivotChartAxisAxisLine {
 export class PivotChartAxisStripLineSettings {
     /**
      * If set true, strip line for pivot chart axis renders.
+     *
      * @default true
      */
     @Property(true)
@@ -1987,6 +2201,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      *  If set true, strip line get render from  pivot chart axis origin.
+     *
      *  @default false
      */
     @Property(false)
@@ -1994,6 +2209,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the start value of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2002,6 +2218,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the end value of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2010,6 +2227,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the size of the pivot chart strip line, when it starts from the origin.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2018,6 +2236,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the color of the pivot chart strip line.
+     *
      * @default '#808080'
      */
     @Property('#808080')
@@ -2025,6 +2244,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the dash Array of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2033,6 +2253,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the size type of the pivot chart strip line
+     *
      * @default Auto
      */
     @Property('Auto')
@@ -2040,6 +2261,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the isRepeat value of the pivot chart strip line.
+     *
      * @default false
      * @aspDefaultValueIgnore
      */
@@ -2048,6 +2270,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the repeatEvery value of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2056,6 +2279,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the repeatUntil value of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2064,6 +2288,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the isSegmented value of the pivot chart strip line
+     *
      * @default false
      * @aspDefaultValueIgnore
      */
@@ -2072,6 +2297,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the segmentStart value of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2080,6 +2306,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the segmentEnd value of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2088,6 +2315,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the segmentAxisName of the pivot chart strip line.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2102,6 +2330,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the strip line text.
+     *
      * @default ''
      */
     @Property('')
@@ -2109,6 +2338,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Allows to set the angle to which the strip line text gets rotated.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2120,6 +2350,7 @@ export class PivotChartAxisStripLineSettings {
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     *
      * @default 'Middle'
      */
     @Property('Middle')
@@ -2130,6 +2361,7 @@ export class PivotChartAxisStripLineSettings {
      * * Start: Places the strip line text at the start.
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
+     *
      * @default 'Middle'
      */
     @Property('Middle')
@@ -2145,6 +2377,7 @@ export class PivotChartAxisStripLineSettings {
      * Allows to set the order of the strip line. They are,
      * * Behind: Places the strip line behind the series elements.
      * * Over: Places the strip line over the series elements.
+     *
      * @default 'Behind'
      */
     @Property('Behind')
@@ -2152,6 +2385,7 @@ export class PivotChartAxisStripLineSettings {
 
     /**
      * Strip line Opacity
+     *
      * @default 1
      */
     @Property(1)
@@ -2163,6 +2397,7 @@ export class PivotChartAxisStripLineSettings {
 export class PivotChartAxisLabelBorder {
     /**
      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default ''
      */
     @Property('')
@@ -2170,6 +2405,7 @@ export class PivotChartAxisLabelBorder {
 
     /**
      * Allows to set the width of the border in pixels.
+     *
      * @default 1
      */
     @Property(1)
@@ -2183,6 +2419,7 @@ export class PivotChartAxisLabelBorder {
      * * Without Border
      * * Brace
      * * CurlyBrace
+     *
      * @default 'Rectangle'
      */
     @Property('Rectangle')
@@ -2202,6 +2439,7 @@ export class PivotChartSettingsChartArea {
 
     /**
      * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -2209,6 +2447,7 @@ export class PivotChartSettingsChartArea {
 
     /**
      * Allows to set the opacity for background.
+     *
      * @default 1
      */
     @Property(1)
@@ -2221,6 +2460,7 @@ export class PivotChartSettingsChartArea {
 export class PivotChartSettingsCrosshairSettings {
     /**
      * If set to true, crosshair line becomes visible.
+     *
      * @default false
      */
     @Property(false)
@@ -2228,6 +2468,7 @@ export class PivotChartSettingsCrosshairSettings {
 
     /**
      * Allows to set the DashArray for crosshair.
+     *
      * @default ''
      */
     @Property('')
@@ -2245,6 +2486,7 @@ export class PivotChartSettingsCrosshairSettings {
      * * Both: Shows both vertical and horizontal crosshair lines.
      * * Vertical: Shows the vertical line.
      * * Horizontal: Shows the horizontal line.
+     *
      * @default Both
      */
     @Property('Both')
@@ -2257,6 +2499,7 @@ export class PivotChartSettingsCrosshairSettings {
 export class PivotChartSettingsLegendSettings {
     /**
      * If set to true, legend will be visible.
+     *
      * @default true
      */
     @Property(true)
@@ -2264,6 +2507,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the height of the legend in pixels.
+     *
      * @default null
      */
     @Property(null)
@@ -2271,6 +2515,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the width of the legend in pixels.
+     *
      * @default null
      */
     @Property(null)
@@ -2306,6 +2551,7 @@ export class PivotChartSettingsLegendSettings {
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
      * * Custom: Displays the legend  based on the given x and y values.
+     *
      * @default 'Auto'
      */
     @Property('Auto')
@@ -2313,6 +2559,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows option to customize the padding between legend items.
+     *
      * @default 8
      */
     @Property(8)
@@ -2323,6 +2570,7 @@ export class PivotChartSettingsLegendSettings {
      * * Near: Aligns the legend to the left of the chart.
      * * Center: Aligns the legend to the center of the chart.
      * * Far: Aligns the legend to the right of the chart.
+     *
      * @default 'Center'
      */
     @Property('Center')
@@ -2336,6 +2584,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the shape height of the legend in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -2343,6 +2592,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the shape width of the legend in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -2362,6 +2612,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the padding between the legend shape and text.
+     *
      * @default 5
      */
     @Property(5)
@@ -2369,6 +2620,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the background color of the legend that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -2376,6 +2628,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the opacity of the legend.
+     *
      * @default 1
      */
     @Property(1)
@@ -2383,6 +2636,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * If set to true, series' visibility collapses based on the legend visibility.
+     *
      * @default true
      */
     @Property(true)
@@ -2390,6 +2644,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the description for legends.
+     *
      * @default null
      */
     @Property(null)
@@ -2397,6 +2652,7 @@ export class PivotChartSettingsLegendSettings {
 
     /**
      * Allows to set the tabindex value for the legend.
+     *
      * @default 3
      */
     @Property(3)
@@ -2409,6 +2665,7 @@ export class PivotChartSettingsLegendSettings {
 export class PivotChartSettingsIndexes {
     /**
      * Allows to set the series index
+     *
      * @default 0
      * @aspType int
      */
@@ -2417,6 +2674,7 @@ export class PivotChartSettingsIndexes {
 
     /**
      * Allows to set the point index
+     *
      * @default 0
      * @aspType int
      */
@@ -2429,6 +2687,7 @@ export class PivotChartSettingsIndexes {
 export class PivotChartSettingsMargin {
     /**
      * Allows to set the left margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -2436,6 +2695,7 @@ export class PivotChartSettingsMargin {
 
     /**
      * Allows to set the right margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -2443,6 +2703,7 @@ export class PivotChartSettingsMargin {
 
     /**
      * Allows to set the top margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -2450,6 +2711,7 @@ export class PivotChartSettingsMargin {
 
     /**
      * Allows to set the bottom margin in pixels.
+     *
      * @default 10
      */
     @Property(10)
@@ -2465,6 +2727,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the fill color for the series that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -2472,6 +2735,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the end angle for the pie and doughnut chart series.
+     *
      * @default null
      */
     @Property(null)
@@ -2479,6 +2743,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to enable or disable series point explode on mouse click or touch for pie, funnel, doughnut and pyramid chart.
+     *
      * @default false
      */
     @Property(false)
@@ -2486,6 +2751,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to enable or disable all series point explode on mouse click or touch for  pie, funnel, doughnut and pyramid chart.
+     *
      * @default false
      */
     @Property(false)
@@ -2493,6 +2759,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set Index of the point to be exploded on load for pie, funnel, doughnut and pyramid chart.
+     *
      * @default null
      */
     @Property(null)
@@ -2500,6 +2767,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set inner radius for pie and doughnut series chart.
+     *
      * @default null
      */
     @Property(null)
@@ -2508,6 +2776,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
     /**
      * Allows to set distance of the point from the center, which takes values in both pixels and
      * percentage for pie, funnel, doughnut and pyramid chart.
+     *
      * @default "30%"
      */
     @Property('30%')
@@ -2515,6 +2784,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the distance between the segments of a funnel/pyramid series. The range will be from 0 to 1.
+     *
      * @default 0
      */
     @Property(0)
@@ -2522,6 +2792,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to define the mode of grouping for pie, funnel, doughnut and pyramid chart series.
+     *
      * @default "Value"
      */
     @Property('Value')
@@ -2529,6 +2800,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to combine the y values into slice named other for  pie, funnel, doughnut and pyramid chart Series.
+     *
      * @default null
      */
     @Property(null)
@@ -2536,6 +2808,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to defines the height of the funnel chart neck with respect to the chart area.
+     *
      * @default "20%"
      */
     @Property('20%')
@@ -2543,6 +2816,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to defines the width of the funnel chart neck with respect to the chart area.
+     *
      * @default "20%"
      */
     @Property('20%')
@@ -2550,6 +2824,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Defines how the values have to be reflected, whether through height/surface of the segments in pyramid series.
+     *
      * @default 'Linear'
      */
     @Property('Linear')
@@ -2557,6 +2832,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows you to draw the chart series points with custom color for the pie, funnel, doughnut and pyramid chart types.
+     *
      * @default []
      */
     @Property([])
@@ -2564,6 +2840,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to defines start angle for the pie, funnel, doughnut and pyramid chart series.
+     *
      * @default 0
      */
     @Property(0)
@@ -2571,6 +2848,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows options to customizing animation for the series.
+     *
      * @default null
      */
     @Complex<PivotChartAnimationModel>(null, Animation)
@@ -2578,6 +2856,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows options to customize data label for the pie, funnel, pyramid, doughnut chart series.
+     *
      * @default null
      */
     @Complex<PivotChartDataLabelModel>(null, PivotChartDataLabel)
@@ -2585,6 +2864,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the pattern of dashes and gaps to stroke the lines in `Line` type series.
+     *
      * @default '0'
      */
     @Property('0')
@@ -2592,6 +2872,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the stroke width for the series that is applicable only for `Line` type series.
+     *
      * @default 1
      */
     @Property(1)
@@ -2615,6 +2896,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      *  'StackingArea'
      *  'RangeColumn'
      *  'SplineArea'
+     *
      * @default 'Line'
      */
     @Property('Line')
@@ -2622,6 +2904,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Specifies whether to join start and end point of a line/area series used in polar/radar chart to form a closed path.
+     *
      * @default true
      */
     @Property(true)
@@ -2637,6 +2920,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      * This allows grouping the chart series in `stacked column / bar` charts.
      * Any string value can be provided to the stackingGroup property.
      * If any two or above series have the same value, those series will be grouped together.
+     *
      * @default ''
      */
     @Property('')
@@ -2650,6 +2934,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the visibility of series.
+     *
      * @default true
      */
     @Property(true)
@@ -2657,6 +2942,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the opacity of the series.
+     *
      * @default 1
      */
     @Property(1)
@@ -2685,6 +2971,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      * * StackingLine100
      * * Polar
      * * Radar
+     *
      * @default 'Line'
      */
     @Property('Line')
@@ -2704,6 +2991,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * If set true, the Tooltip for series will be visible.
+     *
      * @default true
      */
     @Property(true)
@@ -2717,6 +3005,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the provided value will be considered as a Tooltip name
+     *
      * @default ''
      */
     @Property('')
@@ -2734,6 +3023,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
      * * Diamond
      * * Cross
      * * HorizontalLine
+     *
      * @default 'SeriesType'
      */
     @Property('SeriesType')
@@ -2741,6 +3031,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the minimum radius.
+     *
      * @default 1
      */
     @Property(1)
@@ -2748,6 +3039,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the custom style for the selected series or points.
+     *
      * @default null
      */
     @Property(null)
@@ -2755,6 +3047,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the type of spline to be rendered.
+     *
      * @default 'Natural'
      */
     @Property('Natural')
@@ -2762,6 +3055,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the maximum radius.
+     *
      * @default 3
      */
     @Property(3)
@@ -2769,6 +3063,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the tension of cardinal spline types
+     *
      * @default 0.5
      */
     @Property(0.5)
@@ -2776,6 +3071,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to render the column series points with particular column width.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2796,6 +3092,7 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to render the column series points with particular column spacing. It takes value from 0 - 1.
+     *
      * @default 0
      */
     @Property(0)
@@ -2815,6 +3112,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      * * Rotate90: Rotates the label to 90 degree when it intersects.
      * * None: Shows all the labels.
      * * Hide: Hides the label when it intersects.
+     *
      * @default Rotate45
      */
     @Property('Rotate45')
@@ -2828,6 +3126,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the title of an axis.
+     *
      * @default ''
      */
     @Property('')
@@ -2835,6 +3134,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to scale the axis by this value. When zoomFactor is 0.5, the chart is scaled by 200% along this axis. Value ranges from 0 to 1.
+     *
      * @default null
      */
     @Property(null)
@@ -2849,6 +3149,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
     /**
      * It used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
+     *
      * @default ''
      */
     @Property('')
@@ -2862,6 +3163,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to specify the indexed category to the axis.
+     *
      * @default false
      */
     @Property(false)
@@ -2869,6 +3171,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the left and right padding for the plot area in pixels.
+     *
      * @default 0
      */
     @Property(0)
@@ -2879,6 +3182,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      * * Shift: Shifts the edge labels.
      * * None: No action will be performed.
      * * Hide: Edge label will be hidden.
+     *
      * @default 'Shift'
      */
     @Property('Shift')
@@ -2888,6 +3192,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      * Allows to set the placement of a label for category axis. They are,
      * * onTicks: Renders the label on the ticks.
      * * betweenTicks: Renders the label between the ticks.
+     *
      * @default 'BetweenTicks'
      */
     @Property('BetweenTicks')
@@ -2897,6 +3202,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      * Allows to set the placement of a ticks to the axis line. They are,
      * * outside: Renders the ticks outside to the axis line.
      * * inside: Renders the ticks inside to the axis line.
+     *
      * @default 'Outside'
      */
     @Property('Outside')
@@ -2904,6 +3210,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
+     *
      * @default false
      */
     @Property(false)
@@ -2911,6 +3218,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * If set to true, axis label will be visible.
+     *
      * @default true
      */
     @Property(true)
@@ -2920,6 +3228,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
      * Allows to set the placement of a labels to the axis line. They are,
      * * outside: Renders the labels outside to the axis line.
      * * inside: Renders the labels inside to the axis line.
+     *
      * @default 'Outside'
      */
     @Property('Outside')
@@ -2927,6 +3236,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the angle to which the axis label gets rotated.
+     *
      * @default 0
      */
     @Property(0)
@@ -2934,6 +3244,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the number of minor ticks per interval.
+     *
      * @default 0
      */
     @Property(0)
@@ -2941,20 +3252,23 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the maximum range of an axis.
+     *
      * @default null
      */
     @Property(null)
-    public maximum: Object; /* eslint-disable-line */
+    public maximum: object;
 
     /**
      * Allows to set the minimum range of an axis.
+     *
      * @default null
      */
     @Property(null)
-    public minimum: Object; /* eslint-disable-line */
+    public minimum: object;
 
     /**
      * Allows to set the maximum width of an axis label.
+     *
      * @default 34.
      */
     @Property(34)
@@ -2962,6 +3276,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the interval for an axis.
+     *
      * @default null
      * @aspDefaultValueIgnore
      */
@@ -2976,6 +3291,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the Trim property for an axis.
+     *
      * @default false
      */
     @Property(false)
@@ -3007,6 +3323,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to specify whether the axis to be rendered in inversed manner or not.
+     *
      * @default false
      */
     @Property(false)
@@ -3014,6 +3331,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the description for axis and its element.
+     *
      * @default null
      */
     @Property(null)
@@ -3021,6 +3339,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the start angle for the series.
+     *
      * @default 0
      */
     @Property(0)
@@ -3028,6 +3347,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the polar radar radius position.
+     *
      * @default 100
      */
     @Property(100)
@@ -3041,6 +3361,7 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
 
     /**
      * Allows to set the tabindex value for the axis.
+     *
      * @default 2
      */
     @Property(2)
@@ -3064,6 +3385,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the visibility of the marker.
+     *
      * @default false.
      */
     @Property(false)
@@ -3071,6 +3393,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the visibility of the tooltip.
+     *
      * @default true.
      */
     @Property(true)
@@ -3078,6 +3401,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default null
      */
     @Property(null)
@@ -3085,6 +3409,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * If set to true, a single ToolTip will be displayed for every index.
+     *
      * @default false.
      */
     @Property(false)
@@ -3092,6 +3417,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
      * @default 0.75
      */
     @Property(0.75)
@@ -3099,6 +3425,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the header for tooltip.
+     *
      * @default null
      */
     @Property(null)
@@ -3106,6 +3433,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the format the ToolTip content.
+     *
      * @default null.
      */
     @Property(null)
@@ -3119,6 +3447,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * Allows to set the custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     *
      * @default null.
      */
     @Property(null)
@@ -3132,6 +3461,7 @@ export class PivotTooltipSettings extends ChildProperty<PivotTooltipSettings> {
 
     /**
      * If set to true, ToolTip will animate while moving from one point to another.
+     *
      * @default true.
      */
     @Property(true)
@@ -3145,6 +3475,7 @@ export class PivotPieChartCenter extends ChildProperty<PivotPieChartCenter> {
 
     /**
      * X value of the center.
+     *
      * @default "50%"
      */
     @Property('50%')
@@ -3152,6 +3483,7 @@ export class PivotPieChartCenter extends ChildProperty<PivotPieChartCenter> {
 
     /**
      * Y value of the center.
+     *
      * @default "50%"
      */
     @Property('50%')
@@ -3166,6 +3498,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * If to true, chart can be pinched to zoom in / zoom out.
+     *
      * @default false
      */
     @Property(false)
@@ -3173,6 +3506,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * If set to true, chart can be zoomed by a rectangular selecting region on the plot area.
+     *
      * @default true
      */
     @Property(true)
@@ -3186,6 +3520,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
      *      enableDeferredZooming: false
      *    }
      * ...
+     *
      * @default false
      */
     @Property(false)
@@ -3193,6 +3528,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * If set to true, chart can be zoomed by using mouse wheel.
+     *
      * @default false
      */
     @Property(false)
@@ -3211,6 +3547,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
      *      mode: 'XY'
      *    }
      * ...
+     *
      * @default 'XY'
      */
     @Property('XY')
@@ -3223,6 +3560,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
      * * Pan
      * * Zoom
      * * Reset
+     *
      * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
      */
     @Property(['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset'])
@@ -3230,6 +3568,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * Specifies whether axis needs to have scrollbar.
+     *
      * @default true.
      */
     @Property(true)
@@ -3237,6 +3576,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * Specifies whether chart needs to be panned by default.
+     *
      * @default false.
      */
     @Property(false)
@@ -3321,6 +3661,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to draw a pivot chart with a specific value field during initial loading.
+     *
      * @default ''
      */
     @Property('')
@@ -3329,6 +3670,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allows to specify the column whose values will be considered to draw the pivot chart. The is applicable
      * for pie, doughnut, funnel and pyramid chart types.
+     *
      * @default ''
      */
     @Property('')
@@ -3337,6 +3679,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allows to specify the delimiter to split the column headers. The is applicable for pie, doughnut,
      * funnel and pyramid chart types.
+     *
      * @default '-'
      */
     @Property('-')
@@ -3345,16 +3688,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * It allows you to draw a pivot chart with multiple value fields as a single or stacked chart area.
      * Use the `multipleAxisMode` enum options, either **Stacked** or **Single**, to show the chart area as either stacked or single based on value fields.
-     * > The `enableMultiAxis` property is deprecated and will no longer be used. Use `enableMultipleAxis` with  to achieve the same.
-     * @default false
-     * @deprecated
-     */
-    @Property(false)
-    public enableMultiAxis: boolean;
-
-    /**
-     * It allows you to draw a pivot chart with multiple value fields as a single or stacked chart area.
-     * Use the `multipleAxisMode` enum options, either **Stacked** or **Single**, to show the chart area as either stacked or single based on value fields.
+     *
      * @default false
      */
     @Property(false)
@@ -3365,6 +3699,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      * The options available are:
      * * Stacked: Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
      * * Single: Allows the chart series to be displayed in a single chart area for different value fields.
+     *
      * @default 'Stacked'
      */
     @Property('Stacked')
@@ -3372,18 +3707,31 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Enable or disable scroll bar while multiple axis.
+     *
      * @default false
      */
     @Property(false)
     public enableScrollOnMultiAxis: boolean;
 
     /**
-    * Allows to display chart series in accordance with member name in all chart area.
-    * > It is applicable only when `enableMultipleAxis` property is set to **true**.
-    * @default false
-    */
+     * Allows to display chart series in accordance with member name in all chart area.
+     * > It is applicable only when `enableMultipleAxis` property is set to **true**.
+     * > The `showMemberSeries` property is deprecated and will no longer be used. Use `showPointColorByMembers` with  to achieve the same.
+     *
+     * @default false
+     * @deprecated
+     */
     @Property(false)
     public showMemberSeries: boolean;
+
+    /**
+     * Allows to display data points in different colors in multiple charts. The multiple charts are actually drawn as a result of the "n" of measures bound in the datasource.
+     * > It is only applicable when the `enableMultipleAxis` property is enabled and the `multipleAxisMode` property is set to **Stacked**.
+     *
+     * @default false
+     */
+    @Property(false)
+    public showPointColorByMembers: boolean;
 
     /**
      * Allow options to customize the title in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
@@ -3393,6 +3741,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to add title to the pivot chart.
+     *
      * @default ''
      */
     @Property('')
@@ -3406,6 +3755,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to add the subtitle to the pivot chart.
+     *
      * @default ''
      */
     @Property('')
@@ -3434,6 +3784,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allows you to change the background color of the chart series in the pivot chart.
      * For example, to display the chart series with background color as red, set the property `background` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"**.
+     *
      * @default null
      */
     @Property(null)
@@ -3441,6 +3792,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to draw a pivot chart with either material, fabric, bootstrap, highcontrast light, material dark, fabric dark, highcontrast, bootstrap dark, bootstrap4 theme.
+     *
      * @default 'Material'
      */
     @Property('Material')
@@ -3448,6 +3800,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to draw the chart series points with custom color in the pivot chart.
+     *
      * @default []
      */
     @Property([])
@@ -3498,6 +3851,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      * * dragY: selects points by dragging with respect to vertical axis.
      * * point: selects a point.
      * * cluster: selects a cluster of point
+     *
      * @default 'None'
      */
     @Property('None')
@@ -3510,6 +3864,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      * funnel, doughnut and pyramid. The available modes are,
      * * none: Disables the selection.
      * * point: selects a point.
+     *
      * @default 'None'
      */
     @Property('None')
@@ -3518,6 +3873,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allows to set the labels placed smartly without overlapping. It is applicable for chart types pie,
      * funnel, doughnut and pyramid.
+     *
      * @default true
      */
     @Property(true)
@@ -3525,6 +3881,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows to Enable or disable the border in pie and doughnut chart while mouse moving.
+     *
      * @default true
      */
     @Property(true)
@@ -3533,6 +3890,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Specifies whether point has to get highlighted or not. It is applicable for chart types pie,
      * funnel, doughnut and pyramid. Takes value either 'None 'or 'Point'.
+     *
      * @default None
      */
     @Property('None')
@@ -3561,6 +3919,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      * * horizontalstripe: sets horizontal stripe as selecting pattern to accumulation chart.
      * * bubble: sets bubble as selecting pattern to accumulation chart.
      * It is applicable for chart types pie, funnel, doughnut and pyramid.
+     *
      * @default None
      */
     @Property('None')
@@ -3568,6 +3927,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.
+     *
      * @default true
      */
     @Property(true)
@@ -3575,6 +3935,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to perform multiple selection in the pivot chart. To enable this option, it requires the property `selectionMode` to be **Point** or **Series** or **Cluster**.
+     *
      * @default false
      */
     @Property(false)
@@ -3583,6 +3944,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     /**
      * Allows you to highlight a specific point of the series while rendering the pivot chart.
      * For example, to highlight first point in the first series, set the properties series to 0 and points to 1. To use this option, it requires the property `selectionMode` to be **Point** or **Series**.
+     *
      * @default []
      */
     @Collection<PivotChartIndexesModel>([], Indexes)
@@ -3590,6 +3952,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to enable/disable the tooltip animation while performing the mouse move from one point to another in the pivot chart.
+     *
      * @default true
      */
     @Property(true)
@@ -3605,6 +3968,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows the group separator to be shown to the values in the pivot chart.
+     *
      * @default true
      */
     @Property(true)
@@ -3612,6 +3976,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to render the pivot chart in a transposed manner or not.
+     *
      * @default false
      */
     @Property(false)
@@ -3619,6 +3984,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to highlight specific legends by clicking the mouse or by interacting with the keyboard in the pivot chart.
+     *
      * @default 1
      */
     @Property(1)
@@ -3626,6 +3992,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to add a description of the pivot chart.
+     *
      * @default null
      */
     @Property(null)
@@ -3633,7 +4000,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers after the pivot chart resized.
-     * @event
+     *
+     * @event resized
      * @deprecated
      */
     @Event()
@@ -3641,6 +4009,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to draw points of the column type pivot chart series as side by side.
+     *
      * @default true
      */
     @Property(true)
@@ -3648,7 +4017,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers after the pivot chart loaded.
-     * @event
+     *
+     * @event loaded
      * @deprecated
      */
     @Event()
@@ -3656,7 +4026,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers before the pivot chart prints.
-     * @event
+     *
+     * @event beforePrint
      * @deprecated
      */
     @Event()
@@ -3664,7 +4035,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers after the pivot chart series animation is completed.
-     * @event
+     *
+     * @event animationComplete
      * @deprecated
      */
     @Event()
@@ -3672,7 +4044,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers before chart loads.
-     * @event
+     *
+     * @event load
      * @deprecated
      */
     @Event()
@@ -3680,7 +4053,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers before the data label for series renders in the pivot chart.
-     * @event
+     *
+     * @event textRender
      * @deprecated
      */
     @Event()
@@ -3688,7 +4062,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers before the legend renders in the pivot chart.
-     * @event
+     *
+     * @event legendRender
      * @deprecated
      */
     @Event()
@@ -3696,7 +4071,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers before the series is rendered in the pivot chart.
-     * @event
+     *
+     * @event seriesRender
      * @deprecated
      */
     @Event()
@@ -3704,14 +4080,16 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Event to customize the multi-level labels of the pivot chart. This triggers while rendering the multi-level labels
-     * @event
+     *
+     * @event multiLevelLabelRender
      */
     @Event()
     public multiLevelLabelRender: EmitType<MultiLevelLabelRenderEventArgs>;
 
     /**
      * It triggers before each points for the series is rendered.
-     * @event
+     *
+     * @event pointRender
      * @deprecated
      */
     @Event()
@@ -3719,22 +4097,25 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers before the tooltip for series is rendered.
-     * @event
+     *
+     * @event tooltipRender
      * @deprecated
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
 
     /**
-     * It triggers when the legend series clicked.
-     * @event
+     * Triggers when the chart legend of a specific series is clicked..
+     *
+     * @event legendClick
      */
-     @Event()
+    @Event()
     public legendClick: EmitType<ILegendClickEventArgs>;
 
     /**
      * It triggers before each axis label is rendered.
-     * @event
+     *
+     * @event axisLabelRender
      * @deprecated
      */
     @Event()
@@ -3742,7 +4123,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers when clicked multi-level label.
-     * @event
+     *
+     * @event multiLevelLabelClick
      * @deprecated
      */
     @Event()
@@ -3750,7 +4132,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers on clicking the pivot chart.
-     * @event
+     *
+     * @event chartMouseClick
      * @deprecated
      */
     @Event()
@@ -3758,7 +4141,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers on hovering the pivot chart.
-     * @event
+     *
+     * @event chartMouseMove
      * @deprecated
      */
     @Event()
@@ -3766,7 +4150,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers on series point move.
-     * @event
+     *
+     * @event pointMove
      * @deprecated
      */
     @Event()
@@ -3774,7 +4159,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers on series point click.
-     * @event
+     *
+     * @event pointClick
      * @deprecated
      */
     @Event()
@@ -3782,7 +4168,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers when mouse down on chart series.
-     * @event
+     *
+     * @event chartMouseDown
      * @deprecated
      */
     @Event()
@@ -3790,7 +4177,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers when cursor leaves the chart.
-     * @event
+     *
+     * @event chartMouseLeave
      * @deprecated
      */
     @Event()
@@ -3798,7 +4186,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers after the drag selection is completed on chart series.
-     * @event
+     *
+     * @event dragComplete
      * @deprecated
      */
     @Event()
@@ -3806,7 +4195,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers when mouse up on chart series.
-     * @event
+     *
+     * @event chartMouseUp
      * @deprecated
      */
     @Event()
@@ -3814,7 +4204,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers when start scroll the chart series.
-     * @event
+     *
+     * @event scrollStart
      * @deprecated
      */
     @Event()
@@ -3822,7 +4213,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers after the zoom selection is completed.
-     * @event
+     *
+     * @event zoomComplete
      * @deprecated
      */
     @Event()
@@ -3830,7 +4222,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers when change the scroll of the chart seires.
-     * @event
+     *
+     * @event scrollChanged
      * @deprecated
      */
     @Event()
@@ -3838,7 +4231,8 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * It triggers after the scroll end.
-     * @event
+     *
+     * @event scrollEnd
      * @deprecated
      */
     @Event()
@@ -3846,6 +4240,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
 
     /**
      * Allows you to display the multi-level label feature in the pivot chart. This multi-level labels used to perform drill operation in the pivot chart.
+     *
      * @default true
      */
     @Property(true)

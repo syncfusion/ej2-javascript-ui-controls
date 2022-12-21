@@ -375,6 +375,19 @@ describe('Schedule Month view', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells')[3].innerHTML).toEqual(workCellEle.innerHTML);
         });
 
+        it('dateRange template', () => {
+            const model: ScheduleModel = {
+                currentView: 'Month', 
+                selectedDate: new Date(2017, 9, 5),
+                dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">9-10</div>');
+            schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/1/17, 12:00 AM-11/4/17, 12:00 AM</div>');
+        });
+
         it('check current date class', () => {
             const model: ScheduleModel = { currentView: 'Month' };
             schObj = util.createSchedule(model, []);

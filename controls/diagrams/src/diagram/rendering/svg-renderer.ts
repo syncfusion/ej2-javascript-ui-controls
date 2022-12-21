@@ -131,6 +131,7 @@ export class SvgRenderer implements IRenderer {
                 shadowElement.parentNode.removeChild(shadowElement);
             }
         }
+
         let attr: object;
         // EJ2-65895 - Added below code to calculate the transform to render the circular handle
         if (isCircularHandle) {
@@ -160,7 +161,7 @@ export class SvgRenderer implements IRenderer {
         }
         const poiterEvents: string = 'pointer-events';
         if (!ariaLabel) {
-            attr[poiterEvents] = 'none';
+            attr[`${poiterEvents}`] = 'none';
         }
         setAttributeSvg(rect, attr);
         this.setSvgStyle(rect, options as StyleAttributes, diagramId);
@@ -363,7 +364,7 @@ export class SvgRenderer implements IRenderer {
         const segments: Object[] = collection;
         let d: string = '';
         for (x = 0, y = 0, i = 0, length = segments.length; i < length; ++i) {
-            const obj: Object = segments[i]; const segment: PathSegment = obj; const char: string = segment.command;
+            const obj: Object = segments[parseInt(i.toString(), 10)]; const segment: PathSegment = obj; const char: string = segment.command;
             if ('x1' in segment) { x1 = segment.x1; }
             if ('x2' in segment) { x2 = segment.x2; }
             if ('y1' in segment) { y1 = segment.y1; }
@@ -474,8 +475,8 @@ export class SvgRenderer implements IRenderer {
                 }
                 for (i = 0; i < childNodes.length; i++) {
                     tspanElement = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-                    textNode = document.createTextNode(childNodes[i].text);
-                    child = childNodes[i];
+                    textNode = document.createTextNode(childNodes[parseInt(i.toString(), 10)].text);
+                    child = childNodes[parseInt(i.toString(), 10)];
                     child.x = setChildPosition(child, childNodes, i, options);
                     offsetX = position.x + child.x - wrapBounds.x;
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
@@ -596,10 +597,10 @@ export class SvgRenderer implements IRenderer {
         if (canvas) {
             let i: number; let j: number; let parentElement: HTMLElement;
             for (i = 0; i < canvas.childNodes.length; i++) {
-                parentElement = canvas.childNodes[i] as HTMLElement;
+                parentElement = canvas.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
                 for (j = 0; j < parentElement.childNodes.length; j++) {
-                    if ((parentElement.childNodes[j] as HTMLElement).id === element.id + '_html_element') {
-                        htmlElement = parentElement.childNodes[j] as HTMLElement;
+                    if ((parentElement.childNodes[parseInt(j.toString(), 10)] as HTMLElement).id === element.id + '_html_element') {
+                        htmlElement = parentElement.childNodes[parseInt(j.toString(), 10)] as HTMLElement;
                         break;
                     }
                 }
@@ -631,7 +632,7 @@ export class SvgRenderer implements IRenderer {
                 element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
             }
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
-                canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
+                canvas.insertBefore(htmlElement, canvas.childNodes[parseInt(indexValue.toString(), 10)]);
 
             }
             parentHtmlElement.appendChild(htmlElement);
@@ -770,8 +771,8 @@ export class SvgRenderer implements IRenderer {
         removeGradient(svg.id);
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                max = !max ? options.gradient.stops[i].offset : Math.max(max, options.gradient.stops[i].offset);
-                min = !min ? options.gradient.stops[i].offset : Math.min(min, options.gradient.stops[i].offset);
+                max = !max ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
+                min = !min ? options.gradient.stops[parseInt(i.toString(), 10)].offset : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
             }
             if (options.gradient.type === 'Linear') {
                 linear = options.gradient;
@@ -785,7 +786,7 @@ export class SvgRenderer implements IRenderer {
                 defs.appendChild(grd);
             }
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                const stop: StopModel = options.gradient.stops[i];
+                const stop: StopModel = options.gradient.stops[parseInt(i.toString(), 10)];
                 const offset: number = min < 0 ? (max + stop.offset) / (2 * max) : stop.offset / max;
                 const stopElement: SVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
                 setAttributeSvg(stopElement, { 'offset': offset.toString(), 'style': 'stop-color:' + stop.color });

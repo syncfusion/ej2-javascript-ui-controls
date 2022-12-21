@@ -134,11 +134,11 @@ export class AutoFill {
 
     private refreshAutoFillOption(type: string): void {
         for (let i: number = 0; i < this.autoFillDropDown.items.length; i++) {
-            this.autoFillDropDown.items[i].iconCss = '';
+            this.autoFillDropDown.items[i as number].iconCss = '';
         }
         for (let i: number = 0; i < this.autoFillDropDown.items.length; i++) {
-            if (this.autoFillDropDown.items[i].text === type) {
-                this.autoFillDropDown.items[i].iconCss = 'e-icons e-selected-icon';
+            if (this.autoFillDropDown.items[i as number].text === type) {
+                this.autoFillDropDown.items[i as number].iconCss = 'e-icons e-selected-icon';
             }
         }
         if (['Copy Cells', 'Fill Series', 'Fill Formatting Only', 'Fill Without Formatting'].indexOf(type) < 0) {
@@ -250,7 +250,7 @@ export class AutoFill {
 
     private hideAutoFillElement(): void {
         const elem: Element = this.parent.element;
-       [].slice.call(elem.querySelectorAll('.e-autofill')).forEach((optElem: Element) => {
+        [].slice.call(elem.querySelectorAll('.e-autofill')).forEach((optElem: Element) => {
             if (elem) {
                 addClass([optElem], 'e-hide');
             }
@@ -300,8 +300,8 @@ export class AutoFill {
         const scell: { colIndex: number, rowIndex: number } = { rowIndex: range[0], colIndex: range[1] };
         const ecell: { colIndex: number, rowIndex: number } = { rowIndex: range[2], colIndex: range[3] };
         const maxIdx: { colIndex: number, rowIndex: number } = { rowIndex: maxr, colIndex: maxc };
-        const modifiedIdx: { colIndex: number, rowIndex: number } = this.modifyRangeForMerge(idx.rowIndex,
-            idx.colIndex, aCell.rowIndex, aCell.colIndex, range);
+        const modifiedIdx: { colIndex: number, rowIndex: number } = this.modifyRangeForMerge(
+            idx.rowIndex, idx.colIndex, aCell.rowIndex, aCell.colIndex, range);
         if (idx.rowIndex < aCell.rowIndex) {// up
             if ((minr - idx.rowIndex > idx.colIndex - maxc) && (minr - idx.rowIndex > minc - idx.colIndex))
             {
@@ -351,8 +351,9 @@ export class AutoFill {
         }
     }
 
-    private modifyRangeForMerge(rowIdx: number, colIdx: number, autoFillRowIdx: number, autoFillColIdx:
-        number, selRange: number[]): { colIndex: number, rowIndex: number } {
+    private modifyRangeForMerge(
+        rowIdx: number, colIdx: number, autoFillRowIdx: number, autoFillColIdx: number,
+        selRange: number[]): { colIndex: number, rowIndex: number } {
         const modifiedIdx: { colIndex: number, rowIndex: number } = { rowIndex: rowIdx, colIndex: colIdx };
         if (this.isMergedRange(selRange)) {
             const selRowCount: number = selRange[2] - selRange[0] + 1;
@@ -577,7 +578,7 @@ export class AutoFill {
         let i: number = 0;
         const data: CellModel[] = this.getRangeData({ range: range, sheetIdx: this.parent.activeSheetIndex });
         for (i = 0; i < data.length; i++) {
-            if (data[i] && (data[i].rowSpan || data[i].colSpan)) {
+            if (data[i as number] && (data[i as number].rowSpan || data[i as number].colSpan)) {
                 return true;
             }
         }

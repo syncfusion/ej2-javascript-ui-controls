@@ -2,23 +2,7 @@
 
 ## [Unreleased]
 
-## 20.3.56 (2022-11-08)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I415519` - When setting the `getImageUrl` with the handler doesn't trigger a server-side GetImage operation in File Manager component issue has been resolved.
-
-## 20.3.49 (2022-10-11)
-
-### File Manager
-
-#### Bug Fixes
-
-- `#I391031` - The issue with "Column header in the Details view within the File Manager is not accessible via the Tab keyboard" has been resolved.
-
-## 20.3.47 (2022-09-29)
+## 20.4.38 (2022-12-21)
 
 ### File Manager
 

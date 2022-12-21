@@ -149,6 +149,7 @@ export class Image {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         if (this.popupObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {
@@ -189,15 +190,15 @@ export class Image {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
-                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i].text);
+                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i as number].text);
                 temp.appendChild(contentElem);
                 const img: NodeListOf<HTMLElement> = temp.querySelectorAll('img');
                 if (temp.querySelector('.e-img-resize') && img.length > 0) {
                     for (let j: number = 0; j < img.length; j++) {
-                        img[j].style.outline = '';
+                        img[j as number].style.outline = '';
                     }
                     detach(temp.querySelector('.e-img-resize'));
-                    this.parent.formatter.getUndoRedoStack()[i].text = temp.innerHTML;
+                    this.parent.formatter.getUndoRedoStack()[i as number].text = temp.innerHTML;
                 }
             }
         }
@@ -344,8 +345,8 @@ export class Image {
         const pos: OffsetPosition = this.calcPos(e);
         const top: number = pos.top;
         const left: number = pos.left;
-        const imgWid: number = e.width;
-        const imgHgt: number = e.height;
+        const imgWid: number = e.getBoundingClientRect().width;
+        const imgHgt: number = e.getBoundingClientRect().height;
         const borWid: number = (Browser.isDevice) ? (4 * parseInt((e.style.outline.slice(-3)), 10)) + 2 :
             (2 * parseInt((e.style.outline.slice(-3)), 10)) + 2; //span border width + image outline width
         const devWid: number = ((Browser.isDevice) ? 0 : 2); // span border width
@@ -373,7 +374,6 @@ export class Image {
             offsetParent = offsetParent.parentNode;
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
-            // eslint-disable-next-line
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
         if (elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption'))) {
@@ -393,6 +393,7 @@ export class Image {
         if (isNullOrUndefined(img.width)) {
             return;
         }
+        // eslint-disable-next-line security/detect-unsafe-regex
         const width: number = img.style.width !== '' ? img.style.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(img.style.width) :
             parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
@@ -400,8 +401,8 @@ export class Image {
             img.style.minWidth = this.parent.insertImageSettings.minWidth === 0 ? '20px' : formatUnit(this.parent.insertImageSettings.minWidth);
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    const original = img.offsetWidth + this.mouseX;
-                    const finalWidthByPerc = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?  (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) : parseFloat(img.style.width));
+                    const original : number = img.offsetWidth + this.mouseX;
+                    const finalWidthByPerc : number = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?  (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) : parseFloat(img.style.width));
                     img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
                 } else {
                     img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
@@ -431,8 +432,8 @@ export class Image {
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
                 if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    const original = img.offsetWidth + this.mouseX;
-                    const finalWidthByPerc = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?
+                    const original : number  = img.offsetWidth + this.mouseX;
+                    const finalWidthByPerc : number = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?
                         (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) :
                         parseFloat(img.style.width));
                     img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
@@ -633,8 +634,8 @@ export class Image {
         if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
             const nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             for (let i: number = 0; i < nodes.length; i++) {
-                if (nodes[i].nodeName === 'IMG') {
-                    this.deletedImg.push(nodes[i]);
+                if (nodes[i as number].nodeName === 'IMG') {
+                    this.deletedImg.push(nodes[i as number]);
                 }
             }
         }
@@ -696,7 +697,7 @@ export class Image {
         case 'backspace':
         case 'delete':
             for (let i: number = 0; i < this.deletedImg.length; i++) {
-                const src: string = (this.deletedImg[i] as HTMLImageElement).src;
+                const src: string = (this.deletedImg[i as number] as HTMLImageElement).src;
                 this.imageRemovePost(src as string);
             }
             if (this.parent.editorMode !== 'Markdown') {
@@ -782,8 +783,8 @@ export class Image {
         if (!isNOU(this.deletedImg) && this.deletedImg.length > 0) {
             for (let i: number = 0; i < this.deletedImg.length; i++) {
                 const args: AfterImageDeleteEventArgs = {
-                    element: this.deletedImg[i],
-                    src: (this.deletedImg[i] as HTMLElement).getAttribute('src')
+                    element: this.deletedImg[i as number],
+                    src: (this.deletedImg[i as number] as HTMLElement).getAttribute('src')
                 };
                 this.parent.trigger(events.afterImageDelete, args);
             }
@@ -847,17 +848,17 @@ export class Image {
         let separator: HTMLElement;
         const items: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
         for (let i: number = 0; i < items.length; i++) {
-            if (items[i].getAttribute('title') === this.i10n.getConstant('openLink') ||
-                items[i].getAttribute('title') === this.i10n.getConstant('editLink') ||
-                items[i].getAttribute('title') === this.i10n.getConstant('removeLink')) {
-                addClass([items[i]], 'e-link-groups');
-                (items[i] as HTMLElement).style.display = 'none';
-            } else if (items[i].getAttribute('title') === 'Insert Link') {
-                (items[i] as HTMLElement).style.display = '';
-            } else if (items[i].classList.contains('e-rte-horizontal-separator')) {
+            if (items[i as number].getAttribute('title') === this.i10n.getConstant('openLink') ||
+                items[i as number].getAttribute('title') === this.i10n.getConstant('editLink') ||
+                items[i as number].getAttribute('title') === this.i10n.getConstant('removeLink')) {
+                addClass([items[i as number]], 'e-link-groups');
+                (items[i as number] as HTMLElement).style.display = 'none';
+            } else if (items[i as number].getAttribute('title') === 'Insert Link') {
+                (items[i as number] as HTMLElement).style.display = '';
+            } else if (items[i as number].classList.contains('e-rte-horizontal-separator')) {
                 // eslint-disable-next-line
                 separator = items[i] as HTMLElement;
-                detach(items[i]);
+                detach(items[i as number]);
             }
         }
         const newItems: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll(
@@ -943,17 +944,17 @@ export class Image {
                 let separator: HTMLElement;
                 if (closest(target, 'a')) {
                     for (let i: number = 0; i < items.length; i++) {
-                        if (items[i].getAttribute('title') === this.i10n.getConstant('openLink') ||
-                            items[i].getAttribute('title') === this.i10n.getConstant('editLink') ||
-                            items[i].getAttribute('title') === this.i10n.getConstant('removeLink')) {
-                            (items[i] as HTMLElement).style.display = '';
-                            removeClass([items[i]], 'e-link-groups');
-                        } else if (items[i].getAttribute('title') === 'Insert Link') {
-                            (items[i] as HTMLElement).style.display = 'none';
-                        } else if (items[i].classList.contains('e-rte-horizontal-separator')) {
+                        if (items[i as number].getAttribute('title') === this.i10n.getConstant('openLink') ||
+                            items[i as number].getAttribute('title') === this.i10n.getConstant('editLink') ||
+                            items[i as number].getAttribute('title') === this.i10n.getConstant('removeLink')) {
+                            (items[i as number] as HTMLElement).style.display = '';
+                            removeClass([items[i as number]], 'e-link-groups');
+                        } else if (items[i as number].getAttribute('title') === 'Insert Link') {
+                            (items[i as number] as HTMLElement).style.display = 'none';
+                        } else if (items[i as number].classList.contains('e-rte-horizontal-separator')) {
                             // eslint-disable-next-line
-                            separator = items[i] as HTMLElement;
-                            detach(items[i]);
+                            separator = items[i as number] as HTMLElement;
+                            detach(items[i as number]);
                         }
                     }
                     const newItems: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll(
@@ -1178,6 +1179,7 @@ export class Image {
         }
     }
     private imageRemovePost(src: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: Image = this;
         let absoluteUrl: string = '';
         if (isNOU(this.parent.insertImageSettings.removeUrl) || this.parent.insertImageSettings.removeUrl === '') { return; }
@@ -1186,8 +1188,9 @@ export class Image {
         } else {
             absoluteUrl = new URL(src, document.baseURI).href;
         }
-        this.removingImgName = absoluteUrl.replace(/^.*[\\\/]/, '');
+        this.removingImgName = absoluteUrl.replace(/^.*[\\/]/, '');
         const xhr: XMLHttpRequest = new XMLHttpRequest();
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         xhr.addEventListener('readystatechange', function() {
             if (this.readyState === 4 && this.status === 200) {
                 proxy.triggerPost(this.response);
@@ -1200,6 +1203,7 @@ export class Image {
     private triggerPost(response: Blob): void {
         const removeUrl: string = this.parent.insertImageSettings.removeUrl;
         if (isNOU(removeUrl) || removeUrl === '') { return; }
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         const file = new File([response], this.removingImgName);
         const ajax: Ajax = new Ajax(removeUrl, 'POST', true, null);
         const formData: FormData = new FormData();
@@ -1351,7 +1355,7 @@ export class Image {
             cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'inherit',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
@@ -1495,7 +1499,7 @@ export class Image {
         const placeUrl: string = this.i10n.getConstant('imageUrl');
         this.inputUrl = this.parent.createElement('input', {
             className: 'e-input e-img-url' + ' ' + this.parent.cssClass,
-            attrs: { placeholder: placeUrl, spellcheck: 'false' }
+            attrs: { placeholder: placeUrl, spellcheck: 'false', 'aria-label': this.i10n.getConstant('imageLinkHeader') }
         });
         this.inputUrl.addEventListener('input', () => {
             if (!isNOU(this.inputUrl)) {
@@ -1953,7 +1957,7 @@ export class Image {
             const imgType: string = fileName.substring(fileName.lastIndexOf('.'));
             const allowedTypes: string[] = this.parent.insertImageSettings.allowedTypes;
             for (let i: number = 0; i < allowedTypes.length; i++) {
-                if (imgType.toLocaleLowerCase() === allowedTypes[i].toLowerCase()) {
+                if (imgType.toLocaleLowerCase() === allowedTypes[i as number].toLowerCase()) {
                     if (this.parent.insertImageSettings.saveUrl) {
                         this.onSelect(e);
                     } else {

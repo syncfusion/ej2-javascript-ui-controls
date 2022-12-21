@@ -29,7 +29,6 @@ export class PivotButton implements IAction {
     /** @hidden */
     public parentElement: HTMLElement;
     private draggable: Draggable;
-    /* eslint-disable-next-line */
     private handlers: { load: Function };
     public menuOption: AggregateMenu;
     public axisField: AxisFieldRenderer;
@@ -43,9 +42,10 @@ export class PivotButton implements IAction {
 
     /**
      * Constructor for render module.
+     *
      * @param {PivotView | PivotFieldList} parent - Component instance.
      */
-    constructor(parent: PivotView | PivotFieldList) {   /* eslint-disable-line */
+    constructor(parent: PivotView | PivotFieldList) {
         this.parent = parent;
         this.menuOption = new AggregateMenu(this.parent);
         this.parent.pivotButtonModule = this;
@@ -56,21 +56,21 @@ export class PivotButton implements IAction {
         this.isDestroyed = false;
     }
 
-    /* eslint-disable */
     private renderPivotButton(args: PivotButtonArgs): void {
-        let field: IFieldOptions[] = extend([], args.field, null, true) as IFieldOptions[]; let axis: string = args.axis; let axisElement: Element; let valuePos: number = -1;
-        let showValuesButton: boolean = (this.parent.dataType === 'pivot' ? (this.parent.getModuleName() === 'pivotfieldlist' &&
+        const field: IFieldOptions[] = extend([], args.field, null, true) as IFieldOptions[];
+        const axis: string = args.axis; let axisElement: Element; let valuePos: number = -1;
+        const showValuesButton: boolean = (this.parent.dataType === 'pivot' ? (this.parent.getModuleName() === 'pivotfieldlist' &&
             (this.parent as PivotFieldList).pivotGridModule) ?
             (this.parent as PivotFieldList).pivotGridModule.showValuesButton : this.parent.showValuesButton : false);
         if (((this.parent.dataSourceSettings.valueAxis === 'row' && args.axis === 'rows') ||
             (this.parent.dataSourceSettings.valueAxis === 'column' && args.axis === 'columns')) && showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
             if (isNullOrUndefined(PivotUtil.getFieldByName('[Measures]', field))) {
-                let measureField: IFieldOptions = PivotUtil.getFieldByName('[Measures]', this.parent.dataSourceSettings.fieldMapping) as IFieldOptions;
-                let valueField: IFieldOptions = {
+                const measureField: IFieldOptions = PivotUtil.getFieldByName('[Measures]', this.parent.dataSourceSettings.fieldMapping) as IFieldOptions;
+                const valueField: IFieldOptions = {
                     name: '[Measures]', caption: this.parent.localeObj.getConstant('values'),
                     axis: args.axis,
                     showRemoveIcon: (measureField && 'showRemoveIcon' in measureField) ? measureField.showRemoveIcon : true,
-                    allowDragAndDrop: (measureField && 'allowDragAndDrop' in measureField) ? measureField.allowDragAndDrop : true,
+                    allowDragAndDrop: (measureField && 'allowDragAndDrop' in measureField) ? measureField.allowDragAndDrop : true
                 };
                 if ((this.parent.dataSourceSettings.valueIndex === -1 || this.parent.dataSourceSettings.valueIndex > field.length)) {
                     valuePos = field.length;
@@ -87,7 +87,7 @@ export class PivotButton implements IAction {
         if (this.parent.getModuleName() === 'pivotfieldlist') {
             this.parentElement = document.getElementById(this.parent.element.id + '_Container');
             if (this.parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-' + axis)) {
-                let axisPrompt: Element = this.parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-' + axis)
+                const axisPrompt: Element = this.parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-' + axis)
                     .querySelector('.' + cls.AXIS_PROMPT_CLASS);
                 if (field.length === 0) {
                     removeClass([axisPrompt], cls.ICON_DISABLE);
@@ -103,10 +103,10 @@ export class PivotButton implements IAction {
             this.parentElement = this.parent.element; axisElement = this.parentElement.querySelector('.e-group-' + axis);
         }
         if (axisElement) {
-            if (this.parent.getModuleName() === 'pivotview' && field.length === 0) {
-                for (let element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
+            if (this.parent.getModuleName() === 'pivotview' && field.length === 0) { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                for (const element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
                     if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
-                        let axisPrompt: HTMLElement = createElement('span', {
+                        const axisPrompt: HTMLElement = createElement('span', {
                             className: cls.AXIS_PROMPT_CLASS,
                             innerHTML: ((this.parent as PivotView).groupingBarSettings.allowDragAndDrop ? axis === 'rows' ? this.parent.localeObj.getConstant('rowAxisPrompt') :
                                 axis === 'columns' ? this.parent.localeObj.getConstant('columnAxisPrompt') :
@@ -118,81 +118,83 @@ export class PivotButton implements IAction {
                     }
                 }
             } else {
-                for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
+                for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     for (let element of (this.parent.getModuleName() === 'pivotfieldlist' ? [axisElement] : this.parentElement.querySelectorAll('.e-group-' + axis) as any)) {
                         element = element as HTMLElement;
-                        let isMeasureAvail: boolean = (this.parent.dataType === 'olap' && (field[i].name.toLowerCase() === '[measures]' || axis === 'values'));
-                        let isMeasureFieldsAvail: boolean = (this.parent.dataType === 'olap' && axis === 'values');
+                        const isMeasureAvail: boolean = (this.parent.dataType === 'olap' && (field[i as number].name.toLowerCase() === '[measures]' || axis === 'values'));
+                        const isMeasureFieldsAvail: boolean = (this.parent.dataType === 'olap' && axis === 'values');
                         if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
-                            let buttonWrapper: HTMLElement = createElement('div', {
+                            const buttonWrapper: HTMLElement = createElement('div', {
                                 className: cls.PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 && axis !== 'all-fields' ? ' e-first-btn' : ''),
-                                attrs: { 'data-tag': axis + ':' + field[i].name }
+                                attrs: { 'data-tag': axis + ':' + field[i as number].name }
                             });
-                            let buttonElement: HTMLElement = createElement('div', {
-                                id: field[i].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i].name.replace(/[^A-Z0-9]/ig, ''),
+                            const buttonElement: HTMLElement = createElement('div', {
+                                id: this.parent.element.id + '_' + field[i as number].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i as number].name.replace(/[^A-Z0-9]/ig, ''),
                                 attrs: {
-                                    'data-uid': field[i].name,
+                                    'data-uid': field[i as number].name,
                                     'tabindex': (this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).grid && axis === 'rows' && !element.classList.contains(cls.GROUP_CHART_ROW)) ? '-1' : '0',
                                     'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
-                                    'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
-                                    'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i].type : field[i].type),
-                                    'data-caption': field[i].caption ? field[i].caption : field[i].name,
-                                    'data-basefield': field[i].baseField,
-                                    'data-baseitem': field[i].baseItem,
+                                    'aria-disabled': 'false', 'aria-label': field[i as number].caption ? field[i as number].caption : field[i as number].name,
+                                    'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i as number].type : field[i as number].type),
+                                    'data-caption': field[i as number].caption ? field[i as number].caption : field[i as number].name,
+                                    'data-basefield': field[i as number].baseField,
+                                    'data-baseitem': field[i as number].baseItem,
                                     'role': 'button'
                                 }
                             });
-                            let dropIndicatorElement: Element = createElement('span', {
+                            const dropIndicatorElement: Element = createElement('span', {
                                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
                                 className: cls.DROP_INDICATOR_CLASS
                             });
-                            let dropLastIndicatorElement: Element = createElement('span', {
+                            const dropLastIndicatorElement: Element = createElement('span', {
                                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
                                 className: cls.DROP_INDICATOR_CLASS + '-last'
                             });
-                            let dragWrapper: HTMLElement = this.createButtonDragIcon(field[i], buttonElement);
-                            let contentElement: HTMLElement = this.createButtonText(field, i, axis, valuePos);
+                            const dragWrapper: HTMLElement = this.createButtonDragIcon(field[i as number], buttonElement);
+                            const contentElement: HTMLElement = this.createButtonText(field, i, axis, valuePos);
                             buttonElement.appendChild(contentElement);
                             if (axis !== 'all-fields') {
-                                if (!isMeasureAvail && !field[i].isNamedSet && !field[i].isCalculatedField) {
+                                if (!isMeasureAvail && !field[i as number].isNamedSet && !field[i as number].isCalculatedField) {
                                     if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i &&
                                         !(this.parent.dataType === 'olap' && ((this.parent.getModuleName() === 'pivotview' &&
                                             (this.parent as PivotView).enableVirtualization) || (this.parent.getModuleName() === 'pivotfieldlist' &&
                                                 (this.parent as PivotFieldList).pivotGridModule !== undefined &&
                                                 (this.parent as PivotFieldList).pivotGridModule.enableVirtualization)))) {
-                                        this.createSortOption(buttonElement, field[i].name, field[i]);
+                                        this.createSortOption(buttonElement, field[i as number].name, field[i as number]);
                                     }
                                     if (axis !== 'values' && valuePos !== i) {
-                                        this.createFilterOption(buttonElement, field[i].name, axis, field[i]);
+                                        this.createFilterOption(buttonElement, field[i as number].name, axis, field[i as number]);
                                     }
                                     if (axis === 'values') {
                                         this.getTypeStatus(field, i, buttonElement);
                                     }
                                 }
-                                if ((field[i].isCalculatedField || field[i].type === 'CalculatedField')) {
-                                    let calcElement: Element = createElement('span', {
+                                if ((field[i as number].isCalculatedField || field[i as number].type === 'CalculatedField')) {
+                                    const calcElement: Element = createElement('span', {
                                         attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('editCalculatedField') },
                                         className: cls.ICON + ' ' + cls.CALC_EDIT
                                     });
-                                    if (this.parent.allowCalculatedField && this.parent.calculatedFieldModule && (field[i].showEditIcon || field[i].showEditIcon === undefined)) {
+                                    if (this.parent.allowCalculatedField && this.parent.calculatedFieldModule &&
+                                        (field[i as number].showEditIcon || field[i as number].showEditIcon === undefined)) {
                                         removeClass([calcElement], cls.ICON_DISABLE);
                                     } else {
                                         addClass([calcElement], cls.ICON_DISABLE);
                                     }
                                     buttonElement.appendChild(calcElement);
                                 }
-                                let removeElement: Element = createElement('span', {
+                                const removeElement: Element = createElement('span', {
                                     attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('remove') },
                                     className: cls.ICON + ' ' + cls.REMOVE_CLASS
                                 });
                                 if (this.parent.getModuleName() === 'pivotview') {
-                                    if (((this.parent as PivotView).groupingBarSettings.showRemoveIcon && (field[i].showRemoveIcon || field[i].showRemoveIcon === undefined))) {
+                                    if (((this.parent as PivotView).groupingBarSettings.showRemoveIcon &&
+                                        (field[i as number].showRemoveIcon || field[i as number].showRemoveIcon === undefined))) {
                                         removeClass([removeElement], cls.ICON_DISABLE);
                                     } else {
                                         addClass([removeElement], cls.ICON_DISABLE);
                                     }
                                 } else {
-                                    if (field[i].showRemoveIcon || field[i].showRemoveIcon === undefined) {
+                                    if (field[i as number].showRemoveIcon || field[i as number].showRemoveIcon === undefined) {
                                         removeClass([removeElement], cls.ICON_DISABLE);
                                     } else {
                                         addClass([removeElement], cls.ICON_DISABLE);
@@ -207,30 +209,33 @@ export class PivotButton implements IAction {
                                 buttonWrapper.appendChild(buttonElement);
                             }
                             element.appendChild(buttonWrapper);
-                            let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl, locale: this.parent.locale, cssClass: this.parent.cssClass });
+                            const pivotButton: Button = new Button({
+                                enableRtl: this.parent.enableRtl, locale: this.parent.locale, cssClass: this.parent.cssClass });
                             pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
                             this.unWireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
                             this.wireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
                             if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
                                 this.parent.getModuleName() === 'pivotfieldlist') {
-                                this.createDraggable(field[i], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
+                                this.createDraggable(field[i as number], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 (buttonElement as any).querySelector('.' + cls.BUTTON_DRAGGABLE).ej2_instances[0].enableAutoScroll = false;
                             }
                         }
                     }
                 }
-                if (axis === 'values') {
-                    for (let element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
+                if (axis === 'values') { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    for (const element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
                         if (element.classList.contains(cls.GROUP_CHART_VALUE) && (this.parent as PivotView).pivotChartModule) {
-                            let valueData: { text: string, value: string }[] = field.map((item) => { return { text: item.caption ? item.caption : item.name, value: item.name }; });
-                            let parent: PivotView = this.parent as PivotView;
+                            const valueData: { text: string, value: string }[] = field.map((item: IFieldOptions) => {
+                                return { text: item.caption ? item.caption : item.name, value: item.name }; });
+                            const parent: PivotView = this.parent as PivotView;
                             if (this.valueFiedDropDownList && element.querySelector('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV)) {
                                 this.valueFiedDropDownList.dataSource = valueData;
                                 this.valueFiedDropDownList.value = !parent.chartSettings.enableMultipleAxis ?
                                     parent.pivotChartModule.currentMeasure : valueData[0].value;
                             } else {
-                                let ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_VALUE_DROPDOWN_DIV });
+                                const ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_VALUE_DROPDOWN_DIV });
                                 element.appendChild(ddlDiv);
                                 this.valueFiedDropDownList = new DropDownList({
                                     dataSource: valueData,
@@ -254,44 +259,44 @@ export class PivotButton implements IAction {
                     }
                 }
                 else if (axis === 'columns') {
-                    let availColindex: number = undefined;
-                    for (let element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
+                    let availColindex: number = undefined; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    for (const element of this.parentElement.querySelectorAll('.e-group-' + axis) as any) {
                         if (element.classList.contains(cls.GROUP_CHART_COLUMN) && (this.parent as PivotView).pivotChartModule) {
-                            let currentMeasure = (this.parent as PivotView).pivotChartModule.currentMeasure;
-                            let delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
-                            let columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
+                            const currentMeasure: string = (this.parent as PivotView).pivotChartModule.currentMeasure;
+                            const delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
+                            const columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
                                 (this.parent as PivotView).chartSettings.columnHeader.split(delimiter).join(' - ') : '';
-                            let engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
-                            let pivotValues: IPivotValues = engineModule.pivotValues;
-                            let totColIndex: INumberIndex = (this.parent as PivotView).pivotChartModule.getColumnTotalIndex(pivotValues);
-                            let rKeys: string[] = Object.keys(pivotValues);
-                            let columnData: {
+                            const engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+                            const pivotValues: IPivotValues = engineModule.pivotValues;
+                            const totColIndex: INumberIndex = (this.parent as PivotView).pivotChartModule.getColumnTotalIndex(pivotValues);
+                            const rKeys: string[] = Object.keys(pivotValues);
+                            const columnData: {
                                 text: string, value: string, title: {
                                     [key: string]: string;
                                 }
                             }[] = [];
                             let firstValueRow: boolean = false;
-                            for (let rKey of rKeys) {
+                            for (const rKey of rKeys) {
                                 if (firstValueRow) {
                                     break;
                                 }
-                                let rowIndex: number = Number(rKey);
-                                if (pivotValues[rowIndex][0] && (pivotValues[rowIndex][0] as IAxisSet).axis === 'row' &&
-                                    (this.parent.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
-                                    let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
-                                    let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
+                                const rowIndex: number = Number(rKey);
+                                if (pivotValues[rowIndex as number][0] && (pivotValues[rowIndex as number][0] as IAxisSet).axis === 'row' &&
+                                    (this.parent.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex as number][0] as IAxisSet).type !== 'grand sum')) {
+                                    const firstRowCell: IAxisSet = pivotValues[rowIndex as number][0] as IAxisSet;
+                                    const tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
                                         (engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
-                                    let rows: IPivotRows = pivotValues[rowIndex];
-                                    let cKeys: string[] = Object.keys(rows);
-                                    for (let cKey of cKeys) {
-                                        let cellIndex: number = Number(cKey);
-                                        let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
-                                        let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
+                                    const rows: IPivotRows = pivotValues[rowIndex as number];
+                                    const cKeys: string[] = Object.keys(rows);
+                                    for (const cKey of cKeys) {
+                                        const cellIndex: number = Number(cKey);
+                                        const cell: IAxisSet = pivotValues[rowIndex as number][cellIndex as number] as IAxisSet; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        const actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                                             tupInfo.measureName : cell.actualText;
                                         if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                                             actualText !== '' && actualText === currentMeasure) {
                                             firstValueRow = true;
-                                            let columnSeries: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
+                                            const columnSeries: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
                                                 : cell.columnHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
                                             columnData.push({ value: columnSeries, text: columnSeries, title: { ['title']: columnSeries } });
                                             if (columnSeries === columnHeader) {
@@ -309,7 +314,7 @@ export class PivotButton implements IAction {
                                     this.columnFieldDropDownList.value = columnData[0].value;
                                 }
                             } else {
-                                let ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_COLUMN_DROPDOWN_DIV });
+                                const ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_COLUMN_DROPDOWN_DIV });
                                 element.appendChild(ddlDiv);
                                 this.columnFieldDropDownList = new DropDownList({
                                     dataSource: columnData,
@@ -321,7 +326,7 @@ export class PivotButton implements IAction {
                                     cssClass: cls.GROUP_CHART_COLUMN_DROPDOWN + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                                     change: (args: ChangeEventArgs) => {
                                         if (args.e && args.e !== null) {
-                                            let delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
+                                            const delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
                                             (this.parent as PivotView).chartSettings.columnHeader = (args.value as string).split(' - ').join(delimiter);
                                         }
                                     }
@@ -339,11 +344,10 @@ export class PivotButton implements IAction {
     }
 
     private createButtonText(field: IFieldOptions[], i: number, axis: string, valuePos: number): HTMLElement {
-        let buttonText: HTMLElement;
         let aggregation: string;
         let filterMem: string;
         if (axis === 'filters') {
-            filterMem = this.updateButtontext(field[i].name);
+            filterMem = this.updateButtontext(field[i as number].name);
         }
         let engineModule: PivotEngine | OlapEngine;
         if (this.parent.dataType === 'olap') {
@@ -351,33 +355,33 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (engineModule.fieldList[field[i].name] !== undefined) {
-            aggregation = engineModule.fieldList[field[i].name].aggregateType;
-            if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
-                engineModule.fieldList[field[i].name].type === 'exclude')) {
+        if (engineModule.fieldList[field[i as number].name] !== undefined) {
+            aggregation = engineModule.fieldList[field[i as number].name].aggregateType;
+            if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i as number].name].type !== 'number' || engineModule.fieldList[field[i as number].name].type === 'include' ||
+                engineModule.fieldList[field[i as number].name].type === 'exclude')) {
                 aggregation = 'Count';
             } else {
                 aggregation = aggregation === undefined ? 'Sum' :
-                    engineModule.fieldList[field[i].name].aggregateType;
+                    engineModule.fieldList[field[i as number].name].aggregateType;
             }
         }
-        let text: string = field[i].caption ? field[i].caption : field[i].name;
-        buttonText = createElement('span', {
+        const text: string = field[i as number].caption ? field[i as number].caption : field[i as number].name;
+        const buttonText: HTMLElement = createElement('span', {
             attrs: {
-                title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i].name].type === 'CalculatedField') ?
+                title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
-                        text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
-                            text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
+                    text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
+                        text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
             className: cls.PIVOT_BUTTON_CONTENT_CLASS + ' ' +
                 (this.parent.getModuleName() === 'pivotview' ?
-                    (this.parent as PivotView).groupingBarSettings.allowDragAndDrop && (field[i].allowDragAndDrop || field[i].allowDragAndDrop === undefined) ? '' : cls.DRAG_DISABLE_CLASS : ''),
-            innerHTML: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i].name].type === 'CalculatedField') ?
+                    (this.parent as PivotView).groupingBarSettings.allowDragAndDrop && (field[i as number].allowDragAndDrop || field[i as number].allowDragAndDrop === undefined) ? '' : cls.DRAG_DISABLE_CLASS : ''),
+            innerHTML: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
                 text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
-                    text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
-                        text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))
+                text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
+                    text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))
         });
         return buttonText;
     }
@@ -389,18 +393,18 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        let fieldListItem: IField = engineModule.fieldList[field[i].name];
+        const fieldListItem: IField = engineModule.fieldList[field[i as number].name];
         if (fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
-            this.createSummaryType(buttonElement, field[i].name, field[i]);
+            this.createSummaryType(buttonElement, field[i as number].name, field[i as number]);
         }
     }
     private validateDropdown(type: string): boolean {
-        let aggregateType: AggregateTypes[] = this.parent.aggregateTypes;
+        const aggregateType: AggregateTypes[] = this.parent.aggregateTypes;
         if (type !== 'number') {
             return (aggregateType.indexOf('Count') > -1 || aggregateType.indexOf('DistinctCount') > -1);
         } else {
             for (let i: number = 0; i < aggregateType.length; i++) {
-                if (this.parent.getAllSummaryType().indexOf(aggregateType[i]) > -1) {
+                if (this.parent.getAllSummaryType().indexOf(aggregateType[i as number]) > -1) {
                     return true;
                 }
             }
@@ -409,7 +413,7 @@ export class PivotButton implements IAction {
     }
 
     private createSummaryType(pivotButton: HTMLElement, fieldName: string, field: IFieldOptions): Element {
-        let spanElement: Element = createElement('span', {
+        const spanElement: Element = createElement('span', {
             attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('format') },
             className: cls.ICON + ' ' + cls.AXISFIELD_ICON_CLASS
         });
@@ -435,8 +439,8 @@ export class PivotButton implements IAction {
     }
 
     private openCalculatedFieldDialog(args: MouseEventArgs): void {
-        let fieldName: string = (args.target as HTMLElement).parentElement.id;
-        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
+        const fieldName: string = (args.target as HTMLElement).parentElement.getAttribute('data-uid');
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
         this.parent.actionObj.actionName = events.editCalculatedField;
         this.parent.actionObj.fieldInfo = fieldInfo;
         if (this.parent.actionBeginMethod()) {
@@ -497,10 +501,10 @@ export class PivotButton implements IAction {
         });
     }
     private createButtonDragIcon(field: IFieldOptions, pivotButton: HTMLElement): HTMLElement {
-        let dragWrapper: HTMLElement = createElement('span', {
+        const dragWrapper: HTMLElement = createElement('span', {
             attrs: { 'tabindex': '-1', 'aria-disabled': 'false' }
         });
-        let dragElement: HTMLElement = createElement('span', {
+        const dragElement: HTMLElement = createElement('span', {
             attrs: {
                 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('drag')
             },
@@ -522,16 +526,16 @@ export class PivotButton implements IAction {
             engineModule = this.parent.engineModule;
         }
         if (!this.parent.allowDeferLayoutUpdate) {
-            sortCLass = engineModule.fieldList[fieldName].sort === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
+            sortCLass = engineModule.fieldList[fieldName as string].sort === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
         } else {
             sortCLass = '';
             for (let i: number = 0; i < this.parent.dataSourceSettings.sortSettings.length; i++) {
-                if (this.parent.dataSourceSettings.sortSettings[i].name === fieldName) {
-                    sortCLass = this.parent.dataSourceSettings.sortSettings[i].order === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
+                if (this.parent.dataSourceSettings.sortSettings[i as number].name === fieldName) {
+                    sortCLass = this.parent.dataSourceSettings.sortSettings[i as number].order === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
                 }
             }
         }
-        if (engineModule.fieldList[fieldName].sort === 'None') {
+        if (engineModule.fieldList[fieldName as string].sort === 'None') {
             spanElement = createElement('span', {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('sort') },
                 className: cls.ICON
@@ -571,19 +575,19 @@ export class PivotButton implements IAction {
             engineModule = this.parent.engineModule;
         }
         if (!this.parent.allowDeferLayoutUpdate) {
-            engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
-                [] : engineModule.fieldList[fieldName].filter;
-            filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
-                !engineModule.fieldList[fieldName].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
+            engineModule.fieldList[fieldName as string].filter = engineModule.fieldList[fieldName as string].filter === null ?
+                [] : engineModule.fieldList[fieldName as string].filter;
+            filterCLass = engineModule.fieldList[fieldName as string].filter.length === 0 ?
+                !engineModule.fieldList[fieldName as string].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
         } else {
             filterCLass = cls.FILTER_CLASS;
             for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
-                if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
+                if (this.parent.dataSourceSettings.filterSettings[i as number].name === fieldName) {
                     filterCLass = cls.FILTERED_CLASS;
                 }
             }
         }
-        let spanElement: Element = createElement('span', {
+        const spanElement: Element = createElement('span', {
             attrs: {
                 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('filter')
             },
@@ -623,11 +627,11 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        let filterCount: number = engineModule.fieldList[fieldName].filter.length;
-        let filterType: string = engineModule.fieldList[fieldName].filterType;
-        let memLen: number = engineModule.fieldList[fieldName].dateMember.length;
+        const filterCount: number = engineModule.fieldList[fieldName as string].filter.length;
+        const filterType: string = engineModule.fieldList[fieldName as string].filterType;
+        const memLen: number = engineModule.fieldList[fieldName as string].dateMember.length;
         let filterMem: string;
-        let firstNode: string = engineModule.fieldList[fieldName].filter[0];
+        const firstNode: string = engineModule.fieldList[fieldName as string].filter[0];
         if (this.parent.dataType === 'olap') {
             filterMem = this.updateOlapButtonText(engineModule as OlapEngine, fieldName, firstNode, filterCount);
         } else if (filterType === 'include') {
@@ -643,27 +647,27 @@ export class PivotButton implements IAction {
         } else if (filterType === 'exclude') {
             if (filterCount === 1) {
                 if (memLen === 2) {
-                    if (firstNode !== engineModule.fieldList[fieldName].dateMember[0].actualText) {
+                    if (firstNode !== engineModule.fieldList[fieldName as string].dateMember[0].actualText) {
                         filterMem = firstNode;
                     } else {
-                        filterMem = engineModule.fieldList[fieldName].dateMember[0].actualText as string;
+                        filterMem = engineModule.fieldList[fieldName as string].dateMember[0].actualText as string;
                     }
                 } else {
                     filterMem = this.parent.localeObj.getConstant('multipleItems');
                 }
             } else if (filterCount > 1) {
                 let j: number;
-                let allNodes: string[] = Object.keys(engineModule.fieldList[fieldName].members);
-                let filteredItems: string[] = engineModule.fieldList[fieldName].filter;
+                const allNodes: string[] = Object.keys(engineModule.fieldList[fieldName as string].members);
+                const filteredItems: string[] = engineModule.fieldList[fieldName as string].filter;
                 if (filterCount === (allNodes.length - 1)) {
-                    /* eslint-disable */
+                    // eslint-disable-next-line no-labels
                     loop: for (j = 0; j < allNodes.length; j++) {
-                        let test: string = allNodes[j];
-                        let x: number = filteredItems.indexOf(test);
+                        const test: string = allNodes[j as number];
+                        const x: number = filteredItems.indexOf(test);
                         if (x === -1) {
-                            filterMem = allNodes[j];
+                            filterMem = allNodes[j as number];
+                            // eslint-disable-next-line no-labels
                             break loop;
-                            /* eslint-enable */
                         }
                     }
                 } else {
@@ -677,22 +681,22 @@ export class PivotButton implements IAction {
     }
     private updateOlapButtonText(engineModule: OlapEngine, fieldName: string, firstNode: string, filterCount: number): string {
         let filterMem: string;
-        let filterItems: string[] = engineModule.fieldList[fieldName].actualFilter;
+        const filterItems: string[] = engineModule.fieldList[fieldName as string].actualFilter;
         if (filterItems.length > 0) {
-            let cMembers: IMembers = engineModule.fieldList[fieldName].members;
-            let actualFilterItems: string[] = [];
-            if (engineModule.fieldList[fieldName].filterMembers.length > 0) {
+            const cMembers: IMembers = engineModule.fieldList[fieldName as string].members;
+            const actualFilterItems: string[] = [];
+            if (engineModule.fieldList[fieldName as string].filterMembers.length > 0) {
                 let dummyfilterItems: { [key: string]: string } = {};
-                for (let item of filterItems) {
-                    dummyfilterItems[item] = item;
-                    if (cMembers[item]) {
+                for (const item of filterItems) {
+                    dummyfilterItems[item as string] = item;
+                    if (cMembers[item as string]) {
                         dummyfilterItems = this.parent.pivotCommon.eventBase.getParentNode(fieldName, item, dummyfilterItems);
                     }
                 }
-                let updatedFilterItems: string[] = dummyfilterItems ? Object.keys(dummyfilterItems) : [];
-                for (let item of updatedFilterItems) {
-                    if (cMembers[item].isSelected) {
-                        if (!(cMembers[item].parent && cMembers[cMembers[item].parent].isSelected)) {
+                const updatedFilterItems: string[] = dummyfilterItems ? Object.keys(dummyfilterItems) : [];
+                for (const item of updatedFilterItems) {
+                    if (cMembers[item as string].isSelected) {
+                        if (!(cMembers[item as string].parent && cMembers[cMembers[item as string].parent].isSelected)) {
                             actualFilterItems.push(item);
                         }
                     }
@@ -702,8 +706,8 @@ export class PivotButton implements IAction {
             filterCount = actualFilterItems.length === 0 ? filterCount : actualFilterItems.length;
         }
         if (filterCount === 0) {
-            filterMem = (engineModule.fieldList[fieldName].allMember ?
-                engineModule.fieldList[fieldName].allMember : this.parent.localeObj.getConstant('all'));
+            filterMem = (engineModule.fieldList[fieldName as string].allMember ?
+                engineModule.fieldList[fieldName as string].allMember : this.parent.localeObj.getConstant('all'));
         } else if (filterCount === 1) {
             filterMem = firstNode;
         } else if (filterCount > 1) {
@@ -712,12 +716,12 @@ export class PivotButton implements IAction {
         return filterMem;
     }
     private createDragClone(args: DragEventArgs): HTMLElement {
-        let element: Element = closest(args.element, '.' + cls.PIVOT_BUTTON_CLASS);
-        let cloneElement: HTMLElement = createElement('div', {
+        const element: Element = closest(args.element, '.' + cls.PIVOT_BUTTON_CLASS);
+        const cloneElement: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_DragClone',
             className: cls.DRAG_CLONE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
         });
-        let contentElement: HTMLElement = createElement('span', {
+        const contentElement: HTMLElement = createElement('span', {
             className: cls.TEXT_CONTENT_CLASS,
             innerHTML: element.textContent
         });
@@ -726,17 +730,17 @@ export class PivotButton implements IAction {
         return cloneElement;
     }
     private onDragStart(e: DragEventArgs): void {
-        let element: Element = closest(e.element, '.' + cls.PIVOT_BUTTON_CLASS);
-        let dragItem: HTMLElement = document.getElementById(this.parent.element.id + '_DragClone');
-        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(element.getAttribute('data-uid'), this.parent);
-        let dragEventArgs: FieldDragStartEventArgs = {
+        const element: Element = closest(e.element, '.' + cls.PIVOT_BUTTON_CLASS);
+        const dragItem: HTMLElement = document.getElementById(this.parent.element.id + '_DragClone');
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(element.getAttribute('data-uid'), this.parent);
+        const dragEventArgs: FieldDragStartEventArgs = {
             fieldName: fieldInfo.fieldName,
             fieldItem: fieldInfo.fieldItem,
             axis: fieldInfo.axis,
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
             cancel: false
         };
-        let control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
+        const control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
             (this.parent as PivotFieldList).isPopupView ? (this.parent as PivotFieldList).pivotGridModule : this.parent;
         control.trigger(events.fieldDragStart, dragEventArgs, (observedArgs: FieldDragStartEventArgs) => {
             if (!observedArgs.cancel) {
@@ -747,16 +751,16 @@ export class PivotButton implements IAction {
                 } else {
                     engineModule = this.parent.engineModule;
                 }
-                let data: IField = engineModule.fieldList[element.getAttribute('data-uid')];
-                let axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
+                const data: IField = engineModule.fieldList[element.getAttribute('data-uid')];
+                const axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
                 addClass([element], cls.SELECTED_NODE_CLASS);
                 if (dragItem && (this.parent.getModuleName() === 'pivotfieldlist' &&
                     (this.parent as PivotFieldList).renderMode) === 'Popup') {
-                    let fieldListPopup: PivotFieldList = (this.parent as PivotFieldList);
+                    const fieldListPopup: PivotFieldList = (this.parent as PivotFieldList);
                     dragItem.style.zIndex = (fieldListPopup.dialogRenderer.fieldListDialog.zIndex + 1).toString();
                 }
                 if (data && data.aggregateType === 'CalculatedField') {
-                    for (let axisContent of axis) {
+                    for (const axisContent of axis) {
                         addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
                     }
                 }
@@ -774,14 +778,14 @@ export class PivotButton implements IAction {
     private onDragStop(args: DragEventArgs & DragAndDropEventArgs): void {
         this.parent.isDragging = false;
         if (args.target && args.element && (closest(args.element, '.' + cls.GROUP_ALL_FIELDS_CLASS) &&
-            !closest(args.target, '.' + cls.DROPPABLE_CLASS))) {   /* eslint-disable-line */
+            !closest(args.target, '.' + cls.DROPPABLE_CLASS))) {
             args.cancel = true;
         }
-        let element: Element = closest(args.element, '.' + cls.PIVOT_BUTTON_CLASS);
+        const element: Element = closest(args.element, '.' + cls.PIVOT_BUTTON_CLASS);
         removeClass([].slice.call(this.parentElement.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS)), cls.SELECTED_NODE_CLASS);
         removeClass([].slice.call(this.parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
-        let axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
-        for (let axisContent of axis) {
+        const axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
+        for (const axisContent of axis) {
             removeClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
         }
         if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
@@ -796,30 +800,28 @@ export class PivotButton implements IAction {
         }
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
             ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
-        if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, element.id)) {
-            this.updateDataSource();
-            /* eslint-disable */
-            let thisObj: PivotButton = this;
-            /* eslint-enable */
+        if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, element.getAttribute('data-uid'))) {
+            this.updateDataSource(); // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const thisObj: PivotButton = this;
             thisObj.parent.axisFieldModule.render();
         }
     }
     private isButtonDropped(dropTarget: HTMLElement, target: HTMLElement): boolean {
-        let axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
-        let droppableElement: HTMLElement = closest(dropTarget, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
+        const axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
+        const droppableElement: HTMLElement = closest(dropTarget, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
         let isDropped: boolean = true;
         if (axisPanel && axisPanel === droppableElement) {
-            let pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
-            let droppableTarget: HTMLElement = closest(dropTarget, '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
+            const pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+            const droppableTarget: HTMLElement = closest(dropTarget, '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
             let sourcePosition: number;
             let droppedPosition: number = -1;
             for (let i: number = 0, n: number = pivotButtons.length; i < n; i++) {
-                if (pivotButtons[i].id === target.id) {
+                if (pivotButtons[i as number].id === target.id) {
                     sourcePosition = i;
                 }
                 if (droppableTarget) {
-                    let droppableButton: HTMLElement = droppableTarget.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
-                    if (pivotButtons[i].id === droppableButton.id) {
+                    const droppableButton: HTMLElement = droppableTarget.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
+                    if (pivotButtons[i as number].id === droppableButton.id) {
                         droppedPosition = i;
                     }
                 }
@@ -832,8 +834,8 @@ export class PivotButton implements IAction {
         return isDropped;
     }
     private updateSorting(args: MouseEventArgs): void {
-        let buttonElement: Element = closest((args.target as HTMLElement), '.' + cls.PIVOT_BUTTON_CLASS);
-        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo((buttonElement ? buttonElement.id : ''), this.parent);
+        const buttonElement: Element = closest((args.target as HTMLElement), '.' + cls.PIVOT_BUTTON_CLASS);
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo((buttonElement ? buttonElement.getAttribute('data-uid') : ''), this.parent);
         if (!((args.target as HTMLElement).classList.contains(cls.FILTER_COMMON_CLASS)) &&
             !((args.target as HTMLElement).classList.contains(cls.REMOVE_CLASS)) &&
             !((args.target as HTMLElement).classList.contains(cls.DRAG_CLASS)) &&
@@ -854,14 +856,17 @@ export class PivotButton implements IAction {
                     if (((this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableValueSorting) ||
                         (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule !== undefined &&
                             (this.parent as PivotFieldList).pivotGridModule.enableValueSorting))) {
-                        if ((this.parent as PivotView).enableValueSorting || (this.parent as PivotFieldList).pivotGridModule.enableValueSorting) {  /* eslint-disable-line */
+                        if ((this.parent as PivotView).enableValueSorting ||
+                            (this.parent as PivotFieldList).pivotGridModule.enableValueSorting) {
                             if ((args.target as HTMLElement).classList.contains('e-pivot-button')) {
                                 if ((args.target as HTMLElement).parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-                                    this.parent.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: undefined } } }, true);
+                                    this.parent.setProperties({
+                                        dataSourceSettings: { valueSortSettings: { headerText: undefined } } }, true);
                                 }
                             } else {
                                 if ((args.target as HTMLElement).parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-                                    this.parent.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: undefined } } }, true);
+                                    this.parent.setProperties({
+                                        dataSourceSettings: { valueSortSettings: { headerText: undefined } } }, true);
                                 }
                             }
                         }
@@ -871,15 +876,13 @@ export class PivotButton implements IAction {
                         (this.parent as PivotFieldList).staticPivotGridModule.actionObj = this.parent.actionObj;
                     }
                     if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() !== 'pivotfieldlist') {
-                        let actionInfo: PivotActionInfo = {
+                        const actionInfo: PivotActionInfo = {
                             sortInfo: this.parent.lastSortInfo
-                        }
+                        };
                         this.parent.actionObj.actionInfo = actionInfo;
                         this.updateDataSource(true);
-                    }
-                    /* eslint-disable */
-                    let thisObj: PivotButton = this;
-                    /* eslint-enable */
+                    } // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const thisObj: PivotButton = this;
                     if (thisObj.parent instanceof PivotFieldList) {
                         thisObj.axisField.render();
                     }
@@ -889,8 +892,11 @@ export class PivotButton implements IAction {
             }
         }
     }
-    /* eslint-disable-next-line */
-    /** @hidden */
+    /**
+     *
+     * @param {boolean} isRefreshGrid - It contains isRefreshGrid
+     * @returns {void}
+     * @hidden */
     public updateDataSource(isRefreshGrid?: boolean): void {
         if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
             this.parent.updateDataSource(isRefreshGrid);
@@ -901,21 +907,18 @@ export class PivotButton implements IAction {
                 } else {
                     (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
                 }
-                /* eslint-disable */
                 (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
-                (this.parent as PivotFieldList).
-                    pivotGridModule.setProperties({ dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);
-                /* eslint-enable */
+                (this.parent as PivotFieldList).pivotGridModule.setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);
             } else {
                 (this.parent as PivotFieldList).triggerPopulateEvent();
             }
         }
     }
-    private updateFiltering(args: MouseEventArgs): void {
-        /* eslint-disable */
-        let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
-        let fieldName: string = (args.target as HTMLElement).parentElement.id;
-        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
+    private updateFiltering(args: MouseEventArgs): void {   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
+        const fieldName: string = (args.target as HTMLElement).parentElement.getAttribute('data-uid');
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
         this.parent.actionObj.actionName = events.filterField;
         this.parent.actionObj.fieldInfo = fieldInfo;
         if (this.parent.actionBeginMethod()) {
@@ -931,7 +934,8 @@ export class PivotButton implements IAction {
             pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
                 this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Container');
             if (pivotObj.dataSourceSettings.mode === 'Server') {
-                if (this.parent.engineModule.fieldList[fieldName].members && Object.keys(this.parent.engineModule.fieldList[fieldName].members).length > 0) {
+                if (this.parent.engineModule.fieldList[fieldName as string].members &&
+                    Object.keys(this.parent.engineModule.fieldList[fieldName as string].members).length > 0) {
                     this.updateFilterEvents();
                 } else {
                     pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
@@ -942,16 +946,16 @@ export class PivotButton implements IAction {
         } catch (execption) {
             this.parent.actionFailureMethod(execption);
         }
-        /* eslint-enable */
     }
-    /* eslint-disable-next-line */
-    /** @hidden */
-    public updateFilterEvents(): void {
-        /* eslint-disable */
-        let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
+    /**
+     *
+     * @returns {void}
+     * @hidden */
+    public updateFilterEvents(): void { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
         this.parent.pivotCommon.eventBase.updateFiltering(pivotObj.mouseEventArgs);
-        let target: HTMLElement = pivotObj.mouseEventArgs.target as HTMLElement;
-        this.fieldName = target.parentElement.id;
+        const target: HTMLElement = pivotObj.mouseEventArgs.target as HTMLElement;
+        this.fieldName = target.parentElement.getAttribute('data-uid');
         if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
             this.bindDialogEvents();
         }
@@ -1012,17 +1016,17 @@ export class PivotButton implements IAction {
         this.parent.pivotCommon.filterDialog.dialogPopUp.buttons = this.buttonModel();
         this.parent.pivotCommon.filterDialog.dialogPopUp.dataBind();
     }
-    private updateCustomFilter(args: Event): void {
-        let dialogElement: HTMLElement =
+    private updateCustomFilter(): void {
+        const dialogElement: HTMLElement =
             this.parent.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-selected-tab') as HTMLElement;
-        let fieldName: string = dialogElement.getAttribute('data-fieldname');
-        let levelName: string = dialogElement.getAttribute('data-selectedField');
-        let filterType: string = dialogElement.getAttribute('data-type');
-        let measure: string = dialogElement.getAttribute('data-measure');
-        let operator: string = dialogElement.getAttribute('data-operator');
-        let operand1: string = dialogElement.getAttribute('data-value1');
-        let operand2: string = dialogElement.getAttribute('data-value2');
-        let type: FilterType = ((filterType === 'value') ? 'Value' : (filterType === 'date') ? 'Date' :
+        const fieldName: string = dialogElement.getAttribute('data-fieldname');
+        const levelName: string = dialogElement.getAttribute('data-selectedField');
+        const filterType: string = dialogElement.getAttribute('data-type');
+        const measure: string = dialogElement.getAttribute('data-measure');
+        const operator: string = dialogElement.getAttribute('data-operator');
+        const operand1: string = dialogElement.getAttribute('data-value1');
+        const operand2: string = dialogElement.getAttribute('data-value2');
+        const type: FilterType = ((filterType === 'value') ? 'Value' : (filterType === 'date') ? 'Date' :
             (filterType === 'number') ? 'Number' : 'Label');
         let filterItem: IFilter = {
             name: fieldName,
@@ -1036,8 +1040,8 @@ export class PivotButton implements IAction {
         if (this.parent.dataType === 'olap') {
             filterItem.selectedField = levelName;
             this.removeDataSourceSettings(fieldName, levelName, type);
-            let filterItems: IFilter[] = this.parent.dataSourceSettings.filterSettings;
-            for (let item of filterItems) {
+            const filterItems: IFilter[] = this.parent.dataSourceSettings.filterSettings;
+            for (const item of filterItems) {
                 if (item.name === fieldName && item.selectedField === levelName) {
                     filterObject = item;
                 }
@@ -1047,19 +1051,19 @@ export class PivotButton implements IAction {
         }
         if ((isNOU(operand1) || operand1 === '') ||
             (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNOU(operand2) || operand2 === ''))) {
-            let inputElementString: string =
+            const inputElementString: string =
                 (type.toLowerCase() + ((isNOU(operand1) || operand1 === '') ? '_input_option_1' : '_input_option_2'));
-            let focusElement: HTMLElement = select('#' + this.parent.element.id + '_' + inputElementString, dialogElement);
+            const focusElement: HTMLElement = select('#' + this.parent.element.id + '_' + inputElementString, dialogElement);
             addClass([focusElement], cls.EMPTY_FIELD);
             focusElement.focus();
             return;
         }
-        let filterEventArgs: MemberFilteringEventArgs = {
+        const filterEventArgs: MemberFilteringEventArgs = {
             cancel: false,
             filterSettings: filterItem,
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
         };
-        let control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
+        const control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
             (this.parent as PivotFieldList).isPopupView ? (this.parent as PivotFieldList).pivotGridModule : this.parent;
         control.trigger(events.memberFiltering, filterEventArgs, (observedArgs: MemberFilteringEventArgs) => {
             if (!observedArgs.cancel) {
@@ -1090,37 +1094,37 @@ export class PivotButton implements IAction {
             }
         });
     }
-    private ClearFilter(e: Event): void {
-        let dialogElement: HTMLElement = this.parent.pivotCommon.filterDialog.dialogPopUp.element;
-        let fieldName: string = dialogElement.getAttribute('data-fieldname');
-        let tabElement: HTMLElement = dialogElement.querySelector('.e-selected-tab') as HTMLElement;
+    private ClearFilter(): void {
+        const dialogElement: HTMLElement = this.parent.pivotCommon.filterDialog.dialogPopUp.element;
+        const fieldName: string = dialogElement.getAttribute('data-fieldname');
+        const tabElement: HTMLElement = dialogElement.querySelector('.e-selected-tab') as HTMLElement;
         this.parent.pivotCommon.filterDialog.dialogPopUp.close();
         if (this.parent.dataType === 'olap' && tabElement) {
-            let levelName: string = tabElement.getAttribute('data-selectedField');
+            const levelName: string = tabElement.getAttribute('data-selectedField');
             this.removeDataSourceSettings(fieldName, levelName);
         } else {
             this.removeDataSourceSettings(fieldName);
         }
-        let filterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+        const filterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         this.refreshPivotButtonState(fieldName, filterObject ? true : false);
         this.updateDataSource(true);
     }
     private removeButton(args: Event): void {
-        let target: HTMLElement = args.target as HTMLElement;
-        let fieldName: string = target.parentElement.id;
-        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
+        const target: HTMLElement = args.target as HTMLElement;
+        const fieldName: string = target.parentElement.getAttribute('data-uid');
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
         this.parent.actionObj.actionName = events.removeField;
         this.parent.actionObj.fieldInfo = fieldInfo;
         if (this.parent.actionBeginMethod()) {
             return;
         }
-        let removeFieldArgs: FieldRemoveEventArgs = {
+        const removeFieldArgs: FieldRemoveEventArgs = {
             cancel: false, fieldName: fieldName,
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
             fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
         };
         try {
-            let control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
+            const control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
                 (this.parent as PivotFieldList).isPopupView ? (this.parent as PivotFieldList).pivotGridModule : this.parent;
             control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
                 if (!observedArgs.cancel) {
@@ -1134,7 +1138,8 @@ export class PivotButton implements IAction {
                         if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
                             fieldInfo.position < this.parent.dataSourceSettings.valueIndex && ((this.parent.dataSourceSettings.valueAxis === 'row' &&
                                 observedArgs.axis === 'rows') || (this.parent.dataSourceSettings.valueAxis === 'column' && observedArgs.axis === 'columns'))) {
-                            this.parent.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }, true);
+                            this.parent.setProperties({
+                                dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }, true);
                         }
                         if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
                             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
@@ -1150,10 +1155,14 @@ export class PivotButton implements IAction {
             this.parent.actionFailureMethod(execption);
         }
     }
-    /** @hidden */
+    /**
+     *
+     * @param {NodeCheckEventArgs} args - It contains args value.
+     * @returns {void}
+     * @hidden */
     public nodeStateModified(args: NodeCheckEventArgs): void {
-        let target: Element = closest(args.node as Element, 'li');
-        let fieldName: string = target.getAttribute('data-fieldname');
+        const target: Element = closest(args.node as Element, 'li');
+        const fieldName: string = target.getAttribute('data-fieldname');
         if (target.getAttribute('data-memberId') === 'all') {
             this.parent.pivotCommon.filterDialog.memberTreeView.nodeChecked = null;
             if (args.action === 'check') {
@@ -1162,124 +1171,124 @@ export class PivotButton implements IAction {
                 this.parent.pivotCommon.filterDialog.memberTreeView.uncheckAll();
             }
             if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
-                !this.parent.olapEngineModule.fieldList[fieldName].isHierarchy) {
-                this.updateNodeStates(this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes(), fieldName, args.action);
+                !this.parent.olapEngineModule.fieldList[fieldName as string].isHierarchy) {
+                this.updateNodeStates(this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes(), fieldName);
             }
             this.checkedStateAll(args.action);
             this.parent.pivotCommon.filterDialog.memberTreeView.nodeChecked = this.nodeStateModified.bind(this);
         } else {
             if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
-                !this.parent.olapEngineModule.fieldList[fieldName].isHierarchy) {
+                !this.parent.olapEngineModule.fieldList[fieldName as string].isHierarchy) {
                 // let st1: number = new Date().getTime();
-                let checkedNodes: string[] = this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes();
+                const checkedNodes: string[] = this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes();
                 // let st2: number = (new Date().getTime() - st1) / 1000;
                 // console.log('getAllCheckedNodes:' + st2);
-                this.updateNodeStates(checkedNodes, fieldName, args.action);
+                this.updateNodeStates(checkedNodes, fieldName);
             }
-            let pos: number = this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-memberId')].index;
-            if (this.parent.pivotCommon.currentTreeItems[pos]) {
-                this.parent.pivotCommon.currentTreeItems[pos].isSelected = args.action === 'check';
+            const pos: number = this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-memberId')].index;
+            if (this.parent.pivotCommon.currentTreeItems[pos as number]) {
+                this.parent.pivotCommon.currentTreeItems[pos as number].isSelected = args.action === 'check';
                 this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-memberId')].isSelected = args.action === 'check';
             }
         }
         this.parent.pivotCommon.filterDialog.updateCheckedState();
     }
     private checkedStateAll(state: string): void {
-        let searchItemObj: { [key: string]: string } = {};
+        const searchItemObj: { [key: string]: string } = {};
         /* eslint-disable @typescript-eslint/no-explicit-any */
-        for (let item of this.parent.pivotCommon.searchTreeItems) {
+        for (const item of this.parent.pivotCommon.searchTreeItems) {
             item.isSelected = state === 'check';
             searchItemObj[(item as any).htmlAttributes['data-memberId']] = (item as any).htmlAttributes['data-memberId'];
         }
-        for (let item of this.parent.pivotCommon.currentTreeItems) {
+        for (const item of this.parent.pivotCommon.currentTreeItems) {
             if (searchItemObj[(item as any).htmlAttributes['data-memberId']] !== undefined) {
                 item.isSelected = state === 'check';
                 this.parent.pivotCommon.currentTreeItemsPos[(item as any).htmlAttributes['data-memberId']].isSelected = state === 'check';
             }
-        }
-        /* eslint-enable @typescript-eslint/no-explicit-any */
+        } /* eslint-enable @typescript-eslint/no-explicit-any */
     }
-    private updateNodeStates(checkedNodes: string[], fieldName: string, state: string): void {
-        let fieldList: IOlapField =
-            (this.parent.pivotCommon.engineModule.fieldList as IOlapFieldListOptions)[fieldName];
-        let currentMembers: IMembers = fieldList.members;
-        let searchMembers: IMembers = fieldList.currrentMembers;
+    private updateNodeStates(checkedNodes: string[], fieldName: string): void {
+        const fieldList: IOlapField =
+            (this.parent.pivotCommon.engineModule.fieldList as IOlapFieldListOptions)[fieldName as string];
+        const currentMembers: IMembers = fieldList.members;
+        const searchMembers: IMembers = fieldList.currrentMembers;
         if (fieldList.searchMembers.length > 0) {
-            let members: string[] = Object.keys(searchMembers);
-            for (let member of members) {
-                if (searchMembers[member]) {
-                    searchMembers[member].isSelected = false;
+            const members: string[] = Object.keys(searchMembers);
+            for (const member of members) {
+                if (searchMembers[member as string]) {
+                    searchMembers[member as string].isSelected = false;
                 }
-                if (currentMembers[member]) {
-                    currentMembers[member].isSelected = false;
+                if (currentMembers[member as string]) {
+                    currentMembers[member as string].isSelected = false;
                     if (this.parent.pivotCommon.filterDialog.memberTreeView.element.querySelector('li[data-memberId="' + member + '"]')) {
-                        let element: HTMLElement = this.parent.pivotCommon.filterDialog.memberTreeView.element.querySelector('li[data-memberId="' + member + '"]');
+                        const element: HTMLElement = this.parent.pivotCommon.filterDialog.memberTreeView.element.querySelector('li[data-memberId="' + member + '"]');
                         if (element && !element.querySelector('ul')) {
                             this.parent.pivotCommon.eventBase.updateChildNodeStates(fieldList.filterMembers, fieldName, member, false);
                         }
                     }
                 }
             }
-            for (let node of checkedNodes) {
-                if (currentMembers[node]) {
+            for (const node of checkedNodes) {
+                if (currentMembers[node as string]) {
                     if (this.parent.pivotCommon.filterDialog.memberTreeView.element.querySelector('li[data-memberId="' + node + '"]')) {
-                        let element: HTMLElement = this.parent.pivotCommon.filterDialog.memberTreeView.element.querySelector('li[data-memberId="' + node + '"]');
+                        const element: HTMLElement = this.parent.pivotCommon.filterDialog.memberTreeView.element.querySelector('li[data-memberId="' + node + '"]');
                         if (element && !element.querySelector('ul')) {
-                            currentMembers[node].isSelected = true;
+                            currentMembers[node as string].isSelected = true;
                             this.parent.pivotCommon.eventBase.updateChildNodeStates(fieldList.filterMembers, fieldName, node, true);
                         }
                     }
                 }
-                if (searchMembers[node]) {
-                    searchMembers[node].isSelected = true;
+                if (searchMembers[node as string]) {
+                    searchMembers[node as string].isSelected = true;
                 }
             }
         } else {
-            let members: string[] = Object.keys(currentMembers);
-            for (let member of members) {
-                if (currentMembers[member].isSelected) {
-                    currentMembers[member].isSelected = false;
+            const members: string[] = Object.keys(currentMembers);
+            for (const member of members) {
+                if (currentMembers[member as string].isSelected) {
+                    currentMembers[member as string].isSelected = false;
                 }
             }
-            for (let node of checkedNodes) {
-                if (currentMembers[node]) {
-                    currentMembers[node].isSelected = true;
+            for (const node of checkedNodes) {
+                if (currentMembers[node as string]) {
+                    currentMembers[node as string].isSelected = true;
                     this.parent.pivotCommon.eventBase.updateChildNodeStates(fieldList.filterMembers, fieldName, node, true);
                 }
             }
         }
     }
-    private updateFilterState(fieldName: string, args: Event): void {
+    private updateFilterState(fieldName: string): void {
         let isNodeUnChecked: boolean = false;
         let filterItem: IFilter = { items: [], name: fieldName, type: 'Include' };
-        let engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        const engineModule: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         if (this.parent.dataType === 'olap' && engineModule &&
-            !(engineModule.fieldList[fieldName] as IOlapField).isHierarchy) {
-            let cMembers: IMembers = engineModule.fieldList[fieldName].members;
-            let sMembers: IMembers = (engineModule as OlapEngine).fieldList[fieldName].currrentMembers;
+            !(engineModule.fieldList[fieldName as string] as IOlapField).isHierarchy) {
+            const cMembers: IMembers = engineModule.fieldList[fieldName as string].members;
+            const sMembers: IMembers = (engineModule as OlapEngine).fieldList[fieldName as string].currrentMembers;
             filterItem.items = this.parent.pivotCommon.filterDialog.memberTreeView.getAllCheckedNodes();
-            filterItem.levelCount = (engineModule.fieldList[fieldName] as IOlapField).levelCount;
+            filterItem.levelCount = (engineModule.fieldList[fieldName as string] as IOlapField).levelCount;
             isNodeUnChecked = (filterItem.items.length ===
-                (this.parent.pivotCommon.filterDialog.memberTreeView.fields.dataSource as { [key: string]: object }[]).length ? false : true);
-            if ((engineModule as OlapEngine).fieldList[fieldName].searchMembers.length > 0 && !isNodeUnChecked) {
-                let cNodeLength: number = Object.keys(cMembers).length;
-                let sNodeLength: number = Object.keys(sMembers).length;
+                (this.parent.pivotCommon.filterDialog.memberTreeView.fields.dataSource as { [key: string]: object }[]).length ?
+                false : true);
+            if ((engineModule as OlapEngine).fieldList[fieldName as string].searchMembers.length > 0 && !isNodeUnChecked) {
+                const cNodeLength: number = Object.keys(cMembers).length;
+                const sNodeLength: number = Object.keys(sMembers).length;
                 isNodeUnChecked = cNodeLength === sNodeLength && cNodeLength === filterItem.items.length ? false : true;
             }
-            let filterItems: string[] = filterItem.items;
-            for (let node of filterItems) {
-                if ((engineModule as OlapEngine).fieldList[fieldName].searchMembers.length > 0 && sMembers[node]) {
-                    sMembers[node].isSelected = true;
-                } else if (cMembers[node]) {
-                    cMembers[node].isSelected = true;
+            const filterItems: string[] = filterItem.items;
+            for (const node of filterItems) {
+                if ((engineModule as OlapEngine).fieldList[fieldName as string].searchMembers.length > 0 && sMembers[node as string]) {
+                    sMembers[node as string].isSelected = true;
+                } else if (cMembers[node as string]) {
+                    cMembers[node as string].isSelected = true;
                 }
             }
         } else {
-            for (let item of this.parent.pivotCommon.searchTreeItems) {
+            for (const item of this.parent.pivotCommon.searchTreeItems) {
                 if (item.isSelected) {
                     if (this.parent.pivotCommon.isDateField) {
                         filterItem.items.push(item.name as string);
-                    } else {
+                    } else { // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         filterItem.items.push((item as any).htmlAttributes['data-memberId'] as string);
                     }
                 }
@@ -1294,23 +1303,23 @@ export class PivotButton implements IAction {
             engineModule.fieldList[filterItem.name].filterType = filterItem.type.toLowerCase();
             engineModule.fieldList[filterItem.name].filter = [];
             for (let i: number = 0; i < filterItem.items.length; i++) {
-                engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i] as string);
+                engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i as number] as string);
             }
         }
-        let filterEventArgs: MemberFilteringEventArgs = {
+        const filterEventArgs: MemberFilteringEventArgs = {
             filterSettings: filterItem,
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
             cancel: false
         };
-        let control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
+        const control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
             (this.parent as PivotFieldList).isPopupView ? (this.parent as PivotFieldList).pivotGridModule : this.parent;
         control.trigger(events.memberFiltering, filterEventArgs, (observedArgs: MemberFilteringEventArgs) => {
             filterItem = observedArgs.filterSettings;
             if (!observedArgs.cancel) {
-                let filterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+                const filterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (filterObject) {
                     for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
-                        if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {
+                        if (this.parent.dataSourceSettings.filterSettings[i as number].name === fieldName) {
                             this.parent.dataSourceSettings.filterSettings.splice(i, 1);
                             break;
                         }
@@ -1326,20 +1335,20 @@ export class PivotButton implements IAction {
                     filterItem = {};
                 }
                 this.parent.lastFilterInfo = filterItem;
-                let actionInfo: PivotActionInfo = {
+                const actionInfo: PivotActionInfo = {
                     filterInfo: this.parent.lastFilterInfo
-                }
+                };
                 this.parent.actionObj.actionInfo = actionInfo;
-                this.updateDataSource(true);
-                let thisObj: PivotButton = this;
+                this.updateDataSource(true); // eslint-disable-next-line @typescript-eslint/no-this-alias
+                const thisObj: PivotButton = this;
                 //setTimeout(() => {
                 if (thisObj.parent instanceof PivotFieldList) {
                     thisObj.axisField.render();
                 }
                 //});
             }
-            let pivotButtons: HTMLElement[] = [].slice.call(this.parentElement.querySelectorAll('.e-pivot-button'));
-            for (let item of pivotButtons) {
+            const pivotButtons: HTMLElement[] = [].slice.call(this.parentElement.querySelectorAll('.e-pivot-button'));
+            for (const item of pivotButtons) {
                 if (item.getAttribute('data-uid') === fieldName) {
                     item.focus();
                     break;
@@ -1348,9 +1357,9 @@ export class PivotButton implements IAction {
         });
     }
     private refreshPivotButtonState(fieldName: string, isFiltered: boolean): void {
-        let pivotButtons: HTMLElement[] = [].slice.call(this.parentElement.querySelectorAll('.e-pivot-button'));
+        const pivotButtons: HTMLElement[] = [].slice.call(this.parentElement.querySelectorAll('.e-pivot-button'));
         let selectedButton: HTMLElement;
-        for (let item of pivotButtons) {
+        for (const item of pivotButtons) {
             if (item.getAttribute('data-uid') === fieldName) {
                 selectedButton = item.querySelector('.' + cls.FILTER_COMMON_CLASS) as HTMLElement;
                 break;
@@ -1365,23 +1374,23 @@ export class PivotButton implements IAction {
         }
     }
     private removeDataSourceSettings(fieldName: string, selectedField?: string, type?: string): void {
-        let filterSettings: IFilter[] = this.parent.dataSourceSettings.filterSettings;
+        const filterSettings: IFilter[] = this.parent.dataSourceSettings.filterSettings;
         for (let len: number = 0, lnt: number = filterSettings.length; len < lnt; len++) {
             if (this.parent.dataType === 'olap' && selectedField) {
-                if (!type && filterSettings[len].name === fieldName &&
-                    filterSettings[len].selectedField === selectedField) {
+                if (!type && filterSettings[len as number].name === fieldName &&
+                    filterSettings[len as number].selectedField === selectedField) {
                     filterSettings.splice(len, 1);
                     break;
                 } else if (type) {
-                    if (filterSettings[len].type !== type &&
-                        filterSettings[len].name === fieldName) {
+                    if (filterSettings[len as number].type !== type &&
+                        filterSettings[len as number].name === fieldName) {
                         filterSettings.splice(len, 1);
                         lnt--;
                         len--;
                     }
                 }
             } else {
-                if (filterSettings[len].name === fieldName) {
+                if (filterSettings[len as number].name === fieldName) {
                     filterSettings.splice(len, 1);
                     if (this.parent.dataType !== 'olap') {
                         break;
@@ -1398,7 +1407,7 @@ export class PivotButton implements IAction {
                 [].slice.call(this.parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS + '-last')), cls.INDICATOR_HOVER_CLASS);
             removeClass([].slice.call(this.parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
             if (closest((e.target as HTMLElement), '.' + cls.DROPPABLE_CLASS)) {
-                let element: HTMLElement = closest((e.target as HTMLElement), '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
+                const element: HTMLElement = closest((e.target as HTMLElement), '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
                 addClass([element.querySelector('.' + cls.DROP_INDICATOR_CLASS)], cls.INDICATOR_HOVER_CLASS);
             }
         }
@@ -1445,6 +1454,8 @@ export class PivotButton implements IAction {
     }
 
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -1456,6 +1467,8 @@ export class PivotButton implements IAction {
     }
 
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -1465,6 +1478,7 @@ export class PivotButton implements IAction {
 
     /**
      * To destroy the pivot button event listener
+     *
      * @returns {void}
      * @hidden
      */

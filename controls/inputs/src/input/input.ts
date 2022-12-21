@@ -338,7 +338,9 @@ export namespace Input {
             }, 200);
         });
     }
-
+    export function destroy(){
+        privateInputObj = null;
+    }
     function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {
         const parent: HTMLElement = getParentNode(element);
         if (parent.classList.contains(CLASSNAMES.FLOATINPUT) && floatLabelType === 'Auto') {
@@ -398,7 +400,7 @@ export namespace Input {
             if (!isNullOrUndefined(parentElement)) {
                 const button: HTMLElement = <HTMLElement> parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
                 if (!isNullOrUndefined(button)) {
-                    if (element.value && parentElement.classList.contains('e-input-focus')) {
+                    if (element.value && !isNullOrUndefined(parentElement) && parentElement.classList.contains('e-input-focus')) {
                         removeClass([button], CLASSNAMES.CLEARICONHIDE);
                     } else {
                         addClass([button], CLASSNAMES.CLEARICONHIDE);

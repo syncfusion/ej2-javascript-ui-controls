@@ -353,7 +353,7 @@ export class Edit {
         if (!this.editorElem || !select('#' + this.parent.element.id + '_edit', this.parent.element)) {
             const editor: HTMLElement = this.parent.createElement(
                 'div', { id: this.parent.element.id + '_edit', className: 'e-spreadsheet-edit', attrs: { 'contentEditable': 'true',
-                'role': 'textbox', 'spellcheck': 'false', 'aria-multiline': 'true' } });
+                    'role': 'textbox', 'spellcheck': 'false', 'aria-multiline': 'true' } });
             if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
                 this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].remove();
             }
@@ -480,7 +480,7 @@ export class Edit {
                 if (args.isUnique) {
                     const indexes: number[] = getRangeIndexes(this.uniqueColl);
                     const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
-                    if (cell) {
+                    if (cell && cell.value) {
                         isSpill = cell.value.toString().indexOf('#SPILL!') > - 1;
                     }
                 }
@@ -869,7 +869,7 @@ export class Edit {
             } else {
                 range = address;
             }
-            let validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: null, isValid: true };
+            const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: null, isValid: true };
             this.parent.notify(isValidation, validEventArgs);
             isValidate = validEventArgs.isValid;
             if (isValidate) {
@@ -956,22 +956,23 @@ export class Edit {
             uniquArgs.sheetName = this.parent.getActiveSheet().name;
         }
         for (let i: number = 0; i < collection.length; i++) {
-            if (collection[i].split('!')[0] === uniquArgs.sheetName) {
-                const rangeIdx: number[] = getRangeIndexes(collection[i]);
+            if (collection[i as number].split('!')[0] === uniquArgs.sheetName) {
+                const rangeIdx: number[] = getRangeIndexes(collection[i as number]);
                 for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
                     for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
                         if (uniquArgs.cellIdx[0] === j && uniquArgs.cellIdx[1] === k) {
                             uniquArgs.isUnique = true; this.uniqueCell = true;
                             const uniqueIndex: number[] = this.uniqueColl !== '' ? getRangeIndexes(this.uniqueColl) : [0, 0, 0, 0];
-                            const collectionIndex: number[] = getRangeIndexes(collection[i]);
+                            const collectionIndex: number[] = getRangeIndexes(collection[i as number]);
                             if (uniqueIndex[0] === collectionIndex[0] && uniqueIndex[1] === collectionIndex[1]) {
                                 const index: number[] = [uniqueIndex[0], collectionIndex[1], uniqueIndex[0], collectionIndex[1]];
                                 index[2] = uniqueIndex[2] > collectionIndex[2] ? uniqueIndex[2] : collectionIndex[2];
                                 index[3] = uniqueIndex[3] > collectionIndex[3] ? uniqueIndex[3] : collectionIndex[3];
                                 this.uniqueColl = getRangeAddress(index);
                                 uniquArgs.uniqueRange = getRangeAddress(index);
-                            } else { this.uniqueColl = collection[i];
-                                uniquArgs.uniqueRange = collection[i];
+                            } else {
+                                this.uniqueColl = collection[i as number];
+                                uniquArgs.uniqueRange = collection[i as number];
                             }
                         }
                     }
@@ -1008,8 +1009,8 @@ export class Edit {
         this.parent.updateCell({value: ''}, getRangeAddress([cellIdx[0], cellIdx[1]]));
         const sheets: SheetModel[] = this.parent.sheets; let formula: string = cell.formula;
         for (let i: number = 0; i < sheets.length; i++) {
-            if (formula.indexOf(sheets[i].name) > - 1) {
-                formula = formula.replace(sheets[i].name, '!' + i);
+            if (formula.indexOf(sheets[i as number].name) > - 1) {
+                formula = formula.replace(sheets[i as number].name, '!' + i);
             }
         }
         this.parent.computeExpression(formula);

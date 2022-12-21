@@ -583,7 +583,7 @@ describe('Self reference data', () => {
         triggerMouseEvent(resourceCheckbox2, 'click')
         let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
         triggerMouseEvent(saveRecord, 'click');
-        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(16);
+        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
     });
   });
   describe("CR issues", () => {
@@ -1344,6 +1344,7 @@ describe('Resource view with persistence', () => {
             ganttObj.actionComplete = (arg: any): void => {
                 if (arg.requestType == "delete") {
                     expect(ganttObj.getFormatedDate(ganttObj.currentViewData[15].ganttProperties.startDate, 'M/dd/yyyy')).toBe('3/29/2019');
+                    expect(ganttObj.currentViewData[17].ganttProperties.resourceInfo).toBe(null);
                 }
             };
             ganttObj.dataBind();

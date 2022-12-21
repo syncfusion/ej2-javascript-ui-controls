@@ -280,3 +280,13 @@ export enum AnnotationDataFormat {
     Json = 'Json',
     Xfdf = 'Xfdf',
 }
+
+/**
+ * Represents the format type of form data.
+ */
+ export enum FormFieldDataFormat {
+    Xml = 'Xml',
+    Fdf = 'Fdf',
+    Xfdf = 'Xfdf',
+    Json = 'Json',
+}

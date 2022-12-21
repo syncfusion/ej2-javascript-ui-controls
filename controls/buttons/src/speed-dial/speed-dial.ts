@@ -64,41 +64,41 @@ export enum SpeedDialMode {
     /**
      * SpeedDial items are displayed in linear order like list.
      */
-    Linear,
+    Linear = 'Linear',
     /**
      * SpeedDial items are displayed like radial menu in radial direction (circular direction).
      */
-    Radial
+    Radial = 'Radial'
 }
 /**
  * Defines the speed dial action items display direction when mode is Linear.
  */
 export enum LinearDirection {
     /**
-    * Speed dial action items are displayed vertically above the button of Speed Dial.
-    */
-    Up,
+     * Speed dial action items are displayed vertically above the button of Speed Dial.
+     */
+    Up = 'Up',
 
     /**
-    * Speed dial action items are displayed vertically below the button of Speed Dial.
-    */
-    Down,
+     * Speed dial action items are displayed vertically below the button of Speed Dial.
+     */
+    Down = 'Down',
 
     /**
-    * Speed dial action items are displayed horizontally on the button's right side.
-    */
-    Right,
+     * Speed dial action items are displayed horizontally on the button's right side.
+     */
+    Right = 'Right',
 
     /**
-    * Speed dial action items are displayed horizontally on the button's left side.
-    */
-    Left,
+     * Speed dial action items are displayed horizontally on the button's left side.
+     */
+    Left = 'Left',
 
     /**
-    * Speed dial action items are displayed vertically above or below the button of Speed Dial based on the position.
-    * If Position is TopRight, TopLeft, TopCenter, the items are displayed vertically below the button else above the button.
-    */
-    Auto
+     * Speed dial action items are displayed vertically above or below the button of Speed Dial based on the position.
+     * If Position is TopRight, TopLeft, TopCenter, the items are displayed vertically below the button else above the button.
+     */
+    Auto = 'Auto'
 }
 
 /**
@@ -106,19 +106,19 @@ export enum LinearDirection {
  */
 export enum RadialDirection {
     /**
-    * SpeedDial items are arranged in clockwise direction.
-    */
-    Clockwise,
+     * SpeedDial items are arranged in clockwise direction.
+     */
+    Clockwise = 'Clockwise',
 
     /**
-    * SpeedDial items are shown in anti-clockwise direction.
-    */
-    AntiClockwise,
+     * SpeedDial items are shown in anti-clockwise direction.
+     */
+    AntiClockwise = 'AntiClockwise',
 
     /**
-    * SpeedDial items are shown clockwise or anti-clockwise based on the position.
-    */
-    Auto
+     * SpeedDial items are shown clockwise or anti-clockwise based on the position.
+     */
+    Auto = 'Auto'
 }
 
 /**
@@ -126,84 +126,84 @@ export enum RadialDirection {
  */
 export enum SpeedDialAnimationEffect {
     /**
-    * SpeedDial open/close actions occur with the Fade animation effect.
-    */
-    Fade,
+     * SpeedDial open/close actions occur with the Fade animation effect.
+     */
+    Fade = 'Fade',
 
     /**
-    * SpeedDial open/close actions occur with the FadeZoom animation effect.
-    */
-    FadeZoom,
+     * SpeedDial open/close actions occur with the FadeZoom animation effect.
+     */
+    FadeZoom = 'FadeZoom',
 
     /**
-    * SpeedDial open/close actions occur with the FlipLeftDown animation effect.
-    */
-    FlipLeftDown,
+     * SpeedDial open/close actions occur with the FlipLeftDown animation effect.
+     */
+    FlipLeftDown = 'FlipLeftDown',
 
     /**
-    * SpeedDial open/close actions occur with the FlipLeftUp animation effect.
-    */
-    FlipLeftUp,
+     * SpeedDial open/close actions occur with the FlipLeftUp animation effect.
+     */
+    FlipLeftUp = 'FlipLeftUp',
 
     /**
-    * SpeedDial open/close actions occur with the FlipRightDown animation effect.
-    */
-    FlipRightDown,
+     * SpeedDial open/close actions occur with the FlipRightDown animation effect.
+     */
+    FlipRightDown = 'FlipRightDown',
 
     /**
-    * SpeedDial open/close actions occur with the FlipRightUp animation effect.
-    */
-    FlipRightUp,
+     * SpeedDial open/close actions occur with the FlipRightUp animation effect.
+     */
+    FlipRightUp = 'FlipRightUp',
 
     /**
-    * SpeedDial open/close actions occur with the FlipXDown animation effect.
-    */
-    FlipXDown,
+     * SpeedDial open/close actions occur with the FlipXDown animation effect.
+     */
+    FlipXDown = 'FlipXDown',
 
     /**
-    * SpeedDial open/close actions occur with the FlipXUp animation effect.
-    */
-    FlipXUp,
+     * SpeedDial open/close actions occur with the FlipXUp animation effect.
+     */
+    FlipXUp = 'FlipXUp',
 
     /**
-    * SpeedDial open/close actions occur with the FlipYLeft animation effect.
-    */
-    FlipYLeft,
+     * SpeedDial open/close actions occur with the FlipYLeft animation effect.
+     */
+    FlipYLeft = 'FlipYLeft',
 
     /**
-    * SpeedDial open/close actions occur with the FlipYRight animation effect.
-    */
-    FlipYRight,
+     * SpeedDial open/close actions occur with the FlipYRight animation effect.
+     */
+    FlipYRight = 'FlipYRight',
 
     /**
-    * SpeedDial open/close actions occur with the SlideBottom animation effect.
-    */
-    SlideBottom,
+     * SpeedDial open/close actions occur with the SlideBottom animation effect.
+     */
+    SlideBottom = 'SlideBottom',
 
     /**
-    * SpeedDial open/close actions occur with the SlideLeft animation effect.
-    */
-    SlideLeft,
+     * SpeedDial open/close actions occur with the SlideLeft animation effect.
+     */
+    SlideLeft = 'SlideLeft',
 
     /**
-    * SpeedDial open/close actions occur with the SlideRight animation effect.
-    */
-    SlideRight,
+     * SpeedDial open/close actions occur with the SlideRight animation effect.
+     */
+    SlideRight = 'SlideRight',
 
     /**
-    * SpeedDial open/close actions occur with the SlideTop animation effect.
-    */
-    SlideTop,
+     * SpeedDial open/close actions occur with the SlideTop animation effect.
+     */
+    SlideTop = 'SlideTop',
 
     /**
-    * SpeedDial open/close actions occur with the Zoom animation effect.
-    */
-    Zoom,
+     * SpeedDial open/close actions occur with the Zoom animation effect.
+     */
+    Zoom = 'Zoom',
 
     /**
-    * SpeedDial open/close actions occur without any animation effect.
-    */
-    None
+     * SpeedDial open/close actions occur without any animation effect.
+     */
+    None = 'None'
 }
 
 /**
@@ -258,8 +258,8 @@ export interface SpeedDialItemEventArgs extends BaseEventArgs {
  */
 export class SpeedDialAnimationSettings extends ChildProperty<SpeedDialAnimationSettings> {
     /**
-     * Defines  the type of animation effect used for opening and closing of the Speed Dial items. 
-     * 
+     * Defines  the type of animation effect used for opening and closing of the Speed Dial items.
+     *
      * @isenumeration true
      * @default SpeedDialAnimationEffect.Fade
      * @asptype SpeedDialAnimationEffect
@@ -268,6 +268,7 @@ export class SpeedDialAnimationSettings extends ChildProperty<SpeedDialAnimation
     public effect: string | SpeedDialAnimationEffect;
     /**
      * Defines the duration in milliseconds that the animation takes to open or close the popup.
+     *
      * @default 400
      * @aspType int
      */
@@ -275,6 +276,7 @@ export class SpeedDialAnimationSettings extends ChildProperty<SpeedDialAnimation
     public duration: number;
     /**
      * Defines the delay before starting the animation.
+     *
      * @default 0
      * @aspType int
      */
@@ -336,7 +338,7 @@ export class RadialSettings extends ChildProperty<RadialSettings> {
  */
 export class SpeedDialItem extends ChildProperty<SpeedDialItem>  {
     /**
-     * Defines one or more CSS classes to include an icon or image in speed dial item. 
+     * Defines one or more CSS classes to include an icon or image in speed dial item.
      *
      * @default ''
      */
@@ -382,7 +384,7 @@ export class SpeedDialItem extends ChildProperty<SpeedDialItem>  {
  * The SpeedDial component that appears in front of all the contents of the page and displays list of action buttons on click which is an extended version of FAB.
  * The button of speed dial is positioned in relative to a view port of browser or the .
  * It can display a menu of related actions or a custom content popupTemplate>.
- * 
+ *
  */
 @NotifyPropertyChanges
 export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPropertyChanged {
@@ -396,7 +398,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public animation: SpeedDialAnimationSettingsModel;
 
     /**
-     * Defines the content for the button of SpeedDial. 
+     * Defines the content for the button of SpeedDial.
      *
      * @default ''
      */
@@ -412,7 +414,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public closeIconCss: string;
 
     /**
-     * Defines one or more CSS classes to customize the appearance of SpeedDial. 
+     * Defines one or more CSS classes to customize the appearance of SpeedDial.
      *
      * @default ''
      */
@@ -421,13 +423,13 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     /**
      * Defines the speed dial item display direction when mode is linear .
-     * The possible values are 
+     * The possible values are
      * * Up
      * * Down
      * * Left
      * * Right
      * * Auto
-     * 
+     *
      * @isenumeration true
      * @default LinearDirection.Auto
      * @asptype LinearDirection
@@ -444,15 +446,17 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public disabled: boolean;
 
     /**
-     * Defines the position of icon in the button of speed dial. 
+     * Defines the position of icon in the button of speed dial.
      * The possible values are:
      * * Left
      * * Right
      *
-     * @default "left"
+     * @isenumeration true
+     * @default IconPosition.Left
+     * @asptype IconPosition
      */
     @Property('Left')
-    public iconPosition: IconPosition;
+    public iconPosition: string | IconPosition;
 
     /**
      * Defines the list of SpeedDial items.
@@ -463,15 +467,15 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public items: SpeedDialItemModel[];
 
     /**
-    * Defines the template content for the speed dial item.
-    *
-    * @default ''
-    */
+     * Defines the template content for the speed dial item.
+     *
+     * @default ''
+     */
     @Property('')
     public itemTemplate: string;
 
     /**
-     * Defines the display mode of speed dial action items. 
+     * Defines the display mode of speed dial action items.
      * The possible values are:
      * * Linear
      * * Radial
@@ -484,7 +488,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public mode: string | SpeedDialMode;
 
     /**
-     * Defines one or more CSS classes to include an icon or image for the button of SpeedDial when it's closed.  
+     * Defines one or more CSS classes to include an icon or image for the button of SpeedDial when it's closed.
      *
      * @default ''
      */
@@ -492,7 +496,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public openIconCss: string;
 
     /**
-     * Defines whether to open the popup when the button of SpeedDial is hovered. 
+     * Defines whether to open the popup when the button of SpeedDial is hovered.
      * By default, SpeedDial opens popup on click action.
      *
      * @default false
@@ -501,7 +505,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public opensOnHover: boolean;
 
     /**
-     * Defines the position of the button of Speed Dial relative to target. 
+     * Defines the position of the button of Speed Dial relative to target.
      * Defines the position of the FAB relative to target.
      * The possible values are:
      * * TopLeft: Positions the FAB at the target's top left corner.
@@ -513,9 +517,9 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * * BottomLeft: Positions the FAB at the target's top left corner.
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
-     *  To refresh the position of FAB on target resize, use refreshPosition method. 
+     *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
-     * 
+     *
      * @isenumeration true
      * @default FabPosition.BottomRight
      * @asptype FabPosition
@@ -524,8 +528,8 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public position: string | FabPosition;
 
     /**
-     * Defines whether the speed dial popup can be displayed as modal or modal less. 
-     * When enabled, the Speed dial creates an overlay that disables interaction with other elements other than speed dial items. 
+     * Defines whether the speed dial popup can be displayed as modal or modal less.
+     * When enabled, the Speed dial creates an overlay that disables interaction with other elements other than speed dial items.
      * If user clicks anywhere other than speed dial items then popup will get closed.
      *
      * @default false.
@@ -550,7 +554,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public radialSettings: RadialSettingsModel;
 
     /**
-     * Defines the selector that points to the element in which the button of SpeedDial will be positioned. 
+     * Defines the selector that points to the element in which the button of SpeedDial will be positioned.
      * By default button is positioned based on viewport of browser.
      * The target element must have relative position, else Button will get positioned based on the closest element which has relative position.
      *
@@ -560,7 +564,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public target: string | HTMLElement;
 
     /**
-     * Defines whether the SpeedDial is visible or hidden. 
+     * Defines whether the SpeedDial is visible or hidden.
      *
      * @default true.
      */
@@ -568,7 +572,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public visible: boolean;
 
     /**
-     * Event callback that is raised before the speed dial popup is closed.  
+     * Event callback that is raised before the speed dial popup is closed.
      *
      * @event beforeClose
      */
@@ -576,7 +580,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public beforeClose: EmitType<SpeedDialBeforeOpenCloseEventArgs>;
 
     /**
-     * Event callback that is raised before rendering the speed dial item.  
+     * Event callback that is raised before rendering the speed dial item.
      *
      * @event beforeItemRender
      */
@@ -584,7 +588,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public beforeItemRender: EmitType<SpeedDialItemEventArgs>;
 
     /**
-     * Event callback that is raised before the speed dial popup is opened.    
+     * Event callback that is raised before the speed dial popup is opened.
      *
      * @event beforeOpen
      */
@@ -600,7 +604,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public created: EmitType<Event>;
 
     /**
-     * Event callback that is raised when a speed dial action item is clicked.  
+     * Event callback that is raised when a speed dial action item is clicked.
      *
      * @event clicked
      */
@@ -608,7 +612,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public clicked: EmitType<SpeedDialItemEventArgs>;
 
     /**
-     * Event callback that is raised when the SpeedDial popup is closed.  
+     * Event callback that is raised when the SpeedDial popup is closed.
      *
      * @event onClose
      */
@@ -616,7 +620,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     public onClose: EmitType<SpeedDialOpenCloseEventArgs>;
 
     /**
-     * Event callback that is raised when the SpeedDial popup is opened.  
+     * Event callback that is raised when the SpeedDial popup is opened.
      *
      * @event onOpen
      */
@@ -640,11 +644,11 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private keyConfigs: { [key: string]: string };
 
     /**
-    * Constructor for creating the widget
-    *
-    * @param  {SpeedDialModel} options - Specifies the floating action button model
-    * @param  {string|HTMLButtonElement} element - Specifies the target element
-    */
+     * Constructor for creating the widget
+     *
+     * @param  {SpeedDialModel} options - Specifies the floating action button model
+     * @param  {string|HTMLButtonElement} element - Specifies the target element
+     */
     constructor(options?: SpeedDialModel, element?: string | HTMLButtonElement) {
         super(options, <string | HTMLButtonElement>element);
     }
@@ -668,7 +672,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             moveLeft: 'leftarrow',
             moveRight: 'rightarrow',
             moveUp: 'uparrow',
-            esc: 'escape',
+            esc: 'escape'
         };
         this.validateDirection();
     }
@@ -706,35 +710,31 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             iconPosition: this.iconPosition,
             position: this.position,
             target: this.target,
-            visible: this.visible,
+            visible: this.visible
         });
         this.fab.appendTo(this.element);
-        if ((this.items.length > 0) || this.popupTemplate) this.createPopup();
+        if ((this.items.length > 0) || this.popupTemplate) { this.createPopup(); }
         this.wireEvents();
 
     }
     private wireEvents(): void {
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
         EventHandler.add(document.body, 'click', this.bodyClickHandler, this);
-        this.opensOnHover ? this.wireFabHover() : this.wireFabClick();
+        if (this.opensOnHover) { this.wireFabHover(); } else { this.wireFabClick(); }
     }
     private wirePopupEvents(): void {
         this.removeRippleEffect = rippleEffect(this.popupEle, { selector: '.' + SDLIICON });
-        this.keyboardModule = new KeyboardEvents(
-            this.element,
-            {
-                keyAction: this.keyActionHandler.bind(this),
-                keyConfigs: this.keyConfigs,
-                eventName: 'keydown'
-            }
+        this.keyboardModule = new KeyboardEvents(this.element, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown'
+        }
         );
-        this.popupKeyboardModule = new KeyboardEvents(
-            this.popupEle,
-            {
-                keyAction: this.popupKeyActionHandler.bind(this),
-                keyConfigs: { esc: 'escape' },
-                eventName: 'keydown'
-            }
+        this.popupKeyboardModule = new KeyboardEvents(this.popupEle, {
+            keyAction: this.popupKeyActionHandler.bind(this),
+            keyConfigs: { esc: 'escape' },
+            eventName: 'keydown'
+        }
         );
         EventHandler.add(this.popupEle, 'click', this.popupClick, this);
         EventHandler.add(this.popupEle, 'mouseleave', this.popupMouseLeaveHandle, this);
@@ -758,31 +758,31 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.element.insertAdjacentElement('afterend', this.popupEle);
         attributes(this.element, { 'aria-expanded': 'false', 'aria-haspopup': 'true', 'aria-controls': this.popupEle.id });
         this.setPopupContent();
-        if (this.modal) this.createOverlay();
+        if (this.modal) { this.createOverlay(); }
         this.checkTarget();
         this.setPositionProps();
         this.wirePopupEvents();
     }
-    private createOverlay() {
+    private createOverlay(): void {
         this.overlayEle = this.createElement('div', {
             id: this.element.id + '_overlay',
-            className: (SDOVERLAY + (this.isMenuOpen ? '' : ' ' + SDHIDDEN) + ' ' + this.cssClass).trim(),
+            className: (SDOVERLAY + (this.isMenuOpen ? '' : ' ' + SDHIDDEN) + ' ' + this.cssClass).trim()
         });
         this.element.insertAdjacentElement('beforebegin', this.overlayEle);
     }
-    private popupClick(e: Event): void {
+    private popupClick(): void {
         this.isControl = true;
     }
 
     //Checks and closes the speed dial if the click happened outside this speed dial.
     private bodyClickHandler(e: Event): void {
         if (this.isControl) { this.isControl = false; return; }
-        if (this.isMenuOpen) this.hidePopupEle(e);
+        if (this.isMenuOpen) { this.hidePopupEle(e); }
     }
 
     private fabClick(e: Event): void {
         this.isControl = true;
-        this.isMenuOpen ? this.hidePopupEle(e) : this.showPopupEle(e);
+        if (this.isMenuOpen) { this.hidePopupEle(e); } else { this.showPopupEle(e); }
     }
 
     private setPopupContent(): void {
@@ -795,15 +795,16 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             this.popupEle.classList.add(TEMPLATESD);
             this.appendTemplate();
         }
+        this.renderReactTemplates();
     }
     private appendTemplate(): void {
         const templateContainer: HTMLElement = this.createElement('div', { className: SDTEMPLATECONTAINER });
         append([templateContainer], this.popupEle);
-        let templateFunction: Function = this.getTemplateString(this.popupTemplate);
+        const templateFunction: Function = this.getTemplateString(this.popupTemplate);
         append(templateFunction({}, this, 'fabPopupTemplate', (this.element.id + 'popupTemplate'), this.isStringTemplate), templateContainer);
     }
     private getTemplateString(template: string): Function {
-        let stringContent = '';
+        let stringContent: string = '';
         try {
             const tempEle: HTMLElement = select(template);
             if (tempEle) {
@@ -820,7 +821,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private updatePopupTemplate(): void {
         if (this.popupEle) {
             if (this.popupEle.querySelector('.' + SDLI)) {
-                this.clearItems;
+                this.clearItems();
                 this.popupEle.classList.remove(RADIALSD, LINEARSD);
                 this.popupEle.classList.add(TEMPLATESD);
             }
@@ -834,7 +835,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         }
     }
     private createUl(): void {
-        let popupUlEle = this.createElement('ul', {
+        const popupUlEle: HTMLElement = this.createElement('ul', {
             className: SDUL,
             id: this.element.id + '_ul',
             attrs: { 'role': 'menu' }
@@ -844,10 +845,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     private createItems(): void {
         this.focusedIndex = -1;
-        let ul: HTMLElement = this.popupEle.querySelector('.' + SDUL);
-        for (let index = 0; index < this.items.length; index++) {
-            let item: SpeedDialItemModel = this.items[index];
-            let li: HTMLElement = this.createElement('li', {
+        const ul: HTMLElement = this.popupEle.querySelector('.' + SDUL);
+        for (let index: number = 0; index < this.items.length; index++) {
+            const item: SpeedDialItemModel = this.items[parseInt(index.toString(), 10)];
+            const li: HTMLElement = this.createElement('li', {
                 className: SDLI + ' ' + SDHIDDEN,
                 id: item.id ? item.id : (this.element.id + '_li_' + index),
                 attrs: { 'role': 'menuitem' }
@@ -856,22 +857,22 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
                 li.setAttribute('aria-label', item.text);
             }
             if (this.itemTemplate) {
-                let templateFunction: Function = this.getTemplateString(this.itemTemplate);
+                const templateFunction: Function = this.getTemplateString(this.itemTemplate);
                 append(templateFunction(item, this, 'fabItemTemplate', (this.element.id + 'itemTemplate'), this.isStringTemplate), li);
             } else {
                 if (item.iconCss) {
-                    let iconSpan: HTMLElement = this.createElement('span', {
-                        className: SDLIICON + ' ' + item.iconCss,
+                    const iconSpan: HTMLElement = this.createElement('span', {
+                        className: SDLIICON + ' ' + item.iconCss
                     });
                     li.appendChild(iconSpan);
                 }
                 if (item.text) {
-                    let textSpan: HTMLElement = this.createElement('span', {
-                        className: SDLITEXT,
+                    const textSpan: HTMLElement = this.createElement('span', {
+                        className: SDLITEXT
                     });
                     textSpan.innerText = item.text;
                     li.appendChild(textSpan);
-                    if (!item.iconCss) li.classList.add(SDLITEXTONLY);
+                    if (!item.iconCss) { li.classList.add(SDLITEXTONLY); }
                 }
             }
             if (item.disabled) {
@@ -883,16 +884,16 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             if (item.title) {
                 li.setAttribute('title', item.title);
             }
-            let eventArgs: SpeedDialItemEventArgs = { element: li, item: item };
+            const eventArgs: SpeedDialItemEventArgs = { element: li, item: item };
             this.trigger('beforeItemRender', eventArgs, (args: SpeedDialItemEventArgs) => {
                 ul.appendChild(args.element);
-            })
+            });
         }
     }
     private setRTL(): void {
-        this.enableRtl ? this.popupEle.classList.add(RTLCLASS) : this.popupEle.classList.remove(RTLCLASS);
+        this.popupEle.classList[this.enableRtl ? 'add' : 'remove'](RTLCLASS);
         this.clearHorizontalPosition();
-        (!(this.popupTemplate || (this.mode === 'Radial'))) ? this.setLinearHorizontalPosition() : this.setHorizontalPosition();
+        if (!(this.popupTemplate || (this.mode === 'Radial'))) { this.setLinearHorizontalPosition(); } else { this.setHorizontalPosition(); }
     }
 
     private checkTarget(): void {
@@ -905,11 +906,11 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
             }
         }
         if (this.isFixed) {
-            if (this.popupEle) this.popupEle.classList.add(FIXEDSD);
-            if (this.overlayEle) this.overlayEle.classList.add(FIXEDSD);
+            if (this.popupEle) { this.popupEle.classList.add(FIXEDSD); }
+            if (this.overlayEle) { this.overlayEle.classList.add(FIXEDSD); }
         } else {
-            if (this.popupEle) this.popupEle.classList.remove(FIXEDSD);
-            if (this.overlayEle) this.overlayEle.classList.remove(FIXEDSD);
+            if (this.popupEle) { this.popupEle.classList.remove(FIXEDSD); }
+            if (this.overlayEle) { this.overlayEle.classList.remove(FIXEDSD); }
         }
     }
     private setVisibility(val: boolean): void {
@@ -917,7 +918,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.fab.setProperties({ visible: val });
     }
     private popupMouseLeaveHandle(e: MouseEvent): void {
-        let target: HTMLElement = e.relatedTarget as HTMLElement;
+        const target: HTMLElement = e.relatedTarget as HTMLElement;
         if (this.opensOnHover && !(target.classList.contains(SPEEDDIAL) || closest(target, '.' + SPEEDDIAL))) {
             this.hidePopupEle(e);
         }
@@ -926,110 +927,119 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.showPopupEle(e);
     }
     private mouseLeaveHandle(e: MouseEvent): void {
-        let target: HTMLElement = e.relatedTarget as HTMLElement;
+        const target: HTMLElement = e.relatedTarget as HTMLElement;
         if (!(target.classList.contains(SDPOPUP) || closest(target, '.' + SDPOPUP))) {
             this.hidePopupEle(e);
         }
     }
     private popupKeyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'esc':
-                this.hidePopupEle(e);
-                break;
+        case 'esc':
+            this.hidePopupEle(e);
+            break;
         }
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'enter':
-            case 'space':
-                e.preventDefault();
-                if (this.isMenuOpen) {
-                    if (this.focusedIndex !== -1) {
-                        this.triggerItemClick(e, this.items[this.focusedIndex]);
-                    } else {
-                        this.hidePopupEle(e);
-                    }
+        case 'enter':
+        case 'space':
+            e.preventDefault();
+            if (this.isMenuOpen) {
+                if (this.focusedIndex !== -1) {
+                    this.triggerItemClick(e, this.items[this.focusedIndex]);
                 } else {
-                    this.showPopupEle(e);
+                    this.hidePopupEle(e);
                 }
+            } else {
+                this.showPopupEle(e);
+            }
+            break;
+        case 'esc':
+            this.hidePopupEle(e);
+            break;
+        default:
+            if (this.popupTemplate || !this.isMenuOpen) { break; }
+            switch (e.action) {
+            case 'end':
+                this.focusLastElement();
                 break;
-            case 'esc':
-                this.hidePopupEle(e);
+            case 'home':
+                this.focusFirstElement();
                 break;
-            default:
-                if (this.popupTemplate || !this.isMenuOpen) break;
-                switch (e.action) {
-                    case 'end':
-                        this.focusLastElement();
-                        break;
-                    case 'home':
-                        this.focusFirstElement();
-                        break;
-                    case 'moveRight':
-                        (this.mode === 'Radial') ? this.focusLeftRightElement(false) : this.focusLinearElement(false);
-                        break;
-                    case 'moveDown':
-                        (this.mode === 'Radial') ? this.focusUpDownElement(false) : this.focusLinearElement(false);
-                        break;
-                    case 'moveLeft':
-                        (this.mode === 'Radial') ? this.focusLeftRightElement(true) : this.focusLinearElement(true);
-                        break;
-                    case 'moveUp':
-                        (this.mode === 'Radial') ? this.focusUpDownElement(true) : this.focusLinearElement(true);
-                        break;
-                }
+            case 'moveRight':
+                if (this.mode === 'Radial') { this.focusLeftRightElement(false); } else { this.focusLinearElement(false); }
                 break;
+            case 'moveDown':
+                if (this.mode === 'Radial') { this.focusUpDownElement(false); } else { this.focusLinearElement(false); }
+                break;
+            case 'moveLeft':
+                if (this.mode === 'Radial') { this.focusLeftRightElement(true); } else { this.focusLinearElement(true); }
+                break;
+            case 'moveUp':
+                if (this.mode === 'Radial') { this.focusUpDownElement(true); } else { this.focusLinearElement(true); }
+                break;
+            }
+            break;
         }
     }
-    private focusFirstElement() {
-        let ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+    private focusFirstElement(): void {
+        const ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
         let index: number = 0;
-        while (ele[index].classList.contains(DISABLED)) {
+        while (ele[parseInt(index.toString(), 10)].classList.contains(DISABLED)) {
             index++;
-            if (index > (ele.length - 1)) return;
+            if (index > (ele.length - 1)) { return; }
         }
-        this.setFocus(index, ele[index]);
+        this.setFocus(index, ele[parseInt(index.toString(), 10)]);
     }
-    private focusLastElement() {
-        let ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+    private focusLastElement(): void {
+        const ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
         let index: number = ele.length - 1;
-        while (ele[index].classList.contains(DISABLED)) {
+        while (ele[parseInt(index.toString(), 10)].classList.contains(DISABLED)) {
             index--;
-            if (index < 0) return;
+            if (index < 0) { return; }
         }
-        this.setFocus(index, ele[index]);
+        this.setFocus(index, ele[parseInt(index.toString(), 10)]);
     }
     /*Linear*/
-    private focusLinearElement(isLeftUp: boolean) {
-        if (this.focusedIndex === -1) { this.focusFirstElement(); return }
-        const isReversed: boolean = this.popupEle.classList.contains(SDVERTICALBOTTOM) || this.popupEle.classList.contains(SDHORIZONTALRIGHT);
+    private focusLinearElement(isLeftUp: boolean): void {
+        if (this.focusedIndex === -1) { this.focusFirstElement(); return; }
+        const isReversed: boolean = this.popupEle.classList.contains(SDVERTICALBOTTOM) ||
+            this.popupEle.classList.contains(SDHORIZONTALRIGHT);
         /* Elements will be in reverse (RTL) order for these classes are present.
         Reversed  and Down or right is previous.
         Not reversed and Up or left is previous.
         ((isReversed && !isLeftUp)||(!isReversed && isLeftUp)) ==> isReversed!==isLeftUp */
-        (isReversed !== isLeftUp) ? this.focusPrevElement() : this.focusNextElement();
+        if (isReversed !== isLeftUp) { this.focusPrevElement(); } else { this.focusNextElement(); }
     }
     /*Radial*/
-    private focusLeftRightElement(isLeft: boolean) {
-        if (this.focusedIndex === -1) { this.focusFirstElement(); return }
-        /*radialTop position  and left + anticlock or right + clock is previous 
-        other positions and right + anticlock or left + clock is previous   
+    private focusLeftRightElement(isLeft: boolean): void {
+        if (this.focusedIndex === -1) { this.focusFirstElement(); return; }
+        /*radialTop position  and left + anticlock or right + clock is previous
+        other positions and right + anticlock or left + clock is previous
         ((isLeft && !this.isClock)||(!isLeft && this.isClock)) ==> isLeft!==this.isClock */
-        const isradialTop = ['TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft'].indexOf(this.getPosition()) !== -1;
-        ((isradialTop && (isLeft !== this.isClock)) || (!isradialTop && (isLeft === this.isClock))) ? this.focusPrevElement() : this.focusNextElement();
+        const isradialTop: boolean = ['TopLeft', 'TopCenter', 'TopRight', 'MiddleLeft'].indexOf(this.position) !== -1;
+        if ((isradialTop && (isLeft !== this.isClock)) || (!isradialTop && (isLeft === this.isClock))) {
+            this.focusPrevElement();
+        } else {
+            this.focusNextElement();
+        }
     }
     /*Radial*/
-    private focusUpDownElement(isUp: boolean) {
-        if (this.focusedIndex === -1) { this.focusFirstElement(); return }
-        /*radialRight position  and up + anticlock or down + clock is previous 
-        other positions and down + anticlock or up + clock is previous   
+    private focusUpDownElement(isUp: boolean): void {
+        if (this.focusedIndex === -1) { this.focusFirstElement(); return; }
+        /*radialRight position  and up + anticlock or down + clock is previous
+        other positions and down + anticlock or up + clock is previous
         ((isUp && !this.isClock)||(!isUp && this.isClock)) ==> isUp!==this.isClock */
-        const isradialRight = ['TopRight', 'MiddleRight', 'BottomRight', 'BottomCenter'].indexOf(this.getPosition()) !== -1;
-        ((isradialRight && (isUp !== this.isClock)) || (!isradialRight && (isUp === this.isClock))) ? this.focusPrevElement() : this.focusNextElement();
+        const isradialRight: boolean = ['TopRight', 'MiddleRight', 'BottomRight', 'BottomCenter'].indexOf(this.position) !== -1;
+        if ((isradialRight && (isUp !== this.isClock)) || (!isradialRight && (isUp === this.isClock))) {
+            this.focusPrevElement();
+        } else {
+            this.focusNextElement();
+        }
     }
 
-    private focusPrevElement() {
-        let ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+    private focusPrevElement(): void {
+        const ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
         let index: number = this.focusedIndex;
         do {
             index--;
@@ -1037,31 +1047,28 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
                 this.setFocus(-1);
                 return;
             }
-        } while (ele[index].classList.contains(DISABLED));
-        this.setFocus(index, ele[index]);
+        } while (ele[parseInt(index.toString(), 10)].classList.contains(DISABLED));
+        this.setFocus(index, ele[parseInt(index.toString(), 10)]);
     }
 
-    private focusNextElement() {
-        let ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+    private focusNextElement(): void {
+        const ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
         let index: number = this.focusedIndex;
         do {
             index++;
-            if (index > (ele.length - 1)) return;
-        } while (ele[index].classList.contains(DISABLED));
-        this.setFocus(index, ele[index]);
+            if (index > (ele.length - 1)) { return; }
+        } while (ele[parseInt(index.toString(), 10)].classList.contains(DISABLED));
+        this.setFocus(index, ele[parseInt(index.toString(), 10)]);
     }
 
-    private setFocus(index: number, ele?: HTMLElement) {
+    private setFocus(index: number, ele?: HTMLElement): void {
         this.removeFocus();
-        if (ele) ele.classList.add(SDACTIVELI);
+        if (ele) { ele.classList.add(SDACTIVELI); }
         this.focusedIndex = index;
     }
     private removeFocus(): void {
-        let preEle: HTMLElement = select('.' + SDACTIVELI, this.popupEle);
-        if (preEle) preEle.classList.remove(SDACTIVELI);
-    }
-    private getPosition(): string {
-        return (typeof (this.position) === "string") ? this.position : FabPosition[this.position];
+        const preEle: HTMLElement = select('.' + SDACTIVELI, this.popupEle);
+        if (preEle) { preEle.classList.remove(SDACTIVELI); }
     }
     private updatePositionProperties(): void {
         this.hidePopupEle();
@@ -1073,7 +1080,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         if (this.popupTemplate) {
             this.setPosition();
         } else if ((this.mode === 'Radial')) {
-            this.setRadialPosition()
+            this.setRadialPosition();
             this.setPosition();
         } else {
             this.setLinearPosition();
@@ -1082,35 +1089,37 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private validateDirection(): void {
         switch (this.direction) {
-            case 'Up':
-                this.actualLinDirection = (topPosition.indexOf(this.getPosition()) != -1) ? 'Auto' : 'Up';
-                break;
-            case 'Down':
-                this.actualLinDirection = (bottomPosition.indexOf(this.getPosition()) != -1) ? 'Auto' : 'Down';
-                break;
-            case 'Right':
-                this.actualLinDirection = (rightPosition.indexOf(this.getPosition()) != -1) ? 'Auto' : 'Right';
-                break;
-            case 'Left':
-                this.actualLinDirection = (leftPosition.indexOf(this.getPosition()) != -1) ? 'Auto' : 'Left';
-                break;
-            case 'Auto':
-            default:
-                this.actualLinDirection = 'Auto';
-                break;
+        case 'Up':
+            this.actualLinDirection = (topPosition.indexOf(this.position) !== -1) ? 'Auto' : 'Up';
+            break;
+        case 'Down':
+            this.actualLinDirection = (bottomPosition.indexOf(this.position) !== -1) ? 'Auto' : 'Down';
+            break;
+        case 'Right':
+            this.actualLinDirection = (rightPosition.indexOf(this.position) !== -1) ? 'Auto' : 'Right';
+            break;
+        case 'Left':
+            this.actualLinDirection = (leftPosition.indexOf(this.position) !== -1) ? 'Auto' : 'Left';
+            break;
+        case 'Auto':
+        default:
+            this.actualLinDirection = 'Auto';
+            break;
         }
-        this.isVertical = !((this.actualLinDirection === "Left") || (this.actualLinDirection === "Right"))
+        this.isVertical = !((this.actualLinDirection === 'Left') || (this.actualLinDirection === 'Right'));
     }
 
     private setMaxSize(): void {
         const top: number = this.element.offsetTop;
         const left: number = this.element.offsetLeft;
-        const bottom: number = (this.isFixed ? window.innerHeight : this.targetEle.clientHeight) - this.element.offsetTop - this.element.offsetHeight;
-        const right: number = (this.isFixed ? window.innerWidth : this.targetEle.clientWidth) - this.element.offsetLeft - this.element.offsetWidth;
+        const bottom: number = (this.isFixed ? window.innerHeight : this.targetEle.clientHeight) -
+            this.element.offsetTop - this.element.offsetHeight;
+        const right: number = (this.isFixed ? window.innerWidth : this.targetEle.clientWidth) -
+            this.element.offsetLeft - this.element.offsetWidth;
         let limit: number = 0;
-        let popupUlEle = this.popupEle.querySelector("." + SDUL) as HTMLElement;
+        const popupUlEle: HTMLElement = this.popupEle.querySelector('.' + SDUL) as HTMLElement;
         if (this.isVertical) {
-            limit = ((this.actualLinDirection === 'Up') || ((this.actualLinDirection === 'Auto') && (topPosition.indexOf(this.getPosition()) === -1))) ? top : bottom;
+            limit = ((this.actualLinDirection === 'Up') || ((this.actualLinDirection === 'Auto') && (topPosition.indexOf(this.position) === -1))) ? top : bottom;
             if (limit < popupUlEle.offsetHeight) {
                 this.popupEle.classList.add(SDOVERFLOW, SDVERTOVERFLOW);
                 popupUlEle.style.setProperty(SDOVERFLOWLIMIT, limit + 'px');
@@ -1126,15 +1135,15 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private setLinearPosition(): void {
         let vertDist: number = 0;
         //Check whether the position value should be in top
-        const isTop: boolean = (this.actualLinDirection === 'Down') || ((this.actualLinDirection === 'Auto') && (topPosition.indexOf(this.getPosition()) !== -1)) ||
-            (!this.isVertical && (bottomPosition.indexOf(this.getPosition()) === -1));
+        const isTop: boolean = (this.actualLinDirection === 'Down') || ((this.actualLinDirection === 'Auto') && (topPosition.indexOf(this.position) !== -1)) ||
+            (!this.isVertical && (bottomPosition.indexOf(this.position) === -1));
         if (isTop) {
             vertDist = this.element.offsetTop + (this.isVertical ? this.element.offsetHeight : 0);
-            if (!this.isVertical) this.popupEle.classList.add(SDHORIZONTALTOP);
+            if (!this.isVertical) { this.popupEle.classList.add(SDHORIZONTALTOP); }
         } else {
             vertDist = this.isFixed ? window.innerHeight : this.targetEle.clientHeight;
             vertDist = (vertDist - this.element.offsetTop - (this.isVertical ? 0 : this.element.offsetHeight));
-            if (this.isVertical) this.popupEle.classList.add(SDVERTICALBOTTOM);
+            if (this.isVertical) { this.popupEle.classList.add(SDVERTICALBOTTOM); }
         }
         this.popupEle.classList.add(isTop ? SDTOP : SDBOTTOM);
         this.popupEle.style.setProperty(SDVERTDIST, vertDist + 'px');
@@ -1142,158 +1151,162 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private setLinearHorizontalPosition(): void {
         //Check whether the position value should be in left
-        if ((this.actualLinDirection === 'Right') || (this.isVertical && (rightPosition.indexOf(this.getPosition()) === -1))) {
-            this.enableRtl ? this.setRight() : this.setLeft();//reverse the direction when RTL enabled
-            if (!this.isVertical) this.popupEle.classList.add(SDHORIZONTALLEFT);
+        if ((this.actualLinDirection === 'Right') || (this.isVertical && (rightPosition.indexOf(this.position) === -1))) {
+            if (this.enableRtl) { this.setRight(); } else { this.setLeft(); } //reverse the direction when RTL enabled
+            if (!this.isVertical) { this.popupEle.classList.add(SDHORIZONTALLEFT); }
         } else {
-            this.enableRtl ? this.setLeft() : this.setRight();//reverse the direction when RTL enabled
+            if (this.enableRtl) { this.setLeft(); } else { this.setRight(); } //reverse the direction when RTL enabled
             this.popupEle.classList.add(this.isVertical ? SDVERTICALRIGHT : SDHORIZONTALRIGHT);
         }
     }
     private setLeft(): void {
-        let horzDist: number = this.element.offsetLeft + (this.isVertical ? 0 : this.element.offsetWidth);
-        this.popupEle.style.setProperty(SDHORZDIST, horzDist + 'px')
+        const horzDist: number = this.element.offsetLeft + (this.isVertical ? 0 : this.element.offsetWidth);
+        this.popupEle.style.setProperty(SDHORZDIST, horzDist + 'px');
         this.popupEle.classList.add(SDLEFT);
     }
     private setRight(): void {
         let horzDist: number = this.isFixed ? window.innerWidth : this.targetEle.clientWidth;
         horzDist = (horzDist - this.element.offsetLeft - (this.isVertical ? this.element.offsetWidth : 0));
-        this.popupEle.style.setProperty(SDHORZDIST, horzDist + 'px')
+        this.popupEle.style.setProperty(SDHORZDIST, horzDist + 'px');
         this.popupEle.classList.add(SDRIGHT);
     }
 
     private setPosition(): void {
         //Check for middle Position
-        if (['MiddleLeft', 'MiddleRight', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) {
+        if (['MiddleLeft', 'MiddleRight', 'MiddleCenter'].indexOf(this.position) !== -1) {
             this.popupEle.classList.add(SDMIDDLE);
-            let yoffset: number = ((this.isFixed ? window.innerHeight : this.targetEle.clientHeight) - this.popupEle.offsetHeight) / 2;
+            const yoffset: number = ((this.isFixed ? window.innerHeight : this.targetEle.clientHeight) - this.popupEle.offsetHeight) / 2;
             this.popupEle.style.setProperty(SDVERTDIST, yoffset + 'px');
         }
-        (bottomPosition.indexOf(this.getPosition()) === -1) ? this.popupEle.classList.add(SDTOP) : this.popupEle.classList.add(SDBOTTOM);
+        this.popupEle.classList.add((bottomPosition.indexOf(this.position) === -1) ? SDTOP : SDBOTTOM);
         this.setHorizontalPosition();
     }
 
     private setHorizontalPosition(): void {
         //Check for Center Position
-        if (['TopCenter', 'BottomCenter', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) {
+        if (['TopCenter', 'BottomCenter', 'MiddleCenter'].indexOf(this.position) !== -1) {
             this.popupEle.classList.add(SDCENTER);
-            let xoffset: number = ((this.isFixed ? window.innerWidth : this.targetEle.clientWidth) - this.popupEle.offsetWidth) / 2;
+            const xoffset: number = ((this.isFixed ? window.innerWidth : this.targetEle.clientWidth) - this.popupEle.offsetWidth) / 2;
             this.popupEle.style.setProperty(SDHORZDIST, xoffset + 'px');
         }
-        const isRight = rightPosition.indexOf(this.getPosition()) !== -1;
-        (!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? this.popupEle.classList.add(SDLEFT) : this.popupEle.classList.add(SDRIGHT);
+        const isRight: boolean = rightPosition.indexOf(this.position) !== -1;
+        this.popupEle.classList.add((!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? SDLEFT : SDRIGHT);
     }
 
     private setRadialPosition(): void {
         this.setRadialCorner();
-        let range: RadialSettingsModel = this.getActualRange();
+        const range: RadialSettingsModel = this.getActualRange();
         this.isClock = range.direction === 'Clockwise';
-        let offset: string = formatUnit(range.offset);
-        let li: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+        const offset: string = formatUnit(range.offset);
+        const li: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
         this.popupEle.style.setProperty(SDRADICALOFFSET, offset);
         this.popupEle.style.setProperty(SDRADICALMINHEIGHT, li[0].offsetHeight + 'px');
         this.popupEle.style.setProperty(SDRADICALMINWIDTH, li[0].offsetWidth + 'px');
-        let availableAngle = Math.abs(range.endAngle - range.startAngle);
+        const availableAngle: number = Math.abs(range.endAngle - range.startAngle);
         //Start and end will be same for Middle Center position, hence available angle will 0 or 360.
-        let gaps = ((availableAngle === 360) || (availableAngle === 0)) ? li.length : li.length - 1;
-        let perAngle: number = availableAngle / gaps;
-        for (let i = 0; i < li.length; i++) {
-            let ele = li[i];
+        const gaps: number = ((availableAngle === 360) || (availableAngle === 0)) ? li.length : li.length - 1;
+        const perAngle: number = availableAngle / gaps;
+        for (let i: number = 0; i < li.length; i++) {
+            const ele: HTMLElement = li[parseInt(i.toString(), 10)];
             let angle: number = this.isClock ? (range.startAngle + (perAngle * i)) : (range.startAngle - (perAngle * i));
-            angle = angle % 360;// removing the Zerp crossing changes.
+            angle = angle % 360; // removing the Zerp crossing changes.
             ele.style.setProperty(SDRADICALANGLE, angle + 'deg');
         }
     }
     private setRadialCorner(): void {
         //topLeftPosition
-        if (['TopLeft', 'TopCenter', 'MiddleLeft', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDTOPRIGHT : SDTOPLEFT); }
+        if (['TopLeft', 'TopCenter', 'MiddleLeft', 'MiddleCenter'].indexOf(this.position) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDTOPRIGHT : SDTOPLEFT); }
         //topRightPosition
-        if (['TopRight', 'TopCenter', 'MiddleRight', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDTOPLEFT : SDTOPRIGHT); }
+        if (['TopRight', 'TopCenter', 'MiddleRight', 'MiddleCenter'].indexOf(this.position) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDTOPLEFT : SDTOPRIGHT); }
         //bottpmLeftPosition
-        if (['BottomLeft', 'BottomCenter', 'MiddleLeft', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDBOTTOMRIGHT : SDBOTTOMLEFT); }
+        if (['BottomLeft', 'BottomCenter', 'MiddleLeft', 'MiddleCenter'].indexOf(this.position) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDBOTTOMRIGHT : SDBOTTOMLEFT); }
         //bottomRightPosition
-        if (['BottomRight', 'BottomCenter', 'MiddleRight', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDBOTTOMLEFT : SDBOTTOMRIGHT); }
+        if (['BottomRight', 'BottomCenter', 'MiddleRight', 'MiddleCenter'].indexOf(this.position) !== -1) { this.popupEle.classList.add(this.enableRtl ? SDBOTTOMLEFT : SDBOTTOMRIGHT); }
     }
-    // 0,360 is at right, 90 is at Bottom, 180 is at left, 270 is at top 
+    // 0,360 is at right, 90 is at Bottom, 180 is at left, 270 is at top
     private getActualRange(): RadialSettingsModel {
-        let range: RadialSettingsModel = { offset: this.radialSettings.offset }
+        const range: RadialSettingsModel = { offset: this.radialSettings.offset };
         let start: number = this.radialSettings.startAngle;
         let end: number = this.radialSettings.endAngle;
         let isClockwise: boolean;
-        switch (this.getPosition()) {
-            case 'TopLeft':
-            case 'TopRight':
-                // Switch Left and Right for RTL mode.
-                if (('TopLeft' == this.getPosition()) != this.enableRtl) {
-                    //TopLeft
-                    isClockwise = this.radialSettings.direction === 'Clockwise';
-                    this.checkAngleRange(start, end, range, isClockwise, 0, 90, false);
-                } else {
-                    //TopRight
-                    isClockwise = this.radialSettings.direction !== 'AntiClockwise';
-                    this.checkAngleRange(start, end, range, isClockwise, 90, 180, false);
-                }
-                break;
-            case 'TopCenter':
+        switch (this.position) {
+        case 'TopLeft':
+        case 'TopRight':
+            // Switch Left and Right for RTL mode.
+            if (('TopLeft' === this.position) !== this.enableRtl) {
+                //TopLeft
                 isClockwise = this.radialSettings.direction === 'Clockwise';
-                this.checkAngleRange(start, end, range, isClockwise, 0, 180, false);
-                break;
-            case 'MiddleLeft':
-            case 'MiddleRight':
-                // Switch Left and Right for RTL mode.
-                if (('MiddleLeft' == this.getPosition()) != this.enableRtl) {
-                    //MiddleLeft
-                    isClockwise = this.radialSettings.direction === 'Clockwise';
-                    /**Replace the value if not defined or greater than 360 or less than 0 or between 91 and  269*/
-                    start = (isNullOrUndefined(start) || (start < 0) || (start > 360) || ((start > 90) && (start < 270))) ? (isClockwise ? 270 : 90) : start;
-                    end = (isNullOrUndefined(end) || (end < 0) || (end > 360) || ((end > 90) && (end < 270))) ? (isClockwise ? 90 : 270) : end;
-                    /**update for Zero Crossing */
-                    start = start < 91 ? start + 360 : start;
-                    end = end < 91 ? end + 360 : end;
-                    let switchVal = (isClockwise && (end < start)) || (!isClockwise && (end > start));
-                    range.startAngle = switchVal ? end : start;
-                    range.endAngle = switchVal ? start : end;
-                } else {
-                    //MiddleRight
-                    isClockwise = this.radialSettings.direction !== 'AntiClockwise';
-                    this.checkAngleRange(start, end, range, isClockwise, 90, 270, false);
-                }
-                break;
-            case 'MiddleCenter':
+                this.checkAngleRange(start, end, range, isClockwise, 0, 90, false);
+            } else {
+                //TopRight
                 isClockwise = this.radialSettings.direction !== 'AntiClockwise';
-                /**Replace the value if not defined or greater than 360 or less than 0 */
-                start = (isNullOrUndefined(start) || (start < 0) || (start > 360)) ? (isClockwise ? 0 : 360) : start;
-                end = (isNullOrUndefined(end) || (end < 0) || (end > 360)) ? (isClockwise ? 360 : 0) : end;
+                this.checkAngleRange(start, end, range, isClockwise, 90, 180, false);
+            }
+            break;
+        case 'TopCenter':
+            isClockwise = this.radialSettings.direction === 'Clockwise';
+            this.checkAngleRange(start, end, range, isClockwise, 0, 180, false);
+            break;
+        case 'MiddleLeft':
+        case 'MiddleRight':
+            // Switch Left and Right for RTL mode.
+            if (('MiddleLeft' === this.position) !== this.enableRtl) {
+                //MiddleLeft
+                isClockwise = this.radialSettings.direction === 'Clockwise';
+                /**Replace the value if not defined or greater than 360 or less than 0 or between 91 and  269*/
+                start = (isNullOrUndefined(start) || (start < 0) || (start > 360) || ((start > 90) && (start < 270))) ?
+                    (isClockwise ? 270 : 90) : start;
+                end = (isNullOrUndefined(end) || (end < 0) || (end > 360) || ((end > 90) && (end < 270))) ?
+                    (isClockwise ? 90 : 270) : end;
                 /**update for Zero Crossing */
-                range.startAngle = (!isClockwise && (start <= end)) ? (start + 360) : start;
-                range.endAngle = (isClockwise && (end <= start)) ? (end + 360) : end;
-                break;
-            case 'BottomLeft':
-            case 'BottomRight':
-                // Switch Left and Right for RTL mode.
-                if (('BottomLeft' == this.getPosition()) != this.enableRtl) {
-                    //BottomLeft
-                    isClockwise = this.radialSettings.direction === 'Clockwise';
-                    this.checkAngleRange(start, end, range, isClockwise, 270, 360, true);
-                } else {
-                    //BottomRight
-                    isClockwise = this.radialSettings.direction !== 'AntiClockwise';
-                    this.checkAngleRange(start, end, range, isClockwise, 180, 270, true);
-                }
-                break;
-            case 'BottomCenter':
+                start = start < 91 ? start + 360 : start;
+                end = end < 91 ? end + 360 : end;
+                const switchVal: boolean = (isClockwise && (end < start)) || (!isClockwise && (end > start));
+                range.startAngle = switchVal ? end : start;
+                range.endAngle = switchVal ? start : end;
+            } else {
+                //MiddleRight
                 isClockwise = this.radialSettings.direction !== 'AntiClockwise';
-                this.checkAngleRange(start, end, range, isClockwise, 180, 360, true);
-                break;
+                this.checkAngleRange(start, end, range, isClockwise, 90, 270, false);
+            }
+            break;
+        case 'MiddleCenter':
+            isClockwise = this.radialSettings.direction !== 'AntiClockwise';
+            /**Replace the value if not defined or greater than 360 or less than 0 */
+            start = (isNullOrUndefined(start) || (start < 0) || (start > 360)) ? (isClockwise ? 0 : 360) : start;
+            end = (isNullOrUndefined(end) || (end < 0) || (end > 360)) ? (isClockwise ? 360 : 0) : end;
+            /**update for Zero Crossing */
+            range.startAngle = (!isClockwise && (start <= end)) ? (start + 360) : start;
+            range.endAngle = (isClockwise && (end <= start)) ? (end + 360) : end;
+            break;
+        case 'BottomLeft':
+        case 'BottomRight':
+            // Switch Left and Right for RTL mode.
+            if (('BottomLeft' === this.position) !== this.enableRtl) {
+                //BottomLeft
+                isClockwise = this.radialSettings.direction === 'Clockwise';
+                this.checkAngleRange(start, end, range, isClockwise, 270, 360, true);
+            } else {
+                //BottomRight
+                isClockwise = this.radialSettings.direction !== 'AntiClockwise';
+                this.checkAngleRange(start, end, range, isClockwise, 180, 270, true);
+            }
+            break;
+        case 'BottomCenter':
+            isClockwise = this.radialSettings.direction !== 'AntiClockwise';
+            this.checkAngleRange(start, end, range, isClockwise, 180, 360, true);
+            break;
         }
         range.direction = isClockwise ? 'Clockwise' : 'AntiClockwise';
         return range;
     }
-    private checkAngleRange(start: number, end: number, range: RadialSettingsModel, isClockwise: boolean, min: number, max: number, check0: boolean): void {
+    private checkAngleRange(
+        start: number, end: number, range: RadialSettingsModel, isClockwise: boolean, min: number, max: number, check0: boolean
+    ): void {
         start = this.checkAngle(start, isClockwise, min, max, check0);
         end = this.checkAngle(end, !isClockwise, min, max, check0);
         /**Switch the values if both are values are in the range but not as per direction*/
-        let switchVal = (isClockwise && (end < start)) || (!isClockwise && (end > start));
+        const switchVal: boolean = (isClockwise && (end < start)) || (!isClockwise && (end > start));
         range.startAngle = switchVal ? end : start;
         range.endAngle = switchVal ? start : end;
     }
@@ -1325,47 +1338,48 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private clearOverflow(): void {
         this.popupEle.classList.remove(SDOVERFLOW, SDVERTOVERFLOW, SDHORZOVERFLOW);
-        this.popupEle.style.removeProperty(SDOVERFLOWLIMIT)
+        this.popupEle.style.removeProperty(SDOVERFLOWLIMIT);
     }
     private hidePopupEle(e?: Event): void {
-        if (!this.popupEle || !this.isMenuOpen) return;
-        let eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
+        if (!this.popupEle || !this.isMenuOpen) { return; }
+        const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
         this.trigger('beforeClose', eventArgs, (args: SpeedDialBeforeOpenCloseEventArgs) => {
-            if (args.cancel) return;
+            if (args.cancel) { return; }
             if (this.animation.effect !== 'None') {
-                let closeAnimation: AnimationModel = {
+                const closeAnimation: AnimationModel = {
                     name: (this.animation.effect + 'Out') as baseEffect,
                     timingFunction: 'easeOut'
-                }
-                let ele: HTMLElement[] = this.popupTemplate ? [this.popupEle.firstElementChild as HTMLElement] : selectAll("." + SDLI, this.popupEle);
-                const timeOutInterval = this.animation.duration / (ele.length + 1);
+                };
+                const eleArray: HTMLElement[] = this.popupTemplate ? [this.popupEle.firstElementChild as HTMLElement] : selectAll('.' + SDLI, this.popupEle);
+                const timeOutInterval: number = this.animation.duration / (eleArray.length + 1);
                 closeAnimation.duration = 2 * timeOutInterval;
                 /* To keep the animation smooth, start the animation of the second element when animation first element is half completed */
-                const animateElement = (curIndex: number): void => {
-                    closeAnimation.delay = (curIndex === ele.length - 1) ? this.animation.delay : 0;
-                    closeAnimation.begin = () => { (curIndex === ele.length - 1) ? this.startHide() : ''; };
+                const animateElement: Function = (curIndex: number): void => {
+                    const ele: HTMLElement = eleArray[parseInt(curIndex.toString(), 10)];
+                    closeAnimation.delay = (curIndex === eleArray.length - 1) ? this.animation.delay : 0;
+                    closeAnimation.begin = () => { if (curIndex === eleArray.length - 1) { this.startHide(); } };
                     closeAnimation.end = () => {
-                        ele[curIndex].classList.add(SDHIDDEN);
-                        (curIndex === 0) ? this.endHide() : '';
+                        ele.classList.add(SDHIDDEN);
+                        if (curIndex === 0) { this.endHide(); }
                     };
-                    new Animation(closeAnimation).animate(ele[curIndex]);
+                    new Animation(closeAnimation).animate(ele);
                     if (curIndex !== 0) {
-                        const index = curIndex - 1;
+                        const index: number = curIndex - 1;
                         setTimeout(() => {
                             animateElement(index);
                         }, timeOutInterval);
                     }
-                }
-                animateElement(ele.length - 1);
+                };
+                animateElement(eleArray.length - 1);
             } else {
                 this.startHide();
                 if (!this.popupTemplate) {
-                    let ele: HTMLElement[] = selectAll("." + SDLI, this.popupEle);
-                    ele.forEach(element => { element.classList.add(SDHIDDEN); });
+                    const ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+                    ele.forEach((element: HTMLElement) => { element.classList.add(SDHIDDEN); });
                 }
                 this.endHide();
             }
-        })
+        });
     }
     private startHide(): void {
         this.element.setAttribute('aria-expanded', 'false');
@@ -1375,7 +1389,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private endHide(): void {
         this.fab.setProperties({ iconCss: this.openIconCss });
         this.popupEle.classList.add(SDHIDDEN);
-        if (this.popupTemplate) this.setVisibility(true);
+        if (this.popupTemplate) { this.setVisibility(true); }
         this.toggleOverlay();
         if (this.popupTemplate) {
             this.popupEle.removeAttribute('tabindex');
@@ -1383,54 +1397,55 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.trigger('onClose', { element: this.popupEle });
     }
     private showPopupEle(e?: Event): void {
-        if (!this.popupEle || this.isMenuOpen) return;
-        let eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
+        if (!this.popupEle || this.isMenuOpen) { return; }
+        const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
         this.trigger('beforeOpen', eventArgs, (args: SpeedDialBeforeOpenCloseEventArgs) => {
-            if (args.cancel) return;
+            if (args.cancel) { return; }
             if (this.animation.effect !== 'None') {
-                let openAnimation: AnimationModel = {
+                const openAnimation: AnimationModel = {
                     name: (this.animation.effect + 'In') as baseEffect,
                     timingFunction: 'easeIn'
-                }
-                let ele: HTMLElement[] = this.popupTemplate ? [this.popupEle.firstElementChild as HTMLElement] : selectAll("." + SDLI, this.popupEle);
-                const timeOutInterval = this.animation.duration / (ele.length + 1);
+                };
+                const eleArray: HTMLElement[] = this.popupTemplate ? [this.popupEle.firstElementChild as HTMLElement] : selectAll('.' + SDLI, this.popupEle);
+                const timeOutInterval: number = this.animation.duration / (eleArray.length + 1);
                 openAnimation.duration = 2 * timeOutInterval;
                 /* To keep the animation smooth, start the animation of the second element when animation first element is half completed */
-                const animateElement = (curIndex: number): void => {
+                const animateElement: Function = (curIndex: number): void => {
+                    const ele: HTMLElement = eleArray[parseInt(curIndex.toString(), 10)];
                     openAnimation.delay = (curIndex === 0) ? this.animation.delay : 0;
                     openAnimation.begin = () => {
-                        (curIndex === 0) ? this.startShow() : '';
-                        ele[curIndex].classList.remove(SDHIDDEN);
+                        if (curIndex === 0) { this.startShow(); }
+                        ele.classList.remove(SDHIDDEN);
                     };
-                    openAnimation.end = () => { (curIndex === ele.length - 1) ? this.endShow() : ''; };
-                    new Animation(openAnimation).animate(ele[curIndex]);
-                    if (curIndex !== ele.length - 1) {
-                        const index = curIndex + 1;
+                    openAnimation.end = () => { if (curIndex === eleArray.length - 1) { this.endShow(); }};
+                    new Animation(openAnimation).animate(ele);
+                    if (curIndex !== eleArray.length - 1) {
+                        const index: number = curIndex + 1;
                         setTimeout(() => {
                             animateElement(index);
                         }, timeOutInterval);
                     }
-                }
+                };
                 animateElement(0);
             } else {
                 this.startShow();
                 if (!this.popupTemplate) {
-                    let ele: HTMLElement[] = selectAll("." + SDLI, this.popupEle);
-                    ele.forEach(element => { element.classList.remove(SDHIDDEN); });
+                    const ele: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+                    ele.forEach((element: HTMLElement) => { element.classList.remove(SDHIDDEN); });
                 }
                 this.endShow();
             }
-        })
+        });
     }
     private startShow(): void {
         this.element.setAttribute('aria-expanded', 'true');
         this.isMenuOpen = true;
         this.toggleOverlay();
         this.popupEle.classList.remove(SDHIDDEN);
-        if (this.popupTemplate) this.setVisibility(false);
+        if (this.popupTemplate) { this.setVisibility(false); }
     }
     private endShow(): void {
-        if (this.closeIconCss) this.fab.setProperties({ iconCss: this.closeIconCss });
+        if (this.closeIconCss) { this.fab.setProperties({ iconCss: this.closeIconCss }); }
         if (this.popupTemplate) {
             this.popupEle.setAttribute('tabindex', '1');
             this.popupEle.focus();
@@ -1438,16 +1453,16 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.trigger('onOpen', { element: this.popupEle });
     }
     private toggleOverlay(): void {
-        if (!this.overlayEle) return;
-        this.isMenuOpen ? this.overlayEle.classList.remove(SDHIDDEN) : this.overlayEle.classList.add(SDHIDDEN);
+        if (!this.overlayEle) { return; }
+        this.overlayEle.classList[this.isMenuOpen ? 'remove' : 'add'](SDHIDDEN);
     }
     private removeOverlayEle(): void {
-        if (!this.overlayEle) return;
+        if (!this.overlayEle) { return; }
         remove(this.overlayEle);
         this.overlayEle = undefined;
     }
 
-    private updatePopupItems() {
+    private updatePopupItems(): void {
         if (this.popupEle) {
             this.hidePopupEle();
             this.clearItems();
@@ -1458,7 +1473,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         }
     }
     private handleResize(e?: Event): void {
-        if (!this.popupEle) return;
+        if (!this.popupEle) { return; }
         this.hidePopupEle(e);
         this.clearOverflow();
         this.setPositionProps();
@@ -1467,7 +1482,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private triggerItemClick(e: Event, item: SpeedDialItemModel): void {
         let target: HTMLElement = e.target as HTMLElement;
         target = target.classList.contains(SDLI) ? target : closest(target, '.' + SDLI) as HTMLElement;
-        let eventArgs: SpeedDialItemEventArgs = { element: target, item: item, event: e };
+        const eventArgs: SpeedDialItemEventArgs = { element: target, item: item, event: e };
         this.trigger('clicked', eventArgs);
         this.hidePopupEle(e);
     }
@@ -1475,7 +1490,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     /**
      * Opens the SpeedDial popup to display to display the speed dial items or the popupTemplate.
      *
-     * @private
+     * @returns {void}
      */
     public show(): void {
         this.showPopupEle();
@@ -1484,6 +1499,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     /**
      * Closes the SpeedDial popup.
      *
+     *@returns {void}
      */
     public hide(): void {
         this.hidePopupEle();
@@ -1492,6 +1508,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     /**
      * Refreshes the button position of speed dial. You can call this method to re-position button when the target is resized.
      *
+     *@returns {void}
      */
     public refreshPosition(): void {
         this.fab.refreshPosition();
@@ -1501,15 +1518,15 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.handleResize(e);
     }
     private clearItems(): void {
-        let li: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
-        li.forEach(element => {
+        const liList: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
+        liList.forEach((element: HTMLElement) => {
             remove(element);
         });
     }
     private unwireEvents(): void {
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
         EventHandler.remove(document.body, 'click', this.bodyClickHandler);
-        this.opensOnHover ? this.unwireFabHover() : this.unwireFabClick();
+        if (this.opensOnHover) { this.unwireFabHover(); } else { this.unwireFabClick(); }
     }
     private unwireFabClick(): void {
         EventHandler.remove(this.fab.element, 'click', this.fabClick);
@@ -1531,10 +1548,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     public destroy(): void {
         super.destroy();
-        this.unwireEvents(); 
-        ['aria-expanded','aria-haspopup','aria-controls'].forEach(attr => {
-            this.element.removeAttribute(attr) 
-        });   
+        this.unwireEvents();
+        ['aria-expanded', 'aria-haspopup', 'aria-controls'].forEach((attr: string) => {
+            this.element.removeAttribute(attr);
+        });
         if (this.popupEle) {
             this.unwirePopupEvents();
             remove(this.popupEle);
@@ -1564,74 +1581,78 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.fab.setProperties(fabModel);
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    if (!this.popupEle) break;
-                    const ele = this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle];
-                    if (oldProp.cssClass) {
-                        removeClass(ele, oldProp.cssClass.split(' '));
-                    }
-                    if (newProp.cssClass) {
-                        addClass(ele, newProp.cssClass.split(' '));
-                    }
-                    break;
-                case 'visible':
-                case 'disabled':
-                    this.hide();
-                    break;
-                case 'enableRtl':
-                    if (!this.popupEle) break;
-                    this.setRTL();
-                    break;
-                case 'openIconCss':
-                    if (!this.isMenuOpen) { this.fab.setProperties({ iconCss: this.openIconCss }); }
-                    break;
-                case 'closeIconCss':
-                    if (this.isMenuOpen) this.fab.setProperties({ iconCss: this.closeIconCss });
-                    break;
-                case 'position':
-                    if (!this.popupEle) break;
-                    this.updatePositionProperties();
-                    break;
-                case 'direction':
-                    if (!this.popupEle || this.popupTemplate) break;
-                    this.updatePositionProperties();
-                    break;
-                case 'popupTemplate':
-                    this.updatePopupTemplate();
-                    break;
-                case 'target':
-                    this.hidePopupEle();
-                    this.checkTarget();
-                    if (this.overlayEle) this.element.insertAdjacentElement('beforebegin', this.overlayEle);
-                    if (!this.popupEle) break;
-                    this.element.insertAdjacentElement('afterend', this.popupEle);
-                    this.updatePositionProperties();
-                    break;
-                case 'items':
-                case 'itemTemplate':
-                    if (this.popupTemplate) break;
-                    this.updatePopupItems();
-                    break;
-                case 'modal':
-                    if (newProp.modal) {
-                        this.createOverlay();
-                    } else {
-                        this.removeOverlayEle();
-                    }
-                    break;
-                case 'mode':
-                    if (!this.popupEle || this.popupTemplate) break;
-                    this.popupEle.classList.remove(RADIALSD, LINEARSD);
-                    this.popupEle.classList.add((this.mode === 'Radial') ? RADIALSD : LINEARSD);
-                    this.updatePositionProperties();
-                    break;
-                case 'radialSettings':
-                    if (this.popupEle && (this.mode === 'Radial') && !this.popupTemplate) this.setRadialPosition();
-                    break;
-                case 'opensOnHover':
-                    !this.opensOnHover ? this.unwireFabHover() : this.unwireFabClick();
-                    this.opensOnHover ? this.wireFabHover() : this.wireFabClick();
-                    break;
+            case 'cssClass':
+                if (!this.popupEle) { break; }
+                if (oldProp.cssClass) {
+                    removeClass(this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle], oldProp.cssClass.split(' '));
+                }
+                if (newProp.cssClass) {
+                    addClass(this.overlayEle ? [this.popupEle, this.overlayEle] : [this.popupEle], newProp.cssClass.split(' '));
+                }
+                break;
+            case 'visible':
+            case 'disabled':
+                this.hide();
+                break;
+            case 'enableRtl':
+                if (!this.popupEle) { break; }
+                this.setRTL();
+                break;
+            case 'openIconCss':
+                if (!this.isMenuOpen) { this.fab.setProperties({ iconCss: this.openIconCss }); }
+                break;
+            case 'closeIconCss':
+                if (this.isMenuOpen) { this.fab.setProperties({ iconCss: this.closeIconCss }); }
+                break;
+            case 'position':
+                if (!this.popupEle) { break; }
+                this.updatePositionProperties();
+                break;
+            case 'direction':
+                if (!this.popupEle || this.popupTemplate) { break; }
+                this.updatePositionProperties();
+                break;
+            case 'popupTemplate':
+                this.updatePopupTemplate();
+                break;
+            case 'target':
+                this.hidePopupEle();
+                this.checkTarget();
+                if (this.overlayEle) { this.element.insertAdjacentElement('beforebegin', this.overlayEle); }
+                if (!this.popupEle) { break; }
+                this.element.insertAdjacentElement('afterend', this.popupEle);
+                this.updatePositionProperties();
+                break;
+            case 'items':
+            case 'itemTemplate':
+                if (this.popupTemplate) { break; }
+                this.updatePopupItems();
+                break;
+            case 'modal':
+                if (newProp.modal) {
+                    this.createOverlay();
+                } else {
+                    this.removeOverlayEle();
+                }
+                break;
+            case 'mode':
+                if (!this.popupEle || this.popupTemplate) { break; }
+                this.popupEle.classList.remove(RADIALSD, LINEARSD);
+                this.popupEle.classList.add((this.mode === 'Radial') ? RADIALSD : LINEARSD);
+                this.updatePositionProperties();
+                break;
+            case 'radialSettings':
+                if (this.popupEle && (this.mode === 'Radial') && !this.popupTemplate) { this.setRadialPosition(); }
+                break;
+            case 'opensOnHover':
+                if (this.opensOnHover) {
+                    this.unwireFabClick();
+                    this.wireFabHover();
+                } else {
+                    this.unwireFabHover();
+                    this.wireFabClick();
+                }
+                break;
             }
         }
     }

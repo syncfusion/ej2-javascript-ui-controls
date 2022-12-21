@@ -70,12 +70,12 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
                 (direction + this.getAreaPathDirection(previous.xValue, origin, series, isInverted, getPoint, null, 'L')) : '';
             this.generatePathOption(options, series, previous, direction, '');
         }
-        if (series.border.width != 0) {
+        if (series.border.width !== 0) {
             emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
-                this.generateBorderPathOption(options, series, previous, emptyPointDirection, '');
-    }
-    this.applySegmentAxis(series, options, segments);
-    this.renderMarker(series);
+            this.generateBorderPathOption(options, series, previous, emptyPointDirection, '');
+        }
+        this.applySegmentAxis(series, options, segments);
+        this.renderMarker(series);
     }
     /**
      * To Store the path directions of the area
@@ -90,9 +90,9 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         ));
     }
 
-      /**
-       * To draw border for the path directions of area
-       */ 
+    /**
+     * To draw border for the path directions of area
+     */
     private generateBorderPathOption(
         options: PathOption[], series: Series, point: Points, emptyPointDirection: string, id: string
     ): void {
@@ -103,8 +103,6 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         ));
 
     }
-    
-    
 
     /**
      * To destroy the area series.

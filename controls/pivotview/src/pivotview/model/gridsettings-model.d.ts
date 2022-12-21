@@ -12,6 +12,7 @@ export interface PivotSelectionSettingsModel {
      * * `Row`: Allows the rows to be highlighted in the pivot table.
      * * `Column`: Allows the columns to be highlighted in the pivot table.
      * * `Both`: Allows both rows, columns and cells to be highlighted in the pivot table.
+     *
      * @default Row
      */
     mode?: SelectionMode;
@@ -23,6 +24,7 @@ export interface PivotSelectionSettingsModel {
      * * `Flow`: Allows the range of cells to be selected between the start index and the end index, which also includes the other cells of the selected rows in the pivot table.
      * * `Box`: Allows you to select a range of cells within the starting and ending column indexes that are included in the range between row cells in the pivot table.
      * * `BoxWithBorder`: Allows the range of cells to be selected as the box mode, but along with the borders in the pivot table.
+     *
      * @default Flow
      */
     cellSelectionMode?: PivotCellSelectionMode;
@@ -33,6 +35,7 @@ export interface PivotSelectionSettingsModel {
      * The types available are:
      * * `Single`: Allows the user to select a row or cell on their own in the pivot table.
      * * `Multiple`: Allows the user to select multiple rows or columns or cells in the pivot table.
+     *
      * @default Single
      */
     type?: SelectionType;
@@ -40,6 +43,7 @@ export interface PivotSelectionSettingsModel {
     /**
      * Allows the selection options to highlight the rows in the pivot table using checkbox selection on their own.
      * > To enable checkboxOnly selection, should specify the column `type` as **checkbox**.
+     *
      * @default false
      */
     checkboxOnly?: boolean;
@@ -47,6 +51,7 @@ export interface PivotSelectionSettingsModel {
     /**
      * Allows you to keep selections in rows or columns or cells while performing all operations in the pivot table.
      * > For persisting selection, any one of the column should be enabled as a primary key using the `columns.isPrimaryKey` property in the grid instance.
+     *
      * @default false
      */
     persistSelection?: boolean;
@@ -58,12 +63,14 @@ export interface PivotSelectionSettingsModel {
      * * `Default`: Allows multiple rows to be selected by clicking rows one by one.
      * * `ResetOnRowClick`: Allows you to reset the previously selected row while clicking on a specific row.
      * You can also select multiple rows by clicking on rows along with the **CTRL** or **SHIFT** key in the pivot table.
+     *
      * @default Default
      */
     checkboxMode?: CheckboxSelectionType;
 
     /**
      * Allows to perform multiple selection in rows with single clicks without using **SHIFT** or **CTRL** keys.
+     *
      * @default false
      */
     enableSimpleMultiRowSelection?: boolean;
@@ -77,6 +84,7 @@ export interface GridSettingsModel {
 
     /**
      * Allow the height of the pivot table content to be set, meaning that the height given should be applied without considering the column headers in the pivot table.
+     *
      * @default 'auto'
      */
     height?: number | string;
@@ -84,6 +92,7 @@ export interface GridSettingsModel {
     /**
      * Allow to set width of the pivot table.
      * > The pivot table will not display less than 400px, as it is the minimum width to the component.
+     *
      * @default 'auto'
      */
     width?: number | string;
@@ -96,12 +105,14 @@ export interface GridSettingsModel {
      * * `Horizontal`: Allows the cell border to be shown horizontally in the pivot table.
      * * `Vertical`: Allows the cell border to be shown vertically in the pivot table.
      * * `Default`: Allows the display of the cell borders based on the theme used in the pivot table.
+     *
      * @default Both
      */
     gridLines?: GridLine;
 
     /**
      * Allow to enable the content of the cells to be wrapped when they exceed the width of the cells in the pivot table.
+     *
      * @default false
      */
     allowTextWrap?: boolean;
@@ -109,6 +120,7 @@ export interface GridSettingsModel {
     /**
      * Allows to reorder a specific column header from one index to another index in the pivot table by drag-and-drop.
      * > Reordering allows only at the same level as the column headers in the pivot table.
+     *
      * @default false
      */
     allowReordering?: boolean;
@@ -116,12 +128,14 @@ export interface GridSettingsModel {
     /**
      * Allows the columns to be resized by clicking and dragging the right edge of the column headers.
      * > In RTL mode, user can click and drag the left edge of the header cell to resize the column.
+     *
      * @default true
      */
     allowResizing?: boolean;
 
     /**
      * Allows the component to be fit based on the width of its columns.
+     *
      * @default true
      */
     allowAutoResizing?: boolean;
@@ -130,6 +144,7 @@ export interface GridSettingsModel {
      * Allow to set height to the pivot table rows commonly.
      * > By default, the rowHeight property is set as 36 pixels for desktop layout and 48 pixels for mobile layout.
      * The height of the column headers alone may vary when grouping bar feature is enabled.
+     *
      * @default null
      */
     rowHeight?: number;
@@ -139,6 +154,7 @@ export interface GridSettingsModel {
      * > By default, the columnWidth property is set as 110 pixels to each column except the first column.
      * The first column always defined as row headers in the pivot table. For first column,
      * 250 pixels and 200 pixels are set respectively with and without grouping bar.
+     *
      * @default 110
      */
     columnWidth?: number;
@@ -151,12 +167,14 @@ export interface GridSettingsModel {
      * * `Ellipsis`: Allows the content of a cell to be displayed as an ellipse when it overflows its content area.
      * * `EllipsisWithTooltip`: Allows the cell content to be displayed as an ellipse when its content area is overflowing.
      * And the tooltip will also be displayed while hovering on the ellipsis applied cell.
+     *
      * @default Ellipsis
      */
     clipMode?: ClipMode;
 
     /**
      * Allows a row or column or cell to be highlighted by simply clicking or arrow key in the pivot table.
+     *
      * @default false
      */
     allowSelection?: boolean;
@@ -165,6 +183,7 @@ export interface GridSettingsModel {
      * Allows to highlight specific row in the pivot table during initial rendering.
      * For example, to highlight the pivot table's first row, set the property `selectedRowIndex` to **0**.
      * > You can get the currently selected row index of the pivot table from the `selectedRowIndex` property using pivot table instance at run-time.
+     *
      * @default -1
      */
     selectedRowIndex?: number;
@@ -183,6 +202,7 @@ export interface GridSettingsModel {
      * * `checkboxMode`: Allow options to customize the checkbox selection mode in the pivot table.
      * For example, to select multiple rows one by one through simple clicking on rows, set the property `checkboxMode` to **Default**.
      * * `enableSimpleMultiRowSelection`: Allows to perform multiple selection in rows with single clicks without using **SHIFT** or **CTRL** keys.
+     *
      * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
      */
     selectionSettings?: SelectionSettingsModel | SelectionSettings;
@@ -194,6 +214,7 @@ export interface GridSettingsModel {
      * * `Both`: Allows the content of the cells to be wrapped in both headers and values.
      * * `Header`: Allows the content of the cells to be wrapped in rows and column headers alone.
      * * `Content`: Allows the content of the cells to be packed for the value cells alone.
+     *
      * @default { wrapMode: 'Both'}
      */
     textWrapSettings?: TextWrapSettings;
@@ -203,6 +224,7 @@ export interface GridSettingsModel {
      * The options available are:
      * * `AllPages`: Prints the entire pivot table.
      * * `CurrentPage`: Prints the current page shown in the pivot table on its own.
+     *
      * @default AllPages
      */
     printMode?: PrintMode;
@@ -220,55 +242,63 @@ export interface GridSettingsModel {
      * * `Sort Ascending`: Allows to perform ascending order with repect to the values on selected cell contained row or column in the pivot table.
      * * `Sort Descending`: Allows to perform descending order with repect to the values on selected cell contained row or column in the pivot table.
      * * `Aggregate`: Allow options to perform calculations over a group of values (exclusively for value fields bound in value axis) using the aggregation option in the pivot table.
+     *
      * @default null
      */
     contextMenuItems?: PivotTableContextMenuItem[] | ContextMenuItemModel[];
 
     /**
      * It triggers before copy information from the pivot table.
-     * @event
+     *
+     * @event beforeCopy
      * @deprecated
      */
     beforeCopy?: EmitType<BeforeCopyEventArgs>;
 
     /**
      * It triggers after print action is completed.
-     * @event
+     *
+     * @event printComplete
      * @deprecated
      */
     printComplete?: EmitType<PrintEventArgs>;
 
     /**
      * It triggers before the print action starts.
-     * @event
+     *
+     * @event beforePrint
      * @deprecated
      */
     beforePrint?: EmitType<PrintEventArgs>;
 
     /**
      * It triggers before the PDF export starts.
-     * @event
+     *
+     * @event beforePdfExport
      * @deprecated
      */
-    beforePdfExport?: EmitType<Object>;   /* eslint-disable-line */
+    beforePdfExport?: EmitType<Object>;
 
     /**
      * It triggers before the Excel export starts.
-     * @event
+     *
+     * @event beforeExcelExport
      * @deprecated
      */
-    beforeExcelExport?: EmitType<Object>; /* eslint-disable-line */
+    beforeExcelExport?: EmitType<Object>;
 
     /**
      * It triggers before context menu opens.
-     * @event
+     *
+     * @event contextMenuOpen
      * @deprecated
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * It triggers when click on context menu.
-     * @event
+     *
+     * @event contextMenuClick
      * @deprecated
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
@@ -276,7 +306,8 @@ export interface GridSettingsModel {
     /**
      * Triggered every time a request is made to access cell information, element, or data.
      * It will get triggered before the cell element is appended to the Grid element.
-     * @event
+     *
+     * @event queryCellInfo
      * @deprecated
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
@@ -284,98 +315,112 @@ export interface GridSettingsModel {
     /**
      * Triggered for column header.
      * It will get triggered before the cell element is appended to the Grid element.
-     * @event
+     *
+     * @event headerCellInfo
      * @deprecated
      */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
      * It triggers before row selection occurs in the pivot table.
-     * @event
+     *
+     * @event rowSelecting
      * @deprecated
      */
     rowSelecting?: EmitType<RowSelectEventArgs>;
 
     /**
      * It triggers after a row is selected in the pivot table.
-     * @event
+     *
+     * @event rowSelected
      * @deprecated
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
     /**
      * It triggers before deselecting the selected row from the pivot table.
-     * @event
+     *
+     * @event rowDeselecting
      * @deprecated
      */
     rowDeselecting?: EmitType<RowDeselectEventArgs>;
 
     /**
      * It triggers when a selected row is deselected from the pivot table.
-     * @event
+     *
+     * @event rowDeselected
      * @deprecated
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
     /**
      * It triggers before any cell selection occurs in the pivot table.
-     * @event
+     *
+     * @event cellSelecting
      * @deprecated
      */
     cellSelecting?: EmitType<CellSelectingEventArgs>;
 
     /**
-     * It triggers after a cell is selected in the pivot table.
-     * @event
+     * It triggers after a cell is selected in the pivot table.\
+     *
+     * @event cellSelected
      * @deprecated
      */
     cellSelected?: EmitType<CellSelectEventArgs>;
 
     /**
      * It triggers before the selected cell is deselecting from the pivot table.
-     * @event
+     *
+     * @event cellDeselecting
      * @deprecated
      */
     cellDeselecting?: EmitType<CellDeselectEventArgs>;
 
     /**
      * It triggers when a particular selected cell is deselected from the pivot table.
-     * @event
+     *
+     * @event cellDeselected
      * @deprecated
      */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
     /**
      * It triggers when column resize starts in the pivot table.
-     * @event
+     *
+     * @event resizeStart
      * @deprecated
      */
     resizeStart?: EmitType<ResizeArgs>;
 
     /**
      * It triggers on column resizing in the pivot table.
-     * @event
+     *
+     * @event resizing
      * @deprecated
      */
     resizing?: EmitType<ResizeArgs>;
 
     /**
      * It triggers when column resize ends in the pivot table.
-     * @event
+     *
+     * @event resizeStop
      * @deprecated
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
      * It triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
-     * @event
+     *
+     * @event pdfHeaderQueryCellInfo
      * @deprecated
      */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
      * It triggers before exporting each cell to PDF document. You can also customize the PDF cells.
-     * @event
+     *
+     * @event pdfQueryCellInfo
      * @deprecated
      */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
@@ -383,7 +428,8 @@ export interface GridSettingsModel {
     /**
      * It triggers before exporting each header cell to Excel file.
      * You can also customize the Excel cells.
-     * @event
+     *
+     * @event excelHeaderQueryCellInfo
      * @deprecated
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -391,35 +437,40 @@ export interface GridSettingsModel {
     /**
      * It triggers before exporting each cell to Excel file.
      * You can also customize the Excel cells.
-     * @event
+     *
+     * @event excelQueryCellInfo
      * @deprecated
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
 
     /**
      * It triggers when column header element drag (move) starts.
-     * @event
+     *
+     * @event columnDragStart
      * @deprecated
      */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
 
     /**
      * It triggers when column header element is dragged (moved) continuously.
-     * @event
+     *
+     * @event columnDrag
      * @deprecated
      */
     columnDrag?: EmitType<ColumnDragEventArgs>;
 
     /**
      * It triggers when a column header element is dropped on the target column.
-     * @event
+     *
+     * @event columnDrop
      * @deprecated
      */
     columnDrop?: EmitType<ColumnDragEventArgs>;
 
     /**
      * It allows to configure the column before it renders.
-     * @event
+     *
+     * @event columnRender
      * @deprecated
      */
     columnRender?: EmitType<ColumnRenderEventArgs>;

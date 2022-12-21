@@ -2,13 +2,18 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
+## 20.4.38 (2022-12-21)
 
 ### Diagram
 
 #### New Feature
 
 - `#I409589` - Support to override the mouseWheel event has been added.
+
+#### Bug Fixes
+
+- `I421148` - Now, connector segment does not get split into multiple segment while hover on node.
+- `#I420202` - The issue on annotation interaction has been resolved.
 
 ## 20.3.60 (2022-12-06)
 

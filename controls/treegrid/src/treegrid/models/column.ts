@@ -398,11 +398,11 @@ export class Column {
         //Angular two way binding
         const keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {
-            this[keys[i]] = column[keys[i]];
+            this[keys[parseInt(i.toString(), 10)]] = column[keys[parseInt(i.toString(), 10)]];
             //Refresh the react columnTemplates on state change
-            if (this.parent && this.parent['isReact'] && keys[i] === 'template') {
+            if (this.parent && this.parent['isReact'] && keys[parseInt(i.toString(), 10)] === 'template') {
                 const refreshReactColumnTemplateByUid: string = 'refreshReactColumnTemplateByUid';
-                this.parent.clipboardModule['treeGridParent'].renderModule[refreshReactColumnTemplateByUid](this.uid);
+                this.parent.clipboardModule['treeGridParent'].renderModule[`${refreshReactColumnTemplateByUid}`](this.uid);
             }
         }
     }

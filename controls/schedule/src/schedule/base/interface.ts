@@ -405,6 +405,13 @@ export interface CellTemplateArgs {
 }
 
 /** @private */
+export interface DateRangeTemplateArgs {
+    startDate: Date;
+    endDate: Date;
+    currentView: View;
+}
+
+/** @private */
 export interface CrudArgs extends ActionEventArgs {
     promise?: Promise<any>;
     editParams?: SaveChanges;
@@ -427,7 +434,7 @@ export interface IRenderer {
     getStartHour(): Date;
     getEndHour(): Date;
     getLabelText(view: string): string;
-    getDateRangeText(): string;
+    getDateRangeText(date?: Date): string;
     getEndDateFromStartDate(date: Date): Date;
     addEventListener(): void;
     removeEventListener(): void;
@@ -608,6 +615,7 @@ export interface ViewsData extends ViewsModel {
     eventTemplateName?: string;
     dayHeaderTemplateName?: string;
     monthHeaderTemplateName?: string;
+    dateRangeTemplateName?: string;
 }
 
 /** @private */

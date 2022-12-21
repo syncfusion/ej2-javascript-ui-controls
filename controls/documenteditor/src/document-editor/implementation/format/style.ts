@@ -36,9 +36,35 @@ export class WParagraphStyle extends WStyle {
         this.paragraphFormat = new WParagraphFormat(this);
         this.characterFormat = new WCharacterFormat(this);
     }
+    /**
+     * @private
+     */
+    public clear(): void {
+        if (this.characterFormat) {
+            this.characterFormat.clearFormat();
+        }
+        if (this.paragraphFormat) {
+            this.paragraphFormat.clearFormat();
+        }
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
     public destroy(): void {
-        this.characterFormat.destroy();
-        this.paragraphFormat.destroy();
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        if (this.paragraphFormat) {
+            this.paragraphFormat.destroy();
+            this.paragraphFormat = undefined;
+        }
+        this.ownerBase = undefined;
+        this.name = undefined;
+        this.next = undefined;
+        this.basedOn = undefined;
+        this.link = undefined;
     }
     public copyStyle(paraStyle: WParagraphStyle): void {
         this.name = paraStyle.name;
@@ -66,8 +92,28 @@ export class WCharacterStyle extends WStyle {
         this.ownerBase = node;
         this.characterFormat = new WCharacterFormat(this);
     }
+    /**
+     * @private
+     */
+    public clear(): void {
+        if (this.characterFormat) {
+            this.characterFormat.clearFormat();
+        }
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
     public destroy(): void {
-        this.characterFormat.destroy();
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        this.ownerBase = undefined;
+        this.name = undefined;
+        this.next = undefined;
+        this.basedOn = undefined;
+        this.link = undefined;
     }
     public copyStyle(charStyle: WCharacterStyle): void {
         this.name = charStyle.name;
@@ -97,7 +143,7 @@ export class WStyles {
     }
     public getItem(index: number): Object {
         if (this.collection.length > index) {
-            return this.collection[index];
+            return this.collection[parseInt(index.toString(), 10)];
         }
         return null;
     }
@@ -109,9 +155,17 @@ export class WStyles {
         return index > -1 && index < this.collection.length;
     }
     public clear(): void {
-        while (this.collection.length > 0) {
-            this.collection.pop();
+        if (this.collection && this.collection.length > 0) {
+            for (let i: number = 0; i < this.collection.length; i++) {
+                let style: Object = this.collection[parseInt(i.toString(), 10)];
+                if (style instanceof WCharacterStyle) {
+                    (style as WCharacterStyle).clear();
+                } else {
+                    (style as WParagraphStyle).clear();
+                }
+            }
         }
+        this.collection = [];
     }
     public findByName(name: string, type?: StyleType): Object {
         let returnStyle: Object;
@@ -148,6 +202,25 @@ export class WStyles {
             styleObjects.push(returnStyle);
         }
         return styleObjects;
+    }
+
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public destroy(): void {
+        if (this.collection && this.collection.length > 0) {
+            for (let i: number = 0; i < this.collection.length; i++) {
+                let style: Object = this.collection[parseInt(i.toString(), 10)];
+                if (style instanceof WCharacterStyle) {
+                    (style as WCharacterStyle).destroy();
+                } else {
+                    (style as WParagraphStyle).destroy();
+                }
+            }
+        }
+        this.collection = [];
+        this.collection = undefined;
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
 }

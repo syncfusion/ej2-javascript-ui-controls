@@ -1,6 +1,8 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet, SheetModel, CellModel } from '../../../src/index';
+import { Spreadsheet, SheetModel, CellModel, getCell } from '../../../src/index';
+import { getComponent, EventHandler } from '@syncfusion/ej2-base';
+import { Overlay } from '../../../src/spreadsheet/services/index';
 
 describe('Undo redo ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -467,6 +469,207 @@ describe('Undo redo ->', () => {
             expect(helper.getElement('#' + helper.id + '_redo').parentElement.classList.contains('e-overlay')).toBeTruthy();
             actionArgs = undoRedo.undoCollection[undoRedo.undoCollection.length - 1];
             expect(actionArgs.eventArgs.style.textDecoration).toBe('underline line-through');
+            done();
+        });
+    });
+
+    describe('UI - Interaction II', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        
+        it('Apply undo after clear Conditional Formats', (done: Function) => {
+            helper.invoke('selectRange', ['H2:H11']);
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2:H11' }]);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-clearrules');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+                helper.invoke('undo');
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                done();
+            });
+        });
+        it('Apply undo after after Cut/Paste Conditional Formats', (done: Function) => {
+            helper.invoke('selectRange', ['H2:H11']);
+            helper.invoke('cut').then(() => {
+                helper.invoke('selectRange', ['J2']);
+                helper.invoke('paste', ['J2']);
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 9]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [1, 9]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(helper.invoke('getCell', [9, 9]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                helper.click('#spreadsheet_undo');
+                expect(helper.invoke('getCell', [1, 9]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 9]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [9, 9]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                done();
+            });
+        });
+        it('Undo after Delete Spill causing Value in Unique Formula Applied->', (done: Function) => {
+            helper.invoke('selectRange', ['J1']);
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('J1', '=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('10');
+            helper.invoke('selectRange', ['J4']);
+            helper.edit('J4', '1');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('#SPILL!');
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('10');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('#SPILL!');
+            done();
+        });
+        it('Redo after Delete Spill causing Value in Unique Formula Applied->', (done: Function) => {
+            helper.invoke('selectRange', ['J1']);
+            helper.click('#spreadsheet_redo');
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('#SPILL!');
+            done();
+        });
+        it('Redo after Delete Spill causing Value in Unique Formula Applied in First Column->', (done: Function) => {
+            helper.invoke('selectRange', ['A12']);
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('A12', '=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].formula).toBe('=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[12].cells[0].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[13].cells[0].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+            helper.invoke('selectRange', ['A15']);
+            helper.edit('A15', '1');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('#SPILL!');
+            helper.triggerKeyNativeEvent(46);
+            expect(spreadsheet.sheets[0].rows[11].cells[0].formula).toBe('=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[12].cells[0].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[13].cells[0].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+            helper.click('#spreadsheet_undo');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('#SPILL!');
+            helper.invoke('selectRange', ['A12']);
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].formula).toBe('=UNIQUE(E2:E11)');
+            expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[12].cells[0].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[13].cells[0].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[14].cells[0].value).toBe('10');
+            done();
+        });
+        it('Redo after apply Unique Formula in used Range->', (done: Function) => {
+            helper.invoke('selectRange', ['G1']);
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('G1', '=UNIQUE(E2:E11)');
+            helper.edit('G1', '=UNIQUE(E2:E11);');
+            expect(spreadsheet.sheets[0].rows[0].cells[6].formula).toBe('=UNIQUE(E2:E11);');
+            expect(spreadsheet.sheets[0].rows[0].cells[6].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[1].cells[6].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[2].cells[6].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[3].cells[6].value).toBe('10');
+            helper.click('#spreadsheet_undo');
+            helper.click('#spreadsheet_redo');
+            expect(spreadsheet.sheets[0].rows[0].cells[6].formula).toBe('=UNIQUE(E2:E11);');
+            expect(spreadsheet.sheets[0].rows[0].cells[6].value).toBe('20');
+            expect(spreadsheet.sheets[0].rows[1].cells[6].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[2].cells[6].value).toBe('15');
+            expect(spreadsheet.sheets[0].rows[3].cells[6].value).toBe('10');
+            done();
+        });
+        it('Undo Image, after cut/Paste', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'D3', isPublic: true });
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                helper.invoke('cut').then(() => {
+                    helper.invoke('selectRange', ['M1']);
+                    helper.invoke('paste', ['M1']);
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":0,"left":768}]');
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+                        EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Redo Image, after cut/Paste', (done: Function) => {
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[12].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":0,"left":768}]');
+                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                done();
+            });
+        });
+        it('Undo Image, after copy/Paste', (done: Function) => {
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['D3']);
+                helper.invoke('paste', ['D3']);
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_2","height":300,"width":400,"top":40,"left":192}]');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[]');
+                    EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                    done();
+                });
+            });
+        });
+        it('Redo Image, after copy/Paste', (done: Function) => {
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_2","height":300,"width":400,"top":40,"left":192}]');
+                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+                done();
+            });
+        });
+        it('Apply Undo after Image Refresh', (done: Function) => {
+            const image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay-active');
+            const inst: Spreadsheet = helper.getInstance();
+            inst.element.focus();  
+            helper.triggerMouseAction('mousedown', { x: image.getBoundingClientRect().left + 1, y: image.getBoundingClientRect().top + 1 }, image, image);
+            helper.triggerMouseAction('mousemove', { x: image.getBoundingClientRect().left + 200, y: image.getBoundingClientRect().top + 100 }, image, image);
+            helper.triggerMouseAction('mouseup', { x: image.getBoundingClientRect().left + 200, y: image.getBoundingClientRect().top + 100 }, document, image);
+            (inst.serviceLocator.getService('shape') as Overlay).destroy();
+            setTimeout(() => {
+                expect(image.style.top).toEqual('139px');
+                expect(image.style.left).toEqual('391px');
+                helper.click('#spreadsheet_undo');
+                expect(image.style.top).toEqual('40px');
+                expect(image.style.left).toEqual('192px');
+                done();
+            });
+        });
+        it('Apply Redo after Image Refresh', (done: Function) => {
+            const image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay-active');
+            helper.click('#spreadsheet_redo');
+            expect(image.style.top).toEqual('139px');
+            expect(image.style.left).toEqual('391px');
             done();
         });
     });

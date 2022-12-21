@@ -1,7 +1,7 @@
 import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings } from '../../base/engine';
 import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
 import { IFilter } from '../../base/engine';
-import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes } from '../base/enum';
+import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties } from '@syncfusion/ej2-grids';
 import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
@@ -198,16 +198,17 @@ export interface BeforeExportEventArgs {
     /** Defines an option to export multiple pivot table to the same PDF file */
     isMultipleExport?: boolean;
     /** Defines current PDF file that holds the pivot table information which will be used to export */
-    pdfDoc?: Object;    /* eslint-disable-line */
+    pdfDoc?: Object;
     /** A file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system. */
     isBlob?: boolean;
     /** Defines the additional settings for excel export such as multiple export, header, footer, etc.
      */
     excelExportProperties?: ExcelExportProperties;
     /** Defines current excel work book that holds the pivot table information which will be used to export */
-    workbook?: any; /* eslint-disable-line */
+    workbook?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     /**
      * Defines the pivot chart export type
+     *
      * @isEnumeration
      */
     type?: ExportType;
@@ -220,6 +221,15 @@ export interface BeforeExportEventArgs {
     /** Defines content height to be export
      */
     height?: number;
+    /**
+     * Determines if the table or chart will be exported to the current document.
+     */
+    currentExportView?: ExportView;
+    /**
+     * Defines the number of columns that will be exported for each PDF page.
+     * > This option is applicable only when exporting the pivot table to PDF document.
+     */
+    columnSize?: number;
 }
 
 /**
@@ -269,7 +279,7 @@ export interface CellClickEventArgs {
     /** Defines the cell element that is clicked. */
     currentCell: Element;
     /** Defines the cell item that is clicked. */
-    data: Object;   /* eslint-disable-line */
+    data: Object;
     /** Defines the native event properties. */
     nativeEvent: MouseEvent;
 }
@@ -281,7 +291,7 @@ export interface HyperCellClickEventArgs {
     /** Defines the cell element that is clicked. */
     currentCell: Element;
     /** Defines the cell item that is clicked. */
-    data: Object;   /* eslint-disable-line */
+    data: Object;
     /** Defines an option to restrict the hyperlink cell click operation. By default, the value is in 'true' state. */
     cancel: boolean;
     /** Defines the native event properties. */
@@ -490,6 +500,7 @@ export interface SelectionSettings {
 
     /**
      * Pivot widget supports row, column, cell, and both (row and column) selection mode.
+     *
      * @default Row
      */
     mode?: SelectionMode;
@@ -500,6 +511,7 @@ export interface SelectionSettings {
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
+     *
      * @default Flow
      * @isEnumeration
      */
@@ -509,6 +521,7 @@ export interface SelectionSettings {
      * Defines options for selection type. They are
      * * `Single`: Allows selection of only a row or a column or a cell.
      * * `Multiple`: Allows selection of multiple rows or columns or cells.
+     *
      * @default Single
      */
     type?: SelectionType;
@@ -517,6 +530,7 @@ export interface SelectionSettings {
      * If 'checkboxOnly' set to true, then the selection is allowed only through checkbox.
      *
      * Note: To enable 'checkboxOnly' selection, should specify the column type as`checkbox`.
+     *
      * @default false
      */
     checkboxOnly?: boolean;
@@ -524,6 +538,7 @@ export interface SelectionSettings {
     /**
      * If 'persistSelection' set to true, then the selection is persisted on all operations.
      * For persisting selection, any one of the column should be enabled as a primary key.
+     *
      * @default false
      */
     persistSelection?: boolean;
@@ -533,6 +548,7 @@ export interface SelectionSettings {
      * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
+     *
      * @default Default
      * @isEnumeration
      */
@@ -540,6 +556,7 @@ export interface SelectionSettings {
 
     /**
      * If 'enableSimpleMultiRowSelection' set to true, then the user can able to perform multiple row selection with single clicks.
+     *
      * @default false
      */
     enableSimpleMultiRowSelection?: boolean;
@@ -572,12 +589,13 @@ export interface PivotButtonArgs {
 
 /**
  * IAction interface
+ *
  * @hidden
  */
 export interface IAction {
     updateModel?(): void;
-    onActionBegin?(args?: Object, type?: string): void; /* eslint-disable-line */
-    onActionComplete?(args?: Object, type?: string): void;  /* eslint-disable-line */
+    onActionBegin?(args?: Object, type?: string): void;
+    onActionComplete?(args?: Object, type?: string): void;
     addEventListener?(): void;
     removeEventListener?(): void;
 }
@@ -797,7 +815,7 @@ export interface AggregateEventArgs {
  */
 export interface QueryCellInfoEventArgs {
     /** Defines the row data associated with the current cell. */
-    data?: Object;  /* eslint-disable-line */
+    data?: Object;
     /** Defines the cell element. */
     cell?: Element;
     /**
@@ -815,7 +833,7 @@ export interface QueryCellInfoEventArgs {
     /** Defines the current action. */
     requestType?: string;
     /** Define the foreign key row data associated with the current cell. */
-    foreignKeyData?: Object;    /* eslint-disable-line */
+    foreignKeyData?: Object;
     /** Define the pivot table instance object. */
     pivotview?: PivotView;
 }
@@ -837,12 +855,14 @@ export interface OffsetModel {
 
     /**
      * Defines offset left position of the marker.
+     *
      * @default 0
      */
     x?: number;
 
     /**
      * Defines offset top position of the marker.
+     *
      * @default 0
      */
     y?: number;
@@ -858,7 +878,7 @@ export interface MemberEditorOpenEventArgs {
     /**
      * Defines the filter members of the selected field.
      */
-    fieldMembers?: { [key: string]: Object }[]; /* eslint-disable-line */
+    fieldMembers?: { [key: string]: Object }[];
     /** Defines selected field's filter settings */
     filterSetting?: IFilter;
     /** Defines an option to restrict the member editor popup from open. */
@@ -938,7 +958,7 @@ export interface MemberItems {
     /**
      * Defines the custom HTML atttribute informations that used to add it specific filter member's DOM element in UI.
      */
-    htmlAttributes?: { [key: string]: Object }; /* eslint-disable-line */
+    htmlAttributes?: { [key: string]: Object };
     /** Defines whether the specific filter member is include or not that used to be display in the pivot table. */
     isSelected?: boolean;
     /** Defines the unique name of a specific filter member. */
@@ -992,7 +1012,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the hash string. */
     hash?: string;
     /** Defines the internal properties. */
-    internalProperties?: any;   /* eslint-disable-line */
+    internalProperties?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 /**
@@ -1002,11 +1022,11 @@ export interface UpdateRawDataArgs {
     /** Defines the raw data needs to be added. */
     addedData: IDataSet[];
     /** Defines the raw data needs to be removed. */
-    removedData: object[];  /* eslint-disable-line */
+    removedData: object[];
     /** Defines the raw data needs to be updated. */
     updatedData: IDataSet[];
     /** Defines the index object. */
-    indexObject: object[];  /* eslint-disable-line */
+    indexObject: object[];
 }
 
 /**
@@ -1020,27 +1040,27 @@ export interface FetchRawDataArgs {
 }
 
 /**
- * The action begins event arguments provide information about the current UI action, such as the action name, current datasource settings, 
+ * The action begins event arguments provide information about the current UI action, such as the action name, current datasource settings,
  * and the selected field information which are configured based on the UI actions like
  * [`drill down/up`](../../pivotview/drill-down/#drill-down-and-drill-up),
  * [`value sorting`](../../pivotview/sorting/#value-sorting),
  * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
  * [`grouping bar`](../../pivotview/grouping-bar/) and
- * [`field list`](../../pivotview/field-list/) buttons actions such as 
+ * [`field list`](../../pivotview/field-list/) buttons actions such as
  * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
- * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar), 
- * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on, 
+ * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+ * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionBeginEventArgs {
     /** Defines the current data source settings information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list. */
     dataSourceSettings?: IDataOptions;
     /** Defines name of the current UI action when it begins. The following are the UI actions and their names:
-     * 
+     *
      * **Pivot Table**
      * * **Drill down** and **drill up** - Drill down/up.
      * * **Value sorting** - Sort value.
-     * 
+     *
      * **Toolbar**
      * * **New report** - Add new report.
      * * **Save report** - Save current report.
@@ -1057,18 +1077,18 @@ export interface PivotActionBeginEventArgs {
      * * **Sub-totals menu** - Show/hide sub-totals.
      * * **Grand totals menu** - Show/hide grand totals.
      * * **MDX** - Open MDX dialog.
-     * 
+     *
      * **Grouping bar** and **Field List** buttons
      * * **Editing** - Edit calculated field.
      * * **Remove** - Remove field.
      * * **Sorting** - Sort field.
      * * **Filtering** - Filter field.
      * * **Aggregation** - Aggregate field.
-     * 
+     *
      * **Field List UI**
      * * **Field list tree** - Sort field tree.
      * * **Calculated field button** - Open calculated field dialog.
-     * 
+     *
      * **Editing**
      * * **Edit** - Edit record.
      * * **Save** - Save edited records.
@@ -1076,7 +1096,7 @@ export interface PivotActionBeginEventArgs {
      * * **Delete** - Remove record.
      */
     actionName?: string;
-    /** 
+    /**
      * Defines the current field information on which field the action takes.
      * > This option is applicable only when the field-based UI actions are performed such as filtering, sorting, field remove, editing and aggregation change.
      */
@@ -1092,21 +1112,21 @@ export interface PivotActionBeginEventArgs {
  * [`value sorting`](../../pivotview/sorting/#value-sorting),
  * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
  * [`grouping bar`](../../pivotview/grouping-bar/) and
- * [`field list`](../../pivotview/field-list/) buttons actions such as 
+ * [`field list`](../../pivotview/field-list/) buttons actions such as
  * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
- * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar), 
- * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on, 
+ * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+ * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionCompleteEventArgs {
     /** Defines the current data source settings information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list. */
     dataSourceSettings?: IDataOptions;
     /** Defines name of the current UI action completed. The following are the UI actions and their names:
-     * 
+     *
      * **Pivot Table**
      * * **Drill down** and **drill up** - Drill down/up.
      * * **Value sorting** - Value sorted.
-     * 
+     *
      * **Toolbar**
      * * **New report** - New report added.
      * * **Save report** - Report saved.
@@ -1123,18 +1143,18 @@ export interface PivotActionCompleteEventArgs {
      * * **Sub-totals menu** - Sub-totals shown/hidden.
      * * **Grand totals menu** - Grand totals shown/hidden.
      * * **MDX** - MDX dialog closed.
-     * 
+     *
      * **Grouping bar** and **Field List** buttons
      * * **Editing** - Calculated field edited.
      * * **Remove** - Field removed.
      * * **Sorting** - Field sorted.
      * * **Filtering** - Field filtered.
      * * **Aggregation** - Field aggregated.
-     * 
+     *
      * **Field List UI**
      * * **Field list tree** - Field tree sorted.
      * * **Calculated field button** - Calculated field applied.
-     * 
+     *
      * **Editing**
      * * **Save** - Edited records saved.
      * * **Add** - New record added.
@@ -1157,21 +1177,21 @@ export interface PivotActionCompleteEventArgs {
  * [`value sorting`](../../pivotview/sorting/#value-sorting),
  * built-in [`toolbar`](../../pivotview/tool-bar/#built-in-toolbar-options) options,
  * [`grouping bar`](../../pivotview/grouping-bar/) and
- * [`field list`](../../pivotview/field-list/) buttons actions such as 
+ * [`field list`](../../pivotview/field-list/) buttons actions such as
  * [`sorting`](../../pivotview/sorting/), [`filtering`](../../pivotview/filtering/),
- * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar), 
- * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on, 
+ * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
+ * [`aggregate type`](../../pivotview/aggregation/#modifying-aggregation-type-for-value-fields-at-runtime) change and so on,
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionFailureEventArgs {
     /** Defines the error information of the current action. */
     errorInfo?: Error;
     /** Defines the name of the current action before it is completed. The following are the UI actions and their names:
-     * 
+     *
      * **Pivot Table**
      * * **Drill down** and **drill up** - Drill down/up.
      * * **Value sorting** - Sort value.
-     * 
+     *
      * **Toolbar**
      * * **New report** - Add new report.
      * * **Save report** - Save current report.
@@ -1188,18 +1208,18 @@ export interface PivotActionFailureEventArgs {
      * * **Sub-totals menu** - Show/hide sub-totals.
      * * **Grand totals menu** - Show/hide grand totals.
      * * **MDX** - Open MDX dialog.
-     * 
+     *
      * **Grouping bar** and **Field List** buttons
      * * **Editing** - Edit calculated field.
      * * **Remove** - Remove field.
      * * **Sorting** - Sort field.
      * * **Filtering** - Filter field.
      * * **Aggregation** - Aggregate field.
-     * 
+     *
      * **Field List UI**
      * * **Field list tree** - Sort field tree.
      * * **Calculated field button** - Open calculated field dialog.
-     * 
+     *
      * **Editing**
      * * **Edit** - Edit record.
      * * **Save** - Save edited records.
@@ -1209,8 +1229,8 @@ export interface PivotActionFailureEventArgs {
     actionName?: string;
 }
 
-/** 
- * Defines the unique information of the current UI action performed such as sorting, filtering, dril, editing, report manipulation, summarization, etc. 
+/**
+ * Defines the unique information of the current UI action performed such as sorting, filtering, dril, editing, report manipulation, summarization, etc.
  */
 export interface PivotActionInfo {
     /** Defines the selected field’s sort settings to order their members either in ascending or descending that used to be displayed in the pivot table. */
@@ -1225,12 +1245,12 @@ export interface PivotActionInfo {
     reportName?: string | PivotReportInfo;
     /** Defines the export information such as current export type and its additional settings such as page size, orientation, header, footer, etc. */
     exportInfo?: PivotExportInfo;
-    /** 
+    /**
      * Defines the edited information such as current edit type, action and its edited record information such as edited data, previous data and index positions of before editing performed.
      */
     editInfo?: PivotEditInfo;
-    /** Defines the current condition formatting settings that used to change the appearance of the pivot table value cells with different style properties such as background color, 
-     * font color, font family, and font size based on specific conditions. 
+    /** Defines the current condition formatting settings that used to change the appearance of the pivot table value cells with different style properties such as background color,
+     * font color, font family, and font size based on specific conditions.
      */
     conditionalFormattingInfo?: IConditionalFormatSettings[];
     /** Defines the current format settings that used to display the values with specific format that used to be displayed in the pivot table. */
@@ -1241,8 +1261,8 @@ export interface PivotActionInfo {
     valueSortInfo?: IValueSortSettings;
 }
 
-/** 
- * Defines the report name that used to create, load, rename save and save as current report. 
+/**
+ * Defines the report name that used to create, load, rename save and save as current report.
  */
 export interface PivotReportInfo {
     /** Defines the report name that used to be renamed. */
@@ -1251,7 +1271,7 @@ export interface PivotReportInfo {
     newName?: string;
 }
 
-/** 
+/**
  * Defines the export information such as current export type and its additional settings such as page size, orientation, header, footer, etc.
  */
 export interface PivotExportInfo {
@@ -1261,7 +1281,7 @@ export interface PivotExportInfo {
     info?: PdfExportProperties | ExcelExportProperties | string;
 }
 
-/** 
+/**
  * Defines the edited information such as current edit type, action and its edited record information such as edited data, previous data and index positions of before editing performed.
  */
 export interface PivotEditInfo {
@@ -1279,7 +1299,7 @@ export interface PivotEditInfo {
     previousPosition?: number[];
 }
 
-/** 
+/**
  * Defines the current toolbar information such as current display options and its settings such as chart settings, grid settings, etc.
  */
 export interface PivotToolbarInfo {
@@ -1291,7 +1311,7 @@ export interface PivotToolbarInfo {
     chartSettings?: ChartSettings;
 }
 
-/** 
+/**
  * Defines the cusrrent sorting information such as field name, sort order and members which is to be sorted.
  */
 export interface HeadersSortEventArgs {

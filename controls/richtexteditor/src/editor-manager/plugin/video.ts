@@ -4,7 +4,6 @@ import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
-import * as EVENTS from './../../common/constant';
 /**
  * Video internal component
  *
@@ -176,12 +175,12 @@ export class VideoCommand {
                 (videoElm as HTMLVideoElement).load();
             }
             if (Browser.userAgent.indexOf('Firefox') !== -1) {
-                vidElement.addEventListener('play', (args) => { this.editAreaVideoClick(e) });
-                vidElement.addEventListener('pause', (args) => { this.editAreaVideoClick(e) });
+                vidElement.addEventListener('play', () => { this.editAreaVideoClick(e); });
+                vidElement.addEventListener('pause', () => { this.editAreaVideoClick(e); });
             }
         }
     }
-    private editAreaVideoClick(e: IHtmlItem) {
+    private editAreaVideoClick(e: IHtmlItem) : void {
         e.callBack({
             requestType: 'VideosPlayPause',
             editorMode: 'HTML',

@@ -13,34 +13,33 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 export class AxisFieldRenderer {
     public parent: PivotFieldList;
 
-    /* eslint-disable-next-line */
     /** Constructor for render module */
-    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
+
+    constructor(parent: PivotFieldList) {
         this.parent = parent;
     }
     /**
      * Initialize the pivot button rendering
+     *
      * @returns {void}
      * @private
      */
     public render(): void {
-        /* eslint-disable */
-        let pivotButtonModule: PivotButton =
-            ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) ?
-                new PivotButton(this.parent) : this.parent.pivotButtonModule);
-        /* eslint-enable */
+        if (!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) {
+            new PivotButton(this.parent);
+        }
         this.createPivotButtons();
     }
     private createPivotButtons(): void {
         if (isNullOrUndefined(this.parent.dataSourceSettings.dataSource) && isNullOrUndefined(this.parent.dataSourceSettings.url)) {
             this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, true);
         }
-        let rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
-        let columns: IFieldOptions[] = this.parent.dataSourceSettings.columns;
-        let values: IFieldOptions[] = this.parent.dataSourceSettings.values;
-        let filters: IFieldOptions[] = this.parent.dataSourceSettings.filters;
-        let fields: IFieldOptions[][] = [rows, columns, values, filters];
-        let parentElement: HTMLElement = this.parent.dialogRenderer.parentElement;
+        const rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
+        const columns: IFieldOptions[] = this.parent.dataSourceSettings.columns;
+        const values: IFieldOptions[] = this.parent.dataSourceSettings.values;
+        const filters: IFieldOptions[] = this.parent.dataSourceSettings.filters;
+        const fields: IFieldOptions[][] = [rows, columns, values, filters];
+        const parentElement: HTMLElement = this.parent.dialogRenderer.parentElement;
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-filters')) {
             parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-filters').querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
         }
@@ -53,12 +52,12 @@ export class AxisFieldRenderer {
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values')) {
             parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values').querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
         }
-        let axis: string[] = ['rows', 'columns', 'values', 'filters'];
+        const axis: string[] = ['rows', 'columns', 'values', 'filters'];
         for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
-            if (fields[len]) {
-                let args: PivotButtonArgs = {
-                    field: fields[len],
-                    axis: axis[len].toString()
+            if (fields[len as number]) {
+                const args: PivotButtonArgs = {
+                    field: fields[len as number],
+                    axis: axis[len as number].toString()
                 };
                 this.parent.notify(events.pivotButtonUpdate, args);
             }

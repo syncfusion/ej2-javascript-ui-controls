@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
@@ -38,7 +39,7 @@ export class StackingStepAreaSeries extends LineBase {
             lineLength = 0;
         }
         for (let i: number = 0; i < pointsLength; i++) {
-            point = visiblePoint[i]; xValue = point.xValue;
+            point = visiblePoint[i as number]; xValue = point.xValue;
             point.symbolLocations = []; point.regions = [];
             pointIndex = point.index;
             if (point.visible && withInRange(visiblePoint[i - 1], point, visiblePoint[i + 1], stackSeries)) {
@@ -46,23 +47,23 @@ export class StackingStepAreaSeries extends LineBase {
                     start = new ChartLocation(xValue, 0);
                     currentPointLocation = getPoint(xValue - lineLength, origin, xAxis, yAxis, isInverted);
                     direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 if (prevPoint != null) {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
                         ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 } else if (stackSeries.emptyPointSettings.mode === 'Gap') {
-                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted);
+                    currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
                 }
-                visiblePoint[i].symbolLocations.push(
-                    getPoint(visiblePoint[i].xValue, stackedvalue.endValues[pointIndex], xAxis, yAxis, isInverted));
-                visiblePoint[i].regions.push(new Rect(
-                    visiblePoint[i].symbolLocations[0].x - stackSeries.marker.width,
-                    visiblePoint[i].symbolLocations[0].y - stackSeries.marker.height,
+                visiblePoint[i as number].symbolLocations.push(
+                    getPoint(visiblePoint[i as number].xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted));
+                visiblePoint[i as number].regions.push(new Rect(
+                    visiblePoint[i as number].symbolLocations[0].x - stackSeries.marker.width,
+                    visiblePoint[i as number].symbolLocations[0].y - stackSeries.marker.height,
                     2 * stackSeries.marker.width, 2 * stackSeries.marker.height
                 ));
                 prevPoint = point;
@@ -71,20 +72,20 @@ export class StackingStepAreaSeries extends LineBase {
             if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
                 let previousPointIndex: number;
                 for (let j: number = i; j >= startPoint; j--) {
-                    pointIndex = visiblePoint[j].index;
+                    pointIndex = visiblePoint[j as number].index;
                     previousPointIndex = j === 0 ? 0 : visiblePoint[j - 1].index;
-                    if (j !== 0 && (stackedvalue.startValues[pointIndex] < stackedvalue.startValues[previousPointIndex] ||
-                        stackedvalue.startValues[pointIndex] > stackedvalue.startValues[previousPointIndex])) {
+                    if (j !== 0 && (stackedvalue.startValues[pointIndex as number] < stackedvalue.startValues[previousPointIndex as number] ||
+                        stackedvalue.startValues[pointIndex as number] > stackedvalue.startValues[previousPointIndex as number])) {
                         currentPointLocation = getPoint(
-                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
+                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                         currentPointLocation = getPoint(
-                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[previousPointIndex],
+                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[previousPointIndex as number],
                             xAxis, yAxis, isInverted
                         );
                     } else {
                         currentPointLocation = getPoint(
-                            visiblePoint[pointIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
+                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
                     }
                     direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
@@ -97,19 +98,19 @@ export class StackingStepAreaSeries extends LineBase {
             // For category axis
             if (pointsLength > 1) {
                 pointIndex = visiblePoint[pointsLength - 1].index;
-                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex] };
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex as number] };
                 secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
                 direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex] };
+                start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex as number] };
                 secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
                 direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
             }
             // To close the stacked step area series path in reverse order
             for (let j: number = pointsLength - 1; j >= startPoint; j--) {
                 let index: number;
-                if (visiblePoint[j].visible) {
-                    pointIndex = visiblePoint[j].index;
-                    point2 = getPoint(visiblePoint[j].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
+                if (visiblePoint[j as number].visible) {
+                    pointIndex = visiblePoint[j as number].index;
+                    point2 = getPoint(visiblePoint[j as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
                     direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                 }
                 if (j !== 0 && !visiblePoint[j - 1].visible) {
@@ -117,25 +118,27 @@ export class StackingStepAreaSeries extends LineBase {
                 }
                 if (j !== 0) {
                     validIndex = index ? index : j - 1;
-                    pointIndex = index ? visiblePoint[index].index : visiblePoint[j - 1].index;
+                    pointIndex = index ? visiblePoint[index as number].index : visiblePoint[j - 1].index;
                     point3 = getPoint(
-                        visiblePoint[validIndex].xValue, stackedvalue.startValues[pointIndex], xAxis, yAxis, isInverted);
+                        visiblePoint[validIndex as number].xValue, stackedvalue.startValues[pointIndex as number],
+                        xAxis, yAxis, isInverted);
                     direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
                 }
             }
             options = new PathOption(
                 stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior,
-               0, 'transparent', stackSeries.opacity, stackSeries.dashArray, direction
+                0, 'transparent', stackSeries.opacity, stackSeries.dashArray, direction
             );
             this.appendLinePath(options, stackSeries, '');
             /**
              * To draw border for the path directions of area
              */
-            if (stackSeries.border.width != 0) {
+            if (stackSeries.border.width !== 0) {
                 emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
                 options = new PathOption(
                     stackSeries.chart.element.id + '_Series_border_' + stackSeries.index, 'transparent',
-                    stackSeries.border.width, stackSeries.border.color ? stackSeries.border.color : stackSeries.interior, 1, stackSeries.dashArray, emptyPointDirection
+                    stackSeries.border.width, stackSeries.border.color ? stackSeries.border.color : stackSeries.interior, 1,
+                    stackSeries.dashArray, emptyPointDirection
                 );
                 this.appendLinePath(options, stackSeries, '');
             }
@@ -181,7 +184,7 @@ export class StackingStepAreaSeries extends LineBase {
     private getNextVisiblePointIndex(points: Points[], j: number): number {
         let index: number;
         for (index = j - 1; index >= 0; index--) {
-            if (!points[index].visible) {
+            if (!points[index as number].visible) {
                 continue;
             } else {
                 return index;

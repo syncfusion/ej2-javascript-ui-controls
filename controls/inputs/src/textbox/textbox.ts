@@ -369,9 +369,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 <HTMLInputElement>this.createElement('input');
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
-                const attributeName: string = this.element.attributes[index].nodeName;
+                const attributeName: string = this.element.attributes[index as number].nodeName;
                 if (attributeName !== 'id' && attributeName !== 'class') {
-                    inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                    inputElement.setAttribute(attributeName, this.element.attributes[index as number].nodeValue);
                     inputElement.innerHTML = this.element.innerHTML;
                     if (attributeName === 'name') {
                         this.element.removeAttribute('name');
@@ -417,11 +417,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.textarea.setAttribute('id', getUniqueID('textarea'));
             const apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
             for (let index: number = 0; index < this.element.attributes.length; index++) {
-                const attributeName: string = this.element.attributes[index].nodeName;
+                const attributeName: string = this.element.attributes[index as number].nodeName;
                 if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
                     !(attributeName === 'id' || attributeName === 'type' || attributeName === 'e-mappinguid')) {
                     // e-mappinguid attribute is handled for Grid component.
-                    this.textarea.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                    this.textarea.setAttribute(attributeName, this.element.attributes[index as number].nodeValue);
                     if (apiAttributes.indexOf(attributeName) < 0) {
                         this.element.removeAttribute(attributeName);
                         index--;
@@ -536,17 +536,17 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        const updatedClassValues : string = this.getInputValidClassList(this.htmlAttributes[key]);
+                        const updatedClassValues : string = this.getInputValidClassList(this.htmlAttributes[`${key}`]);
                         if (updatedClassValues !== '') {
                             addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
                         }
                     } else if (key === 'style') {
                         let setStyle: string = this.textboxWrapper.container.getAttribute(key);
-                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[`${key}`]) :
+                            this.htmlAttributes[`${key}`];
                         this.textboxWrapper.container.setAttribute(key, setStyle);
                     } else {
-                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }
             }
@@ -557,7 +557,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) < 0 ) {
-                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                    this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }
@@ -772,6 +772,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             detach(this.textboxWrapper.container);
         }
         this.textboxWrapper = null;
+        Input.destroy();
         super.destroy();
     }
 
@@ -811,14 +812,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.setProperties({ readonly: true }, true);
                 Input.setReadonly(this.readonly, this.respectiveElement);
             } else if (key === 'class') {
-                this.respectiveElement.classList.add(attributes[key]);
+                this.respectiveElement.classList.add(attributes[`${key}`]);
             } else if (key === 'placeholder') {
-                this.setProperties({ placeholder: attributes[key] }, true);
+                this.setProperties({ placeholder: attributes[`${key}`] }, true);
                 Input.setPlaceholder(this.placeholder, this.respectiveElement);
             } else if (key === 'rows' && this.respectiveElement.tagName === 'TEXTAREA') {
-                this.respectiveElement.setAttribute(key, attributes[key]);
+                this.respectiveElement.setAttribute(key, attributes[`${key}`]);
             } else {
-                this.respectiveElement.setAttribute(key, attributes[key]);
+                this.respectiveElement.setAttribute(key, attributes[`${key}`]);
             }
         }
     }

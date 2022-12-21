@@ -54,12 +54,12 @@ export class Reorder {
     }
     private getTreeColumn(): void {
         const columnModel: string = 'columnModel';
-        const treeColumn: Column | string | ColumnModel = this.parent[columnModel][this.parent.treeColumnIndex];
+        const treeColumn: Column | string | ColumnModel = this.parent[`${columnModel}`][this.parent.treeColumnIndex];
         let treeIndex: number;
         const updatedCols: Column[] = this.parent.getColumns();
         for (let f: number = 0 ; f < updatedCols.length; f++) {
             const treeColumnfield: string = getObject('field', treeColumn);
-            const parentColumnfield: string = getObject('field', updatedCols[f]);
+            const parentColumnfield: string = getObject('field', updatedCols[parseInt(f.toString(), 10)]);
             if (treeColumnfield === parentColumnfield) {
                 treeIndex = f;
                 break;

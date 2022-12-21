@@ -1,5 +1,6 @@
 /**
  * CSS Constants
+ *
  * @hidden
  */
 /** @hidden */
@@ -331,10 +332,8 @@ export const LASTSPAN: string = 'e-lastspan';
 export const EDITOR_SEARCH_WRAPPER_CLASS: string = 'e-editor-search-container';
 /** @hidden */
 export const EDITOR_SEARCH_CLASS: string = 'e-editor-search';
-/* eslint-disable */
 /** @hidden */
 export const EDITOR_SEARCH__INPUT_CLASS: string = 'e-editor-search-input';
-/* eslint-enable */
 /** @hidden */
 export const SELECT_ALL_WRAPPER_CLASS: string = 'e-select-all-container';
 /** @hidden */
@@ -821,3 +820,7 @@ export const PIVOT_PAGER_NAV_CONTAINER: string = 'e-pivot-pager-nav-container';
 export const PIVOT_PAGER_INFO_CONTAINER: string = 'e-pivot-pager-info-container';
 /** @hidden */
 export const PIVOT_CELL_CONTAINER: string = 'e-pivotcell-container';
+/** @hidden */
+export const PIVOT_FILTER_TAB_CONTAINER: string = 'e-filter-tab-container';
+/** @hidden */
+export const PIVOT_FILTER_MEMBER_LIMIT: string = 'e-node-limit';

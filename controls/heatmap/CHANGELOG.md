@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
+## 20.4.38 (2022-12-21)
+
+### Heatmap
+
+#### New Features
+
+- `#F177543` - `enableMultiSelect` property is exposed to enable or disable multiple selection of the HeatMap cells.
+
+## 20.3.60 (2022-12-06)
 
 ### Heatmap
 

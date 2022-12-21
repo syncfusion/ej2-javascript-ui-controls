@@ -12,6 +12,7 @@ import * as util from '../base/util';
  * view base
  */
 export class ViewBase {
+    public previousNextAction: string = 'next';
     public element: HTMLElement;
     public parent: Schedule;
     public renderDates: Date[];
@@ -83,7 +84,7 @@ export class ViewBase {
         for (let row: number = 0; row < trCount; row++) {
             eventContainer = createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS });
             if (this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.renderedResources) {
-                eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[row].groupIndex.toString());
+                eventContainer.setAttribute('data-group-index', this.parent.resourceBase.renderedResources[parseInt(row.toString(), 10)].groupIndex.toString());
             }
             eventRows.push(eventContainer);
         }
@@ -219,6 +220,14 @@ export class ViewBase {
         // Here showTimeIndicator functionalities
     }
 
+    public getStartDate(): Date {
+        return this.renderDates[0];
+    }
+
+    public getEndDate(): Date {
+        return this.renderDates[this.renderDates.length - 1];
+    }
+
     public startDate(): Date {
         return this.renderDates[0];
     }
@@ -322,6 +331,7 @@ export class ViewBase {
     }
 
     public getNextPreviousDate(type: string): Date {
+        this.previousNextAction = type;
         if (this.parent.currentView === 'Day' || this.parent.currentView === 'TimelineDay') {
             if (this.parent.activeViewOptions.showWeekend) {
                 const daysCount: number = this.parent.activeViewOptions.interval;
@@ -488,10 +498,10 @@ export class ViewBase {
                     setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
             }
-            const cssClass : string = `.${cls.HEADER_CELLS_CLASS},.${cls.TIME_SLOT_CLASS},.${cls.HEADER_WEEK_CELLS_CLASS},.${cls.HEADER_MONTH_CELLS_CLASS},.${cls.HEADER_YEAR_CELLS_CLASS}`;
+            const cssClass: string = `.${cls.HEADER_CELLS_CLASS},.${cls.TIME_SLOT_CLASS},.${cls.HEADER_WEEK_CELLS_CLASS},.${cls.HEADER_MONTH_CELLS_CLASS},.${cls.HEADER_YEAR_CELLS_CLASS}`;
             const headerCellElements: HTMLElement[] = [].slice.call(this.element.querySelectorAll(cssClass));
             headerCellElements.forEach((ele: HTMLElement) => {
-                const colSpan : string = isNullOrUndefined(ele.getAttribute('colspan')) ? '1' : ele.getAttribute('colspan');
+                const colSpan: string = isNullOrUndefined(ele.getAttribute('colspan')) ? '1' : ele.getAttribute('colspan');
                 const headerCellColSpan: number = parseInt(colSpan, 10);
                 setStyleAttribute(ele, { 'width': formatUnit(colWidth * headerCellColSpan) });
             });
@@ -603,8 +613,8 @@ export class ViewBase {
             if (index >= renderedCount) {
                 break;
             }
-            index += lastLevel[i].colSpan;
-            this.parent.resourceBase.expandedResources.push(lastLevel[i]);
+            index += lastLevel[parseInt(i.toString(), 10)].colSpan;
+            this.parent.resourceBase.expandedResources.push(lastLevel[parseInt(i.toString(), 10)]);
         }
         if (this.parent.activeViewOptions.group.byDate) {
             this.colLevels[0] = this.parent.resourceBase.expandedResources;

@@ -272,6 +272,15 @@ export class Item extends ChildProperty<Item>  {
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
+    /**
+     * Specifies the tab order of the Toolbar items. When positive values assigned, it allows to switch focus to the next/previous toolbar items with Tab/ShiftTab keys.
+     * By default, user can able to switch between items only via arrow keys.
+     * If the value is set to 0 for all tool bar items, then tab switches based on element order.
+     *
+     * @default -1
+     */
+    @Property(-1)
+    public tabIndex: number;
 }
 /**
  * The Toolbar control contains a group of commands that are aligned horizontally.
@@ -461,7 +470,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             removeClass([this.element], this.cssClass.split(' '));
         }
         this.element.removeAttribute('style');
-        ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach((attrb: string): void =>
+        ['aria-disabled', 'aria-orientation', 'role'].forEach((attrb: string): void =>
             this.element.removeAttribute(attrb));
         super.destroy();
     }
@@ -509,8 +518,19 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             keyConfigs: this.keyConfigs
         });
         EventHandler.add(this.element, 'keydown', this.docKeyDown, this);
-        this.element.setAttribute('tabIndex', '0');
+        this.updateTabIndex('0');
     }
+
+    private updateTabIndex(tabIndex: string): void {
+        const ele: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )');
+        if (!isNOU(ele) && !isNOU(ele.firstElementChild)) {
+            const dataTabIndex: string = ele.firstElementChild.getAttribute('data-tabindex');
+            if (dataTabIndex && dataTabIndex === '-1' && ele.firstElementChild.tagName !== 'INPUT') {
+                ele.firstElementChild.setAttribute('tabindex', tabIndex);
+            }
+        }
+    }
+
     private unwireKeyboardEvent(): void {
         if (this.keyModule) {
             EventHandler.remove(this.element, 'keydown', this.docKeyDown);
@@ -700,7 +720,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         this.activeEleRemove(ele);
                         ele.focus();
                     }
-                    this.element.removeAttribute('tabindex');
                 }
             }
             break;
@@ -749,9 +768,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             rootEle.classList.remove(CLS_DISABLE);
         }
-        rootEle.setAttribute('tabindex', !value ? '0' : '-1');
         if (this.activeEle) {
-            this.activeEle.setAttribute('tabindex', !value ? '0' : '-1');
+            this.activeEle.setAttribute('tabindex', this.activeEle.getAttribute('data-tabindex'));
         }
         if (this.scrollModule) {
             this.scrollModule.disable(value);
@@ -882,7 +900,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         setStyle(this.element, { 'width': width });
         const ariaAttr: { [key: string]: Str } = {
-            'role': 'toolbar', 'aria-disabled': 'false', 'aria-haspopup': 'false',
+            'role': 'toolbar', 'aria-disabled': 'false',
             'aria-orientation': !this.isVertical ? 'horizontal' : 'vertical'
         };
         attributes(this.element, ariaAttr);
@@ -916,17 +934,17 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.tbarEle = [];
         }
         for (let i: number = 0; i < items.length; i++) {
-            innerItem = this.renderSubComponent(items[i], i);
+            innerItem = this.renderSubComponent(items[parseInt(i.toString(), 10)], i);
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
             }
             if (!this.tbarAlign) {
-                this.tbarItemAlign(items[i], itemEleDom, i);
+                this.tbarItemAlign(items[parseInt(i.toString(), 10)], itemEleDom, i);
             }
-            innerPos = <HTEle>itemEleDom.querySelector('.e-toolbar-' + items[i].align.toLowerCase());
+            innerPos = <HTEle>itemEleDom.querySelector('.e-toolbar-' + items[parseInt(i.toString(), 10)].align.toLowerCase());
             if (innerPos) {
-                if (!(items[i].showAlwaysInPopup && items[i].overflow !== 'Show')) {
-                    this.tbarAlgEle[(items[i].align + 's').toLowerCase() as ItmAlign].push(innerItem);
+                if (!(items[parseInt(i.toString(), 10)].showAlwaysInPopup && items[parseInt(i.toString(), 10)].overflow !== 'Show')) {
+                    this.tbarAlgEle[(items[parseInt(i.toString(), 10)].align + 's').toLowerCase() as ItmAlign].push(innerItem);
                 }
                 innerPos.appendChild(innerItem);
             } else {
@@ -935,7 +953,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if ((this as any).isReact) {
             const portals: string = 'portals';
-            this.notify('render-react-toolbar-template', (this as any)[portals]);
+            this.notify('render-react-toolbar-template', (this as any)[`${portals}`]);
             this.renderReactTemplates();
         }
     }
@@ -1089,8 +1107,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
 
     private setOverflowAttributes(ele: HTMLElement): void {
         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
-        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
-        this.element.querySelector('.' + CLS_TBARNAV).setAttribute('role', 'list');
+        const ariaAttr: { [key: string]: Str } = {
+            'tabindex': '0', 'role': 'button', 'aria-haspopup' : 'true',
+            'aria-label': 'overflow'
+        };
+        attributes(this.element.querySelector('.' + CLS_TBARNAV), ariaAttr);
     }
 
     private separator(): void {
@@ -1107,11 +1128,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         for (let i: number = 0; i <= eleItem.length - 1; i++) {
-            if (eleItem[i].offsetLeft < 30 && eleItem[i].offsetLeft !== 0) {
+            if (eleItem[parseInt(i.toString(), 10)].offsetLeft < 30 && eleItem[parseInt(i.toString(), 10)].offsetLeft !== 0) {
                 if (this.overflowMode === 'MultiRow') {
-                    eleItem[i].classList.add(CLS_MULTIROW_SEPARATOR);
+                    eleItem[parseInt(i.toString(), 10)].classList.add(CLS_MULTIROW_SEPARATOR);
                 } else if (this.overflowMode === 'Extended') {
-                    eleItem[i].classList.add(CLS_EXTENDABLE_SEPARATOR);
+                    eleItem[parseInt(i.toString(), 10)].classList.add(CLS_EXTENDABLE_SEPARATOR);
                 }
             }
         }
@@ -1145,7 +1166,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             nodes = selectAll('.' + CLS_TBAROVERFLOW, ele);
             if (el.classList.contains(CLS_TBAROVERFLOW) && nodes.length > 0) {
                 if (tbarObj.tbResize && nodes.length > index) {
-                    ele.insertBefore(el, nodes[index]); ++nodePri;
+                    ele.insertBefore(el, nodes[parseInt(index.toString(), 10)]); ++nodePri;
                 } else {
                     ele.insertBefore(el, ele.children[nodes.length]); ++nodePri;
                 }
@@ -1172,7 +1193,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         });
         const tbarEle: HTEle[] = selectAll('.' + CLS_ITEM, element.querySelector('.' + CLS_ITEMS));
         for (let i: number = tbarEle.length - 1; i >= 0; i--) {
-            const tbarElement: HTEle = tbarEle[i];
+            const tbarElement: HTEle = tbarEle[parseInt(i.toString(), 10)];
             if (tbarElement.classList.contains(CLS_SEPARATOR) && this.overflowMode !== 'Extended') {
                 setStyle(tbarElement, { display: 'none' });
             } else {
@@ -1226,11 +1247,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 collision: { Y: this.enableCollision ? 'flip' : 'none' },
                 position: this.enableRtl ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }
             });
-            popup.appendTo(ele);
             if (this.overflowMode === 'Extended') {
                 popup.width = parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
                 popup.offsetX = 0;
             }
+            popup.appendTo(ele);
             EventHandler.add(document, 'scroll', this.docEvent.bind(this));
             EventHandler.add(document, 'click ', this.docEvent.bind(this));
             popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
@@ -1246,7 +1267,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 popup.hide();
             }
             this.popObj = popup;
-            this.element.setAttribute('aria-haspopup', 'true');
         } else {
             const popupEle: HTEle = this.popObj.element;
             setStyle(popupEle, { maxHeight: '', display: 'block' });
@@ -1272,6 +1292,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const popupEle: HTEle = this.popObj.element;
         const toolEle: HTEle = this.popObj.element.parentElement;
         const popupNav: HTEle = <HTEle>toolEle.querySelector('.' + CLS_TBARNAV);
+        popupNav.setAttribute('aria-expanded', 'true');
         setStyle(popObj.element, { height: 'auto', maxHeight: '' });
         popObj.element.style.maxHeight = popObj.element.offsetHeight + 'px';
         if (this.overflowMode === 'Extended') {
@@ -1287,7 +1308,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             let overflowHeight: number = (popupEle.offsetHeight - ((popupElePos - window.innerHeight - scrollVal) + 5));
             popObj.height = overflowHeight + 'px';
             for (let i: number = 0; i <= popupEle.childElementCount; i++) {
-                const ele: HTEle = <HTEle>popupEle.children[i];
+                const ele: HTEle = <HTEle>popupEle.children[parseInt(i.toString(), 10)];
                 if (ele.offsetTop + ele.offsetHeight > overflowHeight) {
                     overflowHeight = ele.offsetTop;
                     break;
@@ -1312,6 +1333,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private popupClose(e: Event): void {
         const element: HTEle = this.element;
         const popupNav: HTEle = <HTEle>element.querySelector('.' + CLS_TBARNAV);
+        popupNav.setAttribute('aria-expanded', 'false');
         const popIcon: Element = (popupNav.firstElementChild as Element);
         popupNav.classList.remove(CLS_TBARNAVACT);
         classList(popIcon, [CLS_POPUPDOWN], [CLS_POPUPICON]);
@@ -1335,7 +1357,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         };
         for (let i: number = len - 1; i >= 0; i--) {
             let mrgn: number;
-            const compuStyle: CSSStyleDeclaration = window.getComputedStyle(inEle[i]);
+            const compuStyle: CSSStyleDeclaration = window.getComputedStyle(inEle[parseInt(i.toString(), 10)]);
             if (this.isVertical) {
                 mrgn = parseFloat((compuStyle).marginTop);
                 mrgn += parseFloat((compuStyle).marginBottom);
@@ -1343,33 +1365,35 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 mrgn = parseFloat((compuStyle).marginRight);
                 mrgn += parseFloat((compuStyle).marginLeft);
             }
-            const fstEleCheck: boolean = inEle[i] === this.tbarEle[0];
+            const fstEleCheck: boolean = inEle[parseInt(i.toString(), 10)] === this.tbarEle[0];
             if (fstEleCheck) {
                 this.tbarEleMrgn = mrgn;
             }
-            eleOffset = this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth;
+            eleOffset = this.isVertical ? inEle[parseInt(i.toString(), 10)].offsetHeight : inEle[parseInt(i.toString(), 10)].offsetWidth;
             const eleWid: number = fstEleCheck ? (eleOffset + mrgn) : eleOffset;
-            if (checkClass(inEle[i], [CLS_POPPRI]) && popPriority) {
-                inEle[i].classList.add(CLS_POPUP);
+            if (checkClass(inEle[parseInt(i.toString(), 10)], [CLS_POPPRI]) && popPriority) {
+                inEle[parseInt(i.toString(), 10)].classList.add(CLS_POPUP);
                 if (this.isVertical) {
-                    setStyle(inEle[i], { display: 'none', minHeight: eleWid + 'px' });
+                    setStyle(inEle[parseInt(i.toString(), 10)], { display: 'none', minHeight: eleWid + 'px' });
                 } else {
-                    setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' });
+                    setStyle(inEle[parseInt(i.toString(), 10)], { display: 'none', minWidth: eleWid + 'px' });
                 }
                 itemPopCount++;
             }
             if (this.isVertical) {
-                checkoffset = (inEle[i].offsetTop + inEle[i].offsetHeight + mrgn) > eleWidth;
+                checkoffset =
+                    (inEle[parseInt(i.toString(), 10)].offsetTop + inEle[parseInt(i.toString(), 10)].offsetHeight + mrgn) > eleWidth;
             } else {
-                checkoffset = (inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth;
+                checkoffset =
+                    (inEle[parseInt(i.toString(), 10)].offsetLeft + inEle[parseInt(i.toString(), 10)].offsetWidth + mrgn) > eleWidth;
             }
             if (checkoffset) {
-                if (inEle[i].classList.contains(CLS_SEPARATOR)) {
+                if (inEle[parseInt(i.toString(), 10)].classList.contains(CLS_SEPARATOR)) {
                     if (this.overflowMode === 'Extended') {
                         if (itemCount === itemPopCount) {
-                            const sepEle: HTEle = (inEle[i] as HTEle);
+                            const sepEle: HTEle = (inEle[parseInt(i.toString(), 10)] as HTEle);
                             if (checkClass(sepEle, [CLS_SEPARATOR, CLS_TBARIGNORE])) {
-                                inEle[i].classList.add(CLS_POPUP);
+                                inEle[parseInt(i.toString(), 10)].classList.add(CLS_POPUP);
                                 itemPopCount++;
                             }
                         }
@@ -1386,18 +1410,20 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 } else {
                     itemCount++;
                 }
-                if (inEle[i].classList.contains(CLS_TBAROVERFLOW) && pre) {
-                    eleWidth -= ((this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
-                } else if (!checkClass(inEle[i], [CLS_SEPARATOR, CLS_TBARIGNORE])) {
-                    inEle[i].classList.add(CLS_POPUP);
+                if (inEle[parseInt(i.toString(), 10)].classList.contains(CLS_TBAROVERFLOW) && pre) {
+                    eleWidth -= ((this.isVertical ? inEle[parseInt(i.toString(), 10)].offsetHeight :
+                        inEle[parseInt(i.toString(), 10)].offsetWidth) + (mrgn));
+                } else if (!checkClass(inEle[parseInt(i.toString(), 10)], [CLS_SEPARATOR, CLS_TBARIGNORE])) {
+                    inEle[parseInt(i.toString(), 10)].classList.add(CLS_POPUP);
                     if (this.isVertical) {
-                        setStyle(inEle[i], { display: 'none', minHeight: eleWid + 'px' });
+                        setStyle(inEle[parseInt(i.toString(), 10)], { display: 'none', minHeight: eleWid + 'px' });
                     } else {
-                        setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' });
+                        setStyle(inEle[parseInt(i.toString(), 10)], { display: 'none', minWidth: eleWid + 'px' });
                     }
                     itemPopCount++;
                 } else {
-                    eleWidth -= ((this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
+                    eleWidth -= ((this.isVertical ? inEle[parseInt(i.toString(), 10)].offsetHeight :
+                        inEle[parseInt(i.toString(), 10)].offsetWidth) + (mrgn));
                 }
             }
         }
@@ -1418,7 +1444,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const navItem: HTEle = this.createElement('div', { className: CLS_POPUPDOWN + ' e-icons' });
         nav.appendChild(navItem);
         nav.setAttribute('tabindex', '0');
-        nav.setAttribute('role', 'list');
+        nav.setAttribute('role', 'button');
         element.appendChild(nav);
     }
 
@@ -1489,7 +1515,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.popObj.destroy();
             detach(this.popObj.element);
             this.popObj = null;
-            ele.setAttribute('aria-haspopup', 'false');
         }
     }
     private ignoreEleFetch(index: number, innerEle: HTEle): number {
@@ -1566,7 +1591,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 index = this.tbarEle.indexOf(el);
                 if (this.tbarAlign) {
-                    const pos: ItemAlign = this.items[index].align;
+                    const pos: ItemAlign = this.items[parseInt(index.toString(), 10)].align;
                     index = this.tbarAlgEle[(pos + 's').toLowerCase() as ItmAlign].indexOf(el);
                     eleSplice = this.tbarAlgEle[(pos + 's').toLowerCase() as ItmAlign];
                     innerEle = <HTEle>this.element.querySelector('.' + CLS_ITEMS + ' .' + 'e-toolbar-' + pos.toLowerCase());
@@ -1740,11 +1765,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const key: Object[] = Object.keys(attr);
         let keyVal: Str;
         for (let i: number = 0; i < key.length; i++) {
-            keyVal = key[i] as Str;
+            keyVal = key[parseInt(i.toString(), 10)] as Str;
             if (keyVal === 'class') {
-                this.add(element, attr[keyVal]);
+                this.add(element, attr[`${keyVal}`]);
             } else {
-                element.setAttribute(keyVal, attr[keyVal]);
+                element.setAttribute(keyVal, attr[`${keyVal}`]);
             }
         }
     }
@@ -1774,13 +1799,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         };
         if (!isNOU(len) && len >= 1) {
             for (let a: number = 0, element: HTEle[] = [].slice.call(elements); a < len; a++) {
-                const itemElement: HTEle = element[a];
+                const itemElement: HTEle = element[parseInt(a.toString(), 10)];
                 if (typeof (itemElement) === 'number') {
                     ele = this.getElementByIndex(itemElement);
                     if (isNOU(ele)) {
                         return;
                     } else {
-                        elements[a] = ele;
+                        elements[parseInt(a.toString(), 10)] = ele;
                     }
                 } else {
                     ele = itemElement;
@@ -1805,8 +1830,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private getElementByIndex(index: number): HTEle {
-        if (this.tbarEle[index]) {
-            return this.tbarEle[index];
+        if (this.tbarEle[parseInt(index.toString(), 10)]) {
+            return this.tbarEle[parseInt(index.toString(), 10)];
         }
         return null;
     }
@@ -1851,20 +1876,20 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 if (!this.tbarAlign && itemAgn !== 'Left') {
                     this.tbarItemAlign(item, itemsDiv, 1);
                     this.tbarAlign = true;
-                    ele = closest(innerItems[0], '.' + CLS_ITEMS).children[algIndex];
+                    ele = closest(innerItems[0], '.' + CLS_ITEMS).children[parseInt(algIndex.toString(), 10)];
                     ele.appendChild(innerEle);
                     this.tbarAlgEle[(item.align + 's').toLowerCase() as ItmAlign].push(innerEle);
                     this.refreshPositioning();
                 } else if (this.tbarAlign) {
-                    ele = closest(innerItems[0], '.' + CLS_ITEMS).children[algIndex];
-                    ele.insertBefore(innerEle, ele.children[index]);
+                    ele = closest(innerItems[0], '.' + CLS_ITEMS).children[parseInt(algIndex.toString(), 10)];
+                    ele.insertBefore(innerEle, ele.children[parseInt(index.toString(), 10)]);
                     this.tbarAlgEle[(item.align + 's').toLowerCase() as ItmAlign].splice(index, 0, innerEle);
                     this.refreshPositioning();
                 } else if (innerItems.length === 0) {
                     innerItems = selectAll('.' + CLS_ITEMS, this.element);
                     innerItems[0].appendChild(innerEle);
                 } else {
-                    innerItems[0].parentNode.insertBefore(innerEle, innerItems[index]);
+                    innerItems[0].parentNode.insertBefore(innerEle, innerItems[parseInt(index.toString(), 10)]);
                 }
                 this.items.splice(index, 0, item);
                 if (item.template) {
@@ -1911,21 +1936,21 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.resize();
     }
     private removeItemByIndex(index: number, innerItems: HTEle[]): void {
-        if (this.tbarEle[index] && innerItems[index]) {
-            const eleIdx: number = this.tbarEle.indexOf(innerItems[index]);
+        if (this.tbarEle[parseInt(index.toString(), 10)] && innerItems[parseInt(index.toString(), 10)]) {
+            const eleIdx: number = this.tbarEle.indexOf(innerItems[parseInt(index.toString(), 10)]);
             if (this.tbarAlign) {
                 const indexAgn: number =
-                    this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase() as ItmAlign].indexOf(this.tbarEle[eleIdx]);
-                this.tbarAlgEle[(this.items[eleIdx].align + 's').toLowerCase() as ItmAlign].splice(indexAgn, 1);
+                    this.tbarAlgEle[(this.items[parseInt(eleIdx.toString(), 10)].align + 's').toLowerCase() as ItmAlign].indexOf(this.tbarEle[parseInt(eleIdx.toString(), 10)]);
+                this.tbarAlgEle[(this.items[parseInt(eleIdx.toString(), 10)].align + 's').toLowerCase() as ItmAlign].splice(parseInt(indexAgn.toString(), 10), 1);
             }
             if ((this as any).isReact) {
                 this.clearTemplate();
             }
-            const btnItem: EJ2Instance = innerItems[index].querySelector('.e-control.e-btn');
+            const btnItem: EJ2Instance = innerItems[parseInt(index.toString(), 10)].querySelector('.e-control.e-btn');
             if (!isNOU(btnItem) && !isNOU(btnItem.ej2_instances[0]) && !((btnItem.ej2_instances[0] as Button).isDestroyed)) {
                 (btnItem.ej2_instances[0] as Button).destroy();
             }
-            detach(innerItems[index]);
+            detach(innerItems[parseInt(index.toString(), 10)]);
             this.items.splice(eleIdx, 1);
             this.tbarEle.splice(eleIdx, 1);
         }
@@ -2048,7 +2073,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             switch (item.type) {
             case 'Button':
                 dom = this.buttonRendering(item, innerEle);
-                dom.setAttribute('tabindex', '-1');
+                dom.setAttribute('tabindex', isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString());
+                dom.setAttribute('data-tabindex', isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString());
                 dom.setAttribute('aria-label', (item.text || item.tooltipText));
                 innerEle.appendChild(dom);
                 innerEle.addEventListener('click', this.itemClick.bind(this));
@@ -2090,6 +2116,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         return innerEle;
     }
 
+    private getDataTabindex(ele: HTEle): string {
+        return isNOU(ele.getAttribute('data-tabindex')) ? '-1' : ele.getAttribute('data-tabindex');
+    }
     private itemClick(e: Event): void {
         this.activeEleSwitch(<HTEle>e.currentTarget);
     }
@@ -2099,13 +2128,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private activeEleRemove(curEle: HTEle): void {
         if (!isNOU(this.activeEle)) {
-            this.activeEle.setAttribute('tabindex', '-1');
+            this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
         }
         this.activeEle = curEle;
-        if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
-            curEle.removeAttribute('tabindex');
-        } else {
-            this.activeEle.setAttribute('tabindex', '0');
+        if (this.getDataTabindex(this.activeEle) === '-1') {
+            if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
+                this.updateTabIndex('-1');
+                curEle.removeAttribute('tabindex');
+            } else {
+                this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
+            }
         }
     }
     protected getPersistData(): string {
@@ -2189,6 +2221,26 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private updateHideEleTabIndex(ele: HTMLElement, isHidden: boolean, isElement: boolean, eleIndex: number, innerItems: HTEle[]): void {
+        if (isElement) {
+            eleIndex = innerItems.indexOf(ele);
+        }
+        let nextEle: HTEle = innerItems[++eleIndex];
+        while (nextEle) {
+            const skipEle: string | boolean = this.eleContains(nextEle);
+            if (!skipEle) {
+                const dataTabIndex: string = nextEle.firstElementChild.getAttribute('data-tabindex');
+                if (isHidden && dataTabIndex === '-1') {
+                    nextEle.firstElementChild.setAttribute('tabindex', '0');
+                } else if (dataTabIndex !== nextEle.firstElementChild.getAttribute('tabindex')) {
+                    nextEle.firstElementChild.setAttribute('tabindex', dataTabIndex);
+                }
+                break;
+            }
+            nextEle = innerItems[++eleIndex];
+        }
+    }
+
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
      *
@@ -2207,9 +2259,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
                     const changedProb: Object[] = Object.keys(newProp.items);
                     for (let i: number = 0; i < changedProb.length; i++) {
-                        const index: number = parseInt(Object.keys(newProp.items)[i], 10);
-                        const property: Str = Object.keys(newProp.items[index])[0];
-                        const newProperty: Str = Object(newProp.items[index])[property];
+                        const index: number = parseInt(Object.keys(newProp.items)[parseInt(i.toString(), 10)], 10);
+                        const property: Str = Object.keys(newProp.items[parseInt(index.toString(), 10)])[0];
+                        const newProperty: Str = Object(newProp.items[parseInt(index.toString(), 10)])[`${property}`];
                         if (typeof newProperty !== 'function') {
                             if (this.tbarAlign || property === 'align') {
                                 this.refresh();
@@ -2218,7 +2270,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                             }
                             const popupPriCheck: boolean = property === 'showAlwaysInPopup' && !newProperty;
                             const booleanCheck: boolean = property === 'overflow' && this.popupPriCount !== 0;
-                            if ((popupPriCheck) || (this.items[index].showAlwaysInPopup) && booleanCheck) {
+                            if ((popupPriCheck) || (this.items[parseInt(index.toString(), 10)].showAlwaysInPopup) && booleanCheck) {
                                 --this.popupPriCount;
                             }
                             if (isNOU(this.scrollModule)) {
@@ -2228,11 +2280,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                             if ((this as any).isReact) {
                                 this.clearTemplate();
                             }
-                            detach(itemCol[index]);
+                            detach(itemCol[parseInt(index.toString(), 10)]);
                             this.tbarEle.splice(index, 1);
-                            this.addItems([this.items[index]], index);
+                            this.addItems([this.items[parseInt(index.toString(), 10)]], index);
                             this.items.splice(index, 1);
-                            if (this.items[index].template) {
+                            if (this.items[parseInt(index.toString(), 10)].template) {
                                 this.tbarEle.splice(this.items.length, 1);
                             }
                         }
@@ -2320,62 +2372,30 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public hideItem(index: number | HTMLElement | Element, value?: boolean): void {
         const isElement: boolean = (typeof (index) === 'object') ? true : false;
         let eleIndex: number = index as number;
-        let initIndex: number;
         let ele: HTMLElement;
+        if (!isElement && isNOU(eleIndex)) {
+            return;
+        }
         const innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
         if (isElement) {
             ele = (index as HTMLElement);
-        } else if (this.tbarEle[eleIndex]) {
+        } else if (this.tbarEle[parseInt(eleIndex.toString(), 10)]) {
             const innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
-            ele = innerItems[eleIndex];
+            ele = innerItems[parseInt(eleIndex.toString(), 10)];
         }
         if (ele) {
             if (value) {
                 ele.classList.add(CLS_HIDDEN);
-            } else {
-                ele.classList.remove(CLS_HIDDEN);
-            }
-            if (value && isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
-                if (isNOU(ele.firstElementChild.getAttribute('tabindex'))) {
-                    ele.firstElementChild.setAttribute('tabindex', '-1');
-                    const innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
-                    if (isElement) {
-                        eleIndex = innerItems.indexOf(ele);
-                    }
-                    let nextEle: HTEle = innerItems[++eleIndex];
-                    while (nextEle) {
-                        const skipEle: string | boolean = this.eleContains(nextEle);
-                        if (!skipEle) {
-                            nextEle.firstElementChild.removeAttribute('tabindex');
-                            break;
-                        }
-                        nextEle = innerItems[++eleIndex];
+                if (!ele.classList.contains(CLS_SEPARATOR)) {
+                    if (isNOU(ele.firstElementChild.getAttribute('tabindex')) ||
+                        ele.firstElementChild.getAttribute('tabindex') !== '-1') {
+                        this.updateHideEleTabIndex(ele, value, isElement, eleIndex, innerItems);
                     }
                 }
-            } else if (isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
-                initIndex = 0;
-                let setFlag: boolean = false;
-                let removeFlag: boolean = false;
-                let initELe: HTEle = innerItems[initIndex];
-                while (initELe) {
-                    if (!initELe.classList.contains(CLS_SEPARATOR)) {
-                        if (isNOU(initELe.firstElementChild.getAttribute('tabindex'))) {
-                            initELe.firstElementChild.setAttribute('tabindex', '-1');
-                            setFlag = true;
-                        } else {
-                            if (setFlag && removeFlag) {
-                                break;
-                            }
-                            const skipEle: string | boolean = this.eleContains(initELe);
-                            if (!skipEle) {
-                                initELe.firstElementChild.removeAttribute('tabindex');
-                                removeFlag = true;
-                            }
-                            initELe = innerItems[++initIndex];
-                        }
-                    } else {
-                        initELe = innerItems[++initIndex];
-                    }
+            } else {
+                ele.classList.remove(CLS_HIDDEN);
+                if (!ele.classList.contains(CLS_SEPARATOR)) {
+                    this.updateHideEleTabIndex(ele, value, isElement, eleIndex, innerItems);
                 }
             }
             this.refreshOverflow();

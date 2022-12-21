@@ -1,5 +1,3 @@
-/* eslint-disable brace-style */
-/* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { removeElement, getElement, stringToNumber, measureText, textElement, appendPath, calculateShapes, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption } from '../utils/helper-common';
 import { textTrim, showTooltip } from '../utils/helper-legend';
@@ -232,7 +230,6 @@ export class Legend {
      * @private
      */
     public position: LegendPosition = 'Auto';
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
         this.toggledIndexes = [];
@@ -274,8 +271,8 @@ export class Legend {
         let range: RangeModel;
         let text: string = '';
         for (let i: number = 0; i < axes.length; i++) {
-            for (let j: number = 0; j < axes[i].ranges.length; j++) {
-                range = axes[i].ranges[j] as RangeModel;
+            for (let j: number = 0; j < axes[i as number].ranges.length; j++) {
+                range = axes[i as number].ranges[j as number] as RangeModel;
                 if (!isNullOrUndefined(range.start) && !isNullOrUndefined(range.end) && (range.start !== range.end)) {
                     text = range.legendText ? range.legendText : range.start + ' - ' + range.end;
                     this.legendCollection.push(new LegendOptions(
@@ -367,18 +364,17 @@ export class Legend {
      *
      * @param {LegendSettingsModel} legend - Specifies the legend.
      * @param {Rect} legendBounds - Specifies the legendBounds.
-     * @param {boolean} redraw - Specifies the redraw.
      * @returns {void}
      * @private
      */
-    public renderLegend(legend: LegendSettingsModel, legendBounds: Rect, redraw?: boolean
+    public renderLegend(legend: LegendSettingsModel, legendBounds: Rect
     ): void {
         const firstLegend: number = this.findFirstLegendPosition(this.legendCollection);
         const padding: number = legend.padding;
         this.legendRegions = [];
         this.maxItemHeight = Math.max(this.legendCollection[0].textSize.height, legend.shapeHeight);
         const legendGroup: Element = this.gauge.renderer.createGroup({ id: this.legendID + '_g' });
-        const legendTranslateGroup: Element = this.createLegendElements(legendBounds, legendGroup, legend, this.legendID, redraw);
+        const legendTranslateGroup: Element = this.createLegendElements(legendBounds, legendGroup, legend, this.legendID);
         if (firstLegend !== this.legendCollection.length) {
             this.totalPages = 0;
             let legendAxisGroup: Element; // legendItem group for each series group element
@@ -390,8 +386,8 @@ export class Legend {
             const textPadding: number = (2 * legend.shapePadding) + (2 * padding) + legend.shapeWidth;
             let count: number = 0;
             this.pageXCollections = [];
-            this.legendCollection[firstLegend].location = start;
-            let previousLegend: LegendOptions = this.legendCollection[firstLegend];
+            this.legendCollection[firstLegend as number].location = start;
+            let previousLegend: LegendOptions = this.legendCollection[firstLegend as number];
             for (const legendOption of this.legendCollection) {
                 if (legendOption.render && legendOption.text !== '') {
                     legendAxisGroup = this.gauge.renderer.createGroup({
@@ -404,8 +400,7 @@ export class Legend {
                     this.renderText(legendOption, legendAxisGroup, textOptions, legendOption.axisIndex, legendOption.rangeIndex);
 
                     if (legendAxisGroup) {
-                        legendAxisGroup.setAttribute(
-                            'style', 'cursor: ' + ((!legend.toggleVisibility) ? 'auto' : 'pointer'));
+                        (legendAxisGroup as HTMLElement).style.cursor = (!legend.toggleVisibility) ? 'auto' : 'pointer';
                     }
 
                     if (legendTranslateGroup) {
@@ -421,7 +416,7 @@ export class Legend {
                 this.totalPages = 1;
             }
         }
-        this.appendChildElement(this.gauge.svgObject, legendGroup, redraw);
+        this.appendChildElement(this.gauge.svgObject, legendGroup);
         this.setStyles(this.toggledIndexes);
     }
     /**
@@ -447,7 +442,7 @@ export class Legend {
         const symbolOption: PathOption = new PathOption(this.legendID + '_pageup', 'transparent', 5, grayColor, 1, '', '');
         const iconSize: number = this.pageButtonSize;
         if (paginggroup) {
-            paginggroup.setAttribute('style', 'cursor: pointer');
+            (paginggroup as HTMLElement).style.cursor = 'pointer';
         }
         // Page left arrow drawing calculation started here
         this.clipPathHeight = (this.rowCount - 1) * (this.maxItemHeight + legend.padding);
@@ -503,7 +498,6 @@ export class Legend {
         let size: number = (this.clipPathHeight) * page;
         let translate: string = 'translate(0,-' + size + ')';
         if (this.isVertical) {
-            const pageLength: number = page * this.maxColumns;
             size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
             size = size < 0 ? 0 : size; // to avoid small pixel variation
             translate = 'translate(-' + size + ',0)';
@@ -535,8 +529,7 @@ export class Legend {
         textOptions.text = legendOption.text;
         textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        const element: Element =
-            textElement(textOptions, legend.textStyle, fontcolor, group, '');
+        textElement(textOptions, legend.textStyle, fontcolor, group, '');
     }
     /**
      * To render legend symbols for chart and accumulation chart
@@ -548,7 +541,8 @@ export class Legend {
      * @returns {void}
      */
     protected renderSymbol(legendOption: LegendOptions, group: Element, axisIndex: number, rangeIndex: number): void {
-        legendOption.fill = legendOption.fill ? legendOption.fill : (this.gauge.axes[axisIndex].ranges[rangeIndex] as Range).rangeColor;
+        legendOption.fill = legendOption.fill ? legendOption.fill :
+            (this.gauge.axes[axisIndex as number].ranges[rangeIndex as number] as Range).rangeColor;
         appendPath(
             calculateShapes(
                 legendOption.location, legendOption.shape, new Size(legendOption.shapeWidth, legendOption.shapeHeight),
@@ -600,13 +594,13 @@ export class Legend {
             }
             this.totalPages = this.totalRowCount;
         }
-        const availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width, this.legendBounds.x);
+        const availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To show or hide the legend on clicking the legend.
      *
+     * @param {Event} event - Specifies the event argument.
      * @returns {void}
      */
     public click(event: Event): void {
@@ -626,8 +620,8 @@ export class Legend {
                             this.toggledIndexes.push(index);
                         } else {
                             for (let i: number = 0; i < this.toggledIndexes.length; i++) {
-                                if (this.toggledIndexes[i].axisIndex === index.axisIndex &&
-                                    this.toggledIndexes[i].rangeIndex === index.rangeIndex) {
+                                if (this.toggledIndexes[i as number].axisIndex === index.axisIndex &&
+                                    this.toggledIndexes[i as number].rangeIndex === index.rangeIndex) {
                                     toggledIndex = i;
                                     break;
                                 } else {
@@ -637,7 +631,8 @@ export class Legend {
                             if (toggledIndex === -1) {
                                 this.toggledIndexes.push(index);
                             } else {
-                                this.toggledIndexes[toggledIndex].isToggled = !this.toggledIndexes[toggledIndex].isToggled;
+                                this.toggledIndexes[toggledIndex as number].isToggled =
+                                !this.toggledIndexes[toggledIndex as number].isToggled;
                             }
                         }
                         this.setStyles(this.toggledIndexes);
@@ -660,23 +655,23 @@ export class Legend {
     private setStyles(toggledIndexes: Index[]): void {
         for (let i: number = 0; i < toggledIndexes.length; i++) {
             let count: number = 0;
-            for(let j:number = 0; j < toggledIndexes[i].rangeIndex; j++){
-                const rangeStart:number = this.gauge.axes[toggledIndexes[i].axisIndex].ranges[j].start;
-                const rangeEnd:number = this.gauge.axes[toggledIndexes[i].axisIndex].ranges[j].end;
-                if(rangeStart == rangeEnd){
+            for (let j: number = 0; j < toggledIndexes[i as number].rangeIndex; j++) {
+                const rangeStart: number = this.gauge.axes[toggledIndexes[i as number].axisIndex].ranges[j as number].start;
+                const rangeEnd: number = this.gauge.axes[toggledIndexes[i as number].axisIndex].ranges[j as number].end;
+                if (rangeStart === rangeEnd) {
                     count++;
                 }
             }
-            const rangeID: string = this.gauge.element.id + '_Axis_' + toggledIndexes[i].axisIndex + '_Range_' + toggledIndexes[i].rangeIndex;
-            const shapeID: string = this.legendID + '_Axis_' + toggledIndexes[i].axisIndex + '_Shape_' + toggledIndexes[i].rangeIndex;
-            const textID: string = this.legendID + '_Axis_' + toggledIndexes[i].axisIndex + '_text_' + toggledIndexes[i].rangeIndex;
+            const rangeID: string = this.gauge.element.id + '_Axis_' + toggledIndexes[i as number].axisIndex + '_Range_' + toggledIndexes[i as number].rangeIndex;
+            const shapeID: string = this.legendID + '_Axis_' + toggledIndexes[i as number].axisIndex + '_Shape_' + toggledIndexes[i as number].rangeIndex;
+            const textID: string = this.legendID + '_Axis_' + toggledIndexes[i as number].axisIndex + '_text_' + toggledIndexes[i as number].rangeIndex;
             const rangeElement: HTMLElement = this.gauge.svgObject.querySelector('#' + rangeID);
             const shapeElement: HTMLElement = this.gauge.svgObject.querySelector('#' + shapeID);
             const textElement: HTMLElement = this.gauge.svgObject.querySelector('#' + textID);
-            if (toggledIndexes[i].isToggled) {
+            if (toggledIndexes[i as number].isToggled) {
                 if (!isNullOrUndefined(rangeElement)) {
                     rangeElement.style.visibility = 'visible';
-                    shapeElement.setAttribute('fill', this.legendCollection[toggledIndexes[i].rangeIndex - count].fill);
+                    shapeElement.setAttribute('fill', this.legendCollection[toggledIndexes[i as number].rangeIndex - count].fill);
                     textElement.setAttribute('fill', this.legend.textStyle.color || this.gauge.themeStyle.labelColor);
                 }
             } else {
@@ -726,10 +721,9 @@ export class Legend {
      *
      * @param {number} tx - Specifies the tx value.
      * @param {number} width - Specifies the width.
-     * @param {number} legendX - Specifies the legendX.
      * @returns {number} - Returns the number.
      */
-    private getAvailWidth(tx: number, width: number, legendX: number): number {
+    private getAvailWidth(tx: number, width: number): number {
         if (this.isVertical) {
             width = this.maxWidth;
         }
@@ -742,17 +736,14 @@ export class Legend {
      * @param {Element} legendGroup - Specifies the legendGroup.
      * @param {LegendSettingsModel} legend - Specifies the legend.
      * @param {string} id - Specifies the id.
-     * @param {boolean} redraw - Specifies the redraw.
      * @returns {Element} - Returns the element.
      */
     private createLegendElements(
-        legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel,
-        id: string, redraw?: boolean
+        legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel, id: string
     ): Element {
         const padding: number = legend.padding;
         const options: RectOption = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds);
         options.width = this.isVertical ? this.maxWidth : legendBounds.width;
-        // eslint-disable-next-line max-len
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         legendGroup ? legendGroup.appendChild(this.gauge.renderer.drawRectangle(options)) : this.gauge.renderer.drawRectangle(options);
         const legendItemsGroup: Element = this.gauge.renderer.createGroup({ id: id + '_collections' });
@@ -764,8 +755,8 @@ export class Legend {
         options.width = this.isVertical ? options.width - padding : options.width;
         this.clipRect = this.gauge.renderer.drawRectangle(options);
         clippath.appendChild(this.clipRect);
-        this.appendChildElement(this.gauge.svgObject, clippath, redraw);
-        legendItemsGroup.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+        this.appendChildElement(this.gauge.svgObject, clippath);
+        (legendItemsGroup as HTMLElement).style.cssText = 'clip-path:url(#' + clippath.id + ')';
         return this.legendTranslateGroup;
     }
     /**
@@ -773,28 +764,14 @@ export class Legend {
      *
      * @param {Element} parent - Specifies the element.
      * @param {Element} childElement - Specifies the child element.
-     * @param {boolean} redraw - Specifies the boolean value.
-     * @param {boolean} isAnimate - Specifies the boolean value.
-     * @param {string} x - Specifies the x value.
-     * @param {string} y - Specifies the y value.
-     * @param {GaugeLocation} start - Specifies the start value.
-     * @param {string} direction - Specifies the direction.
-     * @param {boolean} forceAnimate - Specifies the boolean value.
-     * @param {boolean} isRect - Specifies the rect value.
-     * @param {Rect} previousRect - Specifies the previous rect value.
-     * @param {number} animateDuration - Specifies the animate duration.
      * @returns {void}
      */
     private appendChildElement(
-        parent: Element | HTMLElement, childElement: Element | HTMLElement,
-        redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
-        start?: GaugeLocation, direction?: string, forceAnimate: boolean = false,
-        isRect: boolean = false, previousRect: Rect = null, animateDuration?: number
+        parent: Element | HTMLElement, childElement: Element | HTMLElement
     ): void {
         const existChild: HTMLElement = parent.querySelector('#' + childElement.id);
         const element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
         const child: HTMLElement = <HTMLElement>childElement;
-        const duration: number = animateDuration ? animateDuration : 300;
         if (existChild) {
             parent.replaceChild(child, element);
         } else {
@@ -939,6 +916,9 @@ export class Legend {
         legendBounds.width = !legend.width ? computedWidth : legendBounds.width;
         legendBounds.height = !legend.height ? computedHeight : legendBounds.height;
         this.rowCount = Math.max(1, Math.ceil((legendBounds.height - legend.padding) / (this.maxItemHeight + legend.padding)));
+        if (this.rowCount === 1 && (legend.position === 'Bottom' || legend.position === 'Top') && (!isNullOrUndefined(legend.width) && legend.width.indexOf("%") > -1)) {
+            legendBounds.width = computedWidth;  
+        }
     }
     /**
      * To find maximum column size for legend
@@ -952,7 +932,7 @@ export class Legend {
     private getMaxColumn(columns: number[], width: number, padding: number, rowWidth: number): number {
         let maxPageColumn: number = padding;
         this.maxColumnWidth = Math.max.apply(null, columns);
-        for (const column of columns) {
+        for (let i: number = 0; i < columns.length; i++) {
             maxPageColumn += this.maxColumnWidth;
             this.maxColumns++;
             if (maxPageColumn + padding > width) {
@@ -1035,7 +1015,6 @@ export class Index {
     public axisIndex: number;
     public rangeIndex: number;
     public isToggled: boolean;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(axisIndex: number, rangeIndex?: number, isToggled?: boolean) {
         this.axisIndex = axisIndex;
         this.rangeIndex = rangeIndex;
@@ -1062,7 +1041,6 @@ export class LegendOptions {
     public shapeHeight: number;
     public rangeIndex?: number;
     public axisIndex?: number;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(
         text: string, originalText: string, fill: string, shape: GaugeShape, visible: boolean, border: Border, shapeBorder: Border,
         shapeWidth: number, shapeHeight: number, rangeIndex?: number, axisIndex?: number

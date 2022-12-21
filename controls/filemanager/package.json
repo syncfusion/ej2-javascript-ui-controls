@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-filemanager",
-	"version": "20.3.56",
+	"version": "18.18.1",
 	"description": "Essential JS 2 FileManager Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -25,7 +25,6 @@
 		"@types/jasmine-ajax": "^3.1.27",
 		"@types/requirejs": "^2.1.26",
 		"@types/node": "10.14.0",
-		"protractor": "5.3.2",
 		"es6-promise": "^3.2.1",
 		"gulp": "^3.9.1",
 		"gulp-sass": "^3.1.0",
@@ -48,7 +47,16 @@
 	"keywords": [
 		"ej2",
 		"syncfusion",
-		"ej2-filemanager"
+		"JavaScript",
+		"TypeScript",
+		"filemanager",
+		"file organizer",
+		"file organizing tool",
+		"file picker",
+		"file viewer",
+		"file browser",
+		"file selector",
+		"directory viewer"
 	],
 	"repository": {
 		"type": "git",

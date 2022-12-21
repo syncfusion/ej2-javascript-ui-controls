@@ -1,4 +1,5 @@
 @include export-module('vscroll-fluent-icons') {
+
   /*! vscroll icons */
   #{&}.e-vscroll {
 
@@ -14,14 +15,13 @@
     }
 
     .e-nav-up-arrow::before {
-      content: '\e7dd';
+      content: '\e776';
       line-height: normal;
     }
 
     .e-nav-down-arrow::before {
-      content: '\e734';
+      content: '\e729';
       line-height: normal;
     }
   }
 }
-  

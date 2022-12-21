@@ -1,0 +1,57 @@
+@include export-module('speed-dial-theme') {
+  .e-speeddial-overlay {
+    background-color: $sd-overlay-bg;
+  }
+
+  .e-speeddial-popup {
+    .e-speeddial-li {
+      color: $sd-font-color;
+
+      .e-speeddial-li-text,
+      .e-speeddial-li-icon {
+        box-shadow: $sd-li-shadow;
+        background-color: $sd-li-bg;
+        border-color: $sd-li-border-color;
+      }
+    }
+    .e-speeddial-li.e-disabled {
+      color: $sd-disabled-font-color;
+      .e-speeddial-li-text,
+      .e-speeddial-li-icon {
+        background-color: $sd-disabled-li-bg;
+        border-color: $sd-disabled-li-border-color;
+      }
+    }
+
+    .e-speeddial-li.e-speeddial-li-active:not(.e-disabled),
+    .e-speeddial-li:focus:not(.e-disabled) {
+      color: $sd-focus-font-color;
+      .e-speeddial-li-text,
+      .e-speeddial-li-icon {
+        background-color: $sd-focus-li-bg;
+        border-color: $sd-focus-li-border-color;
+        @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI') {
+          box-shadow: $sd-focus-box-shadow;
+        }
+      }
+    }
+
+    .e-speeddial-li:not(.e-disabled):hover {
+      color: $sd-hover-font-color;
+      .e-speeddial-li-text,
+      .e-speeddial-li-icon {
+        background-color: $sd-hover-li-bg;
+        border-color: $sd-hover-li-border-color;
+      }
+    }
+
+    .e-speeddial-li:not(.e-disabled):active {
+      color: $sd-active-font-color;
+      .e-speeddial-li-text,
+      .e-speeddial-li-icon {
+        background-color: $sd-active-li-bg;
+        border-color: $sd-active-li-border-color;
+      }
+    }
+  }
+}

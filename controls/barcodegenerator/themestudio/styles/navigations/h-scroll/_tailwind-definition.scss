@@ -1,8 +1,8 @@
 /*! component's theme wise override definitions and variables */
 $hscroll-skin: 'tailwind' !default;
 $border-type: solid;
-$hscroll-hover-font: $content-text-color-alt2  !default;
-$hscroll-active-font-color: $content-text-color-alt2  !default;
+$hscroll-hover-font: $content-text-color-alt2 !default;
+$hscroll-active-font-color: $content-text-color-alt2 !default;
 $hscroll-default-bg: $content-bg-color-alt2 !default;
 $hscroll-press-bg: $content-bg-color-alt2 !default;
 $hscroll-active-bg: $content-bg-color-alt2 !default;
@@ -37,6 +37,7 @@ $hscroll-device-arrow-border-size: 1px !default;
 $hscroll-device-arrow-border-color: $border-light !default;
 $hscroll-device-arrow-color: $icon-color !default;
 $hscroll-device-arrow-size: 18px !default;
+$hscroll-device-arrow-icon-size: 18px !default;
 $hscroll-device-arrow-size-bigger: 22px !default;
 $hscroll-device-arrow-width: 48px !default;
 
@@ -45,12 +46,19 @@ $hscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
 $hscroll-ribble-animation-shadow-frame: 0 0 0 0 $hscroll-ribble-animation-border-frame !default;
 $hscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
 
+$hscroll-nav-hover-press-bg: $hscroll-hover-bg !default;
+$hscroll-nav-hover-icons-color: $hscroll-default-icon-color !default;
+$hscroll-nav-hover-border: $hscroll-hover-border !default;
+$hscroll-nav-focus-bg-color: $hscroll-hover-bg !default;
+$hscroll-nav-focus-border: $hscroll-focus-border !default;
+$hscroll-nav-active-color: $hscroll-default-icon-color !default;
+
 @mixin hscroll-btn-animation {
   background-color: transparent;
   border-radius: 50%;
   border-width: 1px;
   box-sizing: border-box;
-  content: '' ;
+  content: '';
   height: 1px;
   left: 50%;
   position: absolute;
@@ -68,11 +76,9 @@ $hscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12)
   0% {
     border-color: $hscroll-ribble-animation-border-frame;
     box-shadow: $hscroll-ribble-animation-shadow-frame;
-    }
+  }
 
   100% {
     box-shadow: $hscroll-ribble-animation-shadow-frame-end;
-    }
- }
-
-
+  }
+}

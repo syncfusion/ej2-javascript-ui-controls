@@ -59,9 +59,9 @@ export class Aggregate {
         const parentDataLength: number = Object.keys(filteredData).length;
         const parentData: Object[] = [];
         for (let p: number = 0, len: number = parentDataLength; p < len; p++) {
-            const summaryRow: boolean = getObject('isSummaryRow', filteredData[p]);
+            const summaryRow: boolean = getObject('isSummaryRow', filteredData[parseInt(p.toString(), 10)]);
             if (!summaryRow) {
-                parentData.push(filteredData[p]);
+                parentData.push(filteredData[parseInt(p.toString(), 10)]);
             }
         }
         const parentRecords: Object = findParentRecords(parentData);
@@ -71,15 +71,15 @@ export class Aggregate {
         const columns: Column[] = this.parent.getColumns();
         if (this.parent.aggregates.filter((x: AggregateRowModel) => x.showChildSummary).length) {
             for (let i: number = 0, len: number = dataLength; i < len; i++) {
-                parentRecord = parentRecords[i];
+                parentRecord = parentRecords[parseInt(i.toString(), 10)];
                 childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
                 if (childRecordsLength) {
                     for (let summaryRowIndex: number = 1, len: number = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
                         let item: Object; item = {};
                         for (let i: number = 0; i < columns.length; i++) {
-                            const  field: string = (isNullOrUndefined(getObject('field', columns[i]))) ?
-                                columns[i] : getObject('field', (columns[i]));
-                            item[field] = null;
+                            const  field: string = (isNullOrUndefined(getObject('field', columns[parseInt(i.toString(), 10)]))) ?
+                                columns[parseInt(i.toString(), 10)] : getObject('field', (columns[parseInt(i.toString(), 10)]));
+                            item[`${field}`] = null;
                         }
                         item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
                         if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
@@ -112,9 +112,9 @@ export class Aggregate {
         } else {
             const items: Object = {};
             for (let columnIndex: number = 0, length: number = columns.length; columnIndex < length; columnIndex++) {
-                const fields: string = isNullOrUndefined(getObject('field', columns[columnIndex])) ?
-                    columns[columnIndex] : getObject('field', columns[columnIndex]);
-                items[fields] = null;
+                const fields: string = isNullOrUndefined(getObject('field', columns[parseInt(columnIndex.toString(), 10)])) ?
+                    columns[parseInt(columnIndex.toString(), 10)] : getObject('field', columns[parseInt(columnIndex.toString(), 10)]);
+                items[`${fields}`] = null;
             }
             for (let summaryRowIndex: number = 1, length: number = summaryLength; summaryRowIndex <= length; summaryRowIndex++) {
                 this.createSummaryItem(items,  this.parent.aggregates[summaryRowIndex - 1]);
@@ -126,7 +126,7 @@ export class Aggregate {
     private getChildRecordsLength(parentData: ITreeData, flatData: Object[]): number {
         const recordLength: number = Object.keys(flatData).length; let record: ITreeData;
         for (let i: number = 0, len: number = recordLength; i < len; i++) {
-            record = flatData[i];
+            record = flatData[parseInt(i.toString(), 10)];
             const parent: Object = isNullOrUndefined(record.parentItem) ? null :
                 flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentItem.uniqueID; })[0];
             if (parentData === parent) {
@@ -145,17 +145,17 @@ export class Aggregate {
     private createSummaryItem(itemData: Object, summary: AggregateRowModel): Object {
         const summaryColumnLength: number = Object.keys(summary.columns).length;
         for (let i: number = 0, len: number = summaryColumnLength; i < len; i++) {
-            const displayColumn: string = isNullOrUndefined(summary.columns[i].columnName) ? summary.columns[i].field :
-                summary.columns[i].columnName;
+            const displayColumn: string = isNullOrUndefined(summary.columns[parseInt(i.toString(), 10)].columnName) ?
+                summary.columns[parseInt(i.toString(), 10)].field : summary.columns[parseInt(i.toString(), 10)].columnName;
             const keys: string[] = Object.keys(itemData);
             for (const key of keys) {
                 if (key === displayColumn) {
                     if (this.flatChildRecords.length) {
-                        itemData[key] = this.getSummaryValues(summary.columns[i] as AggregateColumn, this.flatChildRecords);
+                        itemData[`${key}`] = this.getSummaryValues(summary.columns[parseInt(i.toString(), 10)] as AggregateColumn, this.flatChildRecords);
                     } else if (this.parent.isLocalData) {
                         const data: Object[] = this.parent.dataSource instanceof DataManager ? this.parent.dataSource.dataSource.json
                             : this.parent.flatData;
-                        itemData[key] = this.getSummaryValues(summary.columns[i] as AggregateColumn, data );
+                        itemData[`${key}`] = this.getSummaryValues(summary.columns[parseInt(i.toString(), 10)] as AggregateColumn, data );
                     }
                 } else {
                     continue;
@@ -181,14 +181,14 @@ export class Aggregate {
         let types: AggregateType[] = <AggregateType[]>summaryColumn.type; let summaryKey: string;
         types = <AggregateType[]>[summaryColumn.type];
         for (let i: number = 0; i < types.length; i++) {
-            summaryKey = types[i];
-            const key: string = summaryColumn.field + ' - ' + types[i].toLowerCase();
-            const val: Object = types[i] !== 'Custom' ? getObject('aggregates', sumData) :
-                calculateAggregate(types[i], sumData, summaryColumn, this.parent);
+            summaryKey = types[parseInt(i.toString(), 10)];
+            const key: string = summaryColumn.field + ' - ' + types[parseInt(i.toString(), 10)].toLowerCase();
+            const val: Object = types[parseInt(i.toString(), 10)] !== 'Custom' ? getObject('aggregates', sumData) :
+                calculateAggregate(types[parseInt(i.toString(), 10)], sumData, summaryColumn, this.parent);
             const disp: string = summaryColumn.columnName;
-            const value: Object = types[i] !== 'Custom' ? val[key] : val;
-            single[disp] = single[disp] || {}; single[disp][key] = value;
-            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
+            const value: Object = types[parseInt(i.toString(), 10)] !== 'Custom' ? val[`${key}`] : val;
+            single[`${disp}`] = single[`${disp}`] || {}; single[`${disp}`][`${key}`] = value;
+            single[`${disp}`][types[parseInt(i.toString(), 10)]] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
         }
         helper.format = summaryColumn.getFormatter();
         const cellElement: Element = createElement('td', {
@@ -197,11 +197,11 @@ export class Aggregate {
         if ((<{ isReact?: boolean }>this.parent).isReact) {
             const renderReactTemplates: string = 'renderReactTemplates';
             tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property, '', null, null, cellElement);
-            this.parent[renderReactTemplates]();
+            this.parent[`${renderReactTemplates}`]();
         } else {
             appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
         }
-        const value: string = single[summaryColumn.columnName][summaryKey];
+        const value: string = single[`${summaryColumn.columnName}`][`${summaryKey}`];
         let summaryValue: string;
         if (cellElement.innerHTML.indexOf(value) === -1) {
             summaryValue = cellElement.innerHTML + value;

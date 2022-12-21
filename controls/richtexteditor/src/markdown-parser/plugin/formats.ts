@@ -71,33 +71,33 @@ export class MDFormats {
             return;
         }
         for (let i: number = 0; i < parents.length; i++) {
-            if (parents[i].text !== '' && !this.selection.isStartWith(parents[i].text as string, '\\' + this.syntax[e.subCommand])) {
-                parents[i].text = this.syntax[e.subCommand] + parents[i].text;
+            if (parents[i as number].text !== '' && !this.selection.isStartWith(parents[i as number].text as string, '\\' + this.syntax[e.subCommand])) {
+                parents[i as number].text = this.syntax[e.subCommand] + parents[i as number].text;
                 textArea.value = textArea.value.substr(
-                    0, parents[i].start as number) + parents[i].text + '\n' +
-                    textArea.value.substr(parents[i].end as number, textArea.value.length);
+                    0, parents[i as number].start as number) + parents[i as number].text + '\n' +
+                    textArea.value.substr(parents[i as number].end as number, textArea.value.length);
                 start = i === 0 ? start + this.syntax[e.subCommand].length : start;
                 addedLength += this.syntax[e.subCommand].length;
                 if (parents.length !== 1) {
                     for (let j: number = i; j < parents.length; j++) {
-                        parents[j].start = j !== 0 ?
-                            this.syntax[e.subCommand].length + (parents[j].start as number) : parents[j].start;
-                        parents[j].end = this.syntax[e.subCommand].length + (parents[j].end as number);
+                        parents[j as number].start = j !== 0 ?
+                            this.syntax[e.subCommand].length + (parents[j as number].start as number) : parents[j as number].start;
+                        parents[j as number].end = this.syntax[e.subCommand].length + (parents[j as number].end as number);
                     }
                 }
-            } else if (parents[i].text === '' && i === 0) {
+            } else if (parents[i as number].text === '' && i === 0) {
                 this.selection.save(start, end);
                 if (this.selection.getSelectedText(textArea).length === 0) {
-                    parents[i].text = this.syntax[e.subCommand];
-                    textArea.value = textArea.value.substr(0, (parents[i].start as number)) + this.syntax[e.subCommand] +
-                        textArea.value.substr((parents[i].end as number), textArea.value.length);
+                    parents[i as number].text = this.syntax[e.subCommand];
+                    textArea.value = textArea.value.substr(0, (parents[i as number].start as number)) + this.syntax[e.subCommand] +
+                        textArea.value.substr((parents[i as number].end as number), textArea.value.length);
                     start = i === 0 ? start + this.syntax[e.subCommand].length : start;
                     addedLength += this.syntax[e.subCommand].length;
                 }
                 if (parents.length !== 1) {
                     for (let j: number = i; j < parents.length; j++) {
-                        parents[j].start = j !== 0 ? 1 + (parents[j].start as number) : parents[j].start;
-                        parents[j].end = 1 + (parents[j].end as number);
+                        parents[j as number].start = j !== 0 ? 1 + (parents[j as number].start as number) : parents[j as number].start;
+                        parents[j as number].end = 1 + (parents[j as number].end as number);
                     }
                 }
             }
@@ -107,9 +107,9 @@ export class MDFormats {
     private clearRegex(): string {
         let regex: string = '';
         const configKey: string[] = Object.keys(this.syntax);
-        for (let j: number = 0; j < configKey.length && configKey[j] !== 'pre' && configKey[j] !== 'p'; j++) {
-            regex += regex === '' ? '^(' + this.selection.replaceSpecialChar(this.syntax[configKey[j]].trim()) + ')' :
-                '|^(' + this.selection.replaceSpecialChar(this.syntax[configKey[j]].trim()) + ')';
+        for (let j: number = 0; j < configKey.length && configKey[j as number] !== 'pre' && configKey[j as number] !== 'p'; j++) {
+            regex += regex === '' ? '^(' + this.selection.replaceSpecialChar(this.syntax[configKey[j as number]].trim()) + ')' :
+                '|^(' + this.selection.replaceSpecialChar(this.syntax[configKey[j as number]].trim()) + ')';
         }
         return regex;
     }
@@ -122,35 +122,36 @@ export class MDFormats {
         if (this.selection.isClear(parents, this.clearRegex())) {
             for (let i: number = 0; i < parents.length; i++) {
                 const configKey: string[] = Object.keys(this.syntax);
-                for (let j: number = 0; parents[i].text !== '' && j < configKey.length; j++) {
-                    const removeText: string = this.syntax[configKey[j]];
-                    if (configKey[j] === command) {
+                for (let j: number = 0; parents[i as number].text !== '' && j < configKey.length; j++) {
+                    const removeText: string = this.syntax[configKey[j as number]];
+                    if (configKey[j as number] === command) {
                         continue;
                     }
+                    // eslint-disable-next-line
                     const regex: RegExp = new RegExp('^(' + this.selection.replaceSpecialChar(removeText) + ')', 'gim');
-                    if (regex.test(parents[i].text as string)) {
-                        parents[i].text = (parents[i].text as string).replace(regex, '');
+                    if (regex.test(parents[i as number].text as string)) {
+                        parents[i as number].text = (parents[i as number].text as string).replace(regex, '');
                         textArea.value = textArea.value.substr(
-                            0, parents[i].start as number) + parents[i].text + '\n' +
-                            textArea.value.substr(parents[i].end as number, textArea.value.length);
+                            0, parents[i as number].start as number) + parents[i as number].text + '\n' +
+                            textArea.value.substr(parents[i as number].end as number, textArea.value.length);
                         start = i === 0 ? (start - (removeText.length)) > 0 ? start - (removeText.length) : 0 : start;
                         removeLength += removeText.length;
                         if (parents.length !== 1) {
                             for (let k: number = 0; k < parents.length; k++) {
-                                parents[k].start = k !== 0 ?
-                                    (parents[k].start as number) - removeText.length : parents[k].start;
-                                parents[k].end = (parents[k].end as number) - removeText.length;
+                                parents[k as number].start = k !== 0 ?
+                                    (parents[k as number].start as number) - removeText.length : parents[k as number].start;
+                                parents[k as number].end = (parents[k as number].end as number) - removeText.length;
                             }
                         }
                         break;
                     }
                 }
-                if (parents[i].text === '' && i === 0) {
+                if (parents[i as number].text === '' && i === 0) {
                     this.selection.save(start, end);
                     if (parents.length !== 1) {
                         for (let j: number = i; j < parents.length; j++) {
-                            parents[j].start = j !== 0 ? 1 + (parents[j].start as number) : parents[j].start;
-                            parents[j].end = 1 + (parents[j].end as number);
+                            parents[j as number].start = j !== 0 ? 1 + (parents[j as number].start as number) : parents[j as number].start;
+                            parents[j as number].end = 1 + (parents[j as number].end as number);
                         }
                     }
                 }
@@ -174,13 +175,13 @@ export class MDFormats {
             const lines: string[] = textArea.value.substring(start, end).split('\n');
             const lastLine: string = lines[lines.length - 1] === '' ? '' : '\n';
             textArea.value = textArea.value.substr(
-                0, start as number) + this.syntax[command] + textArea.value.substring(start, end) +
-                lastLine + this.syntax[command] +
+                0, start as number) + this.syntax[`${command}`] + textArea.value.substring(start, end) +
+                lastLine + this.syntax[`${command}`] +
                 textArea.value.substr(end as number, textArea.value.length);
-            start = this.selection.selectionStart + this.syntax[command].length;
-            end = this.selection.selectionEnd + this.syntax[command].length - 1;
+            start = this.selection.selectionStart + this.syntax[`${command}`].length;
+            end = this.selection.selectionEnd + this.syntax[`${command}`].length - 1;
         } else {
-            const cmd: string = this.syntax[command];
+            const cmd: string = this.syntax[`${command}`];
             const selection: { [key: string]: string | number } = this.parent.markdownSelection.getSelectedInlinePoints(textArea);
             const startNo: number = textArea.value.substr(0, textArea.selectionStart as number).lastIndexOf(cmd);
             let endNo: number = textArea.value.substr(textArea.selectionEnd as number, textArea.selectionEnd as number).indexOf(cmd);
@@ -221,16 +222,16 @@ export class MDFormats {
         const direction: string = (this.parent.element as HTMLTextAreaElement).selectionDirection;
         const checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
-            if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.syntax[keys[i]])) {
-                format = keys[i];
+            if (keys[i as number] !== 'pre' && this.selection.isStartWith(checkLine, this.syntax[keys[i as number]])) {
+                format = keys[i as number];
                 break;
-            } else if (keys[i] === 'pre') {
+            } else if (keys[i as number] === 'pre') {
                 const parentLines: string[] = this.selection.getAllParents((this.parent.element as HTMLTextAreaElement).value);
                 const firstPrevText: string = parentLines[(lines[0].line as number) - 1];
                 const lastNextText: string = parentLines[lines.length + 1];
-                if (this.selection.isStartWith(firstPrevText, this.syntax[keys[i]].split('\n')[0]) &&
-                    this.selection.isStartWith(lastNextText, this.syntax[keys[i]].split('\n')[0])) {
-                    format = keys[i];
+                if (this.selection.isStartWith(firstPrevText, this.syntax[keys[i as number]].split('\n')[0]) &&
+                    this.selection.isStartWith(lastNextText, this.syntax[keys[i as number]].split('\n')[0])) {
+                    format = keys[i as number];
                     break;
                 }
             }

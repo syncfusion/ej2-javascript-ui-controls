@@ -6,7 +6,7 @@ import {
     TextAlignment, VerticalOrigin, TextWrappingStyle, FootEndNoteNumberFormat, CharacterRangeType, FontScriptType
 } from '../../base/types';
 import { BodyWidgetInfo, HelperMethods, LineElementInfo, SubWidthInfo, Point, FootNoteWidgetsInfo, WrapPosition, BlockInfo, SizeInfo, BorderRenderInfo } from '../editor/editor-helper';
-import { WBorder, WBorders, WCharacterFormat, WListFormat, WParagraphFormat, WTabStop, WSectionFormat, WCellFormat } from '../format/index';
+import { WBorder, WBorders, WCharacterFormat, WListFormat, WParagraphFormat, WTabStop, WSectionFormat, WCellFormat, WColumnFormat } from '../format/index';
 import { WAbstractList } from '../list/abstract-list';
 import { WLevelOverride } from '../list/level-override';
 import { WList } from '../list/list';
@@ -44,6 +44,10 @@ export class Layout {
      * @private
      */
     public allowLayout: boolean = true;
+    /**
+     * @private
+     */
+    public isReplaceAll: boolean = false;
     /**
      * @private
      */
@@ -90,6 +94,7 @@ export class Layout {
     private keepWithNext: boolean = false;
     private is2013Justification: boolean = false;
     private nextElementToLayout: ElementBox = undefined;
+    private endNoteHeight: number = 0;
     /**
      * @private
      */
@@ -187,14 +192,32 @@ export class Layout {
 
     public layoutItems(sections: BodyWidget[], isReLayout: boolean): void {
         let page: Page;
+        let height: number = 0;
+        let width: number = 0;
         for (let i: number = 0; i < sections.length; i++) {
             const section: BodyWidget = sections[i] as BodyWidget;
+            this.viewer.columnLayoutArea.setColumns(section.sectionFormat);
             const lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             /* eslint-disable-next-line max-len */
-            if (i > 0 && ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak && lastpage.bodyWidgets[0].childWidgets.length === 0) {
+            if (i > 0 && (((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak || ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithColumnBreak) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
                 this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
             }
-            page = this.viewer.createNewPage(section);
+            if (i === 0 || isNullOrUndefined(section.sectionFormat.breakCode) || section.sectionFormat.breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (section.sectionFormat.columns.length > 1 || (i - 1 >= 0 && sections[i - 1].sectionFormat.columns.length > 1))) {
+                page = this.viewer.createNewPage(section);
+            } else {
+                let clientY: number = this.documentHelper.viewer.clientActiveArea.y;
+                let clientHeight: number = this.documentHelper.viewer.clientActiveArea.height;
+                //if (i - 1 > 0) {
+                page = lastpage;
+                //}
+                page.bodyWidgets.push(section);
+                page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
+                this.documentHelper.viewer.updateClientArea(section, page);
+                this.documentHelper.viewer.clientActiveArea.y = clientY;
+                this.documentHelper.viewer.clientActiveArea.height = clientHeight;
+            }
+            height = section.sectionFormat.pageHeight;
+            width = section.sectionFormat.pageWidth;
             this.addBodyWidget(this.viewer.clientActiveArea, section);
             if (this.documentHelper.pages.length > 1) {
                 let pageIndex: number = 0;
@@ -220,6 +243,7 @@ export class Layout {
         if (this.documentHelper.owner.layoutType === 'Pages') {
             this.layoutEndNoteElement();
         }
+        
         /* tslint:disable:align */
         setTimeout((): void => {
             if (this.documentHelper) {
@@ -245,6 +269,7 @@ export class Layout {
     private layoutSection(section: BodyWidget, index: number): void {
         let block: BlockWidget = section.firstChild as BlockWidget;
         let nextBlock: BlockWidget;
+        let prevBlock: BlockWidget;
         do {
 
             if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
@@ -252,10 +277,17 @@ export class Layout {
                 block.calculateGrid();
             }
             this.viewer.updateClientAreaForBlock(block, true, undefined, true);
+            let bodyIndex: number = block.containerWidget.indexInOwner;
             nextBlock = this.layoutBlock(block, index);
             index = 0;
             this.viewer.updateClientAreaForBlock(block, false);
+            prevBlock = block;
             block = nextBlock;
+            // eslint-disable-next-line max-len
+            if ((isNullOrUndefined(block) || ((block.bodyWidget && block.bodyWidget.page) !== (prevBlock.bodyWidget && prevBlock.bodyWidget.page))) &&
+                prevBlock.bodyWidget.page.footnoteWidget) {
+                this.layoutfootNote(prevBlock.bodyWidget.page.footnoteWidget);
+            }
         } while (block);
         block = section.firstChild as BlockWidget;
         let page: Page;
@@ -576,21 +608,21 @@ export class Layout {
             });
         }
     }
+    
     private checkAndRelayoutPreviousOverlappingBlock(block: BlockWidget): BlockWidget {
         if (!(block.containerWidget instanceof TextFrame) && !this.isRelayoutOverlap) {
             let preivousBlock: BlockWidget = block.previousWidget as BlockWidget;
             if (block instanceof ParagraphWidget) {
                 if (block.floatingElements.length > 0) {
                     for (let i: number = 0; i < block.floatingElements.length; i++) {
-                        const element: ShapeBase = block.floatingElements[i];
+                        let element: ShapeBase = block.floatingElements[i];
                         if (element.textWrappingStyle === 'InFrontOfText' || element.textWrappingStyle === 'Behind' || element.textWrappingStyle === 'Inline') {
                             continue;
                         }
-                        const shapeRect: Rect = new Rect(element.x, element.y, element.width, element.height);
+                        let shapeRect: Rect = new Rect(element.x, element.y, element.width, element.height);
                         while (preivousBlock) {
                             if (preivousBlock instanceof ParagraphWidget) {
-                                /* eslint-disable-next-line max-len */
-                                const paraRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height);
+                                let paraRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height);
                                 if (shapeRect.isIntersecting(paraRect) &&
                                     this.startOverlapWidget !== preivousBlock) {
                                     this.startOverlapWidget = preivousBlock;
@@ -602,20 +634,20 @@ export class Layout {
                         preivousBlock = block.previousWidget as BlockWidget;
                     }
                 } else {
-                    const widget: IWidget[] = block.getSplitWidgets();
+                    let widget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
                     if (widget) {
-                        return widget[widget.length - 1] as BlockWidget;
+                        return widget[widget.length - 1];
                     }
                 }
             } else {
-                const table: TableWidget = block as TableWidget;
+                let table: TableWidget = block as TableWidget;
                 if (!table.wrapTextAround) {
                     return table;
                 }
-                const tableRect: Rect = new Rect(table.x, table.y, table.getTableCellWidth(), table.height);
+                let tableRect: Rect = new Rect(table.x, table.y, table.getTableCellWidth(), table.height);
                 while (preivousBlock) {
                     if (preivousBlock instanceof ParagraphWidget) {
-                        const blockRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height);
+                        let blockRect: Rect = new Rect(preivousBlock.x, preivousBlock.y, preivousBlock.width, preivousBlock.height);
                         if (tableRect.isIntersecting(blockRect) &&
                             this.startOverlapWidget !== preivousBlock) {
                             this.startOverlapWidget = preivousBlock;
@@ -690,7 +722,7 @@ export class Layout {
                         element = element.nextElement;
                         continue;
                     }
-                    if (element instanceof TextElementBox && element.text === '\f') {
+                    if (element instanceof TextElementBox && (element.text === '\f' || element.text === String.fromCharCode(14))) {
                         isPageBreak = true;
                     }
                     break;
@@ -712,6 +744,10 @@ export class Layout {
             const clientArea: Rect = this.viewer.clientArea.clone();
             if (footnote.footNoteType === 'Footnote') {
                 (this.viewer as PageLayoutViewer).updateFootnoteClientArea(footnote.sectionFormat, footnote);
+            } else if (footnote.sectionFormat.columns.length > 1) {
+                this.viewer.updateClientArea(footnote, footnote.page);
+                this.viewer.clientActiveArea.y = clientActiveArea.y;
+                this.viewer.clientActiveArea.height = clientActiveArea.height;
             }
             footnote.height = 0;
             let block: BlockWidget;
@@ -733,8 +769,42 @@ export class Layout {
                     // footnote.bodyWidgets.push(body);
                     height = this.documentHelper.textHelper.getParagraphMarkSize(newPara.characterFormat).Height;
                     footnote.height += height;
+                    this.endNoteHeight += height;
+                    if (footnote.page.bodyWidgets[footnote.page.bodyWidgets.length - 1].sectionFormat.columns.length > 1 && footnote.footNoteType === 'Endnote') {
+                        let firstBlock: BlockWidget = footnote.page.bodyWidgets[0].firstChild as BlockWidget;
+                        this.viewer.updateClientArea(footnote.page.bodyWidgets[0], footnote.page);
+                        this.viewer.clientActiveArea.height -= this.viewer.clientActiveArea.height > this.endNoteHeight ? this.endNoteHeight : 0;
+                        this.viewer.clientArea.height -= this.viewer.clientArea.height > this.endNoteHeight ? this.endNoteHeight : 0;
+                        while (firstBlock) {
+                            this.viewer.updateClientAreaForBlock(firstBlock, true);
+                            this.layoutBlock(firstBlock, 0);
+                            this.viewer.updateClientAreaForBlock(firstBlock, false);
+                            if (firstBlock.previousRenderedWidget !== undefined && firstBlock.bodyWidget.indexInOwner !== (firstBlock.previousRenderedWidget as BlockWidget).bodyWidget.indexInOwner) {
+                                this.viewer.updateClientArea(firstBlock.bodyWidget, firstBlock.bodyWidget.page);
+                                this.viewer.clientActiveArea.height -= this.viewer.clientActiveArea.height > this.endNoteHeight ? this.endNoteHeight : 0;
+                                this.viewer.clientArea.height -= this.viewer.clientArea.height > this.endNoteHeight ? this.endNoteHeight : 0;
+                                this.viewer.updateClientAreaForBlock(firstBlock, true);
+                                this.layoutBlock(firstBlock, 0);
+                                this.viewer.updateClientAreaForBlock(firstBlock, false);
+                                if (firstBlock.bodyWidget.page !== (firstBlock.previousRenderedWidget as BlockWidget).bodyWidget.page) {
+                                    footnote.page = firstBlock.bodyWidget.page;
+                                    firstBlock.bodyWidget.page.endnoteWidget = footnote;
+                                    (firstBlock.previousRenderedWidget as BlockWidget).bodyWidget.page.endnoteWidget = undefined;
+                                }
+                            }
+                            firstBlock = firstBlock.nextRenderedWidget as BlockWidget;
+                        }
+                        this.endNoteHeight = 0;
+                        this.viewer.updateClientArea(footnote, footnote.page);
+                        let lastBlock: BlockWidget = footnote.page.bodyWidgets[0].lastChild as BlockWidget;
+                        this.viewer.clientActiveArea.y = lastBlock.y + lastBlock.height;
+                        this.viewer.clientActiveArea.height = clientActiveArea.height;
+                    }
                     footnote.y = this.viewer.clientActiveArea.y;
-                    this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
+                    if (footnote.footNoteType === 'Endnote') {
+                        this.viewer.updateClientArea(footnote, footnote.page, true);
+                    }
+                    this.viewer.cutFromTop(footnote.y + height);
                     footnote.margin = new Margin(0, height, 0, 0);
                 }
                 for (let j: number = 0; j < footnote.bodyWidgets[i].childWidgets.length; j++) {
@@ -837,12 +907,18 @@ export class Layout {
                     }
                 }
                 line.marginTop = 0;
+                //let bodyIndex: number = line.paragraph.bodyWidget.indexInOwner;
                 // if (!this.isInitialLoad && !this.isBidiReLayout && this.isContainsRtl(line)) {
                 //     this.reArrangeElementsForRtl(line, paragraph.paragraphFormat.bidi);
                 // }
                 line = this.layoutLine(line, 0);
-                paragraph = line.paragraph;
-                line = line.nextLine;
+                // if (!line.paragraph.isInsideTable && bodyIndex !== line.paragraph.containerWidget.indexInOwner) {
+                //     line = undefined;
+                // }
+                // else {
+                    paragraph = line.paragraph;
+                    line = line.nextLine;
+                // }
             }
         }
         this.updateWidgetToPage(this.viewer, paragraph);
@@ -940,6 +1016,8 @@ export class Layout {
         }
         this.clearLineMeasures();
         line.marginTop = 0;
+        let bodyIndex: number = paragraph.bodyWidget.indexInOwner;
+        let lineIndex: number = line.indexInOwner;
         while (element instanceof ElementBox) {
             element.padding.left = 0;
             if (!isNotEmptyField) {
@@ -967,7 +1045,14 @@ export class Layout {
                     if (this.is2013Justification && !isNullOrUndefined(this.nextElementToLayout)) {
                         element = this.nextElementToLayout;
                     } else {
+                        // if (!line.paragraph.isInsideTable && bodyIndex !== line.paragraph.containerWidget.indexInOwner && !isNullOrUndefined(element.nextElement)) {
+                        //     if (element.nextElement.line.children.indexOf(element.nextElement) !== element.nextElement.line.children.length - 1) {
+                        //         element = undefined;
+                        //     }
+                        // }
+                        // if (!isNullOrUndefined(element)) {
                         element = element.nextElement;
+                        // }
                         if(element instanceof TextElementBox && element.text.indexOf(" ") == 0 && element.text.length > 2){
                             if(isNullOrUndefined(element.nextElement) && element.text.trim().length > 0){
                                 element.text = element.text.substring(1,element.text.length);
@@ -1130,9 +1215,9 @@ export class Layout {
                 width = this.getTabWidth(paragraph, this.viewer, index, line, element as TabElementBox);
                 element.width = width;
             }
-            // As per MS word behavior, optional hyper is shown only when show paragraph mark properly is enabled
+            // As per MS word behavior, optional hyper Or column break is shown only when show paragraph mark properly is enabled
             // We need to show this special character based on property `showHiddenMark`
-            else if (element.text === '\u001f') {
+            else if (element.text === String.fromCharCode(31) || element.text === String.fromCharCode(14)) {
                 element.width = width = 0;
             }
         }
@@ -1143,8 +1228,12 @@ export class Layout {
         if (this.viewer instanceof PageLayoutViewer &&
             ((element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') || !(element instanceof ShapeElementBox))
             && this.viewer.clientActiveArea.height < element.height && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y) {
-            if ((element instanceof TextElementBox && element.text !== '\f') || !(element instanceof TextElementBox)) {
+            if ((element instanceof TextElementBox && element.text !== '\f' && element.text !== String.fromCharCode(14)) || !(element instanceof TextElementBox)) {
+                // let bodyIndex: number = line.paragraph.containerWidget.indexInOwner;
                 this.moveToNextPage(this.viewer, line);
+                // if (bodyIndex !== line.paragraph.containerWidget.indexInOwner){
+                // return;
+                // }
             }
             if (element instanceof FieldTextElementBox) {
                 this.updateFieldText(element);
@@ -1164,6 +1253,80 @@ export class Layout {
         // tslint:disable-next-line:max-line-length
         if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole) && this.documentHelper.owner.layoutType === 'Pages') {
             this.layoutFootEndNoteElement(element);
+            let prevPara: ParagraphWidget;
+            let ismove: boolean = false;
+            let clientArea: Rect = new Rect(this.viewer.clientArea.x, this.viewer.clientArea.y, this.viewer.clientArea.width, this.viewer.clientArea.height);
+            let clientActiveArea: Rect = new Rect(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.y, this.viewer.clientActiveArea.width, this.viewer.clientActiveArea.height);
+                if (element.line.paragraph.bodyWidget.sectionFormat.columns.length > 1
+                    && element.line.paragraph.bodyWidget.indexInOwner > 0 && element.height <= this.viewer.clientActiveArea.height) {
+                    prevPara = element.line.paragraph.bodyWidget.previousRenderedWidget.lastChild as ParagraphWidget;
+                    let prevLastChild = element.line.paragraph.bodyWidget.previousRenderedWidget.lastChild as ParagraphWidget;
+                    this.viewer.updateClientArea(element.line.paragraph.bodyWidget, (prevPara.bodyWidget as BodyWidget).page);
+                    if (prevLastChild.y + prevLastChild.height >= this.viewer.clientArea.height + this.viewer.clientArea.y) {
+                        ismove = true;
+                    } else {
+                        this.viewer.clientActiveArea = clientActiveArea;
+                        this.viewer.clientArea = clientArea;
+                    }
+                }
+                if (ismove) {
+                    for (let i: number = 0; i < prevPara.bodyWidget.page.bodyWidgets.length; i++) {
+                        let isShiftBlocks: boolean = false;
+                        let body: BodyWidget =  prevPara.bodyWidget.page.bodyWidgets[i];
+                        var nextBody = body.nextRenderedWidget;
+                        if (nextBody === undefined) {
+                            break;
+                        }
+                        prevPara = body.lastChild as ParagraphWidget;
+                        while (prevPara && prevPara.y + prevPara.height >= this.viewer.clientArea.y + this.viewer.clientArea.height) {
+                            if (!(prevPara.y >= this.viewer.clientArea.y + this.viewer.clientArea.height) && prevPara.childWidgets.length > 1) {
+                                let height: number = prevPara.y;
+                                for (var j = 0; j < prevPara.childWidgets.length; j++) {
+                                    height += (prevPara.childWidgets[j] as LineWidget).height;
+                                    if (height >= this.viewer.clientArea.y + this.viewer.clientArea.height) {
+                                        let lineIndex: number = prevPara.childWidgets.indexOf(prevPara.childWidgets[j]);
+                                        let nextParagraph: ParagraphWidget = new ParagraphWidget();
+                                        nextParagraph = this.moveChildsToParagraph(prevPara, lineIndex, nextParagraph);
+                                        isShiftBlocks = true;
+                                        nextBody.childWidgets.splice(0, 0, nextParagraph);
+                                        nextParagraph.containerWidget = nextBody;
+                                        nextParagraph.isLayouted = true;
+                                        prevPara = undefined;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                let index = body.childWidgets.indexOf(prevPara);
+                                body.childWidgets.splice(index, 1);
+                                nextBody.childWidgets.splice(0, 0, prevPara);
+                                prevPara.containerWidget = nextBody;
+                                prevPara = prevPara.previousRenderedWidget as ParagraphWidget;
+                                isShiftBlocks = true;
+                            }
+                        }
+                        if (!isShiftBlocks) {
+                            continue;
+                        }
+                        this.viewer.updateClientArea(nextBody as BodyWidget, (nextBody as BodyWidget).page);
+                        prevPara = nextBody.firstChild as ParagraphWidget;
+                        while (prevPara && prevPara.isLayouted) {
+                            this.viewer.updateClientAreaForBlock(prevPara, true);
+                            this.layoutParagraph(prevPara, 0);
+                            this.viewer.updateClientAreaForBlock(prevPara, false);
+                            if (prevPara.nextRenderedWidget !== undefined && prevPara.bodyWidget.indexInOwner !== (prevPara.nextRenderedWidget  as ParagraphWidget).bodyWidget.indexInOwner) {
+                                this.viewer.updateClientArea((prevPara.nextRenderedWidget as ParagraphWidget).bodyWidget, (prevPara.nextRenderedWidget as ParagraphWidget).bodyWidget.page);
+                            }
+                            prevPara = prevPara.nextRenderedWidget as ParagraphWidget;
+                        }
+                        if (prevPara && !prevPara.isLayouted) {
+                            this.viewer.updateClientAreaForBlock(prevPara, true);
+                            this.layoutBlock(prevPara, 0);
+                            this.viewer.updateClientAreaForBlock(prevPara, false);
+                        } else if (isNullOrUndefined(prevPara)) {
+                            break;
+                        }
+                    }
+                }
         }
         if (element instanceof FootnoteElementBox) {
             if (this.isfootMove) {
@@ -1256,13 +1419,13 @@ export class Layout {
         if(!isNullOrUndefined(element.nextNode) && element.nextNode instanceof ContentControl){
             contentControl = element.nextNode;
         }
-        if ((text === '\v' || text === '\f') && !contentControl) {
+        if ((text === '\v' || text === '\f' || text === String.fromCharCode(14)) && !contentControl) {
             let elementIndex: number = line.children.indexOf(element);
             if (elementIndex > -1) {
                 this.addSplittedLineWidget(line, elementIndex);
             }
         }
-        if (element.line.isLastLine() && isNullOrUndefined(element.nextElement) || text === '\v' || text === '\f') {
+        if (element.line.isLastLine() && isNullOrUndefined(element.nextElement) || text === '\v' || text === '\f' || text === String.fromCharCode(14)) {
             if (this.isXPositionUpdated) {
                 this.isXPositionUpdated = false;
                 return;
@@ -1270,12 +1433,15 @@ export class Layout {
             this.moveToNextLine(element.line);
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
                 this.layoutEmptyLineWidget(paragraph, true, line, true);
-            } else if (text === '\f' && this.viewer instanceof PageLayoutViewer) {
+            } else if ((text === '\f' || text === String.fromCharCode(14)) && this.viewer instanceof PageLayoutViewer) {
+                let isRTLLayout: boolean = this.isRTLLayout;
+                this.isRTLLayout = false;
                 if (isNullOrUndefined(element.nextNode) || element.nextNode instanceof ContentControl) {
                     this.moveToNextPage(this.viewer, element.line, true);
                 } else if (!isNullOrUndefined(element.line.nextLine)) {
                     this.moveToNextPage(this.viewer, element.line.nextLine, false);
                 }
+                this.isRTLLayout = isRTLLayout;
             }
         }
         this.isXPositionUpdated = false;
@@ -1659,6 +1825,7 @@ export class Layout {
                                 } else {
                                     minwidth = elementBox.width;
                                 }
+                               
                                 if (Math.round(rect.width) < minimumWidthRequired || rect.width < minwidth) {
                                     if (isEntityFitInCurrentLine && (textWrappingBounds.x - (ownerPara.x + ownerPara.leftIndent)) > minimumWidthRequired
                                         && (this.viewer.clientArea.right - textWrappingBounds.right) > minimumWidthRequired) {
@@ -2043,7 +2210,7 @@ export class Layout {
                 bodyWidget.page.footnoteWidget = footnote;
             }
             let body: BlockContainer = element.bodyWidget;
-            this.viewer.updateClientArea(footnote.sectionFormat, footnote.page);
+            this.viewer.updateClientArea(footnote, footnote.page);
             this.viewer.clientArea.y = clientArea.y;
             this.viewer.clientActiveArea.y = clientActiveArea.y;
             for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
@@ -2088,6 +2255,25 @@ export class Layout {
             this.viewer.clientActiveArea.height -= height;
             this.footnoteHeight += height;
             this.viewer.clientArea = clientArea;
+        } else if (element.footnoteType === 'Endnote') {
+            for (let i: number = 0; i < element.bodyWidget.childWidgets.length; i++) {
+                let block: BlockWidget = element.bodyWidget.childWidgets[i] as BlockWidget;
+                if (block.isLayouted) {
+                    continue;
+                }
+                block.bodyWidget.page = element.paragraph.bodyWidget.page;
+                this.viewer.updateClientAreaForBlock(block, true);
+                this.layoutBlock(block, 0);
+                this.viewer.updateClientAreaForBlock(block, false);
+                this.endNoteHeight += block.height;
+                block.x = 0;
+                block.y = 0;
+                block.height = 0;
+                block.width = 0;
+                block.isLayouted = false;
+                this.viewer.clientArea = clientArea;
+                this.viewer.clientActiveArea = clientActiveArea;
+            }
         }
         return isFitted;
     }
@@ -2481,7 +2667,6 @@ export class Layout {
         } else {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
-
         if(currentListLevel.numberFormat === '') {
             return;
         }
@@ -2971,7 +3156,7 @@ export class Layout {
             subWidth = getWidthAndSpace[0].subWidth;
             whiteSpaceCount = getWidthAndSpace[0].spaceCount;
             totalSpaceCount = getWidthAndSpace[0].totalSpaceCount;
-            skip2013Justification = line.isEndsWithPageBreak || line.isEndsWithLineBreak || line.paragraph.bidi || this.isRTLLayout;
+            skip2013Justification = line.isEndsWithPageBreak || line.isEndsWithColumnBreak || line.isEndsWithLineBreak || line.paragraph.bidi || this.isRTLLayout;
         }
         if (!skip2013Justification && (getWidthAndSpace && getWidthAndSpace.length === 1) && this.viewer.clientActiveArea.width > 0 &&
             !isParagraphEnd && !this.is2013Justification && textAlignment === 'Justify' && this.documentHelper.compatibilityMode === 'Word2013') {
@@ -3082,7 +3267,7 @@ export class Layout {
         this.checkInbetweenShapeOverlap(line);
         if (line.isLastLine() && line.indexInOwner === 0 && line.paragraph.paragraphFormat.widowControl) {
             let previousSplitWidget: ParagraphWidget = line.paragraph.previousSplitWidget as ParagraphWidget;
-            if (!isNullOrUndefined(previousSplitWidget) && !previousSplitWidget.isEndsWithPageBreak && previousSplitWidget.indexInOwner !== 0) {
+            if (!isNullOrUndefined(previousSplitWidget) && !previousSplitWidget.isEndsWithPageBreak && !previousSplitWidget.isEndsWithColumnBreak && previousSplitWidget.indexInOwner !== 0) {
                 let startLineIndex: number = previousSplitWidget.childWidgets.length - 1;
                 if (previousSplitWidget.childWidgets.length === 2) {
                     startLineIndex = 0;
@@ -3136,7 +3321,6 @@ export class Layout {
                     } else {
                         line.marginTop = updatedFloatPosition;
                     }
-
                 } else if (considerShape && !overlapShape && lineRect.isIntersecting(shapeRect)) {
                     overlapShape = shape;
                     if (line.paragraph.isEmpty() && isFloatingElementPresent) {
@@ -3255,7 +3439,7 @@ export class Layout {
                     if (paragraphWidget.paragraphFormat.keepLinesTogether && !isNullOrUndefined(paragraphWidget.previousWidget)) {
                         index = 0;
                         keepLinesTogether = true;
-                    } else if (index == 1 && !line.previousLine.isEndsWithPageBreak &&paragraphWidget.paragraphFormat.widowControl &&
+                    } else if (index == 1 && !line.previousLine.isEndsWithPageBreak && !line.previousLine.isEndsWithColumnBreak && paragraphWidget.paragraphFormat.widowControl &&
                         !isNullOrUndefined(paragraphWidget.previousWidget)) {
                         index = 0;
                         keepLinesTogether = true;
@@ -3264,7 +3448,7 @@ export class Layout {
                 if (index > 0 || isPageBreak) {
                     paragraphWidget.height = viewer.clientActiveArea.y - paragraphWidget.y;
                 }
-                if (index === 0 && !paragraphWidget.isEndsWithPageBreak) {
+                if (index === 0 && !paragraphWidget.isEndsWithPageBreak && !paragraphWidget.isEndsWithColumnBreak) {
                     let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
                     if (!isNullOrUndefined(blockInfo.node)) {
                         startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
@@ -3285,8 +3469,10 @@ export class Layout {
                 this.layoutfootNote(paragraphWidget.bodyWidget.page.footnoteWidget);
                 // this.viewer.updateClientAreaForBlock(paragraphWidget.bodyWidget.page.footnoteWidget.block, false);
             }
-            let nextBody: BodyWidget = this.moveBlocksToNextPage(paragraphWidget, index === 0);
-            this.viewer.updateClientArea(nextBody.sectionFormat, nextBody.page);
+            let prevPage: Page = paragraphWidget.bodyWidget.page;
+            let nextBody: BodyWidget = this.moveBlocksToNextPage(paragraphWidget, index === 0, index);
+            // if (prevPage !== nextBody.page) {
+            this.viewer.updateClientArea(nextBody, nextBody.page);
             this.viewer.updateClientAreaForBlock(paragraphWidget, true);
             if (index > 0) {
                 if (line.isLastLine() && isPageBreak) {
@@ -3298,19 +3484,7 @@ export class Layout {
                 } else {
                     nextParagraph = new ParagraphWidget();
                 }
-                nextParagraph = this.addParagraphWidget(this.viewer.clientActiveArea, nextParagraph);
-                nextParagraph.index = paragraphWidget.index;
-                let insertIndex: number = 0;
-                for (let i: number = index; i < paragraphWidget.childWidgets.length; i++) {
-                    let lineWidget: LineWidget = paragraphWidget.childWidgets[i] as LineWidget;
-                    lineWidget.paragraph = nextParagraph;
-                    nextParagraph.childWidgets.splice(insertIndex, 0, lineWidget);
-                    lineWidget.paragraph = nextParagraph;
-                    insertIndex++;
-                }
-                nextParagraph.paragraphFormat = paragraphWidget.paragraphFormat;
-                nextParagraph.characterFormat = paragraphWidget.characterFormat;
-                paragraphWidget.childWidgets.splice(index);
+                nextParagraph = this.moveChildsToParagraph(paragraphWidget, index, nextParagraph);
                 nextParagraph.containerWidget = nextBody;
                 const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(nextParagraph);
                 this.moveFootNotesToPage(footWidget, paragraphWidget.bodyWidget, nextBody);
@@ -3402,6 +3576,22 @@ export class Layout {
             this.viewer.clientActiveArea.y = this.endOverlapWidget.y;
         }
     }
+    private moveChildsToParagraph(srcParagraph: ParagraphWidget, childStartIndex: number, nextParagraph: ParagraphWidget): ParagraphWidget {
+        nextParagraph = this.addParagraphWidget(this.viewer.clientActiveArea, nextParagraph);
+        let insertIndex: number = 0;
+        for (let i: number = childStartIndex; i < srcParagraph.childWidgets.length; i++) {
+            let lineWidget: LineWidget = srcParagraph.childWidgets[i] as LineWidget;
+            lineWidget.paragraph = nextParagraph;
+            nextParagraph.childWidgets.splice(insertIndex, 0, lineWidget);
+            lineWidget.paragraph = nextParagraph;
+            insertIndex++;
+        }
+        nextParagraph.paragraphFormat = srcParagraph.paragraphFormat;
+        nextParagraph.characterFormat = srcParagraph.characterFormat;
+        nextParagraph.index = srcParagraph.index;
+        srcParagraph.childWidgets.splice(childStartIndex);
+        return nextParagraph;
+    }
     /**
      * @param {ParagraphWidget} paragarph - the paragraph
      * @param {BodyWidget} body - the bodyWidget
@@ -3427,7 +3617,7 @@ export class Layout {
      * Align block based on keep with next and keep lines together property.
      */
     private alignBlockElement(block: ParagraphWidget | TableRowWidget): BlockInfo {
-        if (block instanceof ParagraphWidget && block.isEndsWithPageBreak) {
+        if (block instanceof ParagraphWidget && (block.isEndsWithPageBreak || block.isEndsWithColumnBreak)) {
             return { node: undefined, position: { index: '' } };
         }
         let startBlock: BlockWidget;
@@ -3437,7 +3627,7 @@ export class Layout {
 
         while (previousBlock) {
             if (previousBlock instanceof ParagraphWidget) {
-                if (!previousBlock.paragraphFormat.keepWithNext || previousBlock.isEndsWithPageBreak) {
+                if (!previousBlock.paragraphFormat.keepWithNext || previousBlock.isEndsWithPageBreak || previousBlock.isEndsWithColumnBreak) {
                     break;
                 }
                 startBlock = previousBlock;
@@ -3712,11 +3902,9 @@ export class Layout {
             // cellWidget.childWidgets.push(paragraphWidget);
             paragraphWidget.containerWidget = cellWidget;
         } else {
-            if (!paragraphWidget.isEndsWithPageBreak || viewer instanceof WebLayoutViewer) {
+            if (!paragraphWidget.isEndsWithPageBreak && !paragraphWidget.isEndsWithColumnBreak || viewer instanceof WebLayoutViewer) {
                 paragraphWidget.height = viewer.clientActiveArea.y - paragraphWidget.y;
             }
-           
-            
             //Adds the paragraph widget to the Header Footer/ Body widget.
             // this.updateWidgetsToBody(paragraphWidget, viewer, paragraphWidget);
             //For canvas no need to render paragraph widget here. In case of div, need to render paragraph here.
@@ -4310,7 +4498,7 @@ export class Layout {
         }
         return undefined;
     }
-
+    
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
         let fPosition: number = 0;
         let isCustomTab: boolean = false;
@@ -5534,6 +5722,28 @@ export class Layout {
                         //Updates table widgets location.
                         viewer.updateClientAreaForBlock(rowToMove.ownerTable, true, tableWidgets);
                         //Update splitted row widget location. if header is repeated update the y position of splitted widget to header height.
+                        if (splittedWidget.bodyWidget.sectionFormat.columns.length > 1) {
+                            let clientArea: Rect = new Rect(this.viewer.clientArea.x, this.viewer.clientArea.y, this.viewer.clientArea.width, this.viewer.clientArea.height);
+                            let clientActiveArea: Rect = new Rect(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.y, this.viewer.clientActiveArea.width, this.viewer.clientActiveArea.height);
+                            splittedWidget.x = this.viewer.clientActiveArea.x;
+                            const topMargin: number = this.getMaxTopCellMargin(splittedWidget);
+                            const bottomMargin: number = this.getMaxBottomCellMargin(splittedWidget);
+                            for (let i: number = 0; i < splittedWidget.childWidgets.length; i++) {
+                                 const cell: TableCellWidget = splittedWidget.childWidgets[i] as TableCellWidget;
+                                 this.addTableCellWidget(cell, this.viewer.clientActiveArea, topMargin + splittedWidget.topBorderWidth, bottomMargin + splittedWidget.bottomBorderWidth);
+                                 this.viewer.updateClientAreaForCell(cell, true);
+                                    for (let j: number = 0; j < cell.childWidgets.length; j++) {
+                                        const block: BlockWidget = cell.childWidgets[j] as BlockWidget;
+                                        viewer.updateClientAreaForBlock(block, true);
+                                        block.containerWidget = cell;
+                                        this.layoutBlock(block, 0);
+                                        viewer.updateClientAreaForBlock(block, false);
+                                    }
+                                    this.viewer.updateClientAreaForCell(cell, false);
+                            }
+                            this.viewer.clientActiveArea = clientActiveArea;
+                            this.viewer.clientArea = clientArea;
+                        }
                         splittedWidget.x = splittedWidget.x;
                         splittedWidget.y = tableWidget.y;
                         // let cellspace: number = viewer instanceof PageLayoutViewer ? cellspacing / 2 : cellspacing;
@@ -5928,8 +6138,9 @@ export class Layout {
     /* eslint-disable-next-line max-len */
     private getSplittedWidget(bottom: number, splitMinimalWidget: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], cellWidget: TableCellWidget, footNoteCollection: FootnoteElementBox[]): TableCellWidget {
         let splittedWidget: TableCellWidget = undefined;
+        let footnoteHeight: number = 0;
         if (cellWidget.y + cellWidget.height > bottom - this.footHeight - cellWidget.margin.bottom) {
-            for (let i: number = cellWidget.index + 1; i < cellWidget.ownerRow.childWidgets.length; i++) {
+            for (let i: number = 0; i < cellWidget.ownerRow.childWidgets.length; i++) {
                 let tableCellWidget: TableCellWidget = cellWidget.ownerRow.childWidgets[i] as TableCellWidget;
                 if (tableCellWidget.y + tableCellWidget.height < bottom - this.footHeight - tableCellWidget.margin.bottom) {
                     for (let j: number = 0; j < tableCellWidget.childWidgets.length; j++) {
@@ -5939,6 +6150,7 @@ export class Layout {
                                 let lineWidget: LineWidget = paragraphWidget.childWidgets[k] as LineWidget;
                                 let height: number = this.getFootNoteHeightInLine(lineWidget);
                                 this.existFootnoteHeight += height;
+                                footnoteHeight += height;
                             }
                         }
                     }
@@ -6002,6 +6214,7 @@ export class Layout {
                 }
             }
         }
+        this.existFootnoteHeight -= footnoteHeight;
         if (isNullOrUndefined(splittedWidget) && splitMinimalWidget && this.isRelayoutneed) {
             //Creates new widget, to hold the splitted contents.
             splittedWidget = this.createCellWidget(cellWidget);
@@ -6522,7 +6735,7 @@ export class Layout {
             this.documentHelper.blockToShift = undefined;
         }
         let updateNextBlockList: boolean = true;
-        while (nextBlock instanceof BlockWidget && nextBlock.bodyWidget.sectionIndex === sectionIndex) {
+        while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.sectionIndex === sectionIndex || nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak')) {
             if (!isNullOrUndefined(isFootnoteReLayout) && isFootnoteReLayout && !nextBlock.isLayouted && this.isInitialLoad) {
                 break;
             }
@@ -6562,7 +6775,7 @@ export class Layout {
                 //let paragraph: ParagraphWidget;
                 if (currentWidget.containerWidget !== block.containerWidget) {
                     if (!(currentWidget instanceof ParagraphWidget) ||
-                        (currentWidget instanceof ParagraphWidget) && !currentWidget.isEndsWithPageBreak) {
+                        (currentWidget instanceof ParagraphWidget) && !currentWidget.isEndsWithPageBreak && !currentWidget.isEndsWithColumnBreak && (currentWidget.containerWidget as BodyWidget).page !== (block.containerWidget as BodyWidget).page) {
                         /* eslint-disable-next-line max-len */
                         this.updateContainerWidget(block as Widget, currentWidget.containerWidget as BodyWidget, currentWidget.indexInOwner + 1, false);
                     }
@@ -6619,7 +6832,7 @@ export class Layout {
 
     /* eslint-disable-next-line max-len */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
-        if (!this.allowLayout) {
+        if(this.isReplaceAll) {
             return;
         }
         this.isRelayout = true;
@@ -6693,7 +6906,7 @@ export class Layout {
             } else if (bodyWidget instanceof TextFrame) {
                 this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true);
             } else {
-                this.viewer.updateClientArea(bodyWidget.sectionFormat, bodyWidget.page);
+                this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
             }
             /* eslint-disable-next-line max-len */
             const area: Rect = new Rect(this.viewer.clientArea.x, this.viewer.clientArea.y, this.viewer.clientArea.width, this.viewer.clientArea.height);
@@ -6748,7 +6961,7 @@ export class Layout {
         } else if (bodyWidget instanceof TextFrame) {
             this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true);
         } else {
-            this.viewer.updateClientArea(bodyWidget.sectionFormat, bodyWidget.page);
+            this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
         }
         //Clear Hieght for all the content
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
@@ -6881,6 +7094,10 @@ export class Layout {
             && this.documentHelper.owner.isLayoutEnabled) {
             if (bodyWidget instanceof BlockContainer || bodyWidget instanceof TextFrame) {
                 let curretBlock: BlockWidget = this.checkAndGetBlock(bodyWidget, blockIndex);
+                if (bodyWidget instanceof BodyWidget && isNullOrUndefined(curretBlock) && !isNullOrUndefined(bodyWidget.nextRenderedWidget) && (bodyWidget.nextRenderedWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak' ) {
+                    curretBlock = bodyWidget.nextRenderedWidget.firstChild as BlockWidget;
+                    bodyWidget = bodyWidget.nextRenderedWidget as BodyWidget;
+                }
                 if (isNullOrUndefined(curretBlock)) {
                     return;
                 }
@@ -6895,7 +7112,7 @@ export class Layout {
                     this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape as ShapeElementBox, true);
 
                 } else if (!isNullOrUndefined(bodyWidget.containerWidget) && bodyWidget.containerWidget instanceof FootNoteWidget) {
-                    this.viewer.updateClientArea((bodyWidget as BodyWidget).sectionFormat, bodyWidget.page, true);
+                    this.viewer.updateClientArea(bodyWidget as BodyWidget, (bodyWidget as BodyWidget).page, true);
                     if (bodyWidget.containerWidget.footNoteType === 'Footnote') {
                         this.isRelayoutFootnote = true;
                         this.viewer.clientArea.height = Number.POSITIVE_INFINITY;
@@ -6909,14 +7126,14 @@ export class Layout {
                     }
                     // curretBlock.containerWidget.height -= curretBlock.height;
                 } else {
-                    if (!isNullOrUndefined(bodyWidget.page.footnoteWidget)) {
-                        if (bodyWidget.page.footnoteWidget.footNoteType === 'Footnote') {
-                            this.viewer.updateClientArea((bodyWidget as BodyWidget).sectionFormat, bodyWidget.page, true);
+                    if (!isNullOrUndefined((bodyWidget as BodyWidget).page.footnoteWidget)) {
+                        if ((bodyWidget as BodyWidget).page.footnoteWidget.footNoteType === 'Footnote') {
+                            this.viewer.updateClientArea(bodyWidget as BodyWidget, (bodyWidget as BodyWidget).page, true);
                         } else {
-                            this.viewer.updateClientArea((bodyWidget as BodyWidget).sectionFormat, bodyWidget.page, true);
+                            this.viewer.updateClientArea(bodyWidget as BodyWidget, (bodyWidget as BodyWidget).page, true);
                         }
                     } else {
-                        this.viewer.updateClientArea((bodyWidget as BodyWidget).sectionFormat, bodyWidget.page, true);
+                        this.viewer.updateClientArea(bodyWidget as BodyWidget, (bodyWidget as BodyWidget).page, true);
                     }
                     // if (bodyWidget.page.footnoteWidget) {
                     //     this.viewer.clientActiveArea.height -= bodyWidget.page.footnoteWidget.height;
@@ -6924,20 +7141,33 @@ export class Layout {
                     // }
                 }
 
-                if (blockIndex > 0) {
-                    const prevWidget: BodyWidget = curretBlock.getSplitWidgets()[0].previousRenderedWidget as BodyWidget;
-                    if (!(prevWidget instanceof ParagraphWidget) ||
-                        (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak) {
-                        this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                if (blockIndex > 0 || (curretBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak' && curretBlock.bodyWidget.index !== 0 && curretBlock === bodyWidget.firstChild)) {
+                    const prevWidget: Widget = curretBlock.getSplitWidgets()[0].previousRenderedWidget as Widget;
+                    if (!(isNullOrUndefined(prevWidget) || prevWidget instanceof ParagraphWidget) ||
+                        (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak) {
                         if (isNullOrUndefined(isSkipShifting) && curretBlock.containerWidget !== prevWidget.containerWidget) {
                             /* eslint-disable-next-line max-len */
                             const prevBodyWidget: BodyWidget = curretBlock.containerWidget as BodyWidget;
                             const newBodyWidget: BodyWidget = prevWidget.containerWidget as BodyWidget;
                             const footWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(curretBlock);
-                            this.updateContainerWidget(curretBlock as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
                             this.moveFootNotesToPage(footWidgets, prevBodyWidget, newBodyWidget);
+                            if (curretBlock.bodyWidget.sectionFormat.breakCode !== 'NoBreak') { 
+                                this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                                this.updateContainerWidget(curretBlock as Widget, newBodyWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
+                            } else {
+                                this.viewer.updateClientArea(curretBlock.bodyWidget, curretBlock.bodyWidget.page, true);
+                                this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                            }
+                        } else {
+                            if (prevWidget instanceof ParagraphWidget && prevWidget.height <= 0) {
+                                let prevPara: ParagraphWidget = prevWidget as ParagraphWidget;
+                                this.viewer.updateClientAreaForBlock(prevPara, true);
+                                this.layoutParagraph(prevPara, 0);
+                                this.viewer.updateClientArea(prevPara.bodyWidget, prevPara.bodyWidget.page, true);
+                            }
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
                         }
-                    } else if (prevWidget instanceof ParagraphWidget && prevWidget.isEndsWithPageBreak &&
+                    } else if (prevWidget instanceof ParagraphWidget && (prevWidget.isEndsWithPageBreak || prevWidget.isEndsWithColumnBreak) &&
                         prevWidget.containerWidget === curretBlock.containerWidget) {
                         this.moveBlocksToNextPage(prevWidget, false);
                     }
@@ -6983,21 +7213,39 @@ export class Layout {
         if (containerWidget instanceof TextFrame) {
             return containerWidget.childWidgets[blockIndex] as BlockWidget;
         } else {
-            const sectionIndex: number = containerWidget.index;
-            while (containerWidget && containerWidget.index === sectionIndex) {
-                if (containerWidget.childWidgets.length > 0 && (containerWidget.firstChild as Widget).index <= blockIndex &&
-                    (containerWidget.lastChild as Widget).index >= blockIndex) {
-                    for (let i: number = 0; i < containerWidget.childWidgets.length; i++) {
-                        const block: BlockWidget = containerWidget.childWidgets[i] as BlockWidget;
-                        if (block.index === blockIndex) {
-                            return block;
+            const sectionIndex: number = containerWidget.indexInOwner;
+            if ((containerWidget as BodyWidget).page.bodyWidgets.length <= 1) {
+                while (containerWidget && containerWidget.indexInOwner === sectionIndex) {
+                    if (containerWidget.childWidgets.length > 0 && (containerWidget.firstChild as Widget).index <= blockIndex &&
+                        (containerWidget.lastChild as Widget).index >= blockIndex) {
+                        for (let i: number = 0; i < containerWidget.childWidgets.length; i++) {
+                            const block: BlockWidget = containerWidget.childWidgets[i] as BlockWidget;
+                            if (block.index === blockIndex) {
+                                return block;
+                            }
                         }
                     }
+                    if (containerWidget instanceof BodyWidget) {
+                        containerWidget = containerWidget.nextRenderedWidget as BlockContainer;
+                    } else {
+                        break;
+                    }
                 }
-                if (containerWidget instanceof BodyWidget) {
-                    containerWidget = containerWidget.nextRenderedWidget as BlockContainer;
-                } else {
-                    break;
+            } else {
+                while (containerWidget) {
+                    if (containerWidget.childWidgets.length > 0) {
+                        for (let i: number = 0; i < containerWidget.childWidgets.length; i++) {
+                            const block: BlockWidget = containerWidget.childWidgets[i] as BlockWidget;
+                            if (block.index === blockIndex) {
+                                return block;
+                            }
+                        }
+                    }
+                    if (containerWidget instanceof BodyWidget) {
+                        containerWidget = containerWidget.nextRenderedWidget as BlockContainer;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
@@ -7088,11 +7336,11 @@ export class Layout {
                         this.viewer.clientActiveArea = clientActiveAreaForTableWrap.clone();
                         this.viewer.clientArea = clientAreaForTableWrap.clone();
                     } else {
-                        this.viewer.updateClientArea(table.bodyWidget.sectionFormat, table.bodyWidget.page);
+                        this.viewer.updateClientArea(table.bodyWidget, table.bodyWidget.page);
                     }
                 } else {
                     this.documentHelper.tableLefts.pop();
-                    this.viewer.updateClientArea(table.bodyWidget.sectionFormat, table.bodyWidget.page);
+                    this.viewer.updateClientArea(table.bodyWidget, table.bodyWidget.page);
                     for (let z: number = 0; z < tables.length; z++) {
                         let bodyWidget: BlockContainer = tables[z].bodyWidget;
                         if (!isNullOrUndefined(bodyWidget) && bodyWidget.floatingElements.indexOf(tables[z]) === -1) {
@@ -7547,6 +7795,7 @@ export class Layout {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
             this.documentHelper.blockToShift = undefined;
             this.checkAndShiftEndnote();
+            this.documentHelper.removeEmptyPages();
             return;
         }
         let block: BlockWidget = this.documentHelper.blockToShift;
@@ -7557,7 +7806,7 @@ export class Layout {
         // Todo: For page layout and section break continuous, need to handle the same.
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
-        while (nextBlock instanceof BlockWidget && nextBlock.bodyWidget.index === sectionIndex) {
+        while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak')) {
             let currentWidget: Widget = undefined;
             let blocks: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
             currentWidget = blocks[blocks.length - 1];
@@ -7714,15 +7963,16 @@ export class Layout {
             const widget: ParagraphWidget = paragraph.getSplitWidgets()[i] as ParagraphWidget;
             if (!isNullOrUndefined(prevWidget)) {
                 const isPageBreak: boolean = prevWidget.lastChild ? (prevWidget.lastChild as LineWidget).isEndsWithPageBreak : false;
-                this.shiftToPreviousWidget(widget, viewer, prevWidget, isPageBreak);
-                if ((isNullOrUndefined(widget.childWidgets) || widget.childWidgets.length === 0) && !isPageBreak) {
+                const isColumnBreak: boolean = prevWidget.lastChild ? (prevWidget.lastChild as LineWidget).isEndsWithColumnBreak : false;
+                this.shiftToPreviousWidget(widget, viewer, prevWidget, isPageBreak, isColumnBreak);
+                if ((isNullOrUndefined(widget.childWidgets) || widget.childWidgets.length === 0) && !isPageBreak && !isColumnBreak) {
                     i--;
                     continue;
                 }
                 prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
                     prevBodyWidget = widget.containerWidget as BodyWidget;
-                    if (isPageBreak) {
+                    if (isPageBreak || isColumnBreak) {
                         viewer.updateClientAreaByWidget(widget);
                     }
                 }
@@ -7740,6 +7990,9 @@ export class Layout {
                 }
                 //Check whether this widget is moved to previous container widget.
                 prevWidget = widget;
+                viewer.updateClientAreaForBlock(widget, true);
+                widget.x = viewer.clientActiveArea.x;
+                viewer.updateClientAreaForBlock(widget, false);
                 widget.y = viewer.clientActiveArea.y;
                 if (widget.floatingElements.length > 0) {
                     for (let k: number = 0; k < widget.floatingElements.length; k++) {
@@ -7768,7 +8021,7 @@ export class Layout {
                 //Moves the paragraph widget to previous body widget.
                 if (!isNullOrUndefined(prevBodyWidget) && prevBodyWidget !== widget.containerWidget) {
                     index++;
-                    if (!(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak) {
+                    if (!(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak && !(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak) {
                         this.updateContainerWidget(widget, prevBodyWidget, index, true, footWidget);
                     }
                     if (footWidget.length > 0) {
@@ -7782,19 +8035,24 @@ export class Layout {
                         }
                     }
                 }
-                if (widget.isEndsWithPageBreak && this.viewer instanceof PageLayoutViewer) {
+                if ((widget.isEndsWithPageBreak || widget.isEndsWithColumnBreak) && this.viewer instanceof PageLayoutViewer) {
                     let nextBodyWidget: BodyWidget = this.createOrGetNextBodyWidget(prevBodyWidget, this.viewer);
                     nextBodyWidget = this.moveBlocksToNextPage(widget, true);
-                    viewer.updateClientArea(nextBodyWidget.sectionFormat, nextBodyWidget.page);
+                    viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
                 }
             } else {
                 const previousBlock: BlockWidget = widget.previousRenderedWidget as BlockWidget;
                 let isPageBreak: boolean = false;
+                let isColumnBreak: boolean = false;
                 if (previousBlock instanceof ParagraphWidget && previousBlock.isEndsWithPageBreak &&
                     this.viewer instanceof PageLayoutViewer) {
                     isPageBreak = true;
                 }
-                const isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget);
+                if (previousBlock instanceof ParagraphWidget && previousBlock.isEndsWithColumnBreak &&
+                    this.viewer instanceof PageLayoutViewer) {
+                    isColumnBreak = true;
+                }
+                const isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget, isColumnBreak);
                 prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
                     prevBodyWidget = widget.containerWidget as BodyWidget;
@@ -8052,11 +8310,12 @@ export class Layout {
         const prevBodyWidget: BodyWidget = prevObj.bodyWidget;
         const index: number = prevObj.index;
         const isPageBreak: boolean = ((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget).isEndsWithPageBreak;
+        const isColumnBreak: boolean = ((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget).isEndsWithColumnBreak;
         if (prevBodyWidget !== block.containerWidget) {
-            if (!isPageBreak) {
+            if (!isPageBreak && !isColumnBreak) {
                 this.updateContainerWidget(block, prevBodyWidget as BodyWidget, index + 1, true);
             } else {
-                viewer.updateClientArea(block.bodyWidget.sectionFormat, block.bodyWidget.page);
+                viewer.updateClientArea(block.bodyWidget, block.bodyWidget.page);
             }
         }
         if (block.isInHeaderFooter || this.viewer instanceof WebLayoutViewer) {
@@ -8101,7 +8360,7 @@ export class Layout {
         }
     }
     /* eslint-disable-next-line max-len */
-    private splitWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousBodyWidget: BodyWidget, index: number, isPageBreak: boolean, footWidget?: BodyWidget[]): boolean {
+    private splitWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousBodyWidget: BodyWidget, index: number, isPageBreak: boolean, footWidget?: BodyWidget[], isColumnBreak?: boolean): boolean {
         const firstLine: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
         const keepLinesTogether: boolean = (paragraphWidget.paragraphFormat.keepLinesTogether && (this.viewer.clientActiveArea.y !== this.viewer.clientArea.y));
         let maxElementHeight: number = keepLinesTogether ? paragraphWidget.height : this.getMaxElementHeight(firstLine);
@@ -8119,7 +8378,7 @@ export class Layout {
             }
             //maxElementHeight += (paragraphWidget.bodyWidget.page.footnoteWidget.childWidgets[0] as ParagraphWidget).height;
         }
-        if (viewer.clientActiveArea.height >= maxElementHeight && !isPageBreak) {
+        if (viewer.clientActiveArea.height >= maxElementHeight && !isPageBreak && !isColumnBreak) {
             let splittedWidget: ParagraphWidget = undefined;
             const widgetIndex: number = paragraphView.indexOf(paragraphWidget);
             if (widgetIndex < (paragraphView.length - 1)) {
@@ -8136,11 +8395,7 @@ export class Layout {
                 paragraphView.push(splittedWidget);
             }
             if (previousBodyWidget !== paragraphWidget.containerWidget) {
-                const fromBodyWidget: BodyWidget = paragraphWidget.containerWidget as BodyWidget;
-                if (paragraphWidget.childWidgets.indexOf(this.documentHelper.selection.start.currentWidget) !== -1 || paragraphWidget.childWidgets.indexOf(this.documentHelper.selection.end.currentWidget) !== -1) {
-                    this.updateContainerWidget(paragraphWidget, previousBodyWidget, index, true);
-                    this.moveFootNotesToPage(footWidget, fromBodyWidget, previousBodyWidget);
-                }
+                this.updateContainerWidget(paragraphWidget, previousBodyWidget, index, true);
             }
             for (let i: number = paragraphWidget.childWidgets.length - 1; i > 0; i--) {
                 const line: LineWidget = paragraphWidget.childWidgets[i] as LineWidget;
@@ -8150,73 +8405,77 @@ export class Layout {
                     }
                     break;
                 } else {
+                    const line: LineWidget = paragraphWidget.childWidgets[i] as LineWidget;
                     //Moves the line widget to next widget.
                     this.updateParagraphWidgetInternal(line, splittedWidget, 0);
                 }
             }
             if (isNullOrUndefined(splittedWidget.containerWidget) && splittedWidget.childWidgets.length > 0) {
                 const y: number = viewer.clientActiveArea.y;
-                /* eslint-disable-next-line max-len */
+                // eslint-disable-next-line max-len
                 const clientArea: Rect = new Rect(viewer.clientArea.x, viewer.clientArea.y, viewer.clientArea.width, viewer.clientArea.height);
-                /* eslint-disable-next-line max-len */
+                // eslint-disable-next-line max-len
                 const activeArea: Rect = new Rect(viewer.clientActiveArea.x, viewer.clientActiveArea.y, viewer.clientActiveArea.width, viewer.clientActiveArea.height);
+                let prevPage: Page = paragraphWidget.bodyWidget.page;
                 //Checks whether next node exists, else adds new page.
-                nextBodyWidget = this.moveBlocksToNextPage(paragraphWidget, false);
-                // nextBodyWidget = this.createOrGetNextBodyWidget(previousBodyWidget, viewer);
-                nextBodyWidget.childWidgets.splice(0, 0, splittedWidget);
-                nextBodyWidget.height += splittedWidget.height;
+                nextBodyWidget = this.moveBlocksToNextPage(paragraphWidget,false,-1);
                 splittedWidget.containerWidget = nextBodyWidget;
-                if (nextBodyWidget != previousBodyWidget && previousBodyWidget.page.footnoteWidget) {
-                    footWidget = this.getFootNoteWidgetsOf(splittedWidget, true);
-                    this.moveFootNotesToPage(footWidget, previousBodyWidget, nextBodyWidget);
+                nextBodyWidget.childWidgets.splice(0, 0, splittedWidget);
+                if (prevPage !== nextBodyWidget.page) {
+                    nextBodyWidget.height += splittedWidget.height;
+                    if (nextBodyWidget != previousBodyWidget) {
+                        this.moveFootNotesToPage(footWidget, previousBodyWidget, nextBodyWidget);
+                    }
+                    if (nextBodyWidget.childWidgets.length === 1 && nextBodyWidget.firstChild instanceof ParagraphWidget &&
+                        nextBodyWidget.firstChild.equals(paragraphWidget)) {
+                        //paragraphWidget.x = paragraphWidget.x;
+                        paragraphWidget.y = y;
+                        return true;
+                    } else {
+                        //Resetting Client area
+                        viewer.clientArea = clientArea;
+                        viewer.clientActiveArea = activeArea;
+                    }
                 }
-                if (nextBodyWidget.childWidgets.length === 1 && nextBodyWidget.firstChild instanceof ParagraphWidget &&
-                    nextBodyWidget.firstChild.equals(paragraphWidget)) {
-                    //paragraphWidget.x = paragraphWidget.x;
+                else {
+                    if (paragraphWidget.x !== paragraphWidget.containerWidget.x) {
+                        paragraphWidget.x = paragraphWidget.containerWidget.x;
+                    }
                     paragraphWidget.y = y;
+                    viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
+                    splittedWidget = this.addParagraphWidget(this.viewer.clientActiveArea, splittedWidget);
                     return true;
-                } else {
-                    //Resetting Client area
-                    viewer.clientArea = clientArea;
-                    viewer.clientActiveArea = activeArea;
                 }
             }
         } else {
             nextBodyWidget = this.createOrGetNextBodyWidget(previousBodyWidget, this.viewer);
             if (paragraphWidget.containerWidget !== nextBodyWidget) {
-                let startBlock: BlockWidget = paragraphWidget;
-                let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
-                if (!isNullOrUndefined(blockInfo.node)) {
-                    startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : this.splitParagraph(blockInfo.node as ParagraphWidget, parseInt(blockInfo.position.index, 10)) as BlockWidget;
-                    paragraphWidget = startBlock as ParagraphWidget;
-                    this.keepWithNext = true;
-                }
+                let prevPage: Page = paragraphWidget.bodyWidget.page;
                 nextBodyWidget = this.moveBlocksToNextPage(paragraphWidget, true);
-                this.updateContainerWidget(paragraphWidget, nextBodyWidget, 0, true);
-                //footWidget = this.getFootNoteWidgetsOf(paragraphWidget);
-                if (!isNullOrUndefined(previousBodyWidget.page.footnoteWidget)) {
+                if (previousBodyWidget !== nextBodyWidget) {
+                    viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
+                    this.updateContainerWidget(paragraphWidget, nextBodyWidget, 0, true);
+                    this.addParagraphWidget(this.viewer.clientActiveArea, paragraphWidget);
                     this.moveFootNotesToPage(footWidget, previousBodyWidget, nextBodyWidget);
                 }
-            } else if (!isNullOrUndefined(previousBodyWidget) && isNullOrUndefined(paragraphWidget.previousWidget)) {
-                this.updateContainerWidget(paragraphWidget, previousBodyWidget, previousBodyWidget.childWidgets.length, false);
-                let startBlock: BlockWidget = paragraphWidget;
-                let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
-                if (!isNullOrUndefined(blockInfo.node)) {
-                    startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : this.splitParagraph(blockInfo.node as ParagraphWidget, parseInt(blockInfo.position.index, 10)) as BlockWidget; this.keepWithNext = true;
-                    nextBodyWidget = this.moveBlocksToNextPage(startBlock.previousWidget as BlockWidget, true);
-                    this.updateClientPositionForBlock(paragraphWidget.previousWidget as BlockWidget, paragraphWidget);
-                    // TODO: Handle moving footnote widget
-                } else {
-                    this.updateContainerWidget(paragraphWidget, nextBodyWidget, 0, true);
+                if (previousBodyWidget.page === nextBodyWidget.page) {
+                    if (previousBodyWidget === nextBodyWidget) {
+                        viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
+                        return false;
+                    }
+                    return true;
                 }
             }
         }
         if (previousBodyWidget === paragraphWidget.containerWidget) {
+            if (paragraphWidget.x !== paragraphWidget.containerWidget.x) {
+                paragraphWidget.x = paragraphWidget.containerWidget.x;
+            }
             paragraphWidget.y = viewer.clientActiveArea.y;
             viewer.cutFromTop(viewer.clientActiveArea.y + paragraphWidget.height);
         } else {
             //Updates client area based on next body widget.
-            viewer.updateClientArea(nextBodyWidget.sectionFormat, nextBodyWidget.page);
+            viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
         }
         return false;
     }
@@ -8250,7 +8509,7 @@ export class Layout {
      * @param toBodyWidget
      */
     public moveFootNotesToPage(footnoteWidgets: BodyWidget[], fromBodyWidget: BodyWidget, toBodyWidget: BodyWidget): void {
-        if (footnoteWidgets.length > 0 && fromBodyWidget.page.footnoteWidget) {
+        if (footnoteWidgets.length > 0 && fromBodyWidget.page.footnoteWidget && fromBodyWidget.page !== toBodyWidget.page) {
             let footNoteIndex: number = -1;
             let footNoteWidget: BodyWidget;
             let insertIndex: number = 0;
@@ -8338,6 +8597,11 @@ export class Layout {
         return height;
     }
     private createOrGetNextBodyWidget(bodyWidget: BodyWidget, viewer: LayoutViewer): BodyWidget {
+        let nextColumn: WColumnFormat = this.viewer.columnLayoutArea.getNextColumnByBodyWidget(bodyWidget);
+        if (!isNullOrUndefined(nextColumn)) {
+            let nextColumnBody: BodyWidget = this.createOrGetNextColumnBody(bodyWidget);
+            return nextColumnBody;
+        }
         let nextBodyWidget: BodyWidget = undefined;
         let pageIndex: number = 0;
         pageIndex = this.documentHelper.pages.indexOf(bodyWidget.page);
@@ -8392,7 +8656,7 @@ export class Layout {
         return false;
     }
     /* eslint-disable-next-line max-len */
-    private shiftToPreviousWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousWidget: ParagraphWidget, isPageBreak: boolean): void {
+    private shiftToPreviousWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousWidget: ParagraphWidget, isPageBreak: boolean, isColumnBreak: boolean): void {
         const fromBodyWidget: BodyWidget = paragraphWidget.containerWidget as BodyWidget;
         let toBodyWidget: BodyWidget = previousWidget.containerWidget as BodyWidget;
         let footNotes: FootnoteElementBox[] = [];
@@ -8417,7 +8681,7 @@ export class Layout {
                 }
                 maxElementHeight += height;
             }
-            if (viewer.clientActiveArea.height >= maxElementHeight && !isPageBreak) {
+            if (viewer.clientActiveArea.height >= maxElementHeight && !isPageBreak && !isColumnBreak) {
                 if (footNotes.length > 0 && this.isLineInFootNote(line, footNotes)) {
                     footNoteWidgets = footNoteWidgets.concat(this.getFootNoteWidgetsBy(line.paragraph, footNotes));
                 }
@@ -8443,7 +8707,7 @@ export class Layout {
                     this.updateContainerWidget(paragraphWidget, newBodyWidget, 0, true);
                 }
                 //Updates client area based on next page.
-                viewer.updateClientArea(fromBodyWidget.sectionFormat, fromBodyWidget.page);
+                viewer.updateClientArea(fromBodyWidget, fromBodyWidget.page);
                 break;
             }
         }
@@ -8532,30 +8796,44 @@ export class Layout {
         return { bodyWidget: prevBodyWidget, index: index };
     }
 
-    public moveBlocksToNextPage(block: BlockWidget, moveFootnoteFromLastBlock: boolean): BodyWidget {
+    public moveBlocksToNextPage(block: BlockWidget, moveFootnoteFromLastBlock?: boolean, childStartIndex?: number, sectionBreakContinuous?: boolean): BodyWidget {
         const body: BodyWidget = block.bodyWidget as BodyWidget;
-        const page: Page = body.page;
-        const pageIndex: number = page.index + 1;
+        let nextColumn: WColumnFormat = this.viewer.columnLayoutArea.getNextColumnByBodyWidget(block.bodyWidget);
         let nextPage: Page = undefined;
         let nextBody: BodyWidget = undefined;
-        let insertPage: boolean = false;
-        if (this.documentHelper.pages.length > pageIndex) {
-            nextPage = this.documentHelper.pages[pageIndex];
-            if (nextPage.bodyWidgets.length === 0 || !body.equals(nextPage.bodyWidgets[0])) {
-                nextPage = undefined;
-                insertPage = true;
-            } else {
-                nextBody = nextPage.bodyWidgets[0];
-                this.viewer.updateClientArea(nextBody.sectionFormat, nextBody.page);
-            }
+        if (!isNullOrUndefined(nextColumn)) {
+            nextBody = this.moveToNextColumnByBodyWidget(block, childStartIndex);
+            this.viewer.updateClientArea(nextBody, nextBody.page);
         }
-        if (isNullOrUndefined(nextPage)) {
-            nextBody = this.createSplitBody(body);
-            nextPage = this.viewer.createNewPage(nextBody, pageIndex);
-            if (insertPage) {
-                this.documentHelper.insertPage(pageIndex, nextPage);
+        if (isNullOrUndefined(nextBody)) {
+            let insertPage: boolean = false;
+            const page: Page = body.page;
+            const pageIndex: number = page.index + 1;
+            if (this.documentHelper.pages.length > pageIndex) {
+                nextPage = this.documentHelper.pages[pageIndex];
+                if (nextPage.bodyWidgets.length === 0 || !body.equals(nextPage.bodyWidgets[0])) {
+                    nextPage = undefined;
+                    insertPage = true;
+                } else {
+                    nextBody = nextPage.bodyWidgets[0];
+                    this.viewer.updateClientArea(nextBody, nextBody.page);
+                }
             }
-            this.clearLineMeasures();
+            if (isNullOrUndefined(nextPage)) {
+                nextBody = this.createSplitBody(body);
+                if ((((this.documentHelper.owner.editorHistory &&
+                    this.documentHelper.owner.editorHistory.isRedoing && this.documentHelper.owner.editorHistory.currentBaseHistoryInfo &&
+                    this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.action === 'SectionBreakContinuous')) && block.bodyWidget.sectionFormat.breakCode === 'NoBreak')
+                    || sectionBreakContinuous) {
+                    //  this.viewer.clientActiveArea.y = block.y + block.height;
+                } else {
+                    nextPage = this.viewer.createNewPage(nextBody, pageIndex);
+                }
+                if (insertPage) {
+                    this.documentHelper.insertPage(pageIndex, nextPage);
+                }
+                this.clearLineMeasures();
+            }
         }
         // eslint-disable  no-constant-condition
         do {
@@ -8594,9 +8872,30 @@ export class Layout {
     }
     private createSplitBody(body: BodyWidget): BodyWidget {
         const newBody: BodyWidget = this.addBodyWidget(this.viewer.clientActiveArea);
-        newBody.sectionFormat = body.sectionFormat;
+        if (this.isInitialLoad || body.sectionFormat.breakCode !== 'NoBreak') {
+            newBody.sectionFormat = body.sectionFormat;
+        } else {
+            newBody.sectionFormat = new WSectionFormat(newBody);
+            this.viewer.owner.parser.parseSectionFormat(body.sectionFormat, newBody.sectionFormat);
+        }
         newBody.index = body.index;
         return newBody;
+    }
+    private createOrGetNextColumnBody(fromBody: BodyWidget): BodyWidget {
+        let nextColumnBody: BodyWidget = fromBody.page.bodyWidgets[fromBody.page.bodyWidgets.indexOf(fromBody) + 1];
+        if (isNullOrUndefined(nextColumnBody)) {
+            nextColumnBody = new BodyWidget();
+            nextColumnBody.sectionFormat = fromBody.sectionFormat;
+            nextColumnBody.index = fromBody.index;
+            nextColumnBody.page = fromBody.page;
+            fromBody.page.bodyWidgets.push(nextColumnBody);
+        }
+        return nextColumnBody;
+    }
+    private moveToNextColumnByBodyWidget(block: BlockWidget, childStartIndex: number): BodyWidget {
+        let fromBody: BodyWidget = block.containerWidget as BodyWidget;
+        let nextColumnBody: BodyWidget = this.createOrGetNextColumnBody(fromBody);
+        return nextColumnBody;
     }
     //endregion
 
@@ -8618,9 +8917,11 @@ export class Layout {
         if (isNullOrUndefined(lineToLayout)) {
             lineToLayout = lineWidget;
         }
-        lineToLayout.paragraph.splitTextRangeByScriptType(lineToLayout.indexInOwner);
-        lineToLayout.paragraph.splitLtrAndRtlText(lineToLayout.indexInOwner);
-        lineToLayout.paragraph.combineconsecutiveRTL(lineToLayout.indexInOwner);
+        if (this.allowLayout) {
+            lineToLayout.paragraph.splitTextRangeByScriptType(lineToLayout.indexInOwner);
+            lineToLayout.paragraph.splitLtrAndRtlText(lineToLayout.indexInOwner);
+            lineToLayout.paragraph.combineconsecutiveRTL(lineToLayout.indexInOwner);
+        }
         let bodyWidget: BodyWidget = paragraph.containerWidget as BlockContainer;
         bodyWidget.height -= paragraph.height;
         if ((this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) && !(bodyWidget instanceof TextFrame)) {
@@ -8636,7 +8937,7 @@ export class Layout {
             //     // curretBlock.containerWidget.height -= curretBlock.height;
             //     this.viewer.clientActiveArea.y = paragraph.containerWidget.y;
         } else {
-            this.viewer.updateClientArea(bodyWidget.sectionFormat, bodyWidget.page, true);
+            this.viewer.updateClientArea(bodyWidget, bodyWidget.page, true);
         }
         this.viewer.updateClientAreaForBlock(paragraph, true);
         if (!isNullOrUndefined(paragraph.containerWidget) && !isNullOrUndefined(paragraph.containerWidget.containerWidget) && paragraph.containerWidget.containerWidget instanceof FootNoteWidget) {
@@ -8665,8 +8966,8 @@ export class Layout {
         }
         this.layoutNextItemsBlock(paragraph, this.viewer);
         const prevWidget: BodyWidget = paragraph.getSplitWidgets()[0].previousRenderedWidget as BodyWidget;
-        if (!isNullOrUndefined(prevWidget) && !paragraph.isEndsWithPageBreak && (!(prevWidget instanceof ParagraphWidget) ||
-            (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak)) {
+        if (!isNullOrUndefined(prevWidget) && !paragraph.isEndsWithPageBreak && !paragraph.isEndsWithColumnBreak && (!(prevWidget instanceof ParagraphWidget) ||
+            (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak)) {
             this.viewer.cutFromTop(paragraph.y + paragraph.height);
             if (paragraph.containerWidget !== prevWidget.containerWidget && !isNullOrUndefined(prevWidget.containerWidget)) {
                 /* eslint-disable-next-line max-len */
@@ -9656,7 +9957,7 @@ export class Layout {
                                     if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'Behind')) {
                                         if (!(floatElement.paragraph.isInsideTable) && (autoShape === 'StraightConnector' || autoShape === 'Rectangle')) {
                                             isXPositionUpated = true;
-                                            indentX = horzPosition + HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+                                            indentX = horzPosition + paragraph.bodyWidget.x;
                                         } else {
                                             indentX = paragraph.x + horzPosition;
                                         }

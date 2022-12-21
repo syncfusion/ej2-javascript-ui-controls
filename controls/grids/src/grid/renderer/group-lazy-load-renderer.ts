@@ -1,6 +1,6 @@
 import { extend, remove, isNullOrUndefined, setStyleAttribute, removeClass, addClass } from '@syncfusion/ej2-base';
 import { Query, Predicate } from '@syncfusion/ej2-data';
-import { IRenderer, IGrid, LazyLoadArgs, LazyLoadGroupArgs, NotifyArgs, IRow } from '../base/interface';
+import { IRenderer, IGrid, LazyLoadArgs, LazyLoadGroupArgs, NotifyArgs, IRow, VirtualInfo } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { ContentRender } from './content-renderer';
 import { ReturnType } from '../base/type';
@@ -14,6 +14,7 @@ import { GroupModelGenerator, GroupedData } from '../services/group-model-genera
 import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
 import { Cell } from '../models/cell';
+import { VirtualContentRenderer } from './virtual-content-renderer';
 import * as literals from '../base/string-literals';
 
 /**
@@ -50,13 +51,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private uid3: string;
     private blockSize: number;
     private groupCache: { [x: number]: Row<Column>[] } = {};
+    private cacheRowsObj: { [x: number]: Row<Column>[] } = {};
     private startIndexes: { [x: number]: number[] } = {};
     private captionCounts: { [x: number]: number[] } = {};
     private rowsByUid: { [x: number]: Row<Column>[] } = {};
     private objIdxByUid: { [x: number]: Row<Column>[] } = {};
     private initialGroupCaptions: { [x: number]: Row<Column>[] } = {};
     private requestType: string[] = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete',
-        'filterbeforeopen', 'filterchoicerequest', 'infiniteScroll'];
+        'filterbeforeopen', 'filterchoicerequest', 'infiniteScroll', 'virtualscroll'];
     private scrollTopCache: number|undefined = undefined;
 
     /** @hidden */
@@ -89,15 +91,20 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
      */
     public captionExpand(tr: HTMLTableRowElement): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rowsObject: Row<Column>[] = this.groupCache[page];
+        const rowsObject: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         const uid: string = tr.getAttribute('data-uid');
         this.refreshCaches();
-        if (!this.scrollTopCache || this.parent.scrollModule['content'].scrollTop > this.scrollTopCache) {
+        if ((!this.scrollTopCache || this.parent.scrollModule['content'].scrollTop > this.scrollTopCache) &&
+            !this.parent.enableVirtualization) {
             this.scrollTopCache = this.parent.scrollModule['content'].scrollTop;
         }
         const oriIndex: number = this.getRowObjectIndexByUid(uid);
-        const isRowExist: boolean = rowsObject[oriIndex + 1] ? rowsObject[oriIndex].indent < rowsObject[oriIndex + 1].indent : false;
-        const data: Row<Column> = rowsObject[oriIndex];
+        let isRowExist: boolean = rowsObject[oriIndex + 1] ?
+            rowsObject[parseInt(oriIndex.toString(), 10)].indent < rowsObject[oriIndex + 1].indent : false;
+        if (this.parent.enableVirtualization) {
+            isRowExist = this.cacheRowsObj[`${uid}`] ? true : false;
+        }
+        const data: Row<Column> = rowsObject[parseInt(oriIndex.toString(), 10)];
         const key: { fields: string[], keys: string[] } = getGroupKeysAndFields(oriIndex, rowsObject);
         const e: LazyLoadGroupArgs = { captionRowElement: tr, groupInfo: data, enableCaching: true, cancel: false };
         this.parent.trigger(events.lazyLoadGroupExpand, e, (args: LazyLoadGroupArgs) => {
@@ -111,7 +118,10 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             }
             args.skip = 0;
             args.take = this.pageSize;
-            data.isExpand = this.rowsByUid[page][data.uid].isExpand = true;
+            data.isExpand = true;
+            if (this.rowsByUid[parseInt(page.toString(), 10)][data.uid]) {
+                this.rowsByUid[parseInt(page.toString(), 10)][data.uid].isExpand = true;
+            }
             this.captionRowExpand(args);
         });
     }
@@ -128,17 +138,17 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         this.refreshCaches();
         const captionIndex: number = this.getRowObjectIndexByUid(uid);
         const e: LazyLoadArgs = {
-            captionRowElement: tr, groupInfo: cache[captionIndex], cancel: false
+            captionRowElement: tr, groupInfo: cache[parseInt(captionIndex.toString(), 10)], cancel: false
         };
         this.parent.trigger(events.lazyLoadGroupCollapse, e, (args: LazyLoadGroupArgs) => {
             if (args.cancel) {
                 return;
             }
             args.isExpand = false;
-            this.removeRows(captionIndex, rowIdx);
-            if (this.parent.enableInfiniteScrolling) {
-                this.groupCache[this.parent.pageSettings.currentPage] = extend([],
-                    this.refRowsObj[this.parent.pageSettings.currentPage]) as Row<Column>[];
+            this.removeRows(captionIndex, rowIdx, uid);
+            if (this.parent.enableInfiniteScrolling || this.parent.enableVirtualization) {
+                this.groupCache[this.parent.pageSettings.currentPage] = extend(
+                    [], this.refRowsObj[this.parent.pageSettings.currentPage]) as Row<Column>[];
                 this.refreshRowObjects([], captionIndex);
             }
         });
@@ -166,17 +176,18 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const cache: Row<Column>[] = this.groupCache[this.parent.pageSettings.currentPage];
         if (uids.length) {
             for (let i: number = 0; i < uids.length; i++) {
-                const capIdx: number = this.getRowObjectIndexByUid(uids[i]);
-                const capRow: Row<Column> = cache[capIdx];
+                const capIdx: number = this.getRowObjectIndexByUid(uids[parseInt(i.toString(), 10)]);
+                const capRow: Row<Column> = cache[parseInt(capIdx.toString(), 10)];
                 if (!capRow) { continue; }
                 if (this.captionCounts[this.parent.pageSettings.currentPage][capRow.uid]) {
                     for (let i: number = capIdx + 1; i < cache.length; i++) {
-                        if (cache[i].indent === capRow.indent || cache[i].indent < capRow.indent) {
+                        if (cache[parseInt(i.toString(), 10)].indent === capRow.indent
+                            || cache[parseInt(i.toString(), 10)].indent < capRow.indent) {
                             delete this.captionCounts[this.parent.pageSettings.currentPage][capRow.uid];
                             break;
                         }
-                        if (cache[i].isCaptionRow) {
-                            delete this.captionCounts[this.parent.pageSettings.currentPage][cache[i].uid];
+                        if (cache[parseInt(i.toString(), 10)].isCaptionRow) {
+                            delete this.captionCounts[this.parent.pageSettings.currentPage][cache[parseInt(i.toString(), 10)].uid];
                         }
                     }
                 }
@@ -201,25 +212,25 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private refreshCaches(): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const cache: Row<Column>[] = this.groupCache[page];
+        const cache: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         if (this.parent.enableInfiniteScrolling) {
-            this.rowsByUid[page] = [];
-            this.objIdxByUid[page] = [];
+            this.rowsByUid[parseInt(page.toString(), 10)] = [];
+            this.objIdxByUid[parseInt(page.toString(), 10)] = [];
         }
         else {
             this.rowsByUid = {};
             this.objIdxByUid = {};
         }
         for (let i: number = 0; i < cache.length; i++) {
-            this.maintainRows(cache[i], i);
+            this.maintainRows(cache[parseInt(i.toString(), 10)], i);
         }
     }
 
     private getInitialCaptionIndexes(): string[] {
         const page: number = this.parent.pageSettings.currentPage;
         const uids: string[] = [];
-        for (let i: number = 0; i < this.initialGroupCaptions[page].length; i++) {
-            uids.push(this.initialGroupCaptions[page][i].uid);
+        for (let i: number = 0; i < this.initialGroupCaptions[parseInt(page.toString(), 10)].length; i++) {
+            uids.push(this.initialGroupCaptions[parseInt(page.toString(), 10)][parseInt(i.toString(), 10)].uid);
         }
         return uids;
     }
@@ -230,7 +241,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
      * @hidden
      */
     public getRowObjectIndexByUid(uid: string): number {
-        return this.objIdxByUid[this.parent.pageSettings.currentPage][uid] as number;
+        return this.objIdxByUid[this.parent.pageSettings.currentPage][`${uid}`] as number;
     }
 
     private collapseShortcut(args: { target: Element, collapse: boolean }): void {
@@ -259,7 +270,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     }
 
     private getRowByUid(uid: string): Row<Column> {
-        return this.rowsByUid[this.parent.pageSettings.currentPage][uid] as Row<Column>;
+        return this.rowsByUid[this.parent.pageSettings.currentPage][`${uid}`] as Row<Column>;
     }
 
     private actionBegin(args: NotifyArgs): void {
@@ -267,19 +278,22 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             if (!this.requestType.some((value: string) => value === args.requestType)) {
                 this.groupCache = {};
                 this.resetRowMaintenance();
+                if (this.parent.enableVirtualization) {
+                    (this.parent.contentModule as VirtualContentRenderer).currentInfo = {};
+                }
             }
             if (args.requestType === 'reorder' && this.parent.groupSettings.columns.length) {
                 const keys: string[] = Object.keys(this.groupCache);
                 for (let j: number = 0; j < keys.length; j++) {
-                    const cache: Row<Column>[] = this.groupCache[keys[j]];
+                    const cache: Row<Column>[] = this.groupCache[keys[parseInt(j.toString(), 10)]];
                     for (let i: number = 0; i < cache.length; i++) {
-                        if (cache[i].isCaptionRow && !this.captionModelGen.isEmpty()) {
-                            this.changeCaptionRow(cache[i], null, keys[j]);
+                        if (cache[parseInt(i.toString(), 10)].isCaptionRow && !this.captionModelGen.isEmpty()) {
+                            this.changeCaptionRow(cache[parseInt(i.toString(), 10)], null, keys[parseInt(j.toString(), 10)]);
                         }
-                        if (cache[i].isDataRow) {
-                            const from: number = (<{ fromIndex?: number }>args).fromIndex + cache[i].indent;
-                            const to: number = (<{ toIndex?: number }>args).toIndex + cache[i].indent;
-                            this.moveCells(cache[i].cells, from, to);
+                        if (cache[parseInt(i.toString(), 10)].isDataRow) {
+                            const from: number = (<{ fromIndex?: number }>args).fromIndex + cache[parseInt(i.toString(), 10)].indent;
+                            const to: number = (<{ toIndex?: number }>args).toIndex + cache[parseInt(i.toString(), 10)].indent;
+                            this.moveCells(cache[parseInt(i.toString(), 10)].cells, from, to);
                         }
                     }
                 }
@@ -288,6 +302,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 || ((<{ action?: string }>args).action === 'add' && args.requestType === 'save')) {
                 this.groupCache = {};
                 this.resetRowMaintenance();
+                if (this.parent.enableVirtualization) {
+                    (this.parent.contentModule as VirtualContentRenderer).currentInfo = {};
+                }
             }
         }
     }
@@ -317,43 +334,55 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         arr.splice(from, 0, arr.splice(to, 1)[0]);
     }
 
-    private removeRows(idx: number, trIdx: number): void {
+    private removeRows(idx: number, trIdx: number, uid?: string): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rows: Row<Column>[] = this.groupCache[page];
+        const rows: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         const trs: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
         let aggUid: string;
+        let count: number = 0;
         if (this.parent.aggregates.length) {
             const agg: Row<Column>[] = this.getAggregateByCaptionIndex(idx);
             aggUid = agg.length ? agg[agg.length - 1].uid : undefined;
         }
-        const indent: number = rows[idx].indent;
-        this.addClass(this.getNextChilds(idx));
-        rows[idx].isExpand = this.rowsByUid[page][rows[idx].uid].isExpand = false;
+        const indent: number = rows[parseInt(idx.toString(), 10)].indent;
+        this.addClass(this.getNextChilds(parseInt(idx.toString(), 10)));
+        rows[parseInt(idx.toString(), 10)].isExpand = false;
+        if (this.rowsByUid[parseInt(page.toString(), 10)][rows[parseInt(idx.toString(), 10)].uid]) {
+            this.rowsByUid[parseInt(page.toString(), 10)][rows[parseInt(idx.toString(), 10)].uid].isExpand = false;
+        }
         let capUid: string;
         for (let i: number = idx + 1; i < rows.length; i++) {
-            if (rows[i].indent === indent || rows[i].indent < indent) {
-                capUid = rows[i].uid;
+            if (rows[parseInt(i.toString(), 10)].indent === indent || rows[parseInt(i.toString(), 10)].indent < indent) {
+                capUid = rows[parseInt(i.toString(), 10)].uid;
                 break;
             }
-            if (rows[i].isCaptionRow && rows[i].isExpand) {
+            if (rows[parseInt(i.toString(), 10)].isCaptionRow && rows[parseInt(i.toString(), 10)].isExpand) {
                 this.addClass(this.getNextChilds(i));
             }
         }
         for (let i: number = trIdx + 1; i < trs.length; i++) {
-            if (trs[i].getAttribute('data-uid') === capUid) {
+            if (trs[parseInt(i.toString(), 10)].getAttribute('data-uid') === capUid) {
                 break;
-            } else if (trs[i].getAttribute('data-uid') === aggUid) {
-                remove(trs[i]);
+            } else if (trs[parseInt(i.toString(), 10)].getAttribute('data-uid') === aggUid) {
+                remove(trs[parseInt(i.toString(), 10)]);
                 break;
             } else {
-                remove(trs[i]);
-                this.refRowsObj[page].splice(trIdx + 1, 1);
+                remove(trs[parseInt(i.toString(), 10)]);
+                this.refRowsObj[parseInt(page.toString(), 10)].splice(trIdx + 1, 1);
+                count = count + 1;
             }
         }
-        if (this.parent.scrollModule['content'].scrollTop > this.scrollTopCache) {
+        if (this.parent.enableVirtualization) {
+            this.cacheRowsObj[`${uid}`] = this.groupCache[parseInt(page.toString(), 10)].slice(idx + 1, idx + 1 + count);
+            this.groupCache[parseInt(page.toString(), 10)].splice(idx + 1, count);
+            this.parent.notify(events.refreshVirtualLazyLoadCache, { rows: [], uid: rows[parseInt(idx.toString(), 10)].uid, count: count });
+            (this.parent.contentModule as VirtualContentRenderer).setVirtualHeight();
+            this.parent.islazyloadRequest = false;
+        }
+        if (this.parent.scrollModule['content'].scrollTop > this.scrollTopCache && !this.parent.enableVirtualization) {
             this.parent.scrollModule['content'].scrollTop = this.scrollTopCache;
         }
-        this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[page] });
+        this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[parseInt(page.toString(), 10)] });
     }
 
     private addClass(rows: Row<Column>[]): void {
@@ -366,14 +395,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private getNextChilds(index: number, rowObjects?: Row<Column>[]): Row<Column>[] {
         const group: Row<Column>[] = this.groupCache[this.parent.pageSettings.currentPage];
         const rows: Row<Column>[] = rowObjects ? rowObjects : group;
-        const indent: number = group[index].indent + 1;
+        const indent: number = group[parseInt(index.toString(), 10)].indent + 1;
         const childRows: Row<Column>[] = [];
         for (let i: number = rowObjects ? 0 : index + 1; i < rows.length; i++) {
-            if (rows[i].indent < indent) {
+            if (rows[parseInt(i.toString(), 10)].indent < indent) {
                 break;
             }
-            if (rows[i].indent === indent) {
-                childRows.push(rows[i]);
+            if (rows[parseInt(i.toString(), 10)].indent === indent) {
+                childRows.push(rows[parseInt(i.toString(), 10)]);
             }
         }
         return childRows;
@@ -389,22 +418,26 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const tr: HTMLElement = this.parent.getContent().querySelectorAll('tr')[args.index];
         const uid: string = tr.getAttribute('data-uid');
         const captionIndex: number = this.getRowObjectIndexByUid(uid);
-        const captionRow: IRow<Column> = this.groupCache[this.parent.pageSettings.currentPage][captionIndex];
+        const captionRow: IRow<Column> = this.groupCache[this.parent.pageSettings.currentPage][parseInt(captionIndex.toString(), 10)];
         let rows: Row<Column>[] = args.isRowExist ? args.isScroll ? this.scrollData
-            : this.getChildRowsByParentIndex(captionIndex, true, true, null, true) : [];
+            : this.parent.enableVirtualization ? this.cacheRowsObj[`${uid}`] :
+                this.getChildRowsByParentIndex(captionIndex, true, true, null, true) : [];
         this.scrollData = [];
         if (!args.isRowExist) {
             this.setRowIndexes(captionIndex, captionRow);
-            this.refreshCaptionRowCount(this.groupCache[this.parent.pageSettings.currentPage][captionIndex], args.count);
+            this.refreshCaptionRowCount(
+                this.groupCache[this.parent.pageSettings.currentPage][parseInt(captionIndex.toString(), 10)], args.count);
             if (Object.keys(args.data).indexOf('GroupGuid') !== -1) {
                 for (let i: number = 0; i < args.data.length; i++) {
                     const data: Row<Column> = this.groupGenerator.generateCaptionRow(
-                        args.data[i] as GroupedData, args.level, captionRow.parentGid, undefined, 0, captionRow.uid
+                        args.data[parseInt(i.toString(), 10)] as GroupedData, args.level, captionRow.parentGid, undefined, 0, captionRow.uid
                     );
                     rows.push(data);
                     if (this.parent.aggregates.length) {
-                        rows = rows.concat(<Row<Column>[]>
-                            (this.summaryModelGen.generateRows(args.data[i], { level: args.level + 1, parentUid: data.uid }))
+                        rows = rows.concat(
+                            <Row<Column>[]>(this.summaryModelGen.generateRows(
+                                args.data[parseInt(i.toString(), 10)],
+                                { level: args.level + 1, parentUid: data.uid }))
                         );
                     }
                 }
@@ -424,11 +457,17 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         }
         const aggregates: Row<Column>[] = !args.isScroll && !args.isRowExist ? this.getAggregateByCaptionIndex(captionIndex) : [];
         if (!args.up) {
-            if (!args.isRowExist) {
+            if (!args.isRowExist || (this.parent.enableVirtualization && args.isRowExist && this.cacheRowsObj[`${uid}`])) {
                 this.refreshRowObjects(rows, args.isScroll ? this.rowObjectIndex : captionIndex);
             }
         }
 
+        if (this.parent.enableVirtualization) {
+            const uid: string  = args.isScroll ? this.groupCache[this.parent.pageSettings.currentPage][this.rowIndex].uid : captionRow.uid;
+            this.parent.notify(events.refreshVirtualLazyLoadCache, { rows: rows, uid: uid });
+            (this.parent.contentModule as VirtualContentRenderer).setVirtualHeight();
+            (this.parent.contentModule as VirtualContentRenderer).isTop = false;
+        }
         this.render(trIdx, rows, lastRow, aggregates);
         if (this.isFirstChildRow && !args.up) {
             this.parent.getContent().firstElementChild.scrollTop = rows.length * this.parent.getRowHeight();
@@ -438,9 +477,12 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         this.rowObjectIndex = undefined;
         this.childCount = 0;
         for (let i: number = 0; i < rows.length; i++) {
-            this.refRowsObj[this.parent.pageSettings.currentPage].splice(captionIndex + i + 1, 0, rows[i]);
+            this.refRowsObj[this.parent.pageSettings.currentPage].splice(captionIndex + i + 1, 0, rows[parseInt(i.toString(), 10)]);
         }
         this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[this.parent.pageSettings.currentPage] });
+        if (this.parent.enableVirtualMaskRow) {
+            this.parent.removeMaskRow();
+        }
     }
 
     private setRowIndexes(capIdx: number, row: IRow<Column>): void {
@@ -454,44 +496,46 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private getStartIndex(capIdx: number, isScroll: boolean): number {
         const page: number = this.parent.pageSettings.currentPage;
-        const cache: Row<Column>[] = this.groupCache[page];
+        const cache: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         if (isScroll) {
             return cache[this.rowObjectIndex].index + 1;
         }
         let count: number = 0;
         let idx: number = 0;
-        const prevCapRow: Row<Column> = this.getRowByUid(cache[capIdx].parentUid);
+        const prevCapRow: Row<Column> = this.getRowByUid(cache[parseInt(capIdx.toString(), 10)].parentUid);
         if (prevCapRow) {
             idx = this.prevCaptionCount(prevCapRow);
         }
-        if (cache[capIdx].indent > 0) {
+        if (cache[parseInt(capIdx.toString(), 10)].indent > 0) {
             for (let i: number = capIdx - 1; i >= 0; i--) {
-                if (cache[i].indent < cache[capIdx].indent) {
+                if (cache[parseInt(i.toString(), 10)].indent < cache[parseInt(capIdx.toString(), 10)].indent) {
                     break;
                 }
-                if (cache[i].isCaptionRow && cache[i].indent === cache[capIdx].indent) {
-                    count = count + (cache[i].data as GroupedData).count;
+                if (cache[parseInt(i.toString(), 10)].isCaptionRow && cache[parseInt(i.toString(), 10)]
+                    .indent === cache[parseInt(capIdx.toString(), 10)].indent) {
+                    count = count + (cache[parseInt(i.toString(), 10)].data as GroupedData).count;
                 }
             }
         }
-        const index: number = count + idx + this.startIndexes[page][(cache[capIdx] as IRow<Column>).parentGid];
+        const index: number = count + idx
+            + this.startIndexes[parseInt(page.toString(), 10)][(cache[parseInt(capIdx.toString(), 10)] as IRow<Column>).parentGid];
         return index;
     }
 
     private prevCaptionCount(prevCapRow: Row<Column>): number {
         const page: number = this.parent.pageSettings.currentPage;
-        const cache: Row<Column>[] = this.groupCache[page];
+        const cache: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         let idx: number = 0;
         for (let i: number = cache.indexOf(prevCapRow) - 1; i >= 0; i--) {
-            if (cache[i].indent === 0) {
+            if (cache[parseInt(i.toString(), 10)].indent === 0) {
                 break;
             }
-            if (cache[i].indent < prevCapRow.indent) {
+            if (cache[parseInt(i.toString(), 10)].indent < prevCapRow.indent) {
                 break;
             }
-            if (cache[i].isCaptionRow && cache[i].indent === prevCapRow.indent) {
-                const count: number = this.captionCounts[page][cache[i].uid];
-                idx = idx + (count ? count : (cache[i].data as GroupedData).count);
+            if (cache[parseInt(i.toString(), 10)].isCaptionRow && cache[parseInt(i.toString(), 10)].indent === prevCapRow.indent) {
+                const count: number = this.captionCounts[parseInt(page.toString(), 10)][cache[parseInt(i.toString(), 10)].uid];
+                idx = idx + (count ? count : (cache[parseInt(i.toString(), 10)].data as GroupedData).count);
             }
         }
         const capRow: Row<Column> = this.getRowByUid(prevCapRow.parentUid);
@@ -507,11 +551,11 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             const indexes: number[] = [];
             let idx: number;
             for (let i: number = 0; i < cache.length; i++) {
-                if (cache[i].isCaptionRow) {
+                if (cache[parseInt(i.toString(), 10)].isCaptionRow) {
                     if (!indexes.length) {
                         indexes.push(0);
                     } else {
-                        indexes.push((cache[idx].data as GroupedData).count + indexes[indexes.length - 1]);
+                        indexes.push((cache[parseInt(idx.toString(), 10)].data as GroupedData).count + indexes[indexes.length - 1]);
                     }
                     idx = i;
                 }
@@ -529,18 +573,18 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     }
 
     private render(trIdx: number, rows: Row<Column>[], hasLastChildRow: boolean, aggregates: Row<Column>[]): void {
-        const tr: HTMLElement = this.parent.getContent().querySelectorAll('tr')[trIdx];
+        const tr: HTMLElement = this.parent.getContent().querySelectorAll('tr')[parseInt(trIdx.toString(), 10)];
         const scrollEle: Element = this.parent.getContent().firstElementChild;
         const rowHeight: number = this.parent.getRowHeight();
         if (tr && aggregates.length) {
             for (let i: number = aggregates.length - 1; i >= 0; i--) {
-                tr.insertAdjacentElement('afterend', this.rowRenderer.render(aggregates[i], this.parent.getColumns()));
+                tr.insertAdjacentElement('afterend', this.rowRenderer.render(aggregates[parseInt(i.toString(), 10)], this.parent.getColumns()));
             }
         }
         if (tr && rows.length) {
             for (let i: number = rows.length - 1; i >= 0; i--) {
-                if (this.confirmRowRendering(rows[i])) {
-                    tr.insertAdjacentElement('afterend', this.rowRenderer.render(rows[i], this.parent.getColumns()));
+                if (this.confirmRowRendering(rows[parseInt(i.toString(), 10)])) {
+                    tr.insertAdjacentElement('afterend', this.rowRenderer.render(rows[parseInt(i.toString(), 10)], this.parent.getColumns()));
                     if (this.isScrollDown) {
                         scrollEle.scrollTop = scrollEle.scrollTop - rowHeight;
                     }
@@ -562,14 +606,14 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
      */
     public maintainRows(row: Row<Column>, index?: number): void {
         const page: number = this.parent.pageSettings.currentPage;
-        if (!this.rowsByUid[page]) {
-            this.rowsByUid[page] = {} as Row<Column>[];
-            this.objIdxByUid[page] = {} as Row<Column>[];
+        if (!this.rowsByUid[parseInt(page.toString(), 10)]) {
+            this.rowsByUid[parseInt(page.toString(), 10)] = {} as Row<Column>[];
+            this.objIdxByUid[parseInt(page.toString(), 10)] = {} as Row<Column>[];
         }
         if (row.uid) {
-            this.rowsByUid[page][row.uid] = row;
+            this.rowsByUid[parseInt(page.toString(), 10)][row.uid] = row;
         }
-        this.objIdxByUid[page][row.uid] = index;
+        this.objIdxByUid[parseInt(page.toString(), 10)][row.uid] = index;
     }
 
     private confirmRowRendering(row: Row<Column>): boolean {
@@ -585,24 +629,24 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private refreshRowObjects(newRows: Row<Column>[], index: number): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rowsObject: Row<Column>[] = this.groupCache[page];
-        this.rowsByUid[page] = {} as Row<Column>[];
-        this.objIdxByUid[page] = {} as Row<Column>[];
+        const rowsObject: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
+        this.rowsByUid[parseInt(page.toString(), 10)] = {} as Row<Column>[];
+        this.objIdxByUid[parseInt(page.toString(), 10)] = {} as Row<Column>[];
         const newRowsObject: Row<Column>[] = [];
         let k: number = 0;
         for (let i: number = 0; i < rowsObject.length; i++) {
             if (i === index) {
-                this.maintainRows(rowsObject[i], k);
-                newRowsObject.push(rowsObject[i]);
+                this.maintainRows(rowsObject[parseInt(i.toString(), 10)], k);
+                newRowsObject.push(rowsObject[parseInt(i.toString(), 10)]);
                 k++;
                 for (let j: number = 0; j < newRows.length; j++) {
-                    this.maintainRows(newRows[j], k);
-                    newRowsObject.push(newRows[j]);
+                    this.maintainRows(newRows[parseInt(j.toString(), 10)], k);
+                    newRowsObject.push(newRows[parseInt(j.toString(), 10)]);
                     k++;
                 }
             } else {
-                this.maintainRows(rowsObject[i], k);
-                newRowsObject.push(rowsObject[i]);
+                this.maintainRows(rowsObject[parseInt(i.toString(), 10)], k);
+                newRowsObject.push(rowsObject[parseInt(i.toString(), 10)]);
                 k++;
             }
         }
@@ -612,16 +656,16 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private getAggregateByCaptionIndex(index: number): Row<Column>[] {
         const cache: Row<Column>[] = this.groupCache[this.parent.pageSettings.currentPage];
-        const parent: Row<Column> = cache[index];
+        const parent: Row<Column> = cache[parseInt(index.toString(), 10)];
         const indent: number = parent.indent;
         const uid: string = parent.uid;
         const agg: Row<Column>[] = [];
         for (let i: number = index + 1; i < cache.length; i++) {
-            if (cache[i].indent === indent) {
+            if (cache[parseInt(i.toString(), 10)].indent === indent) {
                 break;
             }
-            if (isNullOrUndefined(cache[i].indent) && cache[i].parentUid === uid) {
-                agg.push(cache[i]);
+            if (isNullOrUndefined(cache[parseInt(i.toString(), 10)].indent) && cache[parseInt(i.toString(), 10)].parentUid === uid) {
+                agg.push(cache[parseInt(i.toString(), 10)]);
             }
         }
         return agg;
@@ -632,7 +676,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         includeAgg?: boolean, includeCollapseAgg?: boolean
     ): Row<Column>[] {
         const cache: Row<Column>[] = data ? data : this.groupCache[this.parent.pageSettings.currentPage];
-        const parentRow: Row<Column> = cache[index];
+        const parentRow: Row<Column> = cache[parseInt(index.toString(), 10)];
         let agg: Row<Column>[] = [];
         if (!parentRow.isCaptionRow || (parentRow.isCaptionRow && !parentRow.isExpand && !includeCollapseAgg)) {
             return [];
@@ -645,20 +689,20 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         let rows: Row<Column>[] = [];
         let count: number = 0;
         for (let i: number = index + 1; i < cache.length; i++) {
-            if (cache[i].parentUid === uid) {
-                if (isNullOrUndefined(cache[i].indent)) {
+            if (cache[parseInt(i.toString(), 10)].parentUid === uid) {
+                if (isNullOrUndefined(cache[parseInt(i.toString(), 10)].indent)) {
                     continue;
                 }
                 count++;
-                rows.push(cache[i]);
-                if (deep && cache[i].isCaptionRow) {
+                rows.push(cache[parseInt(i.toString(), 10)]);
+                if (deep && cache[parseInt(i.toString(), 10)].isCaptionRow) {
                     rows = rows.concat(this.getChildRowsByParentIndex(i, deep, block, data, includeAgg));
                 }
                 if (block && count === this.pageSize) {
                     break;
                 }
             }
-            if (cache[i].indent === indent) {
+            if (cache[parseInt(i.toString(), 10)].indent === indent) {
                 break;
             }
         }
@@ -677,8 +721,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             return this.getRenderedRowsObject();
         }
         for (let i: number = 0; i < cache.length; i++) {
-            if (cache[i].indent === 0) {
-                rows.push(cache[i]);
+            if (cache[parseInt(i.toString(), 10)].indent === 0) {
+                rows.push(cache[parseInt(i.toString(), 10)]);
                 rows = rows.concat(this.getChildRowsByParentIndex(i, true, true, cache, true));
             }
         }
@@ -692,7 +736,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const rows: Row<Column>[] = [];
         const trs: HTMLTableRowElement[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
         for (let i: number = 0; i < trs.length; i++) {
-            rows.push(this.getRowByUid(trs[i].getAttribute('data-uid')));
+            rows.push(this.getRowByUid(trs[parseInt(i.toString(), 10)].getAttribute('data-uid')));
         }
         return rows;
     }
@@ -702,16 +746,18 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const rowsObject: Row<Column>[] = this.groupCache[this.parent.pageSettings.currentPage];
         let k: number = index;
         for (let i: number = 0; i < this.pageSize; i++) {
-            if (!rowsObject[k] || rowsObject[k].indent < rowsObject[index].indent) {
+            if (!rowsObject[parseInt(k.toString(), 10)] || rowsObject[parseInt(k.toString(), 10)]
+                .indent < rowsObject[parseInt(index.toString(), 10)].indent) {
                 break;
             }
-            if (rowsObject[k].indent === rowsObject[index].indent) {
-                rows.push(rowsObject[k]);
-                if (rowsObject[k].isCaptionRow && rowsObject[k].isExpand) {
+            if (rowsObject[parseInt(k.toString(), 10)].indent === rowsObject[parseInt(index.toString(), 10)].indent) {
+                rows.push(rowsObject[parseInt(k.toString(), 10)]);
+                if (rowsObject[parseInt(k.toString(), 10)].isCaptionRow && rowsObject[parseInt(k.toString(), 10)].isExpand) {
                     rows = rows.concat(this.getChildRowsByParentIndex(k, true, true, null, true));
                 }
             }
-            if (rowsObject[k].indent > rowsObject[index].indent || isNullOrUndefined(rowsObject[k].indent)) {
+            if (rowsObject[parseInt(k.toString(), 10)].indent > rowsObject[parseInt(index.toString(), 10)].indent
+                || isNullOrUndefined(rowsObject[parseInt(k.toString(), 10)].indent)) {
                 i--;
             }
             k++;
@@ -724,15 +770,16 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const rowsObject: Row<Column>[] = this.groupCache[this.parent.pageSettings.currentPage];
         let str: boolean = false;
         for (let i: number = 0; i < rowsObject.length; i++) {
-            if (str && (!rowsObject[i] || rowsObject[i].indent < rowsObject[index].indent || rowsObject[i].uid === end)) {
+            if (str && (!rowsObject[parseInt(i.toString(), 10)] || rowsObject[parseInt(i.toString(), 10)]
+                .indent < rowsObject[parseInt(index.toString(), 10)].indent || rowsObject[parseInt(i.toString(), 10)].uid === end)) {
                 break;
             }
-            if (!str && rowsObject[i].uid === start) {
+            if (!str && rowsObject[parseInt(i.toString(), 10)].uid === start) {
                 str = true;
             }
-            if (str && rowsObject[i].indent === rowsObject[index].indent) {
-                rows.push(rowsObject[i]);
-                if (rowsObject[i].isCaptionRow && rowsObject[i].isExpand) {
+            if (str && rowsObject[parseInt(i.toString(), 10)].indent === rowsObject[parseInt(index.toString(), 10)].indent) {
+                rows.push(rowsObject[parseInt(i.toString(), 10)]);
+                if (rowsObject[parseInt(i.toString(), 10)].isCaptionRow && rowsObject[parseInt(i.toString(), 10)].isExpand) {
                     rows = rows.concat(this.getChildRowsByParentIndex(i, true, true, null, true));
                 }
             }
@@ -754,10 +801,10 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         }
         if (!e.scrollDown && endTrs) {
             for (let i: number = 0; i < endTrs.length; i++) {
-                const top: number = endTrs[i].getBoundingClientRect().top;
+                const top: number = endTrs[parseInt(i.toString(), 10)].getBoundingClientRect().top;
                 const scrollHeight: number = this.parent.getContent().scrollHeight;
                 if (top > 0 && top < scrollHeight) {
-                    tr = endTrs[i];
+                    tr = endTrs[parseInt(i.toString(), 10)];
                     lazyLoadEnd = true;
                     this.rowIndex = (tr as HTMLTableRowElement).rowIndex;
                     break;
@@ -770,7 +817,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             lazyLoadUp = result.entered;
         }
 
-        if (tr) {
+        if (tr && !tr.classList.contains('e-masked-row')) {
             if (lazyLoadDown && e.scrollDown && lazyLoadDown && tr) {
                 this.scrollDownHandler(tr);
             }
@@ -785,11 +832,11 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private scrollUpEndRowHandler(tr: Element): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rows: Row<Column>[] = this.groupCache[page];
+        const rows: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         const uid: string = tr.getAttribute('data-uid');
         let index: number = this.rowObjectIndex = this.getRowObjectIndexByUid(uid);
         const idx: number = index;
-        const childRow: Row<Column> = rows[index];
+        const childRow: Row<Column> = rows[parseInt(index.toString(), 10)];
         const parentCapRow: Row<Column> = this.getRowByUid(childRow.parentUid);
         const capRowObjIdx: number = this.getRowObjectIndexByUid(parentCapRow.uid);
         const captionRowEle: Element = this.parent.getContent().querySelector('tr[data-uid=' + parentCapRow.uid + ']');
@@ -814,7 +861,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             };
             if (this.cacheMode && this.childCount >= (this.pageSize * this.cacheBlockSize)) {
                 const child: Row<Column>[] = this.getChildRowsByParentIndex(capRowObjIdx);
-                const currenBlock: number = Math.ceil((child.indexOf(rows[idx]) / this.pageSize));
+                const currenBlock: number = Math.ceil((child.indexOf(rows[parseInt(idx.toString(), 10)]) / this.pageSize));
                 const removeBlock: number = currenBlock - (this.cacheBlockSize - 1);
                 this.removeBlock(uid, isRowExist, removeBlock, child);
                 args.cachedRowIndex = (removeBlock * this.pageSize);
@@ -827,27 +874,40 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private scrollDownHandler(tr: Element): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rows: Row<Column>[] = this.groupCache[page];
+        const rows: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         const uid: string = tr.getAttribute('data-uid');
         let index: number = this.getRowObjectIndexByUid(uid);
         const idx: number = index;
-        const childRow: Row<Column> = rows[index];
+        const childRow: Row<Column> = rows[parseInt(index.toString(), 10)];
         const parentCapRow: Row<Column> = this.getRowByUid(childRow.parentUid);
         const capRowObjIdx: number = this.getRowObjectIndexByUid(parentCapRow.uid);
         const captionRowEle: Element = this.getRowElementByUid(parentCapRow.uid);
         const capRowEleIndex: number = (captionRowEle as HTMLTableRowElement).rowIndex;
         const child: Row<Column>[] = this.getChildRowsByParentIndex(capRowObjIdx);
+        if (child.length === 0) {
+            return;
+        }
         const childIdx: number = child.indexOf(childRow);
         const currentPage: number = Math.ceil(childIdx / this.pageSize);
         this.childCount = currentPage * this.pageSize;
+        if (isNullOrUndefined(child[this.childCount - 1])) {
+            return;
+        }
+        if (this.parent.enableVirtualization) {
+            this.parent.islazyloadRequest = true;
+        }
         index = this.rowObjectIndex = this.getRowObjectIndexByUid(child[this.childCount - 1].uid);
-        const lastchild: Row<Column> = rows[index];
+        const lastchild: Row<Column> = rows[parseInt(index.toString(), 10)];
         const lastRow: HTMLTableRowElement = this.getRowElementByUid(lastchild.uid);
         this.rowIndex = lastRow.rowIndex;
         index = this.getCurrentBlockEndIndex(lastchild, index);
+        if (this.childCount === (parentCapRow.data as GroupedData).count) {
+            this.parent.islazyloadRequest = false;
+        }
         if (this.childCount < (parentCapRow.data as GroupedData).count) {
             const isRowExist: boolean = rows[index + 1] ? childRow.indent === rows[index + 1].indent : false;
             if (isRowExist && !isNullOrUndefined(this.getRowElementByUid(rows[index + 1].uid))) {
+                this.parent.islazyloadRequest = false;
                 this.childCount = 0;
                 return;
             }
@@ -865,7 +925,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             if (this.cacheMode && (this.childCount - this.pageSize) >= (this.pageSize * this.cacheBlockSize)) {
                 this.isScrollDown = true;
                 const child: Row<Column>[] = this.getChildRowsByParentIndex(capRowObjIdx);
-                const currenBlock: number = Math.ceil((child.indexOf(rows[idx]) / this.pageSize)) - 1;
+                const currenBlock: number = Math.ceil((child.indexOf(rows[parseInt(idx.toString(), 10)]) / this.pageSize)) - 1;
                 const removeBlock: number = (currenBlock - (this.cacheBlockSize - 1)) + 1;
                 this.removeBlock(uid, isRowExist, removeBlock, child, lastchild);
                 args.cachedRowIndex = (removeBlock * this.pageSize);
@@ -873,12 +933,13 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             this.captionRowExpand(args);
         } else {
             this.childCount = 0;
+            this.parent.islazyloadRequest = false;
         }
     }
 
     private getCurrentBlockEndIndex(row: Row<Column>, index: number): number {
         const page: number = this.parent.pageSettings.currentPage;
-        const rows: Row<Column>[] = this.groupCache[page];
+        const rows: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         if (row.isCaptionRow) {
             if (row.isExpand) {
                 const childCount: number = this.getChildRowsByParentIndex(index, true).length;
@@ -888,7 +949,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             this.rowObjectIndex = this.rowObjectIndex + agg.length;
             let idx: number = index;
             for (let i: number = idx + 1; i < rows.length; i++) {
-                if (rows[i].indent === rows[index].indent || rows[i].indent < rows[index].indent) {
+                if (rows[parseInt(i.toString(), 10)].indent === rows[parseInt(index.toString(), 10)].indent
+                    || rows[parseInt(i.toString(), 10)].indent < rows[parseInt(index.toString(), 10)].indent) {
                     index = idx;
                     break;
                 } else {
@@ -901,12 +963,12 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private removeBlock(uid: string, isRowExist: boolean, removeBlock: number, child: Row<Column>[], lastchild?: Row<Column>): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rows: Row<Column>[] = this.groupCache[page];
+        const rows: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         const uid1: string = child[(((removeBlock + 1) * this.pageSize) - 1) - this.blockSize].uid;
         const uid2: string = child[(removeBlock * this.pageSize) - this.pageSize].uid;
         const uid3: string = child[(removeBlock * this.pageSize)].uid;
         const firstIdx: number = this.getRowObjectIndexByUid(uid1);
-        rows[firstIdx].lazyLoadCssClass = 'e-lazyload-middle-up';
+        rows[parseInt(firstIdx.toString(), 10)].lazyLoadCssClass = 'e-lazyload-middle-up';
         this.getRowElementByUid(uid1).classList.add('e-lazyload-middle-up');
         if (lastchild) {
             this.getRowElementByUid(uid3).classList.add('e-not-lazyload-first');
@@ -924,7 +986,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private scrollUpHandler(tr: Element): void {
         const page: number = this.parent.pageSettings.currentPage;
-        const rows: Row<Column>[] = this.groupCache[page];
+        const rows: Row<Column>[] = this.groupCache[parseInt(page.toString(), 10)];
         const uid: string = tr.getAttribute('data-uid');
         const row: IRow<Column> = this.getRowByUid(uid);
         const index: number = this.rowObjectIndex = this.getRowObjectIndexByUid(uid);
@@ -933,7 +995,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const captionRowEle: Element = this.parent.getRowElementByUID(parentCapRow.uid) as HTMLTableRowElement;
         const capRowEleIndex: number = (captionRowEle as HTMLTableRowElement).rowIndex;
         const child: Row<Column>[] = this.getChildRowsByParentIndex(capRowObjIdx);
-        const childIdx: number = child.indexOf(rows[index]);
+        const childIdx: number = child.indexOf(rows[parseInt(index.toString(), 10)]);
         const currenBlock: number = Math.floor((childIdx / this.pageSize));
         let idx: number = this.blockSize;
         if ((this.blockSize * 2) > this.pageSize) {
@@ -964,9 +1026,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const uid1: string = childRows.length ? childRows[childRows.length - 1].uid : child[(count - 1)].uid;
         const uid2: string = child[count - size].uid;
         const uid3: string = child[(count - size) - 1].uid;
-        const lastIdx: number = this.objIdxByUid[page][uid2] - idx;
-        if (rows[lastIdx].lazyLoadCssClass === 'e-lazyload-middle-down') {
-            const trEle: Element = this.getRowElementByUid(rows[lastIdx].uid);
+        const lastIdx: number = this.objIdxByUid[parseInt(page.toString(), 10)][`${uid2}`] - idx;
+        if (rows[parseInt(lastIdx.toString(), 10)].lazyLoadCssClass === 'e-lazyload-middle-down') {
+            const trEle: Element = this.getRowElementByUid(rows[parseInt(lastIdx.toString(), 10)].uid);
             if (trEle) {
                 trEle.classList.add('e-lazyload-middle-down');
             }
@@ -998,11 +1060,18 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private findRowElements(rows: Element[]): { entered: boolean, tr: Element } {
         let entered: boolean = false; let tr: Element;
         for (let i: number = 0; i < rows.length; i++) {
-            const rowIdx: number = (rows[i] as HTMLTableRowElement).rowIndex;
+            let rowIdx: number = (rows[parseInt(i.toString(), 10)] as HTMLTableRowElement).rowIndex;
+            if (this.parent.enableVirtualization) {
+                const currentInfo: VirtualInfo = (this.parent.contentModule as VirtualContentRenderer).currentInfo;
+                if (currentInfo && currentInfo.blockIndexes && currentInfo.blockIndexes[0] > 1 ) {
+                    rowIdx = rowIdx + ((this.parent.contentModule as VirtualContentRenderer).offsets[currentInfo.blockIndexes[0] - 1] /
+                        this.parent.getRowHeight());
+                }
+            }
             if (isRowEnteredInGrid(rowIdx, this.parent)) {
                 entered = true;
                 this.rowIndex = rowIdx;
-                tr = rows[i];
+                tr = rows[parseInt(i.toString(), 10)];
                 break;
             }
         }
@@ -1017,18 +1086,18 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const trs: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
         let start: boolean = false;
         for (let i: number = 0; i < trs.length; i++) {
-            if (trs[i].getAttribute('data-uid') === uid3) {
+            if (trs[parseInt(i.toString(), 10)].getAttribute('data-uid') === uid3) {
                 const tr: HTMLTableRowElement = this.parent.getContent().querySelector('tr[data-uid=' + uid1 + ']') as HTMLTableRowElement;
                 if (tr) {
                     this.rowIndex = tr.rowIndex;
                 }
                 break;
             }
-            if (trs[i].getAttribute('data-uid') === uid2) {
+            if (trs[parseInt(i.toString(), 10)].getAttribute('data-uid') === uid2) {
                 start = true;
             }
             if (start) {
-                remove(trs[i]);
+                remove(trs[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -1038,12 +1107,12 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const trs: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
         let trigger: boolean = false;
         for (let i: number = 0; i < trs.length; i++) {
-            if (trs[i].getAttribute('data-uid') === uid2) {
+            if (trs[parseInt(i.toString(), 10)].getAttribute('data-uid') === uid2) {
                 trigger = true;
             }
             if (trigger) {
-                remove(trs[i]);
-                if (trs[i].getAttribute('data-uid') === uid1) {
+                remove(trs[parseInt(i.toString(), 10)]);
+                if (trs[parseInt(i.toString(), 10)].getAttribute('data-uid') === uid1) {
                     break;
                 }
             }
@@ -1052,13 +1121,17 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private setCache(e?: { args: NotifyArgs, data: Row<Column>[] }): void {
         const page: number = this.parent.pageSettings.currentPage;
+        if (this.parent.enableVirtualization) {
+            this.parent.lazyLoadRender = this;
+        }
         if (this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll' &&
-            e.args['prevPage'] != e.args['currentPage']) {
-            this.groupCache[page] = this.initialGroupCaptions[page] = this.groupCache[e.args['prevPage']]
-            .concat(extend([], e.data) as Row<Column>[]);
+            e.args['prevPage'] !== e.args['currentPage']) {
+            this.groupCache[parseInt(page.toString(), 10)] = this.initialGroupCaptions[parseInt(page.toString(), 10)] = this.groupCache[e.args['prevPage']]
+                .concat(extend([], e.data) as Row<Column>[]);
         }
         else {
-            this.groupCache[page] = this.initialGroupCaptions[page] = extend([], e.data) as Row<Column>[];
+            this.groupCache[parseInt(page.toString(), 10)] =
+                this.initialGroupCaptions[parseInt(page.toString(), 10)] = extend([], e.data) as Row<Column>[];
         }
     }
 
@@ -1080,6 +1153,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                 this.parent.showSpinner();
             }
             this.parent.renderModule.data.getData({}, query).then((e: ReturnType) => {
+                if (this.parent.enableVirtualization) {
+                    this.parent.islazyloadRequest = true;
+                }
                 this.parent.hideSpinner();
                 this.parent.removeMaskRow();
                 if (e.result.length === 0) {
@@ -1149,8 +1225,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const tr: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         let row: Element;
         for (let i: number = 0; !isNullOrUndefined(index) && i < tr.length; i++) {
-            if (tr[i].getAttribute(literals.dataRowIndex) === index.toString()) {
-                row = tr[i];
+            if (tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex) === index.toString()) {
+                row = tr[parseInt(i.toString(), 10)];
                 break;
             }
         }
@@ -1172,12 +1248,12 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
         const contentrows: Row<Column>[] = this.getRows().filter((row: Row<Column>) => !row.isDetailRow);
         for (let i: number = 0; i < columns.length; i++) {
-            const column: Column = columns[i];
+            const column: Column = columns[parseInt(i.toString(), 10)];
             const idx: number = this.parent.getNormalizedColumnIndex(column.uid);
             const colIdx: number = this.parent.getColumnIndexByUid(column.uid);
             const displayVal: string = column.visible === true ? '' : 'none';
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[parseInt(idx.toString(), 10)], { 'display': displayVal });
             }
             this.setDisplayNone(gObj.getDataRows(), colIdx, displayVal, contentrows, idx);
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {
@@ -1204,14 +1280,15 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         } else {
             const keys: string[] = Object.keys(this.groupCache);
             for (let j: number = 0; j < keys.length; j++) {
-                const uids: Row<Column>[] = this.rowsByUid[keys[j]] as Row<Column>[];
+                const uids: Row<Column>[] = this.rowsByUid[keys[parseInt(j.toString(), 10)]] as Row<Column>[];
                 const idxs: string[] = Object.keys(uids);
                 for (let i: number = 0; i < idxs.length; i++) {
-                    const tr: HTMLTableRowElement = this.parent.getContent().querySelector('tr[data-uid=' + idxs[i] + ']');
-                    const row: Row<Column> = uids[idxs[i]];
+                    const tr: HTMLTableRowElement = this.parent.getContent()
+                        .querySelector('tr[data-uid=' + idxs[parseInt(i.toString(), 10)] + ']');
+                    const row: Row<Column> = uids[idxs[parseInt(i.toString(), 10)]];
                     if (row.isCaptionRow) {
                         if (!this.captionModelGen.isEmpty()) {
-                            this.changeCaptionRow(row, tr, keys[j]);
+                            this.changeCaptionRow(row, tr, keys[parseInt(j.toString(), 10)]);
                         } else {
                             row.cells[row.indent + 1].colSpan = displayVal === '' ? row.cells[row.indent + 1].colSpan + 1
                                 : row.cells[row.indent + 1].colSpan - 1;
@@ -1222,10 +1299,10 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
                     }
                     if (row.isDataRow) {
                         this.showAndHideCells(tr, idx, displayVal, false);
-                        row.cells[oriIdx].visible = displayVal === '' ? true : false;
+                        row.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
                     }
                     if (!row.isCaptionRow && !row.isDataRow && isNullOrUndefined(row.indent)) {
-                        row.cells[oriIdx].visible = displayVal === '' ? true : false;
+                        row.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
                         row.visible = row.cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
                         this.showAndHideCells(tr, idx, displayVal, true, row);
                     }
@@ -1243,8 +1320,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         data.uid = row.uid;
         data.isExpand = row.isExpand;
         data.lazyLoadCssClass = row.lazyLoadCssClass;
-        this.rowsByUid[index][row.uid] = data;
-        this.groupCache[index][this.objIdxByUid[index][row.uid]] = data;
+        this.rowsByUid[parseInt(index.toString(), 10)][row.uid] = data;
+        this.groupCache[parseInt(index.toString(), 10)][this.objIdxByUid[parseInt(index.toString(), 10)][row.uid]] = data;
         if (tr) {
             const tbody: Element = this.parent.getContentTable().querySelector( literals.tbody);
             tbody.replaceChild(this.rowRenderer.render(data, this.parent.getColumns()), tr);
@@ -1254,9 +1331,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private showAndHideCells(tr: HTMLTableRowElement, idx: number, displayVal: string, isSummary: boolean, row?: Row<Column>): void {
         if (tr) {
             const cls: string = isSummary ? 'td.e-summarycell' : 'td.e-rowcell';
-            setStyleAttribute(tr.querySelectorAll(cls)[idx] as HTMLElement, { 'display': displayVal });
-            if (tr.querySelectorAll(cls)[idx].classList.contains('e-hide')) {
-                removeClass([tr.querySelectorAll(cls)[idx]], ['e-hide']);
+            setStyleAttribute(tr.querySelectorAll(cls)[parseInt(idx.toString(), 10)] as HTMLElement, { 'display': displayVal });
+            if (tr.querySelectorAll(cls)[parseInt(idx.toString(), 10)].classList.contains('e-hide')) {
+                removeClass([tr.querySelectorAll(cls)[parseInt(idx.toString(), 10)]], ['e-hide']);
             }
             if (isSummary) {
                 if (row.visible && tr.classList.contains('e-hide')) {

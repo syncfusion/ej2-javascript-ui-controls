@@ -2540,8 +2540,8 @@ export class Node extends NodeBase implements IElement {
         let textStyle: TextStyle;
         const changedProperties: string = 'changedProperties';
         const oldProperties: string = 'oldProperties';
-        this.shape[changedProperties] = {};
-        this.shape[oldProperties] = {};
+        this.shape[`${changedProperties}`] = {};
+        this.shape[`${oldProperties}`] = {};
 
         switch (this.shape.type) {
         case 'Path':
@@ -2596,13 +2596,13 @@ export class Node extends NodeBase implements IElement {
                 if (subProcess.processes && subProcess.processes.length) {
                     const children: string[] = (this.shape as BpmnShape).activity.subProcess.processes;
                     for (const i of children) {
-                        if (diagram.nameTable[i] && (!diagram.nameTable[i].processId || diagram.nameTable[i].processId === this.id)) {
-                            diagram.nameTable[i].processId = this.id;
+                        if (diagram.nameTable[`${i}`] && (!diagram.nameTable[`${i}`].processId || diagram.nameTable[`${i}`].processId === this.id)) {
+                            diagram.nameTable[`${i}`].processId = this.id;
                             if (subProcess.collapsed) {
                                 diagram.updateElementVisibility(
-                                    diagram.nameTable[i].wrapper, diagram.nameTable[i], !subProcess.collapsed);
+                                    diagram.nameTable[`${i}`].wrapper, diagram.nameTable[`${i}`], !subProcess.collapsed);
                             }
-                            (content as Container).children.push(diagram.nameTable[i].wrapper);
+                            (content as Container).children.push(diagram.nameTable[`${i}`].wrapper);
                         }
                     }
                 }
@@ -2751,7 +2751,7 @@ export class Node extends NodeBase implements IElement {
     /** @private */
     public initPorts(accessibilityContent: Function | string, container: Container): void {
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
-            this.initPort(accessibilityContent, container, this.ports[i] as Port);
+            this.initPort(accessibilityContent, container, this.ports[parseInt(i.toString(), 10)] as Port);
         }
     }
 
@@ -2869,7 +2869,7 @@ export class Node extends NodeBase implements IElement {
         void {
         let annotation: DiagramElement;
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation, diagramId, virtualize, i, annotationTemplate);
+            annotation = this.initAnnotationWrapper(this.annotations[parseInt(i.toString(), 10)] as Annotation, diagramId, virtualize, i, annotationTemplate);
             // tslint:disable-next-line:no-any
             let wrapperContent: any;
             const contentAccessibility: Function = getFunction(accessibilityContent);
@@ -3560,7 +3560,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         } else {
             if (this.nodes || this.connectors) {
                 for (let i: number = 0; i < this.nodes.length; i++) {
-                    const node: NodeModel = diagram.nameTable[this.nodes[i].id];
+                    const node: NodeModel = diagram.nameTable[this.nodes[parseInt(i.toString(), 10)].id];
                     const wrapper: Container = node.wrapper;
                     // this.width = wrapper.actualSize.width;
                     // this.height = wrapper.actualSize.height;
@@ -3570,7 +3570,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
                     container.children.push(wrapper);
                 }
                 for (let j: number = 0; j < this.connectors.length; j++) {
-                    const connector: ConnectorModel = diagram.nameTable[this.connectors[j].id];
+                    const connector: ConnectorModel = diagram.nameTable[this.connectors[parseInt(j.toString(), 10)].id];
                     const wrapper: Container = connector.wrapper;
                     // this.width = wrapper.actualSize.width; this.height = wrapper.actualSize.height;
                     // this.rotateAngle = wrapper.rotateAngle; this.offsetX = wrapper.offsetX;
@@ -3580,7 +3580,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
             }
         }
         const isProtectedOnChange: string = 'isProtectedOnChange';
-        const diagramProtectPropertyChange: boolean = diagram[isProtectedOnChange];
+        const diagramProtectPropertyChange: boolean = diagram[`${isProtectedOnChange}`];
         diagram.protectPropertyChange(false);
         this.wrapper = container;
         diagram.protectPropertyChange(diagramProtectPropertyChange);

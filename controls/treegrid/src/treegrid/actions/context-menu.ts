@@ -102,7 +102,7 @@ export class ContextMenu {
             if (!isNullOrUndefined(this.parent.rowDragAndDropModule)) {
                 const indentOutdentAction: string = 'indentOutdentAction';
                 const action: string = args.item.id === this.parent.element.id + '_gridcontrol_cmenu_Indent' ? 'indent' : 'outdent';
-                this.parent.rowDragAndDropModule[indentOutdentAction](null, action);
+                this.parent.rowDragAndDropModule[`${indentOutdentAction}`](null, action);
             }
         }
     }

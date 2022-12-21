@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
-import { ChartData, } from '../utils/get-data';
+import { ChartData } from '../utils/get-data';
 import { SeriesModel } from '../series/chart-series-model';
 import { PointData, getTransform, firstToLowerCase } from '../../common/utils/helper';
 import { dragStart, drag, dragEnd } from '../../common/model/constants';
@@ -103,7 +103,7 @@ export class DataEditing {
     private pointDragging(si: number, pi: number): void {
         const chart: Chart = this.chart;
         const yValueArray: number[] = []; let y: number; let ySize: number; let yValue: number;
-        const series: Series = chart.visibleSeries[si];
+        const series: Series = chart.visibleSeries[si as number];
         const pointDrag: DragSettingsModel = series.dragSettings;
         const xAxis: Axis = series.xAxis;
         const yAxis: Axis = series.yAxis;
@@ -124,19 +124,19 @@ export class DataEditing {
         const maxRange: number = yAxis.maximum !== null ? yAxis.visibleRange.max + extra : (isNullOrUndefined(pointDrag.maxY) ?
             (yValue) : pointDrag.maxY);
         if (maxRange >= yValue && minRange <= yValue) {
-            series.points[pi].yValue = series.points[pi].y = chart.dragY = (yAxis.valueType === 'Logarithmic') ?
+            series.points[pi as number].yValue = series.points[pi as number].y = chart.dragY = (yAxis.valueType === 'Logarithmic') ?
                 Math.pow(yAxis.logBase, yValue) : parseFloat(yValue.toFixed(2));
-            series.points[pi].interior = pointDrag.fill;
+            series.points[pi as number].interior = pointDrag.fill;
             for (let i: number = 0; i < series.points.length; i++) {
-                yValueArray[i] = series.points[i].yValue;
+                yValueArray[i as number] = series.points[i as number].yValue;
             }
             series.yMin = Math.min.apply(null, yValueArray);
             series.yMax = Math.max.apply(null, yValueArray);
             this.isPointDragging = true;
             chart.refreshBound();
             chart.trigger(drag, {
-                seriesIndex: si, pointIndex: pi, series: series, point: series.points[pi],
-                oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex], newValue: series.points[pi].yValue
+                seriesIndex: si, pointIndex: pi, series: series, point: series.points[pi as number],
+                oldValue: chart.visibleSeries[this.seriesIndex].yData[this.pointIndex], newValue: series.points[pi as number].yValue
             });
         }
     }

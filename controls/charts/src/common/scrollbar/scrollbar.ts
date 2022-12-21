@@ -270,10 +270,11 @@ export class ScrollBar {
         const circleWidth: number = 1;
         const currentScrollWidth: number = currentX + currentWidth + circleRadius + circleWidth;
         const currentZPWidth: number = circleRadius + (circleWidth / 2);
-        let axisSize = this.isVertical ? axis.rect.height : this.width;
+        const axisSize: number = this.isVertical ? axis.rect.height : this.width;
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / axisSize;
         axis.zoomFactor = isRequire ? this.zoomFactor : axis.zoomFactor;
-        this.zoomPosition = currentScrollWidth > axisSize ? (1 - axis.zoomFactor) : currentX < (circleRadius + circleWidth) ? 0 : (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / axisSize;
+        this.zoomPosition = currentScrollWidth > axisSize ? (1 - axis.zoomFactor) : currentX < (circleRadius + circleWidth) ? 0 :
+            (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / axisSize;
         axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
     }
     /**

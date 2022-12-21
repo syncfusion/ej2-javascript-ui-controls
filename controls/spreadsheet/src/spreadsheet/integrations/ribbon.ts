@@ -27,7 +27,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { findDlg, insertDesignChart, removeDesignChart } from '../common/index';
+import { findDlg, insertDesignChart, removeDesignChart, isImported } from '../common/index';
 import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule } from '../../workbook/common/index';
 
 /**
@@ -111,16 +111,16 @@ export class Ribbon {
             header: { text: l10n.getConstant('Home') },
             content: [
                 { prefixIcon: 'e-undo-icon', tooltipText: `${l10n.getConstant('Undo')} (Ctrl+Z)`,
-                 htmlAttributes: { 'aria-label': l10n.getConstant('Undo') }, id: id + '_undo', disabled: true },
+                    htmlAttributes: { 'aria-label': l10n.getConstant('Undo') }, id: id + '_undo', disabled: true },
                 { prefixIcon: 'e-redo-icon', tooltipText: `${l10n.getConstant('Redo')} (Ctrl+Y)`,
-                 htmlAttributes: { 'aria-label': l10n.getConstant('Redo') }, id: id + '_redo', disabled: true },
+                    htmlAttributes: { 'aria-label': l10n.getConstant('Redo') }, id: id + '_redo', disabled: true },
                 { type: 'Separator', id: id + '_separator_1' },
                 { prefixIcon: 'e-cut-icon', tooltipText: `${l10n.getConstant('Cut')} (Ctrl+X)`,
-                 htmlAttributes: { 'aria-label': l10n.getConstant('Cut') }, id: id + '_cut'},
+                    htmlAttributes: { 'aria-label': l10n.getConstant('Cut') }, id: id + '_cut'},
                 { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`,
-                 htmlAttributes: { 'aria-label': l10n.getConstant('Copy') }, id: id + '_copy' },
+                    htmlAttributes: { 'aria-label': l10n.getConstant('Copy') }, id: id + '_copy' },
                 { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id),
-                 htmlAttributes: { 'aria-label': l10n.getConstant('Paste') }, id: id + '_paste', disabled: true},
+                    htmlAttributes: { 'aria-label': l10n.getConstant('Paste') }, id: id + '_paste', disabled: true},
                 { type: 'Separator', id: id + '_separator_2' },
                 { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
                 { type: 'Separator', id: id + '_separator_3' },
@@ -129,11 +129,11 @@ export class Ribbon {
                 { template: this.getFontSizeDDB(id), tooltipText: l10n.getConstant('FontSize'), id: id + '_font_size' },
                 { type: 'Separator', id: id + '_separator_5' },
                 { template: this.getBtn(id, 'bold', l10n.getConstant('Bold')), tooltipText: `${l10n.getConstant('Bold')} (Ctrl+B)`,
-                 id: id + '_bold' },
+                    id: id + '_bold' },
                 { template: this.getBtn(id, 'italic', l10n.getConstant('Italic')), tooltipText: `${l10n.getConstant('Italic')} (Ctrl+I)`,
-                 id: id + '_italic' },
+                    id: id + '_italic' },
                 { template: this.getBtn(id, 'line-through', l10n.getConstant('Strikethrough')),
-                 tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
+                    tooltipText: `${l10n.getConstant('Strikethrough')} (Ctrl+5)`,
                     id: id + '_line-through' },
                 { template: this.getBtn(id, 'underline', l10n.getConstant('Underline')), tooltipText: `${l10n.getConstant('Underline')} (Ctrl+U)`,
                     id: id + '_underline' },
@@ -143,7 +143,7 @@ export class Ribbon {
                     id: id + '_fill_color_picker' },
                 { template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders' },
                 { template: this.getMergeSplitBtn(id), tooltipText: l10n.getConstant('MergeCells'),
-                 htmlAttributes: { 'aria-label': l10n.getConstant('MergeCells') }, id: id + '_merge_cells', disabled: true },
+                    htmlAttributes: { 'aria-label': l10n.getConstant('MergeCells') }, id: id + '_merge_cells', disabled: true },
                 { type: 'Separator', id: id + '_separator_7' },
                 { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' },
                 { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' },
@@ -164,7 +164,7 @@ export class Ribbon {
         {
             header: { text: l10n.getConstant('Formulas') }, content: [{
                 prefixIcon: 'e-insert-function', tooltipText: l10n.getConstant('InsertFunction'), text: l10n.getConstant('InsertFunction'),
-                 id: id + '_insert_function'
+                id: id + '_insert_function'
             }]
         },
         {
@@ -336,7 +336,8 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const tabIdx: number = this.ribbon.items.length - 1;
         const chartTabHeader: string = l10n.getConstant('ChartDesign');
-        if (this.parent.allowChart && this.ribbon.items[tabIdx] && this.ribbon.items[tabIdx].header.text !== chartTabHeader) {
+        if (this.parent.allowChart && this.ribbon.items[tabIdx as number] && this.ribbon.items[tabIdx as number].header.text !==
+            chartTabHeader) {
             this.preTabIdx = this.ribbon.selectedTab;
             const id: string = this.parent.element.id;
             const items: RibbonItemModel[] = [{
@@ -369,7 +370,7 @@ export class Ribbon {
     private removeDesignChart(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const tabIdx: number = this.ribbon.items.length - 1;
-        if (this.parent.allowChart && this.ribbon.items[tabIdx] && this.ribbon.items[tabIdx].header.text ===
+        if (this.parent.allowChart && this.ribbon.items[tabIdx as number] && this.ribbon.items[tabIdx as number].header.text ===
             l10n.getConstant('ChartDesign')) {
             this.ribbon.tabObj.select(this.preTabIdx + 1);
             this.parent.hideRibbonTabs([l10n.getConstant('ChartDesign')], true);
@@ -382,7 +383,7 @@ export class Ribbon {
             if (document.getElementsByClassName('e-charttheme-ddb').length > 0) {
                 document.getElementsByClassName('e-charttheme-ddb')[0].remove();
             }
-            delete this.ribbon.items[tabIdx].content[0];
+            delete this.ribbon.items[tabIdx as number].content[0];
             this.ribbon.items.length = this.ribbon.items.length - 1;
         }
     }
@@ -422,8 +423,8 @@ export class Ribbon {
                     l10n.getConstant('Insert')) {
                     const ribbonContent: TlbItemModel[] = this.ribbon.items[args.selectedIndex].content;
                     for (let i: number = ribbonContent.length - 1; i >= 0; i--) {
-                        if (ribbonContent[i].id === this.parent.element.id + '_chart') {
-                            const chartBtn: HTMLElement = ribbonContent[i].template as HTMLElement;
+                        if (ribbonContent[i as number].id === this.parent.element.id + '_chart') {
+                            const chartBtn: HTMLElement = ribbonContent[i as number].template as HTMLElement;
                             if (chartBtn && chartBtn.classList.contains('e-dropdown-btn')) {
                                 this.destroyComponent(chartBtn, 'dropdown-btn');
                             }
@@ -454,11 +455,14 @@ export class Ribbon {
         let theme: ChartTheme = 'Material';
         const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
         if (overlay) {
-            let chart: HTMLElement;
-            if (chart = overlay.querySelector('.e-chart')) {
+            let chart: HTMLElement = overlay.querySelector('.e-chart');
+            if (chart) {
                 theme = (getComponent(chart, 'chart') as { theme: ChartTheme }).theme;
-            } else if (chart = overlay.querySelector('.e-accumulationchart')) {
-                theme = (getComponent(chart, 'accumulationchart') as { theme: ChartTheme }).theme;
+            } else {
+                chart = overlay.querySelector('.e-accumulationchart');
+                if (chart) {
+                    theme = (getComponent(chart, 'accumulationchart') as { theme: ChartTheme }).theme;
+                }
             }
         }
         const chartThemeDDB: DropDownButton = new DropDownButton({
@@ -479,7 +483,7 @@ export class Ribbon {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.tBarDdbBeforeOpen(
                     args.element, args.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
-            },
+            }
         });
         chartThemeDDB.createElement = this.parent.createElement;
         chartThemeDDB.appendTo(chartThemeBtn);
@@ -558,8 +562,8 @@ export class Ribbon {
             createPopupOnClick: true,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 chartMenu = this.createChartMenu(ul, menuClass, l10n, chartDdb);
-                this.tBarDdbBeforeOpen(args.element, chartMenu.items,
-                    (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
+                this.tBarDdbBeforeOpen(
+                    args.element, chartMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
             },
             open: (): void => focus(ul),
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
@@ -663,7 +667,7 @@ export class Ribbon {
             this.parent.createElement('span', { id: 'stackedColumn1003D', className: 'e-stackedColumn1003D e-column-icon' });
         clusteredColumn.title = l10n.getConstant('ClusteredColumn'); stackedColumn.title = l10n.getConstant('StackedColumn');
         stackedColumn100.title = l10n.getConstant('StackedColumn100'); stackedColumn1003D.title = l10n.getConstant('OrangeDataBar');
-        stackedColumn3D.title = l10n.getConstant('LightblueDataBar'); clusteredColumn3D.title = l10n.getConstant('PurpleDataBar');
+        stackedColumn3D.title = l10n.getConstant('LightBlueDataBar'); clusteredColumn3D.title = l10n.getConstant('PurpleDataBar');
         column1Cont.appendChild(clusteredColumn); column1Cont.appendChild(stackedColumn); column1Cont.appendChild(stackedColumn100);
         column2Cont.appendChild(clusteredColumn3D); column2Cont.appendChild(stackedColumn3D); column2Cont.appendChild(stackedColumn1003D);
         const bar: HTMLElement = this.parent.createElement('div', { id: 'bar_main', className: 'e-bar-main' });
@@ -689,7 +693,7 @@ export class Ribbon {
             this.parent.createElement('span', { id: 'stackedBar1003D', className: 'e-stackedBar1003D e-bar-icon' });
         clusteredBar.title = l10n.getConstant('ClusteredBar'); stackedBar.title = l10n.getConstant('StackedBar');
         stackedBar100.title = l10n.getConstant('StackedBar100'); stackedBar1003D.title = l10n.getConstant('OrangeDataBar');
-        stackedBar3D.title = l10n.getConstant('LightblueDataBar'); clusteredBar3D.title = l10n.getConstant('PurpleDataBar');
+        stackedBar3D.title = l10n.getConstant('LightBlueDataBar'); clusteredBar3D.title = l10n.getConstant('PurpleDataBar');
         bar1Cont.appendChild(clusteredBar); bar1Cont.appendChild(stackedBar); bar1Cont.appendChild(stackedBar100);
         bar2Cont.appendChild(clusteredBar3D); bar2Cont.appendChild(stackedBar3D); bar2Cont.appendChild(stackedBar1003D);
 
@@ -908,7 +912,7 @@ export class Ribbon {
             icons.forEach((icon: string): void => {
                 appendTo.appendChild(
                     this.parent.createElement('span', { id: icon + category, className: `e-${icon.toLowerCase()} e-cf-icon`,
-                    attrs: { 'title': l10n.getConstant(icon + category) } }));
+                        attrs: { 'title': l10n.getConstant(icon + category) } }));
             });
         };
         const cfMenu: Menu = new Menu({
@@ -1308,7 +1312,7 @@ export class Ribbon {
         case `${id}_border_insideborders`:
             this.parent.notify(setCellFormat, { style: { border: this.border }, onActionUpdate: true, borderType: 'Inner' });
             break;
-       case `${id}_border_noborders`:
+        case `${id}_border_noborders`:
             this.parent.notify(setCellFormat, { style: { border: '' }, onActionUpdate: true });
             break;
         }
@@ -1413,7 +1417,7 @@ export class Ribbon {
                 }
                 this.textAlignDdb.element.setAttribute(
                     'aria-label', (l10n.getConstant('HorizontalAlignment') + ' ' + l10n.getConstant('Align' + this.getAlignText(args))));
-            },
+            }
         });
         this.textAlignDdb.createElement = this.parent.createElement;
         this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align', attrs: { 'type': 'button' } }));
@@ -1442,7 +1446,7 @@ export class Ribbon {
                 }
                 this.verticalAlignDdb.element.setAttribute(
                     'aria-label', (l10n.getConstant('VerticalAlignment') + ' ' + l10n.getConstant('Align' + this.getAlignText(args))));
-            },
+            }
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
         this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align', attrs: { 'type': 'button' } }));
@@ -1586,8 +1590,8 @@ export class Ribbon {
             },
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.sortingDdb, args.element, 'iconCss');
-                args.element.setAttribute
-                    ('aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('SortAndFilter'));
+                args.element.setAttribute(
+                    'aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('SortAndFilter'));
             },
             select: (args: MenuEventArgs): void => {
                 switch (args.item.text) {
@@ -1618,12 +1622,9 @@ export class Ribbon {
 
     private getFindBtn(id: string): HTMLElement {
         const findToolbtn: HTMLElement = this.parent.createElement(
-            'button', {
-                id: id + '_findbtn', attrs: {
-                    'type': 'button',
-                    'aria-label': (this.parent.serviceLocator.getService(locale) as L10n).getConstant('FindReplaceTooltip')
-                }
-        }) as HTMLElement;
+            'button', { id: id + '_findbtn', attrs:
+            { 'type': 'button', 'aria-label':
+            (this.parent.serviceLocator.getService(locale) as L10n).getConstant('FindReplaceTooltip') } }) as HTMLElement;
         this.findDdb = new Button({ cssClass: 'e-spreadsheet-find-ddb e-flat', iconCss: 'e-icons e-search-icon' });
         this.findDdb.createElement = this.parent.createElement;
         this.findDdb.appendTo(findToolbtn);
@@ -1635,7 +1636,11 @@ export class Ribbon {
             const findBtn: HTMLButtonElement = (e && e.target ? closest(e.target as Element,  `#${this.parent.element.id}_findbtn`) :
                 select(`#${this.parent.element.id}_findbtn`, this.ribbon.element)) as HTMLButtonElement;
             if (findBtn) {
-                disable ? findBtn.classList.add('e-disabled') : findBtn.classList.remove('e-disabled');
+                if (disable) {
+                    findBtn.classList.add('e-disabled')
+                } else {
+                    findBtn.classList.remove('e-disabled');
+                }
                 findBtn.disabled = disable;
             }
         }
@@ -1829,7 +1834,7 @@ export class Ribbon {
         args.element.title = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Align' + this.getAlignText(args));
     }
     private getAlignText(args: MenuEventArgs): string {
-        let text: string = args.item.iconCss.split(' e-')[1].split('-icon')[0];
+        const text: string = args.item.iconCss.split(' e-')[1].split('-icon')[0];
         return text[0].toUpperCase() + text.slice(1, text.length);
     }
     private toggleBtnClicked(e: MouseEvent | KeyboardEvent): void {
@@ -1854,33 +1859,33 @@ export class Ribbon {
             break;
         }
         if (target.classList.contains('e-active')) {
-            value = activeModel[key];
+            value = activeModel[`${key}`];
             eventArgs = { style: activeModel, onActionUpdate: true };
             this.parent.notify(property, eventArgs);
             if (eventArgs.cancel) { target.classList.remove('e-active'); }
         } else {
-            value = defaultModel[key];
+            value = defaultModel[`${key}`];
             eventArgs = { style: defaultModel, onActionUpdate: true };
             this.parent.notify(property, eventArgs);
             if (eventArgs.cancel) { target.classList.add('e-active'); }
         }
-        if (!eventArgs.cancel && value !== eventArgs.style[key]) {
+        if (!eventArgs.cancel && value !== eventArgs.style[`${key}`]) {
             this.refreshToggleBtn(getCellIndexes(this.parent.getActiveSheet().activeCell));
         }
     }
 
     private getCellStyleValue(cssProp: string, indexes: number[]): string {
         const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
-        let value: string = this.parent.cellStyle[cssProp];
-        if (cell && cell.style && cell.style[cssProp]) {
-            value = cell.style[cssProp];
+        let value: string = this.parent.cellStyle[`${cssProp}`];
+        if (cell && cell.style && cell.style[`${cssProp}`]) {
+            value = cell.style[`${cssProp}`];
         }
         return value;
     }
     private refreshSelected(inst: DropDownButton, element: HTMLElement, key: string, itemKey: string = key): void {
         for (let i: number = 0; i < inst.items.length; i++) {
-            if (inst.items[i][itemKey] === inst[key]) {
-                element.children[i].classList.add('e-selected'); break;
+            if (inst.items[i as number][`${itemKey}`] === inst[`${key}`]) {
+                element.children[i as number].classList.add('e-selected'); break;
             }
         }
     }
@@ -1901,7 +1906,7 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const items: ItemModel[] = [];
         const themes: string[] = ['Material', 'Fabric', 'Bootstrap', 'HighContrastLight', 'MaterialDark', 'FabricDark', 'HighContrast',
-        'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent'];
+            'BootstrapDark', 'Bootstrap4', 'Bootstrap5Dark', 'Bootstrap5', 'TailwindDark', 'Tailwind', 'FluentDark', 'Fluent'];
         themes.forEach((id: string): void => {
             items.push({ id: id, text: l10n.getConstant(id), iconCss: id === theme ? 'e-icons e-selected-icon' : '' });
         });
@@ -1970,9 +1975,9 @@ export class Ribbon {
         const cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet());
         const dummyDiv: HTMLElement = this.parent.createElement('div');
         const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
-        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('APPLY'), attrs: { 'type': 'button' } });
-        const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample', innerHTML: l10n.getConstant('CustomFormatSample') + ':'});
-        const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormat'), 'spellcheck': 'false' }});
+        const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', innerHTML: l10n.getConstant('Apply'), attrs: { 'type': 'button' } });
+        const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample', innerHTML: l10n.getConstant('CustomFormatTypeList') + ':'});
+        const inputElem: HTMLElement = this.parent.createElement('input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'placeholder': l10n.getConstant('CustomFormatPlaceholder'), 'spellcheck': 'false' }});
         const listviewCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-listview'});
         const customFormatDialog: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         const formatData = [{ text: 'General' }, { text: '0' }, { text: '0.00' }, { text: '#,##0' }, { text: '#,##0.00' },
@@ -2042,8 +2047,8 @@ export class Ribbon {
         this.numPopupWidth = 0;
         const elemList: NodeListOf<Element> = args.element.querySelectorAll('span.e-numformat-preview-text');
         for (let i: number = 0, len: number = elemList.length; i < len; i++) {
-            if (this.numPopupWidth < (elemList[i] as HTMLElement).offsetWidth) {
-                this.numPopupWidth = (elemList[i] as HTMLElement).offsetWidth;
+            if (this.numPopupWidth < (elemList[i as number] as HTMLElement).offsetWidth) {
+                this.numPopupWidth = (elemList[i as number] as HTMLElement).offsetWidth;
             }
         }
         const popWidth: number = this.numPopupWidth + 160;
@@ -2066,7 +2071,8 @@ export class Ribbon {
             value: cell && (cell.value || <unknown>cell.value === 0) ? cell.value : '',
             format: getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType),
             sheetIndex: this.parent.activeSheetIndex,
-            onLoad: true
+            onLoad: true,
+            skipFormatCheck: isImported(this.parent)
         };
         this.parent.notify(getFormattedCellObject, eventArgs);
         const previewElem: HTMLElement = this.parent.createElement('span', {
@@ -2083,7 +2089,7 @@ export class Ribbon {
         if (isNullOrUndefined(activeTab)) { activeTab = this.ribbon.selectedTab; }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sheet: SheetModel = this.parent.getActiveSheet();
-        switch (this.ribbon.items[activeTab].header.text) {
+        switch (this.ribbon.items[activeTab as number].header.text) {
         case l10n.getConstant('Home'):
             this.refreshHomeTabContent(getCellIndexes(sheet.activeCell));
             break;
@@ -2209,7 +2215,7 @@ export class Ribbon {
                 } else if (name === 'wrap') {
                     isActive = cell && cell.wrap;
                 } else {
-                    value = this.getCellStyleValue(fontProps[index], indexes).toLowerCase();
+                    value = this.getCellStyleValue(fontProps[index as number], indexes).toLowerCase();
                     isActive = value.indexOf(name) > -1;
                 }
                 if (isActive) {
@@ -2225,8 +2231,8 @@ export class Ribbon {
         fontFamily = fontFamily.split('"').join('');
         this.fontNameDdb.element.firstElementChild.textContent = fontFamily;
         for (let i: number = 0; i < this.fontNameDdb.items.length; i++) {
-            if (this.fontNameDdb.items[i].text === fontFamily) {
-                this.fontNameDdb.items[i].iconCss = 'e-icons e-selected-icon';
+            if (this.fontNameDdb.items[i as number].text === fontFamily) {
+                this.fontNameDdb.items[i as number].iconCss = 'e-icons e-selected-icon';
                 if (i !== this.fontNameIndex) {
                     this.fontNameDdb.items[this.fontNameIndex].iconCss = '';
                 }
@@ -2235,7 +2241,7 @@ export class Ribbon {
                 break;
             }
         }
-        if (['Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier',
+        if (['Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Comic Sans MS', 'Courier',
             'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto',
             'Tahoma', 'Times New Roman', 'Verdana'].indexOf(fontFamily) < 0) {
             this.fontNameDdb.items[this.fontNameIndex].iconCss = '';
@@ -2245,11 +2251,11 @@ export class Ribbon {
 
     private refreshNumFormatSelection(type: string): void {
         for (let i: number = 0; i < this.numFormatDDB.items.length; i++) {
-            if (this.numFormatDDB.items[i].iconCss !== '') {
-                this.numFormatDDB.items[i].iconCss = '';
+            if (this.numFormatDDB.items[i as number].iconCss !== '') {
+                this.numFormatDDB.items[i as number].iconCss = '';
             }
-            if (this.numFormatDDB.items[i].text === type) {
-                this.numFormatDDB.items[i].iconCss = 'e-icons e-selected-icon';
+            if (this.numFormatDDB.items[i as number].text === type) {
+                this.numFormatDDB.items[i as number].iconCss = 'e-icons e-selected-icon';
             }
         }
         this.numFormatDDB.element.firstElementChild.textContent = type;
@@ -2309,7 +2315,6 @@ export class Ribbon {
             const sheet: SheetModel = this.parent.getActiveSheet();
             let evtHArgs: { isShow: boolean, sheetIdx: number, cancel: boolean };
             let evtglArgs: { isShow: boolean, sheetIdx: number, cancel: boolean };
-            let isActive: boolean;
             let indexes: number[];
             let selectCell: number[];
             switch (args.item.id) {
@@ -2392,7 +2397,7 @@ export class Ribbon {
         if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
             if (isNullOrUndefined(args.activeTab)) {
                 for (let i: number = 0, len: number = this.ribbon.items.length; i < len; i++) {
-                    if (this.ribbon.items[i].header.text === viewtabHeader) { args.activeTab = i; break; }
+                    if (this.ribbon.items[i as number].header.text === viewtabHeader) { args.activeTab = i; break; }
                 }
             }
             const text: string = this.getLocaleText(args.props);
@@ -2402,11 +2407,11 @@ export class Ribbon {
             const id: string = `${this.parent.element.id}_${args.props.toLowerCase()}`;
             const len: number = this.ribbon.items[args.activeTab].content.length;
             for (let i: number; i < len; i++) {
-                if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
+                if (this.ribbon.items[args.activeTab].content[i as number].type === 'Separator') {
                     continue;
                 }
-                if (this.ribbon.items[args.activeTab].content[i].id === id) {
-                    this.ribbon.items[args.activeTab].content[i].text = text;
+                if (this.ribbon.items[args.activeTab].content[i as number].id === id) {
+                    this.ribbon.items[args.activeTab].content[i as number].text = text;
                     this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
                 }
             }
@@ -2417,14 +2422,14 @@ export class Ribbon {
         if (this.ribbon.items[this.ribbon.selectedTab].header.text === datatabHeader) {
             if (isNullOrUndefined(args.activeTab)) {
                 for (let i: number = 0, len: number = this.ribbon.items.length; i < len; i++) {
-                    if (this.ribbon.items[i].header.text === datatabHeader) { args.activeTab = i; break; }
+                    if (this.ribbon.items[i as number].header.text === datatabHeader) { args.activeTab = i; break; }
                 }
             }
             const id: string = `${this.parent.element.id}_${args.props.toLowerCase()}`;
             if (id === this.parent.element.id + '_protect') {
                 const len: number = this.ribbon.items[this.ribbon.selectedTab].content.length; let j: number;
                 for (j = 0; j < len; j++) {
-                    if (this.ribbon.items[this.ribbon.selectedTab].content[j].id === this.parent.element.id + '_protect') {
+                    if (this.ribbon.items[this.ribbon.selectedTab].content[j as number].id === this.parent.element.id + '_protect') {
                         break;
                     }
                 }
@@ -2433,12 +2438,12 @@ export class Ribbon {
             else if (id === this.parent.element.id + '_protectworkbook') {
                 const len: number = this.ribbon.items[this.ribbon.selectedTab].content.length; let j: number;
                 for (j = 0; j < len; j++) {
-                    if (this.ribbon.items[this.ribbon.selectedTab].content[j].id === this.parent.element.id + '_protectworkbook') {
+                    if (this.ribbon.items[this.ribbon.selectedTab].content[j as number].id === this.parent.element.id + '_protectworkbook') {
                         break;
                     }
                 }
                 if (this.parent.isProtected || this.parent.password.length > 0) {
-                    text = this.getLocaleProtectWorkbook('UnProtectWorkbook');
+                    text = this.getLocaleProtectWorkbook('UnprotectWorkbook');
                 }
                 else if (!this.parent.isProtected) {
                     text = this.getLocaleProtectWorkbook('ProtectWorkbook');
@@ -2446,9 +2451,9 @@ export class Ribbon {
             }
             const len: number = this.ribbon.items[args.activeTab].content.length;
             for (let i: number; i < len; i++) {
-                if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') { continue; }
-                if (this.ribbon.items[args.activeTab].content[i].id === id) {
-                    this.ribbon.items[args.activeTab].content[i].text = text;
+                if (this.ribbon.items[args.activeTab].content[i as number].type === 'Separator') { continue; }
+                if (this.ribbon.items[args.activeTab].content[i as number].id === id) {
+                    this.ribbon.items[args.activeTab].content[i as number].text = text;
                     this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
                 }
             }
@@ -2497,43 +2502,45 @@ export class Ribbon {
     private refreshViewTabContent(activeTab: number): void {
         const id: string = this.parent.element.id; const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        for (let i: number = 0; i < this.ribbon.items[activeTab].content.length; i++) {
-            if (this.ribbon.items[activeTab].content[i].type === 'Separator') { continue; }
-            if (this.ribbon.items[activeTab].content[i].id === `${id}_headers`) {
+        let tabItem: TlbItemModel;
+        for (let i: number = 0; i < this.ribbon.items[activeTab as number].content.length; i++) {
+            tabItem = this.ribbon.items[activeTab as number].content[i as number];
+            if (tabItem.type === 'Separator') { continue; }
+            if (tabItem.id === `${id}_headers`) {
                 this.updateViewTabContent(activeTab, 'Headers', i);
             }
-            if (this.ribbon.items[activeTab].content[i].id === `${id}_gridlines`) {
+            if (tabItem.id === `${id}_gridlines`) {
                 this.updateViewTabContent(activeTab, 'GridLines', i);
             }
-            if (this.ribbon.items[activeTab].content[i].id === (`${id}_freezepanes`)) {
+            if (tabItem.id === (`${id}_freezepanes`)) {
                 if (sheet.frozenRows || sheet.frozenColumns) {
-                    if (this.ribbon.items[activeTab].content[i].text === l10n.getConstant('FreezePanes')) {
+                    if (tabItem.text === l10n.getConstant('FreezePanes')) {
                         this.updateToggleText('freezepanes', this.updateRibbonItemText('Unfreeze', 'Panes', i, activeTab));
                     }
                 } else {
-                    if (this.ribbon.items[activeTab].content[i].text === l10n.getConstant('UnfreezePanes')) {
+                    if (tabItem.text === l10n.getConstant('UnfreezePanes')) {
                         this.updateToggleText('freezepanes', this.updateRibbonItemText('Freeze', 'Panes', i, activeTab));
                     }
                 }
             }
-            if (this.ribbon.items[activeTab].content[i].id === (`${id}_freezerows`)) {
+            if (tabItem.id === (`${id}_freezerows`)) {
                 if (sheet.frozenRows) {
-                    if (this.ribbon.items[activeTab].content[i].text === l10n.getConstant('FreezeRows')) {
+                    if (tabItem.text === l10n.getConstant('FreezeRows')) {
                         this.updateToggleText('freezerows', this.updateRibbonItemText('Unfreeze', 'Rows', i, activeTab));
                     }
                 } else {
-                    if (this.ribbon.items[activeTab].content[i].text === l10n.getConstant('UnfreezeRows')) {
+                    if (tabItem.text === l10n.getConstant('UnfreezeRows')) {
                         this.updateToggleText('freezerows', this.updateRibbonItemText('Freeze', 'Rows', i, activeTab));
                     }
                 }
             }
-            if (this.ribbon.items[activeTab].content[i].id === (`${id}_freezecolumns`)) {
+            if (tabItem.id === (`${id}_freezecolumns`)) {
                 if (sheet.frozenColumns) {
-                    if (this.ribbon.items[activeTab].content[i].text === l10n.getConstant('FreezeColumns')) {
+                    if (tabItem.text === l10n.getConstant('FreezeColumns')) {
                         this.updateToggleText('freezecolumns', this.updateRibbonItemText('Unfreeze', 'Columns', i, activeTab));
                     }
                 } else {
-                    if (this.ribbon.items[activeTab].content[i].text === l10n.getConstant('UnfreezeColumns')) {
+                    if (tabItem.text === l10n.getConstant('UnfreezeColumns')) {
                         this.updateToggleText('freezecolumns', this.updateRibbonItemText('Freeze', 'Columns', i, activeTab));
                     }
                 }
@@ -2544,11 +2551,11 @@ export class Ribbon {
     private updateViewTabContent(activeTab: number, item: string, idx: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet(); const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (sheet['show' + item]) {
-            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Show' + item)) {
+            if (this.ribbon.items[activeTab as number].content[idx as number].text === l10n.getConstant('Show' + item)) {
                 this.updateToggleText(item.toLowerCase(), this.updateRibbonItemText('Hide', item, idx, activeTab));
             }
         } else {
-            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Hide' + item)) {
+            if (this.ribbon.items[activeTab as number].content[idx as number].text === l10n.getConstant('Hide' + item)) {
                 this.updateToggleText(item.toLowerCase(), this.updateRibbonItemText('Show', item, idx, activeTab));
             }
         }
@@ -2556,20 +2563,20 @@ export class Ribbon {
     private updateRibbonItemText(showHideText: string, item: string, idx: number, activeTab: number): string {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const text: string = l10n.getConstant(showHideText + item);
-        this.ribbon.items[activeTab].content[idx].text = text;
+        this.ribbon.items[activeTab as number].content[idx as number].text = text;
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         return text;
     }
 
     private refreshDataTabContent(activeTab: number): void {
         const id: string = this.parent.element.id; let updated: boolean;
-        for (let j: number = 0; j < this.ribbon.items[activeTab].content.length; j++) {
-            if (this.ribbon.items[activeTab].content[j].type === 'Separator') { continue; }
-            if (this.ribbon.items[activeTab].content[j].id === `${id}_protect`) {
+        for (let j: number = 0; j < this.ribbon.items[activeTab as number].content.length; j++) {
+            if (this.ribbon.items[activeTab as number].content[j as number].type === 'Separator') { continue; }
+            if (this.ribbon.items[activeTab as number].content[j as number].id === `${id}_protect`) {
                 this.updateDataTabContent(activeTab, 'Sheet', j);
                 if (updated) { break; } updated = true;
             }
-            if (this.ribbon.items[activeTab].content[j].id === `${id}_protectworkbook`) {
+            if (this.ribbon.items[activeTab as number].content[j as number].id === `${id}_protectworkbook`) {
                 this.updateDataTabContent(activeTab, 'Workbook', j);
             }
         }
@@ -2580,8 +2587,8 @@ export class Ribbon {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (item === 'Sheet') {
             if (sheet.isProtected) {
-                if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
-                    this.ribbon.items[activeTab].content[idx].cssClass = 'e-active';
+                if (this.ribbon.items[activeTab as number].content[idx as number].text === l10n.getConstant('Protect' + item)) {
+                    this.ribbon.items[activeTab as number].content[idx as number].cssClass = 'e-active';
                     this.updateProtectBtn('Unprotect', item, idx, activeTab);
                 }
             } else {
@@ -2591,11 +2598,11 @@ export class Ribbon {
         else if (item === 'Workbook') {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             if (this.parent.isProtected) {
-                if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
-                    this.updateToggleText('protectworkbook', this.updateRibbonItemText('UnProtect', item, idx, activeTab));
+                if (this.ribbon.items[activeTab as number].content[idx as number].text === l10n.getConstant('Protect' + item)) {
+                    this.updateToggleText('protectworkbook', this.updateRibbonItemText('Unprotect', item, idx, activeTab));
                 }
             } else {
-                if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('UnProtect' + item)) {
+                if (this.ribbon.items[activeTab as number].content[idx as number].text === l10n.getConstant('Unprotect' + item)) {
                     this.updateToggleText('protectworkbook', this.updateRibbonItemText('Protect', item, idx, activeTab));
                 }
             }
@@ -2604,7 +2611,7 @@ export class Ribbon {
     private updateProtectBtn(protectText: string, item: string, idx: number, activeTab: number): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const text: string = l10n.getConstant(protectText + item);
-        this.ribbon.items[activeTab].content[idx].text = text;
+        this.ribbon.items[activeTab as number].content[idx as number].text = text;
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText('protect', text);
     }
@@ -2612,7 +2619,7 @@ export class Ribbon {
     private updateProtectWorkbookBtn(protectText: string, item: string, idx: number, activeTab: number): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const text: string = l10n.getConstant(protectText);
-        this.ribbon.items[activeTab].content[idx].text = text;
+        this.ribbon.items[activeTab as number].content[idx as number].text = text;
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText('protectworkbook', text);
     }
@@ -2706,8 +2713,8 @@ export class Ribbon {
                 element.style.left = `${offset.left - clientRect.width}px`;
                 element.style.top = `${offset.top - clientRect.height}px`;
                 for (let i: number = 0; i < ddbObj.items.length; i++) {
-                    if (ddbObj.content === ddbObj.items[i].text) {
-                        args.element.children[i].classList.add('e-selected');
+                    if (ddbObj.content === ddbObj.items[i as number].text) {
+                        args.element.children[i as number].classList.add('e-selected');
                         break;
                     }
                 }
@@ -2732,7 +2739,7 @@ export class Ribbon {
             [].slice.call(args.element.children).forEach((li: HTMLElement, index: number): void => {
                 wrapper = this.parent.createElement('div', { innerHTML: li.innerHTML });
                 li.innerHTML = '';
-                wrapper.appendChild(this.parent.createElement('span', { className: 'e-extension', innerHTML: contents[index] }));
+                wrapper.appendChild(this.parent.createElement('span', { className: 'e-extension', innerHTML: contents[index as number] }));
                 li.appendChild(wrapper);
             });
         }
@@ -2794,20 +2801,20 @@ export class Ribbon {
         }
         const len: number = this.ribbon.items[this.ribbon.selectedTab].content.length; let i: number;
         for (i = 0; i < len; i++) {
-            if (this.ribbon.items[this.ribbon.selectedTab].content[i].id === this.parent.element.id + '_protectworkbook') {
+            if (this.ribbon.items[this.ribbon.selectedTab].content[i as number].id === this.parent.element.id + '_protectworkbook') {
                 break;
             }
         }
         if (sheet.isProtected) {
             if (this.parent.isProtected && this.parent.element.querySelector('#' + this.parent.element.id + '_protectworkbook') &&
                 this.parent.element.querySelector('#' + this.parent.element.id + '_protectworkbook')
-                    .querySelector('.e-tbar-btn-text').textContent === l10n.getConstant('UnProtectWorkbook')) {
+                    .querySelector('.e-tbar-btn-text').textContent === l10n.getConstant('UnprotectWorkbook')) {
                 if (this.ribbon.items[this.ribbon.selectedTab].header.text === l10n.getConstant('Data')) {
-                    this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('UnProtectWorkbook');
+                    this.ribbon.items[this.ribbon.selectedTab].content[i as number].text = l10n.getConstant('UnprotectWorkbook');
                 }
             } else {
                 if (this.ribbon.items[this.ribbon.selectedTab].header.text === l10n.getConstant('Data')) {
-                    this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
+                    this.ribbon.items[this.ribbon.selectedTab].content[i as number].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
@@ -2817,13 +2824,13 @@ export class Ribbon {
         } else {
             if (this.parent.isProtected && this.parent.element.querySelector('#' + this.parent.element.id + '_protectworkbook') &&
                 this.parent.element.querySelector('#' + this.parent.element.id + '_protectworkbook')
-                    .querySelector('.e-tbar-btn-text').textContent === l10n.getConstant('UnProtectWorkbook')) {
+                    .querySelector('.e-tbar-btn-text').textContent === l10n.getConstant('UnprotectWorkbook')) {
                 if (this.ribbon.items[this.ribbon.selectedTab].header.text === l10n.getConstant('Data')) {
-                    this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('UnProtectWorkbook');
+                    this.ribbon.items[this.ribbon.selectedTab].content[i as number].text = l10n.getConstant('UnprotectWorkbook');
                 }
             } else {
                 if (this.ribbon.items[this.ribbon.selectedTab].header.text === l10n.getConstant('Data')) {
-                    this.ribbon.items[this.ribbon.selectedTab].content[i].text = l10n.getConstant('ProtectWorkbook');
+                    this.ribbon.items[this.ribbon.selectedTab].content[i as number].text = l10n.getConstant('ProtectWorkbook');
                 }
             }
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: this.parent.allowImage }]);
@@ -2849,17 +2856,17 @@ export class Ribbon {
         const l10: L10n = this.parent.serviceLocator.getService(locale);
         const id: string = this.parent.element.id;
         switch (prop) {
-            case 'allowFreezePane':
-                this.ribbon.enableItems(
-                    l10.getConstant('View'), [`${id}_freezepanes`, `${id}_freezerows`, `${id}_freezecolumns`], this.parent.allowFreezePane);
-                break;
-            case 'showRibbon':
-                if (this.parent.showRibbon) {
-                    this.initialize(true);
-                } else if (this.ribbon) {
-                    this.destroy();
-                }
-                break;
+        case 'allowFreezePane':
+            this.ribbon.enableItems(
+                l10.getConstant('View'), [`${id}_freezepanes`, `${id}_freezerows`, `${id}_freezecolumns`], this.parent.allowFreezePane);
+            break;
+        case 'showRibbon':
+            if (this.parent.showRibbon) {
+                this.initialize(true);
+            } else if (this.ribbon) {
+                this.destroy();
+            }
+            break;
         }
     }
     private addEventListener(): void {

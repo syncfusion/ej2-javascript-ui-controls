@@ -1636,5 +1636,51 @@ describe('insert Audio', () => {
              }, 100);
          });
      });
+
+     describe('Quick tool bar appears while click out of the audio if audio change to break', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><audio controls><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3" /></audio></p>`,
+                insertAudioSettings: {
+                    layoutOption: 'Break'
+                }
+            });
+
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Quick tool bar appears while click out of the audio if audio change to break", (done) => {
+            let target = <HTMLElement>rteObj.element.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).audioModule.audEle = rteObj.contentModule.getEditPanel().querySelector('.e-audio-wrap audio');
+            let mouseEventArgs = {
+                item: { command: 'Audios', subCommand: 'Break' }
+            };
+            let audio: HTMLElement = rteObj.element.querySelector('.e-rte-audio') as HTMLElement;
+            (<any>rteObj).audioModule.alignmentSelect(mouseEventArgs);
+            expect(audio.classList.contains('e-audio-break')).toBe(true);
+            let trg: any = <HTMLElement>rteObj.element.querySelectorAll(".e-content")[0];
+            let clickEvent1: any = document.createEvent("MouseEvents");
+            let eventsArg1: any = { pageX: 50, pageY: 300, target: document.querySelector('p')};
+            clickEvent1.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventsArg1 });
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(0);
+            done();
+        });
+    });
  });
  

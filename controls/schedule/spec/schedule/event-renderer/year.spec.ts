@@ -85,6 +85,247 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Testing the min/max date in year view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Test event-1',
+                StartTime: new Date(2022, 0, 1),
+                EndTime: new Date(2022, 0, 1)
+            }, {
+                Id: 2,
+                Subject: 'Test event-2',
+                StartTime: new Date(2022, 0, 2),
+                EndTime: new Date(2022, 0, 2)
+            }, {
+                Id: 3,
+                Subject: 'Test event-3',
+                StartTime: new Date(2022, 0, 5),
+                EndTime: new Date(2022, 0, 5)
+            }, {
+                Id: 4,
+                Subject: 'Test event-4',
+                StartTime: new Date(2022, 0, 16),
+                EndTime: new Date(2022, 0, 16)
+            }, {
+                Id: 5,
+                Subject: 'Test event-5',
+                StartTime: new Date(2022, 0, 30),
+                EndTime: new Date(2022, 0, 30)
+            }];
+            const model: ScheduleModel = {
+                width: '500px', selectedDate: new Date(2022, 0, 1),
+                views: [{ option: 'Year' }]
+            };
+            schObj = util.createSchedule(model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('year view min/maxDate checking', (done: Function) => {
+            schObj.dataBound = function () {
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6].firstElementChild as HTMLElement, 'click');
+                expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
+                expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6].classList.contains('e-disable-dates')).toBe(true);
+                expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6].children.length).toEqual(1);
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-cell.e-work-cells')[21].firstElementChild as HTMLElement, 'click');
+                expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+                const appointment: HTMLElement = schObj.element.querySelectorAll('.e-cell.e-work-cells')[21].children[1] as HTMLElement;
+                expect(appointment.classList.contains('e-appointment')).toEqual(true);
+                done();
+            };
+            const monthCalendar: NodeListOf<Element> = schObj.element.querySelectorAll('.e-month-calendar');
+            expect(monthCalendar.length).toEqual(12);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-cell.e-work-cells')[21].firstElementChild as HTMLElement, 'click');
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            const appointment: HTMLElement = schObj.element.querySelectorAll('.e-cell.e-work-cells')[21].children[1] as HTMLElement;
+            expect(appointment.classList.contains('e-appointment')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6].firstElementChild as HTMLElement, 'click');
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6].classList.contains('e-disable-dates')).toBe(false);
+            expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6].children[1].classList.contains('e-appointment')).toEqual(true);
+            schObj.minDate = new Date(2022, 0, 15);
+            schObj.dataBind();
+            schObj.maxDate = new Date(2022, 1, 15);
+            schObj.dataBind();
+        });
+    });
+
+    describe('Testing the min/max dates with resources in Timeline year view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Events - Within a day',
+                StartTime: new Date(2018, 4, 1, 10, 0),
+                EndTime: new Date(2018, 4, 1, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 2,
+                Subject: 'Events - Within a day',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 3,
+                Subject: 'Events - Within a day',
+                StartTime: new Date(2018, 4, 1, 10, 0),
+                EndTime: new Date(2018, 4, 1, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 4,
+                Subject: 'Events - In multiple day',
+                StartTime: new Date(2018, 4, 2, 10, 0),
+                EndTime: new Date(2018, 4, 8, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            }
+            ];
+            const model: ScheduleModel = {
+                width: '900px', height: '800px', selectedDate: new Date(2018, 0, 1),
+                views: [{ option: 'TimelineYear' },
+                { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
+            };
+            schObj = util.createGroupSchedule(1, model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Horizontal year checking', (done: Function) => {
+            schObj.dataBound = function () {
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]'), 'click');
+                expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+                expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]'), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            schObj.minDate = new Date(2018, 3, 30);
+            schObj.dataBind();
+            schObj.maxDate = new Date(2018, 5, 30);
+            schObj.dataBind();
+            done();
+        });
+        it('Vertical year checking', (done: Function) => {
+            schObj.dataBound = function () {
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]'), 'click');
+                expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+                expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-icon-timeline-year-vertical'), 'click');
+            done();
+        });
+    });
+
+    describe('Testing the min/max dates without resources in Timeline year view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Test event-1',
+                StartTime: new Date(2022, 1, 1),
+                EndTime: new Date(2022, 1, 1)
+            }, {
+                Id: 2,
+                Subject: 'Test event-2',
+                StartTime: new Date(2022, 1, 2),
+                EndTime: new Date(2022, 1, 2)
+            }, {
+                Id: 3,
+                Subject: 'Test event-3',
+                StartTime: new Date(2022, 2, 5),
+                EndTime: new Date(2022, 2, 5)
+            }, {
+                Id: 4,
+                Subject: 'Test event-4',
+                StartTime: new Date(2022, 2, 16),
+                EndTime: new Date(2022, 2, 16)
+            }, {
+                Id: 5,
+                Subject: 'Test event-5',
+                StartTime: new Date(2022, 2, 30),
+                EndTime: new Date(2022, 2, 30)
+            }];
+            const model: ScheduleModel = {
+                width: '900px', height: '1000px', selectedDate: new Date(2022, 0, 1),
+                views: [{ option: 'TimelineYear' },
+                { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }]
+            };
+            schObj = util.createSchedule(model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+
+        it('Horizontal year checking', (done: Function) => {
+            schObj.dataBound = function () {
+                expect(schObj.element.querySelectorAll('.e-appointment-wrapper')[0].childNodes.length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-work-cells')[106].classList.contains('e-disable-dates')).toBe(true);
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_3"]'), 'click');
+                expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]'), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[111].classList.contains('e-disable-dates')).toBe(false);
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_3"]'), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            schObj.minDate = new Date(2022, 1, 28);
+            schObj.dataBind();
+            schObj.maxDate = new Date(2022, 2, 30);
+            schObj.dataBind();
+            done();
+        });
+        it('Vertical year checking', (done: Function) => {
+            schObj.dataBound = function () {
+                expect(schObj.element.querySelectorAll('.e-appointment-wrapper')[0].childNodes.length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-work-cells')[106].classList.contains('e-disable-dates')).toBe(true);
+                util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_3"]'), 'click');
+                expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+                util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-icon-timeline-year-vertical'), 'click');
+            done();
+        });
+    });
+
     describe('Testing the year view rendering in mobile with resources', () => {
         let schObj: Schedule;
         const uA: string = Browser.userAgent;
@@ -109,6 +350,80 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(eventElements.length).toBeGreaterThan(0);
             const resourceToolbar: NodeListOf<Element> = schObj.element.querySelectorAll('.e-schedule-resource-toolbar-container');
             expect(resourceToolbar.length).toEqual(1);
+        });
+    });
+
+    describe('Testing the more indicators in mobile with resources', () => {
+        let schObj: Schedule;
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel 2 Build/PPR1.180610.009)' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.85 Mobile Safari/537.36';
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Events - Within a day',
+                StartTime: new Date(2018, 4, 1, 10, 0),
+                EndTime: new Date(2018, 4, 1, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 2,
+                Subject: 'Events - Within a day',
+                StartTime: new Date(2018, 4, 1, 10, 0),
+                EndTime: new Date(2018, 4, 1, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 3,
+                Subject: 'Events - In multiple day',
+                StartTime: new Date(2018, 4, 2, 10, 0),
+                EndTime: new Date(2018, 4, 8, 12, 30),
+                IsAllDay: false,
+                FId: 1,
+                HallId: 1,
+                RoomId: 1,
+                OwnerId: 1
+            }
+            ];
+            Browser.userAgent = androidUserAgent;
+            const model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2018, 0, 1),
+                views: [{ option: 'TimelineYear' }]
+            };
+            schObj = util.createGroupSchedule(1, model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+            Browser.userAgent = uA;
+        });
+
+        it('More indicators checking', () => {
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(1);
+            expect(schObj.element.querySelector('.e-more-indicator').getAttribute('data-count')).toBe('1');
+            const moreIndicator: HTMLElement = schObj.element.querySelector('.e-more-indicator') as HTMLElement;
+            util.triggerMouseEvent(moreIndicator, 'click');
+            const MorePopupWrapper: HTMLElement = document.querySelector('.e-more-popup-wrapper') as HTMLElement;
+            expect(MorePopupWrapper.classList.contains('e-popup-open')).toEqual(true);
+            expect(MorePopupWrapper.classList.contains('e-popup-close')).toEqual(false);
+            expect(document.querySelector('.e-more-appointment-wrapper').childElementCount).toEqual(2);
+            util.triggerMouseEvent(document.querySelector('.e-more-event-close'), 'click');
+            expect(MorePopupWrapper.classList.contains('e-popup-open')).toEqual(false);
+            expect(MorePopupWrapper.classList.contains('e-popup-close')).toEqual(true);
+        });
+
+        it('Spanned appointment checking in mobile mode', () => {
+            const spannedApp: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement
+            expect(spannedApp.offsetWidth).toEqual(700);
+            expect(spannedApp.offsetTop).toEqual(327);
         });
     });
 

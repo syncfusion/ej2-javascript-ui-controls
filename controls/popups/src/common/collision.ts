@@ -177,7 +177,6 @@ export function flip(
     if (!target || !element || !positionX || !positionY || (!axis.X && !axis.Y)) {
         return;
     }
-    // eslint-disable-next-line
     const tEdge: EdgeOffset = { TL: null,
             TR: null,
             BL: null,

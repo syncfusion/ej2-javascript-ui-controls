@@ -739,9 +739,9 @@ export class QuickPopups {
                 let resourceData: string[];
                 let lastResource: ResourcesModel;
                 for (let i: number = this.parent.resourceBase.resourceCollection.length - 1; i >= 0; i--) {
-                    resourceData = eventData[this.parent.resourceBase.resourceCollection[i].field] as string[];
+                    resourceData = eventData[this.parent.resourceBase.resourceCollection[parseInt(i.toString(), 10)].field] as string[];
                     if (!isNullOrUndefined(resourceData)) {
-                        lastResource = this.parent.resourceBase.resourceCollection[i];
+                        lastResource = this.parent.resourceBase.resourceCollection[parseInt(i.toString(), 10)];
                         break;
                     }
                 }
@@ -754,7 +754,7 @@ export class QuickPopups {
                     let text: string;
                     const i: number = util.findIndexInData(lastResourceData, lastResource.idField, value);
                     if (i > -1) {
-                        text = lastResourceData[i][lastResource.textField] as string;
+                        text = lastResourceData[parseInt(i.toString(), 10)][lastResource.textField] as string;
                     }
                     if (text) { resNames.push(text); }
                 });
@@ -762,7 +762,7 @@ export class QuickPopups {
             } else {
                 const argsData: CellClickEventArgs = args as CellClickEventArgs;
                 const groupIndex: number = !isNullOrUndefined(argsData.groupIndex) ? argsData.groupIndex : 0;
-                const resourceDetails: TdData = this.parent.resourceBase.lastResourceLevel[groupIndex];
+                const resourceDetails: TdData = this.parent.resourceBase.lastResourceLevel[parseInt(groupIndex.toString(), 10)];
                 resourceValue = resourceDetails.resourceData[resourceDetails.resource.textField] as string;
             }
         }
@@ -837,9 +837,9 @@ export class QuickPopups {
                         const workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS +
                             ' tbody tr td[data-group-index="' + gIndex + '"]'));
                         for (let i: number = 0; i < workCells.length; i++) {
-                            const date: string = workCells[i].getAttribute('data-date');
+                            const date: string = workCells[parseInt(i.toString(), 10)].getAttribute('data-date');
                             if (date < tdDate) {
-                                this.morePopup.relateTo = workCells[i] as HTMLElement;
+                                this.morePopup.relateTo = workCells[parseInt(i.toString(), 10)] as HTMLElement;
                             }
                         }
                     }

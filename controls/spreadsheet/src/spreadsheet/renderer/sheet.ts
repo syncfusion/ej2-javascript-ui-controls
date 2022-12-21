@@ -4,8 +4,8 @@ import { getCellIndexes, getRangeIndexes, skipHiddenIdx, applyCF, ApplyCFArgs } 
 import { getColumnsWidth, getColumnWidth, ConditionalFormat } from '../../workbook/index';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
-import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, isReact, getDPRValue } from '../common/index';
-import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates, rowHeightChanged } from '../common/index';
+import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, getDPRValue } from '../common/index';
+import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, rowHeightChanged } from '../common/index';
 import { colWidthChanged, clearUndoRedoCollection, getUpdatedScrollPosition, locale } from '../common/index';
 import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight, getFormattedCellObject, getColorCode, getRowHeight } from '../../workbook/index';
 
@@ -44,7 +44,7 @@ export class SheetRender implements IRenderer {
         }
         cell.appendChild(
             this.parent.createElement('button', { className: 'e-selectall', id: `${this.parent.element.id}_select_all`,
-            attrs: { 'aria-label': this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll'), 'type': 'button' } }));
+                attrs: { 'aria-label': this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll'), 'type': 'button' } }));
     }
 
     private updateLeftColGroup(width?: number, rowHdr?: HTMLElement): void {
@@ -78,14 +78,14 @@ export class SheetRender implements IRenderer {
             const frozenCol: HTMLElement = document.getElementById(this.parent.element.id + '_sheet').getElementsByClassName(
                 'e-frozen-column')[0] as HTMLElement;
             frozenCol.style.height = `calc(100% - ${scrollSize}px)`;
-            frozenCol.style[offset] = width - getDPRValue(1) + 'Px'; frozenCol.style.display = '';
+            frozenCol.style[`${offset}`] = width - getDPRValue(1) + 'Px'; frozenCol.style.display = '';
         }
         this.setHeaderPanelWidth(this.getSelectAllContent(), width);
         this.getColHeaderPanel().style.width = `calc(100% - ${width}px)`;
-        this.getColHeaderPanel().style[offset] = width + 'px';
+        this.getColHeaderPanel().style[`${offset}`] = width + 'px';
         this.setHeaderPanelWidth(rowHdr, width);
         this.getContentPanel().style.width = `calc(100% - ${width}px)`;
-        this.getContentPanel().style[offset] = width + 'px';
+        this.getContentPanel().style[`${offset}`] = width + 'px';
         let scroll: HTMLElement =
             (this.contentPanel.nextElementSibling ? this.contentPanel.nextElementSibling : null) as HTMLElement;
         if (scroll) {
@@ -96,7 +96,7 @@ export class SheetRender implements IRenderer {
                 scroll.style.borderTopWidth = '0px';
             }
             scroll = scroll.firstElementChild as HTMLElement;
-            scroll.style[offset] = width + 'px'; scroll.style.width = `calc(100% - ${width}px)`;
+            scroll.style[`${offset}`] = width + 'px'; scroll.style.width = `calc(100% - ${width}px)`;
             if (Browser.userAgent.indexOf('Mac OS') > -1 && Browser.info.name === 'safari') {
                 scroll.style.height = '7px'; scroll.style.top = '-7px';
             }
@@ -288,7 +288,9 @@ export class SheetRender implements IRenderer {
                 }
             }
         });
-        if (this.parent[isReact]) { this.parent[renderReactTemplates](); }
+        if ((this.parent as { isReact?: boolean }).isReact) {
+            this.parent['renderReactTemplates']();
+        }
         cTBody.parentElement.insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf((): void => {
             if (!this.parent) { return; }
@@ -297,9 +299,10 @@ export class SheetRender implements IRenderer {
             if (sheetContent.childElementCount && sheetContent.querySelector('.e-header-panel') !== this.headerPanel) {
                 const sheetChild: HTMLCollection = sheetContent.children;
                 for (let i: number = 0; i < sheetChild.length; i++) {
-                    if (!sheetChild[i].classList.contains('e-frozen-row') && !sheetChild[i].classList.contains('e-frozen-column') && 
-                        !sheetChild[i].classList.contains('e-ss-overlay')) {
-                        sheetContent.removeChild(sheetChild[i]);
+                    if (!sheetChild[i as number].classList.contains('e-frozen-row') &&
+                        !sheetChild[i as number].classList.contains('e-frozen-column') &&
+                        !sheetChild[i as number].classList.contains('e-ss-overlay')) {
+                        sheetContent.removeChild(sheetChild[i as number]);
                     }
                 }
             }
@@ -326,7 +329,7 @@ export class SheetRender implements IRenderer {
                 let triggerEvent: boolean = true;
                 if (this.parent.scrollSettings.enableVirtualization) {
                     for (let i: number = 0; i < sheet.ranges.length; i++) {
-                        if ((<ExtendedRange>sheet.ranges[i]).info.count - 1 > this.parent.viewport.bottomIndex) {
+                        if ((<ExtendedRange>sheet.ranges[i as number]).info.count - 1 > this.parent.viewport.bottomIndex) {
                             triggerEvent = false; break;
                         }
                     }
@@ -354,9 +357,12 @@ export class SheetRender implements IRenderer {
         }
         if (this.parent.createdHandler) {
             if ((this.parent.createdHandler as { observers: object }).observers) {
-                this.parent[created].observers = (this.parent.createdHandler as { observers: object }).observers;
-                if ((this.parent as any).isAngular && (this.parent.createdHandler as { currentObservers: object }).currentObservers) {
-                    this.parent[created].currentObservers = (this.parent.createdHandler as { currentObservers: object }).currentObservers;
+                (this.parent['created']  as { observers?: object }).observers =
+                    (this.parent.createdHandler as { observers: object }).observers;
+                if ((this.parent as { isAngular?: boolean }).isAngular &&
+                    (this.parent.createdHandler as { currentObservers: object }).currentObservers) {
+                    (this.parent['created'] as { currentObservers?: object }).currentObservers =
+                        (this.parent.createdHandler as { currentObservers: object }).currentObservers;
                 }
             } else {
                 this.parent.setProperties({ created: this.parent.createdHandler }, true);
@@ -373,14 +379,16 @@ export class SheetRender implements IRenderer {
     private checkRowHeightChanged(args: { top?: number, left?: number }, sheet: SheetModel): void {
         const eventArgs: { top: number, left: number, sheet: SheetModel } = { top: args.top, left: args.left, sheet: sheet };
         this.parent.notify(getUpdatedScrollPosition, eventArgs);
-        if (args.top != eventArgs.top) {
-            if (this.parent.scrollModule && this.parent.scrollModule.offset.top.idx && (eventArgs.top - args.top) < getRowHeight(sheet, this.parent.scrollModule.offset.top.idx)) {
+        if (args.top !== eventArgs.top) {
+            if (this.parent.scrollModule && this.parent.scrollModule.offset.top.idx && (eventArgs.top - args.top) <
+                getRowHeight(sheet, this.parent.scrollModule.offset.top.idx)) {
                 this.parent.scrollModule.offset.top.size = eventArgs.top;
             }
             args.top = eventArgs.top;
         }
-        if (args.left != eventArgs.left) {
-            if (this.parent.scrollModule && this.parent.scrollModule.offset.left.idx && (eventArgs.left - args.left) < getColumnWidth(sheet, this.parent.scrollModule.offset.left.idx)) {
+        if (args.left !== eventArgs.left) {
+            if (this.parent.scrollModule && this.parent.scrollModule.offset.left.idx && (eventArgs.left - args.left) <
+                getColumnWidth(sheet, this.parent.scrollModule.offset.left.idx)) {
                 this.parent.scrollModule.offset.left.size = eventArgs.left
             }
             args.left = eventArgs.left;
@@ -407,7 +415,7 @@ export class SheetRender implements IRenderer {
         if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
             const cfRule: ConditionalFormat[] = sheet.conditionalFormats as ConditionalFormat[];
             for (let i: number = 0; i < cfRule.length; i++) {
-                delete cfRule[i].result;
+                delete cfRule[i as number].result;
             }
         }
     }
@@ -440,9 +448,9 @@ export class SheetRender implements IRenderer {
             }
             if (indexes[1] - frozenCol === args.indexes[1]) {
                 if (indexes[0] < frozenRow) {
-                    row = hTBody.children[count];
+                    row = hTBody.children[count as number];
                 } else {
-                    row = tBody.children[count];
+                    row = tBody.children[count as number];
                 }
                 if (row) {
                     row.innerHTML = '';
@@ -457,7 +465,7 @@ export class SheetRender implements IRenderer {
             cell = this.cellRenderer.render(<CellRenderArgs>{
                 colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
                 first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' :
-                (notFirstRow && indexes[0] === args.indexes[0] ? 'Row' : ''), isRefreshing: true, checkCF: true });
+                    (notFirstRow && indexes[0] === args.indexes[0] ? 'Row' : ''), isRefreshing: true, checkCF: true });
             this.checkColMerge(indexes, args.indexes, cell, value);
             if (frozenRow && indexes[0] === lastFrozenRow) { count = 0; }
         });
@@ -582,7 +590,7 @@ export class SheetRender implements IRenderer {
                 if (args.direction === 'first' && indexes[1] === args.indexes[1]) {
                     this.checkColMerge(
                         [indexes[0], this.parent.viewport.leftIndex + frozenCol], args.indexes,
-                        ((indexes[0] < frozenRow ? hTBody : tBody).rows[rowCount] ||
+                        ((indexes[0] < frozenRow ? hTBody : tBody).rows[rowCount as number] ||
                             { cells: [] }).cells[(args.indexes[3] - args.indexes[1]) + 1],
                         getCell(indexes[0], this.parent.viewport.leftIndex + frozenCol, sheet) || {});
                 }
@@ -606,9 +614,9 @@ export class SheetRender implements IRenderer {
                 }
                 if (indexes[1] === args.indexes[1]) {
                     if (indexes[0] < frozenRow) {
-                        row = hTBody.children[rowCount] as HTMLElement;
+                        row = hTBody.children[rowCount as number] as HTMLElement;
                     } else {
-                        row = tBody.children[rowCount] as HTMLElement;
+                        row = tBody.children[rowCount as number] as HTMLElement;
                         if (!row) {
                             skipRender = true;
                             return;
@@ -695,12 +703,12 @@ export class SheetRender implements IRenderer {
                 }
             }
             if (frozenCol) { hRow = (rFrag.lastElementChild as HTMLElement) || hRow; }
-            cell = this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address:
-                cKey, lastCell: indexes[1] === args.indexes[3], row: row, pHRow: hRow.previousSibling,
-            checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
-            isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
-                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first',
-                checkCF: true });
+            cell = this.cellRenderer.render(
+                <CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address: cKey, row: row,
+                    lastCell: indexes[1] === args.indexes[3], pHRow: hRow.previousSibling, checkNextBorder: args.direction === 'last' &&
+                    indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling, isHeightCheckNeeded: args.direction === 'first'
+                    || args.direction === '', hRow: hRow, first: args.direction === 'last' && !args.skipUpdateOnFirst && indexes[0] ===
+                    args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first', checkCF: true });
             if (args.direction ===  'last' && tBody.rows.length) {
                 this.checkRowMerge(
                     indexes, args.indexes, cell, value, (indexes[1] < frozenCol ? rTBody : tBody).rows[0].cells[indexes[1] < frozenCol ?
@@ -815,8 +823,7 @@ export class SheetRender implements IRenderer {
                     this.parent.selectRange(sheet.selectedRange);
                 } else {
                     this.getContentPanel().style.width = '';
-                    const offset: string = this.parent.enableRtl ? 'right' : 'left';
-                    this.getContentPanel().style[offset] = '';
+                    this.getContentPanel().style[this.parent.enableRtl ? 'right' : 'left'] = '';
                 }
                 this.getScrollElement().style.left = this.getRowHeaderWidth(sheet) + 'px';
             }

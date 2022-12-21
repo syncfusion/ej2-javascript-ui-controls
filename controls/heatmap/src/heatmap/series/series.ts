@@ -5,7 +5,7 @@ import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper'
 import { CellColor, RgbColor } from '../utils/colorMapping';
 import { BorderModel, FontModel, BubbleSizeModel } from '../model/base-model';
 import { Border, Font, BubbleTooltipData, BubbleSize } from '../model/base';
-import { IThemeStyle, ICellEventArgs } from '../model/interface';
+import { ICellEventArgs } from '../model/interface';
 import { Theme} from '../model/theme';
 import { CellType, BubbleType } from '../utils/enum';
 import { CellSettingsModel } from './series-model';
@@ -119,7 +119,6 @@ export class Series {
     /** @private */
     public containerTextObject: Element;
     /** @private */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     public format: Function;
 
     public checkLabelYDisplay: boolean;
@@ -144,7 +143,7 @@ export class Series {
             (cellSetting.border.width / 2)) / heatMap.xLength) * 100) / 100;
         const tempHeight: number = Math.round(((heatMap.initialClipRect.height -
             (cellSetting.border.width / 2)) / heatMap.yLength) * 100) / 100;
-        let tempVal: number = 0; const themeStyle: IThemeStyle = heatMap.themeStyle;
+        let tempVal: number = 0;
         let tempRectPosition: CurrentRect[] = [];  const tempBorder: BorderModel = cellSetting.border; let borderColor: string;
         let displayText: string; this.rectPositionCollection = []; this.color = ''; this.bubbleColorValue = [];
         if (heatMap.yAxis.opposedPosition) {
@@ -153,11 +152,11 @@ export class Series {
         const circleRadius: number = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x: number = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
             if (heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
-                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataYIndex];
-                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataYIndex];
+                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataYIndex as number];
+                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataYIndex as number];
             } else if (heatMap.paletteSettings.colorGradientMode === 'Row' && this.heatMap.paletteSettings.type === 'Gradient') {
-                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataXIndex];
-                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataXIndex];
+                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataXIndex as number];
+                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataXIndex as number];
             }
             this.setTextAndColor(dataXIndex, dataYIndex);
             const rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
@@ -264,26 +263,26 @@ export class Series {
             let maxValue: number;
             const minValue : number = (i === 0) && !this.heatMap.isColorRange ? this.heatMap.dataSourceMinValue :
                 this.heatMap.isColorRange ?
-                    this.heatMap.toggleValue[i].startValue : this.heatMap.toggleValue[i].value;
+                    this.heatMap.toggleValue[i as number].startValue : this.heatMap.toggleValue[i as number].value;
             if (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor') {
                 maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.maxColorValue :
                     this.heatMap.toggleValue[i + 1].value - 0.01;
             } else {
                 maxValue = (i === this.heatMap.toggleValue.length - 1 && !this.heatMap.isColorRange) ?
                     this.heatMap.dataSourceMaxValue : this.heatMap.isColorRange ?
-                        this.heatMap.toggleValue[i].endValue : this.heatMap.toggleValue[i + 1].value - 0.01;
+                        this.heatMap.toggleValue[i as number].endValue : this.heatMap.toggleValue[i + 1].value - 0.01;
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const clonedDataSource: any[] = this.heatMap.clonedDataSource;
-            const bubbleText: number = !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
-                clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '';
+            const bubbleText: number = !isNullOrUndefined(clonedDataSource[dataXIndex as number][dataYIndex as number][1]) &&
+                clonedDataSource[dataXIndex as number][dataYIndex as number][1].toString() !== '' ? clonedDataSource[dataXIndex as number][dataYIndex as number][1] : '';
             const text: number = parseFloat(
                 this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
                     bubbleText.toString() : this.text.toString());
             if (isNaN(text)) {
                 isValueInRange = true;
             } else if (!isNaN(text) && text >= minValue && text <= maxValue) {
-                if (!this.heatMap.toggleValue[i].visible) {
+                if (!this.heatMap.toggleValue[i as number].visible) {
                     isValueInRange = false;
                     break;
                 } else {
@@ -291,7 +290,7 @@ export class Series {
                     break;
                 }
             } else if (this.heatMap.isColorRange &&
-                maxValue >= this.heatMap.toggleValue[i].endValue && i === this.heatMap.toggleValue.length - 1) {
+                maxValue >= this.heatMap.toggleValue[i as number].endValue && i === this.heatMap.toggleValue.length - 1) {
                 isValueInRange = true;
                 break;
             }
@@ -341,11 +340,11 @@ export class Series {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clonedDataSource: any[] = this.heatMap.clonedDataSource;
         if (this.heatMap.bubbleSizeWithColor) {
-            this.text = !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][0]) &&
-                clonedDataSource[dataXIndex][dataYIndex][0].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][0] : '';
-            this.color = !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
-                clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ?
-                this.cellColor.getColorByValue(clonedDataSource[dataXIndex][dataYIndex][1])
+            this.text = !isNullOrUndefined(clonedDataSource[dataXIndex as number][dataYIndex as number][0]) &&
+                clonedDataSource[dataXIndex as number][dataYIndex as number][0].toString() !== '' ? clonedDataSource[dataXIndex as number][dataYIndex as number][0] : '';
+            this.color = !isNullOrUndefined(clonedDataSource[dataXIndex as number][dataYIndex as number][1]) &&
+                clonedDataSource[dataXIndex as number][dataYIndex as number][1].toString() !== '' ?
+                this.cellColor.getColorByValue(clonedDataSource[dataXIndex as number][dataYIndex as number][1])
                 : this.heatMap.isColorValueExist ? this.heatMap.emptyPointColor : this.cellColor.getColorByValue(this.text);
             const tempBubbleCollection: BubbleTooltipData = new BubbleTooltipData(
                 adaptData.isJsonData && adaptData.adaptorType === 'Cell' ? adaptData.bubbleDataMapping.size : null,
@@ -354,12 +353,12 @@ export class Series {
             this.bubbleColorValue.push({
                 mappingName: adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
                     adaptData.bubbleDataMapping.color : null,
-                bubbleData: !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
-                    clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '',
+                bubbleData: !isNullOrUndefined(clonedDataSource[dataXIndex as number][dataYIndex as number][1]) &&
+                    clonedDataSource[dataXIndex as number][dataYIndex as number][1].toString() !== '' ? clonedDataSource[dataXIndex as number][dataYIndex as number][1] : '',
                 valueType: 'Color'
             });
         } else {
-            this.text = clonedDataSource[dataXIndex][dataYIndex];
+            this.text = clonedDataSource[dataXIndex as number][dataYIndex as number];
             this.color = this.cellColor.getColorByValue(this.text);
         }
     }
@@ -701,7 +700,7 @@ export class Series {
             this.heatMap.axisCollections[1].axisLabelSize - 1;
         rectX = rectX === 0 ? 1 : rectX;
         // eslint-disable-next-line prefer-const
-        currentRect = this.heatMap.heatMapSeries.rectPositionCollection[rectY][rectX - 1];
+        currentRect = this.heatMap.heatMapSeries.rectPositionCollection[rectY as number][rectX - 1];
         this.hoverXAxisLabel = this.heatMap.axisCollections[0].tooltipLabels[rectX - 1];
         this.hoverXAxisValue = this.heatMap.axisCollections[0].labelValue[rectX - 1];
         this.hoverYAxisLabel = this.heatMap.axisCollections[1].tooltipLabels[(

@@ -104,7 +104,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
         if (member && member.length) {
             addSeparator(node, diagram); let memberText: string = '';
             for (let i: number = 0; i < member.length; i++) {
-                const members: UmlEnumerationMemberModel = member[i];
+                const members: UmlEnumerationMemberModel = member[parseInt(i.toString(), 10)];
                 if (members.name !== '') {
                     memberText += members.name;
                 }
@@ -150,7 +150,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
             addSeparator(node, diagram);
             for (let i: number = 0; i < attributes.length; i++) {
                 let text: string;
-                const attribute: UmlClassAttributeModel = attributes[i];
+                const attribute: UmlClassAttributeModel = attributes[parseInt(i.toString(), 10)];
                 if (attribute.scope && (attribute).scope === 'Public') {
                     text = ' +';
                 } else if (attribute.scope && attribute.scope === 'Private') {
@@ -218,7 +218,7 @@ export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlCla
         let methodText: string = '';
         let text: string;
         for (let i: number = 0; i < methods.length; i++) {
-            const method: UmlClassMethodModel = methods[i];
+            const method: UmlClassMethodModel = methods[parseInt(i.toString(), 10)];
             if (method.scope && method.scope === 'Public') {
                 text = ' +';
             } else if (method.scope && method.scope === 'Private') {
@@ -230,10 +230,10 @@ export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlCla
             }
             if (method.parameters) {
                 for (let j: number = 0; j < method.parameters.length; j++) {
-                    if (method.parameters[j].type) {
-                        argumentText += method.parameters[j].name + ':' + method.parameters[j].type;
+                    if (method.parameters[parseInt(j.toString(), 10)].type) {
+                        argumentText += method.parameters[parseInt(j.toString(), 10)].name + ':' + method.parameters[parseInt(j.toString(), 10)].type;
                     } else {
-                        argumentText += method.parameters[j].name;
+                        argumentText += method.parameters[parseInt(j.toString(), 10)].name;
                     }
                     if (j !== method.parameters.length - 1) {
                         argumentText += ',';

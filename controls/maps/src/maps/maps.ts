@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable radix */
-/* eslint-disable max-len */
-/* eslint-disable valid-jsdoc */
 /**
  * Maps Component file
  */
@@ -14,10 +9,10 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields, MapLocation, getMousePosition, calculateSize } from './utils/helper';
 import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle, querySelector } from './utils/helper';
 import { createStyle } from './utils/helper';
-import { ZoomSettings, LegendSettings, Tile } from './model/base';
+import { ZoomSettings, LegendSettings } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';
-import { MarkerSettingsModel, SelectionSettingsModel , InitialMarkerSelectionSettingsModel} from './model/base-model';
+import { MarkerSettingsModel, SelectionSettingsModel, InitialMarkerSelectionSettingsModel } from './model/base-model';
 import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel, InitialShapeSelectionSettingsModel } from './model/base-model';
 import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';
 import { Bubble } from './layers/bubble';
@@ -31,7 +26,6 @@ import { load, click, onclick, rightClick, loaded, doubleClick, resize, shapeSel
 import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle, Theme } from './model/theme';
-import { BingMap } from './layers/bing-map';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
 import { GeoPosition, ITooltipRenderCompleteEventArgs, ILegendRenderingEventArgs } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
@@ -41,7 +35,7 @@ import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoo
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
 import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax, processResult, getElementsByClassName } from '../maps/utils/helper';
-import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint, calculateZoomLevel } from '../maps/utils/helper';
+import { findPosition, textTrim, TextOption, renderTextElement, calculateZoomLevel } from '../maps/utils/helper';
 import { Annotations } from '../maps/user-interaction/annotation';
 import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';
 import { NavigationLineSettingsModel, changeBorderWidth } from './index';
@@ -548,7 +542,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @private
      */
-     public isAddLayer: boolean;
+    public isAddLayer: boolean;
 
     /**
      * Specifies the localization object.
@@ -659,6 +653,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomPersistence: boolean = false;
     /** @private */
     public defaultState: boolean = true;
+    /** @private */
+    public currentTiles: HTMLElement;
     /** @private */
     public markerCenterLatitude: number;
     /** @private */
@@ -822,10 +818,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (const key of keys) {
-                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
-                    extend(this[key], dataObj[key]);
+                if ((typeof this[key as string] === 'object') && !isNullOrUndefined(this[key as string])) {
+                    extend(this[key as string], dataObj[key as string]);
                 } else {
-                    this[key] = dataObj[key];
+                    this[key as string] = dataObj[key as string];
                 }
             }
             this.isProtectedOnChange = false;
@@ -855,18 +851,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.setCulture();
     }
     private renderElements(): void {
-        this.trigger(load, { maps: this });
-        this.createSVG();
-        this.findBaseAndSubLayers();
-        this.createSecondaryElement();
-        this.addTabIndex();
-        this.themeStyle = getThemeStyle(this.theme);
-        this.renderBorder();
-        this.renderTitle(this.titleSettings, 'title', null, null);
-        this.renderArea();
-        this.processRequestJsonData();
-        this.renderComplete();
-        this.isAddLayer = !this.isTileMap ? false : this.isAddLayer;
+        if (!this.isDestroyed) {
+            this.trigger(load, { maps: this });
+            this.createSVG();
+            this.findBaseAndSubLayers();
+            this.createSecondaryElement();
+            this.addTabIndex();
+            this.themeStyle = getThemeStyle(this.theme);
+            this.renderBorder();
+            this.renderTitle(this.titleSettings, 'title', null, null);
+            this.renderArea();
+            this.processRequestJsonData();
+            this.renderComplete();
+            this.isAddLayer = !this.isTileMap ? false : this.isAddLayer;
+        }
     }
     /**
      * To Initialize the control rendering.
@@ -880,7 +878,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     protected processRequestJsonData(): void {
         const length: number = this.layersCollection.length - 1;
         this.serverProcess = { request: 0, response: 0 }; let queryModule: Query;
-        let localAjax: MapAjax; let ajaxModule: Ajax; let dataModule: DataManager;
+        let dataModule: DataManager;
         Array.prototype.forEach.call(this.layersCollection, (layer: LayerSettings, layerIndex: number) => {
             if (layer.shapeData instanceof DataManager) {
                 this.serverProcess['request']++;
@@ -911,32 +909,34 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
             if (layer.markerSettings.length > 0) {
                 for (let i: number = 0; i < layer.markerSettings.length; i++) {
-                    if (layer.markerSettings[i].dataSource instanceof DataManager) {
+                    if (layer.markerSettings[i as number].dataSource instanceof DataManager) {
                         this.serverProcess['request']++;
-                        dataModule = layer.markerSettings[i].dataSource as DataManager;
-                        queryModule = layer.markerSettings[i].query instanceof Query ? layer.markerSettings[i].query : new Query();
+                        dataModule = layer.markerSettings[i as number].dataSource as DataManager;
+                        queryModule = layer.markerSettings[i as number].query instanceof Query ?
+                            layer.markerSettings[i as number].query : new Query();
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         dataManager.then((e: any) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            layer.markerSettings[i].dataSource = processResult(e) as any[];
+                            layer.markerSettings[i as number].dataSource = processResult(e) as any[];
                         });
                     }
                 }
             }
             if (layer.bubbleSettings.length > 0) {
                 for (let i: number = 0; i < layer.bubbleSettings.length; i++) {
-                    if (layer.bubbleSettings[i].dataSource instanceof DataManager) {
+                    if (layer.bubbleSettings[i as number].dataSource instanceof DataManager) {
                         this.serverProcess['request']++;
-                        dataModule = layer.bubbleSettings[i].dataSource as DataManager;
-                        queryModule = layer.bubbleSettings[i].query instanceof Query ? layer.bubbleSettings[i].query : new Query();
+                        dataModule = layer.bubbleSettings[i as number].dataSource as DataManager;
+                        queryModule = layer.bubbleSettings[i as number].query instanceof Query ?
+                            layer.bubbleSettings[i as number].query : new Query();
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dataManager: Promise<any> = dataModule.executeQuery(queryModule);
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         dataManager.then((e: any) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            layer.bubbleSettings[i].dataSource = processResult(e) as any[];
+                            layer.bubbleSettings[i as number].dataSource = processResult(e) as any[];
                         });
                     }
                 }
@@ -980,13 +980,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const collection: LayerSettings[] = this.layersCollection;
             this.layersCollection = [];
             for (let i: number = 0; i < collection.length; i++) {
-                if (collection[i].isBaseLayer) {
-                    this.layersCollection.push(collection[i]);
+                if (collection[i as number].isBaseLayer) {
+                    this.layersCollection.push(collection[i as number]);
                 }
             }
             for (let j: number = 0; j < collection.length; j++) {
-                if (!collection[j].isBaseLayer) {
-                    this.layersCollection.push(collection[j]);
+                if (!collection[j as number].isBaseLayer) {
+                    this.layersCollection.push(collection[j as number]);
                 }
             }
             this.renderMap();
@@ -1014,32 +1014,34 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const position: Point = this.getExtraPosition();
         for (let i: number = 0; i < this.layers.length; i++) {
             if (position.x !== 0 || position.y !== 0) {
-                let markerTemplate: HTMLElement = document.getElementById(this.element.id + '_LayerIndex_' + i + '_Markers_Template_Group');
+                const markerTemplate: HTMLElement = document.getElementById(this.element.id + '_LayerIndex_' + i + '_Markers_Template_Group');
                 if (!isNullOrUndefined(markerTemplate)) {
                     markerTemplate.style.top = this.mapAreaRect.y + position.y + 'px';
                     markerTemplate.style.left = this.mapAreaRect.x + position.x + 'px';
                 }
             }
-            if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
-                this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
-                const checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
-                this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
-                const shapeSelection: InitialShapeSelectionSettingsModel[] = this.layers[i].initialShapeSelection;
-                for (let j: number = 0; j < this.layers[i].initialShapeSelection.length; j++) {
-                    this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
+            if (this.layers[i as number].selectionSettings && this.layers[i as number].selectionSettings.enable &&
+                this.layers[i as number].initialShapeSelection.length > 0 && this.checkInitialRender) {
+                const checkSelection: boolean = this.layers[i as number].selectionSettings.enableMultiSelect;
+                this.layers[i as number].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
+                const shapeSelection: InitialShapeSelectionSettingsModel[] = this.layers[i as number].initialShapeSelection;
+                for (let j: number = 0; j < this.layers[i as number].initialShapeSelection.length; j++) {
+                    this.shapeSelection(i, shapeSelection[j as number].shapePath, shapeSelection[j as number].shapeValue, true);
                 }
-                this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
+                this.layers[i as number].selectionSettings.enableMultiSelect = checkSelection;
                 if (i === this.layers.length - 1) { this.checkInitialRender = false; }
             }
             if (!this.isResize) {
-                for (let k : number = 0; k < this.layers[i].markerSettings.length; k++) {
-                    if (this.layers[i].markerSettings[k].selectionSettings && this.layers[i].markerSettings[k].selectionSettings.enable
-                        && this.layers[i].markerSettings[k].initialMarkerSelection.length > 0) {
-                        const markerSelectionValues : InitialMarkerSelectionSettingsModel[] =
-                            this.layers[i].markerSettings[k].initialMarkerSelection;
-                        for (let j : number = 0; j < markerSelectionValues.length; j++) {
-                            this.markerInitialSelection(i, k, this.layers[i].markerSettings[k], markerSelectionValues[j].latitude,
-                                                        markerSelectionValues[j].longitude);
+                for (let k: number = 0; k < this.layers[i as number].markerSettings.length; k++) {
+                    // eslint-disable-next-line max-len
+                    if (this.layers[i as number].markerSettings[k as number].selectionSettings && this.layers[i as number].markerSettings[k as number].selectionSettings.enable
+                        && this.layers[i as number].markerSettings[k as number].initialMarkerSelection.length > 0) {
+                        const markerSelectionValues: InitialMarkerSelectionSettingsModel[] =
+                            this.layers[i as number].markerSettings[k as number].initialMarkerSelection;
+                        for (let j: number = 0; j < markerSelectionValues.length; j++) {
+                            this.markerInitialSelection(i, k, this.layers[i as number].markerSettings[k as number],
+                                                        markerSelectionValues[j as number].latitude,
+                                                        markerSelectionValues[j as number].longitude);
                         }
                     }
                 }
@@ -1103,8 +1105,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.element.style.outline = 'none';
         for (let i: number = 0; i < document.getElementsByTagName('path').length - 1; i++) {
-            if (document.getElementsByTagName('path')[i].id.indexOf('shapeIndex') > -1) {
-                document.getElementsByTagName('path')[i].style.outline = 'none';
+            if (document.getElementsByTagName('path')[i as number].id.indexOf('shapeIndex') > -1) {
+                document.getElementsByTagName('path')[i as number].style.outline = 'none';
             }
         }
         this.zoomingChange();
@@ -1125,15 +1127,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public markerSelection(
-        selectionSettings : SelectionSettingsModel, map : Maps, targetElement : Element,
-        data : any
-    ) : void {
-        const border : BorderModel = {
+        selectionSettings: SelectionSettingsModel, map: Maps, targetElement: Element,
+        data: any
+    ): void {
+        const border: BorderModel = {
             color: selectionSettings.border.color,
             width: selectionSettings.border.width / map.scale,
             opacity: selectionSettings.border.opacity
         };
-        const markerSelectionProperties : any = {
+        const markerSelectionProperties: any = {
             opacity: selectionSettings.opacity,
             fill: selectionSettings.fill,
             border: border,
@@ -1170,16 +1172,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public markerInitialSelection(
-        layerIndex : number, markerIndex : number, markerSettings : MarkerSettingsModel,
-        latitude : number, longitude : number
+        layerIndex: number, markerIndex: number, markerSettings: MarkerSettingsModel,
+        latitude: number, longitude: number
     ): void {
-        const selectionSettings : SelectionSettingsModel = markerSettings.selectionSettings;
+        const selectionSettings: SelectionSettingsModel = markerSettings.selectionSettings;
         if (selectionSettings.enable) {
-            for (let i : number = 0; i < markerSettings.dataSource['length']; i++) {
-                const data: any = markerSettings.dataSource[i];
+            for (let i: number = 0; i < markerSettings.dataSource['length']; i++) {
+                const data: any = markerSettings.dataSource[i as number];
                 if (data['latitude'] === latitude && data['longitude'] === longitude) {
-                    const targetId : string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
-                    '_dataIndex_' + i;
+                    const targetId: string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
+                        '_dataIndex_' + i;
                     this.markerSelection(selectionSettings, this, getElement(targetId), data);
                 }
             }
@@ -1233,8 +1235,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.zoomModule.layerCollectionEle = getElementByID(this.element.id + '_Layer_Collections');
         }
         if (this.isTileMap && getElementByID(this.element.id + '_Tile_SVG') && getElementByID(this.element.id + '_tile_parent')) {
-            let tileElement: Element = getElementByID(this.element.id + '_tile_parent');
-            let tileSvgElement: Element = getElementByID(this.element.id + '_Tile_SVG');
+            const tileElement: Element = getElementByID(this.element.id + '_tile_parent');
+            const tileSvgElement: Element = getElementByID(this.element.id + '_Tile_SVG');
             const tileSvgParentElement: Element = getElementByID(this.element.id + '_Tile_SVG_Parent');
             const tileRect: ClientRect = tileElement.getBoundingClientRect();
             const tileSvgRect: ClientRect = tileSvgElement.getBoundingClientRect();
@@ -1243,15 +1245,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             (tileSvgParentElement as HTMLElement).style.left = left + 'px';
             (tileSvgParentElement as HTMLElement).style.top = top + 'px';
             if (!isNullOrUndefined(this.legendModule) && this.legendModule.totalPages.length > 0) {
-                (tileElement as HTMLElement).style.width = (tileSvgElement as HTMLElement).style.width =  this.legendModule.legendTotalRect.width.toString();                
-                (tileElement as HTMLElement).style.height = (tileSvgElement as HTMLElement).style.height = this.legendModule.legendTotalRect.height.toString();                
+                (tileElement as HTMLElement).style.width = (tileSvgElement as HTMLElement).style.width =
+                    this.legendModule.legendTotalRect.width.toString();
+                (tileElement as HTMLElement).style.height = (tileSvgElement as HTMLElement).style.height =
+                    this.legendModule.legendTotalRect.height.toString();
                 (tileSvgParentElement as HTMLElement).style.width = this.legendModule.legendTotalRect.width + 'px';
                 (tileSvgParentElement as HTMLElement).style.height = this.legendModule.legendTotalRect.height + 'px';
             }
             const markerTemplateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
             if (!isNullOrUndefined(markerTemplateElements) && markerTemplateElements.length > 0) {
                 for (let i: number = 0; i < markerTemplateElements.length; i++) {
-                    const templateGroupEle: HTMLElement = markerTemplateElements[i] as HTMLElement;
+                    const templateGroupEle: HTMLElement = markerTemplateElements[i as number] as HTMLElement;
                     templateGroupEle.style.left = left + 'px';
                     templateGroupEle.style.top = top + 'px';
                 }
@@ -1264,11 +1268,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const elements: Element = document.getElementById(this.element.id + '_Layer_Collections');
             if (!isNullOrUndefined(elements) && elements.childElementCount > 0) {
                 for (let i: number = 0; i < elements.childNodes.length; i++) {
-                    const childElement: SVGAElement = elements.childNodes[i] as SVGAElement;
-                    if (childElement.tagName === 'g' && childElement.id.indexOf('_Legend_Group') == -1) {
+                    const childElement: SVGAElement = elements.childNodes[i as number] as SVGAElement;
+                    if (childElement.tagName === 'g' && childElement.id.indexOf('_Legend_Group') === -1) {
                         const layerIndex: number = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                         for (let j: number = 0; j < childElement.childNodes.length; j++) {
-                            const childNode: Element = <Element>childElement.childNodes[j];
+                            const childNode: Element = <Element>childElement.childNodes[j as number];
                             if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
                                 (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                                 (!(childNode.id.indexOf('_dataLableIndex_Group') > -1))) {
@@ -1308,7 +1312,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             for (let i: number = 0; i < templateElements.length; i++) {
                 let offSetLetValue: number = 0;
                 let offSetTopValue: number = 0;
-                const templateGroupEle: Element = templateElements[i] as Element;
+                const templateGroupEle: Element = templateElements[i as number] as Element;
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
                     const layerOffset: ClientRect = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
                     const elementOffset: ClientRect = getElementByID(templateGroupEle.id).getBoundingClientRect();
@@ -1319,7 +1323,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                             - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     }
                     for (let j: number = 0; j < templateGroupEle.childElementCount; j++) {
-                        const currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j];
+                        const currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j as number];
                         if (currentTemplate.id.indexOf('Marker') !== -1) {
                             const elementOffset: ClientRect = getElementByID(currentTemplate.id).getBoundingClientRect();
                             currentTemplate.style.left = parseFloat(currentTemplate.style.left) - (this.isTileMap ? 0 : elementOffset.width / 2) + 'px';
@@ -1347,17 +1351,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 id: this.element.id + '_tile_parent'
             });
             (ele as HTMLElement).style.cssText = 'position: absolute; left: ' +
-                                (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
-                                + (this.mapAreaRect.y + padding) + 'px; height: ' +
-                                (this.mapAreaRect.height) + 'px; width: '
-                                + (this.mapAreaRect.width) + 'px; overflow: hidden;';
+                (this.mapAreaRect.x) + 'px; right: ' + (this.margin.right) + 'px; top: '
+                + (this.mapAreaRect.y + padding) + 'px; height: ' +
+                (this.mapAreaRect.height) + 'px; width: '
+                + (this.mapAreaRect.width) + 'px; overflow: hidden;';
             const ele1: Element = createElement('div', {
                 id: this.element.id + '_tiles'
             });
             (ele1 as HTMLElement).style.cssText = 'position: absolute; left: ' +
-                                (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
-                                + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
-                                + (this.mapAreaRect.width) + 'px; overflow: hidden;';
+                (this.mapAreaRect.x) + 'px;  right: ' + (this.margin.right) + 'px; top: '
+                + (this.mapAreaRect.y + padding) + 'px; height: ' + (this.mapAreaRect.height) + 'px; width: '
+                + (this.mapAreaRect.width) + 'px; overflow: hidden;';
             this.element.appendChild(ele);
             this.element.appendChild(ele1);
         }
@@ -1387,7 +1391,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             (layer.type === 'Layer') ? mainLayers.push(layer) : subLayers.push(layer);
         });
         for (let i: number = 0; i < mainLayers.length; i++) {
-            const baseLayer: LayerSettings = <LayerSettings>mainLayers[i];
+            const baseLayer: LayerSettings = <LayerSettings>mainLayers[i as number];
             if (baseLayer.visible && baseIndex === i) {
                 baseLayer.isBaseLayer = true;
                 this.isTileMap = (baseLayer.layerType === 'Geometry' && !isNullOrUndefined(baseLayer.shapeData)) ? false : true;
@@ -1398,7 +1402,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
             }
         }
-        subLayers.map((subLayer: LayerSettings, subLayerIndex: number) => {
+        subLayers.map((subLayer: LayerSettings) => {
             if (subLayer.visible) {
                 this.layersCollection.push(subLayer);
             }
@@ -1574,6 +1578,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     private keyUpHandler(event: KeyboardEvent): void {
         const id: string = event.target['id'];
+        if (this.isTileMap) {
+            this.removeTileMap();
+        }
         if (event.code === 'Tab' && id.indexOf('_LayerIndex_') > -1 && id.indexOf('shapeIndex') > -1) {
             this.keyboardHighlightSelection(id, event.type);
         } else if (id.indexOf('_LayerIndex_') === -1 && id.indexOf('shapeIndex') === -1 &&
@@ -1589,24 +1596,31 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const layerIndex: number = parseInt(id.split('_LayerIndex_')[1].split('_')[0], 10);
         const shapeIndex: number = parseInt(id.split('_shapeIndex_')[1].split('_')[0], 10);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const shapeData: any = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
-            this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+        const shapeData: any = this.layers[layerIndex as number].shapeData['features']['length'] > shapeIndex ?
+            this.layers[layerIndex as number].shapeData['features'][shapeIndex as number]['properties'] : null;
         const dataIndex: number = parseInt(id.split('_dataIndex_')[1].split('_')[0], 10);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data: any = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
-        if (this.layers[layerIndex].selectionSettings.enable && key === 'keydown' && this.selectionModule) {
-            this.selectionModule.selectionsettings = this.layers[layerIndex].selectionSettings;
+        const data: any = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex as number].dataSource[dataIndex as number];
+        if (this.layers[layerIndex as number].selectionSettings.enable && key === 'keydown' && this.selectionModule) {
+            this.selectionModule.selectionsettings = this.layers[layerIndex as number].selectionSettings;
             this.selectionModule.selectionType = 'Shape';
             this.selectionModule.selectElement(<Element>event.target, layerIndex, data, shapeData);
-        } else if (this.highlightModule && (this.layers[layerIndex].highlightSettings.enable && key === 'keyup' &&
+        } else if (this.highlightModule && (this.layers[layerIndex as number].highlightSettings.enable && key === 'keyup' &&
             !(event.target as HTMLElement).classList.contains('ShapeselectionMapStyle'))) {
-            this.highlightModule.highlightSettings = this.layers[layerIndex].highlightSettings;
+            this.highlightModule.highlightSettings = this.layers[layerIndex as number].highlightSettings;
             this.highlightModule.handleHighlight(<Element>event.target, layerIndex, data, shapeData);
         }
     }
 
     private keyDownHandler(event: KeyboardEvent): void {
         const zoom: Zoom = this.zoomModule;
+        if ((event.code === 'ArrowUp' || event.code === 'ArrowDown' || event.code === 'ArrowLeft'
+            || event.code === 'ArrowRight') && zoom) {
+            const animatedTiles: HTMLElement = document.getElementById(this.element.id + '_animated_tiles');
+            if (this.isTileMap && !isNullOrUndefined(animatedTiles)) {
+                this.currentTiles = (animatedTiles.cloneNode(true) as HTMLElement);
+            }
+        }
         if ((event.key === '+' || event.code === 'Equal') && zoom) {
             zoom.performZoomingByToolBar('zoomin');
         } else if ((event.key === '-' || event.code === 'Minus') && zoom) {
@@ -1625,7 +1639,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             zoom.mouseDownLatLong['y'] = 0;
             zoom.mouseMoveLatLong['x'] = this.mapAreaRect.width / 7;
             zoom.panning('None', event.code === 'ArrowLeft' ? -(zoom.mouseMoveLatLong['x']) : zoom.mouseMoveLatLong['x'],
-                zoom.mouseDownLatLong['y'], event);
+                         zoom.mouseDownLatLong['y'], event);
             zoom.mouseDownLatLong['x'] = zoom.mouseMoveLatLong['x'];
         } else if (event.code === 'Enter') {
             const id: string = event.target['id'];
@@ -1666,18 +1680,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {boolean} - Returns the boolean value
      * @private
      */
-    public SelectedElement(targetEle : Element) : boolean {
-        let isSelect : boolean = false;
+    public SelectedElement(targetEle: Element): boolean {
+        let isSelect: boolean = false;
         if (targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
             isSelect = true;
         }
         return isSelect;
     }
-	
+
     /**
      * This method is used to perform the operations when a click operation is performed on maps.
      *
      * @param {PointerEvent} e - Specifies the pointer event on maps.
+     * @returns {void}
      */
     public mapsOnClick(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -1694,7 +1709,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const eventArgs: IMouseEventArgs = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
                 latitude: latitude, longitude: longitude,
-                isShapeSelected : this.SelectedElement(targetEle)
+                isShapeSelected: this.SelectedElement(targetEle)
             };
             if (this.onclick) {
                 eventArgs.name = onclick;
@@ -1709,7 +1724,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private clickHandler(e : PointerEvent, eventArgs : IMouseEventArgs, targetEle: Element) : void {
+    private clickHandler(e: PointerEvent, eventArgs: IMouseEventArgs, targetEle: Element): void {
         if (targetEle.id.indexOf('shapeIndex') > -1) {
             this.mergeCluster();
             if (getElement(this.element.id + '_mapsTooltip') &&
@@ -1728,27 +1743,29 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private triggerShapeSelection(targetEle: Element) {
+    private triggerShapeSelection(targetEle: Element): void {
         const layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-        const shapeSelectedEventArgs : IShapeSelectedEventArgs = triggerShapeEvent(
-            targetEle.id, this.layers[layerIndex].selectionSettings, this, shapeSelected
+        const shapeSelectedEventArgs: IShapeSelectedEventArgs = triggerShapeEvent(
+            targetEle.id, this.layers[layerIndex as number].selectionSettings, this, shapeSelected
         );
         if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
             customizeStyle(this.selectionModule.selectionType + 'selectionMap',
-                            this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                           this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
         } else if (shapeSelectedEventArgs.cancel && this.selectionModule
             && isNullOrUndefined(shapeSelectedEventArgs['data'])) {
             removeClass(targetEle);
             this.selectionModule.removedSelectionList(targetEle);
         }
     }
-    private getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement, x: number, y: number): GeoPosition {
+    private getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement,
+                             x: number, y: number): GeoPosition {
         let layerIndex: number = 0;
         let latLongValue: any;
-        if (targetId.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (parseInt(this.mouseDownEvent['x']) === parseInt(this.mouseClickEvent['x']))
-            && (parseInt(this.mouseDownEvent['y']) === parseInt(this.mouseClickEvent['y']))) {
+        if (targetId.indexOf('_LayerIndex_') !== -1 && !this.isTileMap &&
+            (parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
+            (parseInt(this.mouseDownEvent['y'], 10) === parseInt(this.mouseClickEvent['y'], 10))) {
             layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
-            if (this.layers[layerIndex].geometryType === 'Normal') {
+            if (this.layers[layerIndex as number].geometryType === 'Normal') {
                 if (targetId.indexOf('_shapeIndex_') > -1) {
                     const location: MapLocation = getMousePosition(pageX, pageY, (targetElement as any).parentElement);
                     const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
@@ -1767,7 +1784,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     const markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
                     const dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
                     if (!isNaN(markerIndex) && !isNaN(dataIndex)) {
-                        const dataObject: any = this.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
+                        const dataObject: any =
+                            this.layers[layerIndex as number].markerSettings[markerIndex as number].dataSource[dataIndex as number];
                         latLongValue = { latitude: dataObject['latitude'], longitude: dataObject.longitude };
                     } else {
                         latLongValue = { latitude: null, longitude: null };
@@ -1776,11 +1794,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             } else {
                 latLongValue = this.getGeoLocation(layerIndex, x, y);
             }
-        } else if (this.isTileMap && (parseInt(this.mouseDownEvent['x']) === parseInt(this.mouseClickEvent['x']))
-            && (parseInt(this.mouseDownEvent['y']) === parseInt(this.mouseClickEvent['y']))) {
+        } else if (this.isTileMap && (parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
+            (parseInt(this.mouseDownEvent['y'], 10) === parseInt(this.mouseClickEvent['y'], 10))) {
             latLongValue = this.getTileGeoLocation(x, y);
         }
         return latLongValue;
+    }
+
+    private removeTileMap(): void {
+        const animateElement: HTMLElement = document.getElementById(this.element.id + '_animated_tiles');
+        if (!isNullOrUndefined(this.currentTiles) && animateElement.childElementCount !== this.currentTiles.childElementCount) {
+            for (let l: number = animateElement.childElementCount - 1; l >= this.currentTiles.childElementCount; l--) {
+                animateElement.removeChild(animateElement.children[l as number]);
+            }
+        }
+        this.currentTiles = null;
     }
 
     /**
@@ -1812,6 +1840,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             pageX = e.pageX;
             pageY = e.pageY;
             target = <Element>e.target;
+        }
+        if (this.isTileMap) {
+            this.removeTileMap();
         }
         if (this.isTouch) {
             if (targetEle.id.indexOf('_ToolBar') === -1) {
@@ -1849,6 +1880,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const rect: ClientRect = this.element.getBoundingClientRect();
         const element: Element = <Element>e.target;
+        const animatedTiles: HTMLElement = document.getElementById(this.element.id + '_animated_tiles');
+        if (this.isTileMap && !isNullOrUndefined(animatedTiles)) {
+            this.currentTiles = (animatedTiles.cloneNode(true) as HTMLElement);
+        }
         if (element.id.indexOf('_ToolBar') === -1) {
             const markerModule: Marker = this.markerModule;
             if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
@@ -1883,6 +1918,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method is used to perform operations when performing the double click operation on maps.
      *
      * @param {PointerEvent} e - Specifies the pointer event.
+     * @returns {void}
      */
     public mapsOnDoubleClick(e: PointerEvent): void {
         this.notify('dblclick', e);
@@ -1893,17 +1929,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let latitude: number = null; let longitude: number = null;
         if (targetElement.id.indexOf('_ToolBar') === -1) {
             if (targetElement.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
-                    && (this.mouseDownEvent['y'] === e.clientY)) {
+                && (this.mouseDownEvent['y'] === e.clientY)) {
                 layerIndex = parseFloat(targetElement.id.split('_LayerIndex_')[1].split('_')[0]);
                 latLongValue = this.getGeoLocation(layerIndex, e['layerX'], e['layerY']);
                 latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             } else if (this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
-                    && (this.mouseDownEvent['y'] === e.clientY)) {
+                && (this.mouseDownEvent['y'] === e.clientY)) {
                 latLongValue = this.getTileGeoLocation(e['layerX'], e['layerY']);
                 latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             }
-            const doubleClickArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
-                target : targetId, latitude: latitude, longitude: longitude, isShapeSelected : null };
+            const doubleClickArgs: IMouseEventArgs = {
+                cancel: false, name: doubleClick, x: e.clientX, y: e.clientY,
+                target: targetId, latitude: latitude, longitude: longitude, isShapeSelected: null
+            };
             this.trigger('doubleClick', doubleClickArgs);
         }
     }
@@ -1958,21 +1996,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private legendTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
-        let legendText : string; let page : number = this.legendModule.currentPage;
-        let legendIndex : string = (<HTMLElement>event.target).id.split('_Index_')[1];
-        let collection : any;
+        let legendText: string; let page: number = this.legendModule.currentPage;
+        let legendIndex: string = (<HTMLElement>event.target).id.split('_Index_')[1];
+        let collection: any;
         page = this.legendModule.totalPages.length <= this.legendModule.currentPage
             ? this.legendModule.totalPages.length - 1 : this.legendModule.currentPage < 0 ?
                 0 : this.legendModule.currentPage;
-        const count : number = this.legendModule.totalPages.length !== 0 ?
-            this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
-        for (let i : number = 0; i < count; i++) {
-            collection = this.legendModule.totalPages[page]['Collection'][i];
+        const count: number = this.legendModule.totalPages.length !== 0 ?
+            this.legendModule.totalPages[page as number]['Collection'].length : this.legendModule.totalPages.length;
+        for (let i: number = 0; i < count; i++) {
+            collection = this.legendModule.totalPages[page as number]['Collection'][i as number];
             legendText = collection['DisplayText'];
             targetId = event.target['id'];
             legendIndex = event.target['id'].split('_Index_')[1];
             if ((targetId === (this.element.id + '_Legend_Text_Index_' + legendIndex)) &&
-        ((<HTMLElement>event.target).textContent.indexOf('...') > -1) && collection['idIndex'] === parseInt(legendIndex, 10)) {
+                ((<HTMLElement>event.target).textContent.indexOf('...') > -1) && collection['idIndex'] === parseInt(legendIndex, 10)) {
                 showTooltip(
                     legendText, this.legendSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight,
                     this.element.id + '_EJ2_Legend_Text_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch
@@ -1997,7 +2035,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if ((targetId === (this.element.id + '_Map_title')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
             showTooltip(
-                this.titleSettings.text, this.titleSettings.textStyle.size || this.themeStyle.titleFontSize, x, y, this.element.offsetWidth, this.element.offsetHeight,
+                this.titleSettings.text, this.titleSettings.textStyle.size || this.themeStyle.titleFontSize, x, y,
+                this.element.offsetWidth, this.element.offsetHeight,
                 this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch
             );
         } else {
@@ -2012,30 +2051,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param e - Specifies the arguments of window resize event.
      */
     public mapsOnResize(e: Event): boolean {
-        this.isResize = this.isReset = true;
-        const args: IResizeEventArgs = {
-            cancel: false,
-            name: resize,
-            previousSize: this.availableSize,
-            currentSize: calculateSize(this),
-            maps: this
-        };
-        this.trigger(resize, args);
-        if (!args.cancel) {
-            if (this.resizeTo) {
-                clearTimeout(this.resizeTo);
-            }
-            if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-maps')) {
-                this.resizeTo = setTimeout(
-                    (): void => {
-                        this.unWireEVents();
-                        this.createSVG();
-                        this.refreshing = true;
-                        this.wireEVents();
-                        this.render();
-                        this.refreshing = false;
-                    },
-                    500);
+        if (!this.isDestroyed) {
+            this.isResize = this.isReset = true;
+            const args: IResizeEventArgs = {
+                cancel: false,
+                name: resize,
+                previousSize: this.availableSize,
+                currentSize: calculateSize(this),
+                maps: this
+            };
+            this.trigger(resize, args);
+            if (!args.cancel) {
+                if (this.resizeTo) {
+                    clearTimeout(this.resizeTo);
+                }
+                if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-maps')) {
+                    this.resizeTo = setTimeout(
+                        (): void => {
+                            this.unWireEVents();
+                            this.createSVG();
+                            this.refreshing = true;
+                            this.wireEVents();
+                            this.render();
+                            this.refreshing = false;
+                        },
+                        500);
+                }
             }
         }
         return false;
@@ -2051,29 +2092,33 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
-        this.zoomNotApplied = false;
-        let isRefresh: boolean = this.zoomSettings.zoomFactor == zoomFactor;
-        if (!this.isTileMap && this.zoomModule) {
-            if (!isNullOrUndefined(centerPosition)) {
-                this.zoomSettings.zoomFactor = zoomFactor;
-                isRefresh = this.centerPosition.latitude === centerPosition.latitude && this.centerPosition.longitude === centerPosition.longitude ? true : isRefresh;
+        if (!this.isDestroyed) {
+            this.zoomNotApplied = false;
+            let isRefresh: boolean = this.zoomSettings.zoomFactor === zoomFactor;
+            if (!this.isTileMap && this.zoomModule) {
+                if (!isNullOrUndefined(centerPosition)) {
+                    this.zoomSettings.zoomFactor = zoomFactor;
+                    isRefresh = this.centerPosition.latitude === centerPosition.latitude &&
+                        this.centerPosition.longitude === centerPosition.longitude ? true : isRefresh;
+                    this.centerPosition = centerPosition;
+                    this.isZoomByPosition = true;
+                    this.mapScaleValue = null;
+                }
+                else {
+                    this.zoomSettings.zoomFactor = zoomFactor;
+                    this.isZoomByPosition = true;
+                    this.mapScaleValue = null;
+                }
+            } else if (this.zoomModule) {
+                this.tileZoomLevel = this.zoomSettings.zoomFactor = zoomFactor;
+                isRefresh = this.centerPosition.latitude === centerPosition.latitude &&
+                    this.centerPosition.longitude === centerPosition.longitude ? true : isRefresh;
                 this.centerPosition = centerPosition;
                 this.isZoomByPosition = true;
-                this.mapScaleValue = null;
             }
-            else {
-                this.zoomSettings.zoomFactor = zoomFactor;
-                this.isZoomByPosition = true;
-                this.mapScaleValue = null;
+            if (isRefresh) {
+                this.refresh();
             }
-        } else if (this.zoomModule) {
-            this.tileZoomLevel = this.zoomSettings.zoomFactor =  zoomFactor;
-            isRefresh = this.centerPosition.latitude === centerPosition.latitude && this.centerPosition.longitude === centerPosition.longitude ? true : isRefresh;
-            this.centerPosition = centerPosition;
-            this.isZoomByPosition = true;
-        }
-        if (isRefresh) {
-            this.refresh();
         }
     }
 
@@ -2082,25 +2127,28 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {PanDirection} direction - Specifies the direction in which the panning is performed.
      * @param {PointerEvent | TouchEvent} mouseLocation - Specifies the location of the mouse pointer in maps.
+     * @returns {void}
      */
     public panByDirection(direction: PanDirection, mouseLocation?: PointerEvent | TouchEvent): void {
-        let xDiff: number = 0; let yDiff: number = 0;
-        switch (direction) {
-        case 'Left':
-            xDiff = -(this.mapAreaRect.width / 7);
-            break;
-        case 'Right':
-            xDiff = (this.mapAreaRect.width / 7);
-            break;
-        case 'Top':
-            yDiff = -(this.mapAreaRect.height / 7);
-            break;
-        case 'Bottom':
-            yDiff = (this.mapAreaRect.height / 7);
-            break;
-        }
-        if (this.zoomModule) {
-            this.zoomModule.panning(direction, xDiff, yDiff, mouseLocation);
+        if (!this.isDestroyed) {
+            let xDiff: number = 0; let yDiff: number = 0;
+            switch (direction) {
+            case 'Left':
+                xDiff = -(this.mapAreaRect.width / 7);
+                break;
+            case 'Right':
+                xDiff = (this.mapAreaRect.width / 7);
+                break;
+            case 'Top':
+                yDiff = -(this.mapAreaRect.height / 7);
+                break;
+            case 'Bottom':
+                yDiff = (this.mapAreaRect.height / 7);
+                break;
+            }
+            if (this.zoomModule) {
+                this.zoomModule.panning(direction, xDiff, yDiff, mouseLocation);
+            }
         }
     }
 
@@ -2108,12 +2156,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method is used to add the layers dynamically to the maps.
      *
      * @param {Object} layer - Specifies the layer for the maps.
+     * @returns {void}
      */
     public addLayer(layer: Object): void {
-        let mapsLayer: LayerSettingsModel[] = this.layers;
-        mapsLayer.push(layer);
-        this.isAddLayer = true;
-        this.layers = mapsLayer;
+        if (!this.isDestroyed) {
+            const mapsLayer: LayerSettingsModel[] = this.layers;
+            mapsLayer.push(layer);
+            this.isAddLayer = true;
+            this.layers = mapsLayer;
+        }
     }
     /**
      * This method is used to remove a layer from map.
@@ -2122,9 +2173,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public removeLayer(index: number): void {
-        let mapsLayer: LayerSettingsModel[] = this.layers;
-        mapsLayer.splice(index, 1);
-        this.layers = mapsLayer;
+        if (!this.isDestroyed) {
+            const mapsLayer: LayerSettingsModel[] = this.layers;
+            mapsLayer.splice(index, 1);
+            this.layers = mapsLayer;
+        }
     }
     /**
      * This method is used to add markers dynamically in the maps.
@@ -2136,14 +2189,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public addMarker(layerIndex: number, markerCollection: MarkerSettingsModel[]): void {
-        const layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
-        if (markerCollection.length > 0 && layerEle) {
-            for (const newMarker of markerCollection) {
-                this.layersCollection[layerIndex].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
+        if (!this.isDestroyed) {
+            const layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
+            if (markerCollection.length > 0 && layerEle) {
+                for (const newMarker of markerCollection) {
+                    this.layersCollection[layerIndex as number].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
+                }
+                const markerModule: Marker = new Marker(this);
+                markerModule.markerRender(this, layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+                this.arrangeTemplate();
             }
-            const markerModule: Marker = new Marker(this);
-            markerModule.markerRender(this, layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
-            this.arrangeTemplate();
         }
     }
     /**
@@ -2156,94 +2211,97 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public shapeSelection(layerIndex: number, propertyName: string | string[], name: string, enable?: boolean): void {
-        let targetEle: Element;
-        let subLayerIndex: number;
-        const popertyNameArray: string[] = Array.isArray(propertyName) ? propertyName : Array(propertyName);
-        if (isNullOrUndefined(enable)) {
-            enable = true;
-        }
-        const selectionsettings: SelectionSettingsModel = this.layers[layerIndex].selectionSettings;
-        if (!selectionsettings.enableMultiSelect && this.legendSelection && enable) {
-            this.removeShapeSelection();
-        }
-        if (this.layers[layerIndex].type === 'SubLayer') {
-            for (let i: number = 0; i < this.layersCollection.length; i++) {
-                if ((this.layersCollection[i].shapeData === this.layers[layerIndex].shapeData)) {
-                    subLayerIndex = i;
-                    break;
+        if (!this.isDestroyed) {
+            let targetEle: Element;
+            let subLayerIndex: number;
+            const popertyNameArray: string[] = Array.isArray(propertyName) ? propertyName : Array(propertyName);
+            if (isNullOrUndefined(enable)) {
+                enable = true;
+            }
+            const selectionsettings: SelectionSettingsModel = this.layers[layerIndex as number].selectionSettings;
+            if (!selectionsettings.enableMultiSelect && this.legendSelection && enable) {
+                this.removeShapeSelection();
+            }
+            if (this.layers[layerIndex as number].type === 'SubLayer') {
+                for (let i: number = 0; i < this.layersCollection.length; i++) {
+                    if ((this.layersCollection[i as number].shapeData === this.layers[layerIndex as number].shapeData)) {
+                        subLayerIndex = i;
+                        break;
+                    }
                 }
             }
-        }
-        if (selectionsettings.enable) {
-            let targetId: string;
-            let dataIndex: number;
-            let shapeIndex: number;
-            let indexValue: number;
-            let shapeDataValue: any;
-            let data: any;
-            const shapeData: any[] = <any[]>this.layers[layerIndex].shapeData['features'];
-            for (let i: number = 0; i < shapeData.length; i++) {
-                for (let j: number = 0; j < (<string[]>popertyNameArray).length; j++) {
-                    const propertyName : string = !isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
-                    && isNaN(shapeData[i]['properties'][popertyNameArray[j]]) ?
-                        shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
-                    const shapeName : string = !isNullOrUndefined(name) && typeof name === 'string' ? name.toLowerCase() : name;
-                    let k: number;
-                    if (propertyName === shapeName) {
-                        if (!isNullOrUndefined(this.layers[layerIndex].shapeSettings.colorValuePath)) {
-                            k = checkShapeDataFields(
-                                <any[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
-                                this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath,
-                                this.layers[layerIndex]);
-                        }
-                        const baseLayer: LayerSettings = <LayerSettings>this.layers[layerIndex];
-                        if (this.baseLayerIndex >= 0 && baseLayer.isBaseLayer) {
-                            indexValue = 0;
-                        } else if (this.layers[layerIndex].type === 'SubLayer') {
-                            indexValue = subLayerIndex;
-                        }
-                        targetId = this.element.id + '_' + 'LayerIndex_' + indexValue + '_shapeIndex_' + i + '_dataIndex_' + k;
-                        targetEle = getElement(targetId);
-                        if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
-                            targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+            if (selectionsettings.enable) {
+                let targetId: string;
+                let dataIndex: number;
+                let shapeIndex: number;
+                let indexValue: number;
+                let shapeDataValue: any;
+                let data: any;
+                const shapeData: any[] = <any[]>this.layers[layerIndex as number].shapeData['features'];
+                for (let i: number = 0; i < shapeData.length; i++) {
+                    for (let j: number = 0; j < (<string[]>popertyNameArray).length; j++) {
+                        const propertyName: string = !isNullOrUndefined(shapeData[i as number]['properties'][popertyNameArray[j as number]])
+                            && isNaN(shapeData[i as number]['properties'][popertyNameArray[j as number]]) ?
+                            shapeData[i as number]['properties'][popertyNameArray[j as number]].toLowerCase() : shapeData[i as number]['properties'][popertyNameArray[j as number]];
+                        const shapeName: string = !isNullOrUndefined(name) && typeof name === 'string' ? name.toLowerCase() : name;
+                        let k: number;
+                        if (propertyName === shapeName) {
+                            if (!isNullOrUndefined(this.layers[layerIndex as number].shapeSettings.colorValuePath)) {
+                                k = checkShapeDataFields(
+                                    <any[]>this.layers[layerIndex as number].dataSource, shapeData[i as number]['properties'],
+                                    this.layers[layerIndex as number].shapeDataPath, this.layers[layerIndex as number].shapePropertyPath,
+                                    this.layers[layerIndex as number]);
+                            }
+                            const baseLayer: LayerSettings = <LayerSettings>this.layers[layerIndex as number];
+                            if (this.baseLayerIndex >= 0 && baseLayer.isBaseLayer) {
+                                indexValue = 0;
+                            } else if (this.layers[layerIndex as number].type === 'SubLayer') {
+                                indexValue = subLayerIndex;
+                            }
+                            targetId = this.element.id + '_' + 'LayerIndex_' + indexValue + '_shapeIndex_' + i + '_dataIndex_' + k;
                             targetEle = getElement(targetId);
-                        }
-                        shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                        shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
-                            this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
-                        dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                        data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
-                        if (enable) {
-                            triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
-                            this.shapeSelectionClass = getElement('ShapeselectionMap');
-                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                                this.legendModule.shapeHighLightAndSelection(
-                                    targetEle, data, selectionsettings, 'selection', layerIndex);
+                            if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
+                                targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                                targetEle = getElement(targetId);
                             }
-                            const shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                            if (shapeToggled) {
-                                targetEle.setAttribute('class', 'ShapeselectionMapStyle');
-                                if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
-                                    this.selectedElementId.push(targetEle.getAttribute('id'));
+                            shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                            shapeDataValue = this.layers[layerIndex as number].shapeData['features']['length'] > shapeIndex ?
+                                this.layers[layerIndex as number].shapeData['features'][shapeIndex as number]['properties'] : null;
+                            dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                            data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex as number].dataSource[dataIndex as number];
+                            if (enable) {
+                                triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                                this.shapeSelectionClass = getElement('ShapeselectionMap');
+                                if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                                    this.legendModule.shapeHighLightAndSelection(
+                                        targetEle, data, selectionsettings, 'selection', layerIndex);
                                 }
-                                if (!selectionsettings.enableMultiSelect) { return; }
-                            }
-                        } else {
-                            this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
-                                true : this.legendSelection;
-                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
-                                targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
-                                this.legendModule.shapeHighLightAndSelection(
-                                    targetEle, data, selectionsettings, 'selection', layerIndex);
-                            }
-                            const shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                            if (shapeToggled) {
-                                removeClass(targetEle);
-                                const selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
-                                if (selectedElementIdIndex !== -1) {
-                                    this.selectedElementId.splice(selectedElementIdIndex, 1);
-                                    if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
-                                        this.removeShapeSelection();
+                                const shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                                if (shapeToggled) {
+                                    targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                                    if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                        this.selectedElementId.push(targetEle.getAttribute('id'));
+                                    }
+                                    if (!selectionsettings.enableMultiSelect) { return; }
+                                }
+                            } else {
+                                this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                                    true : this.legendSelection;
+                                if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                                    targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                                    this.legendModule.shapeHighLightAndSelection(
+                                        targetEle, data, selectionsettings, 'selection', layerIndex);
+                                }
+                                const shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                                if (shapeToggled) {
+                                    removeClass(targetEle);
+                                    const selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                                    if (selectedElementIdIndex !== -1) {
+                                        this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                        if (!selectionsettings.enableMultiSelect && this.legendSelection
+                                            && this.selectedElementId.length > 0) {
+                                            this.removeShapeSelection();
+                                        }
                                     }
                                 }
                             }
@@ -2264,53 +2322,55 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public zoomToCoordinates(minLatitude: number, minLongitude: number, maxLatitude: number, maxLongitude: number): void {
-        let centerLatitude: number;
-        let centerLongtitude: number;
-        let isTwoCoordinates: boolean = false;
-        this.centerPosition = {
-            latitude: null,
-            longitude: null
-        };
-        this.isZoomByPosition = false;
-        if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
-            || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
-            minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;
-            minLongitude = isNullOrUndefined(minLatitude) ? 0 : minLongitude;
-            maxLatitude = isNullOrUndefined(maxLatitude) ? minLatitude : maxLatitude;
-            maxLongitude = isNullOrUndefined(maxLongitude) ? minLongitude : maxLongitude;
-            isTwoCoordinates = true;
+        if (!this.isDestroyed) {
+            let centerLatitude: number;
+            let centerLongtitude: number;
+            let isTwoCoordinates: boolean = false;
+            this.centerPosition = {
+                latitude: null,
+                longitude: null
+            };
+            this.isZoomByPosition = false;
+            if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
+                || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
+                minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;
+                minLongitude = isNullOrUndefined(minLatitude) ? 0 : minLongitude;
+                maxLatitude = isNullOrUndefined(maxLatitude) ? minLatitude : maxLatitude;
+                maxLongitude = isNullOrUndefined(maxLongitude) ? minLongitude : maxLongitude;
+                isTwoCoordinates = true;
+            }
+            if (minLatitude > maxLatitude) {
+                [minLatitude, maxLatitude] = [maxLatitude, minLatitude];
+            }
+            if (minLongitude > maxLongitude) {
+                [minLongitude, maxLongitude] = [maxLongitude, minLongitude];
+            }
+            if (!isTwoCoordinates) {
+                centerLatitude = (minLatitude + maxLatitude) / 2;
+                centerLongtitude = (minLongitude + maxLongitude) / 2;
+            } else {
+                centerLatitude = (minLatitude + maxLatitude);
+                centerLongtitude = (minLongitude + maxLongitude);
+            }
+            this.centerLatOfGivenLocation = centerLatitude;
+            this.centerLongOfGivenLocation = centerLongtitude;
+            this.minLatOfGivenLocation = minLatitude;
+            this.minLongOfGivenLocation = minLongitude;
+            this.maxLatOfGivenLocation = maxLatitude;
+            this.maxLongOfGivenLocation = maxLongitude;
+            this.zoomNotApplied = true;
+            this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
+                                                           this.mapAreaRect.width, this.mapAreaRect.height, this);
+            const zoomArgs: IMapZoomEventArgs = {
+                cancel: false, name: 'zoom', type: zoomIn, maps: this,
+                tileTranslatePoint: {}, translatePoint: {},
+                tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
+                scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
+                    { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation }
+            };
+            this.trigger('zoom', zoomArgs);
+            this.refresh();
         }
-        if (minLatitude > maxLatitude) {
-            [minLatitude, maxLatitude] = [maxLatitude, minLatitude];
-        }
-        if (minLongitude > maxLongitude) {
-            [minLongitude, maxLongitude] = [maxLongitude, minLongitude];
-        }
-        if (!isTwoCoordinates) {
-            centerLatitude = (minLatitude + maxLatitude) / 2;
-            centerLongtitude = (minLongitude + maxLongitude) / 2;
-        } else {
-            centerLatitude = (minLatitude + maxLatitude);
-            centerLongtitude = (minLongitude + maxLongitude);
-        }
-        this.centerLatOfGivenLocation = centerLatitude;
-        this.centerLongOfGivenLocation = centerLongtitude;
-        this.minLatOfGivenLocation = minLatitude;
-        this.minLongOfGivenLocation = minLongitude;
-        this.maxLatOfGivenLocation = maxLatitude;
-        this.maxLongOfGivenLocation = maxLongitude;
-        this.zoomNotApplied = true;
-        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
-                                                       this.mapAreaRect.width, this.mapAreaRect.height, this);
-        const zoomArgs: IMapZoomEventArgs = {
-            cancel: false, name: 'zoom', type: zoomIn, maps: this,
-            tileTranslatePoint: {}, translatePoint: {},
-            tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
-            scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
-                { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation}
-        };
-        this.trigger('zoom', zoomArgs);
-        this.refresh();
     }
 
     /**
@@ -2327,7 +2387,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.legendSettings.visible) {
             const legendSelectedElements: number = this.legendSelectionCollection.length;
             for (let i: number = 0; i < legendSelectedElements; i++) {
-                removeClass(getElementByID(this.legendSelectionCollection[i]['legendElement']['id']));
+                removeClass(getElementByID(this.legendSelectionCollection[i as number]['legendElement']['id']));
                 this.selectedLegendElementId.splice(0, 1);
             }
         }
@@ -2366,6 +2426,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * This method disposes the maps component.
+     *
+     * @returns {void}
      */
     public destroy(): void {
         this.unWireEVents();
@@ -2425,82 +2487,83 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public onPropertyChanged(newProp: MapsModel, oldProp: MapsModel): void {
-        let render: boolean = false; let isMarker: boolean = false; let isLayer: boolean = false;
-        let isStaticMapType: boolean = false;
-        let layerEle: Element;
-        if (newProp['layers']) {
-            const newLayerLength: number = Object.keys(newProp['layers']).length;
-            layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
-        }
-        for (const prop of Object.keys(newProp)) {
-            switch (prop) {
-            case 'background':
-                this.renderBorder();
-                break;
-            case 'height':
-            case 'width':
-            case 'layers':
-            case 'projectionType':
-            case 'centerPosition':
-            case 'legendSettings':
-            case 'baseLayerIndex':
-                if (prop === 'layers') {
-                    isLayer = true;
-                    const layerPropLength: number = Object.keys(newProp.layers).length;
-                    for (let x: number = 0; x < layerPropLength; x++) {
-                        if (!isNullOrUndefined(newProp.layers[x])) {
-                            const collection: string[] = Object.keys(newProp.layers[x]);
-                            for (const collectionProp of collection) {
-                                if ((collectionProp === 'layerType' && newProp.layers[x].layerType !== 'Geometry') || (isNullOrUndefined(this.layers[x].shapeData)
-                                    && !isNullOrUndefined(this.layers[x].urlTemplate) && this.layers[x].urlTemplate !== '')) {
-                                    this.isReset = true;
-                                } else if (collectionProp === 'markerSettings') {
-                                    isMarker = true;
-                                } else if (collectionProp === 'staticMapType') {
-                                    isStaticMapType = true;
+        if (!this.isDestroyed) {
+            let render: boolean = false; let isMarker: boolean = false; let isLayer: boolean = false;
+            let isStaticMapType: boolean = false;
+            let layerEle: Element;
+            if (newProp['layers']) {
+                const newLayerLength: number = Object.keys(newProp['layers']).length;
+                layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
+            }
+            for (const prop of Object.keys(newProp)) {
+                switch (prop) {
+                case 'background':
+                    this.renderBorder();
+                    break;
+                case 'height':
+                case 'width':
+                case 'layers':
+                case 'projectionType':
+                case 'centerPosition':
+                case 'legendSettings':
+                case 'baseLayerIndex':
+                    if (prop === 'layers') {
+                        isLayer = true;
+                        const layerPropLength: number = Object.keys(newProp.layers).length;
+                        for (let x: number = 0; x < layerPropLength; x++) {
+                            if (!isNullOrUndefined(newProp.layers[x as number])) {
+                                const collection: string[] = Object.keys(newProp.layers[x as number]);
+                                for (const collectionProp of collection) {
+                                    if ((collectionProp === 'layerType' && newProp.layers[x as number].layerType !== 'Geometry') ||
+                                        (isNullOrUndefined(this.layers[x as number].shapeData)
+                                            && !isNullOrUndefined(this.layers[x as number].urlTemplate) && this.layers[x as number].urlTemplate !== '')) {
+                                        this.isReset = true;
+                                    } else if (collectionProp === 'markerSettings') {
+                                        isMarker = true;
+                                    } else if (collectionProp === 'staticMapType') {
+                                        isStaticMapType = true;
+                                    }
                                 }
                             }
                         }
                     }
+                    render = true;
+                    break;
+                case 'zoomSettings':
+                    if (!isNullOrUndefined(oldProp.zoomSettings)) {
+                        if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor && !isLayer) {
+                            render = false;
+                        } else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
+                            this.zoomSettings.zoomFactor = 1;
+                            render = true;
+                        } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
+                            this.zoomSettings.zoomFactor = 1;
+                            render = true;
+                        } else {
+                            render = true;
+                        }
+                    }
+                    break;
+                case 'locale':
+                case 'currencyCode':
+                    super.refresh();
+                    break;
                 }
-                render = true;
-                break;
-            case 'zoomSettings':
-                if (!isNullOrUndefined(oldProp.zoomSettings)) {
-                    if (newProp.zoomSettings.zoomFactor !== oldProp.zoomSettings.zoomFactor && !isLayer) {
-                        render = false;
-                    }
-                    else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
-                        this.zoomSettings.zoomFactor = 1;
-                        render = true;
-                    } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
-                        this.zoomSettings.zoomFactor = 1;
-                        render = true;
-                    }
-                    else {
-                        render = true;
-                    }
-                }
-                break;
-            case 'locale':
-            case 'currencyCode':
-                super.refresh(); break;
             }
-        }
-        if (render) {
-            if (newProp.layers && isMarker) {
-                removeElement(this.element.id + '_Markers_Group');
-                if (this.isTileMap) {
-                    this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+            if (render) {
+                if (newProp.layers && isMarker) {
+                    removeElement(this.element.id + '_Markers_Group');
+                    if (this.isTileMap) {
+                        this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
+                    } else {
+                        this.render();
+                    }
+                } else if (newProp.layers && isStaticMapType) {
+                    this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
+                } else {
+                    this.createSVG();
+                    this.renderElements();
                 }
-				else {
-                    this.render();
-                }
-            } else if (newProp.layers && isStaticMapType) {
-                this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
-            } else {
-                this.createSVG();
-                this.renderElements();
             }
         }
     }
@@ -2515,7 +2578,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const isVisible: { layer: boolean, bubble: boolean, tooltip: boolean, selection: boolean, highlight: boolean } =
             this.findVisibleLayers(this.layers);
         let annotationEnable: boolean = false;
-        this.annotations.map((annotation: Annotation, index: number) => {
+        this.annotations.map((annotation: Annotation) => {
             annotationEnable = annotation.content != null;
         });
 
@@ -2608,13 +2671,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To find marker visibility
+     *
+     * @returns {boolean} - Returns whether the markers are visible or not.
      */
 
     private isMarkersVisible(): boolean {
         let isVisible: boolean = false;
-        Array.prototype.forEach.call(this.layers, (layer: LayerSettings, layerIndex: number) => {
+        Array.prototype.forEach.call(this.layers, (layer: LayerSettings) => {
             for (let i: number = 0; i < layer.markerSettings.length; i++) {
-                if (layer.markerSettings[i].visible) {
+                if (layer.markerSettings[i as number].visible) {
                     isVisible = true;
                     break;
                 }
@@ -2625,12 +2690,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To find DataLabel visibility
+     *
+     * @returns {boolean} - Returns whether the data labels are visible or not.
      */
 
     private isDataLabelVisible(): boolean {
         let isVisible: boolean = false;
         for (let i: number = 0; i < this.layers.length; i++) {
-            if (this.layers[i].dataLabelSettings.visible) {
+            if (this.layers[i as number].dataLabelSettings.visible) {
                 isVisible = true;
                 break;
             }
@@ -2640,13 +2707,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To find navigation line visibility
+     *
+     * @returns {boolean} - Returns whether the navigation lines are visible or not.
      */
 
     private isNavigationVisible(): boolean {
         let isVisible: boolean = false;
-        Array.prototype.forEach.call(this.layers, (layer: LayerSettings, layerIndex: number) => {
+        Array.prototype.forEach.call(this.layers, (layer: LayerSettings) => {
             for (let i: number = 0; i < layer.navigationLineSettings.length; i++) {
-                if (layer.navigationLineSettings[i].visible) {
+                if (layer.navigationLineSettings[i as number].visible) {
                     isVisible = true;
                     break;
                 }
@@ -2657,9 +2726,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To find space between the secondary element and svg element.
+     *
+     * @returns {Point} - Returns the left and top value of the secondary element of Maps.
      * @private
      */
-     public getExtraPosition(): Point {
+    public getExtraPosition(): Point {
         let top: number = 0;
         let left: number = 0;
         const svgElement: Element = getElement(this.element.id + '_svg');
@@ -2714,7 +2785,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public print(id?: string[] | string | Element): void {
-        if ((this.allowPrint) && (this.printModule)) {
+        if ((this.allowPrint) && (this.printModule) && !this.isDestroyed) {
             this.printModule.print(this, id);
         }
     }
@@ -2728,41 +2799,46 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Promise<string>} - Returns the string value.
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
-        if (isNullOrUndefined(allowDownload)) {
-            allowDownload = true;
-        }
-        if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
-            return new Promise((resolve: any, reject: any) => {
-                resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
-            });
-        } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
-            return new Promise((resolve: any, reject: any) => {
-                resolve(this.pdfExportModule.export(this, type, fileName, allowDownload, orientation));
-            });
+        if (!this.isDestroyed) {
+            if (isNullOrUndefined(allowDownload)) {
+                allowDownload = true;
+            }
+            if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
+                return new Promise((resolve: any, reject: any) => {
+                    resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
+                });
+            } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
+                return new Promise((resolve: any, reject: any) => {
+                    resolve(this.pdfExportModule.export(this, type, fileName, allowDownload, orientation));
+                });
+            }
         }
         return null;
     }
 
     /**
      * This method is used to get the Bing maps URL.
-     * 
+     *
      * @param {string} url - Specifies the URL of the maps.
      * @returns {Promise<string>} - Returns the processed Bing URL as Promise.
      */
     public getBingUrlTemplate(url: string): Promise<string> {
-        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
-            const ajax: Ajax = new Ajax({
-                url: url
+        let promise: Promise<string>;
+        if (!this.isDestroyed) {
+            promise = new Promise((resolve: any, reject: any) => {
+                const ajax: Ajax = new Ajax({
+                    url: url
+                });
+                ajax.onSuccess = (json: string) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const jsonObject: any = JSON.parse(json);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const resource: any = jsonObject['resourceSets'][0]['resources'][0];
+                    resolve(<string>resource['imageUrl']);
+                };
+                ajax.send();
             });
-            ajax.onSuccess = (json: string) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const jsonObject: any = JSON.parse(json);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const resource: any = jsonObject['resourceSets'][0]['resources'][0];
-                resolve(<string>resource['imageUrl']);
-            }
-            ajax.send();
-        }); 
+        }
         return promise;
     }
 
@@ -2833,21 +2909,25 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {GeoPosition}- Returns the geo position
      */
     public getGeoLocation(layerIndex: number, x: number, y: number): GeoPosition {
-        const container: HTMLElement = document.getElementById(this.element.id);
-        const pageX: number = x - container.offsetLeft;
-        const pageY: number = y - container.offsetTop;
-        const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex];
-        const translate: any = getTranslate(this, currentLayer, false);
-        const translatePoint: Point = translate['location'] as Point;
-        const translatePointX: number = translatePoint.x * this.scale;
-        const translatePointY: number = translatePoint.y * this.scale;
-        const mapSize: number = (Math.min(this.mapAreaRect.height, this.mapAreaRect.width)
-            * this.mapLayerPanel['currentFactor']) * this.scale;
-        const xx: number = (this.clip(pageX - translatePointX, 0, mapSize - 1) / mapSize) - 0.5;
-        const yy: number = 0.5 - (this.clip(pageY - translatePointY, 0, mapSize - 1) / mapSize);
-        const lat: number = 90 - 360 * Math.atan(Math.exp(-yy * 2 * Math.PI)) / Math.PI;
-        const long: number = 360 * xx;
-        return { latitude: lat, longitude: long };
+        let latitude: number = 0;
+        let longitude: number = 0;
+        if (!this.isDestroyed) {
+            const container: HTMLElement = document.getElementById(this.element.id);
+            const pageX: number = x - container.offsetLeft;
+            const pageY: number = y - container.offsetTop;
+            const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex as number];
+            const translate: any = getTranslate(this, currentLayer, false);
+            const translatePoint: Point = translate['location'] as Point;
+            const translatePointX: number = translatePoint.x * this.scale;
+            const translatePointY: number = translatePoint.y * this.scale;
+            const mapSize: number = (Math.min(this.mapAreaRect.height, this.mapAreaRect.width)
+                * this.mapLayerPanel['currentFactor']) * this.scale;
+            const xx: number = (this.clip(pageX - translatePointX, 0, mapSize - 1) / mapSize) - 0.5;
+            const yy: number = 0.5 - (this.clip(pageY - translatePointY, 0, mapSize - 1) / mapSize);
+            latitude = 90 - 360 * Math.atan(Math.exp(-yy * 2 * Math.PI)) / Math.PI;
+            longitude = 360 * xx;
+        }
+        return { latitude: latitude, longitude: longitude };
     }
 
     private clip(value: number, minVal: number, maxVal: number): number {
@@ -2862,12 +2942,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {GeoPosition} - Returns the position
      */
     public getTileGeoLocation(x: number, y: number): GeoPosition {
-        const container: HTMLElement = document.getElementById(this.element.id);
-        const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
-        const latLong: any = this.pointToLatLong(
-            x + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
-            y + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
-        return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
+        let latitude: number = 0;
+        let longitude: number = 0;
+        if (!this.isDestroyed) {
+            const container: HTMLElement = document.getElementById(this.element.id);
+            const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+            const latLong: any = this.pointToLatLong(
+                x + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
+                y + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
+            latitude = latLong['latitude'];
+            longitude = latLong['longitude'];
+        }
+        return { latitude: latitude, longitude: longitude };
     }
     /**
      * This method is used to convert the point to latitude and longitude in maps.
@@ -2877,13 +2963,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Object} - Returns the object.
      */
     public pointToLatLong(pageX: number, pageY: number): Object {
-        const padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
-        pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
-        const mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
-        const x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
-        const y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
-        const lat: number = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
-        const long: number = 360 * x1;
-        return { latitude: lat, longitude: long };
+        let latitude: number = 0;
+        let longitude: number = 0;
+        if (!this.isDestroyed) {
+            const padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
+            pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
+            const mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
+            const x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
+            const y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
+            latitude = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
+            longitude = 360 * x1;
+        }
+        return { latitude: latitude, longitude: longitude };
     }
 }

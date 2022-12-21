@@ -675,6 +675,7 @@
               display: inline-table;
               height: 100%;
               width: 100%;
+              min-width: 265px;
 
               ul {
                 .e-fullrow {
@@ -703,6 +704,8 @@
                   cursor: pointer;
                   font-size: 13px;
                   margin-top: 3px;
+                  padding-left: 0px;
+                  padding-right: 0px;
                   @if($skin-name == 'tailwind') {
                     margin-top: 10px;
                   }
@@ -882,10 +885,39 @@
       }
     }
 
-    .e-treeview .e-list-item div.e-icons {
-      font-size: $field-list-bigger-icon-size;
-      @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
-        padding-top: 12px;
+    .e-treeview {
+      .e-list-item {
+        div.e-icons {
+          font-size: $field-list-bigger-icon-size;
+
+          @if ($skin-name =='tailwind') or ($skin-name =='FluentUI') or ($skin-name =='bootstrap5') {
+            padding-top: 12px;
+          }
+        }
+      }
+
+      ul {
+        li {
+          .e-list-icon {
+
+            &.e-edit,
+            &.e-edited,
+            &.e-remove-report {
+
+              @if ($skin-name =='FluentUI') {
+                padding-top: 0;
+              }
+
+              @if ($skin-name =='bootstrap5') {
+                padding-top: 3px;
+              }
+
+              @if ($skin-name =='tailwind') {
+                padding-top: 4px;
+              }
+            }
+          }
+        }
       }
     }
 
@@ -968,7 +1000,7 @@
       max-width: 400px !important;
       min-width: 320px !important;
       @if ($skin-name == 'FluentUI') {
-        min-height: 370px;
+        min-height: 350px;
       }
 
       .e-member-prompt {
@@ -1366,6 +1398,12 @@
               }
             }
           }
+        }
+      }
+
+      .e-member-editor-outer-container:not(.e-excelfilter) {
+        .e-editor-search-container {
+          padding-top: 4px !important;
         }
       }
     }
@@ -1819,6 +1857,21 @@
       }
 
       /* stylelint-disable */
+      &.e-node-limit.e-excel-filter {
+        .e-excelfilter {
+          .e-member-editor-container-outer-div {
+
+            @if ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+                height: 75px !important;
+              }
+            
+            @if ($skin-name =='material') or ($skin-name =='material-dark') {
+              height: 65px !important;
+            }
+          }
+        }
+      }
+
       .e-excelfilter {
 
         @if ($skin-name == 'tailwind') {
@@ -1851,6 +1904,14 @@
 
       &.e-excel-filter {
         min-width: $field-list-bigger-excel-dialog-min-width !important;
+        
+        @if ($skin-name =='fluent') or ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+          height: 427px !important;
+
+          &.e-node-limit {
+            height: 440px !important;
+          }
+        }
       }
     }
 

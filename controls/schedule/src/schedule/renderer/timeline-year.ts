@@ -55,17 +55,17 @@ export class TimelineYear extends Year {
             const months: number[] = this.getMonths();
             const dayHeaderDates: Date[] = this.getMonthDates(new Date(this.parent.selectedDate.getFullYear(), months[0], 1));
             for (let column: number = 0; column < this.columnCount; column++) {
-                const date: Date = new Date(this.parent.selectedDate.getFullYear(), months[column], 1);
+                const date: Date = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(column.toString(), 10)], 1);
                 const innerTd: HTMLElement = createElement('td', { className: cls.HEADER_CELLS_CLASS });
                 if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                     if (this.parent.dayHeaderTemplate) {
-                        append(this.renderDayMonthHeaderTemplate(dayHeaderDates[column], column, 'dayHeaderTemplate'), innerTd);
+                        append(this.renderDayMonthHeaderTemplate(dayHeaderDates[parseInt(column.toString(), 10)], column, 'dayHeaderTemplate'), innerTd);
                     } else {
                         innerTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[column % 7]}</span>`;
                     }
                 } else {
                     if (this.parent.monthHeaderTemplate) {
-                        append(this.renderDayMonthHeaderTemplate(date, months[column], 'monthHeaderTemplate'), innerTd);
+                        append(this.renderDayMonthHeaderTemplate(date, months[parseInt(column.toString(), 10)], 'monthHeaderTemplate'), innerTd);
                     } else {
                         innerTd.innerHTML = `<span>${this.getMonthName(date)}</span>`;
                     }
@@ -171,7 +171,7 @@ export class TimelineYear extends Year {
         const dayHeaderDates: Date[] = this.getMonthDates(new Date(this.parent.selectedDate.getFullYear(), months[0], 1));
         for (let month: number = 0; month < this.rowCount; month++) {
             wrapper.appendChild(createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS }));
-            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), months[month], 1);
+            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(month.toString(), 10)], 1);
             let monthStart: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             let monthEnd: Date = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
             const tr: HTMLElement = createElement('tr');
@@ -189,7 +189,7 @@ export class TimelineYear extends Year {
                 monthTd.setAttribute('data-date', monthDate.getTime().toString());
             } else {
                 if (this.parent.dayHeaderTemplate) {
-                    append(this.renderDayMonthHeaderTemplate(dayHeaderDates[month], month, 'dayHeaderTemplate'), monthTd);
+                    append(this.renderDayMonthHeaderTemplate(dayHeaderDates[parseInt(month.toString(), 10)], month, 'dayHeaderTemplate'), monthTd);
                 } else {
                     monthTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[month % 7]}</span>`;
                 }
@@ -200,11 +200,11 @@ export class TimelineYear extends Year {
             for (let column: number = 0; column < this.columnCount; column++) {
                 let isDateAvail: boolean;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
-                    monthDate = new Date(this.parent.selectedDate.getFullYear(), months[column], 1);
+                    monthDate = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(column.toString(), 10)], 1);
                     monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
                     monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
                     const dayDate: number = (month - monthStart.getDay()) + 1;
-                    date = new Date(this.parent.selectedDate.getFullYear(), months[column], dayDate);
+                    date = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(column.toString(), 10)], dayDate);
                     isDateAvail = dayDate > 0 && date.getTime() < monthEnd.getTime();
                 } else {
                     isDateAvail = column >= monthStart.getDay() && date.getTime() < monthEnd.getTime();
@@ -229,6 +229,9 @@ export class TimelineYear extends Year {
                     if (this.parent.activeViewOptions.workDays.indexOf(date.getDay()) > -1) {
                         classList.push(cls.WORKDAY_CLASS);
                     }
+                    if (!this.parent.isMinMaxDate(date)) {
+                        addClass([td], cls.DISABLE_DATES);
+                    }
                     if (this.isCurrentDate(date)) {
                         classList.push(cls.CURRENT_DAY_CLASS);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -242,6 +245,9 @@ export class TimelineYear extends Year {
                     }
                 } else {
                     addClass([td], cls.OTHERMONTH_CLASS);
+                    if (!this.parent.isMinMaxDate(date)) {
+                        addClass([td], cls.DISABLE_DATES);
+                    }
                 }
                 if (td.classList.contains(cls.OTHERMONTH_CLASS)) {
                     continue;
@@ -270,9 +276,9 @@ export class TimelineYear extends Year {
             tRow.push(tr);
             let resData: TdData;
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                resData = this.parent.resourceBase.renderedResources[row];
+                resData = this.parent.resourceBase.renderedResources[parseInt(row.toString(), 10)];
             }
-            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), monthCells[row], 1);
+            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), monthCells[parseInt(row.toString(), 10)], 1);
             let date: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             for (let month: number = 0; month < this.columnCount; month++) {
                 let classList: string[] = [];
@@ -283,7 +289,7 @@ export class TimelineYear extends Year {
                 } else {
                     classList.push(cls.WORKDAY_CLASS);
                 }
-                monthDate = new Date(this.parent.selectedDate.getFullYear(), monthCells[month], 1);
+                monthDate = new Date(this.parent.selectedDate.getFullYear(), monthCells[parseInt(month.toString(), 10)], 1);
                 date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
                 const tdELe: HTMLElement = createElement('td', {
                     className: cls.WORK_CELLS_CLASS,
@@ -311,9 +317,9 @@ export class TimelineYear extends Year {
             contentBody.appendChild(tr);
             let resData: TdData;
             if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                resData = this.parent.resourceBase.renderedResources[row];
+                resData = this.parent.resourceBase.renderedResources[parseInt(row.toString(), 10)];
             }
-            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), months[row], 1);
+            let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(row.toString(), 10)], 1);
             let date: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                 const monthTr: HTMLElement = tr.cloneNode() as HTMLElement;
@@ -340,10 +346,10 @@ export class TimelineYear extends Year {
                     } else {
                         classList.push(cls.WORKDAY_CLASS);
                     }
-                    monthDate = new Date(this.parent.selectedDate.getFullYear(), months[month], 1);
+                    monthDate = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(month.toString(), 10)], 1);
                     date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
                 } else {
-                    groupIndex = this.colLevels.slice(-1)[0][month].groupIndex;
+                    groupIndex = this.colLevels.slice(-1)[0][parseInt(month.toString(), 10)].groupIndex;
                     classList.push(cls.WORKDAY_CLASS);
                 }
                 const td: HTMLElement = createElement('td', {

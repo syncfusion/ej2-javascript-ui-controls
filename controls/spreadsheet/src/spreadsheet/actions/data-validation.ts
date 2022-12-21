@@ -228,7 +228,7 @@ export class DataValidation {
     private setDropDownListIndex(dataSource: { [key: string]: Object }[], cell: CellModel): number {
         if (cell && cell.value) {
             for (let dataIdx: number = 0, len: number = dataSource.length; dataIdx < len; dataIdx++) {
-                if (dataSource[dataIdx].text === cell.value.toString()) {
+                if (dataSource[dataIdx as number].text === cell.value.toString()) {
                     return dataIdx;
                 }
             }
@@ -245,8 +245,8 @@ export class DataValidation {
         if (definedNames.length > 0 && isRange) {
             const listValue: string = value.split('=')[1];
             for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
-                if (definedNames[idx].name === listValue) {
-                    let definedNameRange: string = definedNames[idx].refersTo;
+                if (definedNames[idx as number].name === listValue) {
+                    let definedNameRange: string = definedNames[idx as number].refersTo;
                     // eslint-disable-next-line
                     while (definedNameRange.includes("'")) {
                         // eslint-disable-next-line
@@ -292,11 +292,11 @@ export class DataValidation {
                 indexes = getRangeIndexes(address);
             }
             for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
-                if (!sheet.rows[rowIdx]) { setRow(sheet, rowIdx, {}); }
+                if (!sheet.rows[rowIdx as number]) { setRow(sheet, rowIdx, {}); }
                 for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                    if (!sheet.rows[rowIdx].cells) { setCell(rowIdx, colIdx, sheet, {}); }
+                    if (!sheet.rows[rowIdx as number].cells) { setCell(rowIdx, colIdx, sheet, {}); }
                     count += 1;
-                    cell = sheet.rows[rowIdx].cells[colIdx];
+                    cell = sheet.rows[rowIdx as number].cells[colIdx as number];
                     const data: string = this.parent.getDisplayText(cell) || '';
                     this.data.push({ text: data, id: 'list-' + count });
                 }
@@ -305,7 +305,7 @@ export class DataValidation {
             const listValues: string[] = value.split(',');
             for (let idx: number = 0; idx < listValues.length; idx++) {
                 count += 1;
-                this.data.push({ text: listValues[idx], id: 'list-' + count });
+                this.data.push({ text: listValues[idx as number], id: 'list-' + count });
             }
         }
         return this.data;
@@ -319,10 +319,10 @@ export class DataValidation {
         if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
         } else {
-            if (this.parent.isEdit) this.parent.closeEdit();
+            if (this.parent.isEdit) { this.parent.closeEdit(); }
             updateCell(
                 this.parent, sheet, { cell: { value: value }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
-                uiRefresh: true, checkCF: true });
+                    uiRefresh: true, checkCF: true });
             this.parent.notify(completeAction, { action: 'cellSave', eventArgs: { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell } });
         }
     }
@@ -357,10 +357,10 @@ export class DataValidation {
         const validationArgs : { moreValidation: boolean, extendValidation: boolean} = this.validateRange(indexes, sheet);
         if (!validationArgs.extendValidation && !validationArgs.moreValidation || okClick) {
             for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
-                if (sheet.rows[rowIdx]) {
+                if (sheet.rows[rowIdx as number]) {
                     for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                        if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
-                            cell = sheet.rows[rowIdx].cells[colIdx];
+                        if (sheet.rows[rowIdx as number].cells && sheet.rows[rowIdx as number].cells[colIdx as number]) {
+                            cell = sheet.rows[rowIdx as number].cells[colIdx as number];
                             if (cell.validation) {
                                 isNew = false;
                                 type = cell.validation.type;
@@ -414,7 +414,7 @@ export class DataValidation {
                     },
                     buttons: [{
                         buttonModel: {
-                            content: l10n.getConstant('CLEARALL'),
+                            content: l10n.getConstant('ClearAll'),
                             cssClass: 'e-btn e-clearall-btn e-flat'
                         },
                         click: (): void => {
@@ -426,7 +426,7 @@ export class DataValidation {
                     },
                     {
                         buttonModel: {
-                            content: l10n.getConstant('APPLY'), isPrimary: true
+                            content: l10n.getConstant('Apply'), isPrimary: true
                         },
                         click: (): void => {
                             this.dlgClickHandler(dialogInst);
@@ -482,16 +482,19 @@ export class DataValidation {
             { text: l10n.getConstant('NotBetween'), id: 'operator-2' },
             { text: l10n.getConstant('EqualTo'), id: 'operator-3' },
             { text: l10n.getConstant('NotEqualTo'), id: 'operator-4' },
-            { text: l10n.getConstant('Greaterthan'), id: 'operator-5' },
-            { text: l10n.getConstant('Lessthan'), id: 'operator-6' },
+            { text: l10n.getConstant('GreaterThan'), id: 'operator-5' },
+            { text: l10n.getConstant('LessThan'), id: 'operator-6' },
             { text: l10n.getConstant('GreaterThanOrEqualTo'), id: 'operator-7' },
             { text: l10n.getConstant('LessThanOrEqualTo'), id: 'operator-8' }
         ];
         const allowSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
+        if (type) {
+            type = this.FormattedType(type);
+        }
         let allowIdx: number = 0;
         if (!isNew) {
             for (let idx: number = 0; idx < this.typeData.length; idx++) {
-                if (type === (this.typeData[idx].text as string).replace(' ', '')) {
+                if (type === this.FormattedType(this.typeData[idx as number].text as string)) {
                     allowIdx = idx;
                     break;
                 }
@@ -503,7 +506,7 @@ export class DataValidation {
             const dataSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
             if (!isNew) {
                 for (let idx: number = 0; idx < this.operatorData.length; idx++) {
-                    if (operator === this.FormattedValue(this.operatorData[idx].text as string)) {
+                    if (operator === this.FormattedValue(this.operatorData[idx as number].text as string)) {
                         dataIdx = idx;
                         break;
                     }
@@ -533,7 +536,7 @@ export class DataValidation {
             change: () => { this.userInput(listObj, this.dataList); }
         });
         listObj.appendTo(allowSelectEle);
-        if (isNew || (listObj.value !== 'List' && (this.dataList.value === 'Between' || this.dataList.value === 'Not between'))) {
+        if (isNew || (listObj.value !== l10n.getConstant('List') && (this.dataList.value === l10n.getConstant('Between') || this.dataList.value === l10n.getConstant('NotBetween')))) {
             const minimumCont: HTMLElement = this.parent.createElement('div', { className: 'e-minimum' });
             const maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
@@ -562,7 +565,7 @@ export class DataValidation {
                 value: 0
             });
             numericMax.appendTo('#maxvalue');
-        } else if (!isNew && type === ' List') {
+        } else if (!isNew && type === 'List') {
             const valueText: HTMLElement = this.parent.createElement('span', {
                 className: 'e-header', innerHTML: l10n.getConstant('Sources')
             });
@@ -589,10 +592,10 @@ export class DataValidation {
         let moreValidation: boolean = false; let extendValidation: boolean = false;
         const type: string[] = []; const operator: string[] = []; const value1: string[] = []; const value2: string[] = [];
         for (let rowIndex: number = indexes[0]; rowIndex <= indexes[2]; rowIndex++) {
-            if (sheet.rows[rowIndex]) {
+            if (sheet.rows[rowIndex as number]) {
                 for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                    if (sheet.rows[rowIndex].cells && sheet.rows[rowIndex].cells[colIdx]) {
-                        const cell: CellModel = sheet.rows[rowIndex].cells[colIdx];
+                    if (sheet.rows[rowIndex as number].cells && sheet.rows[rowIndex as number].cells[colIdx as number]) {
+                        const cell: CellModel = sheet.rows[rowIndex as number].cells[colIdx as number];
                         if (cell.validation) {
                             type.push(cell.validation.type);
                             operator.push(cell.validation.operator);
@@ -614,16 +617,16 @@ export class DataValidation {
         }
         let tmp: string[] = [];
         for (let i: number = 0; i < type.length; i++) {
-            if (tmp.indexOf(type[i]) === -1) {
-                tmp.push(type[i]);
+            if (tmp.indexOf(type[i as number]) === -1) {
+                tmp.push(type[i as number]);
             }
         }
         if (tmp.length > 1) { moreValidation = true; }
         if (!moreValidation) {
             tmp = [];
             for (let j: number = 0; j < operator.length; j++) {
-                if (tmp.indexOf(operator[j]) === -1) {
-                    tmp.push(operator[j]);
+                if (tmp.indexOf(operator[j as number]) === -1) {
+                    tmp.push(operator[j as number]);
                 }
             }
             if (tmp.length > 1) {
@@ -633,8 +636,8 @@ export class DataValidation {
         if (!moreValidation) {
             tmp = [];
             for (let j: number = 0; j < value1.length; j++) {
-                if (tmp.indexOf(value1[j]) === -1) {
-                    tmp.push(value1[j]);
+                if (tmp.indexOf(value1[j as number]) === -1) {
+                    tmp.push(value1[j as number]);
                 }
             }
             if (tmp.length > 1) { moreValidation = true; }
@@ -642,8 +645,8 @@ export class DataValidation {
         if (!moreValidation) {
             tmp = [];
             for (let j: number = 0; j < value2.length; j++) {
-                if (tmp.indexOf(value2[j]) === -1) {
-                    tmp.push(value2[j]);
+                if (tmp.indexOf(value2[j as number]) === -1) {
+                    tmp.push(value2[j as number]);
                 }
             }
             if (tmp.length > 1) {
@@ -653,10 +656,10 @@ export class DataValidation {
         if (!moreValidation) {
             let count: number = 0; let cellCount: number = 0;
             for (let startRow: number = indexes[0]; startRow <= indexes[2]; startRow++) {
-                if (sheet.rows[startRow]) {
+                if (sheet.rows[startRow as number]) {
                     for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                        if (sheet.rows[startRow].cells && sheet.rows[startRow].cells[colIdx]) {
-                            const cell: CellModel = sheet.rows[startRow].cells[colIdx];
+                        if (sheet.rows[startRow as number].cells && sheet.rows[startRow as number].cells[colIdx as number]) {
+                            const cell: CellModel = sheet.rows[startRow as number].cells[colIdx as number];
                             cellCount++;
                             if (cell.validation) {
                                 count++;
@@ -778,7 +781,7 @@ export class DataValidation {
         while (valuesCont.lastChild) {
             valuesCont.removeChild(valuesCont.lastChild);
         }
-        if (listObj.value === 'List') {
+        if (listObj.value === l10n.getConstant('List')) {
             while (dataCont.lastChild) {
                 dataCont.removeChild(dataCont.lastChild);
             }
@@ -798,7 +801,7 @@ export class DataValidation {
                 listObj1.appendTo(dataSelectEle);
             }
         }
-        if (listObj.value !== 'List' && (listObj1.value === 'Between' || listObj1.value === 'Not between')) {
+        if (listObj.value !== l10n.getConstant('List') && (listObj1.value === l10n.getConstant('Between') || listObj1.value === l10n.getConstant('NotBetween'))) {
             const minimumCont: HTMLElement = this.parent.createElement('div', { className: 'e-minimum' });
             const maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
@@ -822,9 +825,9 @@ export class DataValidation {
             maximumCont.appendChild(maximumText);
             maximumCont.appendChild(maximumInp);
         } else {
-            const text: string = listObj.value === 'List' ? l10n.getConstant('Sources') : l10n.getConstant('Value');
+            const text: string = listObj.value === l10n.getConstant('List') ? l10n.getConstant('Sources') : l10n.getConstant('Value');
             const valueText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: text });
-            const valueEle: HTMLElement = listObj.value === 'List' ? this.parent.createElement('input', {
+            const valueEle: HTMLElement = listObj.value === l10n.getConstant('List') ? this.parent.createElement('input', {
                 className: 'e-input',
                 attrs: { placeholder: 'Enter value' }
             }) :
@@ -853,12 +856,10 @@ export class DataValidation {
         const range: string = (dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0] as HTMLInputElement).value;
         let operator: string;
         let type: string = (allowEle as HTMLInputElement).value;
+        type = this.FormattedType(type);
         if (dataEle) {
             operator = (dataEle as HTMLInputElement).value;
             operator = this.FormattedValue(operator);
-        }
-        if (type) {
-            type = type.replace(' ', '');
         }
         let rangeAdd: string[] = [];
         const valArr: string[] = [];
@@ -949,33 +950,61 @@ export class DataValidation {
     }
 
     private FormattedValue(value: string): string {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         switch (value) {
-        case 'Between':
+        case l10n.getConstant('Between'):
             value = 'Between';
             break;
-        case 'Not between':
+        case l10n.getConstant('NotBetween'):
             value = 'NotBetween';
             break;
-        case 'Equal to':
+        case l10n.getConstant('EqualTo'):
             value = 'EqualTo';
             break;
-        case 'Not equal to':
+        case l10n.getConstant('NotEqualTo'):
             value = 'NotEqualTo';
             break;
-        case 'Greater than':
+        case l10n.getConstant('GreaterThan'):
             value = 'GreaterThan';
             break;
-        case 'Less than':
+        case l10n.getConstant('LessThan'):
             value = 'LessThan';
             break;
-        case 'Greater than or equal to':
+        case l10n.getConstant('GreaterThanOrEqualTo'):
             value = 'GreaterThanOrEqualTo';
             break;
-        case 'Less than or equal to':
+        case l10n.getConstant('LessThanOrEqualTo'):
             value = 'LessThanOrEqualTo';
             break;
         default:
             value = 'Between';
+            break;
+        }
+        return value;
+    }
+
+    private FormattedType(value: string): string {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        switch (value) {
+        case l10n.getConstant('WholeNumber'):
+            value = 'WholeNumber';
+            break;
+        case l10n.getConstant('Decimal'):
+            value = 'Decimal';
+            break;
+        case l10n.getConstant('Date'):
+            value = 'Date';
+            break;
+        case l10n.getConstant('TextLength'):
+            value = 'TextLength';
+            break;
+        case l10n.getConstant('List'):
+            value = 'List';
+            break;
+        case l10n.getConstant('Time'):
+            value = 'Time';
+            break;
+        default:
             break;
         }
         return value;
@@ -997,7 +1026,8 @@ export class DataValidation {
         }
         if (!isEmpty) {
             for (let idx: number = 0; idx < values.length; idx++) {
-                const value: string = checkIsFormula(values[idx]) ? this.parent.computeExpression(values[idx]).toString() : values[idx];
+                const value: string = checkIsFormula(values[idx as number]) ? this.parent.computeExpression(
+                    values[idx as number]).toString() : values[idx as number];
                 formValidation = this.formatValidation(value, type, true);
                 if (formValidation.isValidate) {
                     count = count + 1;
@@ -1095,14 +1125,14 @@ export class DataValidation {
                     if (type === 'List') {
                         if (value1.indexOf('=') !== -1) {
                             for (let idx: number = 0; idx < this.data.length; idx++) {
-                                if (args.value.toString() === this.data[idx].text) {
+                                if (args.value.toString() === this.data[idx as number].text) {
                                     isValidate = true;
                                 }
                             }
                         } else {
                             const values: string[] = (value1 as string).split(',');
                             for (let idx: number = 0; idx < values.length; idx++) {
-                                if (args.value.toString() === values[idx]) {
+                                if (args.value.toString() === values[idx as number]) {
                                     isValidate = true;
                                 }
                             }
@@ -1212,7 +1242,8 @@ export class DataValidation {
         return { isValidate: isValidate, errorMsg: errorMsg };
     }
 
-    private checkDataValidation(args: { value: string, range: number[], sheetIdx: number, isCell: boolean, td?: HTMLElement, isValid?: boolean }): void {
+    private checkDataValidation(
+        args: { value: string, range: number[], sheetIdx: number, isCell: boolean, td?: HTMLElement, isValid?: boolean }): void {
         const cell: CellModel = getCell(args.range[0], args.range[1], this.parent.getActiveSheet());
         args.td = args.td || this.parent.getCell(args.range[0], args.range[1]);
         args.sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
@@ -1297,7 +1328,7 @@ export class DataValidation {
             break;
         case 'TextLength':
             if (isDialogValidator) {
-                 options = {
+                options = {
                     rules: {
                         'validation': { regex: /^\d*\.?[0]*$/ }
                     },

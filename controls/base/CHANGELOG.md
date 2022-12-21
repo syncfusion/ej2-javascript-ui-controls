@@ -2,29 +2,13 @@
 
 ## [Unreleased]
 
-## 20.3.50 (2022-10-18)
+## 20.4.38 (2022-12-21)
 
 ### Common
 
 #### Bug Fixes
 
-- `#SF395314` - The issue " incorrect position of the helper element while dragging the `treeview` element" has been resolved.
-
-## 20.3.49 (2022-10-11)
-
-### Common
-
-#### Bug Fixes
-
-- `#SF395268`, `#SF395314` - The issue "Drag area is not getting properly when setting a value for `margin-top`" has been resolved.
-
-## 20.3.47 (2022-09-29)
-
-### Common
-
-#### Bug Fixes
-
-- The issue with the "React template element is not getting in the Grid `queryCellInfo` event" has been resolved.
+- `#I421652` - The issue with the "gulp is added to the dependency package in the ej2 package" has been resolved.
 
 ## 20.3.47 (2022-09-29)
 

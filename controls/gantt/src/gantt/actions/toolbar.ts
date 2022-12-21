@@ -58,7 +58,8 @@ export class Toolbar {
                     itemStr =  item.toLowerCase();
                     localeName = item[0].toLowerCase() + item.slice(1);
                 }
-                this.predefinedItems[item] = {
+
+                this.predefinedItems[item as string] = {
                     id: this.parent.element.id + '_' + itemStr, prefixIcon: 'e-' + itemStr,
                     text: this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant(localeName),
                     tooltipText: this.parent.localeObj.getConstant(localeName) + ((localeName === 'add' ||
@@ -67,6 +68,14 @@ export class Toolbar {
                             this.parent.localeObj.getConstant('tasks') : ''),
                     align: this.parent.isAdaptive ? 'Right' : 'Left'
                 };
+                if (this.parent.enableRtl) {
+                    if (item === 'PrevTimeSpan') {
+                        this.predefinedItems[item as string].prefixIcon = 'e-nexttimespan';
+                    }
+                    if (item === 'NextTimeSpan') {
+                        this.predefinedItems[item as string].prefixIcon = 'e-prevtimespan';
+                }
+            }
             }
             const searchLocalText: string = this.parent.localeObj.getConstant('search');
             if (this.parent.isAdaptive) {
@@ -98,6 +107,7 @@ export class Toolbar {
         const items: ItemModel[] = this.getItems();
         this.toolbar = new NavToolbar({
             items: items,
+            enableRtl : this.parent.enableRtl,
             clicked: this.toolbarClickHandler.bind(this),
             height: this.parent.isAdaptive ? 48 : 'auto'
         });
@@ -116,6 +126,7 @@ export class Toolbar {
             this.searchElement = this.element.querySelector('#' + this.parent.element.id + '_searchbar');
             const textObj: TextBox = new TextBox({
                 placeholder: this.parent.localeObj.getConstant('search'),
+                enableRtl: this.parent.enableRtl,
                 floatLabelType: 'Never',
                 showClearButton: true
             });
@@ -229,12 +240,20 @@ export class Toolbar {
     }
 
     private getItemObject(itemName: string): ItemModel {
-        return this.predefinedItems[itemName] || { text: itemName, id: this.id + '_' + itemName };
+        return this.predefinedItems[itemName as string] || { text: itemName, id: this.id + '_' + itemName };
     }
     private toolbarClickHandler(arg: ClickEventArgs): void {
         const gObj: Gantt = this.parent;
         const gID: string = this.id;
+        this.parent.isToolBarClick = false
         extend(arg, { cancel: false });
+        if (arg.item['properties'].id === this.parent.element.id+"_pdfexport" || arg.item['properties'].id === this.parent.element.id+"_critical-path") {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
+        }
         gObj.trigger(events.toolbarClick, arg, (args: ClickEventArgs) => {
             if (args.cancel) {
                 return;
@@ -398,12 +417,12 @@ export class Toolbar {
                 disableItems.push(gID + '_indent');
                 disableItems.push(gID + '_outdent');
             } else {
-                if (gObj.updatedRecords[ind].level === 0 && hasData && !touchEdit) {
+                if (gObj.updatedRecords[ind as number].level === 0 && hasData && !touchEdit) {
                     enableItems.push(gID + '_indent');
                     disableItems.push(gID + '_outdent');
                 } else {
                     previousGanttRecord = gObj.updatedRecords[ind - 1];
-                    if ((gObj.updatedRecords[ind].level - previousGanttRecord.level === 1) && ind !== -1) {
+                    if ((gObj.updatedRecords[ind as number].level - previousGanttRecord.level === 1) && ind !== -1) {
                         disableItems.push(gID + '_indent');
                         enableItems.push(gID + '_outdent');
                     } else if (ind !== -1) {
@@ -424,16 +443,17 @@ export class Toolbar {
                 enableItems.push(gID + '_update', gID + '_cancel');
                 disableItems = [];
                 for (let t: number = 0; t < toolbarItems.length; t++) {
-                    if (toolbarItems[t].id !== gID + '_update' && toolbarItems[t].id !== gID + '_cancel' &&
-                        toolbarDefaultItems.indexOf(toolbarItems[t].id) !== -1) {
-                        disableItems.push(toolbarItems[t].id);
+                    if (toolbarItems[t as number].id !== gID + '_update' && toolbarItems[t as number].id !== gID + '_cancel' &&
+                        toolbarDefaultItems.indexOf(toolbarItems[t as number].id) !== -1) {
+                        disableItems.push(toolbarItems[t as number].id);
                     }
                 }
             } else {
                 disableItems.push(gID + '_update', gID + '_cancel');
                 for (let t: number = 0; t < toolbarItems.length; t++) {
-                    if (enableItems.indexOf(toolbarItems[t].id) === -1 && disableItems.indexOf(toolbarItems[t].id) === -1) {
-                        enableItems.push(toolbarItems[t].id);
+                    if (enableItems.indexOf(toolbarItems[t as number].id) === -1 &&
+                       disableItems.indexOf(toolbarItems[t as number].id) === -1) {
+                        enableItems.push(toolbarItems[t as number].id);
                     }
                 }
             }
@@ -449,7 +469,7 @@ export class Toolbar {
         for (let e: number = 0; e < enableItems.length; e++) {
             let index: number;
             for (let t: number = 0; t < toolbarItems.length; t++) {
-                if (toolbarItems[t].id === enableItems[e]) {
+                if (toolbarItems[t as number].id === enableItems[e as number]) {
                     index = t;
                     break;
                 }
@@ -461,7 +481,7 @@ export class Toolbar {
         for (let d: number = 0; d < disableItems.length; d++) {
             let index: number;
             for (let t: number = 0; t < toolbarItems.length; t++) {
-                if (toolbarItems[t].id === disableItems[d]) {
+                if (toolbarItems[t as number].id === disableItems[d as number]) {
                     index = t;
                     break;
                 }

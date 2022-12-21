@@ -1,3 +1,5 @@
+/* eslint-disable curly */
+/* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
@@ -56,7 +58,7 @@ export class Legend extends BaseLegend {
             this.move(e);
             if ((<Chart>this.chart).highlightModule && ((<Chart>this.chart).highlightMode !== 'None' || (<Chart>this.chart).legendSettings.enableHighlight)) {
                 const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
-                this.legendID + '_shape_',this.legendID + '_g_'];
+                    this.legendID + '_shape_', this.legendID + '_g_'];
                 const targetId: string = (<HTMLElement>e.target).id;
                 let index: number;
                 for (const id of legendItemsId) {
@@ -65,7 +67,7 @@ export class Legend extends BaseLegend {
                         (<Chart>this.chart).highlightModule.legendSelection((<Chart>this.chart), index, e.target as Element, e.type);
                         break;
                     }
-                    
+
                 }
                 // this.click(e);
             }
@@ -89,6 +91,7 @@ export class Legend extends BaseLegend {
         this.legendCollections = [];
         let seriesType: ChartDrawType | ChartSeriesType;
         let fill: string;
+        let dashArray: string;
         const colors: string[] = [];
         this.isRtlEnable = chart.enableRtl;
         this.isReverse = !this.isRtlEnable && chart.legendSettings.reverse;
@@ -100,13 +103,14 @@ export class Legend extends BaseLegend {
                 if (series.category !== 'Indicator') {
                     seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                         <ChartSeriesType>series.type;
+                    dashArray = !series.marker.visible && (seriesType.indexOf('Line') > -1 && seriesType.indexOf('Area') === -1) ? series.dashArray : '';
                     // To set legend color when use pointColorMapping
                     fill = (series.pointColorMapping && series.points.length > 0) ?
                         (series.points[0].interior ? series.points[0].interior : series.interior) : series.interior;
                     this.legendCollections.push(new LegendOptions(
                         series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
-                        seriesType, series.legendImageUrl, series.marker.shape, series.marker.visible
+                        seriesType, series.legendImageUrl, series.marker.shape, series.marker.visible, null, null, dashArray
                     ));
                 }
             } else if (this.legend.mode === 'Point') {
@@ -195,13 +199,13 @@ export class Legend extends BaseLegend {
         let legendWidth: number = 0;
         let columnHeight: number = 0;
         let columnCount : number = 0;
-         let rowCount: number = 0;
+        let rowCount: number = 0;
         let titlePlusArrowSpace: number = 0;
-        let legendEventArgs: ILegendRenderEventArgs;       
+        let legendEventArgs: ILegendRenderEventArgs;
         let render: boolean = false;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         for (let i: number = 0; i < this.legendCollections.length; i++) {
-            legendOption = this.legendCollections[i];
+            legendOption = this.legendCollections[i as number];
             if (regSub.test(legendOption.text)) {
                 legendOption.text = getUnicodeText(legendOption.text, regSub);
             }
@@ -223,7 +227,7 @@ export class Legend extends BaseLegend {
             shapePadding = legendOption.text ? legend.shapePadding : 0;
             if (legendOption.render && legendOption.text) {
                 render = true;
-                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + (!this.isVertical ? (i==0) ? padding : this.itemPadding : padding);
+                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + (!this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
                 rowWidth = rowWidth + legendWidth;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
@@ -232,21 +236,21 @@ export class Legend extends BaseLegend {
                 this.getLegendHeight(legendOption, legend, legendBounds, rowWidth, this.maxItemHeight, padding);
                 if (legendBounds.width < (padding + rowWidth + titlePlusArrowSpace) || this.isVertical) {
                     maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace - (this.isVertical ? 0 : legendWidth)));
-                    if (rowCount === 0 && (legendWidth !== rowWidth)) {                     
-                        rowCount = 1;                       
+                    if (rowCount === 0 && (legendWidth !== rowWidth)) {
+                        rowCount = 1;
                     }
                     rowWidth = this.isVertical ? 0 : legendWidth;
-                    rowCount++;  
+                    rowCount++;
                     columnCount = 0;
-                    columnHeight = verticalArrowSpace;           
+                    columnHeight = verticalArrowSpace;
                     //columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + titleSpace + verticalArrowSpace;
                 }
-                const len = (rowCount > 0 ? (rowCount -1) : 0);
-                this.rowHeights[len]= Math.max((this.rowHeights[len] ? this.rowHeights[len] :0), legendOption.textSize.height);
-               // this.maxItemHeight = Math.max(this.maxItemHeight, legendOption.textSize.height);
-               this.columnHeights[columnCount] = (this.columnHeights[columnCount] ? this.columnHeights[columnCount] : 0) + legendOption.textSize.height + (this.isVertical ? (i==0) ? padding : this.itemPadding : padding);     
-               columnCount++;
-            }                
+                const len: number = (rowCount > 0 ? (rowCount - 1) : 0);
+                this.rowHeights[len as number] = Math.max((this.rowHeights[len as number] ? this.rowHeights[len as number] : 0), legendOption.textSize.height);
+                // this.maxItemHeight = Math.max(this.maxItemHeight, legendOption.textSize.height);
+                this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ? this.columnHeights[columnCount as number] : 0) + legendOption.textSize.height + (this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
+                columnCount++;
+            }
         }
         columnHeight = Math.max.apply(null, this.columnHeights) +  padding + titleSpace;
         columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
@@ -270,24 +274,23 @@ export class Legend extends BaseLegend {
         }
     }
     /** @private */
-    public getLegendHeight(legendOption: LegendOptions, legend: LegendSettingsModel, legendBounds: Rect, rowWidth: number, legendHeight : number, padding : number)  {
-      
-        let legendWidth: number = legendOption.textSize.width; 
-        const textPadding: number = legend.shapePadding + (padding * 2) + legend.shapeWidth;      
-        switch(legend.textWrap) {
-            case 'Wrap':
-            case 'AnyWhere':
-                if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > legendBounds.width) {
-                    legendOption.textCollection = textWrap(
-                        legendOption.text,
-                        (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) : (legendBounds.width - textPadding)), legend.textStyle
-                );                
-               } else {
+    public getLegendHeight(legendOption: LegendOptions, legend: LegendSettingsModel, legendBounds: Rect, rowWidth: number, legendHeight : number, padding : number): void  {
+        const legendWidth: number = legendOption.textSize.width;
+        const textPadding: number = legend.shapePadding + (padding * 2) + legend.shapeWidth;
+        switch (legend.textWrap) {
+        case 'Wrap':
+        case 'AnyWhere':
+            if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > legendBounds.width) {
+                legendOption.textCollection = textWrap(
+                    legendOption.text,
+                    (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) : (legendBounds.width - textPadding)), legend.textStyle
+                );
+            } else {
                 legendOption.textCollection.push(legendOption.text);
-               }
-               legendOption.textSize.height = (legendHeight * legendOption.textCollection.length);              
-              break;
-            }            
+            }
+            legendOption.textSize.height = (legendHeight * legendOption.textCollection.length);
+            break;
+        }
     }
     /** @private */
     public getRenderPoint(
@@ -299,26 +302,25 @@ export class Legend extends BaseLegend {
         if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding - this.itemPadding, rect) || this.isVertical) {
             legendOption.location.x = start.x;
             if (count !== firstLegend)
-              this.chartRowCount++;
+                this.chartRowCount++;
             legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                 prevLegend.location.y + (this.isVertical ? prevLegend.textSize.height : this.rowHeights[(this.chartRowCount - 2)]) + (this.isVertical ? this.itemPadding : padding);
-              
         } else {
             legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             legendOption.location.y = prevLegend.location.y;
         }
         let availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (legendOption.location.x +
-            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x; 
-        availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) :availwidth;
-            if (this.legend.textOverflow == "Ellipsis" && this.legend.textWrap == "Normal") {           
-                legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
-           }
-      
+            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (legendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
+        availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) : availwidth;
+        if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
+            legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text, this.legend.textStyle);
+        }
+
     }
 
     private isWithinBounds(previousBound : number, textWidth : number, rect: Rect) : boolean
     {
-        if(!this.isRtlEnable)
+        if (!this.isRtlEnable)
         {
             return (previousBound + textWidth) > (rect.x + rect.width + (this.legend.shapeWidth / 2));
         }
@@ -332,8 +334,8 @@ export class Legend extends BaseLegend {
         const chart: Chart = <Chart>this.chart;
         const seriesIndex: number = chart.legendSettings.mode === 'Series' ? index : 0;
         const legendIndex: number = !this.isReverse ?  index : (this.legendCollections.length - 1) - index;
-        const series: Series = chart.visibleSeries[seriesIndex];
-        const legend: LegendOptions = this.legendCollections[legendIndex];
+        const series: Series = chart.visibleSeries[seriesIndex as number];
+        const legend: LegendOptions = this.legendCollections[legendIndex as number];
         const changeDetection: string = 'isProtectedOnChange';
         if (chart.legendSettings.mode === 'Series') {
             const legendClickArgs: ILegendClickEventArgs = {
@@ -342,45 +344,47 @@ export class Legend extends BaseLegend {
             };
             this.chart.trigger(legendClick, legendClickArgs);
             series.legendShape = legendClickArgs.legendShape;
-            if (series.fill !== null) {
-                chart.visibleSeries[index].interior = series.fill;
-            }
-            if (chart.legendSettings.toggleVisibility) {
-                if (series.category === 'TrendLine') {
-                    if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
-                        chart.series[series.sourceIndex].trendlines[series.index].visible = true;
-                    } else {
-                        chart.series[series.sourceIndex].trendlines[series.index].visible = false;
-                    }
-                } else {
-                    series.chart[changeDetection] = true;
-                    this.changeSeriesVisiblity(series, series.visible);
+            if (!legendClickArgs.cancel) {
+                if (series.fill !== null) {
+                    chart.visibleSeries[index as number].interior = series.fill;
                 }
-                legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
-                    (series.visible);
-                this.refreshLegendToggle(chart, series);
-            } else if (chart.highlightModule) {
-                chart.highlightModule.legendSelection(chart, index, event.target as Element, event.type);
-            } else if (chart.selectionModule) {
-                chart.selectionModule.legendSelection(chart, index, event.target as Element, event.type);
+                if (chart.legendSettings.toggleVisibility) {
+                    if (series.category === 'TrendLine') {
+                        if (!chart.series[series.sourceIndex].trendlines[series.index].visible) {
+                            chart.series[series.sourceIndex].trendlines[series.index].visible = true;
+                        } else {
+                            chart.series[series.sourceIndex].trendlines[series.index].visible = false;
+                        }
+                    } else {
+                        series.chart[changeDetection as string] = true;
+                        this.changeSeriesVisiblity(series, series.visible);
+                    }
+                    legend.visible = series.category === 'TrendLine' ? chart.series[series.sourceIndex].trendlines[series.index].visible :
+                        (series.visible);
+                    this.refreshLegendToggle(chart, series);
+                } else if (chart.highlightModule) {
+                    chart.highlightModule.legendSelection(chart, index, event.target as Element, event.type);
+                } else if (chart.selectionModule) {
+                    chart.selectionModule.legendSelection(chart, index, event.target as Element, event.type);
+                }
+                series.chart[changeDetection as string] = false;
             }
-            series.chart[changeDetection] = false;
         } else if (chart.legendSettings.mode === 'Point') {
-            const point: Points = series.points[index];
+            const point: Points = series.points[index as number];
             const legendClickArgs: ILegendClickEventArgs = {
                 legendText: legend.text, legendShape: legend.shape,
                 chart: chart.isBlazor ? {} as Chart : chart, series: series, points: [point], name: legendClick, cancel: false
             };
             this.chart.trigger(legendClick, legendClickArgs);
-            if (chart.legendSettings.toggleVisibility) {
+            if (chart.legendSettings.toggleVisibility && !legendClickArgs.cancel) {
                 point.visible = !point.visible;
-                const legendOption: LegendOptions = this.legendCollections[index];
+                const legendOption: LegendOptions = this.legendCollections[index as number];
                 legendOption.visible = point.visible;
                 this.refreshLegendToggle(chart, series);
             }
         } else if (chart.legendSettings.mode === 'Range') {
             const points: Points[] = [];
-            const legendOption: LegendOptions = this.legendCollections[index];
+            const legendOption: LegendOptions = this.legendCollections[index as number];
             for (const point of series.points) {
                 if (legendOption.fill === (point.interior || series.interior)) {
                     points.push(point);
@@ -391,7 +395,7 @@ export class Legend extends BaseLegend {
                 chart: chart.isBlazor ? {} as Chart : chart, series: series, points: points, name: legendClick, cancel: false
             };
             this.chart.trigger(legendClick, legendClickArgs);
-            if (chart.legendSettings.toggleVisibility) {
+            if (chart.legendSettings.toggleVisibility && !legendClickArgs.cancel) {
                 legendOption.visible = !legendOption.visible;
                 for (const point of points) {
                     point.visible = !point.visible;
@@ -485,10 +489,10 @@ export class Legend extends BaseLegend {
         const pageX: number = this.chart.mouseX;
         const pageY: number = this.chart.mouseY;
         let legendRegion: ILegendRegions[] = [];
-        const targetId: string = (<HTMLElement>event.target).id.indexOf("_chart_legend_g_") > -1 ?
+        const targetId: string = (<HTMLElement>event.target).id.indexOf('_chart_legend_g_') > -1 ?
             (event.target as HTMLElement).firstChild['id'] : (<HTMLElement>event.target).id;
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
-        this.legendID + '_shape_'];
+            this.legendID + '_shape_'];
         let seriesIndex: number;
         for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
@@ -527,23 +531,23 @@ export class Legend extends BaseLegend {
         canvasRect.width = canvasRect.width + borderWidth;
         canvasRect.height = canvasRect.height + borderWidth;
         if (withInBounds(pageX, pageY, this.pagingRegions[0])) {
-           // pageDown calculations are performing here
-           if(!this.isRtlEnable) {
-              this.canvasPageDown(cRender, canvasRect, bounds);
-           }
-           else {
-             this.canvasPageUp(cRender, canvasRect, bounds)
-           }
+        // pageDown calculations are performing here
+            if (!this.isRtlEnable) {
+                this.canvasPageDown(cRender, canvasRect, bounds);
+            }
+            else {
+                this.canvasPageUp(cRender, canvasRect, bounds);
+            }
             return null;
         }
         if (withInBounds(pageX, pageY, this.pagingRegions[1])) {
             // pageUp calculations are performing here
-            if(!this.isRtlEnable) {
+            if (!this.isRtlEnable) {
                 this.canvasPageUp(cRender, canvasRect, bounds);
-             }
-             else {
+            }
+            else {
                 this.canvasPageDown(cRender, canvasRect, bounds);
-             }
+            }
             return null;
         }
     }

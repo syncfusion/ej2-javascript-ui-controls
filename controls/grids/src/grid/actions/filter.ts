@@ -174,7 +174,7 @@ export class Filter implements IAction {
      */
     public setFilterModel(col: Column): void {
         const type: string = col.filter.type || this.parent.filterSettings.type;
-        this.filterModule = new this.type[type](this.parent, this.parent.filterSettings, this.serviceLocator, this.customOperators, this);
+        this.filterModule = new this.type[`${type}`](this.parent, this.parent.filterSettings, this.serviceLocator, this.customOperators, this);
     }
 
     /**
@@ -199,8 +199,8 @@ export class Filter implements IAction {
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
             const dropdownlist: NodeListOf<Element> = [].slice.call(this.element.getElementsByClassName('e-filterbaroperator'));
             for (let i: number = 0; i < dropdownlist.length; i++) {
-                if ((<EJ2Intance>dropdownlist[i]).ej2_instances[0]) {
-                    (<EJ2Intance>dropdownlist[i]).ej2_instances[0].destroy();
+                if ((<EJ2Intance>dropdownlist[parseInt(i.toString(), 10)]).ej2_instances[0]) {
+                    (<EJ2Intance>dropdownlist[parseInt(i.toString(), 10)]).ej2_instances[0].destroy();
                 }
             }
         }
@@ -282,12 +282,12 @@ export class Filter implements IAction {
             const isMenuNotEqual: boolean = this.operator === 'notequal';
             this.currentFilterObject = {
                 field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
-                value: arrayVal[i], predicate: this.predicate,
+                value: arrayVal[parseInt(i.toString(), 10)], predicate: this.predicate,
                 matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
             };
             const index: number = this.getFilteredColsIndexByField(col);
             if (index > -1 && !Array.isArray(this.value)) {
-                this.filterSettings.columns[index] = this.currentFilterObject;
+                this.filterSettings.columns[parseInt(index.toString(), 10)] = this.currentFilterObject;
             } else {
                 this.filterSettings.columns.push(this.currentFilterObject);
             }
@@ -318,7 +318,8 @@ export class Filter implements IAction {
     private getFilteredColsIndexByField(col: Column): number {
         const cols: PredicateModel[] = this.filterSettings.columns;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].uid === col.uid || (col.isForeignColumn() && this.parent.getColumnByUid(col.uid).field === col.foreignKeyValue)) {
+            if (cols[parseInt(i.toString(), 10)].uid === col.uid || (col.isForeignColumn()
+                && this.parent.getColumnByUid(col.uid).field === col.foreignKeyValue)) {
                 return i;
             }
         }
@@ -572,7 +573,7 @@ export class Filter implements IAction {
         let flag: boolean = true;
         const colLen: string[] = Object.keys((col));
         for (let i: number = 0; i < colLen.length ; i++) {
-            const key: Object[] = Object.keys(col[colLen[i]]);
+            const key: Object[] = Object.keys(col[colLen[parseInt(i.toString(), 10)]]);
             if (key.length === 1 && key[0] === 'uid') {
                 flag = false; } }
         return flag;
@@ -593,7 +594,7 @@ export class Filter implements IAction {
                         this.column.field : undefined, action: 'filter', columns: this.filterSettings.columns,
                     requestType: 'filtering', type: events.actionBegin, cancel: false
                 };
-                if (this.contentRefresh && this.skipUid(e.properties[col])) {
+                if (this.contentRefresh && this.skipUid(e.properties[`${col}`])) {
                     this.parent.notify(events.modelChanged, args);
                     if ((<{ cancel?: boolean }>args).cancel) {
                         if (isNullOrUndefined(this.prevFilterObject)) {
@@ -610,7 +611,7 @@ export class Filter implements IAction {
                 }
                 break;
             case 'showFilterBarStatus':
-                if (e.properties[prop]) {
+                if (e.properties[`${prop}`]) {
                     this.updateFilterMsg();
                 } else if (this.parent.allowPaging) {
                     this.parent.updateExternalMessage('');
@@ -628,32 +629,32 @@ export class Filter implements IAction {
     private refreshFilterSettings(): void {
         if (this.filterSettings.type === 'FilterBar') {
             for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
-                this.column = this.parent.grabColumnByUidFromAllCols(this.filterSettings.columns[i].uid);
-                let filterValue: string | number | Date | boolean = this.filterSettings.columns[i].value;
+                this.column = this.parent.grabColumnByUidFromAllCols(this.filterSettings.columns[parseInt(i.toString(), 10)].uid);
+                let filterValue: string | number | Date | boolean = this.filterSettings.columns[parseInt(i.toString(), 10)].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
                 if (!isNullOrUndefined(this.column.format)) {
                     this.applyColumnFormat(filterValue);
                 } else {
-                    const key: string = this.filterSettings.columns[i].field;
-                    this.values[key] = this.filterSettings.columns[i].value;
+                    const key: string = this.filterSettings.columns[parseInt(i.toString(), 10)].field;
+                    this.values[`${key}`] = this.filterSettings.columns[parseInt(i.toString(), 10)].value;
                 }
                 const filterElement: HTMLInputElement = this.getFilterBarElement(this.column.field);
                 if (filterElement) {
-                    if (this.cellText[this.filterSettings.columns[i].field] !== ''
-                        && !isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
+                    if (this.cellText[this.filterSettings.columns[parseInt(i.toString(), 10)].field] !== ''
+                        && !isNullOrUndefined(this.cellText[this.filterSettings.columns[parseInt(i.toString(), 10)].field])) {
                         filterElement.value = this.cellText[this.column.field];
                     } else {
-                        filterElement.value = this.filterSettings.columns[i].value as string;
+                        filterElement.value = this.filterSettings.columns[parseInt(i.toString(), 10)].value as string;
                     }
                 }
             }
             if (this.filterSettings.columns.length === 0) {
                 const col: Column[] = this.parent.getColumns();
                 for (let i: number = 0; i < col.length; i++) {
-                    const filterElement: HTMLInputElement = this.getFilterBarElement(col[i].field);
+                    const filterElement: HTMLInputElement = this.getFilterBarElement(col[parseInt(i.toString(), 10)].field);
                     if (filterElement && filterElement.value !== '') {
                         filterElement.value = '';
-                        delete this.values[col[i].field];
+                        delete this.values[col[parseInt(i.toString(), 10)].field];
                     }
                 }
             }
@@ -664,8 +665,8 @@ export class Filter implements IAction {
         if (this.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             const fltrIconElement: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-filtered'));
             for (let i: number = 0, len: number = fltrIconElement.length; i < len; i++) {
-                fltrIconElement[i].removeAttribute('aria-filtered');
-                fltrIconElement[i].classList.remove('e-filtered');
+                fltrIconElement[parseInt(i.toString(), 10)].removeAttribute('aria-filtered');
+                fltrIconElement[parseInt(i.toString(), 10)].classList.remove('e-filtered');
             }
         }
     }
@@ -709,13 +710,14 @@ export class Filter implements IAction {
             return;
         }
         for (let i: number = 0; i < cols.length; i++) {
-            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
+            cols[parseInt(i.toString(), 10)].uid = cols[parseInt(i.toString(), 10)].uid
+                || this.parent.getColumnByField(cols[parseInt(i.toString(), 10)].field).uid;
         }
         const colUid: string[] = cols.map((f: Column) => f.uid);
         const filteredcols: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
         this.refresh = false;
         for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
-            this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
+            this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[parseInt(i.toString(), 10)]).field, false);
         }
         this.refresh = true;
         if (filteredcols.length) {
@@ -814,9 +816,10 @@ export class Filter implements IAction {
         const colUid: string[] = cols.map((f: Column) => f.uid);
         const filteredColsUid: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
         for (let i: number = 0, len: number = filteredColsUid.length; i < len; i++) {
-            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
+            cols[parseInt(i.toString(), 10)].uid = cols[parseInt(i.toString(), 10)].uid
+            || this.parent.getColumnByField(cols[parseInt(i.toString(), 10)].field).uid;
             let len: number = cols.length;
-            const column: Column = this.parent.grabColumnByUidFromAllCols(filteredColsUid[i]);
+            const column: Column = this.parent.grabColumnByUidFromAllCols(filteredColsUid[parseInt(i.toString(), 10)]);
             if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
                 const currentPred: PredicateModel = this.filterSettings.columns.filter((e: PredicateModel) => {
                     return e.uid === column.uid; })[0];
@@ -825,11 +828,11 @@ export class Filter implements IAction {
                     fCell = this.parent.getHeaderContent().querySelector(selector) as HTMLInputElement;
                     if (fCell) {
                         fCell.value = '';
-                        delete this.values[field];
+                        delete this.values[`${field}`];
                     }
                 }
                 while (len--) {
-                    if (cols[len].uid === column.uid) {
+                    if (cols[parseInt(len.toString(), 10)].uid === column.uid) {
                         cols.splice(len, 1);
                     }
                 }
@@ -840,11 +843,11 @@ export class Filter implements IAction {
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
                 }
                 this.isRemove = true;
-                if (this.actualPredicate[field]) {
-                    delete this.actualPredicate[field];
+                if (this.actualPredicate[`${field}`]) {
+                    delete this.actualPredicate[`${field}`];
                 }
-                if (this.values[field]) {
-                    delete this.values[field];
+                if (this.values[`${field}`]) {
+                    delete this.values[`${field}`];
                 }
                 if (this.refresh) {
                     this.parent.notify(events.modelChanged, {
@@ -930,7 +933,8 @@ export class Filter implements IAction {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (let index: number = 0; index < columns.length; index++) {
-                    column = gObj.grabColumnByUidFromAllCols(columns[index].uid) || gObj.grabColumnByFieldFromAllCols(columns[index].field);
+                    column = gObj.grabColumnByUidFromAllCols(columns[parseInt(index.toString(), 10)].uid)
+                    || gObj.grabColumnByFieldFromAllCols(columns[parseInt(index.toString(), 10)].field);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -967,7 +971,7 @@ export class Filter implements IAction {
     private checkForSkipInput(column: Column, value: string): boolean {
         let isSkip: boolean;
         if (column.type === 'number') {
-            if (DataUtil.operatorSymbols[value] || this.skipNumberInput.indexOf(value) > -1) {
+            if (DataUtil.operatorSymbols[`${value}`] || this.skipNumberInput.indexOf(value) > -1) {
                 isSkip = true;
             }
         } else if (column.type === 'string') {
@@ -1042,7 +1046,7 @@ export class Filter implements IAction {
             }
             skipInput = ['>', '<', '=', '!'];
             for (let i: number = 0; i < value.length; i++) {
-                if (skipInput.indexOf(value[i]) > -1) {
+                if (skipInput.indexOf(value[parseInt(i.toString(), 10)]) > -1) {
                     index = i;
                     break;
                 }
@@ -1116,10 +1120,10 @@ export class Filter implements IAction {
             { '=': this.filterOperators.equal, '!': this.filterOperators.notEqual }, DataUtil.operatorSymbols);
         // eslint-disable-next-line no-prototype-builtins
         if (operators.hasOwnProperty(singleOp) || operators.hasOwnProperty(multipleOp)) {
-            this.operator = operators[singleOp];
+            this.operator = operators[`${singleOp}`];
             this.value = value.substring(1);
             if (!this.operator) {
-                this.operator = operators[multipleOp];
+                this.operator = operators[`${multipleOp}`];
                 this.value = value.substring(2);
             }
         }
@@ -1271,7 +1275,7 @@ export class Filter implements IAction {
         for (let i: number = 0; i < result.length; i++) {
             let index: number = -1;
             for (let j: number = 0; j < this.filterSettings.columns.length; j++) {
-                if (result[i].field === this.filterSettings.columns[j].field) {
+                if (result[parseInt(i.toString(), 10)].field === this.filterSettings.columns[parseInt(j.toString(), 10)].field) {
                     index = j;
                     break;
                 }
@@ -1305,15 +1309,17 @@ export class Filter implements IAction {
         const cols: PredicateModel[] = this.filterSettings.columns;
         this.actualPredicate = {};
         for (let i: number = 0; i < cols.length; i++) {
-            this.column = this.parent.getColumnByField(cols[i].field) ||
-                getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns());
-            let fieldName: string = cols[i].field;
-            if (!this.parent.getColumnByField(cols[i].field)) {
-                fieldName = getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns()).field;
+            this.column = this.parent.getColumnByField(cols[parseInt(i.toString(), 10)].field) ||
+                getColumnByForeignKeyValue(cols[parseInt(i.toString(), 10)].field, this.parent.getForeignKeyColumns());
+            let fieldName: string = cols[parseInt(i.toString(), 10)].field;
+            if (!this.parent.getColumnByField(cols[parseInt(i.toString(), 10)].field)) {
+                fieldName = getColumnByForeignKeyValue(cols[parseInt(i.toString(), 10)].field, this.parent.getForeignKeyColumns()).field;
             }
             this.refreshFilterIcon(
-                fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate,
-                cols[i].matchCase, cols[i].ignoreAccent, cols[i].uid
+                fieldName, cols[parseInt(i.toString(), 10)].operator, cols[parseInt(i.toString(), 10)].value,
+                cols[parseInt(i.toString(), 10)].type, cols[parseInt(i.toString(), 10)].predicate,
+                cols[parseInt(i.toString(), 10)].matchCase, cols[parseInt(i.toString(), 10)].ignoreAccent,
+                cols[parseInt(i.toString(), 10)].uid
             );
         }
     }
@@ -1331,10 +1337,10 @@ export class Filter implements IAction {
             value: value,
             type: type
         };
-        if (this.actualPredicate[fieldName]) {
-            this.actualPredicate[fieldName].push(obj);
+        if (this.actualPredicate[`${fieldName}`]) {
+            this.actualPredicate[`${fieldName}`].push(obj);
         } else {
-            this.actualPredicate[fieldName] = [obj];
+            this.actualPredicate[`${fieldName}`] = [obj];
         }
         const field: string = uid ? this.parent.grabColumnByUidFromAllCols(uid).field : fieldName;
         this.addFilteredClass(field);

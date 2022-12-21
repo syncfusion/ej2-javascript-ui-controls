@@ -63,6 +63,9 @@ export class EditorHistory {
      * @private
      */
     public modifiedParaFormats: Dictionary<BaseHistoryInfo, ModifiedParagraphFormat[]>;
+    /**
+     * @private
+     */
     public documentHelper: DocumentHelper;
     //Properties
     /**
@@ -85,7 +88,7 @@ export class EditorHistory {
         return this.redoStackIn;
     }
     /**
-     * Gets or Sets the limit of undo operations can be done.
+     * Gets the limit of undo operations can be done.
      *
      * @aspType int
      * @returns {number} - Returns the redo limit
@@ -97,7 +100,7 @@ export class EditorHistory {
      * Sets the limit of undo operations can be done.
      *
      * @aspType int
-     * @param {number} value - Specified the value.
+     * @param {number} value - Specifies the value to set undo limit.
      */
     public set undoLimit(value: number) {
         if (value < 0) {
@@ -106,19 +109,19 @@ export class EditorHistory {
         this.undoLimitIn = value;
     }
     /**
-     * Gets or Sets the limit of redo operations can be done.
+     * Gets the limit of redo operations can be done.
      *
      * @aspType int
-     * @returns {number} - Returns the redo limit
+     * @returns {number} - Returns the redo limit.
      */
     public get redoLimit(): number {
         return isNullOrUndefined(this.redoLimitIn) ? 0 : this.redoLimitIn;
     }
     /**
-     * Gets or Sets the limit of redo operations can be done.
+     * Sets the limit of redo operations can be done.
      *
      * @aspType int
-     * @param {number} value - Specified the value.
+     * @param {number} value Specifies the value to set redo limit.
      */
     public set redoLimit(value: number) {
         if (value < 0) {
@@ -146,17 +149,17 @@ export class EditorHistory {
         return 'EditorHistory';
     }
     /**
-     * Determines whether undo operation can be done.
+     * Determines whether the undo operation can be done.
      *
-     * @returns {boolean} - Returns the canUndo.
+     * @returns {boolean} - Returns true if can undo; Otherwise, false.
      */
     public canUndo(): boolean {
         return !isNullOrUndefined(this.undoStack) && this.undoStack.length > 0;
     }
     /**
-     * Determines whether redo operation can be done.
+     * Determines whether the redo operation can be done.
      *
-     * @returns {boolean} - Returns the canRedo.
+     * @returns {boolean} - Returns true if can redo; Otherwise, false.
      */
     public canRedo(): boolean {
         return !isNullOrUndefined(this.redoStack) && this.redoStack.length > 0;
@@ -428,11 +431,11 @@ export class EditorHistory {
         this.currentBaseHistoryInfo.updateSelection();
         const collection: Dictionary<number, ModifiedLevel> = new Dictionary<number, ModifiedLevel>();
         for (let i: number = 0; i < currentAbstractList.levels.length; i++) {
-            const levels: WListLevel = this.documentHelper.getAbstractListById(list.abstractListId).levels[i];
+            const levels: WListLevel = this.documentHelper.getAbstractListById(list.abstractListId).levels[parseInt(i.toString(), 10)];
             this.currentBaseHistoryInfo.addModifiedPropertiesForList(levels);
-            const modifiedLevel: ModifiedLevel = new ModifiedLevel(levels, currentAbstractList.levels[i]);
+            const modifiedLevel: ModifiedLevel = new ModifiedLevel(levels, currentAbstractList.levels[parseInt(i.toString(), 10)]);
             if (!isNullOrUndefined(levels)) {
-                this.documentHelper.owner.editorModule.copyListLevel(levels, (currentAbstractList.levels[i] as WListLevel));
+                this.documentHelper.owner.editorModule.copyListLevel(levels, (currentAbstractList.levels[parseInt(i.toString(), 10)] as WListLevel));
             }
             collection.add(i, modifiedLevel);
         }
@@ -452,7 +455,7 @@ export class EditorHistory {
         }
         const collection: ModifiedParagraphFormat[] = [];
         for (let i: number = 0; i < this.documentHelper.listParagraphs.length; i++) {
-            const paragraph: ParagraphWidget = this.documentHelper.listParagraphs[i];
+            const paragraph: ParagraphWidget = this.documentHelper.listParagraphs[parseInt(i.toString(), 10)];
             const paraFormat: WParagraphFormat = paragraph.paragraphFormat;
             const currentList: WList = this.documentHelper.getListById(paraFormat.listFormat.listId);
             const listLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, paraFormat.listFormat.listLevelNumber);
@@ -479,7 +482,7 @@ export class EditorHistory {
         this.documentHelper.owner.isLayoutEnabled = false;
         this.owner.editorModule.updateListParagraphs();
         for (let i: number = 0; i < modifiedCollection.keys.length; i++) {
-            const levelNumber: number = modifiedCollection.keys[i];
+            const levelNumber: number = modifiedCollection.keys[parseInt(i.toString(), 10)];
             let modifiedLevel: ModifiedLevel = modifiedCollection.get(levelNumber);
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
                 modifiedLevel = this.currentBaseHistoryInfo.addModifiedPropertiesForList(modifiedLevel.ownerListLevel) as ModifiedLevel;

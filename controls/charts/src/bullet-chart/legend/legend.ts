@@ -74,7 +74,7 @@ export class BulletChartLegend extends BaseLegend {
         const bulletChart: BulletChart = this.chart as BulletChart;
         for (const range of visibleRangeCollection) {
             if (range.name !== null) {
-                fill = range.color ? range.color : bulletChart.themeStyle.rangeStrokes[range.index][key];
+                fill = range.color ? range.color : bulletChart.themeStyle.rangeStrokes[range.index][key as string];
                 this.legendCollections.push(new LegendOptions(
                     range.name, fill, range.shape, this.chart.legendSettings.visible, null,
                     range.legendImageUrl, null, false, range.index, null
@@ -93,8 +93,8 @@ export class BulletChartLegend extends BaseLegend {
             fill = (bulletChart.theme.indexOf('Dark') > -1) ? 'white' : bulletChart.targetColor ? bulletChart.targetColor : 'black';
             const shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect';
             for (let i: number = 0; i < Object.keys(bulletChart.dataSource).length; i++) {
-                if (isNullOrUndefined(bulletChart.dataSource[i][bulletChart.targetField].length)
-                || bulletChart.dataSource[i][bulletChart.targetField].length === 1) {
+                if (isNullOrUndefined(bulletChart.dataSource[i as number][bulletChart.targetField].length)
+                || bulletChart.dataSource[i as number][bulletChart.targetField].length === 1) {
                     while (i === 0) {
                         this.legendCollections.push(new LegendOptions(
                             'Target', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
@@ -107,13 +107,13 @@ export class BulletChartLegend extends BaseLegend {
                     const targetTypeLength: number = targetTypes.length;
                     while (i === 0) {
                         for (let i: number = 0; i < targetTypeLength ; i++) {
-                            targetType[i] = targetTypes[i % targetTypeLength];
-                            targetType[i] = (targetType[i] === 'Rect') ? bulletChart.orientation === 'Vertical' ?
-                                'ActualRect' : 'TargetRect' : (targetType[i]);
-                            targetType[i] = (targetType[i] === 'Cross') ? 'Multiply' :  targetType[i];
+                            targetType[i as number] = targetTypes[i % targetTypeLength];
+                            targetType[i as number] = (targetType[i as number] === 'Rect') ? bulletChart.orientation === 'Vertical' ?
+                                'ActualRect' : 'TargetRect' : (targetType[i as number]);
+                            targetType[i as number] = (targetType[i as number] === 'Cross') ? 'Multiply' :  targetType[i as number];
                             this.legendCollections.push(
                                 new LegendOptions(
-                                    'Target_' + i, fill, <LegendShape>targetType[i], this.chart.legendSettings.visible,
+                                    'Target_' + i, fill, <LegendShape>targetType[i as number], this.chart.legendSettings.visible,
                                     null, '', null, false, count++, null
                                 ));
                         }

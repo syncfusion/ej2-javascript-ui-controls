@@ -63,6 +63,9 @@ export class LazyLoadGroup implements IAction {
         if (this.parent.groupSettings.enableLazyLoading) {
             renderer.addRenderer(RenderType.Content, new GroupLazyLoadRenderer(this.parent, this.serviceLocator));
         }
+        if (this.parent.enableVirtualization) {
+            this.parent.lazyLoadRender = new GroupLazyLoadRenderer(this.parent, this.serviceLocator);
+        }
     }
 
     /**

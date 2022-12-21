@@ -97,7 +97,7 @@ export class DateParser {
             let numMapper: NumberMapper = isBlazor() ? (dependable.parserObject as any).numbers :
                 parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
             for (let i: number = 0; i < length; i++) {
-                const str: string = patternMatch[i];
+                const str: string = patternMatch[parseInt(i.toString(), 10)];
                 const len: number = str.length;
                 const char: string = (str[0] === 'K') ? 'h' : str[0];
                 let isNumber: boolean;
@@ -222,7 +222,7 @@ export class DateParser {
                     break;
                 }
                 if (canUpdate) {
-                    parseOptions.evalposition[charKey] = { isNumber: isNumber, pos: i + 1 + gmtCorrection, hourOnly: hourOnly };
+                    parseOptions.evalposition[`${charKey}`] = { isNumber: isNumber, pos: i + 1 + gmtCorrection, hourOnly: hourOnly };
                 }
                 if (i === length - 1 && !isNullOrUndefined(regexString)) {
                     parseOptions.parserRegex = new RegExp('^' + regexString + '$', 'i');
@@ -343,7 +343,7 @@ export class DateParser {
         } else {
             const props: string[] = Object.keys(parseOptions.evalposition);
             for (const prop of props) {
-                const curObject: ValuePosition = parseOptions.evalposition[prop];
+                const curObject: ValuePosition = parseOptions.evalposition[`${prop}`];
                 let matchString: string = matches[curObject.pos];
                 if (curObject.isNumber) {
                     // eslint-disable-next-line
@@ -362,7 +362,7 @@ export class DateParser {
 
                         }
                         if (!isNullOrUndefined(val)) {
-                            retOptions[prop] = val;
+                            retOptions[`${prop}`] = val;
                         }
                     } else {
                         // eslint-disable-next-line

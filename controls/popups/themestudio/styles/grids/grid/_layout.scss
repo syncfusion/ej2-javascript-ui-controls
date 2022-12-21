@@ -934,6 +934,18 @@
       }
     }
 
+    & .e-toolbar-items{
+      & .e-input-group-icon.e-icons.e-sicon:hover:not(.e-clear-icon),
+      & .e-input-group-icon.e-icons.e-sicon:active:not(.e-clear-icon),
+      & .e-input-group-icon.e-icons.e-sicon:focus:not(.e-clear-icon) {
+          background: none;
+          box-shadow: none;
+      }
+      & .e-input-group-icon.e-icons.e-sicon:not(.e-clear-icon) {
+          border: none;
+      }
+  }
+
     .e-res-toolbar {
       border-bottom: 1px solid;
       border-bottom-color: $grid-header-border-color;
@@ -950,6 +962,11 @@
           & .e-sicon.e-clear-icon:active,
           & .e-sicon.e-clear-icon:focus {
             background: none;
+            & .e-icons {
+              @if $grid-skin == 'bootstrap5' or $grid-skin == 'bootstrap4' {
+                color: $grid-responsive-toolbar-icon-color;
+              }
+            }
           }
 
           & .e-icons {
@@ -1031,6 +1048,7 @@
                 }
             }
           }
+
         }
       }
 
@@ -3655,7 +3673,6 @@
       .e-frozencontent {
         border-bottom-style: $grid-border-type;
         height: inherit;
-        overflow: hidden;
       }
 
       .e-gridcontent .e-content,
@@ -3698,7 +3715,7 @@
 
   .e-gridheader .e-headercontent .e-reorderuparrow {
     @if $grid-skin == 'fluent' or $grid-skin == 'bootstrap5' {
-      margin-top: -9px;
+      margin-top: -2px;
     }
   }
 
@@ -3882,6 +3899,9 @@
 
       .e-icons {
         padding-bottom: $grid-adaptive-toolbar-icon-hover-bottom;
+        @if $grid-skin == 'bootstrap5' or $grid-skin == 'bootstrap4' {
+          color: $grid-responsive-toolbar-icon-color;
+        }
       }
     }
 

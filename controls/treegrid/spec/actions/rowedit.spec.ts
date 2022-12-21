@@ -3131,6 +3131,52 @@ describe('EJ2-54664 - delete the parent and child record using deleteRecord meth
   });
 });
 
+describe('EJ2-67148 - collapsing a record after editing throws script error', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Row',
+            newRowPosition: 'Below'
+
+        },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        columns: [
+            {
+                field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+                validationRules: { required: true, number: true}, width: 90
+            },
+            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: {required: true} },
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+              format: 'yMd', validationRules: { date: true} },
+            {
+                field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100, editType: 'numericedit',
+                validationRules: { number: true, min: 0}, edit: { params: {  format: 'n'}}
+            }
+        ]
+      },
+      done
+    );
+  });
+  it('Collapsing after editing the parent record', (done: Function) => {
+      gridObj.updateRow(0,{taskName:'test'});
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      expect(gridObj.dataSource[0].taskName).toBe('test');
+      done();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
 describe('Add rows - Add rows as child', () => {
   let gridObj: TreeGrid;
   let actionComplete: () => void;

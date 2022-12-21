@@ -17,32 +17,31 @@
     background-size: 100% 100%;
     max-height: 500px;
     max-width: 500px;
-   }
+  }
 
   .e-content-placeholder.e-symbolpalette.e-placeholder-symbolpalette {
     background-size: 100% 100%;
     max-height: 200px;
     max-width: 200px;
-   }
-
+  }
 
   .e-diagram-endpoint-handle {
     fill: $diagram-endpoint-handle-color;
     stroke: $diagram-resize-handle-stroke;
-   }
+  }
 
   .e-diagram-endpoint-handle.e-connected {
     fill: $diagram-endpoint-handle-connected-color;
     stroke: $diagram-endpoint-handle-connected-border;
-   }
+  }
 
   .e-diagram-endpoint-handle.e-disabled {
     fill: $diagram-resize-handle-disable-color;
     opacity: 1;
     stroke: $diagram-resize-handle-disable-stroke;
-   }
+  }
 
-   // sass-lint:disable-all
+   /* stylelint-disable */
   .e-diagram-bezier-handle.e-source.e-disabled {
     opacity: 1 !important;
    }
@@ -54,7 +53,7 @@
   .e-symbolpalette .e-acrdn-content {
     background-color: $palette-background-color !important;
    }
-  // sass-lint:enable-all
+  /* stylelint-enable */
 
   .e-diagram-bezier-handle {
     fill: $diagram-bezier-handle-color;
@@ -183,7 +182,7 @@
     stroke: $diagram-multiselect-stroke;
   }
 
-  // sass-lint:disable-all
+  /* stylelint-disable */
   .e-diagram-rotate {
     cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAACXBIWXMAAAsSAAALEgHS3X78AAAA60lEQVQ4jZ1SwQ2DMBAzlfLJI2KEjJAVukG7ARsxQkfoKHQDugHdgOoqh14oCaGWIpSTudzZRg2MdYOxrq0il2Csm411o7Eu5GinTN0D6AGMAGZVux9p1LGBrHIF0LD+4l3ql70thDABSFZYaeTJ6UqNWhL3ELhyyhUR98TcwI06Lk1aNonO1NocqGWy/6zOcGCq6OjiSCw22/wUfEzL8ND2P9duFXBmHMDvWVN7CliFkkGe69VM5RmVLDqG7ZMPOroWP5BTle5WjR6dkQayutyLqU6gsiU/ypHMiI41yf+CE01qov+R0egXAN5x6jng51I3yAAAAABJRU5ErkJggg==), auto !important;
    }
@@ -198,5 +197,5 @@
     width: auto !important;
     height: auto !important;
     }
-  // sass-lint:enable-all
+  /* stylelint-enable */
 }

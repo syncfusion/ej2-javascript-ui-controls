@@ -299,6 +299,10 @@ export class TableOptionsDialog {
             }
             this.target = undefined;
         }
+        if (this.tableFormatIn) {
+            this.tableFormatIn.destroy();
+            this.tableFormatIn = undefined;
+        }
         this.dialog = undefined;
         this.target = undefined;
         this.documentHelper = undefined;

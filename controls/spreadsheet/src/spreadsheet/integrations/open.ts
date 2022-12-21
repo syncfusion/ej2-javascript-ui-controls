@@ -13,6 +13,7 @@ import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 export class Open {
     private parent: Spreadsheet;
     public isImportedFile: boolean = false;
+    public preventFormatCheck: boolean;
     public unProtectSheetIdx: number[] = [];
     constructor(parent: Spreadsheet) {
         this.parent = parent;
@@ -75,6 +76,7 @@ export class Open {
         const impArgs: OpenOptions = {
             file: filesData
         };
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         this.parent.open(impArgs);
         (document.getElementById(this.parent.element.id + '_fileUpload') as HTMLInputElement).value = '';
     }
@@ -91,6 +93,7 @@ export class Open {
         const openCancelFn: Function = (action: string): void => {
             (this.parent.serviceLocator.getService(dialog) as Dialog).hide(true);
             const file: File = new File([], response.guid, { type: action.toLowerCase() });
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             this.parent.open(
                 <OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password, orginalFile: response.eventArgs.file });
         };
@@ -103,13 +106,13 @@ export class Open {
             } else if (openError[3] === response.data) {
                 const alertSpan: Element = this.parent.createElement('span', {
                     className: 'e-importprotectpwd-alert-span',
-                    innerHTML: l10n.getConstant('InCorrectPassword')
+                    innerHTML: l10n.getConstant('IncorrectPassword')
                 });
                 (this.parent.element.querySelector('.e-importprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
             } else if (openError[4] === response.data) {
                 const alertSpan: Element = this.parent.createElement('span', {
                     className: 'e-unprotectsheetpwd-alert-span',
-                    innerHTML: l10n.getConstant('InCorrectPassword')
+                    innerHTML: l10n.getConstant('IncorrectPassword')
                 });
                 (this.parent.element.querySelector('.e-unprotectworksheet-dlg').querySelector('.e-dlg-content')).appendChild(alertSpan);
             } else if (openError[5] === response.data){
@@ -162,6 +165,8 @@ export class Open {
             this.parent.renderModule.refreshSheet(response.isOpenFromJson);
             this.parent.notify(refreshSheetTabs, null);
             this.isImportedFile = true;
+            this.preventFormatCheck = response.eventArgs && response.eventArgs.file && (response.eventArgs.file as File).name &&
+                !(response.eventArgs.file as File).name.includes('.csv');
             this.unProtectSheetIdx = [];
             this.parent.hideSpinner();
         }

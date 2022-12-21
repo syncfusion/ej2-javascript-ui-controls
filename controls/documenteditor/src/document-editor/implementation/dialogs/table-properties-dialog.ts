@@ -189,11 +189,11 @@ export class TablePropertiesDialog {
         this.target.appendChild(separatorLine);
         const alignMentButtons: HTMLCollectionOf<Element> = this.tableTab.getElementsByClassName(this.tableTab.id + 'e-de-table-alignment');
         for (let i: number = 0; i < alignMentButtons.length; i++) {
-            (alignMentButtons[i] as HTMLElement).addEventListener('click', this.changeTableAlignment);
+            (alignMentButtons[parseInt(i.toString(), 10)] as HTMLElement).addEventListener('click', this.changeTableAlignment);
         }
         const cellAlignment: HTMLCollectionOf<Element> = this.cellTab.getElementsByClassName(this.cellTab.id + 'e-de-table-cell-alignment');
         for (let i: number = 0; i < cellAlignment.length; i++) {
-            cellAlignment[i].addEventListener('click', this.changeCellAlignment);
+            cellAlignment[parseInt(i.toString(), 10)].addEventListener('click', this.changeCellAlignment);
         }
     }
     /**
@@ -283,9 +283,9 @@ export class TablePropertiesDialog {
             const containerWidth: number = ownerTable.getOwnerWidth(true);
             const tableWidth: number = ownerTable.getTableClientWidth(containerWidth);
             for (let i: number = 0; i < ownerTable.childWidgets.length; i++) {
-                let rowWidget: TableRowWidget = ownerTable.childWidgets[i] as TableRowWidget;
+                let rowWidget: TableRowWidget = ownerTable.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
                 for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
-                    let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                    let cellWidget: TableCellWidget = rowWidget.childWidgets[parseInt(j.toString(), 10)] as TableCellWidget;
                     if (this.cellFormat.preferredWidthType === 'Percent' && cellWidget.cellFormat.preferredWidthType === 'Point') {
                         cellWidget.cellFormat.preferredWidthType = 'Percent';
                         cellWidget.cellFormat.preferredWidth = cellWidget.cellFormat.preferredWidth / tableWidth * 100;
@@ -794,7 +794,7 @@ export class TablePropertiesDialog {
         const id: string = this.tableTab.id;
         const groupButtons: HTMLCollectionOf<Element> = this.tableTab.getElementsByClassName(id + 'e-de-table-alignment');
         for (let j: number = 0; j < groupButtons.length; j++) {
-            const groupButton: HTMLElement = groupButtons[j] as HTMLElement;
+            const groupButton: HTMLElement = groupButtons[parseInt(j.toString(), 10)] as HTMLElement;
             if (groupButton.classList.contains('e-de-table-alignment-active')) {
                 if (j === 0) {
                     return this.ltrButton.checked ? 'Left' : 'Right';
@@ -812,7 +812,7 @@ export class TablePropertiesDialog {
         const id: string = element.id;
         const groupButtons: HTMLCollectionOf<Element> = element.getElementsByClassName(id + 'e-de-table-alignment');
         for (let j: number = 0; j < groupButtons.length; j++) {
-            const groupButton: HTMLElement = groupButtons[j] as HTMLElement;
+            const groupButton: HTMLElement = groupButtons[parseInt(j.toString(), 10)] as HTMLElement;
             if (groupButton.classList.contains('e-de-table-alignment-active')) {
                 classList(groupButton, ['e-de-table-properties-alignment'], ['e-de-table-alignment-active']);
             }
@@ -1178,7 +1178,7 @@ export class TablePropertiesDialog {
     private updateClassForCellAlignment(element: HTMLElement): void {
         const cellAlignments: HTMLCollectionOf<Element> = element.getElementsByClassName(element.id + 'e-de-table-cell-alignment');
         for (let j: number = 0; j < cellAlignments.length; j++) {
-            const cellAlignment: HTMLElement = cellAlignments[j] as HTMLElement;
+            const cellAlignment: HTMLElement = cellAlignments[parseInt(j.toString(), 10)] as HTMLElement;
             if (cellAlignment.classList.contains('e-de-table-alignment-active')) {
                 classList(cellAlignment, ['e-de-tablecell-alignment'], ['e-de-table-alignment-active']);
             }
@@ -1203,7 +1203,7 @@ export class TablePropertiesDialog {
         const id: string = this.cellTab.id;
         const groupButtons: HTMLCollectionOf<Element> = this.cellTab.getElementsByClassName(id + 'e-de-table-cell-alignment');
         for (let j: number = 0; j < groupButtons.length; j++) {
-            const groupButton: HTMLElement = groupButtons[j] as HTMLElement;
+            const groupButton: HTMLElement = groupButtons[parseInt(j.toString(), 10)] as HTMLElement;
             if (groupButton.classList.contains('e-de-table-alignment-active')) {
                 if (j === 0) {
                     return 'Top';
@@ -1314,7 +1314,7 @@ export class TablePropertiesDialog {
                 this.target.parentElement.removeChild(this.target);
             }
             for (let s: number = 0; s < this.target.childNodes.length; s++) {
-                this.target.removeChild(this.target.childNodes[s]);
+                this.target.removeChild(this.target.childNodes[parseInt(s.toString(), 10)]);
                 s--;
             }
             this.target = undefined;
@@ -1345,6 +1345,10 @@ export class TablePropertiesDialog {
         this.cellTopAlign = undefined;
         this.cellCenterAlign = undefined;
         this.cellBottomAlign = undefined;
+        if (this.paraFormatIn) {
+            this.paraFormatIn.destroy();
+            this.paraFormatIn  = undefined;
+        }
         if (this.tableFormatIn) {
             this.tableFormatIn.destroy();
         }

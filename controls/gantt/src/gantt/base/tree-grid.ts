@@ -29,7 +29,6 @@ export class GanttTreeGrid {
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /** @hidden */
     public prevCurrentView: Object;
-
     constructor(parent: Gantt) {
         this.parent = parent;
         this.parent.treeGrid = new TreeGrid();
@@ -48,7 +47,7 @@ export class GanttTreeGrid {
     }
     private renderReactTemplate(args: Object[]): void {
         const portals: string = 'portals';
-        this.parent[portals] = args;
+        this.parent[portals as string] = args;
         this.parent.renderTemplates();
     }
     private createContainer(): void {
@@ -71,7 +70,7 @@ export class GanttTreeGrid {
         this.composeProperties();
         this.bindEvents();
         const root: string = 'root';
-        this.parent.treeGrid[root] = this.parent[root] ? this.parent[root] : this.parent;
+        this.parent.treeGrid[root as string] = this.parent[root as string] ? this.parent[root as string] : this.parent;
         this.parent.treeGrid.appendTo(this.treeGridElement);
         this.wireEvents();
     }
@@ -80,9 +79,12 @@ export class GanttTreeGrid {
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
 	this.parent.treeGrid.enableCollapseAll = this.parent.collapseAllParentTasks;
         this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
+	this.parent.treeGrid.enableRtl = this.parent.enableRtl;
         this.parent.treeGrid.childMapping = isNullOrUndefined(this.parent.taskFields.child) ? '' : this.parent.taskFields.child;
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
+        this.parent.treeGrid.loadingIndicator = this.parent.loadingIndicator;
+        this.parent.treeGrid.enableVirtualMaskRow = this.parent.enableVirtualMaskRow;
         if (this.parent.dataSource instanceof Object && isCountRequired(this.parent)) {
             // In order to bind the observable data at load time, hasChildMapping is necessary to be mapped.
             this.parent.treeGrid.hasChildMapping = 'isParent';
@@ -94,19 +96,19 @@ export class GanttTreeGrid {
         }
         this.parent.treeGrid.expandStateMapping = this.parent.taskFields.expandState;
         const isGantt: string = 'isGantt';
-        this.parent.treeGrid[isGantt] = true;
+        this.parent.treeGrid[isGantt as string] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
         if (this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
             this.parent.treeGrid.searchSettings = this.parent.searchSettings;
         }
         const isJsComponent: string = 'isJsComponent';
-        this.parent.treeGrid[isJsComponent] = true;
+        this.parent.treeGrid[isJsComponent as string] = true;
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
             toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
         }
-	this.parent.treeGrid.height =
+        this.parent.treeGrid.height =
 	       this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - 19;
     }
     private getContentDiv(): HTMLElement {
@@ -178,6 +180,14 @@ export class GanttTreeGrid {
     private dataBound(args: object): void {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
+        if (this.parent.isVirtualScroll) {
+            if ((this.parent.enableVirtualMaskRow && this.parent.enableVirtualization) ||
+                (this.parent.enableVirtualization && !this.parent.enableVirtualMaskRow && this.parent.loadingIndicator.indicatorType === "Shimmer") ||
+                (this.parent.loadingIndicator.indicatorType === "Shimmer")) {
+                    this.parent.hideMaskRow();
+            }
+            this.parent.isVirtualScroll = false;
+        }
         this.prevCurrentView = extend([], [], this.parent.currentViewData, true);
     }
     private dataStateChange(args: DataStateChangeEventArgs): void {
@@ -212,6 +222,11 @@ export class GanttTreeGrid {
             const collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            this.parent.hideMaskRow();
+        } else {
+            this.parent.hideSpinner();
+        }
     }
     private expanded(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart && !this.parent.isExpandCollapseLevelMethod) {
@@ -219,6 +234,11 @@ export class GanttTreeGrid {
                 const expandedArgs: object = this.createExpandCollapseArgs(args);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
             }
+        }
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            this.parent.hideMaskRow();
+        } else {
+            this.parent.hideSpinner();
         }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
@@ -228,6 +248,13 @@ export class GanttTreeGrid {
             setValue('doubleClickTarget', null, this.parent.treeGrid.editModule);
         }
         this.parent.trigger('actionBegin', args);
+        if (args.requestType != "virtualscroll" && args.type != "edit" && args.requestType != "beginEdit") {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
+        }
     }// eslint-disable-next-line
     private created(args: object): void {
         this.updateKeyConfigSettings();
@@ -270,7 +297,7 @@ export class GanttTreeGrid {
                 const oldKey: any = old[keys[i]] instanceof Date ? new Date(old[keys[i]]).getTime() : old[keys[i]];
                 /* eslint-disable-next-line */
 				const currentKey: any = current[keys[i]] instanceof Date ? new Date(current[keys[i]]).getTime() : current[keys[i]];
-                if (oldKey !== currentKey && excludeKeys.indexOf(keys[i]) === -1) {
+                if (oldKey !== currentKey && excludeKeys.indexOf(keys[i as number]) === -1) {
                     this.parent.modifiedRecords.push(current);
                     isEqual = false; break;
                 }
@@ -330,6 +357,11 @@ export class GanttTreeGrid {
             this.parent.addDeleteRecord = false;
         }
         this.parent.trigger('actionComplete', updatedArgs);
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            this.parent.hideMaskRow()
+        } else {
+            this.parent.hideSpinner()
+        }
     }
 
     private updateKeyConfigSettings(): void {
@@ -403,15 +435,15 @@ export class GanttTreeGrid {
             'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
-            if (typeof ganttObj.columns[i] === 'string') {
-                column.field = ganttObj.columns[i] as string;
+            if (typeof ganttObj.columns[i as number] === 'string') {
+                column.field = ganttObj.columns[i as number] as string;
             } else {
-                column = <GanttColumnModel>ganttObj.columns[i];
+                column = <GanttColumnModel>ganttObj.columns[i as number];
             }
             let columnName: string[] = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter((name: string) => {
-                    return column.field === tasks[name];
+                    return column.field === tasks[name as string];
                 });
             }
             if (columnName.length === 0) {
@@ -436,10 +468,10 @@ export class GanttTreeGrid {
         /** Create default columns with task settings property */
         for (let j: number = 0; j < tasksMapping.length; j++) {
             const column: GanttColumnModel = {};
-            if (!isNullOrUndefined(tasks[tasksMapping[j]])) {
-                column.field = tasks[tasksMapping[j]];
+            if (!isNullOrUndefined(tasks[tasksMapping[j as number]])) {
+                column.field = tasks[tasksMapping[j as number]];
                 this.createTreeGridColumn(column, length === 0);
-                this.parent.columnMapping[tasksMapping[j]] = column.field;
+                this.parent.columnMapping[tasksMapping[j as number]] = column.field;
             }
         }
         if (this.parent.viewType !== 'ProjectView') {
@@ -575,7 +607,7 @@ export class GanttTreeGrid {
         const id: number[] = [];
         if (!isNullOrUndefined(value)) {
             for (let i: number = 0; i < value.length; i++) {
-                id.push(typeof value[i] === 'object' ? value[i][this.parent.resourceFields.id] : value[i]);
+                id.push(typeof value[i as number] === 'object' ? value[i as number][this.parent.resourceFields.id] : value[i as number]);
             }
             return id;
         } else {
@@ -590,18 +622,18 @@ export class GanttTreeGrid {
      */
     private composeIDColumn(column: GanttColumnModel): void {
         const isProjectView: boolean = this.parent.viewType === 'ProjectView';
-        let lengthDataSource: number = this.parent.dataSource['length'];
+        const lengthDataSource: number = this.parent.dataSource['length'];
         let taskIDName: string | number;
         column.isPrimaryKey = isProjectView ? true : false;
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('id');
         column.width = column.width ? column.width : 100;
         for (let i:number = 0; i< lengthDataSource; i++) {
-            if (!isNullOrUndefined(this.parent.dataSource[i][this.parent.taskFields.id])) {
-                taskIDName = this.parent.dataSource[i][this.parent.taskFields.id];
+            if (!isNullOrUndefined(this.parent.dataSource[i as number][this.parent.taskFields.id])) {
+                taskIDName = this.parent.dataSource[i as number][this.parent.taskFields.id];
                 break;
             }
         }
-        if(typeof(taskIDName) === "string" || isNullOrUndefined(taskIDName)) {
+        if (typeof(taskIDName) === "string" || isNullOrUndefined(taskIDName)) {
             if (this.parent.viewType === 'ResourceView') {
                 column.allowEditing = column.allowEditing ? column.allowEditing : false;
             } else {
@@ -642,7 +674,7 @@ export class GanttTreeGrid {
     private bindTreeGridColumnProperties(newGanttColumn: GanttColumnModel, isDefined?: boolean): void {
         const treeGridColumn: ColumnModel = {}; const ganttColumn: GanttColumnModel = {};
         for (const prop of Object.keys(newGanttColumn)) {
-            treeGridColumn[prop] = ganttColumn[prop] = newGanttColumn[prop];
+            treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
         }
         this.parent.columnByField[ganttColumn.field] = ganttColumn;
         this.parent.ganttColumns.push(new GanttColumn(ganttColumn));
@@ -680,7 +712,7 @@ export class GanttTreeGrid {
         return '';
     }
     private modeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line
-        if (data[field]) {
+        if (data[field as string]) {
             return 'Manual';
         } else {
             return 'Auto';
@@ -700,7 +732,7 @@ export class GanttTreeGrid {
             newScrollTop = getValue('top', args);
         }
         this.treeGridElement.querySelector('.e-content').scrollTop = newScrollTop;
-        this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;
+	this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;
     }
     private treeGridClickHandler(e: PointerEvent): void {
         this.parent.notify('treeGridClick', e);

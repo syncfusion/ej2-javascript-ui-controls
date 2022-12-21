@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 20.4.38 (2022-12-21)
+
+### Circular Gauge
+
+#### New Features
+
+- `#I293761`, `#I294324`, `#I309426`, `#F165646`, `#I420860` - When `animationDuration` is set in the rounded range bar pointer, the path element for the pointer is now improved.
+
 ## 20.3.49 (2022-10-11)
 
 ### Circular Gauge

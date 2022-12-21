@@ -6,8 +6,8 @@ import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
 import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';
 import { Dialog, createSpinner, hideSpinner, showSpinner, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
-import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';
-import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';
+import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings, VirtualizationSettings } from '../models/index';
+import { NavigationPaneSettingsModel, DetailsViewSettingsModel, VirtualizationSettingsModel } from '../models/index';
 import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';
 import { Toolbar } from '../actions/toolbar';
 import { DetailsView } from '../layout/details-view';
@@ -33,6 +33,7 @@ import { BreadCrumbBar } from '../actions/breadcrumb-bar';
 import { ContextMenu } from '../pop-up/context-menu';
 import { defaultLocale } from '../models/default-locale';
 import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
+import { Virtualization } from '../actions/virtualization';
 
 /**
  * The FileManager component allows users to access and manage the file system through the web  browser. It can performs the
@@ -63,6 +64,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public contextmenuModule: IContextMenu;
     /** @hidden */
     public breadcrumbbarModule: BreadCrumbBar;
+    /** @hidden */
+    public virtualizationModule: Virtualization;
 
 
     /* Internal variables */
@@ -239,6 +242,20 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Complex<DetailsViewSettingsModel>({}, DetailsViewSettings)
     public detailsViewSettings: DetailsViewSettingsModel;
+
+    /** 
+     * Gets or sets the virtualization settings of the File Manager to load a large set of files/folders.
+     * When `virtualizationSettings.enable` is true, the file and folders will be loaded based on the count specified in corresponding views.
+     * By default, 20 files/folders render in the details view and 40 files and folders render in the large icons view.
+     * The remaining files/folders will be rendered on vertical scroll within File Manager content.
+     * @default { 
+     * enable: false 
+     * detailsViewItemsCount: 20, 
+     * largeIconsViewItemsCount: 40 
+     * }
+     */
+    @Complex<VirtualizationSettingsModel>({}, VirtualizationSettings)
+    private virtualizationSettings: VirtualizationSettingsModel;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
@@ -709,6 +726,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 args: [this]
             });
         }
+        if (this.virtualizationSettings.enable) {
+            modules.push({
+                member: 'virtualization',
+                args: [this]
+            });
+        }
         return modules;
     }
 
@@ -998,8 +1021,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         let action: string = 'save';
         if ((this.retryArgs.length !== 0)) {
             for (let i: number = 0; i < this.retryArgs.length; i++) {
-                if (args.fileData.name === this.retryArgs[i].file.name) {
-                    action = this.retryArgs[i].action;
+                if (args.fileData.name === this.retryArgs[i as number].file.name) {
+                    action = this.retryArgs[i as number].action;
                     this.retryArgs.splice(i, 1);
                     i = this.retryArgs.length;
                 }

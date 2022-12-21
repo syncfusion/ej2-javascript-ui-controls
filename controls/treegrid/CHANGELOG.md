@@ -2,76 +2,23 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
+## 20.4.38 (2022-12-21)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Features
 
-- `#I419247` - `expandRow` and `collapseRow` methods are working properly while expanding or collapsing a row respectively when `frozenRows` property enabled
+- Provided the shimmer effect for tree grid while loading, refreshing and data processing. Please find the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/loading-animation.html).
+- `#I307202`, `#FB20655` - Provided support to load child records on demand while virtual scrolling in remote data binding. Find more details in the documentation [here](https://ej2.syncfusion.com/documentation/treegrid/data-binding/remote-data/#loadchildondemand-with-virtualization).
 
-## 20.3.60 (2022-12-06)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I419658` - Resolved template column not rendered properly when stacked header enabled.
-
-## 20.3.58 (2022-11-22)
+## 20.3.47 (2022-09-29)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Features
 
-- `#I417095` - NVDA screen reader problem for expand/collapse action has been resolved.
-- `#I418121` - Resolved row selected issue while performing expand/collapse operation.
-
-## 20.3.57 (2022-11-15)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I410505` - Resolved the tree column cell was selected while performing the expand or collapse operation.
-- `#I414378` - Resolved `selectedItems` not getting properly after performing the filter action with checkbox enabled.
-
-## 20.3.52 (2022-10-26)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I411501` - Checkbox-column selectAll behaviour works properly while clear searching.
-- `#I411372` - Confirmation dialog shows properly while expanding/collapsing actions on batch edit mode.
-
-## 20.3.50 (2022-10-18)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I395009` - `selectedItems` are getting properly after performing filter actions.
-- `#I407372` - Resolved script error when navigate over the cells through tab pressing on keyboard navigations while using row drag and drop with collapsed state record.
-- `#I411504`, `#I404107`, `#I402745`, `#I403053` - Expand icon is showing properly while using the custom binding.
-
-## 20.3.49 (2022-10-11)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#FB33879`, `#FB33758` - Virtualization works properly with remote data binding
-- `#I385208` - Row Drag and Drop works properly between the tree grids when items are collapsed.
-
-## 20.3.48 (2022-10-05)
-
-### Tree Grid
-
-#### Bug fixes
-
-- `#I406947` - Resolved cursor icon disappears while resizing after the cell editing.
-- `#I402612` - Newly added record positioned properly when no records are selected with remote data binding
+- Provided support for inline editing with virtualization enabled. Please find the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/tree-grid/virtual-scrolling.html).
+- `#I323425`, `#I332700`, `#I344742`, `#I375307` - Provided support for frozen column with virtualization enabled.
 
 ## 20.2.36 (2022-06-30)
 

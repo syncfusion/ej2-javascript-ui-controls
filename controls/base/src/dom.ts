@@ -241,9 +241,9 @@ export function attributes(element: Element | Node | any, attributes: { [key: st
             if (key === 'tabindex') {
                 iKey = 'tabIndex';
             }
-            ele.attributes[iKey] = attributes[key];
+            ele.attributes[`${iKey}`] = attributes[`${key}`];
         } else {
-            ele.setAttribute(key, attributes[key]);
+            ele.setAttribute(key, attributes[`${key}`]);
         }
     }
     return ele;
@@ -292,20 +292,20 @@ function querySelectId(selector: string): string {
     if (selector.match(/#[0-9]/g) || selector.match(charRegex)) {
         const idList: string[] = selector.split(',');
         for (let i: number = 0; i < idList.length; i++) {
-            const list: string[] = idList[i].split(' ');
+            const list: string[] = idList[parseInt(i.toString(), 10)].split(' ');
             for (let j: number = 0; j < list.length; j++) {
-                if (list[j].indexOf('#') > -1) {
-                    if (!list[j].match(/\[.*\]/)) {
-                        const splitId: string[] = list[j].split('#');
+                if (list[parseInt(j.toString(), 10)].indexOf('#') > -1) {
+                    if (!list[parseInt(j.toString(), 10)].match(/\[.*\]/)) {
+                        const splitId: string[] = list[parseInt(j.toString(), 10)].split('#');
                         if (splitId[1].match(/^\d/) || splitId[1].match(charRegex)) {
-                            const setId: string[] = list[j].split('.');
+                            const setId: string[] = list[parseInt(j.toString(), 10)].split('.');
                             setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
-                            list[j] = setId.join('.');
+                            list[parseInt(j.toString(), 10)] = setId.join('.');
                         }
                     }
                 }
             }
-            idList[i] = list.join(' ');
+            idList[parseInt(i.toString(), 10)] = list.join(' ');
         }
         return idList.join(',');
     }
@@ -376,7 +376,7 @@ export function getAttributeOrDefault(element: HTMLElement, property: string, va
         if (!isObj) {
             element.setAttribute(property, value.toString());
         } else {
-            element.attributes[property] = value;
+            element.attributes[`${property}`] = value;
         }
         attrVal = value;
     }

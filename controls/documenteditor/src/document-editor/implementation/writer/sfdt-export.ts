@@ -3,7 +3,7 @@ import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WTabStop, WParagraphFormat } from '../format/paragraph-format';
-import { WCellFormat, WTableFormat, WRowFormat, WStyle, WListFormat, WCharacterFormat } from '../format/index';
+import { WCellFormat, WTableFormat, WRowFormat, WStyle, WListFormat, WCharacterFormat, WColumnFormat } from '../format/index';
 import { WBorder, WBorders, WShading } from '../format/index';
 import { LayoutViewer } from '../index';
 import {
@@ -373,6 +373,9 @@ export class SfdtExport {
         section.sectionFormat.headerDistance = bodyWidget.sectionFormat.headerDistance;
         section.sectionFormat.footerDistance = bodyWidget.sectionFormat.footerDistance;
         section.sectionFormat.bidi = bodyWidget.sectionFormat.bidi;
+        if (!isNullOrUndefined(bodyWidget.sectionFormat.breakCode)) {
+            section.sectionFormat.breakCode = bodyWidget.sectionFormat.breakCode;
+        }
         if (bodyWidget.sectionFormat.restartPageNumbering) {
             section.sectionFormat.restartPageNumbering = bodyWidget.sectionFormat.restartPageNumbering;
             section.sectionFormat.pageStartingNumber = bodyWidget.sectionFormat.pageStartingNumber;
@@ -388,6 +391,19 @@ export class SfdtExport {
         }
         if(!isNullOrUndefined(bodyWidget.sectionFormat.pageNumberStyle)) {
             section.sectionFormat.pageNumberStyle = bodyWidget.sectionFormat.pageNumberStyle;
+        }
+        if(!isNullOrUndefined(bodyWidget.sectionFormat.columns) && !isNullOrUndefined(bodyWidget.sectionFormat.numberOfColumns && bodyWidget.sectionFormat.numberOfColumns > 1 )) {
+            let cols: WColumnFormat[] = bodyWidget.sectionFormat.columns;
+            section.sectionFormat.numberOfColumns = bodyWidget.sectionFormat.numberOfColumns;
+            section.sectionFormat.equalWidth = bodyWidget.sectionFormat.equalWidth;
+            section.sectionFormat.lineBetweenColumns = bodyWidget.sectionFormat.lineBetweenColumns;
+            section.sectionFormat.columns = [];
+            for (let i: number = 0; i < cols.length; i++) {
+                let newCol: any = {};
+                newCol.width = HelperMethods.convertPixelToPoint(cols[i].width as number);
+                newCol.space = HelperMethods.convertPixelToPoint(cols[i].space as number); 
+                section.sectionFormat.columns.push(newCol);
+            }
         }
         section.blocks = [];
         section.headersFooters = {};

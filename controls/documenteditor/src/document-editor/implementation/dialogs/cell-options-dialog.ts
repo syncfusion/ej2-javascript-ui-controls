@@ -253,7 +253,7 @@ export class CellOptionsDialog {
 
     private iterateCells(cells: TableCellWidget[], cellFormat: WCellFormat): void {
         for (let i: number = 0; i < cells.length; i++) {
-            this.applySubCellMargins(cells[i].cellFormat, cellFormat);
+            this.applySubCellMargins(cells[parseInt(i.toString(), 10)].cellFormat, cellFormat);
         }
         this.documentHelper.owner.tablePropertiesDialogModule.calculateGridValue(cells[0].ownerTable);
     }
@@ -291,7 +291,7 @@ export class CellOptionsDialog {
                 this.target.parentElement.removeChild(this.target);
             }
             for (let y: number = 0; y < this.target.childNodes.length; y++) {
-                this.target.removeChild(this.target.childNodes[y]);
+                this.target.removeChild(this.target.childNodes[parseInt(y.toString(), 10)]);
                 y--;
             }
             this.target = undefined;

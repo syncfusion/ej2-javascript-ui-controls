@@ -50,7 +50,7 @@ export class BollingerBands extends TechnicalAnalysis {
         const bandCollection: Points[] = [];
         const upperSeries: Series = indicator.targetSeries[start + 1];
         const lowerSeries: Series = indicator.targetSeries[start + 2];
-        const signalSeries: Series = indicator.targetSeries[start];
+        const signalSeries: Series = indicator.targetSeries[start as number];
         const rangeAreaSeries: Series = enableBand ? indicator.targetSeries[0] : null;
         //prepare data
         const validData: Points[] = indicator.points;
@@ -65,44 +65,44 @@ export class BollingerBands extends TechnicalAnalysis {
             const bollingerPoints: Object[] = [];
 
             for (let i: number = 0; i < length; i++) {
-                sum += Number(validData[i].close);
+                sum += Number(validData[i as number].close);
             }
             let sma: number = sum / indicator.period;
             for (let i: number = 0; i < limit; i++) {
-                const y: number = Number(validData[i].close);
+                const y: number = Number(validData[i as number].close);
                 if (i >= length - 1 && i < limit) {
                     if (i - indicator.period >= 0) {
                         const diff: number = y - Number(validData[i - length].close);
                         sum = sum + diff;
                         sma = sum / (indicator.period);
-                        smaPoints[i] = sma;
-                        deviations[i] = Math.pow(y - sma, 2);
-                        deviationSum += deviations[i] - deviations[i - length];
+                        smaPoints[i as number] = sma;
+                        deviations[i as number] = Math.pow(y - sma, 2);
+                        deviationSum += deviations[i as number] - deviations[i - length];
                     } else {
-                        smaPoints[i] = sma;
-                        deviations[i] = Math.pow(y - sma, 2);
-                        deviationSum += deviations[i];
+                        smaPoints[i as number] = sma;
+                        deviations[i as number] = Math.pow(y - sma, 2);
+                        deviationSum += deviations[i as number];
                     }
                     const range: number = Math.sqrt(deviationSum / (indicator.period));
-                    const lowerBand: number = smaPoints[i] - (multiplier * range);
-                    const upperBand: number = smaPoints[i] + (multiplier * range);
+                    const lowerBand: number = smaPoints[i as number] - (multiplier * range);
+                    const upperBand: number = smaPoints[i as number] + (multiplier * range);
                     if (i + 1 === length) {
                         for (let j: number = 0; j < length - 1; j++) {
-                            bollingerPoints[j] = {
-                                'X': validData[j].x, 'mb': smaPoints[i],
+                            bollingerPoints[j as number] = {
+                                'X': validData[j as number].x, 'mb': smaPoints[i as number],
                                 'lb': lowerBand, 'ub': upperBand, visible: true
                             };
                         }
                     }
-                    bollingerPoints[i] = {
-                        'X': validData[i].x, 'mb': smaPoints[i],
+                    bollingerPoints[i as number] = {
+                        'X': validData[i as number].x, 'mb': smaPoints[i as number],
                         'lb': lowerBand, 'ub': upperBand, visible: true
                     };
                 } else {
                     if (i < indicator.period - 1) {
-                        smaPoints[i] = sma;
-                        deviations[i] = Math.pow(y - sma, 2);
-                        deviationSum += deviations[i];
+                        smaPoints[i as number] = sma;
+                        deviations[i as number] = Math.pow(y - sma, 2);
+                        deviationSum += deviations[i as number];
                     }
                 }
             }
@@ -113,17 +113,18 @@ export class BollingerBands extends TechnicalAnalysis {
                     const lb: string = 'lb';
                     const mb: string = 'mb';
                     upperCollection.push(this.getDataPoint(
-                        validData[k].x, bollingerPoints[k][ub], validData[k], upperSeries,
+                        validData[k as number].x, bollingerPoints[k as number][ub as string], validData[k as number], upperSeries,
                         upperCollection.length));
                     lowerCollection.push(this.getDataPoint(
-                        validData[k].x, bollingerPoints[k][lb], validData[k], lowerSeries,
+                        validData[k as number].x, bollingerPoints[k as number][lb as string], validData[k as number], lowerSeries,
                         lowerCollection.length));
                     signalCollection.push(this.getDataPoint(
-                        validData[k].x, bollingerPoints[k][mb], validData[k], signalSeries,
+                        validData[k as number].x, bollingerPoints[k as number][mb as string], validData[k as number], signalSeries,
                         signalCollection.length));
                     if (enableBand) {
                         bandCollection.push(this.getRangePoint(
-                            validData[k].x, upperCollection[++i].y, lowerCollection[++j].y, validData[k], rangeAreaSeries,
+                            validData[k as number].x, upperCollection[++i].y, lowerCollection[++j].y,
+                            validData[k as number], rangeAreaSeries,
                             bandCollection.length
                         ));
                     }
@@ -133,7 +134,7 @@ export class BollingerBands extends TechnicalAnalysis {
         if (enableBand) {
             this.setSeriesRange(bandCollection, indicator, indicator.targetSeries[0]);
         }
-        this.setSeriesRange(signalCollection, indicator, indicator.targetSeries[start]);
+        this.setSeriesRange(signalCollection, indicator, indicator.targetSeries[start as number]);
         this.setSeriesRange(upperCollection, indicator, indicator.targetSeries[start + 1]);
         this.setSeriesRange(lowerCollection, indicator, indicator.targetSeries[start + 2]);
     }

@@ -147,7 +147,7 @@ export class DataManipulation {
         } else {
             const keys: string[] = Object.keys(data);
             for (let i: number = 0; i < keys.length; i++) {
-                const tempData: Object = data[i];
+                const tempData: Object = data[parseInt(i.toString(), 10)];
                 this.hierarchyData.push(extend({}, tempData));
                 if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
                     this.taskIds.push(tempData[this.parent.idMapping]);
@@ -161,12 +161,12 @@ export class DataManipulation {
                     .group(this.parent.parentIdMapping)
             );
             for (let i: number = 0; i < mappingData.length; i++) {
-                const groupData: Group = mappingData[i];
+                const groupData: Group = mappingData[parseInt(i.toString(), 10)];
                 const index: number = this.taskIds.indexOf(groupData.key);
                 if (!isNullOrUndefined(groupData.key)) {
                     if (index > -1) {
                         const childData: Object[] = (groupData.items);
-                        this.hierarchyData[index][this.parent.childMapping] = childData;
+                        this.hierarchyData[parseInt(index.toString(), 10)][this.parent.childMapping] = childData;
                         continue;
                     }
                 }
@@ -176,7 +176,7 @@ export class DataManipulation {
         }
         if (!Object.keys(this.hierarchyData).length) {
             const isGantt: string = 'isGantt';
-            const referenceData: boolean = !(this.parent.dataSource instanceof DataManager) && this.parent[isGantt];
+            const referenceData: boolean = !(this.parent.dataSource instanceof DataManager) && this.parent[`${isGantt}`];
             this.parent.flatData = referenceData ? <Object[]>(this.parent.dataSource) : [];
         } else {
             this.createRecords(this.hierarchyData);
@@ -214,7 +214,14 @@ export class DataManipulation {
      * @returns {void}
      */
     private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
+        const actionArgs: string = 'actionArgs';
+        if (isRemoteData(this.parent) && this.parent.enableVirtualization && args[`${actionArgs}`].requestType === 'virtualscroll' ) {
+            this.parent.hideSpinner();
+        }
         const records: ITreeData[] = args.result;
+        if (isRemoteData(this.parent) && this.parent.enableVirtualization && (args[`${actionArgs}`].requestType === 'virtualscroll' || args[`${actionArgs}`].action === 'clearFilter' || args[`${actionArgs}`].searchString === '')) {
+            this.parent.query.expands = [];
+        }
         if (!this.parent.hasChildMapping && !this.parentItems.length &&
       (!this.parent.loadChildOnDemand)) {
             this.zerothLevelData = args;
@@ -222,29 +229,66 @@ export class DataManipulation {
         } else {
             if (!this.parent.loadChildOnDemand) {
                 for (let rec: number = 0; rec < records.length; rec++) {
-                    if (isCountRequired(this.parent) && records[rec].hasChildRecords && this.parent.initialRender) {
-                        records[rec].expanded = false;
+                    if (isCountRequired(this.parent) && records[parseInt(rec.toString(), 10)].hasChildRecords &&
+                    this.parent.initialRender) {
+                        records[parseInt(rec.toString(), 10)].expanded = false;
                     }
-                    if (isNullOrUndefined(records[rec].index)) {
-                        records[rec].taskData = extend({}, records[rec]);
-                        records[rec].uniqueID = getUid(this.parent.element.id + '_data_');
-                        setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
-                        records[rec].level = 0;
-                        records[rec].index = Math.ceil(Math.random() * 1000);
-                        if ((records[rec][this.parent.hasChildMapping] ||
-                          this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)) {
-                            records[rec].hasChildRecords = true;
+                    if (isRemoteData(this.parent) && this.parent.enableVirtualization) {
+                        const childRecords: ITreeData[] = [];
+                        const parent: TreeGrid = this.parent;
+                        records.filter(function (e: ITreeData) {
+                            if (e[`${parent.parentIdMapping}`] === records[parseInt(rec.toString(), 10)][`${parent.idMapping}`]) {
+                                childRecords.push(e);
+                            }
+                        });
+                        if (childRecords.length) {
+                            records[parseInt(rec.toString(), 10)].expanded = true;
                         }
-                        records[rec].checkboxState = 'uncheck';
+                        else if (records[parseInt(rec.toString(), 10)].hasChildRecords) {
+                            records[parseInt(rec.toString(), 10)].expanded = false;
+                        }
+                    }
+                    if (isNullOrUndefined(records[parseInt(rec.toString(), 10)].index)) {
+                        records[parseInt(rec.toString(), 10)].taskData = extend({}, records[parseInt(rec.toString(), 10)]);
+                        records[parseInt(rec.toString(), 10)].uniqueID = getUid(this.parent.element.id + '_data_');
+                        setValue('uniqueIDCollection.' + records[parseInt(rec.toString(), 10)].uniqueID, records[parseInt(rec.toString(), 10)], this.parent);
+                        records[parseInt(rec.toString(), 10)].level = 0;
+                        if (isRemoteData(this.parent) && this.parent.enableVirtualization && records[parseInt(rec.toString(), 10)][`${this.parent.parentIdMapping}`] && records[parseInt(rec.toString(), 10)].level === 0) {
+                            records[parseInt(rec.toString(), 10)].level = records[parseInt(rec.toString(), 10)].level + 1;
+                        }
+                        records[parseInt(rec.toString(), 10)].index = Math.ceil(Math.random() * 1000);
+                        if ((records[parseInt(rec.toString(), 10)][this.parent.hasChildMapping] ||
+                          this.parentItems.indexOf(records[parseInt(rec.toString(), 10)][this.parent.idMapping]) !== -1)) {
+                            records[parseInt(rec.toString(), 10)].hasChildRecords = true;
+                        }
+                        records[parseInt(rec.toString(), 10)].checkboxState = 'uncheck';
                     }
                 }
             } else {
-                if (!isNullOrUndefined(records) && !((this.parent.loadChildOnDemand) && isCountRequired(this.parent) && !isNullOrUndefined(this.parent['dataResults']['expandRecord']))) {
+                const dataResults: string = 'dataResults';
+                const expandRecord: string = 'expandRecord';
+                if (!isNullOrUndefined(records) && !((this.parent.loadChildOnDemand) && isCountRequired(this.parent) && !isNullOrUndefined(this.parent[`${dataResults}`][`${expandRecord}`])) &&
+                !(isRemoteData(this.parent) && this.parent.loadChildOnDemand && args[`${actionArgs}`].isExpandCollapse && this.parent.enableVirtualization)) {
                     this.convertToFlatData(records);
                 }
             }
         }
-        args.result = this.parent.loadChildOnDemand ? this.parent.flatData : records;
+        if (isRemoteData(this.parent) && this.parent.loadChildOnDemand && args[`${actionArgs}`].isExpandCollapse && this.parent.enableVirtualization) {
+            args.result = records;
+        }
+        else if (isRemoteData(this.parent) && this.parent.enableVirtualization && !this.parent.loadChildOnDemand) {
+            args.result = records;
+        }
+        else {
+            args.result = this.parent.loadChildOnDemand ? this.parent.flatData : records;
+        }
+        if (isRemoteData(this.parent) && this.parent.enableVirtualization && this.parent.loadChildOnDemand
+            && this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
+            && this.parent.grid.filterSettings.columns.length === 0 && !this.parent.grid.searchSettings.key.length) {
+            const query: string = 'query';
+            const summaryQuery: QueryOptions[] = args[`${query}`].queries.filter((q: QueryOptions) => {q.fn === 'onAggregates'});
+            args.result = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData, true);
+        }
         this.parent.notify('updateResults', args);
     }
     /**
@@ -261,6 +305,7 @@ export class DataManipulation {
     private collectExpandingRecs(rowDetails: {record: ITreeData, rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement},
                                  isChild?: boolean): void {
         let gridRows: HTMLTableRowElement[] = this.parent.getRows();
+        const name: string = 'name';
         if (this.parent.rowTemplate) {
             const rows: HTMLCollection = (this.parent.getContentTable() as HTMLTableElement).rows;
             gridRows = [].slice.call(rows);
@@ -271,11 +316,12 @@ export class DataManipulation {
                 rowDetails.record.expanded = true;
             }
             for (let i: number = 0; i < rowDetails.rows.length; i++) {
-                rowDetails.rows[i].style.display = 'table-row';
+                rowDetails.rows[parseInt(i.toString(), 10)].style.display = 'table-row';
                 if (this.parent.loadChildOnDemand) {
-                    const targetEle: Element = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
-                    childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
-                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
+                    const targetEle: Element = rowDetails.rows[parseInt(i.toString(), 10)].getElementsByClassName('e-treegridcollapse')[0];
+                    childRecord = this.parent.rowTemplate ?
+                        this.parent.grid.getCurrentViewRecords()[rowDetails.rows[parseInt(i.toString(), 10)].rowIndex] :
+                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[parseInt(i.toString(), 10)].getAttribute('data-Uid')).data;
                     if (!isNullOrUndefined(targetEle) && childRecord.expanded) {
                         addClass([targetEle], 'e-treegridexpand');
                         removeClass([targetEle], 'e-treegridcollapse');
@@ -291,28 +337,50 @@ export class DataManipulation {
                         this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow }, true);
                     }
                 }
-                const expandingTd: Element = rowDetails.rows[i].querySelector('.e-detailrowcollapse');
+                const expandingTd: Element = rowDetails.rows[parseInt(i.toString(), 10)].querySelector('.e-detailrowcollapse');
                 if (!isNullOrUndefined(expandingTd)) {
                     this.parent.grid.detailRowModule.expand(expandingTd);
                 }
             }
         } else {
-            this.fetchRemoteChildData({record: rowDetails.record, rows: rowDetails.rows, parentRow: rowDetails.parentRow});
+            this.fetchRemoteChildData({action: rowDetails[`${name}`], record: rowDetails.record, rows: rowDetails.rows, parentRow: rowDetails.parentRow});
         }
     }
 
-    private fetchRemoteChildData(rowDetails: { record: ITreeData, rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement }): void {
+    private fetchRemoteChildData(rowDetails: { action: string, record: ITreeData, rows: HTMLTableRowElement[],
+         parentRow: HTMLTableRowElement }): void {
         const args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
         const dm: DataManager = <DataManager>this.parent.dataSource;
         const qry: Query = this.parent.grid.getDataModule().generateQuery();
         const clonequries: QueryOptions[] = qry.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
         qry.queries = clonequries;
         qry.isCountRequired = true;
+        if (this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
+            qry.take(this.parent.pageSettings.pageSize);
+            let expandDetail = [];
+            expandDetail.push('ExpandingAction', rowDetails.record[this.parent.idMapping]);
+            qry.expand(expandDetail);
+        }
+        else if (this.parent.enableVirtualization && rowDetails.action === 'collapse') {
+            qry.take(this.parent.grid.pageSettings.pageSize);
+            var expandDetail = [];
+            expandDetail.push('CollapsingAction', rowDetails.record[this.parent.idMapping]);
+            qry.expand(expandDetail);
+        }
         qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
         showSpinner(this.parent.element);
         dm.executeQuery(qry).then((e: ReturnOption) => {
-            const datas: ITreeData[] = this.parent.grid.currentViewData.slice();
+            const remoteExpandedData: string = 'remoteExpandedData';
+            const remoteCollapsedData: string = 'remoteCollapsedData';
+            const level: string = 'level';
+            let datas: ITreeData[] = this.parent.grid.currentViewData.slice();
             let inx: number = datas.indexOf(rowDetails.record);
+            if (this.parent.enableVirtualization && (rowDetails.action === 'collapse' || rowDetails.action === 'remoteExpand')) {
+                datas = [];
+                for (let i: number = 0; i < inx; i++) {
+                    datas.push(this.parent.grid.currentViewData[parseInt(i.toString(), 10)]);
+                }
+            }
             if (inx === -1) {
                 this.parent.grid.getRowsObject().forEach((rows: Row<Column>) => {
                     if ((rows.data as ITreeData).uniqueID === rowDetails.record.uniqueID) {
@@ -324,22 +392,107 @@ export class DataManipulation {
             const result: ITreeData[] = <ITreeData[]>e.result;
             rowDetails.record.childRecords = result;
             for (let r: number = 0; r < result.length; r++) {
-                result[r].taskData = extend({}, result[r]);
-                result[r].level = rowDetails.record.level + 1;
-                result[r].index = Math.ceil(Math.random() * 1000);
-                const parentData: ITreeData = extend({}, rowDetails.record);
-                delete parentData.childRecords;
-                result[r].parentItem = parentData;
-                result[r].parentUniqueID = rowDetails.record.uniqueID;
-                result[r].uniqueID = getUid(this.parent.element.id + '_data_');
-                result[r].checkboxState = 'uncheck';
-                setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
-                // delete result[r].parentItem.childRecords;
-                if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
-             && !(haveChild && !haveChild[r])) {
-                    result[r].hasChildRecords = true; result[r].expanded = false;
+                if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'remoteExpand') {
+                    this.parent[`${remoteExpandedData}`].push(rowDetails.record);
                 }
-                datas.splice(inx + r + 1, 0, result[r]);
+                else if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'collapse') {
+                    for (let i: number = 0; i < this.parent[`${remoteExpandedData}`].length; i++) {
+                        if (rowDetails.record[`${this.parent.idMapping}`] === this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
+                            this.parent[`${remoteExpandedData}`].splice(i, 1);
+                        }
+                    }
+                }
+                result[parseInt(r.toString(), 10)].taskData = extend({}, result[parseInt(r.toString(), 10)]);
+                if (result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`] && this.parent.enableVirtualization && this.parent[`${remoteExpandedData}`].length) {
+                    for (let i: number = 0; i < this.parent[`${remoteExpandedData}`].length; i++) {
+                        if (result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`] === this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
+                            result[parseInt(r.toString(), 10)].level = this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${level}`] + 1;
+                            const parentData: ITreeData = this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)];
+                            result[parseInt(r.toString(), 10)].parentItem = parentData;
+                            result[parseInt(r.toString(), 10)].parentUniqueID = rowDetails.record.uniqueID;
+                        }
+                    }
+                }
+                else if (this.parent.enableVirtualization) {
+                    if ((result[parseInt(r.toString(), 10)][`${this.parent.hasChildMapping}`] ||
+             this.parentItems.indexOf(result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) !== -1)
+             && !(haveChild && !haveChild[parseInt(r.toString(), 10)])) {
+                        if (isNullOrUndefined(result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`])) {
+                            result[parseInt(r.toString(), 10)].level = 0;
+                        }
+                        else {
+                            result[parseInt(r.toString(), 10)].level = rowDetails.record.level;
+                        }
+                    }
+                    else {
+                        const parentData: ITreeData = extend({}, rowDetails.record);
+                        delete parentData.childRecords;
+                        result[parseInt(r.toString(), 10)].parentItem = parentData;
+                        result[parseInt(r.toString(), 10)].parentUniqueID = rowDetails.record.uniqueID;
+                    }
+                }
+                else {
+                    result[parseInt(r.toString(), 10)].level = rowDetails.record.level + 1;
+                    const parentData: ITreeData = extend({}, rowDetails.record);
+                    delete parentData.childRecords;
+                    result[parseInt(r.toString(), 10)].parentItem = parentData;
+                    result[parseInt(r.toString(), 10)].parentUniqueID = rowDetails.record.uniqueID;
+                }
+                result[parseInt(r.toString(), 10)].index = Math.ceil(Math.random() * 1000);
+                result[parseInt(r.toString(), 10)].uniqueID = getUid(this.parent.element.id + '_data_');
+                result[parseInt(r.toString(), 10)].checkboxState = 'uncheck';
+                if (this.parent.enableVirtualization && isNullOrUndefined(result[parseInt(r.toString(), 10)].level)) {
+                    for (let p: number = 0; p < this.parent.grid.currentViewData.length; p++) {
+                        if (this.parent.grid.currentViewData[parseInt(p.toString(), 10)][`${this.parent.idMapping}`] === result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`]) {
+                            result[parseInt(r.toString(), 10)].level = this.parent.grid.currentViewData[parseInt(p.toString(), 10)]['level'] + 1;
+                        }
+                    }
+                }
+                setValue('uniqueIDCollection.' + result[parseInt(r.toString(), 10)].uniqueID, result[parseInt(r.toString(), 10)], this.parent);
+                // delete result[r].parentItem.childRecords;
+                if ((result[parseInt(r.toString(), 10)][`${this.parent.hasChildMapping}`] ||
+                    this.parentItems.indexOf(result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) !== -1)
+                    && !(haveChild && !haveChild[parseInt(r.toString(), 10)])) {
+                    result[parseInt(r.toString(), 10)].hasChildRecords = true;
+                    if (this.parent.enableVirtualization && this.parent.loadChildOnDemand) {
+                        for (let i: number = 0; i < this.parent[`${remoteCollapsedData}`].length; i++) {
+                            if (result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
+                                result[parseInt(r.toString(), 10)].expanded = this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)]['expanded'];
+                            }
+                        }
+                        if (rowDetails.action === 'collapse' && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] !== rowDetails.record[`${this.parent.idMapping}`] && result[parseInt(r.toString(), 10)].expanded !== false) {
+                            result[parseInt(r.toString(), 10)].expanded = true;
+                        }
+                        else if (rowDetails.action === 'collapse' && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`]) {
+                            result[parseInt(r.toString(), 10)].expanded = false;
+                            this.parent[`${remoteCollapsedData}`].push(rowDetails.record);
+                        }
+                        else if (rowDetails.action === 'remoteExpand') {
+                            for (let i: number = 0; i < this.parent.grid.currentViewData.length; i++) {
+                                if (this.parent.grid.currentViewData[parseInt(i.toString(), 10)][`${this.parent.idMapping}`] === result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) {
+                                    result.splice(r, 1, this.parent.grid.currentViewData[parseInt(i.toString(), 10)]);
+                                }
+                            }
+                            if (result[parseInt(r.toString(), 10)][this.parent.idMapping] === rowDetails.record[`${this.parent.idMapping}`]) {
+                                for (let i: number = 0; i < this.parent[`${remoteCollapsedData}`].length; i++) {
+                                    if (rowDetails.record[`${this.parent.idMapping}`] === this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
+                                        this.parent[`${remoteCollapsedData}`].splice(i, 1);
+                                    }
+                                }
+                            }
+                            if (result[parseInt(r.toString(), 10)].expanded !== false) {
+                                result[parseInt(r.toString(), 10)].expanded = true;
+                            }
+                        }
+                    }
+                    else if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action !== 'collapse') {
+                        result[parseInt(r.toString(), 10)].expanded = true;
+                    }
+                    else if (!(this.parent.enableVirtualization && this.parent.loadChildOnDemand)) {
+                        result[parseInt(r.toString(), 10)].expanded = false;
+                    }
+                }
+                datas.splice(inx + r + 1, 0, result[parseInt(r.toString(), 10)]);
             }
             setValue('result', datas, e); setValue('action', 'beforecontentrender', e);
             this.parent.trigger(events.actionComplete, e);
@@ -352,8 +505,11 @@ export class DataManipulation {
                 }
                 if (!isNullOrUndefined(gridQuery)) {
                     const summaryQuery: QueryOptions[] = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
-                    e[result] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[result], true);
+                    e[`${result}`] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[`${result}`], true);
                 }
+            }
+            if (this.parent.enableVirtualization) {
+                this.parent.grid.pageSettings.totalRecordsCount = e.count;
             }
             e.count = this.parent.grid.pageSettings.totalRecordsCount;
             const virtualArgs: NotifyArgs = {};
@@ -383,21 +539,30 @@ export class DataManipulation {
 
     private beginSorting(): void {
         this.isSortAction = true;
+        if (isRemoteData(this.parent) && this.parent.enableVirtualization) {
+            const index: number = this.parent.query.queries.indexOf(this.parent.query.queries.filter((q: QueryOptions) => q.fn === 'onSortBy')[0]);
+            if (index !== -1) {
+                this.parent.query.queries.splice(index, 1);
+            }
+            if (this.parent.grid.sortSettings.columns.length === 0) {
+                this.parent.query.sortBy(null, null);
+            }
+        }
     }
 
     private createRecords(data: Object, parentRecords?: ITreeData): ITreeData[] {
         const treeGridData: ITreeData[] = [];
         const keys: string[] = Object.keys(data);
         for (let i: number = 0, len: number = keys.length; i < len; i++) {
-            const currentData: ITreeData = extend({}, data[i]);
-            currentData.taskData = data[i];
+            const currentData: ITreeData = extend({}, data[parseInt(i.toString(), 10)]);
+            currentData.taskData = data[parseInt(i.toString(), 10)];
             let level: number = 0;
             this.storedIndex++;
             if (!Object.prototype.hasOwnProperty.call(currentData, 'index')) {
                 currentData.index = this.storedIndex;
             }
             if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) ||
-                ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent))) {
+            ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent))) {
                 currentData.hasChildRecords = true;
                 if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
             && isNullOrUndefined(currentData[this.parent.childMapping])) {
@@ -430,7 +595,27 @@ export class DataManipulation {
                 currentData.level = level;
             }
             currentData.checkboxState = 'uncheck';
-            if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
+            const remoteCollapsedData: string = 'remoteCollapsedData';
+            if (this.parent.enableVirtualization && this.parent.loadChildOnDemand && isRemoteData(this.parent)
+                 && !this.parent.initialRender){
+                if (!currentData.hasChildRecords && isNullOrUndefined(currentData[`${this.parent.parentIdMapping}`])) {
+                    currentData.hasChildRecords = true;
+                    for (let c: number = 0; c < this.parent[`${remoteCollapsedData}`].length; c++) {
+                        if (this.parent[`${remoteCollapsedData}`][parseInt(c.toString(), 10)][`${this.parent.idMapping}`] === currentData[`${this.parent.idMapping}`]) {
+                            currentData.expanded = false;
+                        }
+                    }
+                }
+                else if (currentData.level === 0 && isNullOrUndefined(parentRecords) && !currentData.hasChildRecords) {
+                    currentData.level = currentData.level + 1;
+                }
+                if (currentData[`${this.parent.hasChildMapping}`] && !isNullOrUndefined(currentData[`${this.parent.expandStateMapping}`])) {
+                    currentData.expanded = currentData[`${this.parent.expandStateMapping}`];
+                    currentData.hasChildRecords = true;
+                }
+                this.parent.flatData.push(currentData);
+            }
+            else if (isNullOrUndefined(currentData[`${this.parent.parentIdMapping}`]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
                 this.parent['infiniteScrollData'].push(currentData);
             }
@@ -462,9 +647,9 @@ export class DataManipulation {
         const primaryKeyColumnName: string = this.parent.getPrimaryKeyFieldNames()[0];
         const dataValue: ITreeData = getObject('data', actionAddArgs);
         if ((!isNullOrUndefined(actionAddArgs)) && (!isNullOrUndefined(actionAddArgs.action)) && (actionAddArgs.action === 'add')
-      && (!isNullOrUndefined(actionAddArgs.data)) && isNullOrUndefined(actionAddArgs.data[primaryKeyColumnName])) {
-            actionAddArgs.data[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
-            dataValue.taskData[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+      && (!isNullOrUndefined(actionAddArgs.data)) && isNullOrUndefined(actionAddArgs.data[`${primaryKeyColumnName}`])) {
+            actionAddArgs.data[`${primaryKeyColumnName}`] = args.result[actionAddArgs.index][`${primaryKeyColumnName}`];
+            dataValue.taskData[`${primaryKeyColumnName}`] = args.result[actionAddArgs.index][`${primaryKeyColumnName}`];
         }
         if ((!isNullOrUndefined(actionArgs) && Object.keys(actionArgs).length) || requestType === 'save') {
             requestType = requestType ? requestType : actionArgs.requestType;
@@ -530,12 +715,12 @@ export class DataManipulation {
             const query: Query = getObject('query', args); const srtQry: Query = new Query();
             for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
                 const getColumnByField: string = 'getColumnByField';
-                const col: GridColumnModel = this.parent.grid.renderModule.data[getColumnByField](this.parent.grid.
-                    sortSettings.columns[srt].field);
+                const col: GridColumnModel = this.parent.grid.renderModule.data[`${getColumnByField}`](this.parent.grid.
+                    sortSettings.columns[parseInt(srt.toString(), 10)].field);
                 const compFun: Function | string = col.sortComparer && isOffline(this.parent) ?
                     (col.sortComparer as Function).bind(col) :
-                    this.parent.grid.sortSettings.columns[srt].direction;
-                srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
+                    this.parent.grid.sortSettings.columns[parseInt(srt.toString(), 10)].direction;
+                srtQry.sortBy(this.parent.grid.sortSettings.columns[parseInt(srt.toString(), 10)].field, compFun);
             }
             const modifiedData: Object = new DataManager(parentData).executeLocal(srtQry);
             if (this.parent.allowRowDragAndDrop && !isNullOrUndefined(this.parent.rowDragAndDropModule['draggedRecord']) &&
@@ -584,13 +769,13 @@ export class DataManipulation {
             count = this.dataResults.count;
         }
         const isPdfExport: string = 'isPdfExport'; const isCollapsedStatePersist: string = 'isCollapsedStatePersist';
-        if ((isPrinting === true || (args[isPdfExport] && (isNullOrUndefined(args[isCollapsedStatePersist])
-       || args[isCollapsedStatePersist]))) && this.parent.printMode === 'AllPages') {
+        if ((isPrinting === true || (args[`${isPdfExport}`] && (isNullOrUndefined(args[`${isCollapsedStatePersist}`])
+       || args[`${isCollapsedStatePersist}`]))) && this.parent.printMode === 'AllPages') {
             const actualResults: ITreeData[] = [];
             for (let i: number = 0; i < results.length; i++) {
-                const expandStatus: boolean = getExpandStatus(this.parent, results[i], this.parent.parentData);
+                const expandStatus: boolean = getExpandStatus(this.parent, results[parseInt(i.toString(), 10)], this.parent.parentData);
                 if (expandStatus) {
-                    actualResults.push(results[i]);
+                    actualResults.push(results[parseInt(i.toString(), 10)]);
                 }
             }
             results = actualResults;

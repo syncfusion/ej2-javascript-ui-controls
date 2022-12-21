@@ -5564,7 +5564,30 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[2].style.flexGrow).toBe('0');
         })
     });
-
+    describe('EJ2-62999-In Splitter unique Id is not generated automatically when we do not set the Id property ', () =>{
+        let splitterObj: Splitter;
+        const divElement: HTMLElement = createElement('div', {
+            className: 'defaultSplitter' });
+        beforeAll(() =>{
+            document.body.appendChild(divElement);
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { content: 'First Pane', collapsible: true, size: '20%' },
+                    { content: 'Second Pane', collapsible: true, size: '50%' },
+                    { content: 'Third Pane', collapsible: true, size: '20%' }
+                ],
+            })
+            const target: HTMLElement = document.querySelector('.defaultSplitter');
+            splitterObj.appendTo(target);
+        });
+        afterAll(() =>{
+            splitterObj.destroy();
+            detach(divElement);
+        });
+        it("check the id genarated or not ",()=>{
+            expect(splitterObj.element.hasAttribute('id')).toBe(true);
+        })
+    });
     describe( 'EJ2CORE-938 Split pane Size not set properly after Resizing CASE 1', () => {
         appendSplitterStyles();
         let splitterObj: any;
@@ -5764,29 +5787,4 @@ describe('Splitter Control', () => {
             expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 1 ].style.flexBasis ).toEqual( '' );
         } );
     } );
-
-     describe('EJ2-62999-In Splitter unique Id is not generated automatically when we do not set the Id property ', () =>{
-        let splitterObj: Splitter;
-        const divElement: HTMLElement = createElement('div', {
-            className: 'defaultSplitter' });
-        beforeAll(() =>{
-            document.body.appendChild(divElement);
-            splitterObj = new Splitter({
-                paneSettings: [
-                    { content: 'First Pane', collapsible: true, size: '20%' },
-                    { content: 'Second Pane', collapsible: true, size: '50%' },
-                    { content: 'Third Pane', collapsible: true, size: '20%' }
-                ],
-            })
-            const target: HTMLElement = document.querySelector('.defaultSplitter');
-            splitterObj.appendTo(target);
-        });
-        afterAll(() =>{
-            splitterObj.destroy();
-            detach(divElement);
-        });
-        it("check the id genarated or not ",()=>{
-            expect(splitterObj.element.hasAttribute('id')).toBe(true);
-        })
-    });
  });

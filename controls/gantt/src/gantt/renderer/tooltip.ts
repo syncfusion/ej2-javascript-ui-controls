@@ -37,6 +37,7 @@ export class Tooltip {
             '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone, .e-gantt-manualparenttaskbar';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
+        this.toolTipObj.enableRtl = this.parent.enableRtl;
         this.toolTipObj.enableHtmlSanitizer = false;
         this.toolTipObj.cssClass = cls.ganttTooltip;
         this.toolTipObj.animation = { open: { effect: 'None', delay: 0 }, close: { effect: 'None', delay: 0 } };

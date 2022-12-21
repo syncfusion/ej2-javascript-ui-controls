@@ -56,31 +56,31 @@ export function createMask(): void {
     if (this.mask) {
         const splitMask: string[] = this.mask.split(']');
         for (let i: number = 0; i < splitMask.length; i++) {
-            if (splitMask[i][splitMask[i].length - 1] === '\\') {
-                splitMask[i] = splitMask[i] + ']';
-                const splitInnerMask: string[] = splitMask[i].split('[');
+            if (splitMask[i as number][splitMask[i as number].length - 1] === '\\') {
+                splitMask[i as number] = splitMask[i as number] + ']';
+                const splitInnerMask: string[] = splitMask[i as number].split('[');
                 for (let j: number = 0; j < splitInnerMask.length; j++) {
-                    if (splitInnerMask[j][splitInnerMask[j].length - 1] === '\\') {
-                        splitInnerMask[j] = splitInnerMask[j] + '[';
+                    if (splitInnerMask[j as number][splitInnerMask[j as number].length - 1] === '\\') {
+                        splitInnerMask[j as number] = splitInnerMask[j as number] + '[';
                     }
-                    pushIntoRegExpCollec.call(this, splitInnerMask[j]);
+                    pushIntoRegExpCollec.call(this, splitInnerMask[j as number]);
                 }
             } else {
-                const splitInnerMask: string[] = splitMask[i].split('[');
+                const splitInnerMask: string[] = splitMask[i as number].split('[');
                 if (splitInnerMask.length > 1) {
                     let chkSpace: boolean = false;
                     for (let j: number = 0; j < splitInnerMask.length; j++) {
-                        if (splitInnerMask[j] === '\\') {
+                        if (splitInnerMask[j as number] === '\\') {
                             this.customRegExpCollec.push('[');
-                            this.hiddenMask += splitInnerMask[j] + '[';
-                        } else if (splitInnerMask[j] === '') {
+                            this.hiddenMask += splitInnerMask[j as number] + '[';
+                        } else if (splitInnerMask[j as number] === '') {
                             chkSpace = true;
-                        } else if ((splitInnerMask[j] !== '' && chkSpace) || j === splitInnerMask.length - 1) {
-                            this.customRegExpCollec.push('[' + splitInnerMask[j] + ']');
+                        } else if ((splitInnerMask[j as number] !== '' && chkSpace) || j === splitInnerMask.length - 1) {
+                            this.customRegExpCollec.push('[' + splitInnerMask[j as number] + ']');
                             this.hiddenMask += this.promptChar;
                             chkSpace = false;
                         } else {
-                            pushIntoRegExpCollec.call(this, splitInnerMask[j]);
+                            pushIntoRegExpCollec.call(this, splitInnerMask[j as number]);
                         }
                     }
                 } else {
@@ -92,8 +92,9 @@ export function createMask(): void {
         this.promptMask = this.hiddenMask.replace(/[09?LCAa#&]/g, this.promptChar);
         if (!isNullOrUndefined(this.customCharacters)) {
             for (let i: number = 0; i < this.promptMask.length; i++) {
-                if (!isNullOrUndefined(this.customCharacters[this.promptMask[i]])) {
-                    this.promptMask = this.promptMask.replace(new RegExp(this.promptMask[i], 'g'), this.promptChar);
+                if (!isNullOrUndefined(this.customCharacters[this.promptMask[i as number]])) {
+                    // eslint-disable-next-line detect-non-literal-regexp
+                    this.promptMask = this.promptMask.replace(new RegExp(this.promptMask[i as number], 'g'), this.promptChar);
                 }
             }
         }
@@ -106,14 +107,14 @@ export function createMask(): void {
                 }
                 escapeNumber = this.hiddenMask.length - this.promptMask.length;
                 j = j - escapeNumber;
-                if ((i > 0 && this.hiddenMask[i - 1] !== '\\') && (this.hiddenMask[i] === '>' ||
-                    this.hiddenMask[i] === '<' || this.hiddenMask[i] === '|')) {
+                if ((i > 0 && this.hiddenMask[i - 1] !== '\\') && (this.hiddenMask[i as number] === '>' ||
+                    this.hiddenMask[i as number] === '<' || this.hiddenMask[i as number] === '|')) {
                     this.promptMask = this.promptMask.substring(0, j) +
                         this.promptMask.substring((i + 1) - escapeNumber, this.promptMask.length);
                     this.escapeMaskValue = this.escapeMaskValue.substring(0, j) +
                         this.escapeMaskValue.substring((i + 1) - escapeNumber, this.escapeMaskValue.length);
                 }
-                if (this.hiddenMask[i] === '\\') {
+                if (this.hiddenMask[i as number] === '\\') {
                     this.promptMask = this.promptMask.substring(0, j) + this.hiddenMask[i + 1] +
                         this.promptMask.substring((i + 2) - escapeNumber, this.promptMask.length);
                     this.escapeMaskValue = this.escapeMaskValue.substring(0, j) + this.escapeMaskValue[i + 1] +
@@ -243,19 +244,19 @@ export function strippedValue(element: HTMLInputElement, maskValues: string): st
             if (checkMask) {
                 checkMask = false;
             }
-            if (this.customRegExpCollec[k] === '>' || this.customRegExpCollec[k] === '<' ||
-                this.customRegExpCollec[k] === '|' || this.customRegExpCollec[k] === '\\') {
+            if (this.customRegExpCollec[k as number] === '>' || this.customRegExpCollec[k as number] === '<' ||
+                this.customRegExpCollec[k as number] === '|' || this.customRegExpCollec[k as number] === '\\') {
                 --i;
                 checkMask = true;
             }
             if (!checkMask) {
-                if ((maskValue[i] !== this.promptChar) && (!isNullOrUndefined(this.customRegExpCollec[k]) &&
-                    ((this._callPasteHandler || !isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
-                        (this.customRegExpCollec[k].length > 2 && this.customRegExpCollec[k][0] === '[' &&
-                            this.customRegExpCollec[k][this.customRegExpCollec[k].length - 1] === ']') ||
+                if ((maskValue[i as number] !== this.promptChar) && (!isNullOrUndefined(this.customRegExpCollec[k as number]) &&
+                    ((this._callPasteHandler || !isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k as number]])) ||
+                        (this.customRegExpCollec[k as number].length > 2 && this.customRegExpCollec[k as number][0] === '[' &&
+                            this.customRegExpCollec[k as number][this.customRegExpCollec[k as number].length - 1] === ']') ||
                         (!isNullOrUndefined(this.customCharacters) &&
-                            (!isNullOrUndefined(this.customCharacters[this.customRegExpCollec[k]]))))) && (maskValue !== '')) {
-                    value += maskValue[i];
+                            (!isNullOrUndefined(this.customCharacters[this.customRegExpCollec[k as number]]))))) && (maskValue !== '')) {
+                    value += maskValue[i  as number];
                 }
             }
             ++k;
@@ -269,9 +270,9 @@ export function strippedValue(element: HTMLInputElement, maskValues: string): st
 
 function pushIntoRegExpCollec(value: string): void {
     for (let k: number = 0; k < value.length; k++) {
-        this.hiddenMask += value[k];
-        if (value[k] !== '\\') {
-            this.customRegExpCollec.push(value[k]);
+        this.hiddenMask += value[k as number];
+        if (value[k as number] !== '\\') {
+            this.customRegExpCollec.push(value[k as number]);
         }
     }
 }
@@ -295,7 +296,7 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
         event: event,
         value: this.value,
         maskedValue: inputElement.value,
-        container: this.inputObj.container,
+        container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj,
         selectionEnd: inputElement.selectionEnd
     };
     if (!this.isClicked) {
@@ -312,8 +313,8 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
                 toAllowForward = true;
             } else {
                 for (let i: number = inputElement.selectionStart; i < this.promptMask.length; i++) {
-                    if (inputElement.value[i] !== this.promptChar) {
-                        if ((inputElement.value[i] !== this.promptMask[i])) {
+                    if (inputElement.value[i as number] !== this.promptChar) {
+                        if ((inputElement.value[i as number] !== this.promptMask[i as number])) {
                             toAllowForward = false;
                             break;
                         }
@@ -327,12 +328,12 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
         setTimeout(() => {
             const backSelectionStart: number = inputElement.selectionStart - 1;
             if (backSelectionStart === this.promptMask.length - 1 ||
-                inputElement.value[backSelectionStart] === this.promptChar) {
+                inputElement.value[backSelectionStart as number] === this.promptChar) {
                 toAllowBackward = true;
             } else {
                 for (let i: number = backSelectionStart; i >= 0; i--) {
-                    if (inputElement.value[i] !== this.promptChar) {
-                        if ((inputElement.value[i] !== this.promptMask[i])) {
+                    if (inputElement.value[i as number] !== this.promptChar) {
+                        if ((inputElement.value[i as number] !== this.promptMask[i as number])) {
                             toAllowBackward = false;
                             break;
                         }
@@ -347,7 +348,7 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
             ((modelValue === null || modelValue === '') &&
                 (this.placeholder !== null && this.placeholder !== ''))))) {
             for (startIndex = 0; startIndex < this.promptMask.length; startIndex++) {
-                if (inputElement.value[startIndex] === this.promptChar) {
+                if (inputElement.value[startIndex as number] === this.promptChar) {
                     setTimeout(() => {
                         if (toAllowForward || toAllowBackward) {
                             inputElement.selectionEnd = startIndex;
@@ -358,21 +359,21 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
                             event: event,
                             value: this.value,
                             maskedValue: inputElement.value,
-                            container: this.inputObj.container,
+                            container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj,
                             selectionEnd: inputElement.selectionEnd
                         };
                         triggerFocus.call(this, eventArgs, inputElement);
-                    });
+                    },110);
                     break;
                 }
             }
-            if (isNullOrUndefined(inputElement.value.match(this.promptChar))) {
+            if (isNullOrUndefined(inputElement.value.match(escapeRegExp(this.promptChar)))) {
                 eventArgs = {
                     selectionStart: inputElement.selectionStart,
                     event: event,
                     value: this.value,
                     maskedValue: inputElement.value,
-                    container: this.inputObj.container,
+                    container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj,
                     selectionEnd: inputElement.selectionEnd
                 };
                 triggerFocus.call(this, eventArgs, inputElement);
@@ -389,12 +390,16 @@ export function triggerFocus(eventArgs: MaskFocusEventArgs, inputElement:HTMLInp
     });
 }
 
+export function escapeRegExp(text: any):string {
+    return !isNullOrUndefined(text) ? text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : text;
+}  
+
 export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
     this.blurEventArgs = {
         event: event,
         value: this.value,
         maskedValue: this.element.value,
-        container: this.inputObj.container
+        container: !isNullOrUndefined(this.inputObj) ?  this.inputObj.container : this.inputObj,
     };
     this.trigger('blur', this.blurEventArgs);
     if (this.mask) {
@@ -428,7 +433,7 @@ function maskInputPasteHandler(event: KeyboardEvent): void {
                 let i: number = 0;
                 this.maskKeyPress = true;
                 do {
-                    validateValue.call(this, value[i], false, null); ++i;
+                    validateValue.call(this, value[i as number], false, null); ++i;
                 } while (i < value.length);
                 this.maskKeyPress = false;
                 this._callPasteHandler = false;
@@ -436,7 +441,7 @@ function maskInputPasteHandler(event: KeyboardEvent): void {
                     let i: number = 0;
                     this.maskKeyPress = true;
                     do {
-                        validateValue.call(this, value[i], false, null); ++i;
+                        validateValue.call(this, value[i as number], false, null); ++i;
                     } while (i < value.length);
                     this.maskKeyPress = false;
                 } else {
@@ -497,7 +502,7 @@ function maskInputHandler(event: KeyboardEvent): void {
             this.maskKeyPress = false;
             let i: number = 0;
             do {
-                validateValue.call(this, value[i], event.ctrlKey, event); ++i;
+                validateValue.call(this, value[i as number], event.ctrlKey, event); ++i;
             } while (i < value.length);
             if (this.element.value !== this.preEleVal) {
                 triggerMaskChangeEvent.call(this, event, null);
@@ -626,16 +631,16 @@ function removeMaskInputValues(event: KeyboardEvent): void {
                         curMask = maskValue[i - 1];
                         sIndex = startIndex - 1;
                     } else {
-                        curMask = maskValue[i];
+                        curMask = maskValue[i as number];
                         sIndex = startIndex;
                         ++startIndex;
                     }
-                    let oldValue: string = this.element.value[sIndex];
-                    if ((isNullOrUndefined(this.regExpCollec[curMask]) && (!isNullOrUndefined(this.customCharacters)
-                        && isNullOrUndefined(this.customCharacters[curMask]))
-                        && ((this.hiddenMask[sIndex] !== this.promptChar && this.customRegExpCollec[sIndex][0] !== '['
-                            && this.customRegExpCollec[sIndex][this.customRegExpCollec[sIndex].length - 1] !== ']')))
-                        || (this.promptMask[sIndex] !== this.promptChar && isNullOrUndefined(this.customCharacters))) {
+                    let oldValue: string = this.element.value[sIndex as number];
+                    if ((isNullOrUndefined(this.regExpCollec[`${curMask}`]) && (!isNullOrUndefined(this.customCharacters)
+                        && isNullOrUndefined(this.customCharacters[`${curMask}`]))
+                        && ((this.hiddenMask[sIndex as number] !== this.promptChar && this.customRegExpCollec[sIndex as number][0] !== '['
+                        && this.customRegExpCollec[sIndex as number][this.customRegExpCollec[sIndex as number].length - 1] !== ']')))
+                        || (this.promptMask[sIndex as number] !== this.promptChar && isNullOrUndefined(this.customCharacters))) {
                         this.element.selectionStart = this.element.selectionEnd = sIndex;
                         event.preventDefault();
                         if (event.keyCode === 46 && !multipleDel) {
@@ -660,10 +665,10 @@ function removeMaskInputValues(event: KeyboardEvent): void {
                         sIndex = startIndex;
                         isDeleted = false;
                     }
-                    oldValue = this.element.value[sIndex];
+                    oldValue = this.element.value[sIndex as number];
                     if (((initStartIndex !== initEndIndex) && (this.element.selectionStart === initStartIndex))
-                        || (this.promptMask[sIndex] === this.promptChar) || ((oldValue !== this.promptMask[sIndex]) &&
-                            (this.promptMask[sIndex] !== this.promptChar) && !isNullOrUndefined(this.customCharacters))) {
+                        || (this.promptMask[sIndex as number] === this.promptChar) || ((oldValue !== this.promptMask[sIndex as number]) &&
+                            (this.promptMask[sIndex as number] !== this.promptChar) && !isNullOrUndefined(this.customCharacters))) {
                         break;
                     }
                 }
@@ -833,7 +838,7 @@ function validateValue(key: string, isCtrlKey: boolean, event: KeyboardEvent): v
     let prevSupport: boolean = false;
     let isEqualVal: boolean = false;
     for (let k: number = 0; k < key.length; k++) {
-        const keyValue: string = key[k];
+        const keyValue: string = key[k as number];
         startIndex = this.element.selectionStart;
         if (!this.maskKeyPress && initStartIndex === startIndex) {
             startIndex = startIndex + k;
@@ -841,36 +846,39 @@ function validateValue(key: string, isCtrlKey: boolean, event: KeyboardEvent): v
         if ((!this.maskKeyPress || startIndex < this.promptMask.length)) {
             for (let i: number = startIndex; i < this.promptMask.length; i++) {
                 const maskValue: string = this.escapeMaskValue;
-                curMask = maskValue[startIndex];
-                if (this.hiddenMask[startIndex] === '\\' && this.hiddenMask[startIndex + 1] === key) {
+                curMask = maskValue[startIndex as number];
+                if (this.hiddenMask[startIndex as number] === '\\' && this.hiddenMask[startIndex + 1] === key) {
                     isEqualVal = true;
                 }
-                if ((isNullOrUndefined(this.regExpCollec[curMask]) && (isNullOrUndefined(this.customCharacters)
-                    || (!isNullOrUndefined(this.customCharacters) && isNullOrUndefined(this.customCharacters[curMask])))
-                    && ((this.hiddenMask[startIndex] !== this.promptChar && this.customRegExpCollec[startIndex][0] !== '['
-                        && this.customRegExpCollec[startIndex][this.customRegExpCollec[startIndex].length - 1] !== ']')))
-                    || ((this.promptMask[startIndex] !== this.promptChar) && isNullOrUndefined(this.customCharacters))
+                if ((isNullOrUndefined(this.regExpCollec[`${curMask}`]) && (isNullOrUndefined(this.customCharacters)
+                    || (!isNullOrUndefined(this.customCharacters) && isNullOrUndefined(this.customCharacters[`${curMask}`])))
+                    && ((this.hiddenMask[startIndex as number] !== this.promptChar && this.customRegExpCollec[startIndex as number][0] !== '['
+                        && this.customRegExpCollec[startIndex as number][this.customRegExpCollec[startIndex as number].length - 1] !== ']')))
+                    || ((this.promptMask[startIndex as number] !== this.promptChar) && isNullOrUndefined(this.customCharacters))
                     || (this.promptChar === curMask && this.escapeMaskValue === this.mask)) {
                     this.element.selectionStart = this.element.selectionEnd = startIndex + 1;
                     startIndex = this.element.selectionStart;
-                    curMask = this.hiddenMask[startIndex];
+                    curMask = this.hiddenMask[startIndex as number];
                 }
             }
-            if (!isNullOrUndefined(this.customCharacters) && !isNullOrUndefined(this.customCharacters[curMask])) {
-                const customValStr: string = <string>this.customCharacters[curMask];
+            if (!isNullOrUndefined(this.customCharacters) && !isNullOrUndefined(this.customCharacters[`${curMask}`])) {
+                const customValStr: string = <string>this.customCharacters[`${curMask}`];
                 const customValArr: string[] = customValStr.split(',');
                 for (let i: number = 0; i < customValArr.length; i++) {
-                    if (keyValue.match(new RegExp('[' + customValArr[i] + ']'))) {
+                    // eslint-disable-next-line detect-non-literal-regexp
+                    if (keyValue.match(new RegExp('[' + customValArr[i as number] + ']'))) {
                         allowText = true;
                         break;
                     }
                 }
-            } else if (!isNullOrUndefined(this.regExpCollec[curMask]) && keyValue.match(new RegExp(this.regExpCollec[curMask]))
-                && this.promptMask[startIndex] === this.promptChar) {
+            // eslint-disable-next-line detect-non-literal-regexp
+            } else if (!isNullOrUndefined(this.regExpCollec[`${curMask}`]) && keyValue.match(new RegExp(this.regExpCollec[`${curMask}`]))
+                && this.promptMask[startIndex as number] === this.promptChar) {
                 allowText = true;
-            } else if (this.promptMask[startIndex] === this.promptChar && this.customRegExpCollec[startIndex][0] === '['
-                && this.customRegExpCollec[startIndex][this.customRegExpCollec[startIndex].length - 1] === ']'
-                && keyValue.match(new RegExp(this.customRegExpCollec[startIndex]))) {
+            } else if (this.promptMask[startIndex as number] === this.promptChar && this.customRegExpCollec[startIndex as number][0] === '['
+                && this.customRegExpCollec[startIndex as number][this.customRegExpCollec[startIndex as number].length - 1] === ']'
+                // eslint-disable-next-line detect-non-literal-regexp
+                && keyValue.match(new RegExp(this.customRegExpCollec[startIndex as number]))) {
                 allowText = true;
             }
             if ((!this.maskKeyPress || startIndex < this.hiddenMask.length) && allowText) {
@@ -949,7 +957,7 @@ function preventUnsupportedValues(event: KeyboardEvent, sIdx: number, idx: numbe
                 }
             }
             this.element.selectionStart = this.element.selectionEnd = (chkSupport ||
-                this.element.value[idx] !== this.promptChar) ? sIdx : idx;
+                this.element.value[idx as number] !== this.promptChar) ? sIdx : idx;
         }
         addMaskErrorClass.call(this);
     }
@@ -999,17 +1007,17 @@ function changeToLowerUpperCase(key: string, value: string): string {
     let curVal: string = value;
     let caseCount: number = 0;
     for (i = 0; i < this.hiddenMask.length; i++) {
-        if (this.hiddenMask[i] === '\\') {
+        if (this.hiddenMask[i as number] === '\\') {
             promptMask = curVal.substring(0, i) + '\\' + curVal.substring(i, curVal.length);
         }
-        if (this.hiddenMask[i] === '>' || this.hiddenMask[i] === '<' || this.hiddenMask[i] === '|') {
-            if (this.hiddenMask[i] !== curVal[i]) {
-                promptMask = curVal.substring(0, i) + this.hiddenMask[i] + curVal.substring(i, curVal.length);
+        if (this.hiddenMask[i as number] === '>' || this.hiddenMask[i as number] === '<' || this.hiddenMask[i as number] === '|') {
+            if (this.hiddenMask[i as number] !== curVal[i as number]) {
+                promptMask = curVal.substring(0, i) + this.hiddenMask[i as number] + curVal.substring(i, curVal.length);
             }
             ++caseCount;
         }
         if (promptMask) {
-            if (((promptMask[i] === this.promptChar) && (i > this.element.selectionStart)) ||
+            if (((promptMask[i as number] === this.promptChar) && (i > this.element.selectionStart)) ||
                 (this.element.value.indexOf(this.promptChar) < 0 && (this.element.selectionStart + caseCount) === i)) {
                 caseCount = 0;
                 break;
@@ -1019,13 +1027,13 @@ function changeToLowerUpperCase(key: string, value: string): string {
     }
     while (i >= 0 && promptMask) {
         if (i === 0 || promptMask[i - 1] !== '\\') {
-            if (promptMask[i] === '>') {
+            if (promptMask[i as number] === '>') {
                 key = key.toUpperCase();
                 break;
-            } else if (promptMask[i] === '<') {
+            } else if (promptMask[i as number] === '<') {
                 key = key.toLowerCase();
                 break;
-            } else if (promptMask[i] === '|') {
+            } else if (promptMask[i as number] === '|') {
                 break;
             }
         }
@@ -1049,7 +1057,7 @@ export function setMaskValue(val?: string): void {
         }
         if (val !== null) {
             for (let i: number = 0; i < val.length; i++) {
-                validateValue.call(this, val[i], false, null);
+                validateValue.call(this, val[i as number], false, null);
             }
         }
         const newVal: string = strippedValue.call(this, this.element);

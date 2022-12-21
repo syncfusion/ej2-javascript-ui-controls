@@ -14,12 +14,13 @@ export class ImageExport {
      *
      * @param {TreeMap} control - Specifies the treemap instance
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: TreeMap) {
     }
     /**
      * This method is used to perform the export functionality for the rendered treemap.
      *
+     * @param {TreeMap} treeMap - Specifies the treemap instance.
      * @param {ExportType} type - Specifies the type of the image file.
      * @param {string} fileName - Specifies the file name of the image file.
      * @param {boolean} allowDownload - Specifies whether to download the file or not.
@@ -27,7 +28,7 @@ export class ImageExport {
      * @private
      */
     public export(treeMap: TreeMap, type: ExportType, fileName: string, allowDownload ?: boolean): Promise<string> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -94,9 +95,10 @@ export class ImageExport {
 
     /**
      * To destroy the ImageExport.
-     * 
+     *
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

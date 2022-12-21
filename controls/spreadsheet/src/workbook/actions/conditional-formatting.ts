@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, getSheet, ConditionalFormat } from '../index';
 import { setCFRule, clearCFRule, getRangeAddress, getSheetIndexFromAddress } from '../common/index';
 import { getRangeIndexes, ConditionalFormatModel, CFArgs, ApplyCFArgs, getSwapRange } from '../common/index';
-import { applyCF, clearCF, goto, CFormattingEventArgs, beginAction, ActionEventArgs } from '../common/index';
+import { applyCF, clearCF, goto, CFormattingEventArgs, beginAction } from '../common/index';
 import { completeAction } from '../../spreadsheet/common/event';
 
 
@@ -49,7 +49,6 @@ export class WorkbookConditionalFormat {
         cf.range = cf.range || sheet.selectedRange;
         let indexes: number[] = getSwapRange(getRangeIndexes(cf.range));
         cf.range = getRangeAddress(indexes);
-        let actionArgs: ActionEventArgs;
         if (e.isAction) {
             const eventArgs: CFormattingEventArgs = { range: cf.range, type: cf.type, cancel: false, cFColor: cf.cFColor, value: cf.value,
                 sheetIdx: sheetIndex };
@@ -80,7 +79,7 @@ export class WorkbookConditionalFormat {
         if (e.isAction) {
             this.parent.notify(
                 completeAction, { eventArgs: { range: cf.range, type: cf.type, cFColor: cf.cFColor, value: cf.value, sheetIdx: sheetIndex },
-                action: 'conditionalFormat' });
+                    action: 'conditionalFormat' });
         }
     }
 
@@ -111,17 +110,17 @@ export class WorkbookConditionalFormat {
             return;
         }
         let cf: ConditionalFormat; let cfRange: string[]; let cfIdx: number[]; let newRange: string[];
-        let left: boolean; let right: boolean; let top: boolean; let bottom; let range: string;
+        let left: boolean; let right: boolean; let top: boolean; let bottom: boolean; let range: string;
         let idx: number[] = args.range && (typeof args.range === 'string' ? getRangeIndexes(args.range) : args.range);
         args.oldCFModel = []; args.updatedCFModel = [];
         const updatedCFModel: ConditionalFormatModel[] = [];
         const oldRange: string[] = [];
         const refreshCF: ConditionalFormatModel[] = [];
         for (let i: number = 0; i < cfRule.length; i++) {
-            cf = <ConditionalFormat>cfRule[i];
+            cf = <ConditionalFormat>cfRule[i as number];
             cfRange = cf.range.split(',');
             for (let j: number = 0; j < cfRange.length; j++) {
-                cfIdx = getRangeIndexes(cfRange[j]);
+                cfIdx = getRangeIndexes(cfRange[j as number]);
                 if (args.range) {
                     if (idx[0] <= cfIdx[0] && idx[1] <= cfIdx[1] && idx[2] >= cfIdx[2] && idx[3] >= cfIdx[3]) {
                         cfRange.splice(j, 1);
@@ -185,7 +184,7 @@ export class WorkbookConditionalFormat {
                             }
                         }
                         if (newRange.length) {
-                            cfRange[j] = newRange.join(',');
+                            cfRange[j as number] = newRange.join(',');
                         } else {
                             continue;
                         }
@@ -203,7 +202,7 @@ export class WorkbookConditionalFormat {
             if (range !== cf.range) {
                 if (args.cfModel && (args.cfModel.cFColor !== cf.cFColor || args.cfModel.type !== cf.type ||
                     args.cfModel.value !== cf.value)) {
-                    refreshCF.push(cf)
+                    refreshCF.push(cf);
                     continue;
                 }
                 oldRange.push(cf.range);

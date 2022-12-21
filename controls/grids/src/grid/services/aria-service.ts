@@ -10,7 +10,7 @@ export class AriaService {
     public setOptions(target: HTMLElement, options: IAriaOptions<boolean>): void {
         const props: string[] = Object.keys(options);
         for (let i: number = 0; i < props.length; i++) {
-            setStateAndProperties(target, config[props[i]], options[props[i]]);
+            setStateAndProperties(target, config[props[parseInt(i.toString(), 10)]], options[props[parseInt(i.toString(), 10)]]);
         }
     }
 

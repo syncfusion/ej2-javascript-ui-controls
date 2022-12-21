@@ -75,16 +75,16 @@ export class SmithchartLegend {
             }
             for (let i: number = 0; i < length; i++) {
                 this.legendSeries.push({
-                    text: smithchart.series[i]['name'] ? smithchart.series[i]['name'] : 'series' + i,
+                    text: smithchart.series[i as number]['name'] ? smithchart.series[i as number]['name'] : 'series' + i,
                     seriesIndex: i,
                     shape: smithchart.legendSettings.shape,
-                    fill: smithchart.series[i].fill || smithchart.seriesColors[i % smithchart.seriesColors.length],
+                    fill: smithchart.series[i as number].fill || smithchart.seriesColors[i % smithchart.seriesColors.length],
                     bounds: null
                 });
-                const legendsize: SmithchartSize = this._getLegendSize(smithchart, this.legendSeries[i]);
+                const legendsize: SmithchartSize = this._getLegendSize(smithchart, this.legendSeries[i as number]);
                 legendItemWidth = Math.max(legendsize['width'], legendItemWidth);
                 legendItemHeight = Math.max(legendsize['height'], legendItemHeight);
-                this.legendSeries[i]['bounds'] = { width: legendItemWidth, height: legendItemHeight };
+                this.legendSeries[i as number]['bounds'] = { width: legendItemWidth, height: legendItemHeight };
                 itemsCountRow = itemsCountRow + 1;
                 curRowWidth = curRowWidth + legendItemWidth + itemPadding;
                 curRowHeight = Math.max(legendItemHeight, curRowHeight);

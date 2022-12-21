@@ -94,7 +94,7 @@ export class FullScreen {
                     this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
                     const elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
                     for (let i: number = 0; i < elem.length; i++) {
-                        removeClass([elem[i]], ['e-rte-overflow']);
+                        removeClass([elem[i as number]], ['e-rte-overflow']);
                     }
                     const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
                     this.parent.setContentHeight(null, isExpand);
@@ -123,11 +123,11 @@ export class FullScreen {
             return;
         }
         for (let i: number = 0; i < this.scrollableParent.length; i++) {
-            if (this.scrollableParent[i].nodeName === '#document') {
+            if (this.scrollableParent[i as number].nodeName === '#document') {
                 const elem: HTMLElement = document.querySelector('body');
                 addClass([elem], ['e-rte-overflow']);
             } else {
-                const elem: HTMLElement = this.scrollableParent[i];
+                const elem: HTMLElement = this.scrollableParent[i as number];
                 addClass([elem], ['e-rte-overflow']);
             }
         }
@@ -172,7 +172,7 @@ export class FullScreen {
         }
         const elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
         for (let i: number = 0; i < elem.length; i++) {
-            removeClass([elem[i]], ['e-rte-overflow']);
+            removeClass([elem[i as number]], ['e-rte-overflow']);
         }
         this.removeEventListener();
     }

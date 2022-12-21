@@ -124,6 +124,7 @@ export class Command extends ChildProperty<Command> {
     public canExecute: Function | string;
     /**
      * Defines what to be executed when the key combination is recognized
+     *
      * @aspDefaultValueIgnore
      * @default undefined
      * @deprecated
@@ -172,6 +173,7 @@ export class Command extends ChildProperty<Command> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default {}
      */
     @Complex<KeyGestureModel>({}, KeyGesture)
@@ -179,15 +181,16 @@ export class Command extends ChildProperty<Command> {
 
     /**
      * Defines any additional parameters that are required at runtime
+     * 
      * @default ''
      */
     @Property('')
     public parameter: string;
 
-
     /**
      *
      * Returns the name of class Command
+     *
      * @returns {string}  Returns the name of class Command
      * @private
      */
@@ -199,6 +202,7 @@ export class Command extends ChildProperty<Command> {
 
 /**
  * Defines the collection of commands and the corresponding key gestures
+ *
  */
 export class CommandManager extends ChildProperty<CommandManager> {
     /**

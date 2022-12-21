@@ -94,7 +94,7 @@ export class NodeSelection {
 
     private isChildNode(nodeCollection: Node[], parentNode: Node): boolean {
         for (let index: number = 0; index < parentNode.childNodes.length; index++) {
-            if (nodeCollection.indexOf(parentNode.childNodes[index]) > -1) {
+            if (nodeCollection.indexOf(parentNode.childNodes[index as number]) > -1) {
                 return true;
             }
         }
@@ -178,14 +178,14 @@ export class NodeSelection {
     public getParentNodes(nodeCollection: Node[], range: Range): Node[] {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
-            if ((nodeCollection.indexOf(nodeCollection[index].parentNode) !== -1)
-                || (nodeCollection[index].nodeType === 3 &&
+            if ((nodeCollection.indexOf(nodeCollection[index as number].parentNode) !== -1)
+                || (nodeCollection[index as number].nodeType === 3 &&
                     range.startContainer !== range.endContainer &&
                     range.startContainer.parentNode !== range.endContainer.parentNode)) {
                 nodeCollection.splice(index, 1);
                 index--;
-            } else if (nodeCollection[index].nodeType === 3) {
-                nodeCollection[index] = nodeCollection[index].parentNode;
+            } else if (nodeCollection[index as number].nodeType === 3) {
+                nodeCollection[index as number] = nodeCollection[index as number].parentNode;
             }
         }
         return nodeCollection;
@@ -225,10 +225,11 @@ export class NodeSelection {
      */
     public getSelectionNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
+        // eslint-disable-next-line
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
-            if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
-            (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
+            if (nodeCollection[index as number].nodeType !== 3 || (nodeCollection[index as number].textContent.trim() === '' ||
+            (nodeCollection[index as number].textContent.length === 1 && nodeCollection[index as number].textContent.match(regEx)))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -246,11 +247,12 @@ export class NodeSelection {
      */
     public getSelectionNodesBr(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
+        // eslint-disable-next-line
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         for (let index: number = 0; index < nodeCollection.length; index++) {
-            if (nodeCollection[index].nodeName !== 'BR' &&
-            (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
-            (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx))))) {
+            if (nodeCollection[index as number].nodeName !== 'BR' &&
+            (nodeCollection[index as number].nodeType !== 3 || (nodeCollection[index as number].textContent.trim() === '' ||
+            (nodeCollection[index as number].textContent.length === 1 && nodeCollection[index as number].textContent.match(regEx))))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -281,10 +283,10 @@ export class NodeSelection {
     public getInsertNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
-            if ((nodeCollection[index].childNodes.length !== 0 &&
-                nodeCollection[index].nodeType !== 3) ||
-                (nodeCollection[index].nodeType === 3 &&
-                    nodeCollection[index].textContent === '')) {
+            if ((nodeCollection[index as number].childNodes.length !== 0 &&
+                nodeCollection[index as number].nodeType !== 3) ||
+                (nodeCollection[index as number].nodeType === 3 &&
+                    nodeCollection[index as number].textContent === '')) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -323,7 +325,7 @@ export class NodeSelection {
         let index: number = num.length;
         let constant: number = size;
         for (; index--; null) {
-            node = node && node.childNodes[num[index]];
+            node = node && node.childNodes[num[index as number]];
         }
         if (node && constant >= 0 && node.nodeName !== 'html') {
             if (node.nodeType === 3 && node.nodeValue.replace(/\u00a0/g, '&nbsp;') === '&nbsp;') {

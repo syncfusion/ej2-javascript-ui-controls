@@ -564,14 +564,14 @@ describe('Chart Control', () => {
         it('Axis position Checking', (done: Function) => {
             loaded = (args: Object): void => {
                 let svg: HTMLElement = document.getElementById('chartContainer_AxisTitle_1');
-                expect(svg.getAttribute('y') == '356.9525' || svg.getAttribute('y') == '355.2825').toBe(true);
-                expect(svg.getAttribute('x') == '26.5' || svg.getAttribute('x') == '29.5' ).toBe(true);
+                expect(svg.getAttribute('y') == '336.4475' || svg.getAttribute('y') == '340.9525').toBe(true);
+                expect(svg.getAttribute('x') == '74.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 svg = document.getElementById('chartContainer_AxisTitle_2');
-                expect(svg.getAttribute('y') == '232.85749999999996' || svg.getAttribute('y') == '231.8475').toBe(true);
-                expect(svg.getAttribute('x') == '26.5' || svg.getAttribute('x') == '29.5' ).toBe(true);
+                expect(svg.getAttribute('y') == '195.34249999999997' || svg.getAttribute('y') == '216.85749999999996').toBe(true);
+                expect(svg.getAttribute('x') == '74.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 svg = document.getElementById('chartContainer_AxisTitle_3');
-                expect(svg.getAttribute('y') == '76.65499999999999' || svg.getAttribute('y') == '76.315').toBe(true);
-                expect(svg.getAttribute('x') == '26.5' || svg.getAttribute('x') == '29.5' ).toBe(true);
+                expect(svg.getAttribute('y') == '58.144999999999996' || svg.getAttribute('y') == '60.65499999999999').toBe(true);
+                expect(svg.getAttribute('x') == '74.5' || svg.getAttribute('x') == '47.5' ).toBe(true);
                 done();
             };
             chartElem.loaded = loaded;

@@ -25,8 +25,8 @@ export class RendererFactory {
     public addRenderer(name: RenderType, type: IRenderer): void {
         const rName: string = <string>getEnumValue(RenderType, <RenderType>name);
 
-        if (isNullOrUndefined(this.rendererMap[rName])) {
-            this.rendererMap[rName] = type;
+        if (isNullOrUndefined(this.rendererMap[`${rName}`])) {
+            this.rendererMap[`${rName}`] = type;
         }
     }
 
@@ -41,11 +41,11 @@ export class RendererFactory {
     public getRenderer(name: RenderType): IRenderer {
         const rName: string = <string>getEnumValue(RenderType, <RenderType>name);
 
-        if (isNullOrUndefined(this.rendererMap[rName])) {
+        if (isNullOrUndefined(this.rendererMap[`${rName}`])) {
             // eslint-disable-next-line
             throw `The renderer ${rName} is not found`;
         } else {
-            return this.rendererMap[rName];
+            return this.rendererMap[`${rName}`];
         }
     }
 }

@@ -175,7 +175,8 @@ export class UnProtectDocumentDialog {
      */
     public okButtonClick = (): void => {
         const password: string = this.passwordTextBox.value;
-        if (password === '') {
+        const empty: string = '';
+        if (password.length === empty.length && password === empty) {
             DialogUtility.alert(this.localObj.getConstant('The password is incorrect'));
             return;
         }

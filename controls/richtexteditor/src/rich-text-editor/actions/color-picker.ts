@@ -66,8 +66,8 @@ export class ColorPickerInput {
                     if (!isNullOrUndefined(this.parent.cssClass)) {
                         const allClassName: string[] = this.parent.cssClass.split(' ');
                         for (let i: number = 0; i < allClassName.length; i++) {
-                            if (allClassName[i].trim() !== '') {
-                                fontNode.classList.add(allClassName[i]);
+                            if (allClassName[i as number].trim() !== '') {
+                                fontNode.classList.add(allClassName[i as number]);
                             }
                         }
                     }
@@ -92,8 +92,8 @@ export class ColorPickerInput {
                     if (!isNullOrUndefined(this.parent.cssClass)) {
                         const allClassName: string[] = this.parent.cssClass.split(' ');
                         for (let i: number = 0; i < allClassName.length; i++) {
-                            if (allClassName[i].trim() !== '') {
-                                backNode.classList.add(allClassName[i]);
+                            if (allClassName[i as number].trim() !== '') {
+                                backNode.classList.add(allClassName[i as number]);
                             }
                         }
                     }

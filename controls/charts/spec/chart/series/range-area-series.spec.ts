@@ -216,7 +216,7 @@ describe('Chart', () => {
         it('with Category dataSource', (done: Function) => {
             loaded = (args: Object): void => {
                 let seriesElements: number = document.getElementById('containerSeriesGroup0').childNodes.length;
-                expect(seriesElements == 2).toBe(true); done();
+                expect(seriesElements == 3).toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].visible = true;
@@ -249,8 +249,6 @@ describe('Chart', () => {
             loaded = (args: Object): void => {
                 let seriesElements = document.getElementById('container_Series_0');
                 expect(seriesElements.getAttribute('fill') == 'red').toBe(true);
-                expect(seriesElements.getAttribute('stroke') == 'green').toBe(true);
-                expect(seriesElements.getAttribute('stroke-width') == '2').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

@@ -74,7 +74,7 @@ export class BreadCrumbBar {
                 let addressATag: HTMLElement = null;
                 addressbarLI = this.parent.createElement('li', { className: 'e-address-list-item' });
                 for (let j: number = 0; j <= i; j++) {
-                    id = id + paths[j] + '/';
+                    id = id + paths[j as number] + '/';
                 }
                 addressbarLI.setAttribute('data-utext', id);
                 if (i !== 0) {
@@ -88,7 +88,7 @@ export class BreadCrumbBar {
                     addressATag = createElement('span', { className: CLS.LIST_TEXT });
                 }
                 id = '';
-                addressATag.innerText = pathNames[i];
+                addressATag.innerText = pathNames[i as number];
                 addressbarLI.appendChild(addressATag);
                 addressbarUL.appendChild(addressbarLI);
             }
@@ -120,7 +120,7 @@ export class BreadCrumbBar {
         let liElementsWidth: number = 0;
         const liElementsWidths: number[] = [];
         for (let i: number = 0; i < liElements.length; i++) {
-            const width: number = liElements[i].clientWidth;
+            const width: number = liElements[i as number].clientWidth;
             liElementsWidths.push(width);
             liElementsWidth = liElementsWidth + width;
         }
@@ -157,15 +157,15 @@ export class BreadCrumbBar {
         if (liElementsWidth > breadCrumbBarWidth) {
             let i: number = liElements.length;
             while (i--) {
-                const diff: number = breadCrumbBarWidth - liElementsWidths[i];
+                const diff: number = breadCrumbBarWidth - liElementsWidths[i as number];
                 if (diff > 40) {
-                    addressbarUL.insertBefore(liElements[i], addressbarUL.querySelector('li'));
+                    addressbarUL.insertBefore(liElements[i as number], addressbarUL.querySelector('li'));
                     breadCrumbBarWidth = diff;
                 } else {
                     // eslint-disable-next-line
                     const items: Object[] = [];
                     for (let j: number = 0; j <= i; j++) {
-                        const liElement: Element = liElements[j];
+                        const liElement: Element = liElements[j as number];
                         items.push({
                             text: (<HTMLElement>liElement).innerText,
                             utext: liElement.getAttribute('data-utext')
@@ -291,9 +291,9 @@ export class BreadCrumbBar {
         this.parent.pathNames = [];
         let newpath: string = '';
         for (let i: number = 0, len: number = link.length - 1; i < len; i++) {
-            this.parent.pathId.push(ids[i]);
-            this.parent.pathNames.push(names[i]);
-            newpath += link[i] + '/';
+            this.parent.pathId.push(ids[i as number]);
+            this.parent.pathNames.push(names[i as number]);
+            newpath += link[i as number] + '/';
         }
         this.parent.setProperties({ path: newpath }, true);
         return newpath;

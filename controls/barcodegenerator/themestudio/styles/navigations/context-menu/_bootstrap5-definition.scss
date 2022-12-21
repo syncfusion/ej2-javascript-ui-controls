@@ -48,5 +48,5 @@ $cmenu-selected-color: $flyout-text-color-pressed !default;
 $cmenu-sub-ul-box-shadow: $shadow-lg !default;
 $cmenu-ul-bgcolor: $flyout-bg-color !default;
 $cmenu-li-hover-outline: 0 solid $cmenu-li-border-color !default;
-$cmenu-caret-hover-color: $flyout-text-color-pressed !default;
-$cmenu-hover-icon-color: $flyout-text-color-pressed !default;
+$cmenu-caret-hover-color: $cmenu-caret-color !default;
+$cmenu-hover-icon-color: $cmenu-icon-color !default;

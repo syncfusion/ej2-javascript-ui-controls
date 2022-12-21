@@ -8,7 +8,7 @@ import { data, employeeData } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Edit } from '../../../src/grid/actions/edit';
-import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
+import { createGrid, destroy } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 import { getScrollBarWidth } from '../../../src/grid/base/util';
 
@@ -864,46 +864,5 @@ describe('Freeze render module', () => {
             frozenLeftContentElement = movableContentElement = frozenRightContentElement = null;
             frozenLeftFooterElement = movableFooterElement = frozenRightFooterElement = null;
         });
-    });
-});
-
-describe('EJ2-63013 - Filtering was not working properly with the combination of FrozenColumn and RowDrag and Drop feature => ', () => {
-    let gridObj: Grid;
-    let filterColumn: Function = (gridObj: Grid, colName: string, value: string, keyCode?: number) => {
-        let filterElement: any = gridObj.element.querySelector('[id=\'' + colName + '_filterBarcell\']');
-        filterElement.value = value;
-        filterElement.focus();
-        (gridObj.filterModule as any).keyUpHandler(getKeyUpObj(keyCode ? keyCode : 13, filterElement));
-    };
-    let orderIDElement: any;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data,
-                allowFiltering: true,
-                allowPaging: false,
-                allowRowDragAndDrop: true,
-                frozenColumns: 1,
-                columns: [{ field: 'OrderID', type: 'number', visible: true },
-                { field: 'CustomerID', type: 'string' },
-                { field: 'Freight', format: 'C2', type: 'number' },
-                ],
-            }, done);
-    });
-
-    it('Entering values and pressing enter key in Filter Bar ', (done: Function) => {
-        gridObj.dataBind();
-        orderIDElement = gridObj.element.querySelector('#OrderID_filterBarcell');
-        filterColumn(gridObj, 'OrderID', 10248);
-        setTimeout(done, 200);
-    });
-
-    it('Check the filtered records', () => {
-        expect(gridObj.currentViewData.length).toBe(1);
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = orderIDElement = null;
     });
 });

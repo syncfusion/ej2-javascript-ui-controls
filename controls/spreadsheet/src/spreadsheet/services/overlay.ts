@@ -59,7 +59,7 @@ export class Overlay {
             styles: 'width: ' + this.minWidth + ';  height: ' + this.minHeight
         });
         const indexes: number[] = getRangeIndexes(range);
-        const sheet: SheetModel = this.parent.sheets[sheetIndex];
+        const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
         const frozenRow: number = this.parent.frozenRowCount(sheet);
         const frozenCol: number = this.parent.frozenColCount(sheet);
         const pos: { top: number, left: number } = getCellPosition(
@@ -402,7 +402,7 @@ export class Overlay {
         const overlay: Element = div;
         while (handles.length > i) {
             handleElem = this.parent.createElement('div', {
-                attrs: { 'class': handles[i] + ' ' + 'e-ss-resizer' },
+                attrs: { 'class': handles[i as number] + ' ' + 'e-ss-resizer' },
                 styles: 'width: 8px; height: 8px; border-radius: 4px;'
             });
             overlay.appendChild(handleElem);

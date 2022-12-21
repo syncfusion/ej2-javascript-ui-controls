@@ -27,6 +27,7 @@ $hscroll-device-arrow-border-size: 1px !default;
 $hscroll-device-arrow-border-color: #ccc !default;
 $hscroll-device-arrow-color: #317ab9 !default;
 $hscroll-device-arrow-size: 14px !default;
+$hscroll-device-arrow-icon-size: 12px !default;
 $hscroll-device-arrow-size-bigger: 14px !default;
 $hscroll-device-arrow-width: 52px !default;
 
@@ -39,6 +40,13 @@ $hscroll-active-border: 3px solid $gray-500 !default;
 $hscroll-hover-border: 1px darken($gray-600, 10%) !default;
 $hscroll-hover-border-color: '' !default;
 $hscroll-active-box-shadow: none !default;
+
+$hscroll-nav-hover-press-bg: $hscroll-hover-bg !default;
+$hscroll-nav-hover-icons-color: inherit !default;
+$hscroll-nav-hover-border: $hscroll-hover-border !default;
+$hscroll-nav-focus-bg-color: $hscroll-hover-bg !default;
+$hscroll-nav-focus-border: $hscroll-focus-border !default;
+$hscroll-nav-active-color: $hscroll-default-icon-color !default;
 
 @mixin hscroll-btn-animation {
   content: '';

@@ -207,7 +207,7 @@ export class Parser {
             while (i < formula.length) {
                 formula = formula.split('-*').join('-').split('/*').join('/').split('*/').join('*').split('-/').join('-').
                     split('*+').join('*').split('+*').join('+');
-                if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
+                if ((this.parent.isDigit(formula[i as number]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
                         && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1))) &&
                     (formula[i + 2] !== '-' || (formula[i + 1] !== '*' && formula[i + 1] !== '/'))) {
@@ -215,9 +215,9 @@ export class Parser {
                         throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], true);
                     }
                     if (args.computeForceCalculate) {
-                        if (this.parent.isDigit(formula[i])) {
+                        if (this.parent.isDigit(formula[i as number])) {
                             if (countDigit < 1) {
-                                firstDigit = formula[i];
+                                firstDigit = formula[i as number];
                                 firstOp = formula[i + 1];
                                 if (isNullOrUndefined(firstOp)) {
                                     firstOp = this.emptyStr;
@@ -226,7 +226,7 @@ export class Parser {
                                 countDigit = countDigit + 1;
                                 form = form + firstDigit + firstOp;
                             } else if (countDigit < 2) {
-                                secondDigit = formula[i];
+                                secondDigit = formula[i as number];
                                 secondprevOp = formula[i - 1];
                                 secondnextOp = formula[i + 1];
                                 countDigit = 0;
@@ -241,47 +241,51 @@ export class Parser {
                             }
                             i = i + 2;
                         } else {
-                            form = (formula[i] === '-') ? form + formula[i] : form;
+                            form = (formula[i as number] === '-') ? form + formula[i as number] : form;
                             i = i + 1;
                         }
                     } else {
                         throw this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
                     }
-                    /* eslint-disable-next-line */
-                } else if ((this.parent.isDigit(formula[i]) || formula[i] === this.parent.rightBracket || this.parent.storedData.has(formula[i].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) || this.indexOfAny(formula[i + 1], arithemeticArr)) > -1) {
+                } else if ((this.parent.isDigit(formula[i as number]) || formula[i as number] === this.parent.rightBracket ||
+                    this.parent.storedData.has(formula[i as number].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) ||
+                    this.indexOfAny(formula[i + 1], arithemeticArr)) > -1) {
                     op = isNullOrUndefined(formula[i + 1]) ? this.emptyStr : formula[i + 1];
                     op = op === '&' ? '' : op;
-                    form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i] + op : form + formula[i] + op;
+                    form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i as number] + op : form + formula[i as number] + op;
                     i = i + 2;
                     /* eslint-disable-next-line */
                 } else if (this.indexOfAny(formula[i], logicalSym) > -1 && !isNullOrUndefined(formula[i - 1]) && !isNullOrUndefined(formula[i + 1])) {
-                    form = form + formula[i];
+                    form = form + formula[i as number];
                     i = i + 1;
-                } else if (formula[i] === 'q') {
-                    while (formula[i] !== this.parent.leftBracket) {
-                        form = form + formula[i];
+                } else if (formula[i as number] === 'q') {
+                    while (formula[i as number] !== this.parent.leftBracket) {
+                        form = form + formula[i as number];
                         i = i + 1;
                     }
-                } else if (formula[i] === this.parent.leftBracket || formula[i] === this.parent.rightBracket || formula[i] === '{' || formula[i] === '}' || formula[i] === '(' || formula[i] === ')') {
-                    form = form + formula[i];
+                } else if (formula[i as number] === this.parent.leftBracket || formula[i as number] === this.parent.rightBracket ||
+                    formula[i as number] === '{' || formula[i as number] === '}' || formula[i as number] === '(' ||
+                    formula[i as number] === ')') {
+                    form = form + formula[i as number];
                     i = i + 1;
-                } else if (this.parent.isUpperChar(formula[i]) || formula[i].indexOf(':') > -1 || formula[i] === this.parent.getParseArgumentSeparator() || ((formula[i] === '%') && (this.parent.isDigit(formula[i - 1])))) {
-                    form = form + formula[i];
+                } else if (this.parent.isUpperChar(formula[i as number]) || formula[i as number].indexOf(':') > -1 || formula[i as number]
+                    === this.parent.getParseArgumentSeparator() || (formula[i as number] === '%' && this.parent.isDigit(formula[i - 1]))) {
+                    form = form + formula[i as number];
                     i = i + 1;
-                } else if (formula[i] === this.parent.tic || formula[i] === ' ' || formula[i] === '.' || formula[i] === this.sheetToken ||
-                    formula[i] === '$') {
-                    form = form + formula[i];
+                } else if (formula[i as number] === this.parent.tic || formula[i as number] === ' ' || formula[i as number] === '.' ||
+                    formula[i as number] === this.sheetToken || formula[i as number] === '$') {
+                    form = form + formula[i as number];
                     i = i + 1;
                 } else {
-                    if (this.parent.isDigit(formula[i])) {
-                        form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i] : form + formula[i];
+                    if (this.parent.isDigit(formula[i as number])) {
+                        form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i as number] : form + formula[i as number];
                     }
-                    if (formula[i] === '-' || formula[i] === '+') {
-                        form = form + formula[i];
+                    if (formula[i as number] === '-' || formula[i as number] === '+') {
+                        form = form + formula[i as number];
                         form = form.split('++').join('+').split('+-').join('-').split('-+').join('-');
                     }
-                    if (formula[i] === '/' || formula[i] === '*' || formula[i] === '^') {
-                        form = form + formula[i];
+                    if (formula[i as number] === '/' || formula[i as number] === '*' || formula[i as number] === '^') {
+                        form = form + formula[i as number];
                     }
                     i = i + 1;
                 }
@@ -308,12 +312,12 @@ export class Parser {
                 id = v;
             }
         }
-        const token: string = '!' + id.toString() + '!';
+        const token: string = '!' + id.toString();
         if (sheet === null || sheet.sheetNameToToken == null) {
             return b;
         }
         sheet.sheetNameToToken.forEach((value: string, key: string) => {
-            if (sheet.sheetNameToToken.get(key).toString() === token) {
+            if (sheet.sheetNameToToken.get(key).toString() === token + '!') {
                 let s: string = this.emptyStr;
                 this.parent.namedRanges.forEach((value: string, key: string) => {
                     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -411,9 +415,9 @@ export class Parser {
         const mulCharArray: string[] = [this.charMultiply, this.charDivide];
         const addCharArray: string[] = [this.charAdd, this.charSubtract];
         const compareTokenArray: string[] = [this.tokenLess, this.tokenGreater, this.tokenEqual, this.tokenLessEq,
-        this.tokenGreaterEq, this.tokenNotEqual];
+            this.tokenGreaterEq, this.tokenNotEqual];
         const compareCharArray: string[] = [this.charLess, this.charGreater, this.charEqual, this.charLessEq,
-        this.charGreaterEq, this.charNoEqual];
+            this.charGreaterEq, this.charNoEqual];
         const expCharArray: string[] = [this.charEp, this.charEm];
         const andTokenArray: string[] = [this.tokenAnd];
         const andCharArray: string[] = [this.charAnd];
@@ -451,7 +455,7 @@ export class Parser {
         let i: number = 0;
         let op: string = '';
         for (let c: number = 0; c < operators.length; c++) {
-            op = op + operators[c];
+            op = op + operators[c as number];
         }
         /* eslint-disable */
         text = text.split("---").join("-").split("--").join("+").split(this.parent.getParseArgumentSeparator() + "-").join(this.parent.getParseArgumentSeparator() + "u").split(this.parent.leftBracket + "-").join(this.parent.leftBracket + "u").split("=-").join("=u");
@@ -469,13 +473,13 @@ export class Parser {
         }
         try {
             if (this.indexOfAny(text, operators) > -1) {
-                if (text.includes(" ")) {
-                    let newText: string = "";
+                if (text.includes(' ')) {
+                    let newText: string = '';
                     for (let index: number = 0; index < text.length; index++) {
-                        let currChar: string = text[index];
+                        const currChar: string = text[index as number];
                         if (operators.indexOf(currChar) >= 0) {
                             newText = newText.trim() + currChar;
-                        } else if (currChar == " " && operators.indexOf(newText[newText.length - 1]) >= 0) {
+                        } else if (currChar === ' ' && operators.indexOf(newText[newText.length - 1]) >= 0) {
                             continue;
                         } else {
                             newText += currChar;
@@ -489,24 +493,24 @@ export class Parser {
                     let right: string = '';
                     let leftIndex: number = 0;
                     let rightIndex: number = 0;
-                    const isNotOperator: boolean = text[i] === this.charNOTop;
+                    const isNotOperator: boolean = text[i as number] === this.charNOTop;
                     let j: number = 0;
                     if (!isNotOperator) {
                         j = i - 1;
-                        if (text[j] === this.parent.arithMarker) {
+                        if (text[j as number] === this.parent.arithMarker) {
                             const k: number = this.findLeftMarker(text.substring(0, j - 1));
                             if (k < 0) {
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
                             }
                             left = this.parent.substring(text, k + 1, j - k - 1);
                             leftIndex = k + 1;
-                        } else if (text[j] === this.parent.rightBracket) {
+                        } else if (text[j as number] === this.parent.rightBracket) {
                             let bracketCount: number = 0;
                             let k: number = j - 1;
-                            while (k > 0 && (text[k] !== 'q' || bracketCount !== 0)) {
-                                if (text[k] === 'q') {
+                            while (k > 0 && (text[k as number] !== 'q' || bracketCount !== 0)) {
+                                if (text[k as number] === 'q') {
                                     bracketCount--;
-                                } else if (text[k] === this.parent.rightBracket) {
+                                } else if (text[k as number] === this.parent.rightBracket) {
                                     bracketCount++;
                                 }
                                 k--;
@@ -517,7 +521,7 @@ export class Parser {
 
                             left = this.parent.substring(text, k, j - k + 1);
                             leftIndex = k;
-                        } else if (text[j] === this.parent.tic[0]) {
+                        } else if (text[j as number] === this.parent.tic[0]) {
                             const l: number = text.substring(0, j - 1).lastIndexOf(this.parent.tic);
                             if (l < 0) {
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
@@ -526,14 +530,14 @@ export class Parser {
                             leftIndex = l;
                         } else {
                             let period: boolean = false;
-                            while (j > -1 && (this.parent.isDigit(text[j]) ||
-                                (!period && text[j] === this.parent.getParseDecimalSeparator()))) {
-                                if (text[j] === this.parent.getParseDecimalSeparator()) {
+                            while (j > -1 && (this.parent.isDigit(text[j as number]) ||
+                                (!period && text[j as number] === this.parent.getParseDecimalSeparator()))) {
+                                if (text[j as number] === this.parent.getParseDecimalSeparator()) {
                                     period = true;
                                 }
                                 j = j - 1;
                             }
-                            if (j > -1 && period && text[j] === this.parent.getParseDecimalSeparator()) {
+                            if (j > -1 && period && text[j as number] === this.parent.getParseDecimalSeparator()) {
                                 /* eslint-disable-next-line */
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points]);
                             }
@@ -543,37 +547,37 @@ export class Parser {
                                 leftIndex = j;
                             } else {
                                 j = j - 1;
-                                while (j > -1 && (this.parent.isUpperChar(text[j]) || this.parent.isDigit(text[j]))) {
+                                while (j > -1 && (this.parent.isUpperChar(text[j as number]) || this.parent.isDigit(text[j as number]))) {
                                     j = j - 1;
                                 }
-                                if (j > -1 && text[j] === this.sheetToken) {
+                                if (j > -1 && text[j as number] === this.sheetToken) {
                                     j = j - 1;
-                                    while (j > -1 && text[j] !== this.sheetToken) {
+                                    while (j > -1 && text[j as number] !== this.sheetToken) {
                                         j = j - 1;
                                     }
 
-                                    if (j > -1 && text[j] === this.sheetToken) {
+                                    if (j > -1 && text[j as number] === this.sheetToken) {
                                         j = j - 1;
                                     }
                                 }
-                                if (j > -1 && text[j] === ':') {
+                                if (j > -1 && text[j as number] === ':') {
                                     //// handle range operands
                                     j = j - 1;
-                                    while (j > -1 && this.parent.isDigit(text[j])) {
+                                    while (j > -1 && this.parent.isDigit(text[j as number])) {
                                         j = j - 1;
                                     }
 
-                                    while (j > -1 && this.parent.isUpperChar(text[j])) {
+                                    while (j > -1 && this.parent.isUpperChar(text[j as number])) {
                                         j = j - 1;
                                     }
 
-                                    if (j > -1 && text[j] === this.sheetToken) {
+                                    if (j > -1 && text[j as number] === this.sheetToken) {
                                         j--;
-                                        while (j > -1 && text[j] !== this.sheetToken) {
+                                        while (j > -1 && text[j as number] !== this.sheetToken) {
                                             j--;
                                         }
 
-                                        if (j > -1 && text[j] === this.sheetToken) {
+                                        if (j > -1 && text[j as number] === this.sheetToken) {
                                             j--;
                                         }
                                     }
@@ -601,31 +605,31 @@ export class Parser {
                         throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.expression_cannot_end_with_an_operator]);
                     } else {
                         j = i + 1;
-                        let uFound: boolean = text[j] === 'u';      // for 3*-2
+                        let uFound: boolean = text[j as number] === 'u';      // for 3*-2
                         if (uFound) {
                             j = j + 1;
                         }
-                        if (text[j] === this.parent.tic[0]) {
+                        if (text[j as number] === this.parent.tic[0]) {
                             const k: number = text.substring(j + 1).indexOf(this.parent.tic);
                             if (k < 0) {
                                 throw this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse];
                             }
                             right = this.parent.substring(text, j, k + 2);
                             rightIndex = k + j + 2;
-                        } else if (text[j] === this.parent.arithMarker) {
+                        } else if (text[j as number] === this.parent.arithMarker) {
                             const k: number = this.findRightMarker(text.substring(j + 1));
                             if (k < 0) {
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.cannot_parse]);
                             }
                             right = this.parent.substring(text, j + 1, k);
                             rightIndex = k + j + 2;
-                        } else if (text[j] === 'q') {
+                        } else if (text[j as number] === 'q') {
                             let bracketCount: number = 0;
                             let k: number = j + 1;
-                            while (k < text.length && (text[k] !== this.parent.rightBracket || bracketCount !== 0)) {
-                                if (text[k] === this.parent.rightBracket) {
+                            while (k < text.length && (text[k as number] !== this.parent.rightBracket || bracketCount !== 0)) {
+                                if (text[k as number] === this.parent.rightBracket) {
                                     bracketCount++;
-                                } else if (text[k] === 'q') {
+                                } else if (text[k as number] === 'q') {
                                     bracketCount--;
                                 }
                                 k++;
@@ -638,72 +642,74 @@ export class Parser {
                                 right = 'u' + right;
                             }
                             rightIndex = k + 1;
-                        } else if (this.parent.isDigit(text[j]) || text[j] === this.parent.getParseDecimalSeparator()) {
-                            let period: boolean = (text[j] === this.parent.getParseDecimalSeparator());
+                        } else if (this.parent.isDigit(text[j as number]) || text[j as number] === this.parent.getParseDecimalSeparator()) {
+                            let period: boolean = (text[j as number] === this.parent.getParseDecimalSeparator());
                             j = j + 1;
                             /* eslint-disable-next-line */
                             while (j < text.length && (this.parent.isDigit(text[j]) || (!period && text[j] === this.parent.getParseDecimalSeparator()))) {
-                                if (text[j] === this.parent.getParseDecimalSeparator()) {
+                                if (text[j as number] === this.parent.getParseDecimalSeparator()) {
                                     period = true;
                                 }
                                 j = j + 1;
                             }
-                            if (j < text.length && text[j] === '%') {
+                            if (j < text.length && text[j as number] === '%') {
                                 j += 1;
                             }
-                            if (period && j < text.length && text[j] === this.parent.getParseDecimalSeparator()) {
+                            if (period && j < text.length && text[j as number] === this.parent.getParseDecimalSeparator()) {
                                 throw this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points];
                             }
                             right = 'n' + this.parent.substring(text, i + 1, j - i - 1);
                             rightIndex = j;
-                        } else if (this.parent.isUpperChar(text[j]) || text[j] === this.sheetToken || text[j] === 'u') {
-                            if (text[j] === this.sheetToken) {
+                        } else if (this.parent.isUpperChar(text[j as number]) || text[j as number] === this.sheetToken ||
+                            text[j as number] === 'u') {
+                            if (text[j as number] === this.sheetToken) {
                                 j = j + 1;
-                                while (j < text.length && text[j] !== this.sheetToken) {
+                                while (j < text.length && text[j as number] !== this.sheetToken) {
                                     j = j + 1;
                                 }
                             }
                             j = j + 1;
                             let jTemp: number = 0;
                             let inbracket: boolean = false;
-                            while (j < text.length && (this.parent.isUpperChar(text[j]) || text[j] === '_'
-                                || text[j] === '.' || text[j] === '[' || text[j] === ']' || text[j] === '#' || text[j] === ' '
-                                || text[j] === '%' || text[j] === this.parent.getParseDecimalSeparator() && inbracket)) {
-                                if (j !== text.length - 1 && text[j] === '[' && text[j + 1] === '[') {
+                            while (j < text.length && (this.parent.isUpperChar(text[j as number]) || text[j as number] === '_'
+                                || text[j as number] === '.' || text[j as number] === '[' || text[j as number] === ']' ||
+                                text[j as number] === '#' || text[j as number] === ' ' || text[j as number] === '%' || text[j as number] ===
+                                this.parent.getParseDecimalSeparator() && inbracket)) {
+                                if (j !== text.length - 1 && text[j as number] === '[' && text[j + 1] === '[') {
                                     inbracket = true;
                                 }
-                                if (j !== text.length - 1 && text[j] === ']' && text[j + 1] === ']') {
+                                if (j !== text.length - 1 && text[j as number] === ']' && text[j + 1] === ']') {
                                     inbracket = false;
                                 }
                                 j++;
                                 jTemp++;
                             }
-                            let noCellReference: boolean = (j === text.length) || !this.parent.isDigit(text[j]);
+                            let noCellReference: boolean = (j === text.length) || !this.parent.isDigit(text[j as number]);
                             if (jTemp > 1) {
-                                while (j < text.length && (this.parent.isUpperChar(text[j]) || this.parent.isDigit(text[j])
-                                    || text[j] === ' ' || text[j] === '_')) {
+                                while (j < text.length && (this.parent.isUpperChar(text[j as number]) ||
+                                    this.parent.isDigit(text[j as number]) || text[j as number] === ' ' || text[j as number] === '_')) {
                                     j++;
                                 }
                                 noCellReference = true;
                             }
-                            while (j < text.length && this.parent.isDigit(text[j])) {
+                            while (j < text.length && this.parent.isDigit(text[j as number])) {
                                 j = j + 1;
                             }
-                            if (j < text.length && text[j] === ':') {
+                            if (j < text.length && text[j as number] === ':') {
                                 j = j + 1;
-                                if (j < text.length && text[j] === this.sheetToken) {
+                                if (j < text.length && text[j as number] === this.sheetToken) {
                                     j++;
-                                    while (j < text.length && text[j] !== this.sheetToken) {
+                                    while (j < text.length && text[j as number] !== this.sheetToken) {
                                         j = j + 1;
                                     }
-                                    if (j < text.length && text[j] === this.sheetToken) {
+                                    if (j < text.length && text[j as number] === this.sheetToken) {
                                         j++;
                                     }
                                 }
-                                while (j < text.length && this.parent.isUpperChar(text[j])) {
+                                while (j < text.length && this.parent.isUpperChar(text[j as number])) {
                                     j = j + 1;
                                 }
-                                while (j < text.length && this.parent.isDigit(text[j])) {
+                                while (j < text.length && this.parent.isDigit(text[j as number])) {
                                     j = j + 1;
                                 }
                                 j = j - 1;
@@ -712,7 +718,7 @@ export class Parser {
                             } else {
                                 j = j - 1;
                                 right = this.parent.substring(text, i + 1, j - i);
-                                uFound = text[j] === 'u';
+                                uFound = text[j as number] === 'u';
                                 if (uFound) {
                                     right = 'u' + right;
                                 }
@@ -730,8 +736,8 @@ export class Parser {
                             rightIndex = j + 1;
                         }
                     }
-                    const p: number = op.indexOf(text[i]);
-                    let s: string = this.parent.arithMarker + left + right + markers[p] + this.parent.arithMarker;
+                    const p: number = op.indexOf(text[i as number]);
+                    let s: string = this.parent.arithMarker + left + right + markers[p as number] + this.parent.arithMarker;
                     if (leftIndex > 0) {
                         s = text.substring(0, leftIndex) + s;
                     }
@@ -749,26 +755,26 @@ export class Parser {
                     let oneTokenFound: boolean = false;
                     const textLen: number = text.length;
                     for (let k: number = 0; k < textLen; ++k) {
-                        if (text[k] === this.sheetToken) {
+                        if (text[k as number] === this.sheetToken) {
                             if (k > 0 && !oneTokenFound) {
                                 throw this.parent.getErrorStrings()[CommonErrors.ref];
                             }
                             oneTokenFound = true;
                             k++;
-                            while (k < textLen && this.parent.isDigit(text[k])) {
+                            while (k < textLen && this.parent.isDigit(text[k as number])) {
                                 k++;
                             }
-                            if (k === textLen || text[k] !== this.sheetToken) {
+                            if (k === textLen || text[k as number] !== this.sheetToken) {
                                 isCharacter = false;
                                 break;
                             }
                         } else {
-                            if (!checkLetter && this.parent.isChar(text[k])) {
+                            if (!checkLetter && this.parent.isChar(text[k as number])) {
                                 isCharacter = false;
                                 break;
                             }
-                            if (this.parent.isChar(text[k]) || this.parent.isDigit(text[k]) || text[k] === this.sheetToken) {
-                                checkLetter = this.parent.isUpperChar(text[k]);
+                            if (this.parent.isChar(text[k as number]) || this.parent.isDigit(text[k as number]) || text[k as number] === this.sheetToken) {
+                                checkLetter = this.parent.isUpperChar(text[k as number]);
                             } else {
                                 isCharacter = false;
                                 break;
@@ -794,7 +800,7 @@ export class Parser {
      */
     public indexOfAny(text: string, operators: string[]): number {
         for (let i: number = 0; i < text.length; i++) {
-            if (operators.indexOf(text[i]) > -1) {
+            if (operators.indexOf(text[i as number]) > -1) {
                 return i;
             }
         }
@@ -811,11 +817,11 @@ export class Parser {
         if (text.indexOf(this.parent.arithMarker) > -1) {
             let bracketLevel: number = 0;
             for (let i: number = text.length - 1; i >= 0; --i) {
-                if (text[i] === this.parent.rightBracket) {
+                if (text[i as number] === this.parent.rightBracket) {
                     bracketLevel--;
-                } else if (text[i] === this.parent.leftBracket) {
+                } else if (text[i as number] === this.parent.leftBracket) {
                     bracketLevel++;
-                } else if (text[i] === this.parent.arithMarker && bracketLevel === 0) {
+                } else if (text[i as number] === this.parent.arithMarker && bracketLevel === 0) {
                     ret = i;
                     break;
                 }
@@ -834,11 +840,11 @@ export class Parser {
         if (text.indexOf(this.parent.arithMarker) > -1) {
             let bracketLevel: number = 0;
             for (let j: number = 0; j < text.length; ++j) {
-                if (text[j] === this.parent.rightBracket) {
+                if (text[j as number] === this.parent.rightBracket) {
                     bracketLevel--;
-                } else if (text[j] === this.parent.leftBracket) {
+                } else if (text[j as number] === this.parent.leftBracket) {
                     bracketLevel++;
-                } else if (text[j] === this.parent.arithMarker && bracketLevel === 0) {
+                } else if (text[j as number] === this.parent.arithMarker && bracketLevel === 0) {
                     ret = j;
                     break;
                 }
@@ -895,8 +901,8 @@ export class Parser {
             while (rightParens > -1) {
                 let parenCount: number = 0;
                 let leftParens: number = rightParens - 1;
-                while (leftParens > -1 && (formula[leftParens] !== '(' || parenCount !== 0)) {
-                    if (formula[leftParens] === ')') {
+                while (leftParens > -1 && (formula[leftParens as number] !== '(' || parenCount !== 0)) {
+                    if (formula[leftParens as number] === ')') {
                         parenCount++;
                     }
                     // else if (formula[leftParens] === ')') {
@@ -908,7 +914,7 @@ export class Parser {
                     throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.mismatched_parentheses]);
                 }
                 let i: number = leftParens - 1;
-                while (i > -1 && (this.parent.isChar(formula[i]))) {
+                while (i > -1 && (this.parent.isChar(formula[i as number]))) {
                     i--;
                 }
                 const len: number = leftParens - i - 1;
@@ -1064,7 +1070,7 @@ export class Parser {
      */
     private lastIndexOfAny(text: string, operators: string[]): number {
         for (let i: number = text.length - 1; i > -1; i--) {
-            if (operators.indexOf(text[i]) > -1) {
+            if (operators.indexOf(text[i as number]) > -1) {
                 return i;
             }
         }
@@ -1121,12 +1127,12 @@ export class Parser {
                 i += s.length + 1;
             } else {
                 i += end + 1;
-                while (i < formula.length && !this.parent.isUpperChar(formula[i]) && formula[i] !== this.sheetToken) {
+                while (i < formula.length && !this.parent.isUpperChar(formula[i as number]) && formula[i as number] !== this.sheetToken) {
                     i++;
                 }
             }
             end = i;
-            if (i < formula.length - 1 && formula[i] === '{') {
+            if (i < formula.length - 1 && formula[i as number] === '{') {
                 i = i + 1;
             }
             end = this.indexOfAny(formula.substring(i), markers);

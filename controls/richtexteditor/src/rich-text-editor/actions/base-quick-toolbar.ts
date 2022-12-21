@@ -128,7 +128,7 @@ export class BaseQuickToolbar {
             collision = isCollide(e.popup, e.parentElement);
         }
         for (let i: number = 0; i < collision.length; i++) {
-            switch (collision[i]) {
+            switch (collision[i as number]) {
             case 'top':
                 if (viewPort === 'document') {
                     y = e.windowY;
@@ -260,7 +260,7 @@ export class BaseQuickToolbar {
                 if (target.tagName === 'IMG' || target.tagName === 'AUDIO' || target.tagName === 'VIDEO' || target.tagName === 'IFRAME' || (target.classList &&
                     (target.classList.contains(classes.CLS_AUDIOWRAP) || target.classList.contains(classes.CLS_CLICKELEM) ||
                     target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) {
-                        this.setPosition(showPopupData);
+                    this.setPosition(showPopupData);
                 }
                 if (!this.parent.inlineMode.enable) {
                     this.checkCollision(showPopupData, 'parent', '');

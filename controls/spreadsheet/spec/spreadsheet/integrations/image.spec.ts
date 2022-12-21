@@ -47,6 +47,54 @@ describe('Image ->', () => {
         });
     });
 
+    describe('Delete Image with Freeze Panes', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], frozenRows: 2, frozenColumns: 2  }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete Image With after Freezon Rows and Frozen Columns->', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'C3', isPublic: true });
+            helper.getInstance().spreadsheetImageModule.deleteImage({ id: 'spreadsheet_overlay_picture_1' });
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+                done();
+            });
+        });
+        it('Delete Image With Before Freezon Rows and Frozen Columns->', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'A1', isPublic: true });
+            helper.getInstance().spreadsheetImageModule.deleteImage({ id: 'spreadsheet_overlay_picture_2' });
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_2')).toBeNull();
+                done();
+            });
+        });
+        it('Cancelling Delete Image in action begin event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.actionBegin = (args: any): void => {
+                    if (args.action === 'deleteImage') {  
+                        args.args.eventArgs.cancel = true; }
+                }
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'A1', isPublic: true });
+            helper.getInstance().spreadsheetImageModule.deleteImage({ id: 'spreadsheet_overlay_picture_3' });
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_3')).not.toBeNull();
+                done();
+            });
+        });
+        it('Cancelling Image Insert in action begin event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.actionBegin = (args: any): void => {
+                    if (args.action === 'beforeInsertImage') {  
+                        args.args.eventArgs.cancel = true; }
+                }
+            helper.getInstance().spreadsheetImageModule.createImageElement({options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg'}, range: 'I1', isPublic: true });
+            expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_4')).toBeNull();
+            done();
+        });
+    });
+    
     describe('Delete row/column after inserting the image ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);

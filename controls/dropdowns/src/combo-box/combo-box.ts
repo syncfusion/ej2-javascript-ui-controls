@@ -442,7 +442,7 @@ export class ComboBox extends DropDownList {
 
     protected getFocusElement(): Element {
         const dataItem: { [key: string]: string } = this.isSelectCustom ? { text: '' } : this.getItemData();
-        const selected: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected);
+        const selected: HTMLElement = !isNullOrUndefined(this.list) ? <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected) : this.list;
         const isSelected: boolean = dataItem.text === this.inputElement.value && !isNullOrUndefined(selected);
         if (isSelected) {
             return selected;
@@ -453,7 +453,7 @@ export class ComboBox extends DropDownList {
             const dataSource: { [key: string]: Object }[] = this.sortedData as { [key: string]: Object }[];
             const type: string = this.typeOfData(dataSource).typeof as string;
             const activeItem: { [key: string]: Element | number } = Search(inputValue, this.liCollections, this.filterType, true, dataSource, this.fields, type);
-            const activeElement : Element = activeItem.item as Element;
+            var activeElement : Element = activeItem.item as Element;
             if (!isNullOrUndefined(activeElement)) {
                 const count: number = this.getIndexByValue(activeElement.getAttribute('data-value')) - 1;
                 const height: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
@@ -602,9 +602,11 @@ export class ComboBox extends DropDownList {
             this.setAutoFill(activeElement, isKeyNavigate);
         } else if (this.inputElement.value === '') {
             this.activeIndex = null;
-            this.list.scrollTop = 0;
-            const focusItem: Element = this.list.querySelector('.' + dropDownListClasses.li);
-            this.setHoverList(focusItem);
+            if (!isNullOrUndefined(this.list)) {
+                this.list.scrollTop = 0;
+                const focusItem: Element = this.list.querySelector('.' + dropDownListClasses.li);
+                this.setHoverList(focusItem);
+            }
         } else {
             this.activeIndex = null;
             this.removeSelection();
@@ -904,7 +906,7 @@ export class ComboBox extends DropDownList {
                 this.removeFillSelection();
             }
             const dataItem: { [key: string]: string } = this.isSelectCustom ? { text: '' } : this.getItemData();
-            const selected: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected);
+            const selected: HTMLElement = !isNullOrUndefined(this.list) ? <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected) : null;
             if (this.inputElement && dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
                     this.onChangeEvent(e);

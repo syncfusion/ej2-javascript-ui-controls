@@ -11,7 +11,7 @@ import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, TextBox, InputEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { RemovingEventArgs, UploadingEventArgs, ProgressEventArgs } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { Button, RadioButton, ChangeArgs } from '@syncfusion/ej2-buttons';
+import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
@@ -135,9 +135,9 @@ export class Video {
         if (!isNOU(this.deletedVid) && this.deletedVid.length > 0) {
             for (let i: number = 0; i < this.deletedVid.length; i++) {
                 const args: AfterMediaDeleteEventArgs = {
-                    element: this.deletedVid[i],
-                    src: (this.deletedVid[i] as HTMLElement).tagName !== 'IFRAME' ? (this.deletedVid[i] as HTMLVideoElement).querySelector('source').getAttribute('src') :
-                        (this.deletedVid[i] as HTMLIFrameElement).src
+                    element: this.deletedVid[i as number],
+                    src: (this.deletedVid[i as number] as HTMLElement).tagName !== 'IFRAME' ? (this.deletedVid[i as number] as HTMLVideoElement).querySelector('source').getAttribute('src') :
+                        (this.deletedVid[i as number] as HTMLIFrameElement).src
                 };
                 this.parent.trigger(events.afterMediaDelete, args);
             }
@@ -148,15 +148,15 @@ export class Video {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
-                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i].text);
+                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i as number].text);
                 temp.appendChild(contentElem);
                 const vid: NodeListOf<HTMLElement> = temp.querySelectorAll('video');
                 if (temp.querySelector('.e-vid-resize') && vid.length > 0) {
                     for (let j: number = 0; j < vid.length; j++) {
-                        vid[j].style.outline = '';
+                        vid[j as number].style.outline = '';
                     }
                     detach(temp.querySelector('.e-vid-resize'));
-                    this.parent.formatter.getUndoRedoStack()[i].text = temp.innerHTML;
+                    this.parent.formatter.getUndoRedoStack()[i as number].text = temp.innerHTML;
                 }
             }
         }
@@ -432,7 +432,6 @@ export class Video {
             offsetParent = offsetParent.parentNode;
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
-            // eslint-disable-next-line
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
         if (elem && elem.nodeType === 1 && elem.tagName === 'IFRAME') {
@@ -453,6 +452,7 @@ export class Video {
         if (isNullOrUndefined(vidEleStyle)) {
             return;
         }
+        // eslint-disable-next-line
         const width: string | number = vidEleStyle.width !== '' ? vidEleStyle.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(vidEleStyle.width) :
             parseInt(vidEleStyle.width, 10) : vid.style.width !== '' ? vid.style.width : vid.width;
         const height: string | number = vidEleStyle.height !== '' ? parseInt(vidEleStyle.height, 10) : vid.style.height !== '' ? vid.style.height : vid.height;
@@ -625,8 +625,8 @@ export class Video {
         if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
             const nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             for (let i: number = 0; i < nodes.length; i++) {
-                if (nodes[i].nodeName === 'VIDEO' || nodes[i].nodeName === 'IFRAME') {
-                    this.deletedVid.push(nodes[i]);
+                if (nodes[i as number].nodeName === 'VIDEO' || nodes[i as number].nodeName === 'IFRAME') {
+                    this.deletedVid.push(nodes[i as number]);
                 }
             }
         }
@@ -689,7 +689,7 @@ export class Video {
         case 'backspace':
         case 'delete':
             for (let i: number = 0; i < this.deletedVid.length; i++) {
-                const src: string = (this.deletedVid[i] as HTMLVideoElement).src;
+                const src: string = (this.deletedVid[i as number] as HTMLVideoElement).src;
                 this.videoRemovePost(src as string);
             }
             if (this.parent.editorMode !== 'Markdown') {
@@ -844,6 +844,7 @@ export class Video {
     }
 
     private videoRemovePost(src: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: Video = this;
         let absoluteUrl: string = '';
         if (isNOU(this.parent.insertVideoSettings.removeUrl) || this.parent.insertVideoSettings.removeUrl === '') { return; }
@@ -852,8 +853,10 @@ export class Video {
         } else {
             absoluteUrl = new URL(src, document.baseURI).href;
         }
+        // eslint-disable-next-line no-useless-escape
         this.removingVideoName = absoluteUrl.replace(/^.*[\\\/]/, '');
         const xhr: XMLHttpRequest = new XMLHttpRequest();
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         xhr.addEventListener('readystatechange', function() {
             if (this.readyState === 4 && this.status === 200) {
                 proxy.triggerPost(this.response);
@@ -986,7 +989,7 @@ export class Video {
     }
 
     private showVideoQuickToolbar(e: IShowPopupArgs): void {
-        if (e.type !== 'Videos' || isNullOrUndefined(this.parent.quickToolbarModule)
+        if (e.type !== 'Videos' || e.args.detail === 2 || isNullOrUndefined(this.parent.quickToolbarModule)
             || isNullOrUndefined(this.parent.quickToolbarModule.videoQTBar) || isNullOrUndefined(e.args)) {
             return;
         }
@@ -1018,9 +1021,15 @@ export class Video {
         }
     }
 
-    private hideVideoQuickToolbar(): void {
+    public hideVideoQuickToolbar(): void {
         if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.' + classes.CLS_VID_FOCUS))) {
             removeClass([this.contentModule.getEditPanel().querySelector('.' + classes.CLS_VID_FOCUS)], classes.CLS_VID_FOCUS);
+            if (!isNOU(this.videoEle)) {
+                this.videoEle.style.outline = '';
+            }
+            if (!isNOU(this.contentModule.getEditPanel().querySelector('.e-vid-resize'))) {
+                detach(this.contentModule.getEditPanel().querySelector('.e-vid-resize'));
+            }
             if (this.quickToolObj && this.quickToolObj.videoQTBar && document.body.contains(this.quickToolObj.videoQTBar.element)) {
                 this.quickToolObj.videoQTBar.hidePopup();
             }
@@ -1066,7 +1075,7 @@ export class Video {
             cssClass: classes.CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'inherit',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
@@ -1148,7 +1157,7 @@ export class Video {
         videoUrl.appendChild(urlContent);
         this.embedInputUrl = this.parent.createElement('textarea', {
             className: 'e-input e-embed-video-url',
-            attrs: { placeholder: 'Paste Embed URL here', type: 'text', tabindex: '-1' }
+            attrs: { placeholder: 'Paste Embed URL here', type: 'text', tabindex: '-1', 'aria-label': this.i10n.getConstant('embedVideoLinkHeader') }
         });
         this.embedInputUrl.addEventListener('keyup', () => {
             if (!isNOU(this.embedInputUrl)) {

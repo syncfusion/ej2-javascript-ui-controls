@@ -686,8 +686,212 @@ describe('Conditional formatting ->', () => {
                 done();
             });
         });
+
+        it('Redo after clear Conditional Formats->', (done: Function) => {
+            helper.invoke('selectRange', ['E2:E11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item:nth-child(6)');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_cr_cells').click();
+            expect(helper.invoke('getCell', [1, 4]).style.color).toBe('');
+            expect(helper.invoke('getCell', [2, 4]).style.color).toBe('');
+            helper.click('#spreadsheet_undo');
+            expect(helper.invoke('getCell', [1, 4]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [2, 4]).style.color).toBe('rgb(156, 0, 85)');
+            helper.click('#spreadsheet_redo');
+            expect(helper.invoke('getCell', [1, 4]).style.color).toBe('');
+            expect(helper.invoke('getCell', [2, 4]).style.color).toBe('');
+            done();
+        });
     });
 
+    describe('UI Interaction->', () => { 
+        beforeAll((done: Function) => { 
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'H2:H11' }, { }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply Undo in one sheet and Redo in another Sheet', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const databars: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Data Bars"]');
+            (getComponent(databars.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: databars.getBoundingClientRect().left + 5, y: databars.getBoundingClientRect().top + 5 }, document, databars);
+            helper.getElement('#BlueDataBar').click();
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+            helper.click('#spreadsheet_undo');
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+            helper.invoke('goTo', ['Sheet2!A1']);
+            setTimeout(() => {
+                helper.click('#spreadsheet_redo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                    expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                    expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                    done();
+                });
+            });
+        });
+        it('Apply Clear CF in one sheet and Undo in another Sheet', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+            helper.invoke('goTo', ['Sheet2!A1']);
+            setTimeout(() => {
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                    expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                    expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                    done();
+                });
+            });
+        });
+        it('Apply Clear CF in half Cells and undo', (done: Function) => {
+            helper.invoke('selectRange', ['H2:H5']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+            expect(helper.invoke('getCell', [2, 7]).querySelector('.e-databar')).toBeNull();
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('7%');
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(helper.invoke('getCell', [9, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+                (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+                helper.getElement('#cf_cr_sheet').click();
+                done();
+            });
+        });
+        it('Clear CF from Top to Bottom Selection - I', (done: Function) => {
+            helper.invoke('selectRange', ['D2:H11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const databars: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Data Bars"]');
+            (getComponent(databars.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: databars.getBoundingClientRect().left + 5, y: databars.getBoundingClientRect().top + 5 }, document, databars);
+            helper.getElement('#BlueDataBar').click();
+            helper.invoke('selectRange', ['F2:F11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 5]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 5]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [2, 5]).querySelector('.e-databar')).toBeNull();
+                done();
+            });
+        });
+        it('Clear CF from Top to Bottom Selection with empty cell - I', (done: Function) => {
+            helper.invoke('selectRange', ['E1:E12']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 4]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 4]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [2, 4]).querySelector('.e-databar')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Clear CF from Top to Bottom Selection with empty cell - II', (done: Function) => {
+            helper.invoke('selectRange', ['D1:D12']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 3]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 3]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [2, 3]).querySelector('.e-databar')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Clear CF from Top to Bottom Selection in middle of CF appliedcells', (done: Function) => {
+            helper.invoke('selectRange', ['E3:E10']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 4]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [3, 4]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [4, 4]).querySelector('.e-databar')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Clear CF from Top to Bottom Selection with empty cell - III', (done: Function) => {
+            helper.invoke('selectRange', ['D1:D10']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 3]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [3, 3]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [4, 3]).querySelector('.e-databar')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Clear CF from Top to Bottom Selection with empty cell - IV', (done: Function) => {
+            helper.invoke('selectRange', ['D3:D12']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 3]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [3, 3]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [4, 3]).querySelector('.e-databar')).toBeNull();
+                done();
+            });
+        });
+        it('Apply Undo in active sheet after clear CF and Redo in another sheet', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            expect(helper.invoke('getCell', [2, 3]).querySelector('.e-databar')).not.toBeNull();
+            expect(helper.invoke('getCell', [3, 3]).querySelector('.e-databar')).not.toBeNull();
+            expect(helper.invoke('getCell', [4, 3]).querySelector('.e-databar')).not.toBeNull();
+            helper.invoke('goTo', ['Sheet2!A1']);
+            setTimeout(() => {
+                helper.click('#spreadsheet_redo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [2, 3]).querySelector('.e-databar')).toBeNull();
+                    expect(helper.invoke('getCell', [3, 3]).querySelector('.e-databar')).toBeNull();
+                    expect(helper.invoke('getCell', [4, 3]).querySelector('.e-databar')).toBeNull();
+                    done();
+                }); 
+            });
+        });
+    });
+    
     describe('Conditional formatting on clipboard actions ->', () => {
         let spreadsheet: Spreadsheet;
         beforeAll((done: Function) => {

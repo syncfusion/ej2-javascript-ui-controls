@@ -4,7 +4,7 @@
 import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from './chart-series';
-import { SplineBase } from './spline-base'
+import { SplineBase } from './spline-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../axis/axis';
 
@@ -13,6 +13,8 @@ import { Axis } from '../axis/axis';
  */
 
 export class SplineRangeAreaSeries extends SplineBase {
+
+    public borderDirection : string ='';
     /**
      * Render SplineRangeArea Series.
      *
@@ -21,7 +23,7 @@ export class SplineRangeAreaSeries extends SplineBase {
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, inverted: boolean): void {
         let point: Points;
-        let direction: string = '';        
+        let direction: string = '';
         let closed: boolean = undefined;
         let firstPoint: Points = null;
         let pt: ChartLocation;
@@ -32,10 +34,13 @@ export class SplineRangeAreaSeries extends SplineBase {
         let realPoint: Points[] = [];
         const points: Points[] = [];
         let Index: number = 0;
+        const borderWidth: number = series.border.width ? series.border.width : 0;
+        const borderColor: string = series.border.color ? series.border.color : series.interior;
+        let lastPoint: string = '';
         realPoint = this.filterEmptyPoints(series);
-        
+
         for (let i: number = 0; i < realPoint.length; i++) {
-            point = realPoint[i];
+            point = realPoint[i as number];
             if (point.x === null || point.x === '') {
                 continue;
             } else {
@@ -44,26 +49,26 @@ export class SplineRangeAreaSeries extends SplineBase {
                 points.push(point);
             }
         }
-        
+
         let previous: number;
         let next: number;
         const visiblePoint: Points[] = this.enableComplexProperty(series);
         const length: number = visiblePoint.length;
         for (let i: number = 0; i < length; i++) {
-            point = visiblePoint[i];
+            point = visiblePoint[i as number];
             point.regions = [];
             point.symbolLocations = [];
             next = this.getNextIndex(points, point.index - 1, series);
             previous = this.getPreviousIndex(points, point.index - 1, series);
             let lowPoint: number = Math.min(<number>point.low, <number>point.high);
             let highPoint: number = Math.max(<number>point.low, <number>point.high);
-            
+
             if (yAxis.isAxisInverse) {
                 const temp: number = lowPoint;
                 lowPoint = highPoint;
                 highPoint = temp;
             }
-            
+
             const lowPtCoordinate: ChartLocation = getPoint(point.xValue, lowPoint, xAxis, yAxis, inverted);
             const highPtCoordinate: ChartLocation = getPoint(point.xValue, highPoint, xAxis, yAxis, inverted);
             point.symbolLocations.push(highPtCoordinate);
@@ -82,30 +87,39 @@ export class SplineRangeAreaSeries extends SplineBase {
 
             //Path to connect the high points
             if (point.visible &&
-                withInRange(visiblePoint[previous], point, visiblePoint[next], series)) {
-                    if (firstPoint) {
-                        highControlPt1 = series.drawPoints[previous].controlPoint1;
-                        highControlPt2 = series.drawPoints[previous].controlPoint2;
-                        pt = getPoint(point.xValue, point.high > point.low ? (point.high as number) : (point.low as number), xAxis, yAxis, inverted);
-                        betweenPt1 = getPoint(highControlPt1.x, highControlPt1.y, xAxis, yAxis, inverted);
-                        betweenPt2 = getPoint(highControlPt2.x, highControlPt2.y, xAxis, yAxis, inverted);
-                        direction = direction.concat('C ' + betweenPt1.x + ' '
-                            + betweenPt1.y + ' ' + betweenPt2.x + ' ' + betweenPt2.y + ' ' + pt.x + ' ' + pt.y + ' ');
+                withInRange(visiblePoint[previous as number], point, visiblePoint[next as number], series)) {
+                if (firstPoint) {
+                    highControlPt1 = series.drawPoints[previous as number].controlPoint1;
+                    highControlPt2 = series.drawPoints[previous as number].controlPoint2;
+                    pt = getPoint(point.xValue, point.high > point.low ? (point.high as number) : (point.low as number),
+                                  xAxis, yAxis, inverted);
+                    betweenPt1 = getPoint(highControlPt1.x, highControlPt1.y, xAxis, yAxis, inverted);
+                    betweenPt2 = getPoint(highControlPt2.x, highControlPt2.y, xAxis, yAxis, inverted);
+                    direction = direction.concat('C ' + betweenPt1.x + ' '
+                        + betweenPt1.y + ' ' + betweenPt2.x + ' ' + betweenPt2.y + ' ' + pt.x + ' ' + pt.y + ' ');
+                    this.borderDirection += 'C ' + betweenPt1.x + ' '
+                        + betweenPt1.y + ' ' + betweenPt2.x + ' ' + betweenPt2.y + ' ' + pt.x + ' ' + pt.y + ' ';
+                } else {
+                    if (yAxis.isAxisInverse) {
+                        direction = direction.concat('M ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ' + 'L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ');
+                        this.borderDirection += 'M ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ';
+                        lastPoint = 'L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y);
                     } else {
-                        if (yAxis.isAxisInverse) {
-                            direction = direction.concat('M ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ' + 'L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ');
-                        } else {
-                            direction = direction.concat('M ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ' + 'L ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ');
-                        }
-                        closed = false;
+                        direction = direction.concat('M ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ' + 'L ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ');
+                        this.borderDirection += 'M ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ';
+                        lastPoint = 'L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y);
                     }
-                    if ((i + 1 < visiblePoint.length && !visiblePoint[i + 1].visible)
-                        || i === visiblePoint.length - 1) {
-                        // Path to connect the low points
-                        direction = this.closeSplineRangeAreaPath(visiblePoint, point, series, direction, i, xAxis, yAxis, inverted);
-                        direction = direction.concat(' ' + 'Z');
-                        closed = true;
-                    }
+                    closed = false;
+                }
+                if ((i + 1 < visiblePoint.length && !visiblePoint[i + 1].visible)
+                    || i === visiblePoint.length - 1) {
+                    // Path to connect the low points
+                    direction = this.closeSplineRangeAreaPath(visiblePoint, point, series, direction, i, xAxis, yAxis, inverted);
+                    this.borderDirection += lastPoint;
+                    lastPoint = '';
+                    direction = direction.concat(' ' + 'Z');
+                    closed = true;
+                }
                 firstPoint = point;
             } else {
                 if (closed === false && i !== 0) {
@@ -114,15 +128,29 @@ export class SplineRangeAreaSeries extends SplineBase {
                 }
                 firstPoint = null;
                 point.symbolLocations = [];
-            }            
+            }
         }
         const name1: string = series.category === 'Indicator' ? series.chart.element.id + '_Indicator_' + series.index + '_' + series.name :
             series.chart.element.id + '_Series_' + series.index;
 
         const options: PathOption = new PathOption(
             name1, series.interior,
-            series.border.width, series.border.color, series.opacity, series.dashArray, direction);
+            0, 'transparent', series.opacity, series.dashArray, direction);
         this.appendLinePath(options, series, '');
+        /**
+         * To draw border for the path directions of area
+         */
+         if (series.border.width !== 0) {
+            this.appendLinePath(
+                new PathOption(
+                    series.chart.element.id + '_Series_border_' + series.index, 'transparent',
+                    borderWidth, borderColor, 1, series.dashArray,
+                    this.borderDirection
+                ),
+                series, ''
+            );
+            this.borderDirection = '';
+        }
         this.renderMarker(series);
     }
 
@@ -134,41 +162,46 @@ export class SplineRangeAreaSeries extends SplineBase {
      */
 
     protected closeSplineRangeAreaPath( visiblePoint: Points[], point: Points, series: Series, direction: string,
-        i: number, xAxis: Axis, yAxis: Axis, inverted: boolean): string {
-        let firstPoint: Points = null
+                                        i: number, xAxis: Axis, yAxis: Axis, inverted: boolean): string {
+        let firstPoint: Points = null;
         let pt: ChartLocation;
         let betweenPt1: ChartLocation;
         let betweenPt2: ChartLocation;
         let lowControlPt1: ChartLocation;
         let lowControlPt2: ChartLocation;
         for (let j: number = i; j > 0; j--) {
-            if (visiblePoint[j].visible) {
-                point = visiblePoint[j];
+            if (visiblePoint[j as number].visible) {
+                point = visiblePoint[j as number];
                 let low: number = Math.min(<number>point.low, <number>point.high);
                 let high: number = Math.max(<number>point.low, <number>point.high);
-                
+
                 if (yAxis.isAxisInverse) {
-                const temp: number = low;
-                low = high;
-                high = temp;
+                    const temp: number = low;
+                    low = high;
+                    high = temp;
                 }
-                
+
                 const lowPtCoordinate: ChartLocation = getPoint(point.xValue, low, xAxis, yAxis, inverted);
                 const highPtCoordinate : ChartLocation = getPoint(point.xValue, high, xAxis, yAxis, inverted);
-                if(firstPoint){
-                lowControlPt1 = series.lowDrawPoints[j].controlPoint1;
-                lowControlPt2 = series.lowDrawPoints[j].controlPoint2;
-                pt = getPoint(point.xValue, point.low < point.high ? (point.low as number) : (point.high as number), xAxis, yAxis, inverted);
-                betweenPt1 = getPoint(lowControlPt1.x, lowControlPt1.y, xAxis, yAxis, inverted);
-                betweenPt2 = getPoint(lowControlPt2.x, lowControlPt2.y, xAxis, yAxis, inverted);
-                direction = direction.concat('C ' + betweenPt2.x + ' '
+                if (firstPoint){
+                    lowControlPt1 = series.lowDrawPoints[j as number].controlPoint1;
+                    lowControlPt2 = series.lowDrawPoints[j as number].controlPoint2;
+                    pt = getPoint(point.xValue, point.low < point.high ? (point.low as number) : (point.high as number),
+                                  xAxis, yAxis, inverted);
+                    betweenPt1 = getPoint(lowControlPt1.x, lowControlPt1.y, xAxis, yAxis, inverted);
+                    betweenPt2 = getPoint(lowControlPt2.x, lowControlPt2.y, xAxis, yAxis, inverted);
+                    direction = direction.concat('C ' + betweenPt2.x + ' '
                             + betweenPt2.y + ' ' + betweenPt1.x + ' ' + betweenPt1.y + ' ' + pt.x + ' ' + pt.y + ' ');
+                    this.borderDirection += 'C ' + betweenPt2.x + ' '
+                    + betweenPt2.y + ' ' + betweenPt1.x + ' ' + betweenPt1.y + ' ' + pt.x + ' ' + pt.y + ' ';
                 }
                 else {
                     if (yAxis.isAxisInverse){
                         direction = direction.concat('L ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ' );
+                        this.borderDirection += 'M ' + (highPtCoordinate.x) + ' ' + (highPtCoordinate.y) + ' ';
                     } else {
                         direction = direction.concat('L ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ' );
+                        this.borderDirection += 'M ' + (lowPtCoordinate.x) + ' ' + (lowPtCoordinate.y) + ' ';
                     }
                 }
             } else {

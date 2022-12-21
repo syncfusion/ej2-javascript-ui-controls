@@ -4,21 +4,20 @@ import { ExcelExportProperties, ExcelRow } from '@syncfusion/ej2-grids';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
+ *
  * @hidden
  */
 
 export class PivotExportUtil {
-
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private static getDefinedObj(data: { [key: string]: any }): { [key: string]: any } {
         let keyPos: number = 0;
         let framedSet: any = {};
-        /* eslint-enable @typescript-eslint/no-explicit-any */
         if (!(data === null || data === undefined)) {
-            let fields: string[] = Object.keys(data);
+            const fields: string[] = Object.keys(data);
             while (keyPos < fields.length) {
-                if (!(data[fields[keyPos]] === null || data[fields[keyPos]] === undefined)) {
-                    framedSet[fields[keyPos]] = data[fields[keyPos]];
+                if (!(data[fields[keyPos as number]] === null || data[fields[keyPos as number]] === undefined)) {
+                    framedSet[fields[keyPos as number]] = data[fields[keyPos as number]];
                 }
                 keyPos++;
             }
@@ -29,15 +28,14 @@ export class PivotExportUtil {
     }
 
     public static getClonedPivotValues(pivotValues: IPivotValues): IPivotValues {
-        let clonedSets: IPivotValues = [];
+        const clonedSets: IPivotValues = [];
         for (let i: number = 0; i < pivotValues.length; i++) {
-            if (pivotValues[i]) {
-                clonedSets[i] = [];
-                for (let j: number = 0; j < pivotValues[i].length; j++) {
-                    if (pivotValues[i][j]) {
-                        /* eslint-disable */
-                        clonedSets[i][j] = this.getClonedPivotValueObj(pivotValues[i][j] as { [key: string]: Object });
-                        /* eslint-enable */
+            if (pivotValues[i as number]) {
+                clonedSets[i as number] = [];
+                for (let j: number = 0; j < pivotValues[i as number].length; j++) {
+                    if (pivotValues[i as number][j as number]) {
+                        clonedSets[i as number][j as number] =
+                            this.getClonedPivotValueObj(pivotValues[i as number][j as number] as { [key: string]: Object });
                     }
                 }
             }
@@ -45,17 +43,13 @@ export class PivotExportUtil {
         return clonedSets;
     }
 
-    /* eslint-disable */
     private static getClonedPivotValueObj(data: { [key: string]: Object }): { [key: string]: Object } {
-        /* eslint-enable */
         let keyPos: number = 0;
-        /* eslint-disable @typescript-eslint/no-explicit-any */
         let framedSet: any = {};
-        /* eslint-enable @typescript-eslint/no-explicit-any */
         if (!(data === null || data === undefined)) {
-            let fields: string[] = Object.keys(data);
+            const fields: string[] = Object.keys(data);
             while (keyPos < fields.length) {
-                framedSet[fields[keyPos]] = data[fields[keyPos]];
+                framedSet[fields[keyPos as number]] = data[fields[keyPos as number]];
                 keyPos++;
             }
         } else {
@@ -64,12 +58,10 @@ export class PivotExportUtil {
         return framedSet;
     }
 
-    /* eslint-disable */
     public static isContainCommonElements(collection1: Object[], collection2: Object[]): boolean {
-        /* eslint-enable */
         for (let i: number = 0, cnt: number = collection1.length; i < cnt; i++) {
             for (let j: number = 0, lnt: number = collection2.length; j < lnt; j++) {
-                if (collection2[j] === collection1[i]) {
+                if (collection2[j as number] === collection1[i as number]) {
                     return true;
                 }
             }
@@ -77,14 +69,13 @@ export class PivotExportUtil {
         return false;
     }
 
-    /* eslint-disable */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static formatPdfHeaderFooter(pdf: any): any {
-        let contents: any = [];
+        const contents: any = [];
         if (!isNullOrUndefined(pdf)) {
             for (let i: number = 0; i < pdf.length; i++) {
-                let a = pdf[i];
-                let content = {
-                    /* eslint-enable */
+                const a: any = pdf[i as number];
+                const content: any = {
                     type: a.Type,
                     pageNumberType: a.PageNumberType,
                     style: a.Style ? {
@@ -122,11 +113,9 @@ export class PivotExportUtil {
         return contents;
     }
 
-    /* eslint-disable */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static formatPdfExportProperties(pdf: any): any {
-        let values: any;
-        /* eslint-enable */
-        values = this.getDefinedObj({
+        const values: any = this.getDefinedObj({
             pageOrientation: typeof pdf.PageOrientation === 'string' ? pdf.PageOrientation : null,
             pageSize: typeof pdf.PageSize === 'string' ? pdf.PageSize : null,
             header: !isNullOrUndefined(pdf.Header) ? {
@@ -154,10 +143,10 @@ export class PivotExportUtil {
         });
         return values;
     }
-    /* eslint-disable */
+
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static formatExcelStyle(style: any): any {
-        let prop;
-        /* eslint-enable */
+        let prop: any;
         if (!isNullOrUndefined(style)) {
             prop = this.getDefinedObj({
                 fontColor: style.FontColor,
@@ -179,35 +168,34 @@ export class PivotExportUtil {
         return prop;
     }
 
-    /* eslint-disable */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static formatExcelCell(cell: any): any {
-        let cells: ExcelRow[] = [];
+        const cells: ExcelRow[] = [];
         if (!isNullOrUndefined(cell)) {
             for (let i: number = 0; i < cell.length; i++) {
                 this.getDefinedObj({
-                    index: !isNullOrUndefined(cell[i].Index) ? cell[i].Index : null,
-                    colSpan: !isNullOrUndefined(cell[i].ColSpan) ? cell[i].ColSpan : null,
-                    value: !isNullOrUndefined(cell[i].Value) ? cell[i].Value : null,
+                    index: !isNullOrUndefined(cell[i as number].Index) ? cell[i as number].Index : null,
+                    colSpan: !isNullOrUndefined(cell[i as number].ColSpan) ? cell[i as number].ColSpan : null,
+                    value: !isNullOrUndefined(cell[i as number].Value) ? cell[i as number].Value : null,
                     hyperlink: {
-                        target: !isNullOrUndefined(cell[i].Hyperlink) ? cell[i].Hyperlink.Target : null,
-                        displayText: !isNullOrUndefined(cell[i].Hyperlink) ? cell[i].Hyperlink.DisplayText : null
+                        target: !isNullOrUndefined(cell[i as number].Hyperlink) ? cell[i as number].Hyperlink.Target : null,
+                        displayText: !isNullOrUndefined(cell[i as number].Hyperlink) ? cell[i as number].Hyperlink.DisplayText : null
                     },
-                    styles: this.formatExcelStyle(cell[i].Style),
-                    rowSpan: !isNullOrUndefined(cell[i].RowSpan) ? cell[i].RowSpan : null
+                    styles: this.formatExcelStyle(cell[i as number].Style),
+                    rowSpan: !isNullOrUndefined(cell[i as number].RowSpan) ? cell[i as number].RowSpan : null
                 });
-                /* eslint-enable */
             }
         }
         return cells;
     }
 
-    /* eslint-disable */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static formatExcelHeaderFooter(excel: any): any {
-        let rows: ExcelRow[] = [];
+        const rows: ExcelRow[] = [];
         if (!isNullOrUndefined(excel)) {
             for (let i: number = 0; i < excel.Rows.length; i++) {
-                let row = excel.Rows[i];
-                let prop = this.getDefinedObj({
+                const row: any = excel.Rows[i as number];
+                const prop: any = this.getDefinedObj({
                     index: !isNullOrUndefined(row.Index) ? row.Index : null,
                     cells: this.formatExcelCell(row.Cells),
                     grouping: !isNullOrUndefined(row.Grouping) ? row.Grouping : null
@@ -218,10 +206,9 @@ export class PivotExportUtil {
         return rows;
     }
 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     public static formatExcelExportProperties(excel: any): any {
-        /* eslint-enable */
-        let prop: ExcelExportProperties;
-        prop = this.getDefinedObj({
+        const prop: ExcelExportProperties = this.getDefinedObj({
             dataSource: excel.DataSource,
             query: excel.Query,
             multipleExport: this.getDefinedObj({
@@ -249,4 +236,5 @@ export class PivotExportUtil {
         });
         return prop;
     }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 }

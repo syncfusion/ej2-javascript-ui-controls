@@ -206,7 +206,7 @@ export class Search {
         this.viewer.owner.isLayoutEnabled = false;
         let text: string = results.innerList[0].text;
         for (let i: number = count - 1; i >= 0; i--) {
-            const result: TextSearchResult = results.innerList[i];
+            const result: TextSearchResult = results.innerList[parseInt(i.toString(), 10)];
             if (result.start.currentWidget.children.length === 0) {
                 results = this.textSearch.findAll(text);
                 i = results.length;
@@ -283,7 +283,7 @@ export class Search {
     public highlight(textSearchResults: TextSearchResults): void {
         this.searchHighlighters = new Dictionary<LineWidget, SearchWidgetInfo[]>();
         for (let i: number = 0; i < textSearchResults.innerList.length; i++) {
-            const result: TextSearchResult = textSearchResults.innerList[i];
+            const result: TextSearchResult = textSearchResults.innerList[parseInt(i.toString(), 10)];
             this.highlightResult(result);
         }
         this.viewer.renderVisiblePages();

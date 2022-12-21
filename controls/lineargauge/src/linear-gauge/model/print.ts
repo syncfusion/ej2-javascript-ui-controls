@@ -1,4 +1,3 @@
-/* eslint-disable valid-jsdoc */
 import { print as printFunction, createElement } from '@syncfusion/ej2-base';
 import { LinearGauge} from '../../index';
 import { getElement } from '../utils/helper';
@@ -15,9 +14,9 @@ export class Print {
     /**
      * Constructor for gauge
      *
-     * @param control
+     * @param {LinearGauge} control - Specifies the linear gauge instance.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: LinearGauge) {
     }
 
@@ -27,14 +26,15 @@ export class Print {
      * @param elements
      * @private
      */
+
     public print(gauge: LinearGauge, elements?: string[] | string | Element): void {
-        let printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        const printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         printWindow.moveTo(0, 0);
         printWindow.resizeTo(screen.availWidth, screen.availHeight);
         const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(gauge, elements), name: beforePrint
         };
-        gauge.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
+        gauge.trigger('beforePrint', argsData, () => {
             if (!argsData.cancel) {
                 printFunction(argsData.htmlContent, printWindow);
             }
@@ -47,7 +47,8 @@ export class Print {
      * @param elements
      * @private
      */
-    private getHTMLContent(gauge :LinearGauge, elements?: string[] | string | Element): Element {
+
+    private getHTMLContent(gauge : LinearGauge, elements?: string[] | string | Element): Element {
         const div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
@@ -68,6 +69,7 @@ export class Print {
     /**
      * Get module name.
      */
+
     protected getModuleName(): string {
         return 'Print';
     }
@@ -78,6 +80,7 @@ export class Print {
      * @return {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void {
     }
 }

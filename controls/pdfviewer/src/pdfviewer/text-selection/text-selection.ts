@@ -1452,7 +1452,7 @@ export class TextSelection {
             for (let i = 0; i < selectionTexts.length; i++) {
                 let text = selectionTexts[i];
                 // While copy and paste for space construct new line
-                if (i != 0 && text === ' ' && selectionTexts[i - 1].includes('\r\n')) {
+                if ((i != 0 && text === ' ' && selectionTexts[i - 1].includes('\r\n')) || (i != selectionTexts.length - 1 && selectionTexts[i] === ' ' && selectionTexts[i + 1] === '\r\n')) {
                     text = ''
                 }
                 if (text.slice(text.length - 2) !== '\r\n' || i === selectionTexts.length - 1) {

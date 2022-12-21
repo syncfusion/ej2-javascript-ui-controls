@@ -17,14 +17,14 @@ export class WList {
         if (!isNullOrUndefined(levelOverride) && !isNullOrUndefined(levelOverride.overrideListLevel)) {
             listLevel = levelOverride.overrideListLevel;
         } else {
-            listLevel = this.abstractList.levels[levelNumber];
+            listLevel = this.abstractList.levels[parseInt(levelNumber.toString(), 10)];
         }
         return listLevel;
     }
     public getLevelOverride(levelNumber: number): WLevelOverride {
         for (let i: number = 0; i < this.levelOverrides.length; i++) {
-            if (this.levelOverrides[i] instanceof WLevelOverride) {
-                const levelOverride: WLevelOverride = this.levelOverrides[i] as WLevelOverride;
+            if (this.levelOverrides[parseInt(i.toString(), 10)] instanceof WLevelOverride) {
+                const levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)] as WLevelOverride;
                 if (levelOverride.levelNumber === levelNumber) {
                     return levelOverride;
                 }
@@ -32,14 +32,42 @@ export class WList {
         }
         return undefined;
     }
+    /**
+     * @private
+     */
+    public clear(): void {
+        if (!isNullOrUndefined(this.levelOverrides)) {
+            for (let i: number = 0; i < this.levelOverrides.length; i++) {
+                let levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)];
+                levelOverride.clear();
+            }
+            this.levelOverrides = [];
+        }
+        if (this.abstractList) {
+            this.abstractList.clear();
+        }
+        this.abstractList = undefined;
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
     public destroy(): void {
         if (!isNullOrUndefined(this.levelOverrides)) {
+            for (let i: number = 0; i < this.levelOverrides.length; i++) {
+                let levelOverride: WLevelOverride = this.levelOverrides[parseInt(i.toString(), 10)];
+                levelOverride.destroy();
+            }
             this.levelOverrides = [];
+        }
+        this.levelOverrides = undefined;
+        if (this.abstractList) {
+            this.abstractList.destroy();
+            this.abstractList = undefined;
         }
         this.abstractListId = undefined;
         this.listId = undefined;
-        this.sourceListId = undefined;
-        this.levelOverrides = undefined;
+        this.sourceListId = undefined; 
     }
     public mergeList(list: WList): void {
         if (!isNullOrUndefined(this.abstractListId) && this.abstractListId !== -1) {
@@ -59,7 +87,7 @@ export class WList {
     public clone(): WList {
         const list: WList = new WList();
         for (let i: number = 0; i < this.levelOverrides.length; i++) {
-            list.levelOverrides.push(this.levelOverrides[i].clone());
+            list.levelOverrides.push(this.levelOverrides[parseInt(i.toString(), 10)].clone());
         }
         return list;
     }

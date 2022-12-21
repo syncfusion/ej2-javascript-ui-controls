@@ -683,7 +683,7 @@ export class PageSetupDialog {
                 this.target.parentElement.removeChild(this.target);
             }
             for (let s: number = 0; s < this.target.childNodes.length; s++) {
-                this.target.removeChild(this.target.childNodes[s]);
+                this.target.removeChild(this.target.childNodes[parseInt(s.toString(), 10)]);
                 s--;
             }
             this.target = undefined;

@@ -30,7 +30,7 @@ export function getValue(nameSpace: string, obj: any): any {
     const splits: string[] = nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
 
     for (let j: number = 0; j < splits.length && !isUndefined(value); j++) {
-        value = value[splits[j]];
+        value = value[splits[j as number]];
     }
     return value;
 }
@@ -54,15 +54,15 @@ export function setValue(nameSpace: string, value: any, obj: any): any {
     let key: string;
 
     for (j = 0; j < length; j++) {
-        key = keyValues[j];
+        key = keyValues[j as number];
 
         if (j + 1 === length) {
-            fromObj[key] = value === undefined ? {} : value;
-        } else if (isNullOrUndefined(fromObj[key])) {
-            fromObj[key] = {};
+            fromObj[`${key}`] = value === undefined ? {} : value;
+        } else if (isNullOrUndefined(fromObj[`${key}`])) {
+            fromObj[`${key}`] = {};
         }
 
-        fromObj = fromObj[key];
+        fromObj = fromObj[`${key}`];
     }
 
     return start;
@@ -94,7 +94,7 @@ export class ModuleLoader {
             this.clearUnusedModule(requiredModules);
         }
         for (let i: number = 0; i < reqLengthVal; i++) {
-            const modl: ModuleDeclaration = requiredModules[i];
+            const modl: ModuleDeclaration = requiredModules[i as number];
             for (const module of moduleList) {
                 const modName: string = modl.member;
                 if (module.prototype.getModuleName() === modl.member && !this.isModuleLoaded(modName)) {
@@ -182,7 +182,7 @@ export class ModuleLoader {
      * @private
      */
     private deleteObject(obj: any, key: string): void {
-        delete obj[key];
+        delete obj[`${key}`];
     }
 
 

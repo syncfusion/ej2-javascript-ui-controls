@@ -37,7 +37,7 @@ export class AxisHelper {
         }
         const axes: Axis[] = this.heatMap.axisCollections;
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
-            const axis: Axis = axes[i];
+            const axis: Axis = axes[i as number];
             if (axis.orientation === 'Horizontal') {
                 if (!heatMap.enableCanvasRendering) {
                     element = this.heatMap.renderer.createGroup({ id: heatMap.element.id + 'XAxisGroup' });
@@ -141,7 +141,7 @@ export class AxisHelper {
         const data: DataModel = this.heatMap.dataSourceSettings;
         const processLabels: boolean = !(data && data.isJsonData && data.adaptorType === 'Cell');
         for (let i: number = 0, len: number = axisCollection.length; i < len; i++) {
-            axis = axisCollection[i];
+            axis = axisCollection[i as number];
             if (axis.valueType === 'Numeric' && processLabels) {
                 axis.clearAxisLabel();
                 axis.calculateNumericAxisLabels(this.heatMap);
@@ -168,7 +168,7 @@ export class AxisHelper {
         let axis: Axis;
         const axisCollection: Axis[] = heatmap.axisCollections;
         for (let i: number = axisCollection.length - 1; i >= 0; i--) {
-            axis = axisCollection[i];
+            axis = axisCollection[i as number];
             const padding: number = axis.textStyle.size === '0px' ? 0 : this.padding;
             axis.nearSizes = [];
             axis.farSizes = [];
@@ -203,7 +203,7 @@ export class AxisHelper {
         const heatmap: HeatMap = this.heatMap;
         const axisCollection: Axis[] = heatmap.axisCollections;
         for (let i: number = 0, len: number = axisCollection.length; i < len; i++) {
-            const axis: Axis = axisCollection[i];
+            const axis: Axis = axisCollection[i as number];
             axis.rect = <Rect>extend({}, rect, null, true);
             if (axis.orientation === 'Horizontal' && axis.multiLevelLabels.length !== 0) {
                 if (axis.opposedPosition) {
@@ -255,19 +255,19 @@ export class AxisHelper {
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             const lableRect: Rect = new Rect(lableStrtX, rect.y, interval, rect.height);
             let label: string = (axis.labelIntersectAction === 'Trim' && axis.isIntersect) ? axis.valueType !== 'DateTime' ||
-                axis.showLabelOn === 'None' ? textTrim(interval * axisInterval, labels[i], axis.textStyle) :
-                textTrim(axis.dateTimeAxisLabelInterval[i] * interval, labels[i], axis.textStyle) : labels[i];
-            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : label;
+                axis.showLabelOn === 'None' ? textTrim(interval * axisInterval, labels[i as number], axis.textStyle) :
+                textTrim(axis.dateTimeAxisLabelInterval[i as number] * interval, labels[i as number], axis.textStyle) : labels[i as number];
+            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle) : label;
             const elementSize: Size = measureText(label, axis.textStyle); let transform: string;
             labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             let x: number = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.textStyle.textAlignment === 'Near') {
                 x = lableRect.x - ((!axis.isInversed) ?
-                (elementSize.width / 2) : (lableRect.width + (elementSize.width / 2)));
+                    (elementSize.width / 2) : (lableRect.width + (elementSize.width / 2)));
             } else if (axis.textStyle.textAlignment === 'Far') {
                 x = lableRect.x + ((!axis.isInversed) ?
-                   (lableRect.width - elementSize.width) : -(elementSize.width));
+                    (lableRect.width - elementSize.width) : -(elementSize.width));
             }
             if (axis.labelIntersectAction === 'Trim') {
                 x = (!axis.isInversed) ? (x >= lableRect.x ? x : lableRect.x) : (x > (lableStrtX - interval) ? x : (lableStrtX - interval));
@@ -276,11 +276,12 @@ export class AxisHelper {
                 x = ((x + elementSize.width) > (rect.x + rect.width)) ? (rect.x + rect.width - elementSize.width) : x;
             }
             if (axis.labelIntersectAction === 'MultipleRows' && axis.labelRotation === 0) {
-                const a: number = axis.opposedPosition ? -(axis.multipleRow[i].index - 1) : (axis.multipleRow[i].index - 1);
-                if (axis.multipleRow[i].index > 1) {
+                const a: number = axis.opposedPosition ? -(axis.multipleRow[i as number].index - 1) :
+                    (axis.multipleRow[i as number].index - 1);
+                if (axis.multipleRow[i as number].index > 1) {
                     y = rect.y + labelPadding + (elementSize.height * a) + (axis.opposedPosition ?
-                        -(((elementSize.height * 0.5) / 2) * axis.multipleRow[i].index) :
-                        (((elementSize.height * 0.5) / 2) * axis.multipleRow[i].index));
+                        -(((elementSize.height * 0.5) / 2) * axis.multipleRow[i as number].index) :
+                        (((elementSize.height * 0.5) / 2) * axis.multipleRow[i as number].index));
                 } else {
                     y = rect.y + labelPadding + (axis.opposedPosition ? - ((elementSize.height * 0.5) / 2) :
                         ((elementSize.height * 0.5) / 2));
@@ -314,7 +315,7 @@ export class AxisHelper {
             } else { this.drawSvgCanvas.createText(options, labelElement, label); }
             if (compactInterval === 0) {
                 const labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
-                    axis.dateTimeAxisLabelInterval[i] : axis.axisLabelInterval;
+                    axis.dateTimeAxisLabelInterval[i as number] : axis.axisLabelInterval;
                 lableStrtX = lableStrtX + (!axis.isInversed ? (labelInterval * interval) :
                     -(labelInterval * interval));
             } else {
@@ -323,7 +324,7 @@ export class AxisHelper {
             if (label.indexOf('...') !== -1) {
                 this.heatMap.tooltipCollection.push(
                     new CanvasTooltip(
-                        labels[i],
+                        labels[i as number],
                         new Rect(x, y - elementSize.height, elementSize.width, elementSize.height)));
             }
             if (compactInterval !== 0) { i = i + (compactInterval - 1); }
@@ -369,7 +370,7 @@ export class AxisHelper {
             const x: number = labelRect.x + padding + (axis.opposedPosition ? axisWidth : -axisWidth);
             const indexValue: number = this.heatMap.cellSettings.border.width > 5 ?
                 (((this.heatMap.cellSettings.border.width / 2) / len) * (axis.isInversed ? (i) : (len - i))) : 0;
-            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
+            label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle) : labels[i as number];
             const elementSize: Size = measureText(label, axis.textStyle);
             if (axis.textStyle.textAlignment === 'Far' && axis.angle === 0) {
                 position = axis.isInversed ? labelRect.height - (elementSize.height / 2) : -(elementSize.height / 2);
@@ -387,7 +388,7 @@ export class AxisHelper {
             this.drawSvgCanvas.createText(options, labelElement, label);
             if (compactInterval === 0) {
                 const labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
-                    axis.dateTimeAxisLabelInterval[i] : axis.axisLabelInterval;
+                    axis.dateTimeAxisLabelInterval[i as number] : axis.axisLabelInterval;
                 lableStartY = lableStartY + (axis.isInversed ? (labelInterval * interval) :
                     -(labelInterval * interval));
             } else {
@@ -399,7 +400,7 @@ export class AxisHelper {
                 const xValue: number = axis.opposedPosition ? x : (x - elementSize.width);
                 this.heatMap.tooltipCollection.push(
                     new CanvasTooltip(
-                        labels[i],
+                        labels[i as number],
                         new Rect(
                             xValue, y - elementSize.height, elementSize.width, elementSize.height)));
             }
@@ -567,11 +568,11 @@ export class AxisHelper {
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
                 end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
                 startX = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
-                startY = axis.multiLevelPosition[level].y;
+                startY = axis.multiLevelPosition[level as number].y;
                 endX = position + this.calculateWidth(axis, categoryLabel.end, end, axis.rect);
                 labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
                 gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(endX - startX) : categoryLabel.maximumTextWidth) - padding;
-                y = startY + (opposedPosition ? -((axis.xAxisMultiLabelHeight[level] - labelSize.height)) : labelSize.height);
+                y = startY + (opposedPosition ? -((axis.xAxisMultiLabelHeight[level as number] - labelSize.height)) : labelSize.height);
                 x = !isInversed ? startX + padding : startX - gap;
                 if (multiLevel.alignment === 'Center') {
                     x = ((endX - startX) / 2) + startX;
@@ -603,7 +604,7 @@ export class AxisHelper {
                 if (multiLevel.overflow === 'Wrap' && options.text.length > 1) {
                     this.drawSvgCanvas.createWrapText(options, multiLevel.textStyle, labelElement);
                     for (let i: number = 0; i < options.text.length; i++) {
-                        if (options.text[i].indexOf('...') !== -1) {
+                        if (options.text[i as number].indexOf('...') !== -1) {
                             tooltip = true;
                             break;
                         }
@@ -647,10 +648,10 @@ export class AxisHelper {
         labelIndex: number, axis: Axis, startX: number, startY: number, endX: number,
         path: string, level: number, labelSize: Size, gap: number, x: number): string {
         let path1: number; let path2: number;
-        const endY: number = startY + (axis.opposedPosition ? - (axis.xAxisMultiLabelHeight[labelIndex]) :
-            axis.xAxisMultiLabelHeight[labelIndex]);
+        const endY: number = startY + (axis.opposedPosition ? - (axis.xAxisMultiLabelHeight[labelIndex as number]) :
+            axis.xAxisMultiLabelHeight[labelIndex as number]);
         const padding: number = 3;
-        switch (axis.multiLevelLabels[level].border.type) {
+        switch (axis.multiLevelLabels[level as number].border.type) {
         case 'Rectangle':
             path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +
                     'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ';
@@ -698,7 +699,7 @@ export class AxisHelper {
         let text: string | string[];
         const position: number = (!isInversed ? axis.rect.height : 0) + axis.rect.y;
         axis.multiLevelLabels.map((multiLevel: MultiLevelLabels, level: number) => {
-            startY = axis.multiLevelPosition[level].y;
+            startY = axis.multiLevelPosition[level as number].y;
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_YAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
                 if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
@@ -712,13 +713,13 @@ export class AxisHelper {
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
                 end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
                 startY = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);
-                startX = axis.multiLevelPosition[level].x;
+                startX = axis.multiLevelPosition[level as number].x;
                 endY = position + this.calculateWidth(axis, categoryLabel.start, end, axis.rect);
                 labelSize = measureText(categoryLabel.text, multiLevel.textStyle);
                 gap = ((categoryLabel.maximumTextWidth === null) ? Math.abs(startX) : categoryLabel.maximumTextWidth) - padding;
-                const maxWidth: number = Math.abs(startX - (startX - axis.multiLevelSize[level].width - 2 * padding)) / 2 -
+                const maxWidth: number = Math.abs(startX - (startX - axis.multiLevelSize[level as number].width - 2 * padding)) / 2 -
                     (labelSize.width / 2);
-                x = (axis.opposedPosition ? startX : startX - axis.multiLevelSize[level].width - 2 * padding) + maxWidth;
+                x = (axis.opposedPosition ? startX : startX - axis.multiLevelSize[level as number].width - 2 * padding) + maxWidth;
                 y = startY + padding;
                 if (multiLevel.overflow !== 'None') {
                     if (multiLevel.overflow === 'Wrap') {
@@ -777,9 +778,9 @@ export class AxisHelper {
         labelIndex: number, axis: Axis, startX: number, startY: number, endY: number,
         path: string, level: number, labelSize: Size, gap: number, y: number): string {
         let padding: number = 20; let path1: number; let path2: number;
-        const endX: number = startX - (axis.opposedPosition ? -(axis.multiLevelSize[labelIndex].width + padding) :
-            (axis.multiLevelSize[labelIndex].width + padding));
-        switch (axis.multiLevelLabels[level].border.type) {
+        const endX: number = startX - (axis.opposedPosition ? -(axis.multiLevelSize[labelIndex as number].width + padding) :
+            (axis.multiLevelSize[labelIndex as number].width + padding));
+        switch (axis.multiLevelLabels[level as number].border.type) {
         case 'Rectangle':
             path += 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + endX + ' ' + startY + ' ' +
                     'L' + ' ' + endX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' + 'L' + ' ' + startX + ' ' + startY + ' ';
@@ -821,7 +822,7 @@ export class AxisHelper {
         const id: string = axis.orientation === 'Horizontal' ? 'XAxis' : 'YAxis';
         const pathOptions: PathOption = new PathOption(
             this.heatMap.element.id + '_' + id + '_MultiLevel_Rect_' + borderIndex, 'Transparent',
-            axis.multiLevelLabels[borderIndex].border.width, axis.multiLevelLabels[borderIndex].border.color,
+            axis.multiLevelLabels[borderIndex as number].border.width, axis.multiLevelLabels[borderIndex as number].border.color,
             1, '', path
         );
         const borderElement: Element = this.heatMap.renderer.drawPath(pathOptions) as HTMLElement;
@@ -897,10 +898,10 @@ export class AxisHelper {
 
         let days: number = 0;
         for (let index: number = 0; index < axis.axisLabelSize; index++) {
-            firstDate = new Date(Number(labels[index]));
+            firstDate = new Date(Number(labels[index as number]));
             secondDate = axis.isInversed ? new Date(Number(labels[index - 1])) : new Date(Number(labels[index + 1]));
             if (index === (axis.isInversed ? 0 : axis.axisLabelSize - 1)) {
-                secondDate = new Date(Number(labels[index]));
+                secondDate = new Date(Number(labels[index as number]));
                 if (axis.intervalType === 'Hours') {
                     secondDate = new Date(Number(secondDate.setHours(secondDate.getHours() + 1)));
                 } else if ((axis.intervalType === 'Minutes')) {

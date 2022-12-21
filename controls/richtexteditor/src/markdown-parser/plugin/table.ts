@@ -142,10 +142,10 @@ export class MDTable {
         const syntaxListKey: string[] = Object.keys(this.syntaxTag.List);
         const syntaxArr: string[] = [];
         for (let i: number = 0; i < syntaxFormatKey.length; i++) {
-            syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i]]);
+            syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i as number]]);
         }
         for (let j: number = 0; j < syntaxListKey.length; j++) {
-            syntaxArr.push(this.syntaxTag.List[syntaxListKey[j]]);
+            syntaxArr.push(this.syntaxTag.List[syntaxListKey[j as number]]);
         }
         return syntaxArr;
     }
@@ -154,7 +154,7 @@ export class MDTable {
         const formatTags: string[] = this.getFormatTag();
         const formatSplitZero: string = line.trim().split(' ', 2)[0] + ' ';
         for (let i: number = 0; i < formatTags.length; i++) {
-            if (formatSplitZero === formatTags[i] || /^[\d.]+[ ]+$/.test(formatSplitZero)) {
+            if (formatSplitZero === formatTags[i as number] || /^[\d.]+[ ]+$/.test(formatSplitZero)) {
                 return true;
             }
         }

@@ -382,7 +382,8 @@ export class DragAndDrop extends ActionBase {
                 this.parent.crudModule.crudObj.sourceEvent =
                     [this.parent.resourceBase.lastResourceLevel[parseInt(dragArgs.element.getAttribute('data-group-index'), 10)]];
                 const currentGroupIndex: number = parseInt(dragArgs.target.getAttribute('data-group-index'), 10) || this.actionObj.groupIndex;
-                this.parent.crudModule.crudObj.targetEvent = [this.parent.resourceBase.lastResourceLevel[currentGroupIndex]];
+                this.parent.crudModule.crudObj.targetEvent =
+                    [this.parent.resourceBase.lastResourceLevel[parseInt(currentGroupIndex.toString(), 10)]];
             }
             this.saveChangedData(dragEventArgs, this.isMultiSelect);
         });
@@ -575,7 +576,7 @@ export class DragAndDrop extends ActionBase {
             tr = this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS) as HTMLElement;
         } else {
             const trCollections: HTMLTableRowElement[] = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
-            tr = trCollections[rowIndex] as HTMLElement;
+            tr = trCollections[parseInt(rowIndex.toString(), 10)] as HTMLElement;
         }
         let index: number;
         if (closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS) ||
@@ -587,7 +588,7 @@ export class DragAndDrop extends ActionBase {
         if (isNullOrUndefined(tr)) {
             return;
         }
-        const td: HTMLElement = tr.children[colIndex] as HTMLElement;
+        const td: HTMLElement = tr.children[parseInt(colIndex.toString(), 10)] as HTMLElement;
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.actionObj.groupIndex = parseInt(td.getAttribute('data-group-index'), 10);
         }
@@ -648,16 +649,18 @@ export class DragAndDrop extends ActionBase {
             }
             const startTimeDiff: number = (event[this.parent.eventFields.startTime] as Date).getTime() - this.startTime;
             for (let index: number = 0; index < this.multiData.length; index++) {
-                this.updatedData[index] = this.updateMultipleData(this.multiData[index], startTimeDiff);
-                const dayIndex: number = this.getDayIndex(this.updatedData[index]);
+                this.updatedData[parseInt(index.toString(), 10)] =
+                    this.updateMultipleData(this.multiData[parseInt(index.toString(), 10)], startTimeDiff);
+                const dayIndex: number = this.getDayIndex(this.updatedData[parseInt(index.toString(), 10)]);
                 if (dayIndex >= 0) {
                     const wrapper: HTMLElement =
-                        this.getEventWrapper(dayIndex, this.updatedData[index][this.parent.eventFields.isAllDay] as boolean);
-                    this.appendCloneElement(wrapper, this.actionObj.cloneElement[index]);
-                    this.updateEventHeight(this.updatedData[index], index, dayIndex);
+                        this.getEventWrapper(dayIndex,
+                                             this.updatedData[parseInt(index.toString(), 10)][this.parent.eventFields.isAllDay] as boolean);
+                    this.appendCloneElement(wrapper, this.actionObj.cloneElement[parseInt(index.toString(), 10)]);
+                    this.updateEventHeight(this.updatedData[parseInt(index.toString(), 10)], index, dayIndex);
                 } else {
-                    if (!isNullOrUndefined(this.actionObj.cloneElement[index].parentNode)) {
-                        remove(this.actionObj.cloneElement[index]);
+                    if (!isNullOrUndefined(this.actionObj.cloneElement[parseInt(index.toString(), 10)].parentNode)) {
+                        remove(this.actionObj.cloneElement[parseInt(index.toString(), 10)]);
                     }
                 }
             }
@@ -685,7 +688,7 @@ export class DragAndDrop extends ActionBase {
             }
             const index: number = eventData.length - 1;
             eventData[0][eventFields.startTime] = startTime;
-            eventData[index][eventFields.endTime] = endTime;
+            eventData[parseInt(index.toString(), 10)][eventFields.endTime] = endTime;
         } else {
             eventData.push(event);
         }
@@ -742,8 +745,8 @@ export class DragAndDrop extends ActionBase {
         let datesCount: number = this.verticalEvent.getStartCount();
         if (!this.parent.uiStateValues.isGroupAdaptive) {
             for (let i: number = 0; i < this.actionObj.groupIndex; i++) {
-                if (this.verticalEvent.dateRender[i]) {
-                    datesCount = datesCount + this.verticalEvent.dateRender[i].length;
+                if (this.verticalEvent.dateRender[parseInt(i.toString(), 10)]) {
+                    datesCount = datesCount + this.verticalEvent.dateRender[parseInt(i.toString(), 10)].length;
                 }
             }
         }
@@ -754,7 +757,7 @@ export class DragAndDrop extends ActionBase {
             let dynamicIndex: number = -1;
             let dayIndex: number = !this.parent.activeViewOptions.group.byDate ?
                 isNullOrUndefined(index) ? this.actionObj.index - datesCount : colIndex - datesCount
-                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[indexGroup], util.resetTime(
+                : this.parent.getIndexOfDate(this.verticalEvent.dateRender[parseInt(indexGroup.toString(), 10)], util.resetTime(
                     // eslint-disable-next-line max-len
                     this.parent.getDateFromElement(isNullOrUndefined(index) ? this.actionObj.target as HTMLElement : this.targetTd as HTMLElement)));
             const splitEvents: Record<string, any>[] = this.splitEvent(event);
@@ -763,7 +766,7 @@ export class DragAndDrop extends ActionBase {
             for (let i: number = 0; i < events.length; i++) {
                 if (i > 0) {
                     let filterQuery: string =
-                        `.e-day-wrapper[data-date="${(<Date>util.resetTime(events[i][this.parent.eventFields.startTime])).getTime()}"]`;
+                        `.e-day-wrapper[data-date="${(<Date>util.resetTime(events[parseInt(i.toString(), 10)][this.parent.eventFields.startTime])).getTime()}"]`;
                     if (this.parent.activeViewOptions.group.resources.length > 0) {
                         filterQuery = filterQuery.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
                     }
@@ -776,7 +779,8 @@ export class DragAndDrop extends ActionBase {
                     }
                 }
                 if (dayIndex >= 0) {
-                    const record: Record<string, any> = this.verticalEvent.isSpannedEvent(events[i], dayIndex, indexGroup);
+                    const record: Record<string, any> =
+                        this.verticalEvent.isSpannedEvent(events[parseInt(i.toString(), 10)], dayIndex, indexGroup);
                     const eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
                     const eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
                     let appHeight: number = this.parent.activeViewOptions.timeScale.enable ? this.verticalEvent.getHeight(eStart, eEnd) :
@@ -802,12 +806,12 @@ export class DragAndDrop extends ActionBase {
                                 appWidth = (allDayDifference * this.actionObj.cellWidth);
                             }
                         }
-                        if (this.actionObj.cloneElement[index]) {
+                        if (this.actionObj.cloneElement[parseInt(index.toString(), 10)]) {
                             if (i === 0) {
-                                this.actionObj.cloneElement[index].style.top = formatUnit(topValue);
-                                this.actionObj.cloneElement[index].style.height = formatUnit(appHeight);
-                                this.actionObj.cloneElement[index].style.width = formatUnit(appWidth);
-                                this.actionObj.cloneElement[index].style.left = formatUnit(0);
+                                this.actionObj.cloneElement[parseInt(index.toString(), 10)].style.top = formatUnit(topValue);
+                                this.actionObj.cloneElement[parseInt(index.toString(), 10)].style.height = formatUnit(appHeight);
+                                this.actionObj.cloneElement[parseInt(index.toString(), 10)].style.width = formatUnit(appWidth);
+                                this.actionObj.cloneElement[parseInt(index.toString(), 10)].style.left = formatUnit(0);
                             } else {
                                 this.renderSpannedEvents(record, dynamicIndex, topValue, appHeight);
                             }
@@ -833,7 +837,7 @@ export class DragAndDrop extends ActionBase {
             });
             const appointmentWrap: HTMLElement[] =
                 [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
-            appointmentWrap[index].appendChild(appointmentElement);
+            appointmentWrap[parseInt(index.toString(), 10)].appendChild(appointmentElement);
         }
     }
 
@@ -952,11 +956,12 @@ export class DragAndDrop extends ActionBase {
                 startTimeDiff += startTime.getMonth();
             }
             for (let index: number = 0; index < this.multiData.length; index++) {
-                this.updatedData[index] = this.updateMultipleVerticalDate(this.multiData[index], startTimeDiff);
+                this.updatedData[parseInt(index.toString(), 10)] =
+                    this.updateMultipleVerticalDate(this.multiData[parseInt(index.toString(), 10)], startTimeDiff);
                 if (this.parent.currentView === 'TimelineYear') {
-                    this.dynamicYearlyEventsRendering(this.updatedData[index]);
+                    this.dynamicYearlyEventsRendering(this.updatedData[parseInt(index.toString(), 10)]);
                 } else {
-                    this.dynamicEventsRendering(this.updatedData[index]);
+                    this.dynamicEventsRendering(this.updatedData[parseInt(index.toString(), 10)]);
                 }
             }
         } else {
@@ -1020,8 +1025,8 @@ export class DragAndDrop extends ActionBase {
         const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
         let index: number = this.getCursorCurrentIndex(colIndex, cloneIndex, tr);
         index = index < 0 ? 0 : index;
-        let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[index].getTime()) :
-            this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
+        let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[parseInt(index.toString(), 10)].getTime()) :
+            this.parent.getDateFromElement(<HTMLElement>tr.children[parseInt(index.toString(), 10)]);
         if (this.isStepDragging) {
             const widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {
@@ -1067,13 +1072,14 @@ export class DragAndDrop extends ActionBase {
         if (this.multiData.length > 0) {
             const startTimeDiff: number = (eventsData[0][this.parent.eventFields.startTime] as Date).getTime() - this.startTime;
             for (let i: number = 0; i < this.multiData.length; i++) {
-                this.updatedData[i] = this.updateMultipleData(this.multiData[i], startTimeDiff);
+                this.updatedData[parseInt(i.toString(), 10)] =
+                    this.updateMultipleData(this.multiData[parseInt(i.toString(), 10)], startTimeDiff);
             }
             eventsData = this.updatedData;
         }
         for (let dataIndex: number = 0; dataIndex < eventsData.length; dataIndex++) {
             const events: Record<string, any>[] =
-                this.timelineEventModule.splitEvent(eventsData[dataIndex], this.timelineEventModule.dateRender);
+                this.timelineEventModule.splitEvent(eventsData[parseInt(dataIndex.toString(), 10)], this.timelineEventModule.dateRender);
             const eventData: Record<string, any> = events[0].data as Record<string, any>;
             const startTime: Date = this.timelineEventModule.getStartTime(events[0], eventData);
             const endTime: Date = this.timelineEventModule.getEndTime(events[0], eventData);
@@ -1084,7 +1090,8 @@ export class DragAndDrop extends ActionBase {
             day = day < 0 ? 0 : day;
             const left: number =
                 this.timelineEventModule.getPosition(startTime, endTime, eventObj[this.parent.eventFields.isAllDay] as boolean, day);
-            const cloneElement: HTMLElement = this.multiData.length > 0 ? this.actionObj.cloneElement[dataIndex] : this.actionObj.clone;
+            const cloneElement: HTMLElement =
+                this.multiData.length > 0 ? this.actionObj.cloneElement[parseInt(dataIndex.toString(), 10)] : this.actionObj.clone;
             if (this.parent.enableRtl) {
                 cloneElement.style.right = formatUnit(left);
             } else {
@@ -1141,7 +1148,7 @@ export class DragAndDrop extends ActionBase {
     private getWidthDiff(tr: HTMLTableRowElement, index: number): number {
         const pages: ClientRect | DOMRect = this.scrollArgs.element.getBoundingClientRect();
         if (pages.left <= this.actionObj.pageX && pages.right >= this.actionObj.pageX) {
-            const targetLeft: number = (<HTMLElement>tr.children[index]).offsetLeft;
+            const targetLeft: number = (<HTMLElement>tr.children[parseInt(index.toString(), 10)]).offsetLeft;
             const pageX: number = this.actionObj.pageX - pages.left;
             if (this.parent.enableRtl) {
                 return (targetLeft + this.actionObj.cellWidth) - (this.scrollArgs.element.scrollLeft + pageX);
@@ -1214,7 +1221,7 @@ export class DragAndDrop extends ActionBase {
         const td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
-        let top: number = (<HTMLElement>trCollection[rowIndex]).getBoundingClientRect().height * rowIndex;
+        let top: number = (<HTMLElement>trCollection[parseInt(rowIndex.toString(), 10)]).getBoundingClientRect().height * rowIndex;
         if (this.parent.rowAutoHeight) {
             const cursorElement: HTMLElement = this.getCursorElement(e);
             if (cursorElement) {

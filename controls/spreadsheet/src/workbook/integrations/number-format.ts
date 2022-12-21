@@ -30,7 +30,7 @@ export class WorkbookNumberFormat {
         if (args.range && args.range.indexOf('!') > -1) {
             activeSheetIndex = getSheetIndex(this.parent, args.range.split('!')[0]);
         }
-        const sheet: SheetModel = this.parent.sheets[activeSheetIndex];
+        const sheet: SheetModel = getSheet(this.parent, activeSheetIndex);
         const formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
             args.range.split('!')[1] : args.range) : sheet.selectedRange;
         const selectedRange: number[] = getRangeIndexes(formatRange);
@@ -55,7 +55,7 @@ export class WorkbookNumberFormat {
     public getFormattedCell(args: NumberFormatArgs): string {
         const fResult: string = args.value === undefined || args.value === null ? '' : args.value as string;
         const sheetIdx: number = args.sheetIndex === undefined ? this.parent.activeSheetIndex : args.sheetIndex;
-        const sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         let range: number[];
         if (args.rowIndex === undefined) {
             range = getRangeIndexes(sheet.activeCell);
@@ -68,7 +68,7 @@ export class WorkbookNumberFormat {
         const intl: Internationalization = new Internationalization();
         intl.getNumberFormat(option);
         const currencySymbol: string = getNumberDependable(this.parent.locale, option.currency);
-        if (!args.format || args.format === 'General') {
+        if ((!args.format || args.format === 'General') && !args.skipFormatCheck) {
             args.type = args.format = 'General';
             const dateEventArgs: DateFormatCheckArgs = { value: fResult, updatedVal: fResult, cell: cell };
             this.checkDateFormat(dateEventArgs);
@@ -83,6 +83,9 @@ export class WorkbookNumberFormat {
             }
         } else {
             args.type = getTypeFromFormat(args.format);
+            if (args.skipFormatCheck && !args.format && args.type === 'General') {
+                args.format = 'General';
+            }
         }
         let result: { fResult: string, rightAlign: boolean };
         if (cell.format && this.isCustomType(cell)) {
@@ -137,9 +140,9 @@ export class WorkbookNumberFormat {
             if (sheet.id === this.parent.getActiveSheet().id) {
                 this.parent.notify(
                     refreshCellElement, { isRightAlign: args.type === 'Custom' ? args.isRightAlign : result.rightAlign,
-                    result: args.type === 'Custom' ? args.value as string : result.fResult || args.value as string, rowIndex: args.rowIndex,
-                    colIndex: args.colIndex, sheetIndex: args.sheetIndex, type: args.type, curSymbol: currencySymbol,
-                    value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill });
+                        result: args.type === 'Custom' ? args.value : result.fResult || args.value, rowIndex: args.rowIndex,
+                        colIndex: args.colIndex, sheetIndex: args.sheetIndex, type: args.type, curSymbol: currencySymbol,
+                        value: args.type === 'Custom' ? args.value : args.value || '', isRowFill: this.isRowFill });
                 this.isRowFill = false;
             }
             this.parent.setUsedRange(args.rowIndex, args.colIndex);
@@ -170,15 +173,15 @@ export class WorkbookNumberFormat {
         format: string, cell: CellModel, rowIdx: number, colIdx: number, tdElem?: HTMLElement, skipRowFill?: boolean): string {
         const idx: number = cell.format.indexOf('*');
         const repeatChar: string = format[idx + 1];
-        const codes: string[] = format.split(format[idx] + repeatChar);
+        const codes: string[] = format.split(format[idx as number] + repeatChar);
         let formatText: string;
         let secText: string;
         if (codes[1] === '') {
-            format = format.split(format[idx] + repeatChar).join('');
+            format = format.split(format[idx as number] + repeatChar).join('');
             const sampCell: CellModel = {format: format, value: cell.value};
             formatText = this.processCustomNumberFormat(sampCell);
         } else {
-            formatText = format.split(format[idx] + repeatChar)[0];
+            formatText = format.split(format[idx as number] + repeatChar)[0];
             format = codes[1];
             const sampCell: CellModel = {format: format, value: cell.value};
             secText = this.processCustomNumberFormat(sampCell);
@@ -203,10 +206,13 @@ export class WorkbookNumberFormat {
             }
             const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
             const months: Object = formats.months['stand-alone'] && formats.months['stand-alone'].abbreviated;
-            return months && !!Object.keys(months).find((key: string) => cell.value.toString().includes(months[key]));
+            return months && !!Object.keys(months).find((key: string) => cell.value.toString().includes(months[`${key}`]));
         };
-        if (!isNumber(cell.value) && !(isCustomDate = checkCustomDate())) {
-            return cell.value || '';
+        if (!isNumber(cell.value)) {
+            isCustomDate = checkCustomDate();
+            if (!isCustomDate) {
+                return cell.value || '';
+            }
         }
         let type: string;
         let custFormat: string = cell.format;
@@ -215,7 +221,8 @@ export class WorkbookNumberFormat {
             let isValidDate: boolean; let dateValue: Date;
             if (isCustomDate) {
                 dateValue = toDate(cell.value, new Internationalization(), this.parent.locale, custFormat, cell).dateObj;
-                if (isValidDate = dateValue && dateValue.toString() !== 'Invalid Date') {
+                isValidDate = dateValue && dateValue.toString() !== 'Invalid Date';
+                if (isValidDate) {
                     if (dateValue.getFullYear() < 1900) {
                         return '';
                     } else {
@@ -253,9 +260,9 @@ export class WorkbookNumberFormat {
             const formatArr: string[] = custFormat.split(' ');
             let dayMatchStr: RegExpMatchArray;
             for (let formatIdx: number = 0; formatIdx < formatArr.length; formatIdx++) {
-                dayMatchStr = formatArr[formatIdx].match(/d/g);
+                dayMatchStr = formatArr[formatIdx as number].match(/d/g);
                 if (dayMatchStr && dayMatchStr.length > 2) {
-                    formatArr[formatIdx] = formatArr[formatIdx].split('d').join('E');
+                    formatArr[formatIdx as number] = formatArr[formatIdx as number].split('d').join('E');
                 }
             }
             custFormat = formatArr.join(' ');
@@ -294,20 +301,20 @@ export class WorkbookNumberFormat {
     private processCustomConditions(cell: CellModel): string {
         if (isNumber(cell.value)) {
             const conditions: string[] = cell.format.split(';');
-            const val: number = Number(cell.value); let colorCode: string[] = [];
+            const val: number = Number(cell.value); const colorCode: string[] = [];
             let condition: string; let compareVal: string; let values: string[]; let conditionNotMatch: boolean;
             for (let i: number = 0; i < conditions.length; i++) {
-                condition = conditions[i];
+                condition = conditions[Number(i)];
                 colorCode.push(getColorCode(condition));
-                if (colorCode[i]) {
-                    condition = condition.split(`[${colorCode[i]}]`).join('');
+                if (colorCode[i as number]) {
+                    condition = condition.split(`[${colorCode[i as number]}]`).join('');
                 }
                 compareVal = condition.split('[')[1].split(']')[0];
                 if (((values = compareVal.split('<=')).length === 2 && val <= Number(values[1])) ||
                     (values.length === 1 && (values = compareVal.split('>=')).length === 2 && val >= Number(values[1])) ||
                     (values.length === 1 && (values = compareVal.split('<')).length === 2 && val < Number(values[1])) ||
                     (values.length === 1 && (values = compareVal.split('>')).length === 2 && val > Number(values[1]))) {
-                    cell.format = conditions[i].split(`[${compareVal}]`)[0] + conditions[i].split(`[${compareVal}]`)[1];
+                    cell.format = conditions[i as number].split(`[${compareVal}]`)[0] + conditions[i as number].split(`[${compareVal}]`)[1];
                     conditionNotMatch = false;
                     break;
                 } else {
@@ -330,7 +337,8 @@ export class WorkbookNumberFormat {
         cell: CellModel, rowIdx?: number, colIdx?: number, td?: HTMLElement, currencySymbol?: string, skipRowFill?: boolean): string {
         let cellValue: number;
         const custFormat: string[] = cell.format.split(';');
-        const numberStatusAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(cell, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
+        const numberStatusAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber(
+            cell, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
         const orgValue: string = cell.value;
         if (numberStatusAndValue.isNumber) {
             cell.value = numberStatusAndValue.value;
@@ -378,7 +386,7 @@ export class WorkbookNumberFormat {
         let count: number = 0;
         const codes: string[] = ['#', '0'];
         for (let i: number = 0; i < cell.format.length; i++) {
-            if (cell.format[i] === ',' && !(codes.indexOf(cell.format[i + 1]) > -1)) {
+            if (cell.format[i as number] === ',' && !(codes.indexOf(cell.format[i + 1]) > -1)) {
                 count++;
             }
         }
@@ -419,12 +427,12 @@ export class WorkbookNumberFormat {
         const spaceWidth: number = <number>args.width;
         let count: number;
         for (let i: number = 0; i < format.length; i++) {
-            if (format[i] === '_') {
+            if (format[i as number] === '_') {
                 args.char = format[i + 1];
                 this.parent.notify(getTextSpace, args);
                 const textWidth: number = <number>args.width;
                 count = Math.round(textWidth / spaceWidth);
-                format = format.replace(format[i] + format[i + 1], space.repeat(count));
+                format = format.replace(format[i as number] + format[i + 1], space.repeat(count));
             }
         }
         return format;
@@ -513,6 +521,7 @@ export class WorkbookNumberFormat {
         currencyCode: string): { fResult: string, rightAlign: boolean } {
         let result: { [key: string]: string | boolean };
         if (fResult !== '') {
+            let isNumberAndValue: { isNumber: boolean, value: string };
             switch (args.type) {
             case 'General':
                 result = this.autoDetectGeneralFormat({
@@ -530,7 +539,8 @@ export class WorkbookNumberFormat {
                 }
                 break;
             case 'Currency':
-                const isNumberAndValue: { isNumber: boolean, value: string } = checkIsNumberAndGetNumber({ value: fResult, format: args.format as string }, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
+                isNumberAndValue = checkIsNumberAndGetNumber(
+                    { value: fResult, format: args.format as string }, this.parent.locale, this.groupSep, this.decimalSep, currencySymbol);
                 if (isNumberAndValue.isNumber) {
                     args.value = isNumberAndValue.value;
                     fResult = this.currencyFormat(args, intl, currencyCode);
@@ -597,9 +607,8 @@ export class WorkbookNumberFormat {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
             }
-            let cellVal: string | number;
-            if (options.args.format === 'General' && (cellVal = options.fResult || options.args.value) &&
-                cellVal.toString().split(this.decimalSep)[0].length > 11) {
+            const cellVal: string | number = options.fResult || options.args.value;
+            if (options.args.format === 'General' && cellVal && cellVal.toString().split(this.decimalSep)[0].length > 11) {
                 options.fResult = this.scientificFormat(options.args, 5);
             }
             options.isRightAlign = true;
@@ -936,12 +945,14 @@ export class WorkbookNumberFormat {
             };
             dateArr[0] = dateArr[0].toLowerCase().trim(); dateArr[1] = dateArr[1].toLowerCase().trim();
             if (!Number(dateArr[0]) && dateArr[0].length >= formats.months['stand-alone'].abbreviated['1'].length) {
-                Object.keys(months).find((key: string) => isMonth(months[key].toLowerCase(), abbreviatedMonth[key], dateArr[0], dateArr[0].length));
+                Object.keys(months).find(
+                    (key: string) => isMonth(months[`${key}`].toLowerCase(), abbreviatedMonth[`${key}`], dateArr[0], dateArr[0].length));
                 if (!isNullOrUndefined(firstVal) && !dateArr[0].includes(',')) { // Added ',' checking to skip updating for the MMM d, yyyy ddd format.
                     updateSecValue(dateArr[1]);
                 }
             } else if (!Number(dateArr[1]) && dateArr[1].length >= formats.months['stand-alone'].abbreviated['1'].length) {
-                Object.keys(months).find((key: string) => isMonth(months[key].toLowerCase(), abbreviatedMonth[key], dateArr[1], dateArr[1].length));
+                Object.keys(months).find(
+                    (key: string) => isMonth(months[`${key}`].toLowerCase(), abbreviatedMonth[`${key}`], dateArr[1], dateArr[1].length));
                 if (!isNullOrUndefined(firstVal)) {
                     updateSecValue(dateArr[0]);
                 }
@@ -954,8 +965,10 @@ export class WorkbookNumberFormat {
             }
         } else if (dateArr.length > 2) {
             for (let i: number = 0; i < dateArr.length; i++) {
-                if (!(Number(dateArr[i]) > -1)) {
-                    Object.keys(months).find((key: string) => isMonth(months[key].toLowerCase(), abbreviatedMonth[key], dateArr[i].toLowerCase(), dateArr[i].length));
+                if (!(Number(dateArr[i as number]) > -1)) {
+                    Object.keys(months).find((key: string) =>
+                        isMonth(months[`${key}`].toLowerCase(), abbreviatedMonth[`${key}`], dateArr[i as number].toLowerCase(),
+                                dateArr[i as number].length));
                     if (!isNullOrUndefined(firstVal)) {
                         if (i === 1) {
                             formatArr[1] = 'MMM';

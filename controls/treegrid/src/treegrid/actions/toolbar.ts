@@ -112,11 +112,11 @@ export class Toolbar {
         }
         if (args.item.id === tObj.grid.element.id + '_indent' && tObj.getSelectedRecords().length
          && !isNullOrUndefined(tObj.rowDragAndDropModule)) {
-            this.parent.rowDragAndDropModule[indentOutdentAction](null, 'indent');
+            this.parent.rowDragAndDropModule[`${indentOutdentAction}`](null, 'indent');
         }
         if (args.item.id === tObj.grid.element.id + '_outdent' && tObj.getSelectedRecords().length
          && !isNullOrUndefined(tObj.rowDragAndDropModule)) {
-            this.parent.rowDragAndDropModule[indentOutdentAction](null, 'outdent');
+            this.parent.rowDragAndDropModule[`${indentOutdentAction}`](null, 'outdent');
         }
     }
 

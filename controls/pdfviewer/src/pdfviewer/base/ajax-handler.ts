@@ -136,6 +136,7 @@ export class AjaxHandler {
         return isSkip;
     }
     private sendRequest(jsonObj: object): void {
+        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
         this.httpRequest.open(this.type, this.url, this.mode);
         this.httpRequest.withCredentials = this.pdfViewer.ajaxRequestSettings.withCredentials;
         this.httpRequest.setRequestHeader('Content-Type', this.contentType);
@@ -248,7 +249,7 @@ export class AjaxHandler {
     private setCustomAjaxHeaders(): void {
         for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
             // eslint-disable-next-line max-len
-            this.httpRequest.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerValue);
+            this.httpRequest.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
         }
     }
 }

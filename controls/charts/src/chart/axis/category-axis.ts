@@ -104,7 +104,7 @@ export class Category extends NiceInterval {
                 position = Math.round(tempInterval);
                 triggerLabelRender(
                     this.chart, position,
-                    axis.labels[position] ? axis.labels[position].toString() : position.toString(),
+                    axis.labels[position as number] ? axis.labels[position as number].toString() : position.toString(),
                     labelStyle, axis
                 );
             }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
 /**
  * interface doc
  */

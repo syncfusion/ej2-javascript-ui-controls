@@ -92,7 +92,7 @@ export function isInMultipleRange(address: string, rowIdx: number, colIdx: numbe
     let isInRange: boolean;
     const splitedAddress: string[] = address.split(' ');
     for (let i: number = 0, len: number = splitedAddress.length; i < len; i++) {
-        range = getRangeIndexes(splitedAddress[i]);
+        range = getRangeIndexes(splitedAddress[i as number]);
         isInRange = inRange(range, rowIdx, colIdx);
         if (isInRange) {
             break;
@@ -212,7 +212,7 @@ export function isValidCellReference(value: string): boolean {
     let cellText: string = '';
     const textLength: number = text.length;
     for (let i: number = 0; i < textLength; i++) {
-        if (isChar(text[i])) {
+        if (isChar(text[i as number])) {
             endNum++;
         }
     }
@@ -222,10 +222,10 @@ export function isValidCellReference(value: string): boolean {
         if (cellTextLength < 4) {
             if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
                 while (j < cellTextLength) {
-                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
+                    if ((cellText[j as number]) && cellText[j as number].charCodeAt(0) < numArr[j as number]) {
                         j++;
                         continue;
-                    } else if (!(cellText[j]) && j > 0) {
+                    } else if (!cellText[j as number] && j > 0) {
                         break;
                     } else {
                         return false;
@@ -250,10 +250,12 @@ export function isValidCellReference(value: string): boolean {
  * @returns {number} - To skip the hidden index
  *
  */
- export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
+export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
+    let rowColObj: object;
     if (increase) {
         for (let i: number = index; i < Infinity; i++) {
-            if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+            rowColObj = sheet[`${layout}`];
+            if (rowColObj[index as number] && rowColObj[index as number].hidden) {
                 index++;
             } else {
                 break;
@@ -261,7 +263,8 @@ export function isValidCellReference(value: string): boolean {
         }
     } else {
         for (let i: number = index; i > -1; i--) {
-            if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+            rowColObj = sheet[`${layout}`];
+            if (rowColObj[index as number] && rowColObj[index as number].hidden) {
                 index--;
             } else {
                 break;
@@ -277,7 +280,7 @@ export function isValidCellReference(value: string): boolean {
  * @returns {boolean} - retruns `true` is height needs to be checked.
  * @hidden
  */
- export function isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: boolean): boolean {
+export function isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: boolean): boolean {
     const keys: string[] = Object.keys(style);
     return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
         && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1 || keys.indexOf('borderTop') > -1
@@ -299,7 +302,7 @@ export function getUpdatedFormula(
     let cIdxValue: string; let cell: CellModel;
     if (prevIndexes) {
         cell = prevCell || getCell(prevIndexes[0], prevIndexes[1], sheet, false, true);
-        cIdxValue = cell.formula ? cell.formula.toUpperCase() : '';
+        cIdxValue = cell.formula || '';
     }
     if (cIdxValue) {
         if (isSort) {
@@ -312,14 +315,22 @@ export function getUpdatedFormula(
         const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%']; let splitArray: string[];
         let value: string = cIdxValue;
         for (let i: number = 0; i < formulaOperators.length; i++) {
-            splitArray = value.split(formulaOperators[i]);
+            splitArray = value.split(formulaOperators[i as number]);
             value = splitArray.join(',');
         }
         splitArray = value.split(',');
         const newAddress: { [key: string]: string }[] = []; let newRef: string; let refObj: { [key: string]: string };
+        let isSheetRef: boolean; let cellRefArr: string[]; let cellRef: string;
         for (let j: number = 0; j < splitArray.length; j++) {
-            if (isCellReference(splitArray[j])) {
-                const range: number[] = getRangeIndexes(splitArray[j]);
+            isSheetRef = splitArray[j as number].includes('!');
+            if (isSheetRef) {
+                cellRefArr = splitArray[j as number].split('!');
+                cellRef = cellRefArr[1].toUpperCase();
+            } else {
+                cellRef = splitArray[j as number].toUpperCase();
+            }
+            if (isCellReference(cellRef)) {
+                const range: number[] = getRangeIndexes(cellRef);
                 const newRange: number[] = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
                     currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
                 if (newRange[1] < 0 || newRange[2] < 0 || newRange[3] < 0 || (!isSort && newRange[0] < 0)) {
@@ -329,13 +340,17 @@ export function getUpdatedFormula(
                         newRange[0] = newRange[2];
                     }
                     newRef = getCellAddress(newRange[0], newRange[1]);
-                    if (splitArray[j].includes(':')) {
+                    if (cellRef.includes(':')) {
                         newRef += (':' + getCellAddress(newRange[2], newRange[3]));
                     }
                     newRef = isCellReference(newRef) ? newRef : '#REF!';
                 }
-                refObj = {}; refObj[splitArray[j]] = newRef;
-                if (splitArray[j].includes(':')) {
+                refObj = {};
+                if (isSheetRef) {
+                    newRef = `${cellRefArr[0]}!${newRef}`;
+                }
+                refObj[splitArray[j as number]] = newRef;
+                if (splitArray[j as number].includes(':')) {
                     newAddress.splice(0, 0, refObj);
                 } else {
                     newAddress.push(refObj);
@@ -345,13 +360,13 @@ export function getUpdatedFormula(
         let objKey: string; let objValue: string; cIdxValue = cell.formula;
         let newCIdxValue: string = cIdxValue;
         for (let j: number = 0; j < newAddress.length; j++) {
-            objKey = Object.keys(newAddress[j])[0];
-            objValue = newAddress[j][objKey].toUpperCase();
+            objKey = Object.keys(newAddress[j as number])[0];
+            objValue = newAddress[j as number][`${objKey}`];
             const objKeyLen: number = objKey.length;
             const positionIdx: number = newCIdxValue.indexOf(objKey);
-            let emptyString: string = "";
+            let emptyString: string = '';
             for (let idx: number = 0; idx < objValue.length; idx++) {
-                emptyString += " ";
+                emptyString += ' ';
             }
             cIdxValue = cIdxValue.slice(0, positionIdx) + objValue + cIdxValue.slice(positionIdx + objKeyLen);
             newCIdxValue = newCIdxValue.slice(0, positionIdx) + emptyString + newCIdxValue.slice(positionIdx + objKeyLen);
@@ -378,7 +393,7 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
                 isFormulaCell && !cell.formula ? (cell.value || (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
-                    (<unknown>cell.value === 0 ? '0' : '')) };
+                    (<unknown>cell.value === 0 ? '0' : '')), skipFormatCheck: prop.skipFormatCheck };
             context.notify(workbookEditOperation, evtArgs);
             prop.isFormulaDependent = <boolean>evtArgs.isFormulaDependent;
             if (prop.requestType && args.cell === null) {
@@ -391,7 +406,7 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             }
             if (prop.uiRefresh) {
                 context.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
-                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap);
+                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap, prop.skipFormatCheck);
             }
             if (!prop.preventEvt) {
                 const cellDisplayText: string = context.getDisplayText(cell);
@@ -480,12 +495,13 @@ export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel):
  * @hidden
  */
 export function insertFormatRange(args: InsertDeleteModelArgs, formatRange: number[], isAction: boolean): number[] {
-    let sltRangeIndex: number[] = getRangeIndexes(args.model.selectedRange); let insertStartIndex: number = 0; let insertEndIndex: number = 0;
+    let sltRangeIndex: number[] = getRangeIndexes(args.model.selectedRange); let insertStartIndex: number = 0;
+    let insertEndIndex: number = 0;
     if (args.modelType === 'Column') {
         if (isAction) {
-            sltRangeIndex = [0,args.start as number,0,args.end];
+            sltRangeIndex = [0, args.start as number, 0, args.end];
         }
-        if (args.insertType === "before") {
+        if (args.insertType === 'before') {
             if ((formatRange[1] <= sltRangeIndex[1] && formatRange[3] >= sltRangeIndex[1])) {
                 insertStartIndex = 0;
                 insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
@@ -503,9 +519,9 @@ export function insertFormatRange(args: InsertDeleteModelArgs, formatRange: numb
         return [formatRange[0], formatRange[1] + insertStartIndex, formatRange[2], formatRange[3] + insertEndIndex];
     } else {
         if (isAction) {
-            sltRangeIndex = [args.start as number,0,args.end,0];
+            sltRangeIndex = [args.start as number, 0, args.end, 0];
         }
-        if (args.insertType === "above") {
+        if (args.insertType === 'above') {
             if ((formatRange[0] <= sltRangeIndex[0] && formatRange[2] >= sltRangeIndex[0])) {
                 insertStartIndex = 0;
                 insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
@@ -576,11 +592,12 @@ export function deleteFormatRange(args: InsertDeleteModelArgs, formatRange: numb
 export function updateCFModel(curCF: ConditionalFormat[], cfRule: ConditionalFormatModel[], rowIdx: number, colIdx: number): void {
     let cfRange: string[]; let indexes: number[];
     for (let i: number = curCF.length - 1; i >= 0; i--) {
-        cfRange = curCF[i].range.trim().split(',');
+        cfRange = curCF[i as number].range.trim().split(',');
         for (let j: number = 0; j < cfRange.length; j++) {
-            indexes = getRangeIndexes(cfRange[j].includes(':') ? cfRange[j] : `${cfRange[j]}:${cfRange[j]}`);
+            indexes = getRangeIndexes(cfRange[j as number].includes(':') ? cfRange[j as number] :
+                `${cfRange[j as number]}:${cfRange[j as number]}`);
             if (rowIdx >= indexes[0] && colIdx >= indexes[1] && rowIdx <= indexes[2] && colIdx <= indexes[3]) {
-                cfRule.push(curCF[i]);
+                cfRule.push(curCF[i as number]);
                 curCF.splice(i, 1);
                 break;
             }
@@ -594,7 +611,8 @@ export function checkRange(indexes: number[][], range: string): boolean {
     let left: boolean; let right: boolean; let top: boolean; let bottom; let cfIdx: number[];
     const checkRange: (idx: number[]) => boolean = (idx: number[]): boolean => {
         for (let i: number = 0; i < ranges.length; i++) {
-            cfIdx = getRangeIndexes(ranges[i].includes(':') ? ranges[i] : `${ranges[i]}:${ranges[i]}`);
+            cfIdx = getRangeIndexes(
+                ranges[i as number].includes(':') ? ranges[i as number] : `${ranges[i as number]}:${ranges[i as number]}`);
             if (idx[0] <= cfIdx[0] && idx[1] <= cfIdx[1] && idx[2] >= cfIdx[2] && idx[3] >= cfIdx[3]) {
                 return true;
             } else {
@@ -659,7 +677,7 @@ export function checkRange(indexes: number[][], range: string): boolean {
         return false;
     };
     for (let j: number = 0; j < indexes.length; j++) {
-        if (checkRange(indexes[j])) {
+        if (checkRange(indexes[j as number])) {
             return true;
         }
     }

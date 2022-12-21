@@ -79,9 +79,11 @@ export class MDSelectionFormats {
         return matchText;
     }
     private multiCharRegx(cmd: string): RegExp {
+        // eslint-disable-next-line
         return new RegExp('(\\' + cmd + '\\' + cmd + ')', 'g');
     }
     private singleCharRegx(cmd: string): RegExp {
+        // eslint-disable-next-line
         return new RegExp('(\\' + cmd + ')', 'g');
     }
 
@@ -271,21 +273,21 @@ export class MDSelectionFormats {
     }
 
     private textReplace(text: string, command: string): string {
-        let regx: RegExp = this.singleCharRegx(this.syntax[command]);
+        let regx: RegExp = this.singleCharRegx(this.syntax[`${command}`]);
         switch (command) {
         case 'Bold':
-            regx = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            regx = this.multiCharRegx(this.syntax[`${command}`].substr(0, 1));
             text = text.replace(regx, '');
             break;
         case 'Italic':
-            if (!this.isBold(text, this.syntax[command].substr(0, 1))) {
+            if (!this.isBold(text, this.syntax[`${command}`].substr(0, 1))) {
                 text = text.replace(regx, '');
             } else {
-                const regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
+                const regxB: RegExp = this.multiCharRegx(this.syntax[`${command}`].substr(0, 1));
                 let repText: string = text;
                 repText = repText.replace(regxB, '$%@').replace(regx, '');
                 const regxTemp: RegExp = new RegExp('\\$%@', 'g');
-                text = repText.replace(regxTemp, this.syntax[command].substr(0, 1) + this.syntax[command].substr(0, 1));
+                text = repText.replace(regxTemp, this.syntax[`${command}`].substr(0, 1) + this.syntax[`${command}`].substr(0, 1));
             }
             break;
         case 'StrikeThrough':
@@ -304,23 +306,24 @@ export class MDSelectionFormats {
         return text;
     }
     private isApplied(line: { [key: string]: string | number }, command: string): boolean | void {
-        let regx: RegExp = this.singleCharRegx(this.syntax[command]);
+        let regx: RegExp = this.singleCharRegx(this.syntax[`${command}`]);
         switch (command) {
         case 'SubScript':
         case 'SuperScript':
-            regx = this.singleCharRegx(this.syntax[command]);
+            regx = this.singleCharRegx(this.syntax[`${command}`]);
             return regx.test(line.text as string);
         case 'Bold':
         case 'StrikeThrough':
-            regx = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            regx = this.multiCharRegx(this.syntax[`${command}`].substr(0, 1));
             return regx.test(line.text as string);
         case 'UpperCase':
         case 'LowerCase':
-            regx = new RegExp('^[' + this.syntax[command] + ']*$', 'g');
+            // eslint-disable-next-line
+            regx = new RegExp('^[' + this.syntax[`${command}`] + ']*$', 'g');
             return regx.test(line.text as string);
         case 'Italic': {
             let regTest: boolean;
-            const regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            const regxB: RegExp = this.multiCharRegx(this.syntax[`${command}`].substr(0, 1));
             if (regxB.test(line.text as string)) {
                 let repText: string = line.text as string;
                 repText = repText.replace(regxB, '$%#');

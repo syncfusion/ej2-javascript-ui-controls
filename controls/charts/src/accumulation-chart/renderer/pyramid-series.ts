@@ -94,18 +94,18 @@ export class PyramidSeries extends TriangularBase {
         let currY: number = 0;
 
         for (let i: number = 0; i < count; i++) {
-            if (series.points[i].visible) {
-                y[i] = currY;
-                height[i] = this.getSurfaceHeight(currY, Math.abs(series.points[i].y));
-                currY += height[i] + gapHeight * preSum;
+            if (series.points[i as number].visible) {
+                y[i as number] = currY;
+                height[i as number] = this.getSurfaceHeight(currY, Math.abs(series.points[i as number].y));
+                currY += height[i as number] + gapHeight * preSum;
             }
         }
 
         const coef: number = 1 / (currY - gapHeight * preSum);
         for (let i: number = 0; i < count; i++) {
-            if (series.points[i].visible) {
-                series.points[i].yRatio = coef * y[i];
-                series.points[i].heightRatio = coef * height[i];
+            if (series.points[i as number].visible) {
+                series.points[i as number].yRatio = coef * y[i as number];
+                series.points[i as number].heightRatio = coef * height[i as number];
             }
         }
     }
@@ -149,9 +149,9 @@ export class PyramidSeries extends TriangularBase {
         }
         options.d = this.getSegmentData(point, series, chart);
         point.midAngle = 0;
-        let element: Element = chart.renderer.drawPath(options);
-        element.setAttribute("tabindex", point.index === 0 ? "0" : "");
-        element.setAttribute('aria-label', (point.x + ": " + point.y + '%. ' + series.name));
+        const element: Element = chart.renderer.drawPath(options);
+        element.setAttribute('tabindex', point.index === 0 ? '0' : '');
+        element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
         appendChildElement(false, seriesGroup, element, redraw);
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);

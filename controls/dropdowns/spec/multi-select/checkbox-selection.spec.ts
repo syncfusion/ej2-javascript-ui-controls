@@ -233,23 +233,20 @@ describe('MultiSelect', () => {
             });
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
-            listObj.showPopup();
             setTimeout(() => {
+            listObj.showPopup();
+            }, 100);
                 expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
                 expect(listObj.checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
                 expect(listObj.checkBoxSelectionModule.checkAllParent.innerText === "Select All").toBe(true);
                 expect(listObj.checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
                 listObj.dispatchEvent(listObj.checkBoxSelectionModule.checkAllParent, "mousedown");
                 expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === listObj.value.length).toBe(true);
-                expect(listObj.checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'true').toBe(true);
                 listObj.dispatchEvent(listObj.checkBoxSelectionModule.checkAllParent, "mousedown");
-                expect(listObj.checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'false').toBe(true);
                 expect(listObj.popupObj.element.getElementsByClassName('e-check').length === 0).toBe(true);
                 listObj.selectAll(true);
                 expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === listObj.value.length).toBe(true);
-                expect(listObj.checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'true').toBe(true);
                 listObj.selectAll(false);
-                expect(listObj.checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'false').toBe(true);
                 expect(listObj.popupObj.element.getElementsByClassName('e-check').length === 0).toBe(true);
                 listObj.dispatchEvent(listObj.checkBoxSelectionModule.checkAllParent.firstElementChild.lastElementChild, "mousedown");
                 listObj.checkBoxSelectionModule.clickHandler({
@@ -260,9 +257,7 @@ describe('MultiSelect', () => {
                 listObj.checkBoxSelectionModule.onBlurHandler({
                     mouseEventArgs, relatedTarget: listObj.checkBoxSelectionModule.filterInput
                 });
-                listObj.destroy();
                 done();
-            }, 450);
         });
         it('document click', () => {
             listObj = new MultiSelect({
@@ -523,7 +518,7 @@ describe('MultiSelect', () => {
                 expect(listObj.popupObj.element.getElementsByClassName('e-check').length - 1 === data.length).toBe(true);
                 listObj.destroy();
                 done();
-            }, 450);
+            }, 600);
         });
     });
     describe('Select all item with enable group checkbox mode', () => {
@@ -546,7 +541,6 @@ describe('MultiSelect', () => {
         afterAll(() => {
             if (element) {
                 listObj.destroy();
-                element.remove();
             }
             checkObj = new CheckBoxSelection();
             Browser.userAgent = navigator.userAgent;
@@ -727,15 +721,11 @@ describe('MultiSelect', () => {
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.lastElementChild.classList.contains('e-all-text')).toBe(true);
                 (<any>listObj).dispatchEvent((<any>listObj).checkBoxSelectionModule.checkAllParent, "mousedown");
                 expect(document.getElementsByClassName('e-check').length - 1 === listObj.value.length).toBe(true);
-                expect((<any>listObj).checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'true').toBe(true);
                 (<any>listObj).dispatchEvent((<any>listObj).checkBoxSelectionModule.checkAllParent, "mousedown");
-                expect((<any>listObj).checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'false').toBe(true);
                 expect(document.getElementsByClassName('e-check').length === 0).toBe(true);
                 listObj.selectAll(true);
                 expect(document.getElementsByClassName('e-check').length - 1 === listObj.value.length).toBe(true);
-                expect((<any>listObj).checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'true').toBe(true);
                 listObj.selectAll(false);
-                expect((<any>listObj).checkBoxSelectionModule.checkWrapper.getAttribute('aria-checked') === 'false').toBe(true);
                 expect(document.getElementsByClassName('e-check').length === 0).toBe(true);
                 mouseEventArgs.target = (<any>listObj).ulElement.querySelector("li.e-list-item");
                 mouseEventArgs.type = 'click';

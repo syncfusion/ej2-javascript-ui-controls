@@ -129,18 +129,39 @@ export class WListLevel {
         return value;
         /* eslint-enable */
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
     public destroy(): void {
-        if (!isNullOrUndefined(this.characterFormat)) {
-            this.characterFormat.destroy();
-        }
-        if (!isNullOrUndefined(this.paragraphFormat)) {
-            this.paragraphFormat.destroy();
-        }
         if (!isNullOrUndefined(this.uniqueListLevel)) {
             WListLevel.uniqueListLevels.remove(this.uniqueListLevel);
         }
         this.uniqueListLevel = undefined;
+        if (!isNullOrUndefined(this.characterFormat)) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        if (!isNullOrUndefined(this.paragraphFormat)) {
+            this.paragraphFormat.destroy();
+            this.paragraphFormat = undefined;
+        }
+    }
+    /**
+     * @private
+     */
+    public clearFormat(): void {
+        if (!isNullOrUndefined(this.uniqueListLevel)) {
+            WListLevel.uniqueListLevels.remove(this.uniqueListLevel);
+        }
+        this.uniqueListLevel = undefined;
+        if (this.characterFormat) {
+            this.characterFormat.clearFormat();
+        }
         this.characterFormat = undefined;
+        if (this.paragraphFormat) {
+            this.paragraphFormat.clearFormat();
+        }
         this.paragraphFormat = undefined;
     }
     public static clear(): void {

@@ -77,6 +77,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private defaultResetValue: string;
     private isResizeInitialized: boolean;
     private isValueChangeBlurhandler: boolean;
+    private displayTempElem: HTMLElement;
     /**
      * @hidden
      * @deprecated
@@ -1340,9 +1341,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
         const htmlAttr: { [key: string]: string } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
-                !(/^data-val/.test(this.element.attributes[a].name))) { // data-val for asp.net core data annotation validation.
-                htmlAttr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            if (invalidAttr.indexOf(this.element.attributes[a as number].name) === -1 &&
+                !(/^data-val/.test(this.element.attributes[a as number].name))) { // data-val for asp.net core data annotation validation.
+                htmlAttr[this.element.attributes[a as number].name] = this.element.getAttribute(this.element.attributes[a as number].name);
             }
         }
         extend(htmlAttr, this.htmlAttributes, htmlAttr);
@@ -1370,7 +1371,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.cssClass)) {
             const currentClassList: string[] = this.cssClass.split(' ');
             for (let i: number = 0; i < currentClassList.length; i++) {
-                addClass([this.valueContainer], currentClassList[i]);
+                addClass([this.valueContainer], currentClassList[i as number]);
             }
         }
         this.element.appendChild(this.valueContainer);
@@ -1471,7 +1472,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.focusIn();
             }
         }
-        const tool: IExecutionGroup = executeGroup[commandName];
+        const tool: IExecutionGroup = executeGroup[`${commandName}`];
         if (option && option.undo) {
             if (option.undo && this.formatter.getUndoRedoStack().length === 0) {
                 this.formatter.saveData();
@@ -1695,47 +1696,52 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public addAudioVideoWrapper(): void {
         let insertElem: HTMLElement;
-        let audioElm: NodeListOf<HTMLElement> = this.element.querySelectorAll('audio');
+        const audioElm: NodeListOf<HTMLElement> = this.element.querySelectorAll('audio');
         for (let i: number = 0; i < audioElm.length; i++) {
-            if (!audioElm[i].classList.contains('e-rte-audio')) {
-                audioElm[i].classList.add('e-rte-audio');
-                audioElm[i].classList.add(classes.CLS_AUDIOINLINE);
+            if (!audioElm[i as number].classList.contains('e-rte-audio')) {
+                audioElm[i as number].classList.add('e-rte-audio');
+                audioElm[i as number].classList.add(classes.CLS_AUDIOINLINE);
             }
-            if (!audioElm[i].parentElement.classList.contains(classes.CLS_CLICKELEM) && !audioElm[i].parentElement.classList.contains(classes.CLS_AUDIOWRAP)) {
-                let audioWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_AUDIOWRAP });
+            // eslint-disable-next-line max-len
+            if (!audioElm[i as number].parentElement.classList.contains(classes.CLS_CLICKELEM) && !audioElm[i as number].parentElement.classList.contains(classes.CLS_AUDIOWRAP)) {
+                const audioWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_AUDIOWRAP });
+                audioWrapElem.setAttribute('style','width:300px; margin:0 auto;');
                 audioWrapElem.contentEditable = 'false';
-                let audioInnerWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_CLICKELEM })
+                const audioInnerWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_CLICKELEM });
                 audioWrapElem.appendChild(audioInnerWrapElem);
-                audioElm[i].parentNode.insertBefore(audioWrapElem, audioElm[i].nextSibling);
-                audioInnerWrapElem.appendChild(audioElm[i]);
+                audioElm[i as number].parentNode.insertBefore(audioWrapElem, audioElm[i as number].nextSibling);
+                audioInnerWrapElem.appendChild(audioElm[i as number]);
                 if (audioWrapElem.nextElementSibling === null) {
                     insertElem = this.createElement('br');
                     audioWrapElem.parentNode.insertBefore(insertElem, audioWrapElem.nextSibling);
                 }
             }
         }
-        let videoElm: NodeListOf<HTMLElement> = this.element.querySelectorAll('video');
+        const videoElm: NodeListOf<HTMLElement> = this.element.querySelectorAll('video');
         for (let i: number = 0; i < videoElm.length; i++) {
-            if (!videoElm[i].classList.contains('e-rte-video')) {
-                videoElm[i].classList.add('e-rte-video');
-                videoElm[i].classList.add(classes.CLS_VIDEOINLINE);
+            if (!videoElm[i as number].classList.contains('e-rte-video')) {
+                videoElm[i as number].classList.add('e-rte-video');
+                videoElm[i as number].classList.add(classes.CLS_VIDEOINLINE);
             }
-            if (!videoElm[i].parentElement.classList.contains(classes.CLS_CLICKELEM) && !videoElm[i].parentElement.classList.contains(classes.CLS_VIDEOWRAP)) {
-                let videoWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_VIDEOWRAP });
+            // eslint-disable-next-line max-len
+            if (!videoElm[i as number].parentElement.classList.contains(classes.CLS_CLICKELEM) && !videoElm[i as number].parentElement.classList.contains(classes.CLS_VIDEOWRAP)) {
+                const videoWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_VIDEOWRAP });
                 videoWrapElem.contentEditable = 'false';
-                videoElm[i].parentNode.insertBefore(videoWrapElem, videoElm[i].nextSibling);
-                videoWrapElem.appendChild(videoElm[i]);
+                videoElm[i as number].parentNode.insertBefore(videoWrapElem, videoElm[i as number].nextSibling);
+                videoWrapElem.appendChild(videoElm[i as number]);
                 if (videoWrapElem.nextElementSibling === null) {
                     insertElem = this.createElement('br');
                     videoWrapElem.parentNode.insertBefore(insertElem, videoWrapElem.nextSibling);
                 }
             }
             if (Browser.userAgent.indexOf('Firefox') !== -1) {
-                videoElm[i].addEventListener('play', (args) => { 
+                // eslint-disable-next-line
+                videoElm[i as number].addEventListener('play', (args) => {
                     this.notify(events.mouseDown, { args: args });
                     this.notify('editAreaClick', { args: args });
                 });
-                videoElm[i].addEventListener('pause', (args) => { 
+                // eslint-disable-next-line
+                videoElm[i as number].addEventListener('pause', (args) => {
                     this.notify(events.mouseDown, { args: args });
                     this.notify('editAreaClick', { args: args });
                 });
@@ -1755,6 +1761,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.wireEvents();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public cleanList(e: KeyboardEvent): void {
         const range: Range = this.getRange();
         const currentStartContainer: Node = range.startContainer;
@@ -1768,8 +1775,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
         !range.collapsed && isNOU(endNode.nextElementSibling)) {
             for (let i: number = 0; i < closestLI.childNodes.length; i++) {
-                if (closestLI.childNodes[i].nodeName === '#text' && closestLI.childNodes[i].textContent.trim().length === 0) {
-                    detach(closestLI.childNodes[i]);
+                if (closestLI.childNodes[i as number].nodeName === '#text' && closestLI.childNodes[i as number].textContent.trim().length === 0) {
+                    detach(closestLI.childNodes[i as number]);
                     i--;
                 }
             }
@@ -1808,6 +1815,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (closest(startNode, 'pre') &&
                 (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
                 (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
+                // eslint-disable-next-line
                 const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
                 const pointer: number = e.which === 8 ? range.startOffset - 1 : range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
@@ -1819,14 +1827,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 let index: number;
                 let i: number;
                 for (i = 0; i < parentEle.childNodes.length; i++) {
-                    if (parentEle.childNodes[i] === range.startContainer) {
+                    if (parentEle.childNodes[i as number] === range.startContainer) {
                         index = i;
                     }
                 }
                 let bool: boolean = true;
                 const removeNodeArray: number[] = [];
                 for (i = index; i >= 0; i--) {
-                    if (parentEle.childNodes[i].nodeType === 3 && parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
+                    // eslint-disable-next-line max-len
+                    if (parentEle.childNodes[i as number].nodeType === 3 && parentEle.childNodes[i as number].textContent.charCodeAt(0) === 8203 && bool) {
                         removeNodeArray.push(i);
                     } else {
                         bool = false;
@@ -1834,7 +1843,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }
                 if (removeNodeArray.length > 0) {
                     for (i = removeNodeArray.length - 1; i > 0; i--) {
-                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
+                        parentEle.childNodes[removeNodeArray[i as number]].textContent = '';
                     }
                 }
                 this.formatter.editorManager.nodeSelection.setCursorPoint(
@@ -1887,7 +1896,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.notify(events.keyUp, { member: 'keyup', args: e });
-        if (e.keyCode == 39  || e.keyCode == 37) {
+        if (e.keyCode === 39  || e.keyCode === 37) {
             this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
         }
         if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
@@ -2160,12 +2169,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.element = this.valueContainer;
             for (let i: number = 0; i < this.originalElement.classList.length; i++) {
-                addClass([this.element], this.originalElement.classList[i]);
+                addClass([this.element], this.originalElement.classList[i as number]);
             }
             if (!isNOU(this.cssClass)) {
                 const currentClassList: string[] = this.cssClass.split(' ');
                 for (let i: number = 0; i < currentClassList.length; i++) {
-                    addClass([this.element], currentClassList[i]);
+                    addClass([this.element], currentClassList[i as number]);
                 }
             }
             removeClass([this.element], classes.CLS_RTE_HIDDEN);
@@ -2183,8 +2192,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.cssClass)) {
             const allClassName: string[] = this.cssClass.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
-                if (allClassName[i].trim() !== '') {
-                    removeClass([this.element], allClassName[i]);
+                if (allClassName[i as number].trim() !== '') {
+                    removeClass([this.element], allClassName[i as number]);
                 }
             }
         }
@@ -2201,8 +2210,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private removeHtmlAttributes(): void {
         if (this.htmlAttributes) {
             const keys: string[] = Object.keys(this.htmlAttributes);
-            for (let i: number = 0; i < keys.length && this.element.hasAttribute(keys[i]); i++) {
-                this.element.removeAttribute(keys[i]);
+            for (let i: number = 0; i < keys.length && this.element.hasAttribute(keys[i as number]); i++) {
+                this.element.removeAttribute(keys[i as number]);
             }
         }
     }
@@ -2314,6 +2323,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
+    /* eslint-disable */
     public onPropertyChanged(newProp: RichTextEditorModel, oldProp: RichTextEditorModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
@@ -2335,7 +2345,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.value = this.serializeValue(((this.enableHtmlEncode) ? this.encode(decode(val)) : val));
                 }
                 this.updatePanelValue();
-                if(this.inputElement){
+                if (this.inputElement) {
                     this.notify(events.tableclass, {});
                 }
                 this.setPlaceHolder();
@@ -2350,7 +2360,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 break;
             }
             case 'valueTemplate':
-                this.setValue();
+                this.setValue(true);
                 if (this.showCharCount) {
                     this.countModule.refresh();
                 }
@@ -2433,7 +2443,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
                 break;
             case 'quickToolbarSettings':
-                // eslint-disable-next-line
                 newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
                 this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                 break;
@@ -2443,6 +2452,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
     }
+    /* eslint-enable */
     /**
      * @hidden
      * @returns {void}
@@ -2461,7 +2471,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private removeSheets(srcList: Element[]): void {
         let i: number;
         for (i = 0; i < srcList.length; i++) {
-            detach(srcList[i]);
+            detach(srcList[i as number]);
         }
     }
     private updatePanelValue(): void {
@@ -2566,8 +2576,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(cssClass)) {
             const allClassName: string[] = cssClass.split(' ');
             for (let i: number = 0; i < allClassName.length; i++) {
-                if (allClassName[i].trim() !== '') {
-                    this.element.classList.add(allClassName[i]);
+                if (allClassName[i as number].trim() !== '') {
+                    this.element.classList.add(allClassName[i as number]);
                 }
             }
         }
@@ -2749,11 +2759,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 for (let i: number = 0; i < srcList.length; i++) {
                     if (scriptSheet) {
                         const scriptEle: HTMLScriptElement = this.createScriptElement();
-                        scriptEle.src = srcList[i];
+                        scriptEle.src = srcList[i as number];
                         target.appendChild(scriptEle);
                     } else {
                         const styleEle: HTMLLinkElement = this.createStyleElement();
-                        styleEle.href = srcList[i];
+                        styleEle.href = srcList[i as number];
                         target.appendChild(styleEle);
                     }
                 }
@@ -2779,18 +2789,36 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return styleEle;
     }
 
-    private setValue(): void {
+    private setValue(isPropertyChange?: boolean): void {
         if (this.valueTemplate) {
             const regEx: RegExp = new RegExp(/<(?=.*? .*?\/ ?>|br|hr|input|!--|wbr)[a-z]+.*?>|<([a-z]+).*?<\/\1>/i);
             if (regEx.test(this.valueTemplate)) {
                 this.setProperties({ value: this.valueTemplate });
             } else {
                 const compiledTemplate: NodeList = compile(this.valueTemplate)('', this, 'valueTemplate');
-                for (let i: number = 0; i < compiledTemplate.length; i++) {
-                    const item: Element = compiledTemplate[i] as Element;
-                    append([item], this.element);
+                if (typeof this.valueTemplate !== 'string' && (this as any).isReact) {
+                    this.displayTempElem = this.createElement('div');
+                    for (let i: number = 0; i < compiledTemplate.length; i++) {
+                        const item: Element = compiledTemplate[i as number] as Element;
+                        append([item], this.displayTempElem);
+                    }
+                    this.renderTemplates(() => {
+                        this.inputElement.innerHTML = (this.displayTempElem.childNodes[0] as HTMLElement).innerHTML;
+                        this.setProperties({ value: this.inputElement.innerHTML.trim() });
+                    });
+                } else {
+                    let appendElem: HTMLElement = this.element;
+                    if (isPropertyChange) {
+                        this.inputElement.innerHTML = '';
+                        appendElem = this.inputElement;
+                    }
+                    for (let i: number = 0; i < compiledTemplate.length; i++) {
+                        const item: Element = compiledTemplate[i as number] as Element;
+                        append([item], appendElem);
+                    }
+                    this.setProperties({ value: appendElem.innerHTML.trim() });
+                    this.renderReactTemplates();
                 }
-                this.setProperties({ value: this.element.innerHTML.trim() });
             }
         } else {
             // eslint-disable-next-line
@@ -2803,6 +2831,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
         }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public renderTemplates(callBack: any): void {
+        this.renderReactTemplates(callBack);
     }
 
     private updateResizeFlag(): void {
@@ -2877,7 +2910,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const rzHandle: HTMLElement = this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement;
         const rzHeight: number = this.enableResize ? (!isNOU(rzHandle) ? (rzHandle.offsetHeight + 8) : 0) : 0;
         const expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
-        if (this.toolbarSettings.type === ToolbarType.Expand && isExpand && target !== 'preview') {
+        if (this.toolbarSettings.type === ToolbarType.Expand && isExpand) {
             heightValue = (this.height === 'auto' && rzHeight === 0) ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
         } else {
@@ -3138,7 +3171,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.getToolbarElement().setAttribute('tabindex', '-1');
                     const items: NodeList = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
                     for (let i: number = 0; i < items.length; i++) {
-                        (items[i] as HTMLElement).setAttribute('tabindex', '-1');
+                        (items[i as number] as HTMLElement).setAttribute('tabindex', '-1');
                     }
                 }
             }
@@ -3152,11 +3185,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.getToolbarElement())) {
             const toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
             for (let i: number = 0; i < toolbarItem.length; i++) {
-                if ((!(toolbarItem[i] as HTMLElement).classList.contains('e-rte-dropdown-btn') &&
-                !(toolbarItem[i] as HTMLElement).classList.contains('e-insert-table-btn')) &&
-                (!(toolbarItem[i] as HTMLElement).hasAttribute('tabindex') ||
-                (toolbarItem[i] as HTMLElement).getAttribute('tabindex') !== '-1')) {
-                    (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '-1');
+                if ((!(toolbarItem[i as number] as HTMLElement).classList.contains('e-rte-dropdown-btn') &&
+                !(toolbarItem[i as number] as HTMLElement).classList.contains('e-insert-table-btn')) &&
+                (!(toolbarItem[i as number] as HTMLElement).hasAttribute('tabindex') ||
+                (toolbarItem[i as number] as HTMLElement).getAttribute('tabindex') !== '-1')) {
+                    (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '-1');
                 }
             }
         }
@@ -3186,7 +3219,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.tableModule) && !isNOU(this.inputElement.querySelector('.e-table-box.e-rbox-select'))) { return; }
         this.setProperties({ value: this.getUpdatedValue() }, true);
         this.valueContainer.value = this.value;
-        this.isValueChangeBlurhandler= false;
+        this.isValueChangeBlurhandler = false;
         this.invokeChangeEvent();
     }
     private updateIntervalValue(): void {
@@ -3243,7 +3276,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const value: string = this.getUpdatedValue();
             this.setProperties({ value: value });
             this.notify(events.toolbarRefresh, { args: e, documentNode: document });
-            this.isValueChangeBlurhandler= true;
+            this.isValueChangeBlurhandler = true;
             this.invokeChangeEvent();
             this.isFocusOut = true;
             this.isBlur = false;
@@ -3411,11 +3444,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {
-                if ((e as MouseEvent).which === array[i]) {
+                if ((e as MouseEvent).which === array[i as number]) {
                     if ((e as MouseEvent).ctrlKey && (e as MouseEvent).which === 65) {
                         return;
                     } else if ((e as MouseEvent).which !== 65) {
-                        arrayKey = array[i];
+                        arrayKey = array[i as number];
                         return;
                     }
                 }

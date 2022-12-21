@@ -53,7 +53,7 @@ export class DateProcessor {
             this.setTime(this.parent.defaultStartTime, cloneStartDate);
         } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
             for (let index: number = 0; index < this.parent.workingTimeRanges.length; index++) {
-                const value: IWorkingTimeRange = this.parent.workingTimeRanges[index];
+                const value: IWorkingTimeRange = this.parent.workingTimeRanges[index as number];
                 if (hour >= value.to && (this.parent.workingTimeRanges[index + 1] &&
                     hour < this.parent.workingTimeRanges[index + 1].from)) {
                     // milestone can fall at end any interval time
@@ -79,7 +79,7 @@ export class DateProcessor {
                     }
                 }
                 for (let count: number = 0; count < holidayLength; count++) {
-                    const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count]));
+                    const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
                     const holidayTo: Date = new Date(holidayFrom.getTime());
                     holidayFrom.setHours(0, 0, 0, 0);
                     holidayTo.setHours(23, 59, 59, 59);
@@ -114,10 +114,10 @@ export class DateProcessor {
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
             for (let index: number = 0; index < this.parent.workingTimeRanges.length; index++) {
-                const value: IWorkingTimeRange = this.parent.workingTimeRanges[index];
+                const value: IWorkingTimeRange = this.parent.workingTimeRanges[index as number];
                 if (hour > value.to && (this.parent.workingTimeRanges[index + 1] &&
                     hour <= this.parent.workingTimeRanges[index + 1].from)) {
-                    this.setTime(this.parent.workingTimeRanges[index].to, cloneEndDate);
+                    this.setTime(this.parent.workingTimeRanges[index as number].to, cloneEndDate);
                     break;
                 }
             }
@@ -135,7 +135,7 @@ export class DateProcessor {
                     }
                 }
                 for (let count: number = 0; count < holidayLength; count++) {
-                    const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count]));
+                    const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
                     const holidayTo: Date = new Date(holidayFrom.getTime());
                     const tempHoliday: Date = new Date(cloneEndDate.getTime());
                     tempHoliday.setMinutes(cloneEndDate.getMilliseconds() - 2);
@@ -173,7 +173,7 @@ export class DateProcessor {
                 this.setTime(this.parent.defaultStartTime, cloneDate);
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
-                    const value: IWorkingTimeRange = this.parent.workingTimeRanges[i];
+                    const value: IWorkingTimeRange = this.parent.workingTimeRanges[i as number];
                     if (hour >= value.to && (this.parent.workingTimeRanges[i + 1] &&
                         hour < this.parent.workingTimeRanges[i + 1].from)) {
                         this.setTime(this.parent.workingTimeRanges[i + 1].from, cloneDate);
@@ -203,9 +203,9 @@ export class DateProcessor {
                 this.setTime(this.parent.defaultEndTime, cloneDate);
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
-                    const value: IWorkingTimeRange = this.parent.workingTimeRanges[i];
+                    const value: IWorkingTimeRange = this.parent.workingTimeRanges[i as number];
                     if (hour > value.to && (this.parent.workingTimeRanges[i + 1] && hour <= this.parent.workingTimeRanges[i + 1].from)) {
-                        this.setTime(this.parent.workingTimeRanges[i].to, cloneDate);
+                        this.setTime(this.parent.workingTimeRanges[i as number].to, cloneDate);
                         break;
                     }
                 }
@@ -267,7 +267,7 @@ export class DateProcessor {
     public totalDuration(segments: ITaskSegment[]): number {
         let duration: number = 0;
         for (let i: number = 0; i < segments.length; i++) {
-            duration += segments[i].duration + segments[i].offsetDuration;
+            duration += segments[i as number].duration + segments[i as number].offsetDuration;
         }
         return duration;
     }
@@ -284,7 +284,7 @@ export class DateProcessor {
            !isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
             tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
         } else {
-            if (!isNullOrUndefined(ganttProperties.startDate) && !isNullOrUndefined(ganttProperties.endDate) && 
+            if ((!isNullOrUndefined(this.parent.taskFields.milestone)) && (!isNullOrUndefined(ganttProperties.startDate)) && !isNullOrUndefined(ganttProperties.endDate) && 
                 (ganttProperties.startDate).getTime() === (ganttProperties.endDate).getTime() && !isNullOrUndefined(ganttData.taskData[this.parent.taskFields.milestone])) {
                 tDuration = 1;  
             } else {
@@ -474,7 +474,7 @@ export class DateProcessor {
                 minStartDate.setHours(0, 0, 0, 0);
             }
             for (let index: number = 1; index < flatData.length; index++) {
-                const startDate: Date = flatData[index].ganttProperties.startDate;
+                const startDate: Date = flatData[index as number].ganttProperties.startDate;
                 if (!isNullOrUndefined(startDate) && this.compareDates(startDate, minStartDate) === -1) {
                     minStartDate = startDate;
                 }
@@ -555,7 +555,7 @@ export class DateProcessor {
         const nonWorkingTimeRanges: IWorkingTimeRange[] = this.parent.nonWorkingTimeRanges;
 
         for (let count: number = 0; count < length; count++) {
-            const currentRange: DayWorkingTimeModel = dayWorkingTime[count];
+            const currentRange: DayWorkingTimeModel = dayWorkingTime[count as number];
             if (!isNullOrUndefined(currentRange.from) && !isNullOrUndefined(currentRange.to)) {
                 startDate.setHours(0, 0, 0, 0);
                 const tempDate: Date = new Date(startDate.getTime());
@@ -711,7 +711,7 @@ export class DateProcessor {
         eDate.setHours(0, 0, 0, 0);
         if (sDate.getTime() < eDate.getTime()) {
             for (let i: number = 0; i < holidays.length; i++) {
-                const currentHoliday: Date = this.getDateFromFormat(new Date(holidays[i]));
+                const currentHoliday: Date = this.getDateFromFormat(new Date(holidays[i as number]));
                 if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() > currentHoliday.getTime()) {
                     if ((!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) ||
                     this.parent.includeWeekend) {
@@ -730,8 +730,8 @@ export class DateProcessor {
         const holidays: HolidayModel[] = this.parent.holidays;
         const holidayDates: number[] = [];
         for (let i: number = 0; i < holidays.length; i++) {
-            const from: Date = this.getDateFromFormat(holidays[i].from);
-            const to: Date = this.getDateFromFormat(holidays[i].to);
+            const from: Date = this.getDateFromFormat(holidays[i as number].from);
+            const to: Date = this.getDateFromFormat(holidays[i as number].to);
             if (isNullOrUndefined(from) && isNullOrUndefined(to)) {
                 continue;
             } else if (isNullOrUndefined(from) || isNullOrUndefined(to)) {
@@ -766,7 +766,7 @@ export class DateProcessor {
         }
         const holidays: number[] = this.parent.totalHolidayDates;
         for (let count: number = 0; count < holidays.length; count++) {
-            const holidayFrom: Date = this.getDateFromFormat(new Date(holidays[count]));
+            const holidayFrom: Date = this.getDateFromFormat(new Date(holidays[count as number]));
             const holidayTo: Date = new Date(holidayFrom.getTime());
             holidayFrom.setHours(0, 0, 0, 0);
             holidayTo.setHours(23, 59, 59, 59);
@@ -794,7 +794,7 @@ export class DateProcessor {
         const endOnHoliday: boolean = isAutoSchedule ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
 
         for (let i: number = 0; i < this.parent.nonWorkingTimeRanges.length; i++) {
-            const val: IWorkingTimeRange = this.parent.nonWorkingTimeRanges[i];
+            const val: IWorkingTimeRange = this.parent.nonWorkingTimeRanges[i as number];
             if (sHour >= val.from && sHour <= val.to) {
                 startRangeIndex = i;
             }
@@ -806,11 +806,11 @@ export class DateProcessor {
             startDate.getFullYear() !== endDate.getFullYear()) {
             if (!startOnHoliday) {
                 for (let i: number = startRangeIndex; i < this.parent.nonWorkingTimeRanges.length; i++) {
-                    if (!this.parent.nonWorkingTimeRanges[i].isWorking) {
+                    if (!this.parent.nonWorkingTimeRanges[i as number].isWorking) {
                         if (i === startRangeIndex) {
-                            totNonWrkSecs += (this.parent.nonWorkingTimeRanges[i].to - sHour);
+                            totNonWrkSecs += (this.parent.nonWorkingTimeRanges[i as number].to - sHour);
                         } else {
-                            totNonWrkSecs += (this.parent.nonWorkingTimeRanges[i].interval);
+                            totNonWrkSecs += (this.parent.nonWorkingTimeRanges[i as number].interval);
                         }
                     }
                 }
@@ -819,11 +819,11 @@ export class DateProcessor {
             }
             if (!endOnHoliday) {
                 for (let i: number = 0; i <= endRangeIndex; i++) {
-                    if (!this.parent.nonWorkingTimeRanges[i].isWorking) {
+                    if (!this.parent.nonWorkingTimeRanges[i as number].isWorking) {
                         if (i === endRangeIndex) {
-                            totNonWrkSecs += (eHour - this.parent.nonWorkingTimeRanges[i].from);
+                            totNonWrkSecs += (eHour - this.parent.nonWorkingTimeRanges[i as number].from);
                         } else {
-                            totNonWrkSecs += this.parent.nonWorkingTimeRanges[i].interval;
+                            totNonWrkSecs += this.parent.nonWorkingTimeRanges[i as number].interval;
                         }
                     }
                 }
@@ -834,13 +834,13 @@ export class DateProcessor {
             if (startRangeIndex !== endRangeIndex) {
                 if (!endOnHoliday) {
                     for (let i: number = startRangeIndex; i <= endRangeIndex; i++) {
-                        if (!this.parent.nonWorkingTimeRanges[i].isWorking) {
+                        if (!this.parent.nonWorkingTimeRanges[i as number].isWorking) {
                             if (i === startRangeIndex) {
-                                totNonWrkSecs += (this.parent.nonWorkingTimeRanges[i].to - sHour);
+                                totNonWrkSecs += (this.parent.nonWorkingTimeRanges[i as number].to - sHour);
                             } else if (i === endRangeIndex) {
-                                totNonWrkSecs += (eHour - this.parent.nonWorkingTimeRanges[i].from);
+                                totNonWrkSecs += (eHour - this.parent.nonWorkingTimeRanges[i as number].from);
                             } else {
-                                totNonWrkSecs += this.parent.nonWorkingTimeRanges[i].interval;
+                                totNonWrkSecs += this.parent.nonWorkingTimeRanges[i as number].interval;
                             }
                         }
                     }
@@ -849,7 +849,7 @@ export class DateProcessor {
                 }
             } else {
                 if (!endOnHoliday) {
-                    const range: IWorkingTimeRange = this.parent.nonWorkingTimeRanges[startRangeIndex];
+                    const range: IWorkingTimeRange = this.parent.nonWorkingTimeRanges[startRangeIndex as number];
                     if (!range.isWorking) {
                         totNonWrkSecs = eHour - sHour;
                     }
@@ -894,11 +894,11 @@ export class DateProcessor {
         const workWeek: string[] = this.parent.workWeek.slice();
         const length: number = workWeek.length;
         for (let i: number = 0; i < length; i++) {
-            workWeek[i] = workWeek[i].toLowerCase();
+            workWeek[i as number] = workWeek[i as number].toLowerCase();
         }
         this.parent.nonWorkingDayIndex = [];
         for (let i: number = 0; i < weekDayLength; i++) {
-            if (workWeek.indexOf(weekDay[i]) === -1) {
+            if (workWeek.indexOf(weekDay[i as number]) === -1) {
                 this.parent.nonWorkingDayIndex.push(i);
             }
         }
@@ -1266,7 +1266,7 @@ export class DateProcessor {
     public splitTasksDuration(segments: ITaskSegment[]): number {
         let duration: number = 0;
         for (let i: number = 0; i < segments.length; i++) {
-            const segment: ITaskSegment = segments[i];
+            const segment: ITaskSegment = segments[i as number];
             const sDate: Date = segment.startDate;
             const eDate: Date = segment.endDate;
             duration += Math.ceil(this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24));

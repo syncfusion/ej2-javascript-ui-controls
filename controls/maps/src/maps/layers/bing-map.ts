@@ -41,6 +41,7 @@ export class BingMap {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public destroy(): void {

@@ -186,7 +186,9 @@ export class WorkbookCellFormat {
         if (isHiddenRow(sheet, rowIdx + 1)) {
             const pIdx: number = this.skipHiddenRows(sheet, rowIdx + 1);
             const pCellStyle: string = this.parent.getCellStyleValue(['borderTop'], [pIdx, colIdx]).borderTop;
-            if (pCellStyle !== '') { (sheet.rows[rowIdx].cells[colIdx].style as CellStyleExtendedModel).bottomPriority = true; }
+            if (pCellStyle !== '') {
+                (sheet.rows[rowIdx as number].cells[colIdx as number].style as CellStyleExtendedModel).bottomPriority = true;
+            }
         }
     }
     private setFullBorder(
@@ -215,8 +217,8 @@ export class WorkbookCellFormat {
     }
     private checkAdjacentBorder(sheet: SheetModel, prop: string, rowIdx: number, colIdx: number): void {
         const style: CellStyleModel = {};
-        if (this.parent.getCellStyleValue([prop], [rowIdx, colIdx])[prop] !== '') {
-            style[prop] = undefined; this.setCellStyle(sheet, rowIdx, colIdx, style);
+        if (this.parent.getCellStyleValue([prop], [rowIdx, colIdx])[`${prop}`] !== '') {
+            style[`${prop}`] = undefined; this.setCellStyle(sheet, rowIdx, colIdx, style);
         }
     }
     private checkFullBorder(sheet: SheetModel, prop: string, rowIdx: number, colIdx: number): void {
@@ -224,7 +226,7 @@ export class WorkbookCellFormat {
         if (border !== '') {
             const style: CellStyleModel = { border: undefined };
             ['borderBottom', 'borderTop', 'borderLeft', 'borderRight'].forEach((value: string): void => {
-                if (value !== prop) { style[value] = border; }
+                if (value !== prop) { style[`${value}`] = border; }
             });
             this.setCellStyle(sheet, rowIdx, colIdx, style);
         }
@@ -378,14 +380,18 @@ export class WorkbookCellFormat {
         }
     }
     private setCellStyle(sheet: SheetModel, rowIdx: number, colIdx: number, style: CellStyleModel): void {
-        if (!sheet.rows[rowIdx]) {
-            sheet.rows[rowIdx] = { cells: [] };
-        } else if (!sheet.rows[rowIdx].cells) {
-            sheet.rows[rowIdx].cells = [];
+        if (!sheet.rows[rowIdx as number]) {
+            sheet.rows[rowIdx as number] = { cells: [] };
+        } else if (!sheet.rows[rowIdx as number].cells) {
+            sheet.rows[rowIdx as number].cells = [];
         }
-        if (!sheet.rows[rowIdx].cells[colIdx]) { sheet.rows[rowIdx].cells[colIdx] = {}; }
-        if (!sheet.rows[rowIdx].cells[colIdx].style) { sheet.rows[rowIdx].cells[colIdx].style = {}; }
-        Object.assign(sheet.rows[rowIdx].cells[colIdx].style, style, null, true);
+        if (!sheet.rows[rowIdx as number].cells[colIdx as number]) {
+            sheet.rows[rowIdx as number].cells[colIdx as number] = {};
+        }
+        if (!sheet.rows[rowIdx as number].cells[colIdx as number].style) {
+            sheet.rows[rowIdx as number].cells[colIdx as number].style = {};
+        }
+        Object.assign(sheet.rows[rowIdx as number].cells[colIdx as number].style, style, null, true);
     }
     private skipHiddenRows(sheet: SheetModel, startIdx: number): number {
         startIdx++;
@@ -416,7 +422,8 @@ export class WorkbookCellFormat {
         const range: number[] = getSwapRange(getIndexesFromAddress(clrRange));
         let sRowIdx: number = range[0];
         const eRowIdx: number = range[2];
-        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
+        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length &&
+            [].slice.call(sheet.conditionalFormats);
         const cfRule: ConditionalFormatModel[] = []; let cfRefreshAll: boolean;
         let evtArgs: { [key: string]: string | boolean | number[] | number };
         let sColIdx: number;

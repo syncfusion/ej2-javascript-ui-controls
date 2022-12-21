@@ -90,11 +90,11 @@ export class VirtualScroll implements IAction {
             e.renderer.update(args);
             const rules: Object = {};
             for (let i: number = 0; i < cols.length; i++) {
-                if (!cols[i].visible) {
+                if (!cols[parseInt(i.toString(), 10)].visible) {
                     continue;
                 }
-                if (cols[i].validationRules) {
-                    setValidationRuels(cols[i], 0, rules, {}, {}, cols.length, true);
+                if (cols[parseInt(i.toString(), 10)].validationRules) {
+                    setValidationRuels(cols[parseInt(i.toString(), 10)], 0, rules, {}, {}, cols.length, true);
                 }
             }
             args.form.classList.add('e-virtual-validation');
@@ -121,7 +121,7 @@ export class VirtualScroll implements IAction {
             } else if (gObj.editModule.virtualFormObj && (!error || error.style.display === 'none')) {
                 const existingErrors: NodeListOf<Element> = gObj.editModule.virtualFormObj.element.querySelectorAll('.e-tooltip-wrap:not([style*="display: none"])');
                 for (let i: number = 0; i < existingErrors.length; i++) {
-                    remove(existingErrors[i]);
+                    remove(existingErrors[parseInt(i.toString(), 10)]);
                 }
                 this.setEditedDataToValidationForm(gObj.editModule.virtualFormObj.element, this.getCurrentEditedData(args.prevData));
                 args.isValid = gObj.editModule.virtualFormObj.validate();
@@ -144,8 +144,8 @@ export class VirtualScroll implements IAction {
             if (isRenderer || !col || (!isNullOrUndefined(args.addIdx) && scrollTop > 0) || (!isNullOrUndefined(args.editIdx) && !row)) {
                 let validationCol: Column;
                 for (let i: number = 0; i < cols.length && !col; i++) {
-                    if (cols[i].field === field) {
-                        validationCol = cols[i] as Column;
+                    if (cols[parseInt(i.toString(), 10)].field === field) {
+                        validationCol = cols[parseInt(i.toString(), 10)] as Column;
                         break;
                     }
                 }
@@ -158,10 +158,10 @@ export class VirtualScroll implements IAction {
     private setEditedDataToValidationForm(form: Element, editedData: object): void {
         const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
-            const col: Column = getColumnModelByUid(this.parent, inputs[i].getAttribute('e-mappinguid'));
+            const col: Column = getColumnModelByUid(this.parent, inputs[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
             let value: string =  getValue(col.field, editedData);
             value = isNullOrUndefined(value) ? '' : value;
-            inputs[i].value = value;
+            inputs[parseInt(i.toString(), 10)].value = value;
         }
     }
 

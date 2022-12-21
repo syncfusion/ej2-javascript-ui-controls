@@ -1127,3 +1127,35 @@ describe('To Check Bookmark removed while selecting the word without bookmark st
         expect(editor.documentHelper.bookmarks.get('b3')).toBe(undefined);
     });
 });
+describe("Undo validation in header", () => {
+    let editor: DocumentEditor = undefined;
+    let viewer: LayoutViewer;
+    beforeAll(() => {
+        document.body.innerHTML = "";
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1000px;height:600px' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false , enableEditorHistory: true});
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        viewer = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it("Undo validation in header", async () => {
+        editor.openBlank();
+        editor.selection.goToHeader();
+        editor.editorModule.onEnter();
+        expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
+    });
+});

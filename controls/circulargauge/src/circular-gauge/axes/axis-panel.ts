@@ -17,7 +17,6 @@ export class AxisLayoutPanel {
     private farSizes: number[];
     private axisRenderer: AxisRenderer;
     public pointerRenderer: PointerRenderer;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
         this.axisRenderer = new AxisRenderer(gauge);
@@ -132,7 +131,7 @@ export class AxisLayoutPanel {
                 }
             }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
-            let args: IRadiusCalculateEventArgs = {
+            const args: IRadiusCalculateEventArgs = {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
@@ -211,7 +210,8 @@ export class AxisLayoutPanel {
      */
 
     private calculateNumericInterval(axis: Axis, rect: Rect): number {
-        const allowComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+        const allowComponentRender: boolean = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum)
+         && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
         if (!allowComponentRender) {
             return 0;
         } else if (axis.majorTicks.interval !== null) {
@@ -388,15 +388,18 @@ export class AxisLayoutPanel {
             'clip-path': 'url(#' + gauge.element.id + '_GaugeAreaClipRect_' + ')'
         });
         // To append the secondary element for annotation and tooltip
-        gauge.element.appendChild(createElement('div', {
-            id: gauge.element.id + '_Secondary_Element',
-            styles: 'position: relative'
-        }));
+        const annotationElement: HTMLElement = createElement('div', {
+            id: gauge.element.id + '_Secondary_Element'
+        });
+        annotationElement.style.position = 'relative';
+        gauge.element.appendChild(annotationElement);
+
         gauge.axes.map((axis: Axis, index: number) => {
             element = gauge.renderer.createGroup({
                 id: gauge.element.id + '_Axis_Group_' + index
             });
-            this.gauge.allowComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum) && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
+            this.gauge.allowComponentRender = ((!isNullOrUndefined(axis.minimum) && !isNullOrUndefined(axis.maximum)
+            && axis.minimum !== axis.maximum) || (isNullOrUndefined(axis.minimum) || isNullOrUndefined(axis.maximum)));
             renderer.checkAngles(axis);
             renderer.drawAxisOuterLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element);

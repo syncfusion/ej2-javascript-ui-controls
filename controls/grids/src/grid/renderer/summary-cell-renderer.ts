@@ -21,7 +21,7 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
     public getValue(field: string, data: Object, column: AggregateColumnModel): Object {
         const key: string = !isNullOrUndefined(column.type) ?
             column.field + ' - ' + (typeof column.type === 'string' ? column.type.toLowerCase() : '') : column.columnName;
-        return data[column.columnName] ? data[column.columnName][key] : '';
+        return data[column.columnName] ? data[column.columnName][`${key}`] : '';
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -61,7 +61,7 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             const prop: object = data[column.columnName];
             if (tempObj.property === 'groupCaptionTemplate' || tempObj.property === 'groupFooterTemplate') {
                 const groupKey: string = 'groupKey'; const key: string = 'key';
-                prop[groupKey] = prop[key];
+                prop[`${groupKey}`] = prop[`${key}`];
             }
             tempObj.fn(prop, this.parent, tempObj.property, tempID, null, null, node);
             this.parent.renderTemplates();

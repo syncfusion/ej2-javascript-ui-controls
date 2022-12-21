@@ -93,10 +93,10 @@ export interface ColorPickerModel extends ComponentModel{
     enableOpacity?: boolean;
 
     /**
-    * Specifies the popup element creation on open.
-    *
-    * @default false
-    */
+     * Specifies the popup element creation on open.
+     *
+     * @default false
+     */
     createPopupOnClick?: boolean;
 
     /**

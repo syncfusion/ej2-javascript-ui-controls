@@ -72,8 +72,8 @@ export class TextHelper {
     }
     public getParagraphMarkSize(characterFormat: WCharacterFormat): TextSizeInfo {
         const format: string = this.getFormatText(characterFormat);
-        if (this.paragraphMarkInfo[format]) {
-            return this.paragraphMarkInfo[format];
+        if (this.paragraphMarkInfo[`${format}`]) {
+            return this.paragraphMarkInfo[`${format}`];
         }
         // Gets the text element's width;
         const width: number = this.getWidth(this.paragraphMark, characterFormat);
@@ -82,7 +82,7 @@ export class TextHelper {
         const textSizeInfo: TextSizeInfo = {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
-        return this.paragraphMarkInfo[format] = textSizeInfo;
+        return this.paragraphMarkInfo[`${format}`] = textSizeInfo;
     }
     public getTextSize(elementBox: TextElementBox, characterFormat: WCharacterFormat): number {
         // Gets the text element's width;
@@ -106,11 +106,11 @@ export class TextHelper {
         // Get character format property as  below predefined structure to make it easy to check and retrieve
         // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection
         const key: string = this.getFormatText(characterFormat, fontToRender);
-        if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[key])) {
-            return this.documentHelper.heightInfoCollection[key];
+        if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[`${key}`])) {
+            return this.documentHelper.heightInfoCollection[`${key}`];
         }
         const sizeInfo: TextSizeInfo = this.documentHelper.owner.textMeasureHelper.getHeightInternal(characterFormat, fontToRender);
-        this.documentHelper.heightInfoCollection[key] = sizeInfo;
+        this.documentHelper.heightInfoCollection[`${key}`] = sizeInfo;
         return sizeInfo;
     }
     public getFormatText(characterFormat: WCharacterFormat, fontToRender?: string): string {
@@ -204,6 +204,7 @@ export class TextHelper {
         const textHelper: TextSizeInfo = this.getHeight(format);
         elementBox.height = textHelper.Height;
         elementBox.baselineOffset = textHelper.BaselineOffset;
+        format.destroy();
     }
     public containsSpecialCharAlone(text: string): boolean {
         /* eslint-disable */

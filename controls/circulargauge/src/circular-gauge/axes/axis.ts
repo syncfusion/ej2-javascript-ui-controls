@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
 import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';
 import { RangeModel, LineModel, TickModel, LabelModel, AnimationModel } from './axis-model';
 import { PointerModel, CapModel, NeedleTailModel, AnnotationModel } from './axis-model';

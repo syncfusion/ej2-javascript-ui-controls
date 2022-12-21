@@ -1,4 +1,5 @@
 @include export-module('split-button-theme') {
+
   /*! splitbutton theme */
   .e-split-btn-wrapper {
     .e-split-btn {
@@ -14,6 +15,10 @@
 
       &:disabled {
         border-right-color: $btn-disabled-bgcolor;
+      }
+
+      &.e-inherit {
+        border-color: transparent;
       }
     }
 
@@ -61,6 +66,10 @@
           border-left-color: $btn-disabled-border-color;
           border-right-color: $split-btn-disabled-vertical-border-color;
         }
+
+        &.e-inherit {
+          border-color: transparent;
+        }
       }
 
       &:hover {
@@ -79,6 +88,13 @@
       .e-split-btn {
         border-bottom-color: $split-btn-seperator-vertical-border-color;
         border-right-color: $split-btn-seperator-default-border-color;
+
+        &.e-inherit,
+        &.e-inherit:focus,
+        &.e-inherit:active,
+        &.e-inherit:disabled {
+          border-color: transparent;
+        }
 
         &:focus {
           border-bottom-color: $split-btn-focus-border-color;
@@ -101,6 +117,11 @@
           border-bottom-color: $split-btn-hover-border-color;
           border-right-color: $split-btn-hover-vertical-border-color;
 
+          &.e-inherit,
+          &.e-inherit:disabled {
+            border-color: transparent;
+          }
+
           &:disabled {
             border-bottom-color: $btn-disabled-border-color;
           }
@@ -110,6 +131,13 @@
       &.e-rtl {
         .e-split-btn {
           border-left-color: $split-btn-seperator-default-border-color;
+
+          &.e-inherit,
+          &.e-inherit:focus,
+          &.e-inherit:active,
+          &.e-inherit:disabled {
+            border-color: transparent;
+          }
 
           &:focus {
             border-left-color: $split-btn-focus-left-border-color;
@@ -127,10 +155,13 @@
         &:hover {
           & .e-split-btn {
             border-left-color: $split-btn-hover-left-border-color;
+
+            &.e-inherit {
+              border-color: transparent;
+            }
           }
         }
       }
     }
   }
 }
-  

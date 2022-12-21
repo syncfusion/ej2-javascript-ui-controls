@@ -34,7 +34,7 @@ export class PivotChart {
     private pivotIndex: { rIndex: number; cIndex: number };
     private chartSettings: ChartSettingsModel;
     private element: HTMLElement;
-    private templateFn: Function;   /* eslint-disable-line */
+    private templateFn: Function;
     private chartElement: HTMLElement;
     private measureList: string[];
     private headerColl: RowHeaderPositionGrouping = {};
@@ -59,6 +59,7 @@ export class PivotChart {
 
     /**
      * Get component name.
+     *
      * @returns {string} - string
      * @private
      */
@@ -66,14 +67,13 @@ export class PivotChart {
         return 'pivotChart';
     }
 
-    /* eslint-disable */
     public loadChart(parent: PivotView, chartSettings: ChartSettingsModel): void {
         this.parent = parent;
         this.measuresNames = {};
         this.engineModule = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.dataSourceSettings = this.parent.dataSourceSettings as IDataOptions;
         this.chartSettings = chartSettings;
-        let isDataAvail: boolean = parent.dataType === 'olap' ?
+        const isDataAvail: boolean = parent.dataType === 'olap' ?
             (parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
                 (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
             : parent.dataSourceSettings.values.length > 0;
@@ -82,14 +82,15 @@ export class PivotChart {
                 remove(select('#' + this.parent.element.id + '_chart', this.parent.element));
             }
             if (this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') {
+                // eslint-disable-next-line @typescript-eslint/tslint/config
                 this.measureList = this.dataSourceSettings.values.map((item) => { return item.name; });
             } else {
                 this.measureList = [chartSettings.value === '' ? this.dataSourceSettings.values[0].name : chartSettings.value];
             }
-            for (let field of this.dataSourceSettings.values) {
-                let fieldName: string = field.name.replace(/[^A-Z0-9]+/ig, '_');
+            for (const field of this.dataSourceSettings.values) {
+                const fieldName: string = field.name.replace(/[^A-Z0-9]+/ig, '_');
                 this.measuresNames[field.name] = fieldName;
-                this.measuresNames[fieldName] = field.name;
+                this.measuresNames[fieldName as string] = field.name;
                 if ((this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
                     this.measuresNames[field.caption ? field.caption : field.name] = field.name;
                 }
@@ -105,7 +106,8 @@ export class PivotChart {
                 if ((this.parent.chart as Chart).axes.length > 0) {
                     (this.parent.chart as Chart).axes[0].title = '';
                 }
-                (this.parent.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? 1 : this.parent.chartSettings.primaryXAxis.zoomFactor;
+                (this.parent.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor)
+                    ? 1 : this.parent.chartSettings.primaryXAxis.zoomFactor;
             } else if (this.parent.element.querySelector('.e-accumulationchart')) {
                 this.parent.chart.series[0].dataSource = [{}];
                 (this.parent.chart.series[0] as AccumulationSeriesModel).dataLabel = {};
@@ -115,14 +117,16 @@ export class PivotChart {
         } else {
             if (!select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                 if (this.parent.displayOption.view === 'Both') {
-                    this.parent.displayOption.primary === 'Chart' ?
+                    if (this.parent.displayOption.primary === 'Chart') {
                         (this.parent.element.insertBefore(
                             (createElement('div', {
                                 className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
-                            })), this.parent.element.querySelector('.' + cls.GRID_CLASS))) :
+                            })), this.parent.element.querySelector('.' + cls.GRID_CLASS)));
+                    } else {
                         (this.parent.element.appendChild(createElement('div', {
                             className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
                         })));
+                    }
                 }
                 else {
                     this.parent.element.appendChild(createElement('div', {
@@ -133,9 +137,10 @@ export class PivotChart {
                 if (this.parent.showToolbar && this.parent.grid) {
                     width = this.parent.getGridWidthAsNumber().toString();
                 }
-                let height: string | number = this.getChartHeight();
+                const height: string | number = this.getChartHeight();
                 let tmpChart: Chart | AccumulationChart;
-                if (this.chartSettings && this.chartSettings.chartSeries && this.accumulationType.indexOf(this.chartSettings.chartSeries.type) > -1) {
+                if (this.chartSettings && this.chartSettings.chartSeries &&
+                    this.accumulationType.indexOf(this.chartSettings.chartSeries.type) > -1) {
                     tmpChart = new AccumulationChart({ width: width, height: height });
                 }
                 else {
@@ -156,13 +161,13 @@ export class PivotChart {
         }
         this.columnGroupObject = {};
         this.accEmptyPoint = false;
-        let pivotValues: IPivotValues = this.engineModule.pivotValues;
+        const pivotValues: IPivotValues = this.engineModule.pivotValues;
         this.currentMeasure = (chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ? this.measureList[0] :
             (((chartSettings.value === '' || this.dataSourceSettings.values.filter((item: IFieldOptions) => {
                 return item.name === chartSettings.value;
             }).length === 0) && this.dataSourceSettings.values.length > 0) ? this.dataSourceSettings.values[0].name : chartSettings.value);
-        let totColIndex: INumberIndex = this.getColumnTotalIndex(pivotValues);
-        let rKeys: string[] = Object.keys(pivotValues);
+        const totColIndex: INumberIndex = this.getColumnTotalIndex(pivotValues);
+        const rKeys: string[] = Object.keys(pivotValues);
         let prevLevel: number;
         let firstLevelUName: string;
         let levelCollection: { [key: string]: number } = {};
@@ -179,26 +184,27 @@ export class PivotChart {
         this.chartSeriesInfo = {};
         this.selectedLegend = 0;
         let isDrill: boolean = false;
-        let measureNames: { [key: string]: string } = {};
+        const measureNames: { [key: string]: string } = {};
         let isValidHeader: boolean = false;
-        let delimiter: string = this.parent.dataSourceSettings.valueSortSettings.headerDelimiter;
-        for (let field of this.dataSourceSettings.values) {
-            let fieldName: string = field.name;
-            measureNames[fieldName] = field.caption ? field.caption : fieldName;
+        const delimiter: string = this.parent.dataSourceSettings.valueSortSettings.headerDelimiter;
+        for (const field of this.dataSourceSettings.values) {
+            const fieldName: string = field.name;
+            measureNames[fieldName as string] = field.caption ? field.caption : fieldName;
             measureNames[field.caption ? field.caption : fieldName] = fieldName;
         }
         if (this.parent.dataType === 'olap') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             levelPos = this.groupHierarchyWithLevels(pivotValues as any);
             lastHierarchy = this.fieldPosition[this.fieldPosition.length - 1];
             lastDimension = (this.measurePos === (this.fieldPosition.length - 1) && this.fieldPosition.length > 1) ?
                 this.fieldPosition[this.fieldPosition.length - 2] : lastHierarchy;
             drillDimension = lastDimension;
         }
-        for (let rKey of rKeys) {
-            let rowIndex: number = Number(rKey);
-            if (!isNullOrUndefined(pivotValues[rowIndex])) {
-                let header: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
-                let valueSort: string[] = header && header.valueSort && !isNullOrUndefined(header.valueSort.levelName) ?
+        for (const rKey of rKeys) {
+            const rowIndex: number = Number(rKey);
+            if (!isNullOrUndefined(pivotValues[rowIndex as number])) {
+                const header: IAxisSet = pivotValues[rowIndex as number][0] as IAxisSet;
+                const valueSort: string[] = header && header.valueSort && !isNullOrUndefined(header.valueSort.levelName) ?
                     header.valueSort.levelName.toString().split(delimiter) : undefined;
                 isValidHeader = false;
                 if (valueSort && valueSort[0] !== 'Grand Total') {
@@ -207,8 +213,8 @@ export class PivotChart {
                         isValidHeader = true;
                     }
                     if (!isValidHeader) {
-                        for (let levelName of valueSort) {
-                            if (measureNames[levelName]) {
+                        for (const levelName of valueSort) {
+                            if (measureNames[levelName as string]) {
                                 isValidHeader = true;
                                 break;
                             }
@@ -218,8 +224,11 @@ export class PivotChart {
                 }
                 if (header && header.axis === 'row' && (this.dataSourceSettings.rows.length === 0 ? true :
                     (header.type !== 'grand sum' && isValidHeader))) {
-                    let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
-                    let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
+                    const firstRowCell: IAxisSet = pivotValues[rowIndex as number][0] as IAxisSet;
+                    if (firstRowCell.isSum) {
+                        continue;
+                    }
+                    const tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
                         (this.engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
                     let fieldPos: number = -1;
                     let currrentLevel: number = firstRowCell.level;
@@ -240,7 +249,8 @@ export class PivotChart {
                                         levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
                             levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
                             currrentLevel = integratedLevel;
-                            indexCount += (prevCell && drillDimension === prevCell.hierarchy && !(prevCell.isDrilled && prevCell.hasChild)) ? 1 : 0;
+                            indexCount += (prevCell && drillDimension === prevCell.hierarchy && !(prevCell.isDrilled && prevCell.hasChild))
+                                ? 1 : 0;
                             drillDimension = isDrill ? firstRowCell.hierarchy : lastDimension;
                             prevLevel = integratedLevel;
                             prevCell = firstRowCell;
@@ -252,15 +262,15 @@ export class PivotChart {
                         prevLevel = currrentLevel;
                     }
                     this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
-                    let name: string = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
+                    const name: string = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
                         (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
-                    let values: IFieldListOptions = this.engineModule.fieldList[this.currentMeasure] as IFieldListOptions;
-                    let text: string = this.parent.dataSourceSettings.rows.length === 0 ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values.aggregateType as string) + ' ' +
+                    const values: IFieldListOptions = this.engineModule.fieldList[this.currentMeasure] as IFieldListOptions;
+                    const text: string = this.parent.dataSourceSettings.rows.length === 0 ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values.aggregateType as string) + ' ' +
                         this.parent.localeObj.getConstant('of') + ' ' + (!isNullOrUndefined(values.caption) ? values.caption : values.name) : firstRowCell.formattedText ? firstRowCell.formattedText.toString() : name;
-                    let caption: string = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
+                    const caption: string = (firstRowCell.hasChild && !firstRowCell.isNamedSet) ?
                         ((firstRowCell.isDrilled ? ' - ' : ' + ') + text) : text;
-                    let levelName: string = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort.levelName.toString();
-                    let cellInfo: ChartLabelInfo = {
+                    const levelName: string = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort.levelName.toString();
+                    const cellInfo: ChartLabelInfo = {
                         name: name,
                         text: caption,
                         hasChild: firstRowCell.hasChild,
@@ -273,15 +283,15 @@ export class PivotChart {
                         cell: firstRowCell
                     };
                     if (this.parent.dataType === 'olap' ? firstRowCell.memberType !== 3 : firstRowCell.type !== 'value') {
-                        if (this.headerColl[indexCount]) {
-                            this.headerColl[indexCount][currrentLevel] = cellInfo;
+                        if (this.headerColl[indexCount as number]) {
+                            this.headerColl[indexCount as number][currrentLevel as number] = cellInfo;
                         } else {
-                            this.headerColl[indexCount] = {};
-                            this.headerColl[indexCount][currrentLevel] = cellInfo;
+                            this.headerColl[indexCount as number] = {};
+                            this.headerColl[indexCount as number][currrentLevel as number] = cellInfo;
                         }
                     }
-                    let rows: IPivotRows = pivotValues[rowIndex];
-                    let cKeys: string[] = Object.keys(rows);
+                    const rows: IPivotRows = pivotValues[rowIndex as number];
+                    const cKeys: string[] = Object.keys(rows);
                     let prevMemberCell: IAxisSet;
                     if (this.parent.dataType === 'olap') {
                         memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
@@ -290,7 +300,7 @@ export class PivotChart {
                         if (firstRowCell.type !== 'value') {
                             memberCell = firstRowCell;
                         } else {
-                            let valueSort: string[] = firstRowCell && firstRowCell.valueSort && firstRowCell.valueSort.levelName &&
+                            const valueSort: string[] = firstRowCell && firstRowCell.valueSort && firstRowCell.valueSort.levelName &&
                                 firstRowCell.valueSort.levelName.toString().split(delimiter);
                             let levelName: string;
                             if (valueSort && valueSort.length > 0) {
@@ -300,13 +310,15 @@ export class PivotChart {
                             if ((this.parent.dataSourceSettings.valueIndex <= 0 || (this.engineModule as PivotEngine).valueAxis &&
                                 this.dataSourceSettings.rows.length === (this.engineModule as PivotEngine).measureIndex) ||
                                 isNullOrUndefined(memberCell.valueSort) || (levelName === memberCell.valueSort.levelName)) {
+                                // eslint-disable-next-line no-self-assign
                                 memberCell = memberCell;
                             } else {
-                                let prevIndex = rowIndex;
+                                let prevIndex: number = rowIndex;
                                 while (prevIndex > -1) {
-                                    if (pivotValues[prevIndex] && pivotValues[prevIndex][0] && (pivotValues[prevIndex][0] as IAxisSet).valueSort &&
-                                        (pivotValues[prevIndex][0] as IAxisSet).valueSort.levelName === levelName) {
-                                        memberCell = pivotValues[prevIndex][0] as IAxisSet;
+                                    if (pivotValues[prevIndex as number] && pivotValues[prevIndex as number][0] &&
+                                        (pivotValues[prevIndex as number][0] as IAxisSet).valueSort &&
+                                        (pivotValues[prevIndex as number][0] as IAxisSet).valueSort.levelName === levelName) {
+                                        memberCell = pivotValues[prevIndex as number][0] as IAxisSet;
                                         prevIndex = 0;
                                     }
                                     prevIndex--;
@@ -314,11 +326,12 @@ export class PivotChart {
                             }
                         }
                     }
-                    for (let cKey of cKeys) {
-                        let cellIndex: number = Number(cKey);
-                        let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
-                        let measureAllow: boolean = isNullOrUndefined(cell.rowHeaders) ? this.dataSourceSettings.rows.length === 0 : true;
-                        let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
+                    for (const cKey of cKeys) {
+                        const cellIndex: number = Number(cKey);
+                        const cell: IAxisSet = pivotValues[rowIndex as number][cellIndex as number] as IAxisSet;
+                        const measureAllow: boolean = isNullOrUndefined(cell.rowHeaders) ? this.dataSourceSettings.rows.length === 0 : true;
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
                         if (!(this.parent.dataType === 'olap' && cell.isGrandSum) && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                             actualText !== '' && ((chartSettings.enableMultipleAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ? true : actualText === this.currentMeasure)) {
@@ -327,34 +340,39 @@ export class PivotChart {
                             }
                             if (this.parent.dataType === 'olap' ? ((lastHierarchy === firstRowCell.hierarchy || isDrill) ?
                                 ((firstRowCell.memberType === 3 && prevMemberCell) ?
-                                    (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) : (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
+                                    (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) :
+                                    (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
                                 : (((firstRowCell.type === 'value' && prevMemberCell) ?
-                                    prevMemberCell.members.length > 0 && prevMemberCell.isDrilled : firstRowCell.members.length > 0 && firstRowCell.isDrilled) || !measureAllow)) {
+                                    prevMemberCell.members.length > 0 && prevMemberCell.isDrilled : firstRowCell.members.length > 0
+                                    && firstRowCell.isDrilled) || !measureAllow)) {
                                 break;
                             }
-                            let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
+                            const colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
                                 : cell.columnHeaders.toString().split(delimiter).join(' - ');
-                            let rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
+                            const rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
                                 : cell.rowHeaders.toString().split(delimiter).join(' - ');
-                            let columnSeries: string = colHeaders + ' | ' + actualText;
-                            this.chartSeriesInfo[colHeaders] = { uniqueName: colHeaders, caption: cell.hierarchyName && cell.hierarchyName.toString().split(delimiter).join(' - '), colorIndex: [] };
-                            this.chartSeriesInfo[this.chartSeriesInfo[colHeaders].caption] = this.chartSeriesInfo[colHeaders];
-                            let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex] &&
-                                !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex])) ?
-                                Number(this.engineModule.aggregatedValueMatrix[rowIndex][cellIndex]) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value) : (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value));
+                            const columnSeries: string = colHeaders + ' | ' + actualText;
+                            this.chartSeriesInfo[colHeaders as string] = { uniqueName: colHeaders, caption: cell.hierarchyName && cell.hierarchyName.toString().split(delimiter).join(' - '), colorIndex: [] };
+                            this.chartSeriesInfo[this.chartSeriesInfo[colHeaders as string].caption] =
+                            this.chartSeriesInfo[colHeaders as string];
+                            let yValue: number = (this.parent.dataType === 'pivot' ? (this.engineModule.aggregatedValueMatrix[rowIndex as number] &&
+                                !isNullOrUndefined(this.engineModule.aggregatedValueMatrix[rowIndex as number][cellIndex as number])) ?
+                                Number(this.engineModule.aggregatedValueMatrix[rowIndex as number][cellIndex as number]) :
+                                (!isNullOrUndefined(cell.value) ? Number(cell.value) : cell.value) : (!isNullOrUndefined(cell.value)
+                                ? Number(cell.value) : cell.value));
                             yValue = yValue === Infinity ? null : yValue;
                             if (yValue === 0) {
                                 this.accEmptyPoint = true;
                             }
-                            if (this.columnGroupObject[columnSeries]) {
-                                this.columnGroupObject[columnSeries].push({
+                            if (this.columnGroupObject[columnSeries as string]) {
+                                this.columnGroupObject[columnSeries as string].push({
                                     x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                     y: yValue,
                                     rIndex: rowIndex,
                                     cIndex: cellIndex
                                 });
                             } else {
-                                this.columnGroupObject[columnSeries] = [{
+                                this.columnGroupObject[columnSeries as string] = [{
                                     x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                     y: yValue,
                                     rIndex: rowIndex,
@@ -371,29 +389,35 @@ export class PivotChart {
     }
 
     /**
-     * Refreshing chart based on the updated chartSettings. 
-     * @returns {void}  
+     * Refreshing chart based on the updated chartSettings.
+     *
+     * @returns {void}
      */
     public refreshChart(): void {
         this.chartSeries = [];
         let prevColorIndex: number = 0;
-        let chartSeriesInfo: { [key: string]: { name?: string, color?: string } } = {};
-        let columnKeys: string[] = Object.keys(this.columnGroupObject);
+        const chartSeriesInfo: { [key: string]: { name?: string, color?: string } } = {};
+        const columnKeys: string[] = Object.keys(this.columnGroupObject);
         this.persistSettings = JSON.parse(this.parent.getPersistData()).chartSettings;
-        let seriesColors: string[] = this.persistSettings.palettes && this.persistSettings.palettes.length > 0 ? this.persistSettings.palettes : getSeriesColor(this.chartSettings.theme);
-        let delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
-        let columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
+        const seriesColors: string[] = this.persistSettings.palettes && this.persistSettings.palettes.length > 0
+            ? this.persistSettings.palettes : getSeriesColor(this.chartSettings.theme);
+        const delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';
+        const columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
             (this.parent as PivotView).chartSettings.columnHeader.split(delimiter).join(' - ') : '';
-        let chartType: ChartSeriesType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
-        let fieldWithCaption: { [key: string]: string } = {};
+        const chartType: ChartSeriesType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
+        const fieldWithCaption: { [key: string]: string } = {};
         for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
-            fieldWithCaption[this.parent.dataSourceSettings.values[i].name] = !isNullOrUndefined(this.parent.dataSourceSettings.values[i].caption) ? this.parent.dataSourceSettings.values[i].caption : undefined;
+            fieldWithCaption[this.parent.dataSourceSettings.values[i as number].name] =
+            !isNullOrUndefined(this.parent.dataSourceSettings.values[i as number].caption) ?
+                this.parent.dataSourceSettings.values[i as number].caption : undefined;
         }
         if (this.accumulationType.indexOf(chartType) > -1 && columnKeys.length > 0) {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             let currentSeries: AccumulationSeriesModel = {};
-            currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as AccumulationSeriesModel : currentSeries;
-            if ((isNullOrUndefined(currentSeries.palettes) || currentSeries.palettes.length == 0) && !isNullOrUndefined(this.persistSettings.palettes) && this.persistSettings.palettes.length > 0) {
+            currentSeries = this.persistSettings.chartSeries ?
+                this.frameChartSeries(this.persistSettings.chartSeries) as AccumulationSeriesModel : currentSeries;
+            if ((isNullOrUndefined(currentSeries.palettes) || currentSeries.palettes.length === 0) &&
+            !isNullOrUndefined(this.persistSettings.palettes) && this.persistSettings.palettes.length > 0) {
                 currentSeries.palettes = this.persistSettings.palettes;
             }
             currentSeries.dataSource = this.columnGroupObject[this.currentColumn];
@@ -403,8 +427,8 @@ export class PivotChart {
                 currentSeries.dataLabel = this.persistSettings.chartSeries.dataLabel;
                 currentSeries.dataLabel.name = 'x';
             } else {
-                currentSeries.dataLabel = { visible: true, position: "Outside", name: 'x' };
-                this.parent.setProperties({ chartSettings: { chartSeries: { dataLabel: { visible: true, position: "Outside" } } } }, true);
+                currentSeries.dataLabel = { visible: true, position: 'Outside', name: 'x' };
+                this.parent.setProperties({ chartSettings: { chartSeries: { dataLabel: { visible: true, position: 'Outside' } } } }, true);
             }
             if (this.accEmptyPoint && currentSeries.emptyPointSettings) {
                 currentSeries.emptyPointSettings.mode = 'Zero';
@@ -420,35 +444,40 @@ export class PivotChart {
             }
             this.chartSeries = (this.chartSeries as AccumulationSeriesModel[]).concat(currentSeries);
         } else {
-            for (let key of columnKeys) {
+            for (const key of columnKeys) {
                 let currentSeries: SeriesModel = {};
-                currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as SeriesModel : currentSeries;
-                if (!isNullOrUndefined((currentSeries as any).palettes) && (currentSeries as any).palettes.length > 0 && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
+                currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as SeriesModel
+                    : currentSeries;
+                /* eslint-disable */
+                if (!isNullOrUndefined((currentSeries as any).palettes) && (currentSeries as any).palettes.length > 0
+                    && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
                     this.chartSettings.palettes = (currentSeries as any).palettes;
                 }
-                for (let i: number = 0; i < this.columnGroupObject[key].length; i++) {
-                    let values: IFieldListOptions = this.engineModule.fieldList[this.currentMeasure] as IFieldListOptions;
-                    this.columnGroupObject[key][i].x = (this.parent.dataSourceSettings.rows.length === 0 && !this.chartSettings.showMultiLevelLabels) ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values.aggregateType as string) + ' ' +
-                        this.parent.localeObj.getConstant('of') + ' ' + (!isNullOrUndefined(values.caption) ? values.caption : values.name) : this.columnGroupObject[key][i].x === '' ? this.parent.localeObj.getConstant('blank') : this.columnGroupObject[key][i].x;
+                /* eslint-enable */
+                for (let i: number = 0; i < this.columnGroupObject[key as string].length; i++) {
+                    const values: IFieldListOptions = this.engineModule.fieldList[this.currentMeasure] as IFieldListOptions;
+                    this.columnGroupObject[key as string][i as number].x = (this.parent.dataSourceSettings.rows.length === 0 && !this.chartSettings.showMultiLevelLabels) ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(values.aggregateType as string) + ' ' +
+                        this.parent.localeObj.getConstant('of') + ' ' + (!isNullOrUndefined(values.caption) ? values.caption : values.name) : this.columnGroupObject[key as string][i as number].x === '' ? this.parent.localeObj.getConstant('blank') : this.columnGroupObject[key as string][i as number].x;
                 }
-                currentSeries.dataSource = this.columnGroupObject[key];
+                currentSeries.dataSource = this.columnGroupObject[key as string];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';
                 currentSeries.visible = true;
                 let multiAxisKey: string;
                 if (this.chartSettings.enableMultipleAxis) {
                     let fieldCaptionName: string = key.split(' | ')[1];
-                    fieldCaptionName = !isNullOrUndefined(fieldWithCaption[fieldCaptionName]) ? fieldWithCaption[fieldCaptionName] : fieldCaptionName;
+                    fieldCaptionName = !isNullOrUndefined(fieldWithCaption[fieldCaptionName as string]) ?
+                        fieldWithCaption[fieldCaptionName as string] : fieldCaptionName;
                     multiAxisKey = key.split(' | ')[0] + ' | ' + fieldCaptionName;
                 }
                 currentSeries.name = this.chartSettings.enableMultipleAxis ? multiAxisKey : key.split(' | ')[0];
-                if (this.chartSettings.showMemberSeries && this.chartSettings.enableMultipleAxis) {
+                if (this.chartSettings.showPointColorByMembers && this.chartSettings.enableMultipleAxis) {
                     currentSeries.name = currentSeries.name.split(' |')[0];
-                    let seriesName: string = this.chartSeriesInfo[currentSeries.name].caption;
+                    const seriesName: string = this.chartSeriesInfo[currentSeries.name].caption;
                     currentSeries.name = seriesName !== undefined && seriesName !== null ? seriesName : currentSeries.name;
                     if (!chartSeriesInfo[currentSeries.name]) {
-                        prevColorIndex = seriesColors[prevColorIndex] ? prevColorIndex : 0;
-                        chartSeriesInfo[currentSeries.name] = { name: currentSeries.name, color: seriesColors[prevColorIndex] };
+                        prevColorIndex = seriesColors[prevColorIndex as number] ? prevColorIndex : 0;
+                        chartSeriesInfo[currentSeries.name] = { name: currentSeries.name, color: seriesColors[prevColorIndex as number] };
                         currentSeries.fill = seriesColors[prevColorIndex++];
                         this.chartSeriesInfo[currentSeries.name].colorIndex.push(this.selectedLegend++);
                     }
@@ -459,8 +488,10 @@ export class PivotChart {
                     }
                 }
                 if (['Radar', 'Polar'].indexOf(chartType) < 0) {
-                    let measure: string = key.split(' | ')[1];
-                    (currentSeries as SeriesModel).yAxisName = this.measuresNames[measure] ? this.measuresNames[measure] : measure;
+                    const measure: string = key.split(' | ')[1];
+                    (currentSeries as SeriesModel).tooltipMappingName = this.measuresNames[measure as string];
+                    (currentSeries as SeriesModel).yAxisName = (this.chartSettings.enableMultipleAxis && this.chartSettings.multipleAxisMode === 'Combined') ?
+                        this.measureList.join('_') : this.measuresNames[measure as string] ? this.measuresNames[measure as string] : measure;
                 }
                 if (this.persistSettings.chartSeries && this.persistSettings.chartSeries.emptyPointSettings) {
                     currentSeries.emptyPointSettings = this.persistSettings.chartSeries.emptyPointSettings;
@@ -471,8 +502,9 @@ export class PivotChart {
                 this.chartSeries = (this.chartSeries as SeriesModel[]).concat(currentSeries);
             }
         }
-        let seriesEvent: ChartSeriesCreatedEventArgs = { series: this.chartSeries as SeriesModel[], cancel: false };
-        let pivotChart: PivotChart = this;
+        const seriesEvent: ChartSeriesCreatedEventArgs = { series: this.chartSeries as SeriesModel[], cancel: false };
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const pivotChart: PivotChart = this;
         this.parent.trigger(events.chartSeriesCreated, seriesEvent, (observedArgs: ChartSeriesCreatedEventArgs) => {
             if (!observedArgs.cancel) {
                 pivotChart.bindChart();
@@ -485,32 +517,36 @@ export class PivotChart {
         });
 
     }
+    /* eslint-disable */
     private frameObjectWithKeys(series: any): SeriesModel | AxisModel {
-        let keys: string[] = Object.keys(series);
+        const keys: string[] = Object.keys(series);
         let keyPos: number = 0;
-        let framedSeries: any = {};
+        const framedSeries: any = {};
+        /* eslint-enable */
         while (keyPos < keys.length) {
-            framedSeries[keys[keyPos]] = series[keys[keyPos]];
+            framedSeries[keys[keyPos as number]] = series[keys[keyPos as number]];
             keyPos++;
         }
         return framedSeries;
     }
 
+    /* eslint-disable */
     private frameChartSeries(series: any): SeriesModel | AccumulationSeriesModel {
-        let keys: string[] = Object.keys(series);
+        const keys: string[] = Object.keys(series);
         let keyPos: number = 0;
-        let framedSeries: any = {};
+        const framedSeries: any = {};
+        /* eslint-enable */
         while (keyPos < keys.length) {
             if ((this.accumulationType.indexOf(this.parent.chartSettings.chartSeries.type) > -1 && ['fill', 'dashArray', 'width', 'segmentAxis',
                 'drawType', 'isClosed', 'segments', 'stackingGroup', 'marker', 'errorBar', 'trendlines', 'minRadius',
-                'splineType', 'maxRadius', 'cardinalSplineTension', 'columnWidth', 'columnSpacing', 'cornerRadius'].indexOf(keys[keyPos]) > -1) ||
+                'splineType', 'maxRadius', 'cardinalSplineTension', 'columnWidth', 'columnSpacing', 'cornerRadius'].indexOf(keys[keyPos as number]) > -1) ||
                 (this.accumulationType.indexOf(this.parent.chartSettings.chartSeries.type) < 0 && ['endAngle', 'explode', 'explodeAll', 'explodeIndex',
                     'explodeOffset', 'gapRatio', 'groupMode', 'groupTo', 'neckHeight', 'neckWidth', 'pyramidMode', 'startAngle',
-                    'dataLabel', 'innerRadius'].indexOf(keys[keyPos]) > -1)) {
+                    'dataLabel', 'innerRadius'].indexOf(keys[keyPos as number]) > -1)) {
                 keyPos++;
                 continue;
             }
-            framedSeries[keys[keyPos]] = series[keys[keyPos]];
+            framedSeries[keys[keyPos as number]] = series[keys[keyPos as number]];
             keyPos++;
         }
         return framedSeries;
@@ -518,12 +554,12 @@ export class PivotChart {
 
     private bindChart(): void {
         this.parent.showWaitingPopup();
-        let currentXAxis: AxisModel = this.configXAxis();
-        let currentTooltipSettings: TooltipSettingsModel = this.configTooltipSettings();
-        let currentLegendSettings: LegendSettingsModel = this.configLegendSettings();
-        let currentZoomSettings: ZoomSettingsModel = this.configZoomSettings();
-        let axesWithRows: { axes: AxisModel[], rows: RowModel[], columns: ColumnModel[] } = this.frameAxesWithRows();
-        let type: ChartSeriesType = this.chartSettings.chartSeries.type;
+        const currentXAxis: AxisModel = this.configXAxis();
+        const currentTooltipSettings: TooltipSettingsModel = this.configTooltipSettings();
+        const currentLegendSettings: LegendSettingsModel = this.configLegendSettings();
+        const currentZoomSettings: ZoomSettingsModel = this.configZoomSettings();
+        const axesWithRows: { axes: AxisModel[], rows: RowModel[], columns: ColumnModel[] } = this.frameAxesWithRows();
+        const type: ChartSeriesType = this.chartSettings.chartSeries.type;
         if (this.parent.displayOption.view === 'Both') {
             this.element = this.parent.displayOption.primary === 'Chart' ?
                 (this.parent.element.insertBefore(
@@ -543,7 +579,7 @@ export class PivotChart {
         if (!this.chartElement && this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis && this.chartSettings.chartSeries.type !== 'Pareto') {
             ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART) as HTMLElement).innerHTML = '';
             this.chartElement = (this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART).appendChild(createElement('div', {
-                className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
+                className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner'
             }));
         }
         if ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART_INNER) as HTMLElement) {
@@ -558,7 +594,7 @@ export class PivotChart {
         if (this.parent.showToolbar && this.parent.grid) {
             width = this.parent.getGridWidthAsNumber().toString();
         }
-        let height: string | number = this.getChartHeight();
+        const height: string | number = this.getChartHeight();
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
             this.accumulationType.indexOf(type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') {
             ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.height =
@@ -576,7 +612,7 @@ export class PivotChart {
             if (select('#' + this.parent.element.id + '_chart', this.parent.element)) {
                 select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
                 select('#' + this.parent.element.id + '_chart', this.parent.element).appendChild(createElement('div', {
-                    className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
+                    className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner'
                 }));
             }
         }
@@ -589,7 +625,7 @@ export class PivotChart {
                 this.parent.chart = undefined;
                 select('#' + this.parent.element.id + '_chart', this.parent.element).innerHTML = '';
                 select('#' + this.parent.element.id + '_chart', this.parent.element).appendChild(createElement('div', {
-                    className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner',
+                    className: cls.PIVOTCHART_INNER, id: this.parent.element.id + '_chartInner'
                 }));
                 this.parent.toolbarModule.isMultiAxisChange = false;
             }
@@ -599,7 +635,7 @@ export class PivotChart {
                 AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, StackingLineSeries, MultiColoredAreaSeries, ParetoSeries,
                 Legend, Tooltip, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair, Selection, StripLine, DataLabel);
             AccumulationChart.Inject(PieSeries, FunnelSeries, PyramidSeries, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip,
-                Export);
+                                     Export);
             if (this.accumulationType.indexOf(type) > -1) {
                 this.parent.chart = new AccumulationChart(
                     {
@@ -630,7 +666,8 @@ export class PivotChart {
                         locale: this.parent.locale,
                         enableRtl: this.parent.enableRtl,
                         beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
-                        animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this) : undefined,
+                        animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this)
+                            : undefined,
                         legendRender: this.chartSettings.legendRender ? this.chartSettings.legendRender.bind(this) : undefined,
                         textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
                         pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
@@ -697,12 +734,14 @@ export class PivotChart {
                         enableRtl: this.parent.enableRtl,
                         enableSideBySidePlacement: this.chartSettings.enableSideBySidePlacement,
                         beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
-                        animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this) : undefined,
+                        animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this)
+                            : undefined,
                         legendRender: this.chartSettings.legendRender ? this.chartSettings.legendRender.bind(this) : undefined,
                         textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
                         pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
                         seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
-                        axisMultiLabelRender: this.chartSettings.multiLevelLabelRender ? this.chartSettings.multiLevelLabelRender.bind(this) : undefined,
+                        axisMultiLabelRender: this.chartSettings.multiLevelLabelRender ? this.chartSettings.multiLevelLabelRender.bind(this)
+                            : undefined,
                         chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
                         chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
                         pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,
@@ -721,7 +760,7 @@ export class PivotChart {
                         load: this.load.bind(this),
                         resized: this.resized.bind(this),
                         axisLabelRender: this.axisLabelRender.bind(this),
-                        multiLevelLabelClick: this.multiLevelLabelClick.bind(this),
+                        multiLevelLabelClick: this.multiLevelLabelClick.bind(this)
                     });
             }
             this.parent.chart.isStringTemplate = true;
@@ -788,81 +827,88 @@ export class PivotChart {
     }
 
     private legendClick(args: ILegendClickEventArgs): void {
-        if (this.chartSettings.showMemberSeries && this.chartSettings.enableMultipleAxis) {
-            let colorIndex: number[] = this.chartSeriesInfo[args.legendText].colorIndex;
-            for (let i = 1; i < colorIndex.length; i++) {
-                args.chart.series[colorIndex[i]].visible = !args.chart.series[colorIndex[i]].visible;
+        if (this.chartSettings.showPointColorByMembers && this.chartSettings.enableMultipleAxis) {
+            const colorIndex: number[] = this.chartSeriesInfo[args.legendText].colorIndex;
+            for (let i: number = 1; i < colorIndex.length; i++) {
+                args.chart.series[colorIndex[i as number]].visible = !args.chart.series[colorIndex[i as number]].visible;
             }
         }
         this.parent.trigger(events.chartLegendClick, args);
     }
 
     private pointClick(args: IPointEventArgs): void {
-        let dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
         if (((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) && (this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.rows.length > 1)) {
             this.pivotIndex = {
                 rIndex: dataSource ? dataSource[args.pointIndex].rIndex : undefined,
-                cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined,
+                cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined
             };
             this.creatMenu();
-            let pos: OffsetPosition = this.parent.element.getBoundingClientRect();
-            let y: number = (this.parent.element.querySelector('.e-pivot-toolbar') ?
+            const pos: OffsetPosition = this.parent.element.getBoundingClientRect();
+            const y: number = (this.parent.element.querySelector('.e-pivot-toolbar') ?
                 this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 0) +
                 (this.parent.element.querySelector('.e-chart-grouping-bar') ?
                     this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 0) +
                 (window.scrollY || document.documentElement.scrollTop) + pos.top;
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             this.accumulationMenu.open(y + args.y, args.x + pos.left + (window.scrollX || document.documentElement.scrollLeft));
         } else if ((this.parent.allowDrillThrough || this.parent.editSettings.allowEditing) && this.parent.drillThroughModule) {
-            let rIndex: number = dataSource[args.pointIndex].rIndex;
-            let cIndex: number = dataSource[args.pointIndex].cIndex;
-            this.parent.drillThroughModule.executeDrillThrough(this.parent.pivotValues[rIndex][cIndex] as IAxisSet, rIndex, cIndex);
+            const rIndex: number = dataSource[args.pointIndex].rIndex;
+            const cIndex: number = dataSource[args.pointIndex].cIndex;
+            this.parent.drillThroughModule.executeDrillThrough(
+                this.parent.pivotValues[rIndex as number][cIndex as number] as IAxisSet, rIndex, cIndex);
         }
         this.parent.trigger(events.chartPointClick, args);
     }
-    /* eslint-enable */
 
     private frameAxesWithRows(): { axes: AxisModel[]; rows: RowModel[]; columns: ColumnModel[] } {
         let axes: AxisModel[] = [];
         let rows: RowModel[] = [];
         let columns: ColumnModel[] = [];
-        let percentChart: boolean = this.persistSettings.chartSeries && (
+        const yAxisTitles: string[] = [];
+        const percentChart: boolean = this.persistSettings.chartSeries && (
             this.persistSettings.chartSeries.type === 'StackingColumn100' ||
             this.persistSettings.chartSeries.type === 'StackingBar100' ||
             this.persistSettings.chartSeries.type === 'StackingArea100' ||
             this.persistSettings.chartSeries.type === 'StackingLine100');
-        let percentAggregateTypes: SummaryTypes[] = ['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
+        const percentAggregateTypes: SummaryTypes[] = ['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
             'PercentageOfDifferenceFrom', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal'];
         if (this.chartSettings.enableMultipleAxis) {
             let valCnt: number = 0;
-            let divider: string = (100 / this.dataSourceSettings.values.length) + '%';
-            for (let item of this.dataSourceSettings.values) {
-                let measureField: IField = this.engineModule.fieldList[item.name];
-                let measureAggregatedName: string =
+            const divider: string = (100 / this.dataSourceSettings.values.length) + '%';
+            for (const item of this.dataSourceSettings.values) {
+                const measureField: IField = this.engineModule.fieldList[item.name];
+                const measureAggregatedName: string =
                     (this.parent.dataType === 'olap' ? '' : (this.parent.localeObj.getConstant(measureField.aggregateType) + ' ' +
                         this.parent.localeObj.getConstant('of') + ' ')) + measureField.caption;
                 // let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((itm: IFormatSettings) => {
                 //     return itm.name === item.name;
                 // })[0];
+                yAxisTitles.push(measureAggregatedName);
                 let formatSetting: IFormatSettings;
-                for (let field of this.dataSourceSettings.formatSettings) {
+                for (const field of this.dataSourceSettings.formatSettings) {
                     if (field.name === item.name) {
                         formatSetting = field;
                         break;
                     }
                 }
-                let format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
+                const format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
                     (formatSetting.format.toLowerCase().match(/n|p|c/) === null ? 'N' : formatSetting.format) :
                     this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
-                let resFormat: boolean =
+                const resFormat: boolean =
                     (this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar') ? true : false;
                 let currentYAxis: AxisModel = {};
                 currentYAxis = this.persistSettings.primaryYAxis ?
                     this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
                 currentYAxis.labelFormat = currentYAxis.labelFormat ?
                     currentYAxis.labelFormat : (percentChart ? '' : (!resFormat ? format : 'N'));
-                currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
-                currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1 : this.chartSettings.primaryYAxis.zoomFactor;
-                currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ? this.chartSettings.primaryYAxis.edgeLabelPlacement : this.persistSettings.primaryYAxis.edgeLabelPlacement;
+                currentYAxis.title = (this.chartSettings.multipleAxisMode === 'Combined') ? yAxisTitles.join(' - ') :
+                    currentYAxis.title ? currentYAxis.title : measureAggregatedName;
+                currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1
+                    : this.chartSettings.primaryYAxis.zoomFactor;
+                currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ?
+                    this.chartSettings.primaryYAxis.edgeLabelPlacement : this.persistSettings.primaryYAxis.edgeLabelPlacement;
                 if (this.chartSettings.chartSeries.type === 'Bar' || this.chartSettings.chartSeries.type === 'StackingBar' ||
                     this.chartSettings.chartSeries.type === 'StackingBar100') {
                     currentYAxis.plotOffsetRight = currentYAxis.plotOffsetRight ? currentYAxis.plotOffsetRight : 30;
@@ -871,9 +917,13 @@ export class PivotChart {
                     currentYAxis.plotOffsetTop = currentYAxis.plotOffsetTop ? currentYAxis.plotOffsetTop : 30;
                 }
                 if (!resFormat) {
-                    currentYAxis.name = this.measuresNames[item.name] ? this.measuresNames[item.name] : item.name;
+                    currentYAxis.name = (this.chartSettings.multipleAxisMode === 'Combined') ? this.measureList.join('_') :
+                        this.measuresNames[item.name] ? this.measuresNames[item.name] : item.name;
                 }
                 axes = axes.concat(currentYAxis);
+                if (this.chartSettings.multipleAxisMode === 'Combined') {
+                    axes = [axes[axes.length - 1]];
+                }
                 if (this.chartSettings.multipleAxisMode === 'Stacked') {
                     currentYAxis.rowIndex = valCnt;
                     currentYAxis.columnIndex = valCnt;
@@ -888,15 +938,15 @@ export class PivotChart {
                 valCnt++;
             }
         } else {
-            let measureField: IField = this.engineModule.fieldList[this.currentMeasure];
-            let measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' :
+            const measureField: IField = this.engineModule.fieldList[this.currentMeasure];
+            const measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' :
                 (this.parent.localeObj.getConstant(measureField.aggregateType) + ' ' +
                     this.parent.localeObj.getConstant('of') + ' ')) + measureField.caption;
             // let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((item: IFormatSettings) => {
             //     return item.name === this.currentMeasure;
             // })[0];
             let formatSetting: IFormatSettings;
-            for (let item of this.dataSourceSettings.formatSettings) {
+            for (const item of this.dataSourceSettings.formatSettings) {
                 if (item.name === this.currentMeasure) {
                     formatSetting = item;
                     break;
@@ -907,14 +957,16 @@ export class PivotChart {
                 lengthofFormat = formatSetting.format.length;
             }
             let currentYAxis: AxisModel = {};
-            let format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
+            const format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
                 (((formatSetting.format.toLowerCase().match(/n[0-10]|p[0-10]|c[0-10]/) === null) || lengthofFormat > 3) ? 'N' : formatSetting.format) :
                 this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
             currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
-            currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1 : this.chartSettings.primaryYAxis.zoomFactor;
+            currentYAxis.zoomFactor = isNullOrUndefined(this.chartSettings.primaryYAxis.zoomFactor) ? 1
+                : this.chartSettings.primaryYAxis.zoomFactor;
             currentYAxis.rowIndex = 0;
             currentYAxis.columnIndex = 0;
-            currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ? this.chartSettings.primaryYAxis.edgeLabelPlacement : this.persistSettings.primaryYAxis.edgeLabelPlacement;
+            currentYAxis.edgeLabelPlacement = this.chartSettings.primaryYAxis.edgeLabelPlacement ?
+                this.chartSettings.primaryYAxis.edgeLabelPlacement : this.persistSettings.primaryYAxis.edgeLabelPlacement;
             if (!(this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
                 currentYAxis.name = this.measuresNames[this.currentMeasure] ? this.measuresNames[this.currentMeasure] : this.currentMeasure;
             }
@@ -938,18 +990,18 @@ export class PivotChart {
         return format;
     }
 
-    /* eslint-disable-next-line */
     /** @hidden */
+
     public getColumnTotalIndex(pivotValues: IPivotValues): INumberIndex {
-        let colIndexColl: INumberIndex = {};
-        let rKeys: string[] = Object.keys(pivotValues);
-        for (let rowIndex of rKeys) {
-            let rows: IPivotRows = pivotValues[Number(rowIndex)];
+        const colIndexColl: INumberIndex = {};
+        const rKeys: string[] = Object.keys(pivotValues);
+        for (const rowIndex of rKeys) {
+            const rows: IPivotRows = pivotValues[Number(rowIndex)];
             let cKeys: string[];
             if (!isNullOrUndefined(rows)) {
                 cKeys = Object.keys(rows);
-                for (let cellIndex of cKeys) {
-                    let cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
+                for (const cellIndex of cKeys) {
+                    const cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
                     if (!isNullOrUndefined(cell)) {
                         if (cell.axis !== 'column') {
                             return colIndexColl;
@@ -966,12 +1018,12 @@ export class PivotChart {
 
     private groupHierarchyWithLevels(pivotValues: IAxisSet[]): { [key: string]: { start: number; end: number } } {
         this.fieldPosition = [];
-        let group: { [key: string]: { [key: string]: string } } = {};
+        const group: { [key: string]: { [key: string]: string } } = {};
         let fieldCount: number = 0;
-        let levelPos: { [key: string]: { start: number; end: number } } = {};
+        const levelPos: { [key: string]: { start: number; end: number } } = {};
         this.measurePos = (this.engineModule as OlapEngine).tupRowInfo[0].measurePosition;
         for (let rowPos: number = 0; rowPos < pivotValues.length; rowPos++) {
-            let cell: IAxisSet = (pivotValues[rowPos] as IAxisSet[])[0];
+            const cell: IAxisSet = (pivotValues[rowPos as number] as IAxisSet[])[0];
             if (cell && cell.axis === 'row' && cell.type !== 'grand sum') {
                 if (isNullOrUndefined(group[cell.hierarchy])) {
                     if (cell.memberType === 3) {
@@ -982,7 +1034,7 @@ export class PivotChart {
                             fieldCount--;
                         }
                     } else {
-                        this.fieldPosition[fieldCount] = cell.hierarchy;
+                        this.fieldPosition[fieldCount as number] = cell.hierarchy;
                         group[cell.hierarchy] = { [cell.levelUniqueName]: cell.levelUniqueName };
                     }
                     fieldCount++;
@@ -994,33 +1046,33 @@ export class PivotChart {
         let lastEnd: number = -1;
         for (let pos: number = 0; pos < this.fieldPosition.length; pos++) {
             if (this.measurePos !== pos) {
-                levelPos[this.fieldPosition[pos]] = {
+                levelPos[this.fieldPosition[pos as number]] = {
                     start: (lastEnd + 1),
-                    end: (lastEnd + Object.keys(group[this.fieldPosition[pos]]).length)
+                    end: (lastEnd + Object.keys(group[this.fieldPosition[pos as number]]).length)
                 };
-                lastEnd = levelPos[this.fieldPosition[pos]].end;
+                lastEnd = levelPos[this.fieldPosition[pos as number]].end;
             }
         }
         return levelPos;
     }
-    /* eslint-disable */
+
     private frameMultiLevelLabels(): MultiLevelLabelsModel[] {
-        let startKeys: string[] = Object.keys(this.headerColl);
+        const startKeys: string[] = Object.keys(this.headerColl);
         let parentHeaders: RowHeaderLevelGrouping = this.headerColl[-0.5];
-        for (let startKey of startKeys) {
-            let sKey: number = Number(startKey);
-            let headers = this.headerColl[sKey];
+        for (const startKey of startKeys) {
+            const sKey: number = Number(startKey);
+            const headers: RowHeaderLevelGrouping = this.headerColl[sKey as number];
             let levelPos: number = 0;
             let isAvail: boolean = false;
             while (levelPos <= this.maxLevel) {
                 if (!isAvail) {
-                    if (!headers[levelPos]) {
-                        headers[levelPos] = parentHeaders[levelPos];
+                    if (!headers[levelPos as number]) {
+                        headers[levelPos as number] = parentHeaders[levelPos as number];
                     } else {
                         isAvail = true;
                     }
-                } else if (!headers[levelPos]) {
-                    headers[levelPos] = {
+                } else if (!headers[levelPos as number]) {
+                    headers[levelPos as number] = {
                         name: headers[levelPos - 1].name,
                         // text: headers[levelPos - 1].text,
                         text: '',
@@ -1031,53 +1083,53 @@ export class PivotChart {
                         fieldName: headers[levelPos - 1].fieldName,
                         rowIndex: headers[levelPos - 1].rowIndex,
                         colIndex: headers[levelPos - 1].colIndex,
-                        span: -1,
+                        span: -1
                     };
                     // headers[levelPos - 1].span = 0;
                 }
                 levelPos++;
             }
-            parentHeaders = this.headerColl[sKey];
+            parentHeaders = this.headerColl[sKey as number];
         }
-        let gRows: { [key: number]: any } = {};
-        for (let startKey of startKeys) {
-            let sKey: number = Number(startKey);
-            let headers = this.headerColl[sKey];
-            let lKeys: string[] = Object.keys(headers);
-            for (let levelKey of lKeys) {
-                let lKey: number = Number(levelKey);
-                if (gRows[lKey]) {
-                    let len: number = gRows[lKey].length;
-                    if (headers[lKey].levelName === parentHeaders[lKey].levelName) {
-                        gRows[lKey][len - 1].end = gRows[lKey][len - 1].end as number + 1;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const gRows: { [key: number]: any } = {};
+        for (const startKey of startKeys) {
+            const sKey: number = Number(startKey);
+            const headers: RowHeaderLevelGrouping = this.headerColl[sKey as number];
+            const lKeys: string[] = Object.keys(headers);
+            for (const levelKey of lKeys) {
+                const lKey: number = Number(levelKey);
+                if (gRows[lKey as number]) {
+                    const len: number = gRows[lKey as number].length;
+                    if (headers[lKey as number].levelName === parentHeaders[lKey as number].levelName) {
+                        gRows[lKey as number][len - 1].end = gRows[lKey as number][len - 1].end as number + 1;
                     } else {
-                        gRows[lKey].push({
-                            start: sKey, end: sKey + 1, text: headers[lKey].text,
-                            type: (headers[lKey].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
-                            customAttributes: headers[lKey]
+                        gRows[lKey as number].push({
+                            start: sKey, end: sKey + 1, text: headers[lKey as number].text,
+                            type: (headers[lKey as number].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
+                            customAttributes: headers[lKey as number]
                         });
                     }
                 } else {
-                    gRows[lKey] = [{
-                        start: sKey, end: sKey + 1, text: headers[lKey].text,
-                        type: (headers[lKey].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
-                        customAttributes: headers[lKey]
+                    gRows[lKey as number] = [{
+                        start: sKey, end: sKey + 1, text: headers[lKey as number].text,
+                        type: (headers[lKey as number].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
+                        customAttributes: headers[lKey as number]
                     }];
                 }
             }
             parentHeaders = headers;
         }
-        let levellength: number = Object.keys(gRows).length;
-        let multiLevelLabels: MultiLevelLabelsModel[] = [];
+        const levellength: number = Object.keys(gRows).length;
+        const multiLevelLabels: MultiLevelLabelsModel[] = [];
         for (let level: number = levellength - 1; level > -1; level--) {
-            multiLevelLabels.push({ categories: gRows[level], border: { width: 1 }, overflow: 'Trim' });
+            multiLevelLabels.push({ categories: gRows[level as number], border: { width: 1 }, overflow: 'Trim' });
         }
         return multiLevelLabels;
     }
-    /* eslint-enable */
     private getZoomFactor(): number {
         this.calculatedWidth = this.getCalulatedWidth();
-        let seriesLength: number = (this.chartSeries.length * 10) > 120 ? (this.chartSeries.length * 10) : 120;
+        const seriesLength: number = (this.chartSeries.length * 10) > 120 ? (this.chartSeries.length * 10) : 120;
         let zoomFactor: number = this.chartSeries.length > 0 ?
             (this.calculatedWidth / (Object.keys(this.chartSeries[0].dataSource).length * seriesLength)) : 1;
         zoomFactor = (zoomFactor < 1 && zoomFactor > 0) ? zoomFactor : 1;
@@ -1085,6 +1137,7 @@ export class PivotChart {
     }
 
     /** @hidden */
+
     public getCalulatedWidth(): number {
         if (!isNaN(Number(this.parent.width))) {
             this.calculatedWidth = Number(this.parent.width);
@@ -1099,7 +1152,7 @@ export class PivotChart {
     }
 
     private configTooltipSettings(): TooltipSettingsModel {
-        let tooltip: TooltipSettingsModel = this.persistSettings.tooltip ? this.persistSettings.tooltip : this.chartSettings.tooltip;
+        const tooltip: TooltipSettingsModel = this.persistSettings.tooltip ? this.persistSettings.tooltip : this.chartSettings.tooltip;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
         if (tooltip.enable && tooltip.template) {
             this.templateFn = this.parent.templateParser(tooltip.template);
@@ -1112,14 +1165,15 @@ export class PivotChart {
         return tooltip;
     }
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     private configLegendSettings(): LegendSettingsModel {
-        let legendSettings: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const legendSettings: any = {};
         if (this.chartSettings.legendSettings) {
             let keyPos: number = 0;
-            let keys: string[] = Object.keys(this.chartSettings.legendSettings);
+            const keys: string[] = Object.keys(this.chartSettings.legendSettings);
             while (keyPos < keys.length) {
-                legendSettings[keys[keyPos]] = (this.chartSettings.legendSettings as any)[keys[keyPos]];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                legendSettings[keys[keyPos as number]] = (this.chartSettings.legendSettings as any)[keys[keyPos as number]];
                 keyPos++;
             }
         }
@@ -1128,7 +1182,6 @@ export class PivotChart {
         legendSettings.shapePadding = legendSettings.shapePadding ? legendSettings.shapePadding : 10;
         return legendSettings;
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     private configXAxis(): AxisModel {
         let currentXAxis: AxisModel = {};
@@ -1139,7 +1192,8 @@ export class PivotChart {
             this.dataSourceSettings.rows.map((args: IFieldOptions) => {
                 return args.caption || args.name;
             }).join(' / ');
-        currentXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? this.getZoomFactor() : this.parent.chartSettings.primaryXAxis.zoomFactor;
+        currentXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? this.getZoomFactor()
+            : this.parent.chartSettings.primaryXAxis.zoomFactor;
         if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
             currentXAxis.zoomFactor = 1;
         }
@@ -1156,7 +1210,7 @@ export class PivotChart {
     }
 
     private configZoomSettings(): ZoomSettingsModel {
-        let zoomSettings: ZoomSettingsModel = this.chartSettings.zoomSettings;
+        const zoomSettings: ZoomSettingsModel = this.chartSettings.zoomSettings;
         zoomSettings.enableSelectionZooming = zoomSettings.enableSelectionZooming === undefined ? true :
             zoomSettings.enableSelectionZooming;
         zoomSettings.enableScrollbar = zoomSettings.enableScrollbar === undefined ? true : zoomSettings.enableScrollbar;
@@ -1164,35 +1218,40 @@ export class PivotChart {
     }
 
     private tooltipRender(args: ITooltipRenderEventArgs): void {
-        let measure: string = (args.series as Series).yAxisName ? ((args.series as Series).yAxisName.split('_CumulativeAxis')[0]) :
-            ((this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Pareto') ?
-                args.series.name ? args.series.name.split(' | ')[1] : args.data.seriesName ?
-                    args.data.seriesName.split(' | ')[1] : this.currentMeasure : this.measuresNames[this.currentMeasure] ?
-                    this.measuresNames[this.currentMeasure] : this.currentMeasure);
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        let dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.data.seriesIndex].dataSource;
-        let rowIndex: number = dataSource ? dataSource[args.data.pointIndex].rIndex : undefined;
-        let colIndex: number = dataSource ? dataSource[args.data.pointIndex].cIndex : undefined;
-        let measureField: IField = this.engineModule.fieldList[this.measuresNames[measure] ? this.measuresNames[measure] : measure];
-        let aggregateType: string = this.parent.dataType === 'olap' ? '' : this.parent.localeObj.getConstant(measureField.aggregateType);
-        let measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' : aggregateType + ' ' +
+        const measure: string = (this.chartSettings.enableMultipleAxis && this.chartSettings.multipleAxisMode === 'Combined' &&
+            this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0 && this.chartSettings.chartSeries.type !== 'Radar' &&
+            this.chartSettings.chartSeries.type !== 'Polar') ? (args.series as Series).tooltipMappingName :
+            (args.series as Series).yAxisName ? ((args.series as Series).yAxisName.split('_CumulativeAxis')[0]) :
+                ((this.chartSettings.enableMultipleAxis && this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0 &&
+                    this.chartSettings.chartSeries.type !== 'Pareto') ? args.series.name ? args.series.name.split(' | ')[1] :
+                        args.data.seriesName ? args.data.seriesName.split(' | ')[1] : this.currentMeasure : this.measuresNames[this.currentMeasure] ?
+                        this.measuresNames[this.currentMeasure] : this.currentMeasure);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dataSource: any = args.series.dataSource ? args.series.dataSource
+            : this.parent.chart.series[args.data.seriesIndex].dataSource;
+        const rowIndex: number = dataSource ? dataSource[args.data.pointIndex].rIndex : undefined;
+        const colIndex: number = dataSource ? dataSource[args.data.pointIndex].cIndex : undefined;
+        const measureField: IField = this.engineModule.fieldList[this.measuresNames[measure as string]
+            ? this.measuresNames[measure as string] : measure];
+        const aggregateType: string = this.parent.dataType === 'olap' ? '' : this.parent.localeObj.getConstant(measureField.aggregateType);
+        const measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' : aggregateType + ' ' +
             this.parent.localeObj.getConstant('of') + ' ') + measureField.caption;
-        let formattedText: string = (this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet).formattedText;
-        let formatField: IField = this.engineModule.formatFields[measureField.id];
-        let valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.point.y as number, measureField.id, formattedText);
-        let formattedValue: string = (formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
+        const formattedText: string = (this.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).formattedText;
+        const formatField: IField = this.engineModule.formatFields[measureField.id];
+        const valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.point.y as number, measureField.id, formattedText);
+        const formattedValue: string = (formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
-            valueFormat.toString() :
-            (valueFormat as IAxisSet).formattedText :
+                valueFormat.toString() : (valueFormat as IAxisSet).formattedText :
             formattedText;
-        let text: string | number | Date = (this.parent.pivotValues[rowIndex][colIndex] as IAxisSet).columnHeaders;
-        let columnText = !isNullOrUndefined(text) ? this.parent.dataType === 'olap' ? this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName :
+        const text: string | number | Date = (this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).columnHeaders;
+        const columnText : string = !isNullOrUndefined(text) ? this.parent.dataType === 'olap' ? this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName :
             this.chartSeriesInfo[text.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ')].uniqueName : undefined;
-        let rowText: any = args.point.x;
+        /* eslint-disable */
+        const rowText: any = args.point.x;
         if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {
-            let rowFields: string = dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'row') : '';
-            let columnFields: string = dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'Column') : '';
-            let templateVariable: any = {
+            const rowFields: string = dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'row') : '';
+            const columnFields: string = dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'Column') : '';
+            const templateVariable: any = {
                 rowHeaders: rowText,
                 columnHeaders: columnText,
                 aggregateType: aggregateType,
@@ -1201,13 +1260,13 @@ export class PivotChart {
                 rowFields: rowFields,
                 columnFields: columnFields
             };
+            /* eslint-enable */
             let template: string;
             if (this.parent.chartSettings && this.parent.chartSettings.tooltip &&
                 this.parent.chartSettings.tooltip.enable && this.parent.chartSettings.tooltip.template) {
                 template = this.tooltipTemplateFn()(
                     templateVariable, this, 'tooltipTemplate', this.element.id + '1tooltipTemplate')[0].outerHTML;
             } else {
-                /* eslint-enable @typescript-eslint/no-explicit-any */
                 template = this.parent.getTooltipTemplate()(
                     templateVariable, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
             }
@@ -1222,18 +1281,18 @@ export class PivotChart {
         }
     }
 
-    private tooltipTemplateFn(): Function { /* eslint-disable-line */
+    private tooltipTemplateFn(): Function {
         return this.templateFn;
     }
     private loaded(args: ILoadedEventArgs): void {
         this.parent.isChartLoaded = true;
-        let width: string = this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString();
+        const width: string = this.parent.grid ? this.parent.getGridWidthAsNumber().toString() : this.parent.getWidthAsNumber().toString();
         if (this.parent.chart && this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.showFieldList && this.parent.currentView === 'Chart') {
             this.parent.groupingBarModule.alignIcon();
         }
         if (this.chartSettings.showMultiLevelLabels) {
-            let multilabelAxisName: string =
+            const multilabelAxisName: string =
                 PivotUtil.inArray(this.chartSettings.chartSeries.type, ['Bar', 'StackingBar', 'StackingBar100']) > -1 ?
                     '_chartYAxisMultiLevelLabel0' : '_chartXAxisMultiLevelLabel0';
             if (!isNullOrUndefined(select('#' + this.parent.element.id + multilabelAxisName, this.parent.element))) {
@@ -1258,8 +1317,8 @@ export class PivotChart {
             this.parent.hideWaitingPopup();
         }
     }
-    /* eslint-disable-next-line */
     /** @hidden */
+
     public updateView(): void {
         if (this.parent.grid && this.parent.chart && this.parent.showToolbar) {
             if (this.parent.currentView === 'Table') {
@@ -1268,7 +1327,7 @@ export class PivotChart {
                 if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
                     this.parent.element.querySelector('.e-pivot-grouping-bar') &&
                     this.parent.element.querySelector('.e-chart-grouping-bar')) {
-                    let groupingTable: HTMLElement = this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement;
+                    const groupingTable: HTMLElement = this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement;
                     groupingTable.style.display = '';
                     if (groupingTable && groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.parent.groupingBarModule.gridPanel != null &&
                         !this.parent.groupingBarModule.gridPanel.isDestroyed) {
@@ -1286,7 +1345,7 @@ export class PivotChart {
                     this.parent.element.querySelector('.e-pivot-grouping-bar') &&
                     this.parent.element.querySelector('.e-chart-grouping-bar')) {
                     (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = 'none';
-                    let groupingChartTable: HTMLElement = this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement;
+                    const groupingChartTable: HTMLElement = this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement;
                     groupingChartTable.style.display = '';
                     if (groupingChartTable && groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) &&
                         this.parent.groupingBarModule.chartPanel != null && !this.parent.groupingBarModule.chartPanel.isDestroyed) {
@@ -1304,25 +1363,25 @@ export class PivotChart {
         if (this.accumulationMenu && !this.accumulationMenu.isDestroyed) {
             this.accumulationMenu.destroy();
         }
-        let items: string[] = ((this.parent.allowDrillThrough || this.parent.editSettings.allowEditing)
+        const items: string[] = ((this.parent.allowDrillThrough || this.parent.editSettings.allowEditing)
             && this.parent.drillThroughModule) ? ['expand', 'collapse', 'drillThrough', 'exit'] :
             ['expand', 'collapse', 'exit'];
-        let option: MenuItemModel[] = [];
+        const option: MenuItemModel[] = [];
         for (let i: number = 0; i < items.length; i++) {
             option.push({
-                id: this.parent.element.id + '_DrillMenuChart_' + items[i],
-                text: this.parent.localeObj.getConstant(items[i]),
+                id: this.parent.element.id + '_DrillMenuChart_' + items[i as number],
+                text: this.parent.localeObj.getConstant(items[i as number]),
                 items: []
             });
         }
-        let getString: { key: number; type: string; value: string }[] = this.getMenuItems();
-        let expand: MenuItemModel[] = [];
-        let collapse: MenuItemModel[] = [];
+        const getString: { key: number; type: string; value: string }[] = this.getMenuItems();
+        const expand: MenuItemModel[] = [];
+        const collapse: MenuItemModel[] = [];
         for (let i: number = 0; i < getString.length; i++) {
-            if (getString[i].type === 'expand') {
-                expand.push({ id: this.element.id + 'drillExpand_' + getString[i].key, text: getString[i].value });
+            if (getString[i as number].type === 'expand') {
+                expand.push({ id: this.element.id + 'drillExpand_' + getString[i as number].key, text: getString[i as number].value });
             } else {
-                collapse.push({ id: this.element.id + 'drillCollapse_' + getString[i].key, text: getString[i].value });
+                collapse.push({ id: this.element.id + 'drillCollapse_' + getString[i as number].key, text: getString[i as number].value });
             }
         }
         if (expand.length > 0) {
@@ -1331,7 +1390,7 @@ export class PivotChart {
         if (collapse.length > 0) {
             option[1].items = collapse;
         }
-        let menuOptions: ContextMenuModel = {
+        const menuOptions: ContextMenuModel = {
             cssClass: this.parent.element.id + '_accumulationChart' + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: option,
             enableRtl: this.parent.enableRtl,
@@ -1365,17 +1424,17 @@ export class PivotChart {
     }
     private getMenuItems(): { key: number; type: string; value: string }[] {
         let rowIndex: number = this.pivotIndex.rIndex;
-        let menuItem: { key: number; type: string; value: string }[] = [];
-        let pivotValues: IAxisSet[][] = this.engineModule.pivotValues as IAxisSet[][];
+        const menuItem: { key: number; type: string; value: string }[] = [];
+        const pivotValues: IAxisSet[][] = this.engineModule.pivotValues as IAxisSet[][];
         let levelCol: number[] = [];
-        let pivotValue: IAxisSet = pivotValues[rowIndex][this.pivotIndex.cIndex];
+        let pivotValue: IAxisSet = pivotValues[rowIndex as number][this.pivotIndex.cIndex];
         // let hierarchy: string = pivotValues[rowIndex][0].hierarchy;
-        let level: number = (!pivotValues[rowIndex][0].isNamedSet && pivotValues[rowIndex][0].hasChild) ?
-            pivotValues[rowIndex][0].level : undefined;
-        let levels: string[] = this.parent.dataType === 'olap' ? pivotValue.rowHeaders.toString().split(/~~|::/)
+        let level: number = (!pivotValues[rowIndex as number][0].isNamedSet && pivotValues[rowIndex as number][0].hasChild) ?
+            pivotValues[rowIndex as number][0].level : undefined;
+        const levels: string[] = this.parent.dataType === 'olap' ? pivotValue.rowHeaders.toString().split(/~~|::/)
             : pivotValue.rowHeaders.toString().split(this.engineModule.valueSortSettings.headerDelimiter);
-        while (pivotValues[rowIndex][0]) {
-            pivotValue = pivotValues[rowIndex][0];
+        while (pivotValues[rowIndex as number][0]) {
+            pivotValue = pivotValues[rowIndex as number][0];
             if ((levels.length !== 0) && (levels.indexOf(pivotValue.formattedText.toString()) === (levels.length - 1))) {
                 if (pivotValue.hasChild && !pivotValue.isNamedSet && levelCol.indexOf(pivotValue.level) < 0 &&
                     (level ? level >= pivotValue.level : (level === 0 ? (pivotValue.level === 0) : true))) {
@@ -1395,7 +1454,7 @@ export class PivotChart {
                     levelCol.push(pivotValue.level);
                     level = level ? (level - 1) : (pivotValue.level - 1);
                 }
-                let index: number = levels.indexOf(pivotValue.formattedText.toString());
+                const index: number = levels.indexOf(pivotValue.formattedText.toString());
                 levels.splice(index, 1);
             }
             if (pivotValue.level === 0 && pivotValue.hasChild && !pivotValue.isNamedSet) {
@@ -1408,22 +1467,22 @@ export class PivotChart {
     }
 
     private drillMenuSelect(args: MenuEventArgs): void {
-        let pivotValues: IAxisSet[][] = (this.parent.dataType === 'olap' ?
+        const pivotValues: IAxisSet[][] = (this.parent.dataType === 'olap' ?
             this.parent.olapEngineModule.pivotValues : this.parent.engineModule.pivotValues) as IAxisSet[][];
-        let option: string = (args.element.id).split('_DrillMenuChart_')[1];
+        const option: string = (args.element.id).split('_DrillMenuChart_')[1];
         if (args.element.id.indexOf(this.element.id + 'drill') === 0) {
-            let type: string = args.element.id.split(this.element.id + 'drill')[1].indexOf('Expand') >= 0 ? 'drillExpand' : 'drillCollapse';
-            let rowIndex: number = Number(args.element.id.split(this.element.id + type + '_')[1]);
-            let pivotValue: IAxisSet = pivotValues[rowIndex][0];
-            let name: string = this.parent.dataType === 'olap' ? pivotValue.formattedText :
+            const type: string = args.element.id.split(this.element.id + 'drill')[1].indexOf('Expand') >= 0 ? 'drillExpand' : 'drillCollapse';
+            const rowIndex: number = Number(args.element.id.split(this.element.id + type + '_')[1]);
+            const pivotValue: IAxisSet = pivotValues[rowIndex as number][0];
+            const name: string = this.parent.dataType === 'olap' ? pivotValue.formattedText :
                 (pivotValue.actualText ? pivotValue.actualText.toString() : pivotValue.formattedText.toString());
-            let text: string = pivotValue.formattedText ? pivotValue.formattedText.toString() : name;
-            let caption: string = (pivotValue.hasChild && !pivotValue.isNamedSet) ?
+            const text: string = pivotValue.formattedText ? pivotValue.formattedText.toString() : name;
+            const caption: string = (pivotValue.hasChild && !pivotValue.isNamedSet) ?
                 ((pivotValue.isDrilled ? ' - ' : ' + ') + text) : text;
-            let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
+            const tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
                 (this.engineModule as OlapEngine).tupRowInfo[pivotValue.ordinal] : undefined;
-            let levelName: string = tupInfo ? tupInfo.uNameCollection : pivotValue.valueSort.levelName.toString();
-            let customAttributes: ChartLabelInfo = {
+            const levelName: string = tupInfo ? tupInfo.uNameCollection : pivotValue.valueSort.levelName.toString();
+            const customAttributes: ChartLabelInfo = {
                 fieldName: pivotValue.valueSort.axis as string,
                 level: pivotValue.level,
                 hasChild: pivotValue.hasChild,
@@ -1441,7 +1500,8 @@ export class PivotChart {
                 this.onDrill({ customAttributes });
             }
         } else if (option === 'drillThrough') {
-            this.parent.drillThroughModule.executeDrillThrough(pivotValues[this.pivotIndex.rIndex][this.pivotIndex.cIndex] as IAxisSet, this.pivotIndex.rIndex, this.pivotIndex.rIndex);    /* eslint-disable-line */
+            this.parent.drillThroughModule.executeDrillThrough(pivotValues[this.pivotIndex.rIndex][this.pivotIndex.cIndex] as IAxisSet,
+                                                               this.pivotIndex.rIndex, this.pivotIndex.rIndex);
         } else if (option === 'exit') {
             this.accumulationMenu.close();
         }
@@ -1453,7 +1513,7 @@ export class PivotChart {
         if (isNullOrUndefined(this.parent.getHeightAsNumber())) {
             height = 'auto';
         } else {
-            let offSetVal: number = this.parent.showToolbar ? 6 : 5;
+            const offSetVal: number = this.parent.showToolbar ? 6 : 5;
             height = (this.parent.getHeightAsNumber() - offSetVal).toString();
             offSetHeight = this.parent.getHeightAsNumber() - offSetVal;
         }
@@ -1461,7 +1521,7 @@ export class PivotChart {
             let isNone: boolean = false;
             if (this.parent.element.querySelector('.e-chart-grouping-bar') !== null && (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display.toLowerCase() === 'none') {
                 isNone = true;
-                (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "block";
+                (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'block';
             }
             if (this.parent.showToolbar && this.parent.showGroupingBar) {
                 height = (offSetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
@@ -1478,7 +1538,7 @@ export class PivotChart {
                 height = '200';
             }
             if (isNone) {
-                (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
+                (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
             }
         } else {
             height = 'auto';
@@ -1510,27 +1570,29 @@ export class PivotChart {
             }
         }
         if (args.axis.name !== 'primaryXAxis') {
-            let formatField: IField = this.engineModule.formatFields[args.axis.name];
-            let valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.value, args.axis.name, args.text);
-            let formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
-                this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
-                valueFormat.toString() :
-                (valueFormat as IAxisSet).formattedText :
-                args.value.toString());
+            const formatField: IField = this.engineModule.formatFields[(this.chartSettings.enableMultipleAxis &&
+                this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure : args.axis.name];
+            const valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.value, (this.chartSettings.enableMultipleAxis &&
+                this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure : args.axis.name, args.text);
+            const formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
+                this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ? valueFormat.toString() :
+                    (valueFormat as IAxisSet).formattedText : args.value.toString());
             args.text = formattedValue;
         }
         this.parent.trigger(events.chartAxisLabelRender, args);
     }
 
     private multiLevelLabelClick(args: IMultiLevelLabelClickEventArgs): void {
-        let eventArgs: MultiLevelLabelClickEventArgs = {
+        /* eslint-disable */
+        const eventArgs: MultiLevelLabelClickEventArgs = {
             axis: args.axis,
             text: args.text,
-            cell: !isNullOrUndefined(args.customAttributes) ? (args.customAttributes as any).cell : undefined,  /* eslint-disable-line */
+            cell: !isNullOrUndefined(args.customAttributes) ? (args.customAttributes as any).cell : undefined,
             cancel: false
         };
         this.parent.trigger(events.multiLevelLabelClick, eventArgs);
-        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) { /* eslint-disable-line */
+        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) {
+            /* eslint-enable */
             if (this.parent.dataType === 'olap') {
                 this.parent.onDrill(undefined, args.customAttributes as ChartLabelInfo);
             } else {
@@ -1538,15 +1600,17 @@ export class PivotChart {
             }
         }
     }
-    /* eslint-disable */
+
     /** @hidden */
+
+    /* eslint-disable */
     public onDrill(args: IMultiLevelLabelClickEventArgs | any): void {
-        let labelInfo: any = args.customAttributes;
+        const labelInfo: any = args.customAttributes;
         /* eslint-enable */
         let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
-        let fieldName: string = labelInfo.fieldName;
-        let currentCell: IAxisSet = this.engineModule.pivotValues[labelInfo.rowIndex][labelInfo.colIndex] as IAxisSet;
+        const fieldName: string = labelInfo.fieldName;
+        const currentCell: IAxisSet = this.engineModule.pivotValues[labelInfo.rowIndex][labelInfo.colIndex] as IAxisSet;
         let memberUqName: string =
             (currentCell.valueSort.levelName as string).
                 split(this.engineModule.valueSortSettings.headerDelimiter).join(delimiter);
@@ -1559,12 +1623,12 @@ export class PivotChart {
                 true);
         } else {
             for (let fCnt: number = 0; fCnt < this.dataSourceSettings.drilledMembers.length; fCnt++) {
-                let field: DrillOptionsModel = this.dataSourceSettings.drilledMembers[fCnt];
+                const field: DrillOptionsModel = this.dataSourceSettings.drilledMembers[fCnt as number];
                 memberUqName = memberUqName.split(delimiter).join(field.delimiter ? field.delimiter : delimiter);
                 delimiter = field.delimiter = field.delimiter ? field.delimiter : delimiter;
                 if (field.name === fieldName) {
                     fieldAvail = true;
-                    let memIndex: number = field.items.indexOf(memberUqName);
+                    const memIndex: number = field.items.indexOf(memberUqName);
                     if (memIndex > -1) {
                         field.items.splice(memIndex, 1);
                     } else {
@@ -1579,20 +1643,21 @@ export class PivotChart {
             }
         }
         this.parent.showWaitingPopup();
-        let pivot: PivotChart = this;   /* eslint-disable-line */
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const pivot: PivotChart = this;
         //setTimeout(() => {
-        let drilledItem: IDrilledItem = {
+        const drilledItem: IDrilledItem = {
             fieldName: fieldName, memberName: memberUqName, delimiter: delimiter,
             axis: 'row',
             action: labelInfo.isDrilled ? 'up' : 'down',
             currentCell: currentCell
         };
-        let drillArgs: DrillArgs = {
+        const drillArgs: DrillArgs = {
             drillInfo: drilledItem,
             pivotview: pivot.parent
         };
         pivot.parent.trigger(events.drill, drillArgs);
-        let enginePopulatingEventArgs: EnginePopulatingEventArgs = {
+        const enginePopulatingEventArgs: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
         };
         this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
@@ -1611,10 +1676,10 @@ export class PivotChart {
         }
         pivot.parent.allowServerDataBinding = false;
         pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (pivot.parent as any).bulkChanges.pivotValues;
         pivot.parent.allowServerDataBinding = true;
-        let eventArgs: EnginePopulatedEventArgs = {
+        const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
             pivotValues: this.parent.pivotValues
         };
@@ -1627,17 +1692,18 @@ export class PivotChart {
     private isAttributeDrill(hierarchy: string, drillInfo: IDrillInfo[]): boolean {
         let isDrill: boolean = false;
         for (let i: number = 0; i < this.dataSourceSettings.drilledMembers.length; i++) {
-            if (this.dataSourceSettings.drilledMembers[i].name === hierarchy) {
-                for (let j: number = 0; j < this.dataSourceSettings.drilledMembers[i].items.length; j++) {
-                    let drillItems: string[] =
-                        this.dataSourceSettings.drilledMembers[i].items[j].split(this.dataSourceSettings.drilledMembers[i].delimiter);
+            if (this.dataSourceSettings.drilledMembers[i as number].name === hierarchy) {
+                for (let j: number = 0; j < this.dataSourceSettings.drilledMembers[i as number].items.length; j++) {
+                    const drillItems: string[] = this.dataSourceSettings.drilledMembers[i as number].items[j as number]
+                        .split(this.dataSourceSettings.drilledMembers[i as number].delimiter);
                     let levelName: string = '';
                     for (let k: number = 0; k < drillItems.length; k++) {
-                        if (drillInfo[k] && drillInfo[k].uName) {
-                            levelName = levelName + (levelName === '' ? '' : this.dataSourceSettings.drilledMembers[i].delimiter) + (drillInfo[k].uName.indexOf('[Measures]') > -1 ? '[Measures]' : drillInfo[k].uName);
+                        if (drillInfo[k as number] && drillInfo[k as number].uName) {
+                            levelName = levelName + (levelName === '' ? '' : this.dataSourceSettings.drilledMembers[i as number].delimiter) +
+                            (drillInfo[k as number].uName.indexOf('[Measures]') > -1 ? '[Measures]' : drillInfo[k as number].uName);
                         }
                     }
-                    if (levelName === this.dataSourceSettings.drilledMembers[i].items[j]) {
+                    if (levelName === this.dataSourceSettings.drilledMembers[i as number].items[j as number]) {
                         isDrill = true;
                         break;
                     }
@@ -1656,29 +1722,33 @@ export class PivotChart {
 
     private resized(args: IResizeEventArgs): void {
         if (this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0) {
-            (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? this.getZoomFactor() : this.parent.chartSettings.primaryXAxis.zoomFactor;
+            (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor)
+                ? this.getZoomFactor() : this.parent.chartSettings.primaryXAxis.zoomFactor;
             if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
-                (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? 1 : this.parent.chartSettings.primaryXAxis.zoomFactor;
+                (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor)
+                    ? 1 : this.parent.chartSettings.primaryXAxis.zoomFactor;
             }
         }
         this.parent.trigger(events.chartResized, args);
     }
 
-    /* eslint-disable */
     /** @hidden */
+
     public getResizedChartHeight(): string {
-        let height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
+        const height : string = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
             this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
-            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ? /* eslint-disable-line */
-            isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
-            (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
-                ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
-                this.getChartHeight().toString() : this.getChartHeight().toString();
+            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) >
+            (this.parent.dataSourceSettings.values.length * 235) + 100 ? isNaN(Number(this.getChartHeight())) ?
+                    this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
+                (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
+                    ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() : this.getChartHeight().toString()
+            : this.getChartHeight().toString();
         return height;
     }
 
     /**
      * To destroy the chart module
+     *
      * @returns {void}
      * @hidden
      */

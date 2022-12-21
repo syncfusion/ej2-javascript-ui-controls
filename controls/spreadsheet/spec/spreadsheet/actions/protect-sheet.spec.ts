@@ -4,6 +4,7 @@ import { Spreadsheet, dialog as dlg, DialogBeforeOpenEventArgs, BeforeSelectEven
 import { SheetModel } from '../../../src/index';
 import { ListView, SelectedCollection } from '@syncfusion/ej2-lists';
 import { Dialog, Overlay } from '../../../src/spreadsheet/services/index';
+import { DefaultEditCell } from '@syncfusion/ej2-grids';
 
 describe('Protect sheet ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -307,7 +308,7 @@ describe('Protect sheet ->', () => {
             });
         });
 
-        it('UnProtectWorkbook - Providing password', (done: Function) => {
+        it('UnprotectWorkbook - Providing password', (done: Function) => {
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
                 helper.setAnimationToNone('.e-unprotectworkbook-dlg.e-dialog');
@@ -357,6 +358,33 @@ describe('Protect sheet ->', () => {
             });
         });
         
+    });
+
+    describe('ProtectWorkbook - Providing password in 2nd Input Textbox', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('ProtectWorkbook - Providing password in 2nd Input Textbox', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+                (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'syncfusion';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement));
+                var btnDisable = (helper.getElements('.e-protectworkbook-dlg .e-primary')[0] as HTMLInputElement).disabled;
+                expect(btnDisable).toBeFalsy();
+                (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = '';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement));
+                var btnDisable = (helper.getElements('.e-protectworkbook-dlg .e-primary')[0] as HTMLInputElement).disabled;
+                expect(btnDisable).toBeTruthy();
+                helper.click('.e-protectworkbook-dlg .e-flat');
+                done();
+            });
+        });
     });
 
     describe('CR-Issues ->', () => {
@@ -618,8 +646,8 @@ describe('Protect sheet ->', () => {
                     listView = helper.getElements('.e-listview')[0].ej2_instances[0];
                     setTimeout((): void => {
                         const selectedItems: SelectedCollection = listView.getSelectedItems() as SelectedCollection;
-                        expect(selectedItems.text.indexOf('Select Locked cells')).toBeGreaterThan(-1);
-                        expect(selectedItems.text.indexOf('Select Unlocked Cells')).toBeGreaterThan(-1);
+                        expect(selectedItems.text.indexOf('Select locked cells')).toBeGreaterThan(-1);
+                        expect(selectedItems.text.indexOf('Select unlocked cells')).toBeGreaterThan(-1);
                         done();
                     });
                 },1000);
@@ -634,7 +662,7 @@ describe('Protect sheet ->', () => {
                      lisView.selectItem({ id: '1'});
                     setTimeout((): void => {
                         const selectedItems: SelectedCollection = lisView.getSelectedItems() as SelectedCollection;
-                        expect(selectedItems.text.indexOf('Select Unlocked Cells')).toBeGreaterThan(-1);
+                        expect(selectedItems.text.indexOf('Select unlocked cells')).toBeGreaterThan(-1);
                         done();
                     });
                 },1000);
@@ -649,7 +677,7 @@ describe('Protect sheet ->', () => {
                     lisView.uncheckItem({id: '6'});
                     setTimeout((): void => {
                         const selectedItems: SelectedCollection = lisView.getSelectedItems() as SelectedCollection;
-                        expect(selectedItems.text.indexOf('Select Unlocked Cells')).toEqual(-1);
+                        expect(selectedItems.text.indexOf('Select unlocked cells')).toEqual(-1);
                         done();
                     });
                 },1000);

@@ -42,7 +42,7 @@ export class Logger implements ILogger {
         if (!(types instanceof Array)) { types = [types]; }
         const type: string[] = (<string[]>types);
         for (let i: number = 0; i < type.length; i++) {
-            const item: ItemDetails = detailLists[type[i]];
+            const item: ItemDetails = detailLists[type[parseInt(i.toString(), 10)]];
             const cOp: CheckOptions = item.check(args, this.parent);
             if (cOp.success) {
                 // eslint-disable-next-line no-console

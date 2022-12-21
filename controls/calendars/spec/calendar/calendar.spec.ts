@@ -4936,6 +4936,43 @@ describe(' Islamic Calendar', () => {
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
             expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1481 - 1490');
         });
-    });  
+    }); 
+    describe('Islamic Calendar', () => {
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        let keyEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        target: null,
+        action: 'controlUp'
+        };
+        let cal: any;
+        let calendar: Calendar;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+            Calendar.Inject(Islamic)
+            cal = new Calendar({ start: "Decade",
+            depth: "Year", calendarMode: 'Islamic' });
+            cal.appendTo('#calendar');
+        });
+        afterEach(() => {
+            if (calendar) {
+                calendar.destroy();
+                expect(document.getElementById('calendar').classList.contains('e-control')).toBe(false);
+                expect(document.getElementById('calendar').classList.contains('e-calendar')).toBe(false);
+                expect(document.getElementById('calendar').getAttribute('class')).toBe('');
+                expect(document.getElementById('calendar').attributes.length).toBe(2);
+            }
+            document.body.innerHTML = '';
+        });
+        it('Testing home and end key', () => {
+            keyEventArgs.action = 'home';
+            cal.keyActionHandle(keyEventArgs);
+            expect(document.querySelector('.e-focused-date').textContent).toBe('1441');
+            keyEventArgs.action = 'end';
+            cal.keyActionHandle(keyEventArgs);
+            expect(document.querySelector('.e-focused-date').textContent).toBe('1450');
+        });
+    });
 });
 

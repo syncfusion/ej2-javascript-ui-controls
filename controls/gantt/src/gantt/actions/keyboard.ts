@@ -246,6 +246,7 @@ export class FocusModule {
             const top: number = containerPosition.top + (containerPosition.height / 2);
             const left: number = containerPosition.left + (containerPosition.width / 2);
             this.setActiveElement(e.target as HTMLElement);
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             contextMenu.open(top, left);
             e.preventDefault();
             break;

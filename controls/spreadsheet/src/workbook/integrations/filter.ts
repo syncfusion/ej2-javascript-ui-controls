@@ -45,7 +45,7 @@ export class WorkbookFilter {
      * @param { {args: BeforeFilterEventArgs, promise: Promise<FilterEventArgs>}} eventArgs - Specify the event args.
      * @param {BeforeFilterEventArgs} eventArgs.args - arguments for filtering..
      * @param {Promise<FilterEventArgs>} eventArgs.promise - Specify the promise.
-     * @param {boolean} refresh - Specify the refresh.
+     * @param {boolean} eventArgs.refresh - Specify the refresh.
      * @returns {void} - Filters a range of cells in the sheet.
      */
     private initiateFilterHandler(
@@ -102,7 +102,7 @@ export class WorkbookFilter {
             let sheetIdx: number;
             if (range.indexOf('!') > -1) {
                 sheetIdx = getSheetIndex(this.parent, range.split('!')[0]);
-                sheet = this.parent.sheets[sheetIdx];
+                sheet = getSheet(this.parent, sheetIdx);
             } else {
                 sheet = this.parent.getActiveSheet();
                 sheetIdx = getSheetIndex(this.parent, sheet.name);
@@ -116,7 +116,7 @@ export class WorkbookFilter {
                     (parent.getThreshold('row') * 2))) || sheet.frozenRows || sheet.frozenColumns) || refresh) {
                     jsonData.forEach((data: { [key: string]: CellModel }) => {
                         hide = result.indexOf(data) < 0;
-                        setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
+                        setRow(sheet, Number(data[`${rowKey}`]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
                     });
                     refreshUI = sheetIdx === parent.activeSheetIndex;
                     const paneIndexes: number[] = getRangeIndexes(sheet.paneTopLeftCell);
@@ -126,9 +126,9 @@ export class WorkbookFilter {
                     jsonData.forEach((data: { [key: string]: CellModel }) => {
                         hide = result.indexOf(data) < 0;
                         if (refreshUI) {
-                            setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
+                            setRow(sheet, Number(data[`${rowKey}`]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
                         } else {
-                            const eventArgs: { [key: string]: number | boolean } = { startIndex: Number(data[rowKey]) - 1, hide: hide,
+                            const eventArgs: { [key: string]: number | boolean } = { startIndex: Number(data[`${rowKey}`]) - 1, hide: hide,
                                 isFiltering: true, sheetIndex: sheetIdx };
                             eventArgs.endIndex = eventArgs.startIndex;
                             this.parent.notify(hideShow, eventArgs);
@@ -143,7 +143,7 @@ export class WorkbookFilter {
                 let hide: boolean;
                 jsonData.forEach((data: { [key: string]: CellModel }) => {
                     hide = result.indexOf(data) < 0;
-                    setRow(sheet, Number(data[rowKey]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
+                    setRow(sheet, Number(data[`${rowKey}`]) - 1, <ExtendedRowModel>{ hidden: hide, isFiltered: hide });
                 });
             }
         }

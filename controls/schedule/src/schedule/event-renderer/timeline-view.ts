@@ -107,12 +107,12 @@ export class TimelineEvent extends MonthEvent {
             this.parent.resourceBase.renderedResources;
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
-                const source: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
+                const source: TdData = this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)];
                 this.rowIndex = source.groupIndex;
                 this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, source);
-                if (this.parent.crudModule.crudObj.targetEvent[i] && this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
-                    this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
-                    const target: TdData = this.parent.crudModule.crudObj.targetEvent[i];
+                if (this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)] && this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex !==
+                    this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex) {
+                    const target: TdData = this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)];
                     this.rowIndex = target.groupIndex;
                     this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, target);
                 }
@@ -121,7 +121,7 @@ export class TimelineEvent extends MonthEvent {
         } else {
             for (let i: number = 0; i < resources.length; i++) {
                 this.rowIndex = i;
-                this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[i]);
+                this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -167,10 +167,10 @@ export class TimelineEvent extends MonthEvent {
             const position: number = this.getPosition(startTime, endTime, event[this.fields.isAllDay] as boolean, this.day);
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
             this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
-            if (isNullOrUndefined(this.cellTops[resIndex])) {
-                this.cellTops[resIndex] = this.getRowTop(resIndex);
+            if (isNullOrUndefined(this.cellTops[parseInt(resIndex.toString(), 10)])) {
+                this.cellTops[parseInt(resIndex.toString(), 10)] = this.getRowTop(resIndex);
             }
-            const top: number = this.cellTops[resIndex];
+            const top: number = this.cellTops[parseInt(resIndex.toString(), 10)];
             const appTop: number = (top + (this.maxHeight ? 0 : EVENT_GAP)) + (overlapCount * (appHeight + EVENT_GAP));
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
@@ -440,7 +440,7 @@ export class TimelineEvent extends MonthEvent {
         if (this.renderType === 'day' || isAllDay) {
             return (day * this.slotsPerDay) * this.cellWidth;
         }
-        const currentDate: Date = util.resetTime(new Date(this.dateRender[day].getTime()));
+        const currentDate: Date = util.resetTime(new Date(this.dateRender[parseInt(day.toString(), 10)].getTime()));
         const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         let cellIndex: number;
         if (schedule.endHour.getTime() <= endTime.getTime() && schedule.startHour.getTime() >= startTime.getTime()) {
@@ -468,7 +468,7 @@ export class TimelineEvent extends MonthEvent {
         for (let i: number = 0; i < moreIndicator.length; i++) {
             let indicatorPos: string;
             if (moreIndicator) {
-                indicatorPos = (this.parent.enableRtl) ? moreIndicator[i].style.right : moreIndicator[i].style.left;
+                indicatorPos = (this.parent.enableRtl) ? moreIndicator[parseInt(i.toString(), 10)].style.right : moreIndicator[parseInt(i.toString(), 10)].style.left;
             }
             if (parseInt(indicatorPos, 10) === Math.floor(appPos)) {
                 return true;
@@ -487,7 +487,7 @@ export class TimelineEvent extends MonthEvent {
 
     public getCellTd(): HTMLElement {
         const wrapIndex: number = this.parent.uiStateValues.isGroupAdaptive ? 0 : this.rowIndex;
-        return this.eventContainers[wrapIndex] as HTMLElement;
+        return this.eventContainers[parseInt(wrapIndex.toString(), 10)] as HTMLElement;
     }
 
     public renderBlockIndicator(cellTd: HTMLElement, position: number, resIndex: number): void {

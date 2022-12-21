@@ -3275,6 +3275,24 @@ describe('QueryBuilder', () => {
             queryBuilder.addGroups([{condition: 'and', 'rules': [{}], not: false}], "group0");
             expect(queryBuilder.rule.rules[0].field).toEqual('');
         });
+
+        it('EJ2-66222 - GetValidRules method of query builder returns empty group', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: customFieldData
+                
+            }, '#querybuilder');
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            filterElem.showPopup();
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            items[0].click();
+            queryBuilder.addGroups([{condition: 'and', 'rules': [{}] }], "group0");
+            expect(queryBuilder.getValidRules().rules.length).toEqual(1);
+        });
         
     });
 

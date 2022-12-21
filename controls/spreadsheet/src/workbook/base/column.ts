@@ -74,14 +74,14 @@ export class Column extends ChildProperty<Column> {
  */
 export function getColumn(sheet: SheetModel, colIndex: number): ColumnModel {
     if (sheet.columns) {
-        if (!sheet.columns[colIndex]) {
-            sheet.columns[colIndex] = {};
+        if (!sheet.columns[colIndex as number]) {
+            sheet.columns[colIndex as number] = {};
         }
     } else {
         sheet.columns = [];
-        sheet.columns[colIndex] = {};
+        sheet.columns[colIndex as number] = {};
     }
-    return sheet.columns[colIndex];
+    return sheet.columns[colIndex as number];
 }
 
 /** @hidden
@@ -93,7 +93,7 @@ export function getColumn(sheet: SheetModel, colIndex: number): ColumnModel {
 export function setColumn(sheet: SheetModel, colIndex: number, column: ColumnModel): void {
     const curColumn: ColumnModel = getColumn(sheet, colIndex);
     Object.keys(column).forEach((key: string): void => {
-        curColumn[key] = column[key];
+        curColumn[`${key}`] = column[`${key}`];
     });
 }
 
@@ -107,9 +107,10 @@ export function setColumn(sheet: SheetModel, colIndex: number, column: ColumnMod
  */
 export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean, checkDPR?: boolean): number {
     let width: number;
-    if (sheet && sheet.columns && sheet.columns[index]) {
-        if (!skipHidden && sheet.columns[index].hidden) { return 0; }
-        width = (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
+    if (sheet && sheet.columns && sheet.columns[index as number]) {
+        if (!skipHidden && sheet.columns[index as number].hidden) { return 0; }
+        width = (sheet.columns[index as number].width || sheet.columns[index as number].customWidth) ?
+            sheet.columns[index as number].width : 64;
     } else {
         width = 64;
     }
@@ -149,7 +150,7 @@ export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: num
  * @returns {boolean} - returns the boolean value.
  */
 export function isHiddenCol(sheet: SheetModel, index: number): boolean {
-    return sheet.columns[index] && sheet.columns[index].hidden;
+    return sheet.columns[index as number] && sheet.columns[index as number].hidden;
 }
 
 /**

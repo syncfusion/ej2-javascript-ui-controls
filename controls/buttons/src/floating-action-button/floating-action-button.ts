@@ -19,52 +19,51 @@ const FABCENTER: string = 'e-fab-center';
 /**
  * Defines the position of FAB (Floating Action Button) in target.
  */
-export enum FabPosition
-{
+export enum FabPosition {
     /**
      * Positions the FAB at the target's top left corner.
      */
-    TopLeft,
+    TopLeft = 'TopLeft',
 
     /**
      * Places the FAB on the top-center position of the target.
      */
-    TopCenter,
+    TopCenter = 'TopCenter',
 
     /**
-     * PPositions the FAB at the target's top right corner.
+     * Positions the FAB at the target's top right corner.
      */
-    TopRight,
+    TopRight = 'TopRight',
 
     /**
      * Positions the FAB in the middle of target's left side.
      */
-    MiddleLeft,
+    MiddleLeft = 'MiddleLeft',
 
     /**
      * Positions the FAB in the center of target.
      */
-    MiddleCenter,
+    MiddleCenter = 'MiddleCenter',
 
     /**
      * Positions the FAB in the middle of target's right side.
      */
-    MiddleRight,
+    MiddleRight = 'MiddleRight',
 
     /**
      * Positions the FAB at the target's bottom left corner.
      */
-    BottomLeft,
+    BottomLeft = 'BottomLeft',
 
     /**
      * Places the FAB on the bottom-center position of the target.
      */
-    BottomCenter,
+    BottomCenter = 'BottomCenter',
 
     /**
      * Positions the FAB at the target's bottom right corner.
      */
-    BottomRight
+    BottomRight = 'BottomRight'
 }
 
 /**
@@ -85,7 +84,7 @@ export class Fab extends Button implements INotifyPropertyChanged {
      * * BottomLeft: Positions the FAB at the target's top left corner.
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
-     *  To refresh the position of FAB on target resize, use refreshPosition method. 
+     *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
      *
      * @isenumeration true
@@ -96,7 +95,7 @@ export class Fab extends Button implements INotifyPropertyChanged {
     public position: string | FabPosition;
 
     /**
-     * Defines the selector that points to an element in which the FAB will be positioned. 
+     * Defines the selector that points to an element in which the FAB will be positioned.
      * By default, FAB is positioned based on viewport of browser.
      * The target element must have relative position, else FAB will get positioned based on the closest element which has relative position.
      *
@@ -189,13 +188,10 @@ export class Fab extends Button implements INotifyPropertyChanged {
                 this.targetEle.appendChild(this.element);
             }
         }
-        this.isFixed ? this.element.classList.add(FIXEDFAB) : this.element.classList.remove(FIXEDFAB);
+        this.element.classList[this.isFixed ? 'add' : 'remove'](FIXEDFAB);
     }
     private setVisibility(): void {
-        this.visible ? this.element.classList.remove(FABHIDDEN) : this.element.classList.add(FABHIDDEN);
-    }
-    private getPosition(): string {
-        return (typeof(this.position) === "string")? this.position: FabPosition[this.position];
+        this.element.classList[this.visible ? 'remove' : 'add'](FABHIDDEN);
     }
     private setPosition(): void {
         this.setVerticalPosition();
@@ -203,25 +199,24 @@ export class Fab extends Button implements INotifyPropertyChanged {
     }
     private setVerticalPosition(): void {
         //Check for middle position and middle class and vertical distance atttribute.
-        if (['MiddleLeft', 'MiddleRight', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) {
+        if (['MiddleLeft', 'MiddleRight', 'MiddleCenter'].indexOf(this.position) !== -1) {
             const yoffset: number = ((this.isFixed ? window.innerHeight : this.targetEle.clientHeight) - this.element.offsetHeight) / 2;
             this.element.style.setProperty(FABVERTDIST, yoffset + 'px');
             this.element.classList.add(FABMIDDLE);
         }
         //Check for bottom position and bottom class else add top class.
-        (['BottomLeft', 'BottomCenter', 'BottomRight'].indexOf(this.getPosition()) !== -1) ? 
-            this.element.classList.add(FABBOTTOM) : this.element.classList.add(FABTOP);
+        this.element.classList.add((['BottomLeft', 'BottomCenter', 'BottomRight'].indexOf(this.position) !== -1) ? FABBOTTOM : FABTOP);
     }
 
     private setHorizontalPosition(): void {
         //Check for center position and center class and horizontal distance atttribute.
-        if (['TopCenter', 'BottomCenter', 'MiddleCenter'].indexOf(this.getPosition()) !== -1) {
+        if (['TopCenter', 'BottomCenter', 'MiddleCenter'].indexOf(this.position) !== -1) {
             const xoffset: number = ((this.isFixed ? window.innerWidth : this.targetEle.clientWidth) - this.element.offsetWidth) / 2;
             this.element.style.setProperty(FABHORZDIST, xoffset + 'px');
             this.element.classList.add(FABCENTER);
         }
-        const isRight = ['TopRight', 'MiddleRight', 'BottomRight'].indexOf(this.getPosition()) !== -1;
-        (!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? this.element.classList.add(FABLEFT) : this.element.classList.add(FABRIGHT);
+        const isRight: boolean = ['TopRight', 'MiddleRight', 'BottomRight'].indexOf(this.position) !== -1;
+        this.element.classList.add((!(this.enableRtl || isRight) || (this.enableRtl && isRight)) ? FABLEFT : FABRIGHT);
     }
 
     private clearPosition(): void {
@@ -237,6 +232,8 @@ export class Fab extends Button implements INotifyPropertyChanged {
 
     /**
      * Refreshes the FAB position. You can call this method to re-position FAB when target is resized.
+     *
+     * @returns {void}
      */
     public refreshPosition(): void {
         this.resizeHandler();
@@ -247,6 +244,8 @@ export class Fab extends Button implements INotifyPropertyChanged {
 
     /**
      * Destroys the FAB instance.
+     *
+     * @returns {void}
      *
      */
     public destroy(): void {
@@ -269,21 +268,21 @@ export class Fab extends Button implements INotifyPropertyChanged {
         super.onPropertyChanged(newProp, oldProp);
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'enableRtl':
-                    this.clearHorizontalPosition();
-                    this.setHorizontalPosition();
-                    break;
-                case 'visible':
-                    this.setVisibility();
-                    break;
-                case 'position':
-                    this.clearPosition();
-                    this.setPosition();
-                    break;
-                case 'target':
-                    this.checkTarget();
-                    this.setPosition();
-                    break;
+            case 'enableRtl':
+                this.clearHorizontalPosition();
+                this.setHorizontalPosition();
+                break;
+            case 'visible':
+                this.setVisibility();
+                break;
+            case 'position':
+                this.clearPosition();
+                this.setPosition();
+                break;
+            case 'target':
+                this.checkTarget();
+                this.setPosition();
+                break;
             }
         }
     }

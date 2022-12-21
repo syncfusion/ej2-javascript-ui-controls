@@ -71,34 +71,35 @@ export class NonWorkingDay {
         }
         const viewportHeight: number = this.parent.ganttHeight- toolbarHeight-this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
         for (let i: number = 0; i < this.parent.holidays.length; i++) {
-            if (this.parent.holidays[i].from && this.parent.holidays[i].to) {
-                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].from);
-                toDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].to);
+            if (this.parent.holidays[i as number].from && this.parent.holidays[i as number].to) {
+                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].from);
+                toDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].to);
                 toDate.setDate(toDate.getDate() + 1);
                 fromDate.setHours(0, 0, 0, 0);
                 toDate.setHours(0, 0, 0, 0);
-            } else if (this.parent.holidays[i].from) {
-                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].from);
+            } else if (this.parent.holidays[i as number].from) {
+                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].from);
                 fromDate.setHours(0, 0, 0, 0);
-            } else if (this.parent.holidays[i].to) {
-                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].to);
+            } else if (this.parent.holidays[i as number].to) {
+                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].to);
                 fromDate.setHours(0, 0, 0, 0);
             }
-            const width: number = (this.parent.holidays[i].from && this.parent.holidays[i].to) ?
+            const width: number = (this.parent.holidays[i as number].from && this.parent.holidays[i as number].to) ?
                 this.parent.dataOperation.getTaskWidth(fromDate, toDate) : this.parent.perDayWidth;
             const left: number = this.parent.dataOperation.getTaskLeft(fromDate, false);
+            const align: string = this.parent.enableRtl? `right:${left}px;` : `left:${left}px;`;
             const holidayDiv: HTMLElement = createElement('div', {
-                className: cls.holidayElement, styles: `left:${left}px; width:${width}px; height:100%;`
+                className: cls.holidayElement, styles: `${align} width:${width}px; height:100%;`
             });
             const spanTop: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
             const spanElement: HTMLElement = createElement('span', {
                 className: cls.holidayLabel, styles: `top:${spanTop}px;left:${(width / 2)}px;`
             });
             const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
-            spanElement[property] = this.parent.holidays[i].label ? this.parent.holidays[i].label : '';
+            spanElement[property as string] = this.parent.holidays[i as number].label ? this.parent.holidays[i as number].label : '';
             holidayDiv.appendChild(spanElement);
-            if (this.parent.holidays[i].cssClass) {
-                holidayDiv.classList.add(this.parent.holidays[i].cssClass);
+            if (this.parent.holidays[i as number].cssClass) {
+                holidayDiv.classList.add(this.parent.holidays[i as number].cssClass);
             }
             container.appendChild(holidayDiv);
         }
@@ -156,8 +157,9 @@ export class NonWorkingDay {
                         this.weekendWidthUpdated = true;
                     }
                 }
+                const align: string = this.parent.enableRtl? `right:${left}px;` : `left:${left}px;`;
                 const weekendDiv: HTMLElement = createElement('div', {
-                    className: cls.weekend, styles: `left:${left}px;width:${width}px;height:100%;`
+                    className: cls.weekend, styles: `${align} width:${width}px;height:100%;`
                 });
                 container.appendChild(weekendDiv);
             }
@@ -178,7 +180,7 @@ export class NonWorkingDay {
         const top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         const labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
         for (let i: number = 0; i < labels.length; i++) {
-            (labels[i] as HTMLElement).style.top = formatUnit(top);
+            (labels[i as number] as HTMLElement).style.top = formatUnit(top);
         }
     }
     /**

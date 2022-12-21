@@ -8,7 +8,7 @@ import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { ConnectorModel } from '../../../src';
-import { HierarchicalTree, } from '../../../src/diagram/index';
+import { BpmnFlowModel, HierarchicalTree, } from '../../../src/diagram/index';
 
 Diagram.Inject(BpmnDiagrams,HierarchicalTree);
 
@@ -961,6 +961,108 @@ describe('BPMN subprocess save and load issue ', () => {
         });
         
     });
+});
+
+describe('BPMN Flow connectors not changed properly at runtime ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+         
+        let connectors:ConnectorModel[]=[
+            {
+                id:'association', sourcePoint:{x:100,y:100},targetPoint:{x:250,y:300},type:'Straight',
+                shape:{
+                    type:'Bpmn',
+                    association:'Directional',
+                    flow:'Association',
+                },
+            },
+            {
+                id:'sequence', sourcePoint:{x:300,y:100},targetPoint:{x:550,y:300},type:'Straight',
+                shape:{
+                    type:'Bpmn',
+                    sequence:'Conditional',
+                    flow:'Sequence',
+                },
+            },
+            {
+                id:'message', sourcePoint:{x:450,y:100},targetPoint:{x:650,y:300},type:'Straight',
+                shape:{
+                    type:'Bpmn',
+                    message:'InitiatingMessage',
+                    flow:'Message',
+                },
+            },
+        ]
+           diagram = new Diagram({
+            width: '74%', height: '600px',connectors:connectors
+         });
+        diagram.appendTo('#diagram');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking Bpmn association flow connector after changing its association type at runtime', (done: Function) => { 
+        let preAssociationType = (diagram.connectors[0].shape as BpmnFlowModel).association;
+        let preSrcDec = diagram.connectors[0].sourceDecorator.shape;
+        (diagram.connectors[0].shape as BpmnFlowModel).association = 'BiDirectional';
+        diagram.dataBind();
+        let currAssociationType = (diagram.connectors[0].shape as BpmnFlowModel).association;
+        let currSrcDec = diagram.connectors[0].sourceDecorator.shape;
+        expect(preAssociationType === 'Directional' && currAssociationType === 'BiDirectional' &&
+        preSrcDec === 'None'&& currSrcDec === 'Arrow').toBe(true);
+        done();
+    });
+    it('Checking Bpmn sequence flow connector after changing its sequence type at runtime', (done: Function) => { 
+        let preSequenceType = (diagram.connectors[1].shape as BpmnFlowModel).sequence;
+        let preSrcDec = diagram.connectors[1].sourceDecorator.shape;
+        (diagram.connectors[1].shape as BpmnFlowModel).sequence = 'Normal';
+        diagram.dataBind();
+        let currSequenceType = (diagram.connectors[1].shape as BpmnFlowModel).sequence;
+        let currSrcDec = diagram.connectors[1].sourceDecorator.shape;
+        expect(preSequenceType === 'Conditional' && currSequenceType === 'Normal' &&
+        preSrcDec === 'Diamond' && currSrcDec === 'None').toBe(true);
+        done();
+    });
+       it('Checking Bpmn message flow connector after changing its message type at runtime', (done: Function) => { 
+        let preMessageType = (diagram.connectors[2].shape as BpmnFlowModel).message;
+        let preMessageColor = diagram.connectors[2].wrapper.children[3].style.fill.toLowerCase();
+        (diagram.connectors[2].shape as BpmnFlowModel).message = 'NonInitiatingMessage';
+        diagram.dataBind();
+        let currMessageType = (diagram.connectors[2].shape as BpmnFlowModel).message;
+        let currMessageColor = diagram.connectors[2].wrapper.children[3].style.fill.toLowerCase();
+        expect(preMessageType === 'InitiatingMessage' && currMessageType === 'NonInitiatingMessage' &&
+        preMessageColor === 'white' && currMessageColor === 'lightgrey').toBe(true);
+        done();
+    });
+    it('Checking Bpmn flow type after changing it at runtime', (done: Function) => { 
+        let preFlow = (diagram.connectors[0].shape as BpmnFlowModel).flow;
+        (diagram.connectors[0].shape as BpmnFlowModel).flow = 'Sequence';
+        (diagram.connectors[0].shape as BpmnFlowModel).sequence = 'Conditional';
+        diagram.dataBind();
+        let currFlow = (diagram.connectors[0].shape as BpmnFlowModel).flow;
+        let srcDec = diagram.connectors[0].sourceDecorator.shape;
+        (diagram.connectors[0].shape as BpmnFlowModel).flow = 'Message';
+        diagram.dataBind();
+        let changedFlow = (diagram.connectors[0].shape as BpmnFlowModel).flow;
+        let changedSrcDec = diagram.connectors[0].sourceDecorator.shape;
+        expect(preFlow === 'Association' && currFlow === 'Sequence' && srcDec === 'Diamond'
+        && changedFlow === 'Message' && changedSrcDec === 'Circle').toBe(true);
+        done();
+    });
+    
 });
 
 

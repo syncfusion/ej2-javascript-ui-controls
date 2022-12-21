@@ -1912,7 +1912,7 @@ describe('Datepicker', () => {
             datepicker.showClearButton = false;
             datepicker.dataBind();
             datepicker.destroy();
-            expect(datepicker.inputWrapper.clearButton===null).toBe(true);
+            expect(datepicker.inputWrapper === null).toBe(true);
             datepicker = null;
         });
         it('Clear button Setmodel', () => {

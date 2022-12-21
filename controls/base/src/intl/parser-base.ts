@@ -133,9 +133,9 @@ export class ParserBase {
         let ret: string = '';
         for (let i: number = 0; i < len; i++) {
             if (i !== len - 1) {
-                ret += val[i] + '|';
+                ret += val[parseInt(i.toString(), 10)] + '|';
             } else {
-                ret += val[i];
+                ret += val[parseInt(i.toString(), 10)];
             }
         }
         return ret;

@@ -9,7 +9,7 @@ import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
-import { defaultLocale, locale, setAriaOptions, setResize, initiateFilterUI, clearFilter, clearTemplate, isReact } from '../common/index';
+import { defaultLocale, locale, setAriaOptions, setResize, initiateFilterUI, clearFilter } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
@@ -48,7 +48,7 @@ import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index'
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
 import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress } from './../../workbook/common/index';
-import { updateScroll, SelectionMode, clearCopy } from '../common/index';
+import { updateScroll, SelectionMode, clearCopy, isImported } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -797,7 +797,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this.insideViewport(rowIndex, colIndex)) {
             if (!row) { row = this.getRow(rowIndex, null, colIndex); }
             colIndex = this.getViewportIndex(colIndex, true);
-            td = row ? row.cells[colIndex] : row;
+            td = row ? row.cells[colIndex as number] : row;
         }
         return td
     }
@@ -822,7 +822,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
         }
         index = this.getViewportIndex(index);
-        return table ? table.rows[index] : null;
+        return table ? table.rows[index as number] : null;
     }
 
     /**
@@ -838,9 +838,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @hidden
      */
     public hiddenCount(startIndex: number, endIndex: number, layout: string = 'rows', sheet: SheetModel = this.getActiveSheet()): number {
-        let count: number = 0;
+        let count: number = 0; let rowColModel: { hidden?: boolean };
         for (let i: number = startIndex; i <= endIndex; i++) {
-            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) { count++; }
+            rowColModel = sheet[`${layout}`][i as number];
+            if (rowColModel && rowColModel.hidden) { count++; }
         }
         return count;
     }
@@ -867,7 +868,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     index -= this.hiddenCount(this.viewport.leftIndex + frozenCol, index, 'columns');
                     index -= (this.viewport.leftIndex + frozenCol);
                     return index;
-                }
+                } 
             } else {
                 index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns');
                 index -= this.viewport.leftIndex;
@@ -925,15 +926,16 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.renderSpreadsheet();
         this.wireEvents();
         if (this.created) {
-            if (this[created].observers) {
-                if (this[created].observers.length > 0) {
-                    let observerObject: Object = { observers: this[created].observers };
-                    if ((this as any).isAngular) {
-                        observerObject = { observers: this[created].observers,  currentObservers: this[created].observers };
-                        this[created].currentObservers = [];
+            if ((this.created as { observers?: object[] }).observers) {
+                if ((this.created as { observers?: object[] }).observers.length > 0) {
+                    let observerObject: Object = { observers: (this.created as { observers?: object }).observers };
+                    if ((this as { isAngular?: boolean }).isAngular) {
+                        observerObject = { observers: (this.created as { observers?: object }).observers,
+                            currentObservers: (this.created as { observers?: object }).observers };
+                        (this.created as { currentObservers?: object[] }).currentObservers = [];
                     }
                     this.createdHandler = observerObject;
-                    this[created].observers = [];
+                    (this.created as { observers?: object[] }).observers = [];
                 }
             } else {
                 this.createdHandler = this.created;
@@ -999,9 +1001,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             sheet = getSheetIndex(this as Workbook, sheet);
         }
         if (sheet) {
-            this.setSheetPropertyOnMute(this.sheets[sheet], 'isProtected', true);
-            this.setSheetPropertyOnMute(this.sheets[sheet], 'password', password ? password : '');
-            this.setSheetPropertyOnMute(this.sheets[sheet], 'protectSettings', protectSettings);
+            const sheetModel: SheetModel = this.sheets[sheet as number];
+            this.setSheetPropertyOnMute(sheetModel, 'isProtected', true);
+            this.setSheetPropertyOnMute(sheetModel, 'password', password ? password : '');
+            this.setSheetPropertyOnMute(sheetModel, 'protectSettings', protectSettings);
         }
         sheet = this.getActiveSheet().index;
         this.setSheetPropertyOnMute(this.getActiveSheet(), 'isProtected', true);
@@ -1022,7 +1025,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             sheet = getSheetIndex(this as Workbook, sheet);
         }
         if (sheet) {
-            this.sheets[sheet].isProtected = false;
+            this.sheets[sheet as number].isProtected = false;
 
         } else {
             this.getActiveSheet().isProtected = false;
@@ -1118,7 +1121,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (idx === undefined) { return; }
             if (idx !== this.activeSheetIndex) {
                 const activeCell: string = addrArr[1].split(':')[0];
-                const sheet: SheetModel = this.sheets[idx];
+                const sheet: SheetModel = this.sheets[idx as number];
                 this.setSheetPropertyOnMute(sheet, 'activeCell', activeCell);
                 this.setSheetPropertyOnMute(sheet, 'selectedRange', addrArr[1]);
                 const cellIndex: number[] = getCellIndexes(activeCell);
@@ -1393,14 +1396,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - Set the width of column.
      */
     public setColWidth(width: number | string = 64, colIndex: number = 0, sheetIndex?: number): void {
-        const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
+        const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex as number];
         if (sheet) {
             const mIndex: number = colIndex;
             const colWidth: string = (typeof width === 'number') ? width + 'px' : width;
             colIndex = isNullOrUndefined(colIndex) ? getCellIndexes(sheet.activeCell)[1] : colIndex;
             const setColModel: Function = (): void => {
                 getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
-                sheet.columns[mIndex].customWidth = true;
+                sheet.columns[mIndex as number].customWidth = true;
             };
             const frozenCol: number = this.frozenColCount(sheet);
             if (sheet.id === this.getActiveSheet().id) {
@@ -1445,14 +1448,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - Set the height of row.
      */
     public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number, edited?: boolean): void {
-        const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
+        const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex as number];
         if (sheet) {
             const mIndex: number = rowIndex;
             const rowHeight: string = (typeof height === 'number') ? height + 'px' : height;
             rowIndex = isNullOrUndefined(rowIndex) ? getCellIndexes(sheet.activeCell)[0] : rowIndex;
             const setRowModel: Function = (): void => {
                 setRowHeight(sheet, mIndex, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
-                sheet.rows[mIndex].customHeight = true;
+                sheet.rows[mIndex as number].customHeight = true;
             };
             if (sheet.id === this.getActiveSheet().id) {
                 const frozenRow: number = this.frozenRowCount(sheet);
@@ -1685,7 +1688,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             const prevELem: HTMLElement = this.getCell(cellIdx[0], cellIdx[1]);
             const classList: string[] = [];
             for (let i: number = 0; prevELem && i < prevELem.classList.length; i++) {
-                classList.push(prevELem.classList[i]);
+                classList.push(prevELem.classList[i as number]);
             }
             const befArgs: BeforeHyperlinkArgs = { hyperlink: hyperlink, address: address, displayText: displayText, cancel: false };
             const aftArgs: AfterHyperlinkArgs = { hyperlink: hyperlink, address: address, displayText: displayText };
@@ -1696,18 +1699,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (!befArgs.cancel) {
                 hyperlink = befArgs.hyperlink;
                 address = befArgs.address;
-                const args: { hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt: boolean } = { hyperlink: hyperlink, cell:
-                    address, displayText: displayText, triggerEvt: !isMethod };
+                const args: { hyperlink: string | HyperlinkModel, cell: string, displayText: string, triggerEvt: boolean } = {
+                    hyperlink: hyperlink, cell: address, displayText: displayText, triggerEvt: !isMethod };
                 this.notify(setLinkModel, args);
                 if (address && address.indexOf('!') !== -1) {
                     addrRange = address.split('!');
                     const sheets: SheetModel[] = this.sheets;
                     for (let idx: number = 0; idx < sheets.length; idx++) {
-                        if (sheets[idx].name === addrRange[0]) {
+                        if (sheets[idx as number].name === addrRange[0]) {
                             sheetIdx = idx;
                         }
                     }
-                    sheet = this.sheets[sheetIdx];
+                    sheet = this.sheets[sheetIdx as number];
                     address = addrRange[1];
                 }
                 if (!sheet) {
@@ -1720,10 +1723,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     this.notify(completeAction, { action: 'hyperlink', eventArgs: befArgs });
                 }
                 if (sheet === this.getActiveSheet()) {
-                    this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
+                    this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+                        cellIdx, false, false, false, false, isImported(this));
                     for (let i: number = 0; i < classList.length; i++) {
-                        if (!this.getCell(cellIdx[0], cellIdx[1]).classList.contains(classList[i])) {
-                            this.getCell(cellIdx[0], cellIdx[1]).classList.add(classList[i]);
+                        if (!this.getCell(cellIdx[0], cellIdx[1]).classList.contains(classList[i as number])) {
+                            this.getCell(cellIdx[0], cellIdx[1]).classList.add(classList[i as number]);
                         }
                     }
                     this.notify(refreshRibbonIcons, null);
@@ -1775,7 +1779,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
             const splitRange: string[] = ranges.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
-                super.addInvalidHighlight(sheetName + splitRange[i]);
+                super.addInvalidHighlight(sheetName + splitRange[i as number]);
             }
         } else {
             super.addInvalidHighlight(ranges);
@@ -1800,7 +1804,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
             const splitRange: string[] = address.split(',');
             for (let i: number = 0; i < splitRange.length - 1; i++) {
-                super.removeInvalidHighlight(sheetName + splitRange[i]);
+                super.removeInvalidHighlight(sheetName + splitRange[i as number]);
             }
         } else {
             super.removeInvalidHighlight(address);
@@ -1853,6 +1857,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public open(options: OpenOptions): void {
         this.isOpen = true;
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         super.open(options);
         if (this.isOpen) {
             this.showSpinner();
@@ -1911,8 +1916,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} -  Used to refresh the spreadsheet.
      */
     public refresh(isNew?: boolean): void {
-        if (this[isReact]) {
-            this[clearTemplate]();
+        if ((this as { isReact?: boolean }).isReact) {
+            this['clearTemplate']();
         }
         if (isNew) {
             this.notify(clearCopy, null);
@@ -1924,7 +1929,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(refreshSheetTabs, null);
             this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
             this.renderModule.refreshSheet();
-            this.openModule.isImportedFile = false;
+            this.openModule.isImportedFile = this.openModule.preventFormatCheck = false;
             this.openModule.unProtectSheetIdx = [];
         } else {
             super.refresh();
@@ -1944,7 +1949,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         let i: number;
         for (i = 0; i < images.length; i++) {
             this.notify(createImageElement, {
-                options: images[i],
+                options: images[i as number],
                 range: range ? range : this.getActiveSheet().selectedRange, isPublic: true
             });
         }
@@ -2073,7 +2078,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {string | number} - to get Value Row Col.
      */
     public getValueRowCol(
-        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean, isUnique?: boolean): string | number {
+        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean,
+        isUnique?: boolean): string | number {
         return super.getValueRowCol(sheetId, rowIndex, colIndex, formulaCellReference, refresh, isUnique);
     }
 
@@ -2263,12 +2269,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         const sheet: SheetModel = this.getActiveSheet(); let totalCount: number;
         if (this.scrollSettings.isFinite) { totalCount = (layout === 'rows' ? sheet.rowCount : sheet.colCount) - 1; }
         for (let i: number = startIdx; i <= endIdx; i++) {
-            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
+            if ((sheet[`${layout}`])[i as number] && (sheet[`${layout}`])[i as number].hidden) {
                 if (startIdx === i) { startIdx++; }
                 endIdx++;
                 if (finite && endIdx > totalCount) { endIdx = totalCount; break; }
             } else if (!finite && this.scrollSettings.isFinite && endIdx > totalCount) {
-                if ((sheet[layout])[i - 1] && (sheet[layout])[i - 1].hidden) {
+                if ((sheet[`${layout}`])[i - 1] && (sheet[`${layout}`])[i - 1].hidden) {
                     endIdx--;
                     break;
                 }
@@ -2428,8 +2434,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - Destroys the component
      */
     public destroy(): void {
-        if (this[isReact]) {
-            this[clearTemplate]();
+        if ((this as { isReact?: boolean }).isReact) {
+            this['clearTemplate']();
         }
         this.unwireEvents();
         this.notify(spreadsheetDestroyed, null);
@@ -2701,6 +2707,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public onPropertyChanged(newProp: SpreadsheetModel, oldProp: SpreadsheetModel): void {
         super.onPropertyChanged(newProp, oldProp);
+        let sheetTabsRefreshed: boolean;
         for (const prop of Object.keys(newProp)) {
             let header: HTMLElement;
             let addBtn: HTMLButtonElement;
@@ -2782,31 +2789,30 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
                     break;
                 }
-                let sheetTabsRefreshed: boolean;
                 Object.keys(newProp.sheets).forEach((sheetIdx: string, index: number) => {
-                    const sheet: SheetModel = newProp.sheets[sheetIdx];
+                    const sheet: SheetModel = newProp.sheets[`${sheetIdx}`];
                     if (sheet.ranges && Object.keys(sheet.ranges).length) {
                         const ranges: string[] = Object.keys(sheet.ranges);
                         let newRangeIdx: number;
                         ranges.forEach((rangeIdx: string, idx: number) => {
-                            if (!sheet.ranges[rangeIdx].info) {
+                            if (!sheet.ranges[`${rangeIdx}`].info) {
                                 newRangeIdx = idx;
                             }
                         });
                         ranges.forEach((rangeIdx: string, idx: number) => {
-                            if (sheet.ranges[rangeIdx].dataSource && (isUndefined(newRangeIdx)
+                            if (sheet.ranges[`${rangeIdx}`].dataSource && (isUndefined(newRangeIdx)
                                 || (!isUndefined(newRangeIdx) && newRangeIdx === idx))) {
                                 this.notify(dataSourceChanged, {
                                     sheetIdx: sheetIdx, rangeIdx: rangeIdx,
-                                    isLastRange: ranges.length - 1 === idx, changedData: sheet.ranges[rangeIdx].dataSource
+                                    isLastRange: ranges.length - 1 === idx, changedData: sheet.ranges[`${rangeIdx}`].dataSource
                                 });
                             }
                         });
-                    } else if (sheet.paneTopLeftCell && oldProp.sheets && oldProp.sheets[sheetIdx] &&
-                        oldProp.sheets[sheetIdx].paneTopLeftCell) {
+                    } else if (sheet.paneTopLeftCell && oldProp.sheets && oldProp.sheets[`${sheetIdx}`] &&
+                        oldProp.sheets[`${sheetIdx}`].paneTopLeftCell) {
                         if (this.activeSheetIndex !== Number(sheetIdx)) { return; }
                         const cIdx: number[] = getCellIndexes(sheet.paneTopLeftCell);
-                        const pIdx: number[] = getCellIndexes(oldProp.sheets[sheetIdx].paneTopLeftCell);
+                        const pIdx: number[] = getCellIndexes(oldProp.sheets[`${sheetIdx}`].paneTopLeftCell);
                         if (cIdx[0] !== pIdx[0]) {
                             const frozenRow: number = this.frozenRowCount(this.getActiveSheet());
                             const top: number = cIdx[0] > frozenRow ? getRowsHeight(this.getActiveSheet(), frozenRow, cIdx[0] - 1) : 0;

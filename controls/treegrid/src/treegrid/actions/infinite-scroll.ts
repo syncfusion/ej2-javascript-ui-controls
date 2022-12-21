@@ -75,24 +75,24 @@ export class InfiniteScroll {
     private infiniteRemoteExpand(args: { index: number, childData: ITreeData[] }): void {
         const rowObjects: Row<Column>[] = this.parent.grid.getRowsObject();
         const locator: string = 'serviceLocator'; const generateRows: string = 'generateRows';
-        const serviceLocator: ServiceLocator = this.parent.grid.infiniteScrollModule[locator];
+        const serviceLocator: ServiceLocator = this.parent.grid.infiniteScrollModule[`${locator}`];
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(serviceLocator, null, this.parent.grid);
         const rows: Element[] = this.parent.getRows();
         const position: string = args.index === rows.length - 1 ? 'after' : 'before';
         const cols: Column[] = this.parent.grid.getColumns();
-        const childRowObjects: Row<Column>[] = this.parent.grid.infiniteScrollModule[generateRows](args.childData, args);
+        const childRowObjects: Row<Column>[] = this.parent.grid.infiniteScrollModule[`${generateRows}`](args.childData, args);
         const childRowElements: Element[] = [];
         for (let i: number = 0; i < childRowObjects.length; i++) {
-            childRowElements.push(rowRenderer.render(childRowObjects[i], cols));
+            childRowElements.push(rowRenderer.render(childRowObjects[parseInt(i.toString(), 10)], cols));
         }
         rowObjects.splice(args.index + 1, 0, ...childRowObjects);
         for (let i: number = 0; i < childRowElements.length; i++) {
             if (position === 'after') {
-                rows[args.index + i][position](childRowElements[i]);
+                rows[args.index + i][`${position}`](childRowElements[parseInt(i.toString(), 10)]);
             } else {
-                rows[args.index + i + 1][position](childRowElements[i]);
+                rows[args.index + i + 1][`${position}`](childRowElements[parseInt(i.toString(), 10)]);
             }
-            rows.splice(args.index + 1 + i, 0, childRowElements[i]);
+            rows.splice(args.index + 1 + i, 0, childRowElements[parseInt(i.toString(), 10)]);
         }
         resetRowIndex(this.parent.grid, this.parent.grid.getRowsObject(), this.parent.grid.getRows() as HTMLTableRowElement[], 0);
     }
@@ -105,10 +105,10 @@ export class InfiniteScroll {
     private contentready (): void {
         if (this.parent.infiniteScrollSettings.enableCache && !isNullOrUndefined(this.parent.editModule)) {
             const updateIndex: string = 'updateIndex';
-            this.parent.editModule[updateIndex](this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
+            this.parent.editModule[`${updateIndex}`](this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
             if (this.parent.getFrozenColumns()) {
-                this.parent.editModule[updateIndex](this.parent.grid.dataSource, this.parent.getMovableDataRows(),
-                                                    this.parent.getCurrentViewRecords());
+                this.parent.editModule[`${updateIndex}`](this.parent.grid.dataSource, this.parent.getMovableDataRows(),
+                                                         this.parent.getCurrentViewRecords());
             }
         }
     }
@@ -206,11 +206,11 @@ export class InfiniteScroll {
      */
     private infiniteEditHandler(args: { e: InfiniteScrollArgs, result: Object[] }): void {
         const infiniteData: string = 'infiniteCurrentViewData';
-        const infiniteCurrentViewData: { [x: number]: Object[] } = this.parent.grid.infiniteScrollModule[infiniteData];
+        const infiniteCurrentViewData: { [x: number]: Object[] } = this.parent.grid.infiniteScrollModule[`${infiniteData}`];
         const keys: string[] = Object.keys(infiniteCurrentViewData);
         if (args.e.requestType === 'delete' && args.result.length > 1) {
             for (let i: number = 1; i < args.result.length; i++) {
-                infiniteCurrentViewData[keys[keys.length - 1]].push(args.result[i]);
+                infiniteCurrentViewData[keys[keys.length - 1]].push(args.result[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -252,13 +252,13 @@ export class InfiniteScroll {
         const resetInfiniteCurrentViewData: string = 'resetInfiniteCurrentViewData';
         for (let i: number = 0; i < data.length; i++) {
             rows.filter((e: Row<Column>, index: number) => {
-                if (e.data[keyField] === data[i][keyField]) {
+                if (e.data[`${keyField}`] === data[parseInt(i.toString(), 10)][`${keyField}`]) {
                     if (isFrozen) {
                         const page: number = Math.ceil((index + 1) / this.parent.grid.pageSettings.pageSize);
-                        this.parent.grid.infiniteScrollModule[resetInfiniteCurrentViewData](page, index);
+                        this.parent.grid.infiniteScrollModule[`${resetInfiniteCurrentViewData}`](page, index);
                     }
                     rows.splice(index, 1);
-                    remove(rowElms[index]);
+                    remove(rowElms[parseInt(index.toString(), 10)]);
                     rowElms.splice(index, 1);
                 }
             });
@@ -278,7 +278,7 @@ export class InfiniteScroll {
         const locator: string = 'serviceLocator';
         const actionArgs: ActionEventArgs = eventArgs.args.e;
         const row: Row<Column>[] = eventArgs.row;
-        const serviceLocator: ServiceLocator = this.parent.grid.infiniteScrollModule[locator];
+        const serviceLocator: ServiceLocator = this.parent.grid.infiniteScrollModule[`${locator}`];
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(serviceLocator, null, this.parent.grid);
         let tbody: HTMLElement;
         const currentData: ITreeData[] = this.parent.getCurrentViewRecords();
@@ -301,21 +301,22 @@ export class InfiniteScroll {
         }
         let position: string;
         const addRowIndex: string = 'addRowIndex';
-        let newRowIndex: number = this.parent.editModule[addRowIndex];
+        let newRowIndex: number = this.parent.editModule[`${addRowIndex}`];
         for (let i: number = 0; i < row.length; i++) {
-            const newRow: HTMLTableRowElement = <HTMLTableRowElement>rowRenderer.render(row[i], this.parent.grid.getColumns());
+            const newRow: HTMLTableRowElement = <HTMLTableRowElement>rowRenderer.render(row[parseInt(i.toString(), 10)],
+                                                                                        this.parent.grid.getColumns());
             if (actionArgs.requestType === 'save' && actionArgs.action === 'add') {
                 if (getValue('selectedIndex', this.parent.editModule) !== -1 && this.parent.editSettings.newRowPosition !== 'Top') {
                     if (this.parent.editSettings.newRowPosition === 'Below' || this.parent.editSettings.newRowPosition === 'Child') {
                         position = 'after';
-                        newRowIndex += findChildrenRecords(currentData[newRowIndex]).length;
+                        newRowIndex += findChildrenRecords(currentData[parseInt(newRowIndex.toString(), 10)]).length;
                         if (this.parent.editSettings.newRowPosition === 'Child') {
                             newRowIndex -= 1;    //// for child position already child record is added in childRecords so subtracting 1
                         }
-                        currentRows[newRowIndex][position](newRow);
+                        currentRows[parseInt(newRowIndex.toString(), 10)][`${position}`](newRow);
                     } else if (this.parent.editSettings.newRowPosition === 'Above') {
                         position = 'before';
-                        currentRows[this.parent.editModule[addRowIndex]][position](newRow);
+                        currentRows[this.parent.editModule[`${addRowIndex}`]][`${position}`](newRow);
                     }
                 } else if (this.parent.editSettings.newRowPosition === 'Bottom') {
                     tbody.appendChild(newRow);

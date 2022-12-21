@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { BeforeOpenEventArgs } from "../../../src";
+import { BeforeOpenEventArgs, ICellRenderer, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 
 describe('Open & Save ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -76,5 +76,19 @@ describe('EJ2-56416 ->', () => {
                 }, 1500);
             });
         });
+    });
+    it('Number format update checking after importing', (done: Function) => {
+        const spreadsheet: Spreadsheet = helper.getInstance();
+        spreadsheet.openModule.isImportedFile = true; // After importing, this property will be enabled.
+        const sheet: SheetModel = helper.invoke('getActiveSheet');
+        setCell(12, 0, sheet, { value: '5-10' });
+        const cell: HTMLElement = helper.invoke('getCell', [12, 0]);
+        spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refresh(12, 0, false, cell, false, false, true);
+        expect(cell.textContent).toBe('5-10');
+        expect(sheet.rows[12].cells[0].format).toBeUndefined();
+        helper.edit('B13', '5-10');
+        expect(sheet.rows[12].cells[1].value).toBe('44691');
+        expect(sheet.rows[12].cells[1].format).toBe('dd-MMM');
+        done();
     });
 });

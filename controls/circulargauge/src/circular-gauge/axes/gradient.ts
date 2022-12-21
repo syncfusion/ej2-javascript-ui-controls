@@ -140,7 +140,6 @@ export class Gradient {
      *
      * @param {CircularGauge} gauge - Specifies the instance of the gauge
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
     }
@@ -213,20 +212,23 @@ export class Gradient {
         this.gauge.svgObject.appendChild(def);
         return 'url(#' + name + ')';
     }
-    // eslint-disable-next-line valid-jsdoc
+
     /**
      * To get color, opacity, offset and style for circular gradient path.
      *
+     * @param {ColorStopModel[]} colorStop - Specifies the colorStop.
+     * @param {number} index - Specifies the index.
+     * @returns {GradientColor[]} - return the gradient color value.
      * @private
      */
     private getCircularGradientColor(colorStop: ColorStopModel[], index : number): GradientColor[] {
         const colors: GradientColor[] = []; let colorIndex : number = index;
         for (let j: number = colorIndex; j < (index === (colorStop.length - 1) ? index + 1 : index + 2); j++) {
             const color: GradientColor = {
-                color: colorStop[j].color,
-                colorStop: colorStop[j].offset,
-                opacity: colorStop[j].opacity ? colorStop[j].opacity.toString() : '1',
-                style: colorStop[j].style
+                color: colorStop[j as number].color,
+                colorStop: colorStop[j as number].offset,
+                opacity: colorStop[j as number].opacity ? colorStop[j as number].opacity.toString() : '1',
+                style: colorStop[j as number].style
             };
             colors.push(color);
             colorIndex++;
@@ -277,20 +279,22 @@ export class Gradient {
         const colors: GradientColor[] = [];
         for (let j: number = 0; j < colorStop.length; j++) {
             const color: GradientColor = {
-                color: colorStop[j].color,
-                colorStop: colorStop[j].offset,
-                opacity: colorStop[j].opacity ? colorStop[j].opacity.toString() : '1',
-                style: colorStop[j].style
+                color: colorStop[j as number].color,
+                colorStop: colorStop[j as number].offset,
+                opacity: colorStop[j as number].opacity ? colorStop[j as number].opacity.toString() : '1',
+                style: colorStop[j as number].style
             };
             colors.push(color);
         }
         return colors;
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To get a gradient color string
      *
      * @param {PointerModel | CapModel | NeedleTailModel | RangeModel} element - Specifies the element.
+     * @param {number} index - specifies the index.
+     * @param {string} direction - specifies the direction.
+     * @param {number} rangeIndex - specifies the index of range.
      * @returns {string} - Returns the string
      * @private
      */
@@ -320,7 +324,7 @@ export class Gradient {
 
     /**
      * To destroy the Gradient.
-     * 
+     *
      * @returns {void}
      * @private
      */

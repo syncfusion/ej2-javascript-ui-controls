@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { print as printFunction, createElement } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
-import { getElement, getClientElement } from '../utils/helper';
+import { getElement } from '../utils/helper';
 import { IPrintEventArgs } from '../model/interface';
 import { beforePrint } from '../model/constants';
 
@@ -15,19 +14,21 @@ export class Print {
     /**
      * Constructor for Maps
      *
-     * @param {Maps} control - Specifies the instance of the map
+     * @param {Maps} control - Specifies the instance of the Maps
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: Maps) { }
 
     /**
      * To print the Maps
      *
-     * @param {string[] | string | Element} elements - Specifies the element
+     * @param {Maps} maps -Specifies the Maps instance.
+     * @param {string[] | string | Element} elements - Specifies the element of the Maps
      * @returns {void}
      * @private
      */
     public print(maps: Maps, elements?: string[] | string | Element): void {
-        let printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        const printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         printWindow.moveTo(0, 0);
         printWindow.resizeTo(screen.availWidth, screen.availHeight);
         const argsData: IPrintEventArgs = {
@@ -43,29 +44,30 @@ export class Print {
     /**
      * To get the html string of the Maps
      *
+     * @param {Maps} maps -Specifies the Maps instance.
      * @param {string[] | string | Element} elements - Specifies the html element
      * @returns {Element} - Returns the div element
      * @private
      */
     private getHTMLContent(maps: Maps, elements?: string[] | string | Element): Element {
-        let div: Element = createElement('div');
-        let divElement: Element = maps.element.cloneNode(true) as Element;
+        const div: Element = createElement('div');
+        const divElement: Element = maps.element.cloneNode(true) as Element;
         if (maps.isTileMap) {
             for (let i: number = 0; i < divElement.childElementCount; i++) {
-                if (divElement.children[i].id === maps.element.id + '_tile_parent') {
-                    (divElement.children[i] as HTMLElement).style.removeProperty('height');
-                    (divElement.children[i] as HTMLElement).style.removeProperty('width');
-                    (divElement.children[i] as HTMLElement).style.removeProperty('top');
-                    (divElement.children[i] as HTMLElement).style.removeProperty('left');
-                    (divElement.children[i] as HTMLElement).style.removeProperty('right');
-                    (divElement.children[i] as HTMLElement).style.removeProperty('overflow');
+                if (divElement.children[i as number].id === maps.element.id + '_tile_parent') {
+                    (divElement.children[i as number] as HTMLElement).style.removeProperty('height');
+                    (divElement.children[i as number] as HTMLElement).style.removeProperty('width');
+                    (divElement.children[i as number] as HTMLElement).style.removeProperty('top');
+                    (divElement.children[i as number] as HTMLElement).style.removeProperty('left');
+                    (divElement.children[i as number] as HTMLElement).style.removeProperty('right');
+                    (divElement.children[i as number] as HTMLElement).style.removeProperty('overflow');
                     const svgElement: HTMLElement = document.getElementById(maps.element.id + '_Tile_SVG_Parent');
-                    (divElement.children[i].children[0] as HTMLElement).style.overflow = 'hidden';
-                    (divElement.children[i].children[0] as HTMLElement).style.position = 'absolute';
-                    (divElement.children[i].children[0] as HTMLElement).style.height = svgElement.style.height;
-                    (divElement.children[i].children[0] as HTMLElement).style.width = svgElement.style.width;
-                    (divElement.children[i].children[0] as HTMLElement).style.left = svgElement.style.left;
-                    (divElement.children[i].children[0] as HTMLElement).style.top = svgElement.style.top;
+                    (divElement.children[i as number].children[0] as HTMLElement).style.overflow = 'hidden';
+                    (divElement.children[i as number].children[0] as HTMLElement).style.position = 'absolute';
+                    (divElement.children[i as number].children[0] as HTMLElement).style.height = svgElement.style.height;
+                    (divElement.children[i as number].children[0] as HTMLElement).style.width = svgElement.style.width;
+                    (divElement.children[i as number].children[0] as HTMLElement).style.left = svgElement.style.left;
+                    (divElement.children[i as number].children[0] as HTMLElement).style.top = svgElement.style.top;
                     break;
                 }
             }
@@ -100,5 +102,6 @@ export class Print {
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

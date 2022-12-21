@@ -38,7 +38,7 @@ export class ColumnWidthService {
         }
         const columns: Column[] = (<Column[]>this.parent.getColumns());
         for (let j: number = 0; j < columns.length; j++) {
-            this.setColumnWidth(columns[j], wFlag && this.parent.enableColumnVirtualization ? undefined : j + i);
+            this.setColumnWidth(columns[parseInt(j.toString(), 10)], wFlag && this.parent.enableColumnVirtualization ? undefined : j + i);
         }
         if (this.parent.isRowDragable() && this.parent.getFrozenMode() === 'Right') {
             this.setColumnWidth(new Column({ width: '30px' }), columns.length);
@@ -71,9 +71,10 @@ export class ColumnWidthService {
                 if (tWidth === 0 && this.parent.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
                     this.setUndefinedColumnWidth(collection);
                 }
-                const index: number = this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount();
+                const index: number = this.parent.getColumnIndexByField(
+                    collection[parseInt(i.toString(), 10)].field) + this.parent.getIndentCount();
                 if (tWidth !== 0 && difference < tmWidth) {
-                    this.setWidth(collection[i].minWidth, index);
+                    this.setWidth(collection[parseInt(i.toString(), 10)].minWidth, index);
                 } else if (tWidth !== 0 && difference > tmWidth) {
                     this.setWidth('', index, true);
                 }
@@ -84,8 +85,8 @@ export class ColumnWidthService {
     public setUndefinedColumnWidth(collection?: Column[]): void {
         for (let k: number = 0; k < collection.length; k++) {
             if (k !== collection.length - 1) {
-                collection[k].width = 200;
-                this.setWidth(200, this.parent.getColumnIndexByField(collection[k].field));
+                collection[parseInt(k.toString(), 10)].width = 200;
+                this.setWidth(200, this.parent.getColumnIndexByField(collection[parseInt(k.toString(), 10)].field));
             }
         }
     }
@@ -152,7 +153,7 @@ export class ColumnWidthService {
             headerCol = this.getColumnLevelFrozenColgroup(index, freezeLeft, movableCount, target);
             if (!headerCol) { return; }
         } else {
-            headerCol = (<HTMLTableColElement>header.querySelector(literals.colGroup).children[index]);
+            headerCol = (<HTMLTableColElement>header.querySelector(literals.colGroup).children[parseInt(index.toString(), 10)]);
         }
         if (headerCol && !clear) {
             headerCol.style.width = fWidth;
@@ -182,7 +183,7 @@ export class ColumnWidthService {
             }
             contentCol = this.getColumnLevelFrozenColgroup(index, freezeLeft, movableCount, target);
         } else {
-            contentCol = (<HTMLTableColElement>content.querySelector(literals.colGroup).children[index]);
+            contentCol = (<HTMLTableColElement>content.querySelector(literals.colGroup).children[parseInt(index.toString(), 10)]);
         }
         if (contentCol && !clear) {
             contentCol.style.width = fWidth;
@@ -193,14 +194,14 @@ export class ColumnWidthService {
             const edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
             const editTableCol: HTMLTableColElement[] = [];
             for (let i: number = 0; i < edit.length; i++) {
-                if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
-                    for (let j: number = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
-                        editTableCol.push((<HTMLTableColElement>edit[i].querySelector('colgroup').children[j]));
+                if (parentsUntil(edit[parseInt(i.toString(), 10)], 'e-grid').id === this.parent.element.id) {
+                    for (let j: number = 0; j < edit[parseInt(i.toString(), 10)].querySelector('colgroup').children.length; j++) {
+                        editTableCol.push((<HTMLTableColElement>edit[parseInt(i.toString(), 10)].querySelector('colgroup').children[parseInt(j.toString(), 10)]));
                     }
                 }
             }
             if (edit.length && editTableCol.length) {
-                editTableCol[index].style.width = fWidth;
+                editTableCol[parseInt(index.toString(), 10)].style.width = fWidth;
             }
         }
         if (this.parent.isFrozenGrid()) {
@@ -221,9 +222,9 @@ export class ColumnWidthService {
             headerCol = colGroup[colGroup.length - 1] as HTMLTableColElement;
         } else if (isDrag && index === -1) {
             headerCol = colGroup[0] as HTMLTableColElement;
-        } else if (columns[index].freeze === 'Left') {
+        } else if (columns[parseInt(index.toString(), 10)].freeze === 'Left') {
             headerCol = colGroup[isDrag ? (index + 1) : index] as HTMLTableColElement;
-        } else if (columns[index].freeze === 'Right') {
+        } else if (columns[parseInt(index.toString(), 10)].freeze === 'Right') {
             headerCol = colGroup[index - (left + movable)] as HTMLTableColElement;
         } else {
             headerCol = colGroup[index - left] as HTMLTableColElement;

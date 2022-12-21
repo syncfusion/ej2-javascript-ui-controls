@@ -129,27 +129,27 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
         break;
     case 'Tailwind':
         palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
-                '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
+            '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
         break;
     case 'TailwindDark':
         palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
-                    '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
+            '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
         break;
     case 'Bootstrap5':
         palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
-                    '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
+            '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
         break;
     case 'Bootstrap5Dark':
         palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
-                    '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
+            '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
         break;
     case 'FluentDark':
         palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
-                    '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+            '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
         break;
     case 'Fluent':
         palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
-                    '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+            '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
         break;
     default:
         palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
@@ -234,59 +234,59 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme, canvas: boo
         };
         break;
     case 'Tailwind':
-    style = {
-        axisLabel: '#6B728', axisTitle: '#374151',
-        axisLine: ' #D1D5DB',
-        majorGridLine: '#E5E7EB',
-        minorGridLine: '#E5E7EB',
-        majorTickLine: '#D1D5DB',
-        minorTickLine: ' #D1D5DB',
-        chartTitle: '#374151',
-        legendLabel: '#374151',
-        background: canvas ? 'rgba(255,255,255, 0.0)' : 'transparent',
-        areaBorder: ' #E5E7EB',
-        errorBar: '#374151',
-        crosshairLine: '#1F2937',
-        crosshairFill: '#111827',
-        crosshairLabel: '#F9FAFB',
-        tooltipFill: '#111827',
-        tooltipBoldLabel: '#D1D5DB',
-        tooltipLightLabel: '#F9FAFB',
-        tooltipHeaderLine: '#6B7280',
-        markerShadow: null,
-        selectionRectFill: 'rgba(79,70,229, 0.1)',
-        selectionRectStroke: '#4F46E5',
-        selectionCircleStroke: '#6B7280',
-        tabColor: 'rgb(79, 70, 229)'
-    };
-    break;
-case 'TailwindDark':
-    style = {
-        axisLabel: '#9CA3AF', axisTitle: '#9CA3AF',
-        axisLine: ' #4B5563',
-        majorGridLine: '#374151',
-        minorGridLine: '#374151',
-        majorTickLine: '#4B5563',
-        minorTickLine: ' #4B5563',
-        chartTitle: '#D1D5DB',
-        legendLabel: '#D1D5DB',
-        background: canvas ? '#1f2937' : 'transparent',
-        areaBorder: ' #374151',
-        errorBar: '#ffffff',
-        crosshairLine: '#9CA3AF',
-        crosshairFill: '#F9FAFB',
-        crosshairLabel: '#1F2937',
-        tooltipFill: '#F9FAFB',
-        tooltipBoldLabel: '#6B7280',
-        tooltipLightLabel: '#1F2937',
-        tooltipHeaderLine: '#9CA3AF',
-        markerShadow: null,
-        selectionRectFill: 'rgba(34,211,238, 0.1)',
-        selectionRectStroke: '#22D3EE',
-        selectionCircleStroke: '#282727',
-        tabColor: 'rgb(34, 211, 238)'
-    };
-    break;
+        style = {
+            axisLabel: '#6B728', axisTitle: '#374151',
+            axisLine: ' #D1D5DB',
+            majorGridLine: '#E5E7EB',
+            minorGridLine: '#E5E7EB',
+            majorTickLine: '#D1D5DB',
+            minorTickLine: ' #D1D5DB',
+            chartTitle: '#374151',
+            legendLabel: '#374151',
+            background: canvas ? 'rgba(255,255,255, 0.0)' : 'transparent',
+            areaBorder: ' #E5E7EB',
+            errorBar: '#374151',
+            crosshairLine: '#1F2937',
+            crosshairFill: '#111827',
+            crosshairLabel: '#F9FAFB',
+            tooltipFill: '#111827',
+            tooltipBoldLabel: '#D1D5DB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#6B7280',
+            markerShadow: null,
+            selectionRectFill: 'rgba(79,70,229, 0.1)',
+            selectionRectStroke: '#4F46E5',
+            selectionCircleStroke: '#6B7280',
+            tabColor: 'rgb(79, 70, 229)'
+        };
+        break;
+    case 'TailwindDark':
+        style = {
+            axisLabel: '#9CA3AF', axisTitle: '#9CA3AF',
+            axisLine: ' #4B5563',
+            majorGridLine: '#374151',
+            minorGridLine: '#374151',
+            majorTickLine: '#4B5563',
+            minorTickLine: ' #4B5563',
+            chartTitle: '#D1D5DB',
+            legendLabel: '#D1D5DB',
+            background: canvas ? '#1f2937' : 'transparent',
+            areaBorder: ' #374151',
+            errorBar: '#ffffff',
+            crosshairLine: '#9CA3AF',
+            crosshairFill: '#F9FAFB',
+            crosshairLabel: '#1F2937',
+            tooltipFill: '#F9FAFB',
+            tooltipBoldLabel: '#6B7280',
+            tooltipLightLabel: '#1F2937',
+            tooltipHeaderLine: '#9CA3AF',
+            markerShadow: null,
+            selectionRectFill: 'rgba(34,211,238, 0.1)',
+            selectionRectStroke: '#22D3EE',
+            selectionCircleStroke: '#282727',
+            tabColor: 'rgb(34, 211, 238)'
+        };
+        break;
     case 'Bootstrap5':
         style = {
             axisLabel: '#495057',
@@ -507,7 +507,7 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
             grip: '#ADB5BD'
         };
         break;
-    case 'HighContrast': 
+    case 'HighContrast':
         scrollStyle = {
             backRect: '#757575',
             thumb: '#BFBFBF',
@@ -516,7 +516,7 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
             arrow: '#ADB5BD',
             grip: '#969696'
         };
-        break;   
+        break;
     case 'TailwindDark':
         scrollStyle = {
             backRect: '#6B7280',

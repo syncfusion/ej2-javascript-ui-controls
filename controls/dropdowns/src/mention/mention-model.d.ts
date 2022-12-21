@@ -1,4 +1,4 @@
-import { KeyboardEvents, compile, Property, EventHandler, Animation, AnimationModel, KeyboardEventArgs, formatUnit, append, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, detach, Event, EmitType, Complex, addClass, removeClass, closest, isUndefined, getValue, NotifyPropertyChanges, Browser } from '@syncfusion/ej2-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';import { DropDownBase, PopupEventArgs, SelectEventArgs, BeforeOpenEventArgs, dropDownBaseClasses } from '../drop-down-base/drop-down-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';
+import { KeyboardEvents, compile, Property, EventHandler, Animation, AnimationModel, KeyboardEventArgs, formatUnit, append, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, detach, Event, EmitType, Complex, addClass, removeClass, closest, isUndefined, getValue, NotifyPropertyChanges, Browser } from '@syncfusion/ej2-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';import { DropDownBase, PopupEventArgs, SelectEventArgs, BeforeOpenEventArgs, dropDownBaseClasses } from '../drop-down-base/drop-down-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { Popup, isCollide, createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';
 import {MentionChangeEventArgs} from "./mention";
 
 /**
@@ -62,7 +62,7 @@ export interface MentionModel {
     minLength?: number;
 
     /**
-     * Specifies the order to sort the data source. The possible sort orders are, 
+     * Specifies the order to sort the data source. The possible sort orders are,
      * * `None` - The data source is not sorted.
      * * `Ascending` - The data source is sorted in ascending order.
      * * `Descending` - The data source is sorted in descending order.

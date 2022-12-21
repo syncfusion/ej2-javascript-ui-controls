@@ -1,7 +1,7 @@
 import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName } from '../base/index';
 import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange, ConditionalFormatModel } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
-import { beforeInsert, ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
+import { ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { insertFormatRange } from '../../workbook/index';
 
 /**
@@ -120,21 +120,22 @@ export class WorkbookInsert {
             }
             const curIdx: number = index + model.length; let style: CellStyleModel; let cell: CellModel;
             for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
-                if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i]) {
-                    cell = args.model.rows[curIdx].cells[i];
+                if (args.model.rows[curIdx as number] && args.model.rows[curIdx as number].cells &&
+                    args.model.rows[curIdx as number].cells[i as number]) {
+                    cell = args.model.rows[curIdx as number].cells[i as number];
                     if (cell.rowSpan !== undefined && cell.rowSpan < 0 && cell.colSpan === undefined) {
                         this.parent.notify(insertMerge, <MergeArgs>{
                             range: [curIdx, i, curIdx, i], insertCount: model.length, insertModel: 'Row'
                         });
                     }
                     if (cell.style && getCell(index - 1, i, args.model, false, true).style) {
-                        style = this.checkBorder(cell.style, args.model.rows[index - 1].cells[i].style);
+                        style = this.checkBorder(cell.style, args.model.rows[index - 1].cells[i as number].style);
                         if (style !== {}) {
                             model.forEach((row: RowModel): void => {
                                 if (!row.cells) { row.cells = []; }
-                                if (!row.cells[i]) { row.cells[i] = {}; }
-                                if (!row.cells[i].style) { row.cells[i].style = {}; }
-                                Object.assign(row.cells[i].style, style);
+                                if (!row.cells[i as number]) { row.cells[i as number] = {}; }
+                                if (!row.cells[i as number].style) { row.cells[i as number].style = {}; }
+                                Object.assign(row.cells[i as number].style, style);
                             });
                         }
                     }
@@ -169,31 +170,35 @@ export class WorkbookInsert {
             mergeCollection = [];
             let cell: CellModel; let style: CellStyleModel;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
-                if (!args.model.rows[i]) {
-                    args.model.rows[i] = { cells: [] };
-                } else if (!args.model.rows[i].cells) {
-                    args.model.rows[i].cells = [];
+                if (!args.model.rows[i as number]) {
+                    args.model.rows[i as number] = { cells: [] };
+                } else if (!args.model.rows[i as number].cells) {
+                    args.model.rows[i as number].cells = [];
                 }
-                if (index && !args.model.rows[i].cells[index - 1]) {
-                    args.model.rows[i].cells[index - 1] = {};
+                if (index && !args.model.rows[i as number].cells[index - 1]) {
+                    args.model.rows[i as number].cells[index - 1] = {};
                 }
-                args.model.rows[i].cells.splice(index, 0, ...(args.columnCellsModel[i] && args.columnCellsModel[i].cells ?
-                    args.columnCellsModel[i].cells : cellModel));
+                args.model.rows[i as number].cells.splice(index, 0, ...(args.columnCellsModel[i as number] &&
+                    args.columnCellsModel[i as number].cells ? args.columnCellsModel[i as number].cells : cellModel));
                 const curIdx: number = index + model.length;
-                if (args.model.rows[i].cells[curIdx]) {
-                    cell = args.model.rows[i].cells[curIdx];
+                if (args.model.rows[i as number].cells[curIdx as number]) {
+                    cell = args.model.rows[i as number].cells[curIdx as number];
                     if (cell.colSpan !== undefined && cell.colSpan < 0 && cell.rowSpan === undefined) {
                         mergeCollection.push(<MergeArgs>{
                             range: [i, curIdx, i, curIdx], insertCount: cellModel.length, insertModel: 'Column'
                         });
                     }
                     if (cell.style && getCell(i, index - 1, args.model, false, true).style) {
-                        style = this.checkBorder(cell.style, args.model.rows[i].cells[index - 1].style);
+                        style = this.checkBorder(cell.style, args.model.rows[i as number].cells[index - 1].style);
                         if (style !== {}) {
                             for (let j: number = index; j < curIdx; j++) {
-                                if (!args.model.rows[i].cells[j]) { args.model.rows[i].cells[j] = {}; }
-                                if (!args.model.rows[i].cells[j].style) { args.model.rows[i].cells[j].style = {}; }
-                                Object.assign(args.model.rows[i].cells[j].style, style);
+                                if (!args.model.rows[i as number].cells[j as number]) {
+                                    args.model.rows[i as number].cells[j as number] = {};
+                                }
+                                if (!args.model.rows[i as number].cells[j as number].style) {
+                                    args.model.rows[i as number].cells[j as number].style = {};
+                                }
+                                Object.assign(args.model.rows[i as number].cells[j as number].style, style);
                             }
                         }
                     }
@@ -209,9 +214,9 @@ export class WorkbookInsert {
             const sheetName: string = getSheetName(this.parent);
             const isFromUpdateAction: boolean = (args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction;
             for (let i: number = 0; i < sheetModel.length; i++) {
-                if (sheetModel[i].name) {
+                if (sheetModel[i as number].name) {
                     for (let j: number = 0; j < this.parent.sheets.length; j++) {
-                        if (sheetModel[i].name === this.parent.sheets[j].name) {
+                        if (sheetModel[i as number].name === this.parent.sheets[j as number].name) {
                             sheetModel.splice(i, 1); i--; break;
                         }
                     }
@@ -248,9 +253,10 @@ export class WorkbookInsert {
     }
     private setRowColCount(startIdx: number, endIdx: number, sheet: SheetModel, layout: string): void {
         const prop: string = layout + 'Count';
-        this.parent.setSheetPropertyOnMute(sheet, prop, sheet[prop] + ((endIdx - startIdx) + 1));
+        this.parent.setSheetPropertyOnMute(sheet, prop, sheet[`${prop}`] + ((endIdx - startIdx) + 1));
         if (sheet.id === this.parent.getActiveSheet().id) {
-            this.parent.notify(updateRowColCount, { index: sheet[prop] - 1, update: layout, isInsert: true, start: startIdx, end: endIdx });
+            this.parent.notify(
+                updateRowColCount, { index: sheet[`${prop}`] - 1, update: layout, isInsert: true, start: startIdx, end: endIdx });
         }
     }
     private updateRangeModel(ranges: RangeModel[]): void {
@@ -274,23 +280,24 @@ export class WorkbookInsert {
     private setInsertInfo(sheet: SheetModel, startIndex: number, count: number, totalKey: string, modelType: ModelType = 'Row'): void {
         const endIndex: number = count = startIndex + (count - 1);
         sheet.ranges.forEach((range: ExtendedRange): void => {
-            if (range.info && startIndex < range.info[totalKey]) {
+            if (range.info && startIndex < range.info[`${totalKey}`]) {
                 if (!range.info[`insert${modelType}Range`]) {
                     range.info[`insert${modelType}Range`] = [[startIndex, endIndex]];
                 } else {
                     range.info[`insert${modelType}Range`].push([startIndex, endIndex]);
                 }
-                range.info[totalKey] += ((endIndex - startIndex) + 1);
+                range.info[`${totalKey}`] += ((endIndex - startIndex) + 1);
             }
         });
     }
     private insertConditionalFormats(args: InsertDeleteModelArgs): void {
-        let cfCollection: ConditionalFormatModel[] = args.model.conditionalFormats;
-        if (args.prevAction === "delete") {
+        const cfCollection: ConditionalFormatModel[] = args.model.conditionalFormats;
+        if (args.prevAction === 'delete') {
             this.parent.setSheetPropertyOnMute(args.model, 'conditionalFormats', args.conditionalFormats);
         } else if (cfCollection) {
             for (let i: number = 0, cfLength: number = cfCollection.length; i < cfLength; i++) {
-                cfCollection[i].range = getRangeAddress(insertFormatRange(args, getRangeIndexes(cfCollection[i].range), !args.isAction && !args.isUndoRedo));
+                cfCollection[i as number].range = getRangeAddress(
+                    insertFormatRange(args, getRangeIndexes(cfCollection[i as number].range), !args.isAction && !args.isUndoRedo));
             }
         }
     }

@@ -322,6 +322,13 @@ export interface ScheduleModel extends ComponentModel{
     dateHeaderTemplate?: string;
 
     /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the header date range.
+     *
+     * @default null
+     */
+    dateRangeTemplate?: string;
+
+    /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
      * the month date cells. This template is only applicable for month view day cells.
      *

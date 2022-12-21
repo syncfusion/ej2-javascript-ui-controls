@@ -73,7 +73,7 @@ export class ActionEvents {
         action: string, preventAction?: boolean, isUndo?: boolean, isRedo?: boolean
     }): void {
         const preventAction: boolean = args.preventAction; delete args.preventAction;
-        let actionArgs: { [key: string]: Object } = { action: args.action };
+        const actionArgs: { [key: string]: Object } = { action: args.action };
         if (args.isUndo) { actionArgs.isUndo = true; delete args.isUndo; }
         if (args.isRedo) { actionArgs.isUndo = false; delete args.isRedo; }
         actionArgs.args = args;
@@ -90,7 +90,8 @@ export class ActionEvents {
     }
 
     private actionCompleteHandler(
-        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs, action: string, preventAction?: boolean, preventEventTrigger?: boolean }): void {
+        args: { eventArgs: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs, action: string, preventAction?: boolean,
+            preventEventTrigger?: boolean }): void {
         const preventAction: boolean = args.preventAction; delete args.preventAction;
         this.parent.notify(triggerDataChange, args);
         if (!args.preventEventTrigger) {

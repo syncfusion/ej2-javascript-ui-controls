@@ -1,4 +1,6 @@
-    /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable security/detect-non-literal-fs-filename */
+/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/ban-types */
@@ -79,8 +81,8 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * @default null
      */
 
-     @Property(null)
-     public format: string;
+    @Property(null)
+    public format: string;
 
     /**
      * The opacity for the background.
@@ -251,8 +253,8 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      * @default false
      */
 
-     @Property(false)
-     public isFilled: boolean;
+    @Property(false)
+    public isFilled: boolean;
 
     /**
      * The width of the marker in pixels.
@@ -1048,7 +1050,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 this.rangeColorsInterior(point);
                 i++;
             }
-            
+
         } else if (this.xAxis.valueType.indexOf('DateTime') > -1) {
             const option: DateFormatOptions = {
                 skeleton: 'full',
@@ -1096,7 +1098,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             } else if (this.type.indexOf('Histogram') > -1 && (this.xAxis.maximum || this.xAxis.minimum)) {
                 this.chart['histogramSeriesModule'].calculateBinValues(this);
             }
-            if (this.type.indexOf('Histogram') > -1 && this.points.length == 1) {
+            if (this.type.indexOf('Histogram') > -1 && this.points.length === 1) {
                 this.xMin = this.xMin - this.histogramValues.binWidth;
                 this.xMax = this.xMax + this.histogramValues.binWidth;
             }
@@ -1110,8 +1112,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             if (!this.rangeColorPoints[point.interior]) {
                 this.rangeColorPoints[point.interior] = [];
             }
-            else if (this.rangeColorPoints[point.interior] != undefined) {
-                this.rangeColorPoints[point.interior].push(point)
+            else if (this.rangeColorPoints[point.interior] !== undefined) {
+                this.rangeColorPoints[point.interior].push(point);
             }
         }
     }
@@ -1126,9 +1128,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
     /** @private */
     protected dataPoint(i: number, textMappingName: string, xName: string): Points {
-        this.points[i] = new Points();
-        const point: Points = <Points>this.points[i];
-        const currentViewData: Object = this.currentViewData[i];
+        this.points[i as number] = new Points();
+        const point: Points = <Points>this.points[i as number];
+        const currentViewData: Object = this.currentViewData[i as number];
         const getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
         point.x = getObjectValueByMappingString(xName, currentViewData);
         point.high = getObjectValueByMappingString(this.high, currentViewData);
@@ -1181,7 +1183,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     }
 
     private getObjectValue(mappingName: string, data: Object): Object {
-        return data[mappingName];
+        return data[mappingName as string];
     }
     /**
      * To set empty point value based on empty point mode
@@ -1204,7 +1206,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                     point.open = point.close = 0;
                 }
             } else {
-                point.y = point.yValue = this.yData[i] = 0;
+                point.y = point.yValue = this.yData[i as number] = 0;
             }
             break;
         case 'Average':
@@ -1218,14 +1220,14 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                             point.close;
                     }
                 } else {
-                    point.y = point.yValue = this.yData[i] = this.getAverage(this.yName, i);
+                    point.y = point.yValue = this.yData[i as number] = this.getAverage(this.yName, i);
                 }
             }
             point.visible = true;
             break;
         case 'Drop':
         case 'Gap':
-            this.yData[i] = null;
+            this.yData[i as number] = null;
             point.visible = false;
             break;
         }
@@ -1276,7 +1278,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      */
     private setXYMinMax(yValue: number): void {
         const isLogAxis: boolean = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic');
-        const isNegativeValue: boolean = yValue < 0 || this.yAxis.rangePadding === "None";
+        const isNegativeValue: boolean = yValue < 0 || this.yAxis.rangePadding === 'None';
         let seriesMinY: number;
         if (this.isRectTypeSeries && !setRange(this.yAxis)) {
             seriesMinY = ((isLogAxis ? (yValue) : isNegativeValue ? yValue : 0));
@@ -1285,7 +1287,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         }
         this.yMin = isLogAxis ?
             Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY) || (seriesMinY === 0) ||
-                (seriesMinY.toString() === "0") || (seriesMinY.toString() === '')) ? this.yMin : seriesMinY) :
+                (seriesMinY.toString() === '0') || (seriesMinY.toString() === '')) ? this.yMin : seriesMinY) :
             Math.min(this.yMin, (isNullOrUndefined(seriesMinY) || isNaN(seriesMinY)) ? this.yMin : seriesMinY);
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }
@@ -1337,14 +1339,14 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             }
         }
         if (!this.xAxis.isIndexed) {
-            if (this.xAxis.indexLabels[pointX] === undefined) {
-                this.xAxis.indexLabels[pointX] = this.xAxis.labels.length;
-                this.xAxis.labels.push(pointX);
+            if (this.xAxis.indexLabels[pointX as string] === undefined) {
+                this.xAxis.indexLabels[pointX as string] = this.xAxis.labels.length;
+                this.xAxis.labels.push(pointX as string);
             }
-            point.xValue = this.xAxis.indexLabels[pointX];
+            point.xValue = this.xAxis.indexLabels[pointX as string];
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            this.xAxis.labels[index] ? this.xAxis.labels[index] += ', ' + pointX :
+            this.xAxis.labels[index as number] ? this.xAxis.labels[index as number] += ', ' + pointX :
                 this.xAxis.labels.push(pointX);
             point.xValue = index;
         }
@@ -1353,8 +1355,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * To find average of given property
      */
     private getAverage(member: string, i: number, data: Object = this.currentViewData): number {
-        const previous: number = data[i - 1] ? (data[i - 1][member] || 0) : 0;
-        const next: number = data[i + 1] ? (data[i + 1][member] || 0) : 0;
+        const previous: number = data[i - 1] ? (data[i - 1][member as string] || 0) : 0;
+        const next: number = data[i + 1] ? (data[i + 1][member as string] || 0) : 0;
         return (previous + next) / 2;
     }
 
@@ -1368,7 +1370,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.chart = chart;
         let dataSource: Object | DataManager;
         const isAngular: string = 'isAngular';
-        if (chart[isAngular]) {
+        if (chart[isAngular as string]) {
             dataSource = Object.keys(this.dataSource).length ? this.dataSource : chart.dataSource;
         } else {
             dataSource = this.dataSource || chart.dataSource;
@@ -1377,10 +1379,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, false);
             return;
         }
-       
+
         const dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
         dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
-       
+
     }
 
     private dataManagerSuccess(e: { result: Object, count: number }, isRemoteData: boolean = true): void {
@@ -2036,9 +2038,9 @@ export class Series extends SeriesBase {
                 (series.chart.chartAreaType === 'PolarRadar'))) {
                 stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
                     (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
-                if (!lastPositive[stackingGroup]) {
-                    lastPositive[stackingGroup] = [];
-                    lastNegative[stackingGroup] = [];
+                if (!lastPositive[stackingGroup as string]) {
+                    lastPositive[stackingGroup as string] = [];
+                    lastNegative[stackingGroup as string] = [];
                 }
                 yValues = series.yData;
                 startValues = [];
@@ -2047,36 +2049,36 @@ export class Series extends SeriesBase {
                 visiblePoints = getVisiblePoints(series);
                 for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
                     lastValue = 0;
-                    value = +yValues[j]; // Fix for chart not rendering while y value is given as string issue
-                    if (lastPositive[stackingGroup][visiblePoints[j].xValue] === undefined) {
-                        lastPositive[stackingGroup][visiblePoints[j].xValue] = 0;
+                    value = +yValues[j as number]; // Fix for chart not rendering while y value is given as string issue
+                    if (lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                        lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
                     }
-                    if (lastNegative[stackingGroup][visiblePoints[j].xValue] === undefined) {
-                        lastNegative[stackingGroup][visiblePoints[j].xValue] = 0;
+                    if (lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                        lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
                     }
                     if (isStacking100) {
-                        value = value / frequencies[stackingGroup][visiblePoints[j].xValue] * 100;
+                        value = value / frequencies[stackingGroup as string][visiblePoints[j as number].xValue] * 100;
                         value = !isNaN(value) ? value : 0;
-                        visiblePoints[j].percentage = +(value.toFixed(2));
+                        visiblePoints[j as number].percentage = +(value.toFixed(2));
                     } else {
-                        stackedValues[j] = stackedValues[j] ? stackedValues[j] + Math.abs(value) : Math.abs(value);
+                        stackedValues[j as number] = stackedValues[j as number] ? stackedValues[j as number] + Math.abs(value) : Math.abs(value);
                     }
                     if (value >= 0) {
-                        lastValue = lastPositive[stackingGroup][visiblePoints[j].xValue];
-                        lastPositive[stackingGroup][visiblePoints[j].xValue] += value;
+                        lastValue = lastPositive[stackingGroup as string][visiblePoints[j as number].xValue];
+                        lastPositive[stackingGroup as string][visiblePoints[j as number].xValue] += value;
                     } else {
-                        lastValue = lastNegative[stackingGroup][visiblePoints[j].xValue];
-                        lastNegative[stackingGroup][visiblePoints[j].xValue] += value;
+                        lastValue = lastNegative[stackingGroup as string][visiblePoints[j as number].xValue];
+                        lastNegative[stackingGroup as string][visiblePoints[j as number].xValue] += value;
                     }
                     startValues.push(lastValue);
                     endValues.push(value + lastValue);
-                    if (isStacking100 && (endValues[j] > 100)) {
-                        endValues[j] = 100;
+                    if (isStacking100 && (endValues[j as number] > 100)) {
+                        endValues[j as number] = 100;
                     }
                 }
                 series.stackedValues = new StackValues(startValues, endValues);
-                let isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
-                let isColumnBarType: boolean = (series.type.indexOf("Column") !== -1 || series.type.indexOf("Bar") !== -1);
+                const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
+                const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
                 series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, startValues);
                 series.yMax = Math.max.apply(0, endValues);
                 if (series.yMin > Math.min.apply(0, endValues)) {
@@ -2110,17 +2112,17 @@ export class Series extends SeriesBase {
             if (series.type.indexOf('Stacking') !== -1) {
                 stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
                     (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
-                if (!frequencies[stackingGroup]) {
-                    frequencies[stackingGroup] = [];
+                if (!frequencies[stackingGroup as string]) {
+                    frequencies[stackingGroup as string] = [];
                 }
                 for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
-                    if (frequencies[stackingGroup][visiblePoints[j].xValue] === undefined) {
-                        frequencies[stackingGroup][visiblePoints[j].xValue] = 0;
+                    if (frequencies[stackingGroup as string][visiblePoints[j as number].xValue] === undefined) {
+                        frequencies[stackingGroup as string][visiblePoints[j as number].xValue] = 0;
                     }
-                    if (series.yData[j] > 0) {
-                        frequencies[stackingGroup][visiblePoints[j].xValue] += series.yData[j];
+                    if (series.yData[j as number] > 0) {
+                        frequencies[stackingGroup as string][visiblePoints[j as number].xValue] += series.yData[j as number];
                     } else {
-                        frequencies[stackingGroup][visiblePoints[j].xValue] -= series.yData[j];
+                        frequencies[stackingGroup as string][visiblePoints[j as number].xValue] -= series.yData[j as number];
                     }
                 }
             }
@@ -2210,8 +2212,8 @@ export class Series extends SeriesBase {
                 this.seriesElement.setAttribute('aria-hidden', 'false');
             }
             if (!this.chart.enableCanvas || this.type === 'Bubble') {
-                this.seriesElement.setAttribute("tabindex", index === 0 ? "0" : "");
-                this.seriesElement.setAttribute("style", "outline: none");
+                this.seriesElement.setAttribute('tabindex', index === 0 ? '0' : '');
+                this.seriesElement.setAttribute('style', 'outline: none');
                 this.seriesElement.appendChild(this.clipRectElement);
             }
         }

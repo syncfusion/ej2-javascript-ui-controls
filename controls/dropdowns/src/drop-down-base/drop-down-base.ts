@@ -272,16 +272,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
-     * Enable or disable persisting component's state between page reloads.
-     * If enabled, following list of states will be persisted.
-     * 1. value
-     *
-     * @default false
-     * @deprecated
-     */
-    @Property(false)
-    public enablePersistence: boolean;
-    /**
      * Accepts the template design and assigns it to each list item present in the popup.
      * We have built-in `template engine`
      *
@@ -332,14 +322,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property<SortOrder>('None')
     public sortOrder: SortOrder;
-    /**
-     * Specifies a value that indicates whether the component is enabled or not.
-     *
-     * @default true
-     * @deprecated
-     */
-    @Property(true)
-    public enabled: boolean;
     /**
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
@@ -652,7 +634,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 liElem.classList.add('e-list-nrt');
                 liElem.setAttribute('role','option')
             } else {
-                ele.innerHTML = content;
+                if (!isNullOrUndefined(ele)) {
+                    ele.innerHTML = content;
+                }
             }
         }
     }
@@ -685,13 +669,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     protected setEnableRtl(): void {
-        if (this.list) {
-            this.enableRtlElements.push(this.list);
-        }
-        if (this.enableRtl) {
-            addClass(this.enableRtlElements, dropDownBaseClasses.rtl);
-        } else {
-            removeClass(this.enableRtlElements, dropDownBaseClasses.rtl);
+        if (!isNullOrUndefined(this.enableRtlElements)) {
+            if (this.list) {
+                this.enableRtlElements.push(this.list);
+            }
+            if (this.enableRtl) {
+                addClass(this.enableRtlElements, dropDownBaseClasses.rtl);
+            } else {
+                removeClass(this.enableRtlElements, dropDownBaseClasses.rtl);
+            }
         }
     }
     /**
@@ -725,14 +711,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected getPersistData(): string {
         return this.addOnPersist([]);
-    }
-    /**
-     * Sets the enabled state to DropDownBase.
-     *
-     * @returns {void}
-     */
-    protected setEnabled(): void {
-        this.element.setAttribute('aria-disabled', (this.enabled) ? 'false' : 'true');
     }
     /**
      * Sets the enabled state to DropDownBase.
@@ -979,7 +957,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.liCollections = [];
         this.trigger('actionFailure', e);
         this.l10nUpdate(true);
-        addClass([this.list], dropDownBaseClasses.noData);
+        if (!isNullOrUndefined(this.list)) {
+            addClass([this.list], dropDownBaseClasses.noData);
+        }
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
     protected onActionComplete(
@@ -1124,10 +1104,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (!isNullOrUndefined(this.list) && !this.list.classList.contains(dropDownBaseClasses.noData)) {
             if (isNullOrUndefined(this.fixedHeaderElement)) {
                 this.fixedHeaderElement = this.createElement('div', { className: dropDownBaseClasses.fixedHead });
-                if (!this.list.querySelector('li').classList.contains(dropDownBaseClasses.group)) {
+                if ( !isNullOrUndefined(this.list) && !this.list.querySelector('li').classList.contains(dropDownBaseClasses.group)) {
                     this.fixedHeaderElement.style.display = 'none';
                 }
-                prepend([this.fixedHeaderElement], this.list);
+                if (!isNullOrUndefined(this.fixedHeaderElement) && !isNullOrUndefined(this.list)) {
+                    prepend([this.fixedHeaderElement], this.list);
+                }
                 this.setFixedHeader();
             }
             if (!isNullOrUndefined(this.fixedHeaderElement) && this.fixedHeaderElement.style.zIndex === '0') {
@@ -1226,7 +1208,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected setFixedHeader(): void {
-        this.list.parentElement.style.display = 'block';
+        if (!isNullOrUndefined(this.list)) {
+            this.list.parentElement.style.display = 'block';
+        }
         let borderWidth: number = 0;
         if (this.list && this.list.parentElement) {
             borderWidth = parseInt(
@@ -1243,8 +1227,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 borderWidth = (borderTopWidth + borderBottomWidth + borderLeftWidth + borderRightWidth);
             }
         }
-        const liWidth: number = this.getValidLi().offsetWidth - borderWidth;
-        this.fixedHeaderElement.style.width = liWidth.toString() + 'px';
+        if (!isNullOrUndefined(this.liCollections)) {
+            const liWidth: number = this.getValidLi().offsetWidth - borderWidth;
+            this.fixedHeaderElement.style.width = liWidth.toString() + 'px';
+        }
         setStyleAttribute(this.fixedHeaderElement, { zIndex: 10 });
         const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group + ':not(.e-hide-listitem)') as HTMLElement;
         this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
@@ -1390,9 +1376,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             case 'enableRtl':
                 this.setEnableRtl();
                 break;
-            case 'enabled':
-                this.setEnabled();
-                break;
             case 'groupTemplate':
                 this.renderGroupTemplate(this.list);
                 if (this.ulElement && this.fixedHeaderElement) {
@@ -1441,7 +1424,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             wrapperElement.appendChild(this.list);
         }
         this.setEnableRtl();
-        this.setEnabled();
         if (!isEmptyData) {
             this.initialize(e);
         }
@@ -1538,11 +1520,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.trigger('beforeItemRender', {element: li, item: item});
         }
         if (itemsCount === 0 && isNullOrUndefined(this.list.querySelector('ul'))) {
-            this.list.innerHTML = '';
-            this.list.classList.remove(dropDownBaseClasses.noData);
-            this.list.appendChild(this.ulElement);
+            if (!isNullOrUndefined(this.list)) {
+                this.list.innerHTML = '';
+                this.list.classList.remove(dropDownBaseClasses.noData);
+                if (!isNullOrUndefined(this.ulElement)) {
+                    this.list.appendChild(this.ulElement);
+                }
+            }
             this.liCollections = liCollections;
-            append(liCollections, this.ulElement);
+            if (!isNullOrUndefined(liCollections) && !isNullOrUndefined(this.ulElement)) {
+                append(liCollections, this.ulElement);
+            }
             this.updateAddItemList(this.list, itemsCount);
         } else {
             if (this.getModuleName() === 'listbox' && itemsCount === 0) {
@@ -1660,6 +1648,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             detach(this.list);
         }
+        this.liCollections = null;
+        this.ulElement = null;
+        this.list = null;
+        this.enableRtlElements = null;
+        this.rippleFun = null;
         super.destroy();
     }
 }

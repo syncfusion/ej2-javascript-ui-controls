@@ -111,11 +111,11 @@ export class TableCommand {
     private removeEmptyNode(): void {
         const emptyUl: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
         for (let i: number = 0; i < emptyUl.length; i++) {
-            detach(emptyUl[i]);
+            detach(emptyUl[i as number]);
         }
         let emptyLiChild: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty:not(img)');
         for (let i: number = 0; i < emptyLiChild.length; i++) {
-            detach(emptyLiChild[i]);
+            detach(emptyLiChild[i as number]);
             if (emptyLiChild.length === i + 1) {
                 emptyLiChild = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty:not(img)');
                 i = -1;
@@ -123,7 +123,7 @@ export class TableCommand {
         }
         const emptyLi: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li:empty');
         for (let i: number = 0; i < emptyLi.length; i++) {
-            detach(emptyLi[i]);
+            detach(emptyLi[i as number]);
         }
     }
 
@@ -140,7 +140,7 @@ export class TableCommand {
         let maxJ: number = 0;
         //eslint-disable-next-line
         for (let i: number = 0; a < selectedCells.length; a++) {
-            const selectedCellIndex: number[] = this.getCorrespondingIndex(selectedCells[a], e);
+            const selectedCellIndex: number[] = this.getCorrespondingIndex(selectedCells[a as number], e);
             const minMaxIndex: number[] = this.FindIndex(selectedCellIndex[0], selectedCellIndex[1], e);
             //eslint-disable-next-line
             minI = Math.min(selectedCellIndex[0], minI),
@@ -177,17 +177,18 @@ export class TableCommand {
             const minVal: number = isBelow ? minMaxIndex.endRow : minMaxIndex.startRow;
             const newRow: Element = createElement('tr');
             const isHeaderSelect: boolean = this.curTable.querySelectorAll('th.e-cell-select').length > 0;
-            for (let i: number = 0; i < allCells[minVal].length; i++) {
-                if (isBelow && minVal < allCells.length - 1 && allCells[minVal][i] === allCells[minVal + 1][i] ||
-                        !isBelow && 0 < minVal && allCells[minVal][i] === allCells[minVal - 1][i]) {
-                    if (0 === i || 0 < i && allCells[minVal][i] !== allCells[minVal][i - 1]) {
-                        allCells[minVal][i].setAttribute('rowspan', (parseInt(allCells[minVal][i].getAttribute('rowspan'), 10) + 1).toString());
+            for (let i: number = 0; i < allCells[minVal as number].length; i++) {
+                // eslint-disable-next-line max-len
+                if (isBelow && minVal < allCells.length - 1 && allCells[minVal as number][i as number] === allCells[minVal + 1][i as number] ||
+                        !isBelow && 0 < minVal && allCells[minVal as number][i as number] === allCells[minVal - 1][i as number]) {
+                    if (0 === i || 0 < i && allCells[minVal as number][i as number] !== allCells[minVal as number][i - 1]) {
+                        allCells[minVal as number][i as number].setAttribute('rowspan', (parseInt(allCells[minVal as number][i as number].getAttribute('rowspan'), 10) + 1).toString());
                     }
                 } else {
                     const tdElement: Element = createElement('td');
                     tdElement.appendChild(createElement('br'));
                     newRow.appendChild(tdElement);
-                    tdElement.setAttribute('style', allCells[(isHeaderSelect && isBelow) ? allCells[(minVal + 1)] ? (minVal + 1) : minVal : minVal][i].getAttribute('style'));
+                    tdElement.setAttribute('style', allCells[(isHeaderSelect && isBelow) ? allCells[(minVal + 1)] ? (minVal + 1) : minVal : minVal][i as number].getAttribute('style'));
                 }
             }
             // eslint-disable-next-line
@@ -195,7 +196,7 @@ export class TableCommand {
             if (isHeaderSelect && isBelow) {
                 selectedRow = this.curTable.querySelector('tbody').childNodes[0];
             } else {
-                selectedRow = this.curTable.rows[minVal];
+                selectedRow = this.curTable.rows[minVal as number];
             }
             // eslint-disable-next-line
             (e.item.subCommand === 'InsertRowBefore') ? selectedRow.parentElement.insertBefore(newRow, selectedRow) :
@@ -229,10 +230,10 @@ export class TableCommand {
         const currentTabElm: Element = closest(curRow as HTMLElement, 'table');
         const thTdElm: NodeListOf<HTMLElement> = closest(curRow as HTMLElement, 'table').querySelectorAll('th,td');
         for (let i: number = 0; i < thTdElm.length; i++) {
-            thTdElm[i].dataset.oldWidth = (thTdElm[i].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + '%';
+            thTdElm[i as number].dataset.oldWidth = (thTdElm[i as number].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + '%';
         }
         for (let i: number = 0; i < allRows.length; i++) {
-            curCell = allRows[i].querySelectorAll(':scope > td, :scope > th')[colIndex];
+            curCell = allRows[i as number].querySelectorAll(':scope > td, :scope > th')[colIndex as number];
             const colTemplate: Node = (curCell as HTMLElement).cloneNode(true);
             (colTemplate as HTMLElement).innerHTML = '';
             (colTemplate as HTMLElement).appendChild(createElement('br'));
@@ -246,8 +247,8 @@ export class TableCommand {
             delete (colTemplate as HTMLElement).dataset.oldWidth;
         }
         for (let i: number = 0; i < thTdElm.length; i++) {
-            thTdElm[i].style.width = (Number(thTdElm[i].dataset.oldWidth.split('%')[0]) * currentWidth / previousWidth).toFixed(4) + '%';
-            delete thTdElm[i].dataset.oldWidth;
+            thTdElm[i as number].style.width = (Number(thTdElm[i as number].dataset.oldWidth.split('%')[0]) * currentWidth / previousWidth).toFixed(4) + '%';
+            delete thTdElm[i as number].dataset.oldWidth;
         }
         e.item.selection.setSelectionText(this.parent.currentDocument, selectedCell, selectedCell, 0, 0);
         if (e.callBack) {
@@ -281,9 +282,9 @@ export class TableCommand {
             const minCol: number = selectedMinMaxIndex.startColumn;
             const maxCol: number = selectedMinMaxIndex.endColumn;
             for (let i: number = 0; i < allCells.length; i++) {
-                const currentRow: HTMLElement[] = allCells[i];
+                const currentRow: HTMLElement[] = allCells[i as number];
                 for (let j: number = 0; j < currentRow.length; j++) {
-                    const currentCell: HTMLElement = currentRow[j];
+                    const currentCell: HTMLElement = currentRow[j as number];
                     //eslint-disable-next-line
                     const currentCellIndex: any = this.getCorrespondingIndex(currentCell, allCells);
                     const colSpanVal: number = parseInt(currentCell.getAttribute('colspan'), 10) || 1;
@@ -303,7 +304,7 @@ export class TableCommand {
                 }
             }
             if (deleteIndex > -1) {
-                const rowHeadEle: Element = tBodyHeadEle.children[rowIndex];
+                const rowHeadEle: Element = tBodyHeadEle.children[rowIndex as number];
                 const nextFocusCell: HTMLElement = rowHeadEle &&
                     rowHeadEle.children[(deleteIndex <= rowHeadEle.children.length - 1 ? deleteIndex : deleteIndex - 1)] as HTMLElement;
                 if (nextFocusCell) {
@@ -316,7 +317,7 @@ export class TableCommand {
             const sContainer: Node = this.parent.nodeSelection.getRange(this.parent.currentDocument).startContainer;
             if (sContainer.nodeName !== 'TD') {
                 const startChildLength: number = this.parent.nodeSelection.getRange(this.parent.currentDocument).startOffset;
-                const focusNode: Element = (sContainer as HTMLElement).children[startChildLength];
+                const focusNode: Element = (sContainer as HTMLElement).children[startChildLength as number];
                 if (focusNode) {
                     this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, focusNode, 0);
                 }
@@ -348,20 +349,22 @@ export class TableCommand {
             detach(closest(selectedCell.parentElement, 'table'));
         } else {
             for (maxI = minMaxIndex.endRow; maxI >= minMaxIndex.startRow; maxI--) {
-                currentRow = this.curTable.rows[maxI];
-                for (j = 0; j < allCells[maxI].length; j++) {
-                    if (j === 0 || allCells[maxI][j] !== allCells[maxI][j - 1]) {
-                        if (1 < parseInt(allCells[maxI][j].getAttribute('rowspan'), 10)) {
-                            const rowSpanVal: number = parseInt(allCells[maxI][j].getAttribute('rowspan'), 10) - 1;
+                currentRow = this.curTable.rows[maxI as number];
+                for (j = 0; j < allCells[maxI as number].length; j++) {
+                    if (j === 0 || allCells[maxI as number][j as number] !== allCells[maxI as number][j - 1]) {
+                        if (1 < parseInt(allCells[maxI as number][j as number].getAttribute('rowspan'), 10)) {
+                            const rowSpanVal: number = parseInt(allCells[maxI as number][j as number].getAttribute('rowspan'), 10) - 1;
                             //eslint-disable-next-line
                             1 === rowSpanVal ? allCells[maxI][j].removeAttribute('rowspan') : allCells[maxI][j].setAttribute('rowspan', rowSpanVal.toString());
                         }
                     }
-                    if (maxI < allCells.length - 1 && allCells[maxI][j] === allCells[maxI + 1][j] && (0 === maxI ||
-                        allCells[maxI][j] !== allCells[maxI - 1][j])) {
-                        const element: HTMLElement = allCells[maxI][j];
+                    // eslint-disable-next-line max-len
+                    if (maxI < allCells.length - 1 && allCells[maxI as number][j as number] === allCells[maxI + 1][j as number] && (0 === maxI ||
+                        allCells[maxI as number][j as number] !== allCells[maxI - 1][j as number])) {
+                        const element: HTMLElement = allCells[maxI as number][j as number];
                         let index: number;
-                        for (index = j; 0 < index && allCells[maxI][index] === allCells[maxI][index - 1]; index--) {
+                        // eslint-disable-next-line max-len
+                        for (index = j; 0 < index && allCells[maxI as number][index as number] === allCells[maxI as number][index - 1]; index--) {
                             if (index === 0) {
                                 (this.curTable.rows[maxI + 1] as HTMLElement).prepend(element);
                             } else {
@@ -372,9 +375,9 @@ export class TableCommand {
                 }
                 const deleteIndex: number = currentRow.rowIndex;
                 this.curTable.deleteRow(deleteIndex);
-                const focusTrEle: Element = !isNOU(this.curTable.rows[deleteIndex]) ? this.curTable.querySelectorAll('tbody tr')[deleteIndex]
+                const focusTrEle: Element = !isNOU(this.curTable.rows[deleteIndex as number]) ? this.curTable.querySelectorAll('tbody tr')[deleteIndex as number]
                     : this.curTable.querySelectorAll('tbody tr')[deleteIndex - 1];
-                const nextFocusCell: HTMLElement = focusTrEle && focusTrEle.querySelectorAll('td')[colIndex];
+                const nextFocusCell: HTMLElement = focusTrEle && focusTrEle.querySelectorAll('td')[colIndex as number];
                 if (nextFocusCell) {
                     e.item.selection.setSelectionText(this.parent.currentDocument, nextFocusCell, nextFocusCell, 0, 0);
                     nextFocusCell.classList.add('e-cell-select');
@@ -429,7 +432,7 @@ export class TableCommand {
             const cellCount: number = table.querySelector('tr').childElementCount;
             let colSpanCount: number = 0;
             for (let i: number = 0; i < cellCount; i++) {
-                colSpanCount = colSpanCount + (parseInt(table.querySelector('tr').children[i].getAttribute('colspan'), 10) || 1);
+                colSpanCount = colSpanCount + (parseInt(table.querySelector('tr').children[i as number].getAttribute('colspan'), 10) || 1);
             }
             const header: HTMLTableSectionElement = table.createTHead();
             const row: HTMLTableRowElement = header.insertRow(0);
@@ -492,16 +495,16 @@ export class TableCommand {
         }
         let totalWidth: number = 0;
         for (let j: number = rowSelectedCells.length - 1; j >= 0; j--) {
-            totalWidth = totalWidth + parseFloat((rowSelectedCells[j] as HTMLElement).style.width);
+            totalWidth = totalWidth + parseFloat((rowSelectedCells[j as number] as HTMLElement).style.width);
         }
         (firstCell as HTMLElement).style.width = totalWidth + '%';
 
         for (let i: number = 1; i <= selectedCells.length - 1; i++) {
-            detach(selectedCells[i]);
+            detach(selectedCells[i as number]);
         }
         for (let i: number = 0; i < this.curTable.rows.length ; i++) {
-            if (this.curTable.rows[i].innerHTML === '') {
-                detach(this.curTable.rows[i]);
+            if (this.curTable.rows[i as number].innerHTML === '') {
+                detach(this.curTable.rows[i as number]);
             }
         }
         this.updateRowSpanStyle(minMaxIndexes.startRow, minMaxIndexes.endRow, this.getCorrespondingColumns());
@@ -537,10 +540,10 @@ export class TableCommand {
             for (colIndex === min; colIndex <= max; colIndex++) {
                 // eslint-disable-next-line
                 if (!(min < colIndex && eleArray[0][colIndex] === eleArray[0][colIndex - 1]) && 1 < (index =
-                    Math.min(parseInt(eleArray[0][colIndex].getAttribute('colspan'), 10) || 1, max - min + 1)) &&
-                    eleArray[0][colIndex] === eleArray[0][colIndex + 1]) {
+                    Math.min(parseInt(eleArray[0][colIndex as number].getAttribute('colspan'), 10) || 1, max - min + 1)) &&
+                    eleArray[0][colIndex as number] === eleArray[0][colIndex + 1]) {
                     for (count = index - 1, colValue = 1; colValue < eleArray.length; colValue++) {
-                        if (eleArray[colValue][colIndex] !== eleArray[colValue - 1][colIndex]) {
+                        if (eleArray[colValue as number][colIndex as number] !== eleArray[colValue - 1][colIndex as number]) {
                             /* eslint-disable */
                             for (colMin = colIndex; colMin < colIndex + index; colMin++) {
                                 if (1 < (attrValue = parseInt(eleArray[colValue][colMin].getAttribute('colspan'), 10) || 1) &&
@@ -579,10 +582,11 @@ export class TableCommand {
             for (rowValue = min; rowValue <= max; rowValue++) {
                 // eslint-disable-next-line
                 if (!(min < rowValue && eleArray[rowValue][0] === eleArray[rowValue - 1][0])
-                    && eleArray[rowValue][0] && 1 < (index = Math.min(parseInt(eleArray[rowValue][0].getAttribute('rowspan'), 10) ||
-                    1, max - min + 1)) && eleArray[rowValue][0] === eleArray[rowValue + 1][0]) {
+                    // eslint-disable-next-line no-cond-assign
+                    && eleArray[rowValue as number][0] && 1 < (index = Math.min(parseInt(eleArray[rowValue as number][0].getAttribute('rowspan'), 10) ||
+                    1, max - min + 1)) && eleArray[rowValue as number][0] === eleArray[rowValue + 1][0]) {
                     for (count = index - 1, colIndex = 1; colIndex < eleArray[0].length; colIndex++) {
-                        if (eleArray[rowValue][colIndex] !== eleArray[rowValue][colIndex - 1]) {
+                        if (eleArray[rowValue as number][colIndex as number] !== eleArray[rowValue as number][colIndex - 1]) {
                             for (rowMin = rowValue; rowMin < rowValue + index; rowMin++) {
                                 // eslint-disable-next-line
                                 if (1 < (attrValue = parseInt(eleArray[rowMin][colIndex].getAttribute('rowspan'), 10) || 1) && eleArray[rowMin][colIndex] === eleArray[rowMin + 1][colIndex]) {
@@ -615,10 +619,11 @@ export class TableCommand {
             for (colIndex = firstIndex; colIndex <= length; colIndex++) {
                 // eslint-disable-next-line
                 min < rowIndex && elements[rowIndex][colIndex] === elements[rowIndex - 1][colIndex] ||
-                firstIndex < colIndex && elements[rowIndex][colIndex] === elements[rowIndex][colIndex - 1] ||
-                1 < (spanCount = parseInt(elements[rowIndex][colIndex].getAttribute(attr), 10) || 1) &&
-                (1 < spanCount - index ? elements[rowIndex][colIndex].setAttribute(attr, (spanCount - index).toString()) :
-                    elements[rowIndex][colIndex].removeAttribute(attr));
+                firstIndex < colIndex && elements[rowIndex as number][colIndex as number] === elements[rowIndex as number][colIndex - 1] ||
+                1 < (spanCount = parseInt(elements[rowIndex as number][colIndex as number].getAttribute(attr), 10) || 1) &&
+                // eslint-disable-next-line max-len
+                (1 < spanCount - index ? elements[rowIndex as number][colIndex as number].setAttribute(attr, (spanCount - index).toString()) :
+                    elements[rowIndex as number][colIndex as number].removeAttribute(attr));
             }
         }
     }
@@ -627,8 +632,8 @@ export class TableCommand {
         const selectedCells: NodeListOf<HTMLElement> = this.curTable.querySelectorAll('.e-cell-select');
         let innerHtml: string = selectedCells[0].innerHTML === '<br>' ? '' : selectedCells[0].innerHTML;
         for (let i: number = 1; i < selectedCells.length; i++) {
-            if ('<br>' !== selectedCells[i].innerHTML) {
-                innerHtml = innerHtml ? innerHtml + '<br>' + selectedCells[i].innerHTML : innerHtml + selectedCells[i].innerHTML;
+            if ('<br>' !== selectedCells[i as number].innerHTML) {
+                innerHtml = innerHtml ? innerHtml + '<br>' + selectedCells[i as number].innerHTML : innerHtml + selectedCells[i as number].innerHTML;
             }
         }
         selectedCells[0].innerHTML = innerHtml;
@@ -642,7 +647,7 @@ export class TableCommand {
             let minCol: number = correspondingCells[0].length;
             let maxCol: number = 0;
             for (let i: number = 0; i < selectedCells.length; i++) {
-                const currentRowCol: number[] = this.getCorrespondingIndex(selectedCells[i] as HTMLElement, correspondingCells);
+                const currentRowCol: number[] = this.getCorrespondingIndex(selectedCells[i as number] as HTMLElement, correspondingCells);
                 const targetRowCol: number[] = this.FindIndex(currentRowCol[0], currentRowCol[1], correspondingCells);
                 minRow = Math.min(currentRowCol[0], minRow);
                 maxRow = Math.max(targetRowCol[0], maxRow);
@@ -683,16 +688,17 @@ export class TableCommand {
             let colIndex: number;
             for (avgRowIndex = activeCellIndex[0] + Math.ceil(activeCellRowSpan / 2),
             colIndex = 0 === activeCellIndex[1] ? activeCellIndex[1]
-                : activeCellIndex[1] - 1; 0 <= colIndex && (correspondingCells[avgRowIndex][colIndex] ===
-                    correspondingCells[avgRowIndex][colIndex - 1] || 0 < avgRowIndex && correspondingCells[avgRowIndex][colIndex]
-                    === correspondingCells[avgRowIndex - 1][colIndex]);) {
+                : activeCellIndex[1] - 1; 0 <= colIndex && (correspondingCells[avgRowIndex as number][colIndex as number] ===
+                    // eslint-disable-next-line max-len
+                    correspondingCells[avgRowIndex as number][colIndex - 1] || 0 < avgRowIndex && correspondingCells[avgRowIndex as number][colIndex as number]
+                    === correspondingCells[avgRowIndex - 1][colIndex as number]);) {
                 colIndex--;
             }
             if (colIndex === -1) {
                 // eslint-disable-next-line
                 this.curTable.rows[avgRowIndex].firstChild ? (this.curTable.rows[avgRowIndex] as any).prepend(newCell) : this.curTable.appendChild(newCell);
             } else {
-                correspondingCells[avgRowIndex][colIndex].insertAdjacentElement('afterend', newCell);
+                correspondingCells[avgRowIndex as number][colIndex as number].insertAdjacentElement('afterend', newCell);
             }
 
         } else {
@@ -700,9 +706,9 @@ export class TableCommand {
             newTrEle.appendChild(newCell);
             const selectedRow: HTMLElement[] = correspondingCells[activeCellIndex[0]];
             for (let j: number = 0; j <= selectedRow.length - 1; j++) {
-                if (selectedRow[j] !== selectedRow[j - 1] && selectedRow[j] !== this.activeCell) {
-                    selectedRow[j].setAttribute('rowspan', ((parseInt(selectedRow[j].getAttribute('rowspan'), 10) ?
-                        parseInt(selectedRow[j].getAttribute('rowspan'), 10) : 1) + 1).toString());
+                if (selectedRow[j as number] !== selectedRow[j - 1] && selectedRow[j as number] !== this.activeCell) {
+                    selectedRow[j as number].setAttribute('rowspan', ((parseInt(selectedRow[j as number].getAttribute('rowspan'), 10) ?
+                        parseInt(selectedRow[j as number].getAttribute('rowspan'), 10) : 1) + 1).toString());
                 }
             }
             (this.activeCell.parentNode as HTMLElement).insertAdjacentElement('afterend', newTrEle);
@@ -734,7 +740,7 @@ export class TableCommand {
             const cellCount: number = this.curTable.querySelector('tr').childElementCount;
             let colSpanCount: number = 0;
             for (let i:  number = 0; i < cellCount; i++) {
-                colSpanCount = colSpanCount + (parseInt(this.curTable.querySelector('tr').children[i].getAttribute('colspan'), 10) || 1);
+                colSpanCount = colSpanCount + (parseInt(this.curTable.querySelector('tr').children[i as number].getAttribute('colspan'), 10) || 1);
             }
             avgWidth = parseFloat((((this.activeCell.offsetWidth / 2) / this.curTable.offsetWidth) * 100).toFixed(1));
 
@@ -752,8 +758,8 @@ export class TableCommand {
                 (activeCellcolSpan - activeCellcolSpan / 2).toString()) : newCell.removeAttribute('colspan');
         } else {
             for (let i: number = 0; i <= allRows.length - 1; i++) {
-                if (0 === i || correspondingColumns[i][activeCellIndex[1]] !== correspondingColumns[i - 1][activeCellIndex[1]]) {
-                    const currentCell: HTMLElement = correspondingColumns[i][activeCellIndex[1]];
+                if (0 === i || correspondingColumns[i as number][activeCellIndex[1]] !== correspondingColumns[i - 1][activeCellIndex[1]]) {
+                    const currentCell: HTMLElement = correspondingColumns[i as number][activeCellIndex[1]];
                     if (currentCell !== this.activeCell) {
                         currentCell.setAttribute('colspan', ((parseInt(currentCell.getAttribute('colspan'), 10) ?
                             parseInt(currentCell.getAttribute('colspan'), 10) : 1) + 1).toString());
@@ -782,7 +788,7 @@ export class TableCommand {
         const colspan: number = 0;
         const allRows: HTMLCollectionOf<HTMLTableRowElement> = _this.curTable.rows;
         for (let i: number = 0; i <= allRows.length - 1; i++) {
-            const ele: HTMLElement = allRows[i];
+            const ele: HTMLElement = allRows[i as number];
             let index: number = 0;
             for (let j: number = 0; j <= ele.children.length - 1; j++) {
                 /* eslint-disable */
@@ -806,20 +812,20 @@ export class TableCommand {
         let nextIndex: number;
         let nextCol: number;
         for (nextIndex = rowIndex + 1, nextCol = columnIndex + 1; nextIndex < cells.length;) {
-            if (cells[nextIndex][columnIndex] !== cells[rowIndex][columnIndex]) {
+            if (cells[nextIndex as number][columnIndex as number] !== cells[rowIndex as number][columnIndex as number]) {
                 nextIndex--;
                 break;
             }
             nextIndex++;
         }
-        for (nextIndex === cells.length && nextIndex--; nextCol < cells[rowIndex].length;) {
-            if (cells[rowIndex][nextCol] !== cells[rowIndex][columnIndex]) {
+        for (nextIndex === cells.length && nextIndex--; nextCol < cells[rowIndex as number].length;) {
+            if (cells[rowIndex as number][nextCol as number] !== cells[rowIndex as number][columnIndex as number]) {
                 nextCol--;
                 break;
             }
             nextCol++;
         }
-        return nextCol === cells[rowIndex].length && nextCol--,
+        return nextCol === cells[rowIndex as number].length && nextCol--,
         [
             nextIndex,
             nextCol
@@ -829,8 +835,8 @@ export class TableCommand {
     private getCorrespondingIndex(cell: HTMLElement, allCells: HTMLElement[][]): number[] {
         //let value: RowCol = new RowCol();
         for (let i: number = 0; i < allCells.length; i++) {
-            for (let j: number = 0; j < allCells[i].length; j++) {
-                if (allCells[i][j] === cell) {
+            for (let j: number = 0; j < allCells[i as number].length; j++) {
+                if (allCells[i as number][j as number] === cell) {
                     return [i, j];
                 }
             }
@@ -918,8 +924,8 @@ export class TableCommand {
         const targetColumnIndex: number = Array.prototype.slice.call(target.parentElement.children).indexOf(target);
         const activeCellList: NodeListOf<HTMLElement> = this.curTable.querySelectorAll('.e-cell-select');
         for (let i: number = activeCellList.length - 1; i >= 0; i--) {
-            if (this.activeCell !== activeCellList[i]) {
-                activeCellList[i].classList.remove('e-cell-select');
+            if (this.activeCell !== activeCellList[i as number]) {
+                activeCellList[i as number].classList.remove('e-cell-select');
             }
         }
         if (activeRowIndex === targetRowIndex && activeColumnIndex === targetColumnIndex) {

@@ -73,8 +73,6 @@ export class ContextMenu {
         const selectArgs: MenuSelectEventArgs = extend({ cancel: false }, args) as MenuSelectEventArgs;
         this.parent.trigger('contextMenuItemSelect', selectArgs); const id: string = this.parent.element.id + '_cmenu';
         let field: string;
-        let sheet: SheetModel;
-        let isActive: boolean;
         if (!selectArgs.cancel) {
             let indexes: number[];
             switch (args.item.id) {
@@ -520,7 +518,7 @@ export class ContextMenu {
             items.push({ text: l10n.getConstant(`Hide${layout}s`), id: id + `_hide_${layout.toLowerCase()}` });
         }
         if (this.parent.hiddenCount(indexes[0], indexes[1], `${layout.toLowerCase()}s`)) {
-            items.push({ text: l10n.getConstant(`UnHide${layout}s`), id: id + `_unhide_${layout.toLowerCase()}` });
+            items.push({ text: l10n.getConstant(`Unhide${layout}s`), id: id + `_unhide_${layout.toLowerCase()}` });
         }
     }
 
@@ -601,6 +599,7 @@ export class ContextMenu {
         this.contextMenuInstance.destroy();
         const ele: HTMLElement = document.getElementById(this.parent.element.id + '_contextmenu');
         if (ele) { detach(ele); }
+        this.contextMenuInstance = null;
         this.parent = null;
     }
 }

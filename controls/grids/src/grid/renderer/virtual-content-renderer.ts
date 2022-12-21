@@ -62,6 +62,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private isSelection: boolean = false;
     private selectedRowIndex: number;
     private isBottom: boolean = false;
+    /** @hidden */
+    public isTop: boolean = false;
     private rndrCount: number = 0;
     /** @hidden */
     public activeKey: string;
@@ -148,6 +150,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.scrollPosition = scrollArgs.offset;
         }
         if (this.preventEvent || this.parent.isDestroyed) { this.preventEvent = false; return; }
+        if (this.parent.islazyloadRequest && scrollArgs.direction === 'down') {
+            this.parent.removeMaskRow();
+            this.parent.islazyloadRequest = false;
+            return;
+        }
         if (isNullOrUndefined(document.activeElement)) {
             this.isFocused = false;
         } else {
@@ -185,6 +192,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (info.axis === 'Y') {
                 this.restoreEdit();
             }
+            if (this.parent.groupSettings.enableLazyLoading && this.prevInfo.blockIndexes[0] === 1 && viewInfo.blockIndexes[0] === 1 &&
+                scrollArgs.direction === 'up') {
+                this.virtualEle.adjustTable(0 , viewInfo.offsets.top < this.offsets[1] ? 0 : this.getBlockHeight());
+            }
             return;
         }
 
@@ -195,6 +206,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.showMaskRow(info.axis);
             this.parent.addShimmerEffect();
         }
+        this.parent.islazyloadRequest = false;
         this.parent.notify(viewInfo.event, {
             requestType: 'virtualscroll', virtualInfo: viewInfo,
             focusElement: scrollArgs.focusElement
@@ -311,7 +323,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.element.getBoundingClientRect().height;
         if (!this.requestTypes.some((value: string) => value === this.requestType)) {
             const translate: number = this.getTranslateY(this.content.scrollTop, <number>vHeight, info);
-            this.virtualEle.adjustTable(colVFtable ? 0 : cOffset, translate);
+            if (this.parent.groupSettings.enableLazyLoading && info && this.prevInfo && this.prevInfo.blockIndexes[0] === 1 &&
+                info.blockIndexes[0] === 1 && info.direction === 'up') {
+                this.virtualEle.adjustTable(0 , this.content.scrollTop < this.offsets[1] ? 0 : this.getBlockHeight());
+            } else {
+                this.virtualEle.adjustTable(colVFtable ? 0 : cOffset, translate);
+            }
             if (colVFtable) {
                 this.virtualEle.adjustMovableTable(cOffset, 0);
             }
@@ -393,11 +410,16 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.groupSettings.columns.length) {
             if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
                 const blk: number = this.offsets[this.getTotalBlocks()] - this.prevHeight;
-                this.preventEvent = true; const sTop: number = this.content.scrollTop;
+                if (!this.parent.groupSettings.enableLazyLoading) {
+                    this.preventEvent = true;
+                }
+                const sTop: number = this.content.scrollTop;
                 this.content.scrollTop = sTop + blk;
             }
             this.setVirtualHeight();
-            this.observer.setPageHeight(this.getOffset(blocks[blocks.length - 1]) - this.getOffset(blocks[0] - 1));
+            if (!this.parent.groupSettings.enableLazyLoading) {
+                this.observer.setPageHeight(this.getOffset(blocks[blocks.length - 1]) - this.getOffset(blocks[0] - 1));
+            }
         }
         this.prevInfo = info;
         if (this.isFocused  && this.activeKey !== 'downArrow' && this.activeKey !== 'upArrow') {
@@ -415,6 +437,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.isFrozenGrid() && (this.parent.pageSettings.currentPage === lastPage - 1) && info.direction === 'up') {
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 3];
         }
+        if (this.isTop) {
+            this.parent.getContent().firstElementChild.scrollTop = 0;
+            this.isTop = false;
+        }
         if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.parent.notify(events.autoCol, {});
         }
@@ -425,7 +451,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.validationScrollLeft(e, isFrozen);
         if (!this.initialRowTop) {
             const gridTop: number = this.parent.element.getBoundingClientRect().top;
-            this.initialRowTop = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
+            if (this.parent.getRowByIndex(0)) {
+                this.initialRowTop = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
+            }
         }
         const tableName: freezeTable = (<{ tableName?: freezeTable }>e).tableName;
         const isLoaded: boolean = this.parent.getFrozenMode() === 'Left-Right' ? tableName === 'frozen-right' : tableName === 'movable';
@@ -494,7 +522,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cell: any = (<{ cells?: HTMLElement[] }>row).cells[this.cellIndex];
         cell.focus({ preventScroll: true });
-        this.parent.selectRow(parseInt(row.getAttribute(literals.dataRowIndex), 10));
+        if (!this.parent.selectionSettings.checkboxOnly) {
+            this.parent.selectRow(parseInt(row.getAttribute(literals.dataRowIndex), 10));
+        }
         this.activeKey = this.empty as string;
     }
 
@@ -537,7 +567,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             && this.parent.editModule.formObj.isDestroyed;
         if (!isFormDestroyed) {
             for (let i: number = 0; i < editForms.length; i++) {
-                rowData = this.parent.editModule.getCurrentEditedData(editForms[i], rowData);
+                rowData = this.parent.editModule.getCurrentEditedData(editForms[parseInt(i.toString(), 10)], rowData);
             }
         }
         return rowData;
@@ -611,7 +641,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let page: number = 0;
         this.offsetKeys.some((offset: string) => {
             let iOffset: number = Number(offset);
-            const border: boolean = sTop <= this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
+            const border: boolean = sTop <= this.offsets[`${offset}`] || (iOffset === total && sTop > this.offsets[`${offset}`]);
             if (border) {
                 if (this.offsetKeys.length % 2 !== 0 && iOffset.toString() === this.offsetKeys[this.offsetKeys.length - 2]
                     && sTop <= this.offsets[this.offsetKeys.length - 1]) {
@@ -641,14 +671,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const blockHeight: number = this.offsets[info.blockIndexes[info.blockIndexes.length - 1]] -
             this.tmpOffsets[info.blockIndexes[0]];
         const totalBlocks: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
-        if (result + blockHeight > this.offsets[totalBlocks]) {
-            result -= (result + blockHeight) - this.offsets[totalBlocks];
+        if (result + blockHeight > this.offsets[parseInt(totalBlocks.toString(), 10)]) {
+            result -= (result + blockHeight) - this.offsets[parseInt(totalBlocks.toString(), 10)];
         }
         return result;
     }
 
     public getOffset(block: number): number {
-        return Math.min(this.offsets[block] | 0, this.offsets[this.maxBlock] | 0);
+        return Math.min(this.offsets[parseInt(block.toString(), 10)] | 0, this.offsets[this.maxBlock] | 0);
     }
 
     private onEntered(): Function {
@@ -657,9 +687,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.parent.showSpinner();
             }
             if (this.parent.enableVirtualMaskRow && !this.preventEvent) {
-                setTimeout(() => {
-                    this.parent.showMaskRow(current.axis);
-                }, 0);
+                const firstOffSetKey: number = parseInt(this.offsetKeys[0], 10);
+                const lastOffSetKey: number = parseInt(this.offsetKeys[this.offsetKeys.length - 1], 10);
+                const blockIndex: number[] = this.currentInfo.blockIndexes;
+                if (!((blockIndex && blockIndex[0] === firstOffSetKey && direction === 'up') ||
+                    (blockIndex && blockIndex[blockIndex.length - 1] === lastOffSetKey && direction === 'down'))) {
+                    setTimeout(() => {
+                        this.parent.showMaskRow(current.axis);
+                    }, 0);
+                }
             }
             const colVFtable: boolean = this.parent.enableColumnVirtualization && this.parent.isFrozenGrid();
             const xAxis: boolean = current.axis === 'X'; const top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
@@ -747,31 +783,32 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     public eventListener(action: string): void {
-        this.parent[action](dataReady, this.onDataReady, this);
+        this.parent[`${action}`](dataReady, this.onDataReady, this);
         this.parent.addEventListener(events.dataBound, this.dataBound.bind(this));
         this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(events.actionComplete, this.actionComplete.bind(this));
         this.parent.addEventListener(events.rowSelected, this.rowSelected.bind(this));
-        this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
-        this.parent[action](events.selectVirtualRow, this.selectVirtualRow, this);
-        this.parent[action](events.virtaulCellFocus, this.virtualCellFocus, this);
-        this.parent[action](events.virtualScrollEditActionBegin, this.editActionBegin, this);
-        this.parent[action](events.virtualScrollAddActionBegin, this.addActionBegin, this);
-        this.parent[action](events.virtualScrollEdit, this.restoreEdit, this);
-        this.parent[action](events.virtualScrollEditSuccess, this.editSuccess, this);
-        this.parent[action](events.refreshVirtualCache, this.refreshCache, this);
-        this.parent[action](events.editReset, this.resetIsedit, this);
-        this.parent[action](events.getVirtualData, this.getVirtualData, this);
-        this.parent[action](events.virtualScrollEditCancel, this.editCancel, this);
-        this.parent[action](events.refreshVirtualMaxPage, this.refreshMaxPage, this);
-        this.parent[action](events.setVirtualPageQuery, this.setVirtualPageQuery, this);
-        this.parent[action](events.selectRowOnContextOpen, this.selectRowOnContextOpen, this);
-        this.parent[action](events.resetVirtualFocus, this.resetVirtualFocus, this);
-        this.parent[action](events.refreshVirtualEditFormCells, this.refreshCells, this);
-        this.parent[action](events.scrollToEdit, this.scrollToEdit, this);
+        this.parent[`${action}`](refreshVirtualBlock, this.refreshContentRows, this);
+        this.parent[`${action}`](events.refreshVirtualLazyLoadCache, this.refreshVirtualLazyLoadCache, this);
+        this.parent[`${action}`](events.selectVirtualRow, this.selectVirtualRow, this);
+        this.parent[`${action}`](events.virtaulCellFocus, this.virtualCellFocus, this);
+        this.parent[`${action}`](events.virtualScrollEditActionBegin, this.editActionBegin, this);
+        this.parent[`${action}`](events.virtualScrollAddActionBegin, this.addActionBegin, this);
+        this.parent[`${action}`](events.virtualScrollEdit, this.restoreEdit, this);
+        this.parent[`${action}`](events.virtualScrollEditSuccess, this.editSuccess, this);
+        this.parent[`${action}`](events.refreshVirtualCache, this.refreshCache, this);
+        this.parent[`${action}`](events.editReset, this.resetIsedit, this);
+        this.parent[`${action}`](events.getVirtualData, this.getVirtualData, this);
+        this.parent[`${action}`](events.virtualScrollEditCancel, this.editCancel, this);
+        this.parent[`${action}`](events.refreshVirtualMaxPage, this.refreshMaxPage, this);
+        this.parent[`${action}`](events.setVirtualPageQuery, this.setVirtualPageQuery, this);
+        this.parent[`${action}`](events.selectRowOnContextOpen, this.selectRowOnContextOpen, this);
+        this.parent[`${action}`](events.resetVirtualFocus, this.resetVirtualFocus, this);
+        this.parent[`${action}`](events.refreshVirtualEditFormCells, this.refreshCells, this);
+        this.parent[`${action}`](events.scrollToEdit, this.scrollToEdit, this);
         const event: string[] = this.actions;
         for (let i: number = 0; i < event.length; i++) {
-            this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);
+            this.parent[`${action}`](`${event[parseInt(i.toString(), 10)]}-begin`, this.onActionBegin, this);
         }
         const fn: Function = () => {
             this.observer.observe((scrollArgs: ScrollArg) => this.scrollListener(scrollArgs), this.onEntered());
@@ -788,6 +825,32 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.off(contentReady, fn);
         };
         this.parent.on(contentReady, fn, this);
+    }
+
+    private refreshVirtualLazyLoadCache(e: { rows: Row<Column>[], uid?: string, count?: number }): void {
+        let blockIndex: number[] = this.currentInfo.blockIndexes;
+        if (isNullOrUndefined(this.currentInfo.blockIndexes)) {
+            blockIndex = [1, 2];
+        }
+        let block: number;
+        let index: number;
+        let cache: Row<Column>[];
+        for (let i: number = 0; i < blockIndex.length; i++) {
+            const rows: Row<Column>[] = this.vgenerator.cache[blockIndex[parseInt(i.toString(), 10)]];
+            for (let j: number = 0; j < rows.length; j++) {
+                if (rows[parseInt(j.toString(), 10)].uid === e.uid) {
+                    block = blockIndex[parseInt(i.toString(), 10)]; index = j; cache = rows;
+                    break;
+                }
+            }
+        }
+        if (e.count) {
+            this.vgenerator.cache[parseInt(block.toString(), 10)].splice(index + 1, e.count);
+        } else if (e.rows && e.rows.length) {
+            this.vgenerator.cache[parseInt(block.toString(), 10)] = ([].slice.call(cache.slice(0, index + 1)).concat(
+                [].slice.call(e.rows))).concat([].slice.call(cache.slice(index + 1, cache.length)));
+        }
+        this.refreshOffsets();
     }
 
     private scrollToEdit(col: Column): void {
@@ -869,7 +932,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private editCancel(args: { data: Object }): void {
         const dataIndex: number = getEditedDataIndex(this.parent, args.data);
         if (!isNullOrUndefined(dataIndex)) {
-            args.data = this.parent.getCurrentViewRecords()[dataIndex];
+            args.data = this.parent.getCurrentViewRecords()[parseInt(dataIndex.toString(), 10)];
         }
     }
 
@@ -885,7 +948,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private updateCurrentViewData(data: Object): void {
         const dataIndex: number = getEditedDataIndex(this.parent, data);
         if (!isNullOrUndefined(dataIndex)) {
-            this.parent.getCurrentViewRecords()[dataIndex] = data;
+            this.parent.getCurrentViewRecords()[parseInt(dataIndex.toString(), 10)] = data;
         }
     }
 
@@ -900,8 +963,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private virtualCellFocus(e: KeyboardEventArgs): void {
         // To decide the action (select or scroll), when using arrow keys for cell focus
-        const ele: Element = document.activeElement;
-        if (ele.classList.contains(literals.rowCell)
+        let ele: Element = document.activeElement;
+        if (!ele.classList.contains(literals.rowCell) && ele instanceof HTMLInputElement) {
+            ele = ele.closest('.e-rowcell');
+        }
+        if (ele && ele.classList.contains(literals.rowCell)
             && e && (e.action === 'upArrow' || e.action === 'downArrow')) {
             let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.dataRowIndex), 10);
             if (e && (e.action === 'downArrow' || e.action === 'upArrow')) {
@@ -950,8 +1016,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const rowObjects: Row<Column>[] = this.parent.vcRows;
         let editedrow: Row<Column>;
         for (let i: number = 0; i < rowObjects.length; i++) {
-            if (rowObjects[i].index === this.editedRowIndex) {
-                editedrow = rowObjects[i];
+            if (rowObjects[parseInt(i.toString(), 10)].index === this.editedRowIndex) {
+                editedrow = rowObjects[parseInt(i.toString(), 10)];
             }
         }
         return editedrow;
@@ -963,12 +1029,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.groupSettings.columns.length) {
             this.getEditedRowObject().data = args.data;
         } else {
-            this.vgenerator.cache[block][index].data = args.data;
-            if (this.vgenerator.movableCache[block]) {
-                this.vgenerator.movableCache[block][index].data = args.data;
+            this.vgenerator.cache[parseInt(block.toString(), 10)][parseInt(index.toString(), 10)].data = args.data;
+            if (this.vgenerator.movableCache[parseInt(block.toString(), 10)]) {
+                this.vgenerator.movableCache[parseInt(block.toString(), 10)][parseInt(index.toString(), 10)].data = args.data;
             }
-            if (this.vgenerator.frozenRightCache[block]) {
-                this.vgenerator.frozenRightCache[block][index].data = args.data;
+            if (this.vgenerator.frozenRightCache[parseInt(block.toString(), 10)]) {
+                this.vgenerator.frozenRightCache[parseInt(block.toString(), 10)][parseInt(index.toString(), 10)].data = args.data;
             }
         }
     }
@@ -1089,7 +1155,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     public getColumnOffset(block: number): number {
-        return this.vgenerator.cOffsets[block] | 0;
+        return this.vgenerator.cOffsets[parseInt(block.toString(), 10)] | 0;
     }
 
     public getModelGenerator(): IModelGenerator<Column> {
@@ -1119,7 +1185,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     public getRowByIndex(index: number): Element {
         let row: Element;
         if (isGroupAdaptive(this.parent)) {
-            row = this.parent.getDataRows()[index];
+            row = !isNullOrUndefined(index) ? this.parent.getDataRows()[parseInt(index.toString(), 10)] : undefined;
         }
         else if (this.prevInfo) {
             row = this.getRowCollection(index, false) as Element;
@@ -1148,10 +1214,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let selectedRow: Element | Object = collection[index - startIdx];
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
             if (!isRowObject) {
-                selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
+                selectedRow = index <= this.parent.frozenRows ? rowCollection[parseInt(index.toString(), 10)]
                     : rowCollection[(index - startIdx) + this.parent.frozenRows];
             } else {
-                selectedRow = index <= this.parent.frozenRows ? this.parent.getRowsObject()[index].data : selectedRow;
+                selectedRow = index <= this.parent.frozenRows ? this.parent.getRowsObject()[parseInt(index.toString(), 10)].data
+                    : selectedRow;
             }
         }
         return selectedRow;
@@ -1170,20 +1237,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const gObj: IGrid = this.parent;
         let row: number = 0; const bSize: number = this.getBlockSize();
         const total: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
-        this.prevHeight = this.offsets[total]; this.maxBlock = total % 2 === 0 ? total - 2 : total - 1; this.offsets = {};
+        this.prevHeight = this.offsets[parseInt(total.toString(), 10)];
+        this.maxBlock = total % 2 === 0 ? total - 2 : total - 1; this.offsets = {};
         //Row offset update
         // eslint-disable-next-line prefer-spread
         const blocks: number[] = Array.apply(null, Array(total)).map(() => ++row);
         for (let i: number = 0; i < blocks.length; i++) {
-            const tmp: number = (this.vgenerator.cache[blocks[i]] || []).length;
+            const tmp: number = (this.vgenerator.cache[blocks[parseInt(i.toString(), 10)]] || []).length;
             const rem: number = !isGroupAdaptive(this.parent) ? this.count % bSize : (gObj.vcRows.length % bSize);
-            const size: number = !isGroupAdaptive(this.parent) && blocks[i] in this.vgenerator.cache ?
-                tmp * this.parent.getRowHeight() : rem && blocks[i] === total ? rem * this.parent.getRowHeight() :
+            const size: number = !isGroupAdaptive(this.parent) && blocks[parseInt(i.toString(), 10)] in this.vgenerator.cache ?
+                tmp * this.parent.getRowHeight() : rem && blocks[parseInt(i.toString(), 10)] === total ? rem * this.parent.getRowHeight() :
                     this.getBlockHeight();
                 // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
                 // tmp * getRowHeight() : this.getBlockHeight();
-            this.offsets[blocks[i]] = (this.offsets[blocks[i] - 1] | 0) + size;
-            this.tmpOffsets[blocks[i]] = this.offsets[blocks[i] - 1] | 0;
+            this.offsets[blocks[parseInt(i.toString(), 10)]] = (this.offsets[blocks[parseInt(i.toString(), 10)] - 1] | 0) + size;
+            this.tmpOffsets[blocks[parseInt(i.toString(), 10)]] = this.offsets[blocks[parseInt(i.toString(), 10)] - 1] | 0;
         }
         this.offsetKeys = Object.keys(this.offsets);
         if (isGroupAdaptive(this.parent)) {
@@ -1221,7 +1289,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         let tr: Object = gObj.getDataRows();
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            const column: Column = columns[c];
+            const column: Column = columns[parseInt(c.toString(), 10)];
             let idx: number = gObj.getNormalizedColumnIndex(column.uid);
             const displayVal: string = column.visible === true ? '' : 'none';
 
@@ -1239,7 +1307,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
 
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                setStyleAttribute(colGrp[idx] as HTMLElement, { 'display': displayVal });
+                setStyleAttribute(colGrp[parseInt(idx.toString(), 10)] as HTMLElement, { 'display': displayVal });
             }
             if (!isRefresh) {
                 let width: number;
@@ -1369,7 +1437,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
             mhdrColGrp = [].slice.call(this.parent.getMovableVirtualHeader().querySelectorAll('col'));
         }
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            const column: Column = columns[c];
+            const column: Column = columns[parseInt(c.toString(), 10)];
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
 
@@ -1384,7 +1452,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
             } else {
                 colGrp = this.getColGroup().children;
             }
-            setStyleAttribute(<HTMLElement>colGrp[idx], { 'display': displayVal });
+            setStyleAttribute(<HTMLElement>colGrp[parseInt(idx.toString(), 10)], { 'display': displayVal });
             if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
                 let tablewidth: number;
                 if (column.visible) {

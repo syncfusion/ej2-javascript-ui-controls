@@ -160,12 +160,12 @@ export class Edit {
                 const rowIndex: number = isNullOrUndefined(eventArgs.row) || !Object.keys(eventArgs.row).length ? this.selectedIndex :
                     (<HTMLTableRowElement>eventArgs.row).rowIndex - 1;
                 const keyData: string = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
-                    treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
+                    treeObj.getCurrentViewRecords()[parseInt(rowIndex.toString(), 10)][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
                 treeObj.grid.query.addParams('relationalKey', keyData);
             } else if (eventName === 'actionComplete') {
                 const paramsLength: number = treeObj.grid.query.params.length;
                 for (let i: number = 0; i < paramsLength; i++) {
-                    if (treeObj.grid.query.params[i].key === 'relationalKey') {
+                    if (treeObj.grid.query.params[parseInt(i.toString(), 10)].key === 'relationalKey') {
                         treeObj.grid.query.params.splice(i);
                     }
                 }
@@ -214,9 +214,9 @@ export class Edit {
         const size: number = Math.ceil(newRowIndex / this.parent.grid.pageSettings.pageSize);
         let page: number = size > 0 ? size : 1;
         let dataIndex: number = newRowIndex - ((page - 1) * this.parent.pageSettings.pageSize);
-        const infiniteCurrentViewData: { [x: number]: Object[] } = this.parent.grid.infiniteScrollModule[infiniteData];
+        const infiniteCurrentViewData: { [x: number]: Object[] } = this.parent.grid.infiniteScrollModule[`${infiniteData}`];
         infiniteCurrentViewData[1].splice(0, 1);
-        let data: Object[] = infiniteCurrentViewData[page];
+        let data: Object[] = infiniteCurrentViewData[parseInt(page.toString(), 10)];
         if (!isNullOrUndefined(this.addRowRecord)) {
             data.filter((e: ITreeData, index: number): void => {
                 if (e.uniqueID === this.addRowRecord.uniqueID) {
@@ -230,12 +230,12 @@ export class Edit {
         }
         if (dataIndex >= this.parent.pageSettings.pageSize) {
             page += 1;
-            data = infiniteCurrentViewData[page];
+            data = infiniteCurrentViewData[parseInt(page.toString(), 10)];
             dataIndex = dataIndex - this.parent.pageSettings.pageSize >= 0 ? dataIndex - this.parent.pageSettings.pageSize : 0;
         }
         dataIndex = this.parent.editSettings.newRowPosition === 'Below' ? dataIndex + 1 : dataIndex;
         data.splice(dataIndex, 0, newRecord);
-        this.parent.grid.infiniteScrollModule[updateCurrentViewData]();
+        this.parent.grid.infiniteScrollModule[`${updateCurrentViewData}`]();
     }
 
     private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
@@ -292,15 +292,15 @@ export class Edit {
 
     private deleteUniqueID( value: string) : void {
         const idFilter: string = 'uniqueIDFilterCollection';
-        delete this.parent[idFilter][value];
+        delete this.parent[`${idFilter}`][`${value}`];
         const id: string = 'uniqueIDCollection';
-        delete this.parent[id][value];
+        delete this.parent[`${id}`][`${value}`];
     }
 
     private cellEdit(args: CellEditArgs): Deferred | void {
         const promise: string = 'promise';
-        const prom: Deferred = args[promise];
-        delete args[promise];
+        const prom: Deferred = args[`${promise}`];
+        delete args[`${promise}`];
         if (this.parent.enableVirtualization && !isNullOrUndefined(this.prevAriaRowIndex) && this.prevAriaRowIndex !== '-1') {
             args.row.setAttribute('data-rowindex', this.prevAriaRowIndex);
             this.prevAriaRowIndex = undefined;
@@ -385,7 +385,7 @@ export class Edit {
             args.rowData[args.columnName] = args.value;
             let row: HTMLTableRowElement;
             if (isNullOrUndefined(args.cell)) {
-                row = this.parent.grid.editModule[editModule].form.parentElement.parentNode;
+                row = this.parent.grid.editModule[`${editModule}`].form.parentElement.parentNode;
             } else {
                 row = <HTMLTableRowElement>args.cell.parentNode;
             }
@@ -428,7 +428,7 @@ export class Edit {
                         const editArgs: ActionEventArgs = { requestType : 'save', data : args.rowData, action : 'edit', row : row,
                             rowIndex : rowIndex, rowData : args.rowData, columnName : args.columnName,
                             filterChoiceCount: null, excelSearchOperator: null };
-                        this.parent.grid.getDataModule()[eventPromise](editArgs, this.parent.grid.query);
+                        this.parent.grid.getDataModule()[`${eventPromise}`](editArgs, this.parent.grid.query);
                     } else {
                         this.updateCell(args, rowIndex);
                         this.afterCellSave(args, row, rowIndex);
@@ -473,19 +473,19 @@ export class Edit {
                                  this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
         if (freeze) {
             if (args.cell.closest('.e-frozen-left-header') || args.cell.closest('.e-frozen-left-content')) {
-                mRow = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
+                mRow = <HTMLTableRowElement>this.parent.grid.getRows()[parseInt(rowIndex.toString(), 10)];
             } else if (args.cell.closest('.e-movableheader') || args.cell.closest('.e-movablecontent')) {
-                mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+                mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[parseInt(rowIndex.toString(), 10)];
             } else {
-                mRow = <HTMLTableRowElement>this.parent.grid.getFrozenRightRows()[rowIndex];
+                mRow = <HTMLTableRowElement>this.parent.grid.getFrozenRightRows()[parseInt(rowIndex.toString(), 10)];
             }
             removeClass([mRow], ['e-editedrow', 'e-batchrow']);
             removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
         } else if (this.parent.getFrozenColumns() > 0) {
             if (args.cell.closest('.e-frozenheader') || args.cell.closest('.e-frozencontent')) {
-                mRow = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
+                mRow = <HTMLTableRowElement>this.parent.grid.getRows()[parseInt(rowIndex.toString(), 10)];
             } else {
-                mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+                mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[parseInt(rowIndex.toString(), 10)];
             }
             removeClass([mRow], ['e-editedrow', 'e-batchrow']);
             removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
@@ -524,7 +524,7 @@ export class Edit {
 
     private updateCell(args: CellSaveArgs, rowIndex: number): void {
         this.parent.grid.editModule.updateCell(rowIndex, args.columnName, args.rowData[args.columnName]);
-        this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
+        this.parent.grid.getRowsObject()[parseInt(rowIndex.toString(), 10)].data = args.rowData;
     }
     private crudAction(details: { value: ITreeData, action: string }, columnName?: string): void {
         editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName, this.addRowRecord);
@@ -532,27 +532,27 @@ export class Edit {
         const data: Object = this.parent.grid.dataSource instanceof DataManager ?
             this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource;
         for (let i: number = 0; i < (<Object[]>data).length; i++) {
-            data[i].index = i;
+            data[parseInt(i.toString(), 10)].index = i;
             const key: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
-            if (details.value[key] === data[i][key]) {
+            if (details.value[`${key}`] === data[parseInt(i.toString(), 10)][`${key}`]) {
                 if (details.action === 'add') {
-                    data[i].level = this.internalProperties.level;
-                    data[i].taskData = this.internalProperties.taskData;
-                    data[i].uniqueID = this.internalProperties.uniqueID;
+                    data[parseInt(i.toString(), 10)].level = this.internalProperties.level;
+                    data[parseInt(i.toString(), 10)].taskData = this.internalProperties.taskData;
+                    data[parseInt(i.toString(), 10)].uniqueID = this.internalProperties.uniqueID;
                     if (!isNullOrUndefined(this.internalProperties.parentItem)) {
-                        data[i].parentItem = this.internalProperties.parentItem;
-                        data[i].parentUniqueID = this.internalProperties.parentUniqueID;
+                        data[parseInt(i.toString(), 10)].parentItem = this.internalProperties.parentItem;
+                        data[parseInt(i.toString(), 10)].parentUniqueID = this.internalProperties.parentUniqueID;
                     }
-                    data[i].childRecords = this.internalProperties.childRecords;
+                    data[parseInt(i.toString(), 10)].childRecords = this.internalProperties.childRecords;
                 }
             }
-            setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
+            setValue('uniqueIDCollection.' + data[parseInt(i.toString(), 10)].uniqueID + '.index', i, this.parent);
             const adaptor: AdaptorOptions = (this.parent.dataSource as DataManager).adaptor;
             if ((isRemoteData(this.parent) || adaptor instanceof RemoteSaveAdaptor)) {
-                setValue('uniqueIDCollection.' + data[i].uniqueID, data[i], this.parent);
+                setValue('uniqueIDCollection.' + data[parseInt(i.toString(), 10)].uniqueID, data[parseInt(i.toString(), 10)], this.parent);
             }
-            if (!data[i].level) {
-                this.parent.parentData.push(data[i]);
+            if (!data[parseInt(i.toString(), 10)].level) {
+                this.parent.parentData.push(data[parseInt(i.toString(), 10)]);
             }
         }
         if (!this.parent.enableInfiniteScrolling) {
@@ -563,7 +563,7 @@ export class Edit {
     }
     private updateIndex (data: Object, rows: Object, records: Object): void {
         for (let j: number = 0; j < this.parent.getDataRows().length; j++ ) {
-            const data1: ITreeData = records[j];
+            const data1: ITreeData = records[parseInt(j.toString(), 10)];
             if (!isNullOrUndefined(data1)) {
                 const index: number = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
                 data1.index = index;
@@ -578,28 +578,28 @@ export class Edit {
         if (this.parent.getFrozenColumns() > 0) {
             const cells: NodeListOf<Element> = (rows[0] as Element).querySelectorAll('.e-rowcell');
             for (let l: number = 0; l < cells.length; l++) {
-                if (cells[l].classList.contains('e-gridrowindex0level0')) {
+                if (cells[parseInt(l.toString(), 10)].classList.contains('e-gridrowindex0level0')) {
                     treeColIndex = l;
                     break;
                 }
             }
         }
         for (let k: number = 0; k < this.parent.getRows().length; k++) {
-            if (!rows[k].classList.contains('e-detailrow')) {
+            if (!rows[parseInt(k.toString(), 10)].classList.contains('e-detailrow')) {
                 count++;
             }
-            const data2: ITreeData = records[count];
+            const data2: ITreeData = records[parseInt(count.toString(), 10)];
             if (!isNullOrUndefined(data2)) {
                 let index: number = data2.index;
                 const level: number = data2.level;
-                const row: Element = rows[k];
+                const row: Element = rows[parseInt(k.toString(), 10)];
                 if (!isNullOrUndefined(data2.parentItem)) {
                     index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
                 }
-                const treecell: HTMLElement = (row as HTMLTableRowElement).cells[treeColIndex];
+                const treecell: HTMLElement = (row as HTMLTableRowElement).cells[parseInt(treeColIndex.toString(), 10)];
                 if (!isNullOrUndefined(treecell)) {
                     for (let l: number = 0; l < treecell.classList.length; l++) {
-                        const value: string = treecell.classList[l];
+                        const value: string = treecell.classList[parseInt(l.toString(), 10)];
                         const remove: RegExp = /e-gridrowindex/i;
                         const removed: RegExp = /e-griddetailrowindex/i;
                         const result: RegExpMatchArray = value.match(remove);
@@ -611,7 +611,7 @@ export class Edit {
                             removeClass([treecell], value);
                         }
                     }
-                    if (!rows[k].classList.contains('e-detailrow')) {
+                    if (!rows[parseInt(k.toString(), 10)].classList.contains('e-detailrow')) {
                         addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
                     }else {
                         addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
@@ -643,16 +643,17 @@ export class Edit {
             } else if ((this.parent.editSettings.newRowPosition === 'Below' || this.parent.editSettings.newRowPosition === 'Child')
                   && (this.selectedIndex > -1 || isVirtualization) && withinRange) {
                 position = 'after';
-                if (!isNullOrUndefined(records[index]) && (records[index] as ITreeData).expanded) {
+                if (!isNullOrUndefined(records[parseInt(index.toString(), 10)]) &&
+                 (records[parseInt(index.toString(), 10)] as ITreeData).expanded) {
                     if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
                 || this.parent.getBatchChanges()[this.deletedRecords].length)) {
-                        index += findChildrenRecords(records[index]).length;
+                        index += findChildrenRecords(records[parseInt(index.toString(), 10)]).length;
                         if (this.parent.editSettings.newRowPosition !== 'Child') {
                             const batchChildCount: number = this.batchEditModule.getBatchChildCount();
                             index = index + batchChildCount;
                         }
                     } else {
-                        index += findChildrenRecords(records[index]).length;
+                        index += findChildrenRecords(records[parseInt(index.toString(), 10)]).length;
                     }
                 }
             }
@@ -663,14 +664,14 @@ export class Edit {
                     index = rows.length - 2;
                 }
                 const r: string = 'rows';
-                const newRowObject: Row<Column> =  this.parent.grid.contentModule[r][0];
+                const newRowObject: Row<Column> =  this.parent.grid.contentModule[`${r}`][0];
                 const focussedElement: HTMLInputElement = <HTMLInputElement>document.activeElement;
-                rows[index + 1][position](rows[0]);
+                rows[index + 1][`${position}`](rows[0]);
                 setValue('batchIndex', index + 1, this.batchEditModule);
                 const rowObjectIndex: number = this.parent.editSettings.newRowPosition  === 'Above' ? index : index + 1;
                 if (this.parent.editSettings.mode === 'Batch') {
-                    this.parent.grid.contentModule[r].splice(0, 1);
-                    this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
+                    this.parent.grid.contentModule[`${r}`].splice(0, 1);
+                    this.parent.grid.contentModule[`${r}`].splice(rowObjectIndex, 0, newRowObject);
                 }
                 const freeze: boolean = (this.parent.getFrozenLeftColumnsCount() > 0 ||
                                          this.parent.getFrozenRightColumnsCount() > 0 ) ? true : false;
@@ -678,21 +679,21 @@ export class Edit {
                     const movableRows: Object[] = this.parent.getMovableDataRows();
                     const frows: string = 'freezeRows';
                     const newFreezeRowObject: Row<Column> = this.parent.grid.getRowsObject()[0];
-                    movableRows[index + 1][position](movableRows[0]);
+                    movableRows[index + 1][`${position}`](movableRows[0]);
                     if (freeze) {
                         const rightFrozenRows: Object[] = this.parent.getFrozenRightDataRows();
-                        rightFrozenRows[index + 1][position](rightFrozenRows[0]);
+                        rightFrozenRows[index + 1][`${position}`](rightFrozenRows[0]);
                     }
                     if (this.parent.editSettings.mode === 'Batch') {
-                        this.parent.grid.contentModule[frows].splice(0, 1);
-                        this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);
+                        this.parent.grid.contentModule[`${frows}`].splice(0, 1);
+                        this.parent.grid.contentModule[`${frows}`].splice(rowObjectIndex, 0, newFreezeRowObject);
                     }
                     setValue('batchIndex', index + 1, this.batchEditModule);
                 }
                 if (this.parent.editSettings.mode === 'Row' || this.parent.editSettings.mode === 'Cell') {
                     const errors: NodeListOf<Element> = this.parent.grid.getContentTable().querySelectorAll('.e-griderror');
                     for (let i: number = 0; i < errors.length; i++) {
-                        errors[i].remove();
+                        errors[parseInt(i.toString(), 10)].remove();
                     }
                     setValue('errorRules', [], this.parent.grid.editModule.formObj);
                 }
@@ -714,8 +715,8 @@ export class Edit {
             let newlyAddedRecord: ITreeData;
             if (batchAddedRecords.length) {
                 for (let i: number = 0; i < batchAddedRecords.length; i++) {
-                    if (isNullOrUndefined(batchAddedRecords[i].uniqueID)) {
-                        newlyAddedRecord = batchAddedRecords[i];
+                    if (isNullOrUndefined(batchAddedRecords[parseInt(i.toString(), 10)].uniqueID)) {
+                        newlyAddedRecord = batchAddedRecords[parseInt(i.toString(), 10)];
                     }
                 }
             }
@@ -766,17 +767,17 @@ export class Edit {
                 const primaryKeys: string[] = this.parent.getPrimaryKeyFieldNames();
                 for (let i: number = 0; i < data.length; i++) {
                     this.parent.flatData.filter((e: ITreeData) => {
-                        if (e[primaryKeys[0]] === args.data[i][primaryKeys[0]]) {
-                            data[i] = e;
+                        if (e[`${primaryKeys[0]}`] === args.data[parseInt(i.toString(), 10)][primaryKeys[0]]) {
+                            data[parseInt(i.toString(), 10)] = e;
                         }
                     });
                 }
             }
             for (let i: number = 0; i < data.length; i++) {
-                this.deleteUniqueID(data[i].uniqueID);
-                const childs: ITreeData[] = findChildrenRecords(data[i]);
+                this.deleteUniqueID(data[parseInt(i.toString(), 10)].uniqueID);
+                const childs: ITreeData[] = findChildrenRecords(data[parseInt(i.toString(), 10)]);
                 for (let c: number = 0; c < childs.length; c++) {
-                    this.deleteUniqueID(childs[c].uniqueID);
+                    this.deleteUniqueID(childs[parseInt(c.toString(), 10)].uniqueID);
                 }
                 args.data = [...args.data as object[], ...childs];
             }
@@ -957,10 +958,10 @@ export class Edit {
         if (args.requestType === 'delete') {
             const deletedValues: ITreeData[] = args.data as Object[];
             for (let i: number = 0; i < deletedValues.length; i++) {
-                if (deletedValues[i].parentItem) {
-                    const parentItem: ITreeData = getParentData(this.parent, deletedValues[i].parentItem.uniqueID);
+                if (deletedValues[parseInt(i.toString(), 10)].parentItem) {
+                    const parentItem: ITreeData = getParentData(this.parent, deletedValues[parseInt(i.toString(), 10)].parentItem.uniqueID);
                     if (!isNullOrUndefined(parentItem) && parentItem.hasChildRecords) {
-                        const childIndex: number = parentItem.childRecords.indexOf(deletedValues[i]);
+                        const childIndex: number = parentItem.childRecords.indexOf(deletedValues[parseInt(i.toString(), 10)]);
                         parentItem.childRecords.splice(childIndex, 1);
                     }
                 }

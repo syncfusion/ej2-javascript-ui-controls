@@ -547,7 +547,7 @@ export class TableProperties {
         dropdown.beforeOpen = (): void => {
             div.style.display = 'block';
             for (let i: number = 0; i < this.borderSizeColorElement.length; i++) {
-                (this.borderSizeColorElement[i] as HTMLElement).style.borderBottomColor = this.borderColor;
+                (this.borderSizeColorElement[parseInt(i.toString(), 10)] as HTMLElement).style.borderBottomColor = this.borderColor;
             }
         };
         dropdown.beforeClose = (): void => {

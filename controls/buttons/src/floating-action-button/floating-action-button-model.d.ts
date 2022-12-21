@@ -19,7 +19,7 @@ export interface FabModel extends ButtonModel{
      * * BottomLeft: Positions the FAB at the target's top left corner.
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
-     *  To refresh the position of FAB on target resize, use refreshPosition method. 
+     *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
      *
      * @isenumeration true
@@ -29,7 +29,7 @@ export interface FabModel extends ButtonModel{
     position?: string | FabPosition;
 
     /**
-     * Defines the selector that points to an element in which the FAB will be positioned. 
+     * Defines the selector that points to an element in which the FAB will be positioned.
      * By default, FAB is positioned based on viewport of browser.
      * The target element must have relative position, else FAB will get positioned based on the closest element which has relative position.
      *

@@ -1038,8 +1038,7 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
-});
-describe('Baseline render', () => {
+    describe('Baseline render', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -1116,3 +1115,4 @@ describe('Baseline render', () => {
             destroyGantt(ganttObj);
         });
     });
+});

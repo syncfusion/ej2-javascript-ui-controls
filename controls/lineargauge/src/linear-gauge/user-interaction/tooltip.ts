@@ -1,8 +1,7 @@
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/dot-notation */
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
-import { Axis, Pointer, Range } from '../axes/axis';
+import { Axis, Pointer } from '../axes/axis';
 import { TooltipSettings } from '../model/base';
 import { IVisiblePointer, ITooltipRenderEventArgs } from '../model/interface';
 import { tooltipRender } from '../model/constant';
@@ -10,7 +9,7 @@ import { TooltipPosition} from '../utils/enum';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { RangeModel} from '../axes/axis-model';
-import { getElement, GaugeLocation, Size, textFormatter, formatValue, Rect, getMousePosition } from '../utils/helper';
+import { getElement, GaugeLocation, textFormatter, formatValue, Rect, getMousePosition } from '../utils/helper';
 import { getPointer } from '../utils/helper';
 import { TooltipTheme } from '@syncfusion/ej2-svg-base/src/tooltip/enum';
 
@@ -32,7 +31,6 @@ export class GaugeTooltip {
     private tooltip: TooltipSettings;
     private clearTimeout: number;
     private tooltipId: string;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
         this.gauge = gauge;
         this.element = gauge.element;
@@ -45,8 +43,9 @@ export class GaugeTooltip {
     /**
      * Internal use for tooltip rendering
      *
-     * @param pointerElement
+     * @param {PointerEvent} e - Specifies the pointer event argument
      */
+
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
@@ -78,7 +77,7 @@ export class GaugeTooltip {
                 fontWeight: this.tooltip.textStyle.fontWeight,
                 fontStyle: this.tooltip.textStyle.fontStyle,
                 opacity: this.tooltip.textStyle.opacity
-            }
+            };
             tooltipStyle.color = tooltipStyle.color || this.gauge.themeStyle.tooltipFontColor;
             tooltipStyle.fontFamily = tooltipStyle.fontFamily || this.gauge.themeStyle.fontFamily;
             tooltipStyle.opacity = tooltipStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity;
@@ -96,7 +95,7 @@ export class GaugeTooltip {
             this.currentAxis = current.axis;
             this.axisIndex = current.axisIndex;
             const rangePosition: number = Number(target.id.charAt(target.id.length - 1));
-            this.currentRange = this.currentAxis.ranges[rangePosition];
+            this.currentRange = this.currentAxis.ranges[rangePosition as number];
             const startData: string = (this.currentRange.start).toString();
             const endData: string = (this.currentRange.end).toString();
             const rangeTooltipFormat: string = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
@@ -109,7 +108,7 @@ export class GaugeTooltip {
                 fontWeight: this.tooltip.rangeSettings.textStyle.fontWeight,
                 fontStyle: this.tooltip.rangeSettings.textStyle.fontStyle,
                 opacity: this.tooltip.rangeSettings.textStyle.opacity
-            }
+            };
             rangeTooltipStyle.color = rangeTooltipStyle.color || this.gauge.themeStyle.tooltipFontColor;
             rangeTooltipStyle.fontFamily = rangeTooltipStyle.fontFamily || this.gauge.themeStyle.fontFamily;
             rangeTooltipStyle.opacity = rangeTooltipStyle.opacity || this.gauge.themeStyle.tooltipTextOpacity;
@@ -149,12 +148,11 @@ export class GaugeTooltip {
         (this.tooltip.template && tooltipPos === 'Top')) ? 20 : 0;
         location.x += ((this.tooltip.rangeSettings.template && tooltipPos === 'Right') ||
         (this.tooltip.template && tooltipPos === 'Right')) ? 20 : 0;
-        this.gauge.trigger(tooltipRender, args, (observedArgs: ITooltipRenderEventArgs) => {
+        this.gauge.trigger(tooltipRender, args, () => {
             let template: string = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.template : args.tooltip.template;
             if (template !== null && Object.keys(template).length === 1) {
                 template = template[Object.keys(template)[0]];
             }
-            const themes: string = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
                 const fillColor: string = (target.id.indexOf('Range') > -1) ? this.tooltip.rangeSettings.fill : this.tooltip.fill;
                 this.svgTooltip = this.svgCreate(this.svgTooltip, args, this.gauge, areaRect, fillColor, template, tooltipPos,
@@ -170,9 +168,9 @@ export class GaugeTooltip {
         } else {
             tooltipEle = createElement('div', {
                 id: this.tooltipId,
-                className: 'EJ2-LinearGauge-Tooltip',
-                styles: 'position: absolute;pointer-events:none;'
+                className: 'EJ2-LinearGauge-Tooltip'
             });
+            tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
             document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(tooltipEle);
         }
         return tooltipEle;
@@ -230,9 +228,7 @@ export class GaugeTooltip {
     }
 
     private getTooltipLocation(): GaugeLocation {
-        const radix: number = 10;
         let lineX: number; let lineY: number;
-        const size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         let x: number; let y: number;
         const lineId: string = this.gauge.element.id + '_AxisLine_' + this.axisIndex;
         const tickID: string = this.gauge.element.id + '_MajorTicksLine_' + this.axisIndex;
@@ -267,7 +263,6 @@ export class GaugeTooltip {
             y = (lineY - elementRect.top);
             if (this.pointerElement.id.indexOf('Range') > -1 || this.pointerElement.id.indexOf('BarPointer') > -1) {
                 x = (!this.currentAxis.isInversed) ? ((tooltipPosition === 'End') ? x + width : ((tooltipPosition === 'Start') ?
-                    // eslint-disable-next-line max-len
                     x : x + (width / 2))) : ((tooltipPosition === 'End') ? x : ((tooltipPosition === 'Start') ? x + width : x + (width / 2)));
             } else {
                 x = (this.currentPointer.type === 'Marker') ? (x + width / 2) : (!this.currentAxis.isInversed) ? x + width : x;

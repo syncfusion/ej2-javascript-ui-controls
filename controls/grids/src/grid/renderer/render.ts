@@ -129,7 +129,8 @@ export class Render {
                 this.contentRenderer.refreshContentRows(args);
             } else if ((args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
                 && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
-                && (this.parent.contentModule as GroupLazyLoadRenderer).getGroupCache()[this.parent.pageSettings.currentPage]) {
+                && (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
+                    this.parent.contentModule as GroupLazyLoadRenderer).getGroupCache()[this.parent.pageSettings.currentPage]) {
                 this.contentRenderer.refreshContentRows(args);
             } else {
                 this.refreshDataManager(args);
@@ -146,7 +147,7 @@ export class Render {
         const gridColumns: Column[] = gObj.getColumns();
         if (gObj.detailTemplate) {
             const detailTemplateID: string = gObj.element.id + 'detailTemplate';
-            blazorTemplates[detailTemplateID] = [];
+            blazorTemplates[`${detailTemplateID}`] = [];
             resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
         }
         if (gObj.groupSettings.captionTemplate) {
@@ -162,31 +163,30 @@ export class Render {
             resetBlazorTemplate(gObj.element.id + '_template', 'pageSettings');
         }
         for (let i: number = 0; i < gridColumns.length; i++) {
-            if (gridColumns[i].template) {
-                blazorTemplates[gObj.element.id + gridColumns[i].uid] = [];
-                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid, 'Template');
+            if (gridColumns[parseInt(i.toString(), 10)].template) {
+                blazorTemplates[gObj.element.id + gridColumns[parseInt(i.toString(), 10)].uid] = [];
+                resetBlazorTemplate(gObj.element.id + gridColumns[parseInt(i.toString(), 10)].uid, 'Template');
             }
-            if (gridColumns[i].headerTemplate) {
-                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'headerTemplate', 'HeaderTemplate');
+            if (gridColumns[parseInt(i.toString(), 10)].headerTemplate) {
+                resetBlazorTemplate(gObj.element.id + gridColumns[parseInt(i.toString(), 10)].uid + 'headerTemplate', 'HeaderTemplate');
             }
-            if (gridColumns[i].filterTemplate) {
-                resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'filterTemplate', 'FilterTemplate');
+            if (gridColumns[parseInt(i.toString(), 10)].filterTemplate) {
+                resetBlazorTemplate(gObj.element.id + gridColumns[parseInt(i.toString(), 10)].uid + 'filterTemplate', 'FilterTemplate');
             }
         }
         const guid: string = 'guid';
         for (let k: number = 0; k < gObj.aggregates.length; k++) {
-
-            for (let j: number = 0; j < gObj.aggregates[k].columns.length; j++) {
-                if (gObj.aggregates[k].columns[j].footerTemplate) {
-                    const tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'footerTemplate';
+            for (let j: number = 0; j < gObj.aggregates[parseInt(k.toString(), 10)].columns.length; j++) {
+                if (gObj.aggregates[parseInt(k.toString(), 10)].columns[parseInt(j.toString(), 10)].footerTemplate) {
+                    const tempID: string = gObj.element.id + gObj.aggregates[parseInt(k.toString(), 10)].columns[parseInt(j.toString(), 10)][`${guid}`] + 'footerTemplate';
                     resetBlazorTemplate(tempID, 'FooterTemplate');
                 }
-                if (gObj.aggregates[k].columns[j].groupFooterTemplate) {
-                    const tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupFooterTemplate';
+                if (gObj.aggregates[parseInt(k.toString(), 10)].columns[parseInt(j.toString(), 10)].groupFooterTemplate) {
+                    const tempID: string = gObj.element.id + gObj.aggregates[parseInt(k.toString(), 10)].columns[parseInt(j.toString(), 10)][`${guid}`] + 'groupFooterTemplate';
                     resetBlazorTemplate(tempID, 'GroupFooterTemplate');
                 }
-                if (gObj.aggregates[k].columns[j].groupCaptionTemplate) {
-                    const tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupCaptionTemplate';
+                if (gObj.aggregates[parseInt(k.toString(), 10)].columns[parseInt(j.toString(), 10)].groupCaptionTemplate) {
+                    const tempID: string = gObj.element.id + gObj.aggregates[parseInt(k.toString(), 10)].columns[parseInt(j.toString(), 10)][`${guid}`] + 'groupCaptionTemplate';
                     resetBlazorTemplate(tempID, 'GroupCaptionTemplate');
                 }
             }
@@ -351,35 +351,39 @@ export class Render {
         const data: Object = record && (<{ items: Object[] }>record).items ? (<{ items: Object[] }>record).items[0] : record;
         const fmtr: IValueFormatter = this.locator.getService<IValueFormatter>('valueFormatter');
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
-            value = getObject(columns[i].field || '', data);
-            if (!isNullOrUndefined(columns[i][cFormat])) {
-                columns[i].format = columns[i][cFormat];
+            value = getObject(columns[parseInt(i.toString(), 10)].field || '', data);
+            if (!isNullOrUndefined(columns[parseInt(i.toString(), 10)][`${cFormat}`])) {
+                columns[parseInt(i.toString(), 10)].format = columns[parseInt(i.toString(), 10)][`${cFormat}`];
             }
-            if (!isNullOrUndefined(columns[i].validationRules) && !isNullOrUndefined(columns[i].validationRules[equalTo])) {
-                columns[i].validationRules[equalTo][0] = this.parent.element.id + columns[i].validationRules[equalTo][0];
+            if (!isNullOrUndefined(columns[parseInt(i.toString(), 10)].validationRules)
+                && !isNullOrUndefined(columns[parseInt(i.toString(), 10)].validationRules[`${equalTo}`])) {
+                columns[parseInt(i.toString(), 10)].validationRules[`${equalTo}`][0] = this.parent.element.id + columns[parseInt(i.toString(), 10)].validationRules[`${equalTo}`][0];
             }
-            if (columns[i].isForeignColumn() && columns[i].columnData) {
-                value = getObject(columns[i].foreignKeyValue || '', columns[i].columnData[0]);
+            if (columns[parseInt(i.toString(), 10)].isForeignColumn() && columns[parseInt(i.toString(), 10)].columnData) {
+                value = getObject(columns[parseInt(i.toString(), 10)].foreignKeyValue || '', columns[parseInt(i.toString(), 10)].columnData[0]);
             }
             if (!isNullOrUndefined(value)) {
                 this.isColTypeDef = true;
-                if (!columns[i].type) {
-                    columns[i].type = value.getDay ? (value.getHours() > 0 || value.getMinutes() > 0 ||
+                if (!columns[parseInt(i.toString(), 10)].type) {
+                    columns[parseInt(i.toString(), 10)].type = value.getDay ? (value.getHours() > 0 || value.getMinutes() > 0 ||
                         value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : typeof (value);
                 }
             } else {
-                columns[i].type = columns[i].type || null;
+                columns[parseInt(i.toString(), 10)].type = columns[parseInt(i.toString(), 10)].type || null;
             }
             const valueFormatter: ValueFormatter = new ValueFormatter();
-            if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || ((<DateFormatOptions>columns[i].format).format &&
-                typeof (<DateFormatOptions>columns[i].format).format === 'string'))) {
-                columns[i].setFormatter(valueFormatter.getFormatFunction(extend({}, columns[i].format as DateFormatOptions)));
-                columns[i].setParser(valueFormatter.getParserFunction(columns[i].format as DateFormatOptions));
+            if (columns[parseInt(i.toString(), 10)].format && ((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).skeleton
+                || ((<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).format &&
+                typeof (<DateFormatOptions>columns[parseInt(i.toString(), 10)].format).format === 'string'))) {
+                columns[parseInt(i.toString(), 10)].setFormatter(
+                    valueFormatter.getFormatFunction(extend({}, columns[parseInt(i.toString(), 10)].format as DateFormatOptions)));
+                columns[parseInt(i.toString(), 10)].setParser(
+                    valueFormatter.getParserFunction(columns[parseInt(i.toString(), 10)].format as DateFormatOptions));
             }
-            if (typeof (columns[i].format) === 'string') {
-                setFormatter(this.locator, columns[i]);
-            } else if (!columns[i].format && columns[i].type === 'number') {
-                columns[i].setParser(
+            if (typeof (columns[parseInt(i.toString(), 10)].format) === 'string') {
+                setFormatter(this.locator, columns[parseInt(i.toString(), 10)]);
+            } else if (!columns[parseInt(i.toString(), 10)].format && columns[parseInt(i.toString(), 10)].type === 'number') {
+                columns[parseInt(i.toString(), 10)].setParser(
                     fmtr.getParserFunction({ format: 'n2' } as NumberFormatOptions));
             }
         }
@@ -472,7 +476,7 @@ export class Render {
             if (len) {
                 if (isGroupAdaptive(gObj)) {
                     const content: string = 'content';
-                    args.scrollTop = { top: this.contentRenderer[content].scrollTop };
+                    args.scrollTop = { top: this.contentRenderer[`${content}`].scrollTop };
                 }
                 if (!isInfiniteDelete) {
                     if (this.parent.enableImmutableMode) {
@@ -565,12 +569,13 @@ export class Render {
     private iterateComplexColumns(obj: Object, field: string, split: Object): void {
         const keys: string[] = Object.keys(obj);
         for (let i: number = 0; i < keys.length; i++) {
-            const childKeys: string[] = typeof obj[keys[i]] === 'object' && obj[keys[i]] && !(obj[keys[i]] instanceof Date) ?
-                Object.keys(obj[keys[i]]) : [];
+            const childKeys: string[] = typeof obj[keys[parseInt(i.toString(), 10)]] === 'object'
+                && obj[keys[parseInt(i.toString(), 10)]] && !(obj[keys[parseInt(i.toString(), 10)]] instanceof Date) ?
+                Object.keys(obj[keys[parseInt(i.toString(), 10)]]) : [];
             if (childKeys.length) {
-                this.iterateComplexColumns(obj[keys[i]], field + (keys[i] + '.'), split);
+                this.iterateComplexColumns(obj[keys[parseInt(i.toString(), 10)]], field + (keys[parseInt(i.toString(), 10)] + '.'), split);
             } else {
-                split[this.counter] = field + keys[i];
+                split[this.counter] = field + keys[parseInt(i.toString(), 10)];
                 this.counter++;
             }
         }
@@ -580,12 +585,13 @@ export class Render {
         const cols: Column[] = [];
         const complexCols: Object = {};
         this.iterateComplexColumns(record, '', complexCols);
-        const columns: string[] = Object.keys(complexCols).filter((e: string) => complexCols[e] !== 'BlazId').
-            map((field: string) => complexCols[field]);
+        const columns: string[] = Object.keys(complexCols).filter((e: string) => complexCols[`${e}`] !== 'BlazId').
+            map((field: string) => complexCols[`${field}`]);
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
-            cols[i] = { 'field': columns[i] } as Column;
+            cols[parseInt(i.toString(), 10)] = { 'field': columns[parseInt(i.toString(), 10)] } as Column;
             if (this.parent.enableColumnVirtualization) {
-                cols[i].width = !isNullOrUndefined(cols[i].width) ? cols[i].width : 200;
+                cols[parseInt(i.toString(), 10)].width = !isNullOrUndefined(cols[parseInt(i.toString(), 10)].width) ?
+                    cols[parseInt(i.toString(), 10)].width : 200;
             }
         }
         this.parent.setProperties({ 'columns': cols }, true);
@@ -632,12 +638,12 @@ export class Render {
         const index: number = e.result.length - 1;
         if (index < 0) { return Promise.resolve(e); }
         const group0: Group = <Group>e.result[0];
-        const groupN: Group = <Group>e.result[index]; const predicate: Predicate[] = [];
+        const groupN: Group = <Group>e.result[parseInt(index.toString(), 10)]; const predicate: Predicate[] = [];
         const addWhere: (query: Query) => void =
             (input: Query) => {
                 const groups: Group[] = [group0, groupN];
                 for (let i: number = 0; i < groups.length; i++) {
-                    predicate.push(new Predicate('field', '==', groups[i].field).and(this.getPredicate('key', 'equal', groups[i].key)));
+                    predicate.push(new Predicate('field', '==', groups[parseInt(i.toString(), 10)].field).and(this.getPredicate('key', 'equal', groups[parseInt(i.toString(), 10)].key)));
                 }
                 input.where(Predicate.or(predicate));
             };
@@ -648,7 +654,7 @@ export class Render {
         if (this.data.isRemote()) {
             const groups: Group[] = [group0, groupN];
             for (let i: number = 0; i < groups.length; i++) {
-                rPredicate.push(this.getPredicate((groups[i] as Group).field, 'equal', (groups[i] as Group).key));
+                rPredicate.push(this.getPredicate((groups[parseInt(i.toString(), 10)] as Group).field, 'equal', (groups[parseInt(i.toString(), 10)] as Group).key));
             }
             newQuery.where(Predicate.or(rPredicate));
         } else {
@@ -674,32 +680,35 @@ export class Render {
         const elements: Group[] = current;
         for (let i: number = 0; i < elements.length; i++) {
             const uGroup: Group = dm.executeLocal(new Query()
-                .where(new Predicate('field', '==', elements[i].field).and(this.getPredicate('key', 'equal', elements[i].key))))[0];
-            elements[i].count = uGroup.count; const itemGroup: Group = (<Group>elements[i].items);
+                .where(new Predicate('field', '==', elements[parseInt(i.toString(), 10)].field).and(this.getPredicate('key', 'equal', elements[parseInt(i.toString(), 10)].key))))[0];
+            elements[parseInt(i.toString(), 10)].count = uGroup.count; const itemGroup: Group =
+                (<Group>elements[parseInt(i.toString(), 10)].items);
             const uGroupItem: Group = (<Group>uGroup.items);
             if (itemGroup.GroupGuid) {
-                elements[i].items = <Object[]>this.updateGroupInfo(elements[i].items, uGroup.items);
+                elements[parseInt(i.toString(), 10)].items =
+                <Object[]>this.updateGroupInfo(elements[parseInt(i.toString(), 10)].items, uGroup.items);
             }
             const rows: AggregateRowModel[] = this.parent.aggregates;
             for (let j: number = 0; j < rows.length; j++) {
-                const row: AggregateRowModel = (rows as AggregateRowModel)[j];
+                const row: AggregateRowModel = (rows as AggregateRowModel)[parseInt(j.toString(), 10)];
                 for (let k: number = 0; k < row.columns.length; k++) {
-                    const types: string[] = row.columns[k].type instanceof Array ? (row.columns[k].type) as string[] :
-                        [(row.columns[k].type)] as string[];
+                    const types: string[] = row.columns[parseInt(k.toString(), 10)].type instanceof Array ?
+                        (row.columns[parseInt(k.toString(), 10)].type) as string[] :
+                        [(row.columns[parseInt(k.toString(), 10)].type)] as string[];
                     for (let l: number = 0; l < types.length; l++) {
-                        const key: string = (row.columns[k] as AggregateColumnModel).field + ' - ' + types[l].toLowerCase();
+                        const key: string = (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel).field + ' - ' + types[parseInt(l.toString(), 10)].toLowerCase();
                         const data: Object[] = itemGroup.level ? uGroupItem.records : uGroup.items;
                         const context: Object = this.parent;
-                        if (types[l] === 'Custom') {
+                        if (types[parseInt(l.toString(), 10)] === 'Custom') {
                             const data: Group = itemGroup.level ? uGroupItem : uGroup;
-                            let temp: Function = (row.columns[k] as AggregateColumnModel).customAggregate as Function;
+                            let temp: Function = (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel)
+                                .customAggregate as Function;
                             if (typeof temp === 'string') {
                                 temp = getValue(temp, window);
                             }
-                            elements[i].aggregates[key] = temp ? (temp as Function).call(context, data, (row.columns[k] as AggregateColumnModel)) : '';
+                            elements[parseInt(i.toString(), 10)].aggregates[`${key}`] = temp ? (temp as Function).call(context, data, (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel)) : '';
                         } else {
-                            // eslint-disable-next-line max-len
-                            elements[i].aggregates[key] = DataUtil.aggregates[types[l].toLowerCase()](data, (row.columns[k] as AggregateColumnModel).field);
+                            elements[parseInt(i.toString(), 10)].aggregates[`${key}`] = DataUtil.aggregates[types[parseInt(l.toString(), 10)].toLowerCase()](data, (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel).field);
                         }
                     }
                 }

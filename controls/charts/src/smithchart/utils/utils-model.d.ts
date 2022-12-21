@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Browser } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class SmithchartFont

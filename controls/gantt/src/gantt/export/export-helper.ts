@@ -473,8 +473,8 @@ export class ExportHelper {
         const tWidth: number = (this.pdfDoc.pageSettings.width - 82);
         if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82)) {
             this.gantt.style.allowHorizontalOverflow = true;
-        } else if ((tWidth / this.columns.length) < widths[treeColumnIndex]) {
-            this.gantt.columns.getColumn(treeColumnIndex).width = widths[treeColumnIndex];
+        } else if ((tWidth / this.columns.length) < widths[treeColumnIndex as number]) {
+            this.gantt.columns.getColumn(treeColumnIndex as number).width = widths[treeColumnIndex as number];
         }
         if (this.exportProps.enableFooter || isNullOrUndefined(this.exportProps.enableFooter)) {
             //code for draw the footer content

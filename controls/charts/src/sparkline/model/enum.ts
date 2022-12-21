@@ -88,7 +88,7 @@ export type SparklineTheme =
     'BootstrapDark'|
     /** Render a sparkline with Bootstrap4 theme. */
     'Bootstrap4'|
-	/**  Render a sparkline with Tailwind theme. */
+    /**  Render a sparkline with Tailwind theme. */
     'Tailwind' |
     /**  Render a sparkline with TailwindDark theme. */
     'TailwindDark' |

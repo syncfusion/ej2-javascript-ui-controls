@@ -450,7 +450,12 @@ export class WCharacterFormat {
         this.baseCharStyle = undefined;
     }
     public destroy(): void {
-        this.clearFormat();
+        if (!isNullOrUndefined(this.uniqueCharacterFormat)) {
+            WCharacterFormat.uniqueCharacterFormats.remove(this.uniqueCharacterFormat);
+        }
+        this.uniqueCharacterFormat = undefined;
+        this.baseCharStyle = undefined;
+        this.ownerBase = undefined;
     }
     public copyFormat(format: WCharacterFormat): void {
         if (!isNullOrUndefined(format)) {
@@ -572,4 +577,6 @@ export class WCharacterFormat {
         }
         return hasValue;
     }
+
+    
 }

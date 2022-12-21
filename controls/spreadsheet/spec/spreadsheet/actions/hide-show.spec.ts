@@ -119,9 +119,9 @@ describe('Hide & Show ->', () => {
                 'de-DE': {
                     'spreadsheet': {
                         'HideRows': 'Zeilen löschen',
-                        'UnHideRows': 'Zeilen ausblenden',
+                        'UnhideRows': 'Zeilen ausblenden',
                         'HideColumns': 'Spalten löschen',
-                        'UnHideColumns': 'Spalten ausblenden',
+                        'UnhideColumns': 'Spalten ausblenden',
                     }
                 }
             });

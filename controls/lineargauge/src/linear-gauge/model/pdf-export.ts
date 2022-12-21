@@ -1,4 +1,3 @@
-/* eslint-disable valid-jsdoc */
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge} from '../../index';
 import { ExportType } from '../utils/enum';
@@ -14,22 +13,28 @@ export class PdfExport {
     /**
      * Constructor for gauge
      *
-     * @param control
+     * @param {LinearGauge} control - Specifies the Linear Gauge instance.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: LinearGauge) {
     }
 
     /**
      * To export the file as pdf format
      *
-     * @param type
-     * @param fileName
+     * @param {LinearGauge} gauge - Specifies the Linear Gauge instance.
+     * @param {ExportType} type - Specifies the extension type of the file to which the Linear Gauge to be exported.
+     * @param {string} fileName - Specifies the name of the file.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component.
+     * @param {boolean} allowDownload - Specifies whether the exported file should be downloaded or not.
+     * @returns {Promise<string>} Returns the promise string
      * @private
      */
-    public export(gauge: LinearGauge, type: ExportType, fileName: string,  orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
+
+    public export(gauge: LinearGauge, type: ExportType, fileName: string,  orientation?: PdfPageOrientation,
+                  allowDownload?: boolean): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+        const promise: Promise<string> = new Promise((resolve: any) => {
             const canvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
                 attrs: {
@@ -82,6 +87,7 @@ export class PdfExport {
     /**
      * Get module name.
      */
+
     protected getModuleName(): string {
         return 'PdfExport';
     }
@@ -92,8 +98,7 @@ export class PdfExport {
      * @return {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void {
     }
 }
-
-

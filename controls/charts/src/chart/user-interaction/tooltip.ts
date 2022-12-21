@@ -1,3 +1,5 @@
+/* eslint-disable security/detect-non-literal-regexp */
+/* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/ban-types */
@@ -46,7 +48,7 @@ export class Tooltip extends BaseTooltip {
 
     private mouseUpHandler(): void {
         const chart: Chart = this.control as Chart;
-        let data: PointData = this.getData();
+        const data: PointData = this.getData();
         data.lierIndex = this.lierIndex;
         if (chart.isTouch && !this.isSelected(chart) &&
             ((withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect) && chart.tooltip.shared)
@@ -285,16 +287,17 @@ export class Tooltip extends BaseTooltip {
         return this.parseTemplate(pointData.point, series, this.getFormat(this.chart, series), series.xAxis, series.yAxis);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getTemplateText(data: any): Points {
         if (this.template && this.chart.tooltip.shared) {
             const point: Points = extend({}, data[0].point) as Points;
             point.x = this.formatPointValue(data[0].point, data[0].series.xAxis, 'x', true, false);
             for (let i: number = 0; i < data.length; i++) {
-                if ((data[i].series.seriesType === 'XY')) {
-                    point.y = this.formatPointValue(data[i].point, data[i].series.yAxis, 'y', false, true);
+                if ((data[i as number].series.seriesType === 'XY')) {
+                    point.y = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'y', false, true);
                 } else {
-                    point.low = this.formatPointValue(data[i].point, data[i].series.yAxis, 'low', false, true);
-                    point.high = this.formatPointValue(data[i].point, data[i].series.yAxis, 'high', false, true);
+                    point.low = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'low', false, true);
+                    point.high = this.formatPointValue(data[i as number].point, data[i as number].series.yAxis, 'high', false, true);
                 }
             }
             return point;
@@ -333,7 +336,7 @@ export class Tooltip extends BaseTooltip {
 
     private renderGroupedTooltip(chart: Chart, isFirst: boolean, tooltipDiv: Element): void {
         let data: PointData;
-        let dataCollection: PointData[] = [];
+        const dataCollection: PointData[] = [];
         let lastData: PointData;
         const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
         this.stopAnimation();
@@ -356,7 +359,6 @@ export class Tooltip extends BaseTooltip {
         const argument: ISharedTooltipRenderEventArgs = {
             text: [], cancel: false, name: sharedTooltipRender, data: [], point: [], series: [], headerText: '', textStyle: this.textStyle, template: ''
         };
-        const commonXvalues: number[] = this.mergeXvalues(this.chart.visibleSeries);
         let i: number = 0;
         for (const series of chart.visibleSeries) {
             if (!series.enableTooltip || !series.visible) {
@@ -373,8 +375,8 @@ export class Tooltip extends BaseTooltip {
             if (data) {
                 argument.data.push({ pointX: data.point.x , pointY: data.point.y, seriesIndex: data.series.index,
                     seriesName: data.series.name, pointIndex: data.point.index, pointText: data.point.text  });
-                argument.series[i] = data.series;
-                argument.point[i] = data.point;
+                argument.series[i as number] = data.series;
+                argument.point[i as number] = data.point;
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
                 argument.text.push(this.getTooltipText(data));
@@ -388,9 +390,8 @@ export class Tooltip extends BaseTooltip {
             // } else if (data) {
             //     extraPoints.push(data);
             // }
-            i++
+            i++;
         }
-        
         if (dataCollection.length > 0 && this.currentPoints.length > 0) { // To avoid console error when we have empty chart with shared tooltip.
             this.triggerSharedTooltip(argument, lastData, extraPoints, chart, isFirst, dataCollection);
         } else if (this.getElement(this.element.id + '_tooltip_path')) {
@@ -495,7 +496,7 @@ export class Tooltip extends BaseTooltip {
 
         for (const dataValue of Object.keys(Object.getPrototypeOf(series))) {
             val = new RegExp('${series' + '.' + dataValue + '}', 'gm');
-            textValue = series[dataValue];
+            textValue = series[dataValue as string];
             format = format.replace(val.source, textValue);
         }
         return format;
@@ -507,16 +508,16 @@ export class Tooltip extends BaseTooltip {
         let value: string;
         if (axis.valueType !== 'Category' && isXPoint) {
             customLabelFormat = axis.labelFormat && axis.labelFormat.match('{value}') !== null;
-            textValue = customLabelFormat ? axis.labelFormat.replace('{value}', axis.format(point[dataValue])) :
-                axis.format(point[dataValue]);
-        } else if (isYPoint && !isNullOrUndefined(point[dataValue])) {
+            textValue = customLabelFormat ? axis.labelFormat.replace('{value}', axis.format(point[dataValue as string])) :
+                axis.format(point[dataValue as string]);
+        } else if (isYPoint && !isNullOrUndefined(point[dataValue as string])) {
             customLabelFormat = axis.labelFormat && axis.labelFormat.match('{value}') !== null;
-            value = dataValue === 'outliers' ? axis.format(point[dataValue][this.lierIndex - 4]) :
-                axis.format(point[dataValue]);
+            value = dataValue === 'outliers' ? axis.format(point[dataValue as string][this.lierIndex - 4]) :
+                axis.format(point[dataValue as string]);
             textValue = customLabelFormat ? axis.labelFormat.replace('{value}', value) : value;
 
         } else {
-            textValue = point[dataValue];
+            textValue = point[dataValue as string];
         }
         return textValue;
     }

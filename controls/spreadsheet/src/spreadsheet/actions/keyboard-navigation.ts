@@ -67,7 +67,7 @@ export class KeyboardNavigation {
         const isRtl: boolean = this.parent.enableRtl;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const selectIdx: number[] = getRangeIndexes(sheet.selectedRange);
-        let actIdxes: number[] = getCellIndexes(sheet.activeCell);
+        const actIdxes: number[] = getCellIndexes(sheet.activeCell);
         const mainPanel: Element = this.parent.element.querySelector('.e-main-panel');
         const hCont: Element = this.parent.getScrollElement();
         if ([9, 37, 38, 39, 40, 33, 34].indexOf(e.keyCode) > -1) {
@@ -184,7 +184,6 @@ export class KeyboardNavigation {
             mainPanel.scrollTop = diff;
             getUpdateUsingRaf((): void => {
                 topRow = getCellIndexes(this.parent.getActiveSheet().paneTopLeftCell)[0];
-                const actIdx: Number = topRow + selectDiff;
                 this.parent.selectRange(getRangeAddress([actIdxes[0], actIdxes[1], topRow + selectDiff, actIdxes[1]]));
             });
         }
@@ -325,11 +324,12 @@ export class KeyboardNavigation {
     }
 
     private getNextNonEmptyCell(rowIdx: number, colIdx: number, position: string): number[] {
-        let indexes: number[] = [rowIdx, colIdx];
+        const indexes: number[] = [rowIdx, colIdx];
         const sheet: SheetModel = this.parent.getActiveSheet();
         let checkForEmptyCell: boolean;
-        if (position === "down") {
-            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) && !isUndefined(getCell(rowIdx + 1, colIdx, sheet, null, true).value);
+        if (position === 'down') {
+            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) &&
+                !isUndefined(getCell(rowIdx + 1, colIdx, sheet, null, true).value);
             for (let i: number = rowIdx; i < sheet.rowCount; i++) {
                 if (checkForEmptyCell) {
                     if (isUndefined(getCell(i, colIdx, sheet, null, true).value)) {
@@ -342,8 +342,9 @@ export class KeyboardNavigation {
                 if (i === sheet.rowCount - 1) { return [i, colIdx]; }
             }
         }
-        if (position === "top") {
-            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) && !isUndefined(getCell(rowIdx - 1, colIdx, sheet, null, true).value);
+        if (position === 'top') {
+            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) &&
+                !isUndefined(getCell(rowIdx - 1, colIdx, sheet, null, true).value);
             for (let i: number = rowIdx; i >= 0; i--) {
                 if (checkForEmptyCell) {
                     if (isUndefined(getCell(i, colIdx, sheet, null, true).value)) {
@@ -356,8 +357,9 @@ export class KeyboardNavigation {
                 if (i === 0) { return [i, colIdx]; }
             }
         }
-        if (position === "right") {
-            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) && !isUndefined(getCell(rowIdx, colIdx + 1, sheet, null, true).value);
+        if (position === 'right') {
+            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) &&
+                !isUndefined(getCell(rowIdx, colIdx + 1, sheet, null, true).value);
             for (let i: number = colIdx; i < sheet.colCount; i++) {
                 if (checkForEmptyCell) {
                     if (isUndefined(getCell(rowIdx, i, sheet, null, true).value)) {
@@ -370,8 +372,9 @@ export class KeyboardNavigation {
                 if (i === sheet.colCount - 1) { return [rowIdx, i]; }
             }
         }
-        if (position === "left") {
-            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) && !isUndefined(getCell(rowIdx, colIdx - 1, sheet, null, true).value);
+        if (position === 'left') {
+            checkForEmptyCell = !isUndefined(getCell(rowIdx, colIdx, sheet, null, true).value) &&
+                !isUndefined(getCell(rowIdx, colIdx - 1, sheet, null, true).value);
             for (let i: number = colIdx; i >= 0; i--) {
                 if (checkForEmptyCell) {
                     if (isUndefined(getCell(rowIdx, i, sheet, null, true).value)) {

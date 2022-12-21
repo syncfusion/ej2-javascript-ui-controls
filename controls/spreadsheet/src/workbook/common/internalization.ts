@@ -1,4 +1,4 @@
-import { isNumber } from "../common/math";
+import { isNumber } from '../common/math';
 import { CellModel } from '../base/index';
 
 /**
@@ -30,9 +30,10 @@ export function parseThousandSeparator(value: string, locale: string, groupSep: 
     const splitedValue: string[] = value.split(decimalSep)[0].split(groupSep);
     for (let i: number = 0; i < splitedValue.length; i++) {
         if (i === splitedValue.length - 1) {
-            isParsed = splitedValue[i].length === splitedNum[0].length;
+            isParsed = splitedValue[i as number].length === splitedNum[0].length;
         } else {
-            isParsed = i == 0 ? splitedValue[i].length <= splitedNum[1].length : splitedValue[i].length === splitedNum[1].length;
+            isParsed = i === 0 ? splitedValue[i as number].length <= splitedNum[1].length :
+                splitedValue[i as number].length === splitedNum[1 as number].length;
         }
         if (!isParsed) {
             break;

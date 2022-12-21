@@ -203,6 +203,7 @@ describe('Chart Control', () => {
                 tooltip.remove();
                 done();
             };
+            chart.subTitleStyle.textOverflow = 'Trim';
             chart.width = '80';
             chart.subTitle = 'syncfusion Chart SubTitle';
             chart.isTouch=false;

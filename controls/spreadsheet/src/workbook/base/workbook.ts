@@ -669,9 +669,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         const cell: CellModel = getCell(indexes[0], indexes[1], this.getActiveSheet());
         const style: CellStyleModel = {};
         cssProps.forEach((cssProp: string): void => {
-            style[cssProp] = this.cellStyle[cssProp];
-            if (cell && cell.style && cell.style[cssProp]) {
-                style[cssProp] = cell.style[cssProp];
+            style[`${cssProp}`] = this.cellStyle[`${cssProp}`];
+            if (cell && cell.style && cell.style[`${cssProp}`]) {
+                style[`${cssProp}`] = cell.style[`${cssProp}`];
             }
         });
         return style;
@@ -922,7 +922,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             if (isNullOrUndefined(index) || index >= this.sheets.length) {
                 return null;
             }
-            return this.sheets[index];
+            return this.sheets[index as number];
         }
     }
 
@@ -998,7 +998,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {number} - To skip Hidden Sheets.
      */
     public skipHiddenSheets(index: number, initIdx?: number, hiddenCount: number = 0): number {
-        if (this.sheets[index] && this.sheets[index].state !== 'Visible') {
+        if (this.sheets[index as number] && this.sheets[index as number].state !== 'Visible') {
             if (initIdx === undefined) { initIdx = index; }
             if (index && index + 1 === this.sheets.length) {
                 index = initIdx - 1;
@@ -1025,7 +1025,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {boolean} forceUpdate - To force updating row and column count.
      * @returns {void} - To setting the used range row and column index.
      */
-    public setUsedRange(rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet(), preventRowColUpdate?: boolean, forceUpdate?: boolean ): void {
+    public setUsedRange(
+        rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet(), preventRowColUpdate?: boolean,
+        forceUpdate?: boolean ): void {
         if (forceUpdate) {
             sheet.usedRange.rowIndex = rowIdx;
             sheet.usedRange.colIndex = colIdx;
@@ -1384,15 +1386,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             range = getRangeIndexes(address);
             sheetIdx = this.activeSheetIndex;
         }
-        updateCell(this, this.sheets[sheetIdx], { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
-        let val: string = isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
+        updateCell(this, this.sheets[sheetIdx as number], { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
+        const val: string = isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
         if (val !== null) {
             this.notify(workbookEditOperation, { action: 'updateCellValue', address: range, value: val, sheetIndex: sheetIdx });
         }
         if (sheetIdx === this.activeSheetIndex) {
             this.serviceLocator.getService<{ refresh: Function }>('cell').refresh(range[0], range[1], true, null, val !== null);
             this.notify(activeCellChanged, null);
-            if (inRange(getRangeIndexes(this.sheets[sheetIdx].activeCell), range[0], range[1])) {
+            if (inRange(getRangeIndexes(this.sheets[sheetIdx as number].activeCell), range[0], range[1])) {
                 this.notify(formulaBarOperation, { action: 'refreshFormulabar', value: this.getDisplayText(cell) || cell.formula });
             }
         }
@@ -1609,9 +1611,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public getDisplayText(cell: CellModel): string {
         if (!cell) { return ''; }
         if (cell.format && !isNullOrUndefined(cell.value)) {
-            const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
-                formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true, cell: cell, skipRowFill: true
-            };
+            const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: cell.value, value: cell.value,
+                format: cell.format, onLoad: true, cell: cell, skipRowFill: true, skipFormatCheck: true };
             this.notify(events.getFormattedCellObject, eventArgs);
             return eventArgs.formattedText as string;
         } else if (!cell.value && cell.hyperlink) {
@@ -1719,7 +1720,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public setSheetPropertyOnMute(sheet: SheetModel, prop: string, value: Object): void {
         this.isProtectedOnChange = true;
-        sheet[prop] = value;
+        sheet[`${prop}`] = value;
         this.isProtectedOnChange = false;
     }
 

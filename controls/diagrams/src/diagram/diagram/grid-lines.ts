@@ -139,11 +139,11 @@ export class SnapSettings extends ChildProperty<SnapSettings> {
 
     /**
      * Defines the color of snapping lines
-     * 
+     *
      * @default '#07EDE1'
      */
-     @Property('#07EDE1')
-     public snapLineColor : string;
+    @Property('#07EDE1')
+    public snapLineColor : string;
 }
 
 

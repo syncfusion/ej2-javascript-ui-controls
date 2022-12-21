@@ -14,7 +14,7 @@ const WRAPMODECLASS: string = 'e-breadcrumb-wrap-mode';
 const SCROLLMODECLASS: string = 'e-breadcrumb-scroll-mode';
 const TABINDEX: string = 'tabindex';
 const DISABLEDCLASS: string = 'e-disabled';
-const ARIADISABLED: string = 'aria-disabled'
+const ARIADISABLED: string = 'aria-disabled';
 const DOT: string = '.';
 /**
  * Defines the Breadcrumb overflow modes.
@@ -154,7 +154,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      * - Wrap: Wraps the items on multiple lines when the Breadcrumb’s width exceeds the container space.
      * - Scroll: Shows an HTML scroll bar when the Breadcrumb’s width exceeds the container space.
      * - None: Shows all the items on a single line.
-     * 
+     *
      * @default 'Menu'
      */
     @Property('Menu')
@@ -340,9 +340,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             }
             items.push({ iconCss: 'e-icons e-home', url: baseUri });
             for (let i: number = 0; i < uri.length; i++) {
-                if (uri[i]) {
-                    items.push({ text: uri[i], url: baseUri + uri[i] });
-                    baseUri += uri[i] + '/';
+                if (uri[i as number]) {
+                    items.push({ text: uri[i as number], url: baseUri + uri[i as number] });
+                    baseUri += uri[i as number] + '/';
                 }
             }
             this.setProperties({ items: items }, true);
@@ -406,11 +406,13 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     }
                     if ((args.curData as { isEmptyUrl: boolean }).isEmptyUrl) {
                         args.item.children[0].removeAttribute('href');
-                        if ((!isLastItem || (isLastItem && this.enableActiveItemNavigation)) && !(eventArgs.item.disabled || this.disabled)) {
+                        if ((!isLastItem || (isLastItem && this.enableActiveItemNavigation)) && !(eventArgs.item.disabled
+                            || this.disabled)) {
                             args.item.children[0].setAttribute(TABINDEX, '0');
                             EventHandler.add(args.item.children[0], 'keydown', this.keyDownHandler, this);
                         }
                     }
+                    args.item.removeAttribute('role');
                     if (isLastItem) {
                         args.item.setAttribute('data-active-item', '');
                     }
@@ -420,7 +422,8 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
             };
             for (let i: number = 0; i < len; (i % 2 && j++), i++) {
-                isActiveItem = (this.activeItem && (this.activeItem === items[j].url || this.activeItem === items[j].text));
+                isActiveItem = (this.activeItem && (this.activeItem === items[j as number].url ||
+                    this.activeItem === items[j as number].text));
                 if (isCollasped && i > 1 && i < len - 2) {
                     continue;
                 } else if (isDefaultOverflowMode && ((j < this.startIndex || j > this.endIndex)
@@ -433,7 +436,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     listBaseOptions.template = this.separatorTemplate ? this.separatorTemplate : '/';
                     listBaseOptions.itemClass = 'e-breadcrumb-separator';
                     isSingleLevel = false;
-                    item = [{ previousItem: items[j], nextItem: items[j + 1] }];
+                    item = [{ previousItem: items[j as number], nextItem: items[j + 1] }];
                 } else {
                     // list item
                     listBaseOptions.itemClass = '';
@@ -443,8 +446,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     } else {
                         isSingleLevel = true;
                     }
-                    item = [extend({}, (items[j] as { properties: object }).properties ? (items[j] as { properties: object }).properties
-                        : items[j])];
+                    item = [extend({}, (items[j as number] as { properties: object }).properties ?
+                        (items[j as number] as { properties: object }).properties
+                        : items[j as number])];
                     if (!(item as BreadcrumbItemModel[])[0].url && !this.itemTemplate) {
                         item = [extend({}, (item as BreadcrumbItemModel[])[0], { isEmptyUrl: true, url: '#' })];
                     }
@@ -466,12 +470,13 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     }
                 } else if (this.overflowMode === 'Wrap') {
                     if (i === 0) {
-                        parent = firstOl
+                        parent = firstOl;
                     } else {
                         parent = wrapDiv;
                     }
                 }
-                const li: NodeList = ListBase.createList(this.createElement, item as { [key: string]: Object; }[], listBaseOptions, isSingleLevel, this).childNodes;
+                const li: NodeList = ListBase.createList(this.createElement, item as { [key: string]: Object; }[],
+                                                         listBaseOptions, isSingleLevel, this).childNodes;
                 if (!isItemCancelled) {
                     append(li, parent);
                 } else if (isDefaultOverflowMode || isCollasped || this.overflowMode === 'Menu' || this.overflowMode === 'Wrap') {
@@ -528,7 +533,8 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             for (let i: number = 0; i < liElems.length - 2; i++) {
                 if (liWidth > width) {
                     maxItems = Math.ceil((i - 1) / 2) + ((this.overflowMode === 'Menu' && i <= 2) ? 0 : 1);
-                    if (((this.maxItems > maxItems && !(this.maxItems > -1 && maxItems == -1)) || this.maxItems == -1) && this._maxItems != maxItems) {
+                    if (((this.maxItems > maxItems && !(this.maxItems > -1 && maxItems === -1)) ||
+                    this.maxItems === -1) && this._maxItems !== maxItems) {
                         this._maxItems = maxItems;
                         this.initPvtProps();
                         return this.reRenderItems();
@@ -544,8 +550,8 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                             return this.reRenderItems();
                         }
                     }
-                    if (!(this.overflowMode === 'Menu' && liElems[i].classList.contains(MENUCLASS))) {
-                        liWidth += liElems[i].offsetWidth;
+                    if (!(this.overflowMode === 'Menu' && liElems[i as number].classList.contains(MENUCLASS))) {
+                        liWidth += liElems[i as number].offsetWidth;
                     }
                 }
             }
@@ -554,7 +560,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
             const liElems: NodeListOf<HTMLElement> = this.element.querySelectorAll(DOT + ITEMCLASS);
             if (liElems.length > this._maxItems + this._maxItems - 1) {
                 for (let i: number = this.overflowMode === 'Wrap' ? 1 : 0; i < this._maxItems + this._maxItems - 1; i++) {
-                    width += liElems[i].offsetWidth;
+                    width += liElems[i as number].offsetWidth;
                 }
                 width = width + 5 + (parseInt(getComputedStyle(this.element.children[0]).paddingLeft, 10) * 2);
                 if (this.overflowMode === 'Wrap') {
@@ -568,7 +574,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
 
     private hasField(items: BreadcrumbItemModel[], field: string): boolean {
         for (let i: number = 0, len: number = items.length; i < len; i++) {
-            if ((<obj>items[i])[field]) {
+            if ((<obj>items[i as number])[`${field}`]) {
                 return true;
             }
         }
@@ -576,7 +582,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     }
 
     private getMenuElement(): HTMLElement {
-        return this.createElement('li', { className: 'e-icons e-breadcrumb-menu', attrs: { TABINDEX: '0' } })
+        return this.createElement('li', { className: 'e-icons e-breadcrumb-menu', attrs: { TABINDEX: '0' } });
     }
 
     private beforeItemRenderChanges(prevItem: BreadcrumbItemModel, currItem: BreadcrumbItemModel, elem: Element, isRightIcon: boolean)
@@ -665,8 +671,8 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
                 this.endIndex = idx;
             }
-            this.trigger('itemClick', { element: li, item: this.items[idx], event: e });
-            this.activeItem = this.items[idx].url || this.items[idx].text;
+            this.trigger('itemClick', { element: li, item: this.items[idx as number], event: e });
+            this.activeItem = this.items[idx as number].url || this.items[idx as number].text;
             this.dataBind();
         }
         if ((e.target as Element).classList.contains('e-breadcrumb-collapsed')) {
@@ -739,55 +745,55 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     public onPropertyChanged(newProp: BreadcrumbModel, oldProp: BreadcrumbModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'items':
-                case 'enableActiveItemNavigation':
+            case 'items':
+            case 'enableActiveItemNavigation':
+                this.reRenderItems();
+                break;
+            case 'activeItem':
+                this._maxItems = this.maxItems;
+                this.initPvtProps();
+                this.reRenderItems();
+                break;
+            case 'overflowMode':
+            case 'maxItems':
+                this._maxItems = this.maxItems;
+                this.initPvtProps();
+                this.reRenderItems();
+                if (oldProp.overflowMode === 'Wrap') {
+                    this.element.classList.remove(WRAPMODECLASS);
+                } else if (newProp.overflowMode === 'Wrap') {
+                    this.element.classList.add(WRAPMODECLASS);
+                }
+                if (oldProp.overflowMode === 'Scroll') {
+                    this.element.classList.remove(SCROLLMODECLASS);
+                } else if (newProp.overflowMode === 'Scroll') {
+                    this.element.classList.add(SCROLLMODECLASS);
+                }
+                break;
+            case 'url':
+                this.initItems();
+                this.reRenderItems();
+                break;
+            case 'cssClass':
+                if (oldProp.cssClass) {
+                    removeClass([this.element], oldProp.cssClass.split(' '));
+                }
+                if (newProp.cssClass) {
+                    addClass([this.element], newProp.cssClass.split(' '));
+                }
+                if ((oldProp.cssClass && oldProp.cssClass.indexOf(ICONRIGHT) > -1) && !(newProp.cssClass &&
+                    newProp.cssClass.indexOf(ICONRIGHT) > -1) || !(oldProp.cssClass && oldProp.cssClass.indexOf(ICONRIGHT) > -1) &&
+                    (newProp.cssClass && newProp.cssClass.indexOf(ICONRIGHT) > -1)) {
                     this.reRenderItems();
-                    break;
-                case 'activeItem':
-                    this._maxItems = this.maxItems;
-                    this.initPvtProps();
-                    this.reRenderItems();
-                    break;
-                case 'overflowMode':
-                case 'maxItems':
-                    this._maxItems = this.maxItems;
-                    this.initPvtProps();
-                    this.reRenderItems();
-                    if (oldProp.overflowMode === 'Wrap') {
-                        this.element.classList.remove(WRAPMODECLASS);
-                    } else if (newProp.overflowMode === 'Wrap') {
-                        this.element.classList.add(WRAPMODECLASS);
-                    }
-                    if (oldProp.overflowMode === 'Scroll') {
-                        this.element.classList.remove(SCROLLMODECLASS);
-                    } else if (newProp.overflowMode === 'Scroll') {
-                        this.element.classList.add(SCROLLMODECLASS);
-                    }
-                    break;
-                case 'url':
-                    this.initItems();
-                    this.reRenderItems();
-                    break;
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([this.element], oldProp.cssClass.split(' '));
-                    }
-                    if (newProp.cssClass) {
-                        addClass([this.element], newProp.cssClass.split(' '));
-                    }
-                    if ((oldProp.cssClass && oldProp.cssClass.indexOf(ICONRIGHT) > -1) && !(newProp.cssClass &&
-                        newProp.cssClass.indexOf(ICONRIGHT) > -1) || !(oldProp.cssClass && oldProp.cssClass.indexOf(ICONRIGHT) > -1) &&
-                        (newProp.cssClass && newProp.cssClass.indexOf(ICONRIGHT) > -1)) {
-                        this.reRenderItems();
-                    }
-                    break;
-                case 'enableRtl':
-                    this.element.classList.toggle('e-rtl');
-                    break;
-                case 'disabled':
-                    this.element.classList.toggle(DISABLEDCLASS);
-                    this.element.setAttribute(ARIADISABLED, newProp.disabled + '');
-                    break;
+                }
+                break;
+            case 'enableRtl':
+                this.element.classList.toggle('e-rtl');
+                break;
+            case 'disabled':
+                this.element.classList.toggle(DISABLEDCLASS);
+                this.element.setAttribute(ARIADISABLED, newProp.disabled + '');
+                break;
             }
         }
     }
@@ -839,8 +845,8 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
      * @returns {void}
      */
     public destroy(): void {
-        let classes: string[] = [];
-        let attributes: string[] = ['aria-label'];
+        const classes: string[] = [];
+        const attributes: string[] = ['aria-label'];
         if (this.cssClass) {
             classes.concat(this.cssClass.split(' '));
         }

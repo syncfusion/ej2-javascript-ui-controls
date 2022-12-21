@@ -70,7 +70,7 @@ export class ExportUtils {
         if (elements) {
             if (elements instanceof Array) {
                 for (let j: number = 0; j < elements.length; j++) {
-                    const value: string = elements[j];
+                    const value: string = elements[j as number];
                     div.appendChild(getElement(value).cloneNode(true) as Element);
                 }
             } else if (elements instanceof Element) {
@@ -267,7 +267,7 @@ export class ExportUtils {
             });
             backgroundColor = (svg.childNodes[0] as HTMLElement) ? (svg.childNodes[0] as HTMLElement).getAttribute('fill') : 'transparent';
             if (backgroundColor === 'transparent') {
-                if (control.theme.indexOf("Dark") > -1 || control.theme === "HighContrast") {
+                if (control.theme.indexOf('Dark') > -1 || control.theme === 'HighContrast') {
                     backgroundColor = 'rgba(0, 0, 0, 1)';
                 } else {
                     backgroundColor = 'rgba(255, 255, 255, 1)';
@@ -279,10 +279,10 @@ export class ExportUtils {
             let top: number = 0;
             let left: number = 0;
             if ((control as StockChart).stockLegendModule && (control as StockChart).legendSettings.visible) {
-                if ((control as StockChart).legendSettings.position === "Bottom" || (control as StockChart).legendSettings.position === "Top" 
-                || (control as StockChart).legendSettings.position === "Auto") {
+                if ((control as StockChart).legendSettings.position === 'Bottom' || (control as StockChart).legendSettings.position === 'Top'
+                || (control as StockChart).legendSettings.position === 'Auto') {
                     top += (control as StockChart).stockLegendModule.legendBounds.height;
-                } else if ((control as StockChart).legendSettings.position === "Left" || (control as StockChart).legendSettings.position === "Right") {
+                } else if ((control as StockChart).legendSettings.position === 'Left' || (control as StockChart).legendSettings.position === 'Right') {
                     left += (control as StockChart).stockLegendModule.legendBounds.width;
                 }
             }
@@ -372,19 +372,19 @@ export class ExportUtils {
         const buffers: ArrayBuffer[] = [];
         const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {
-            image = images[g];
+            image = images[g as number];
             image = image.replace(/^data:[a-z]*;,/, '');
             const image1: string[] = image.split(',');
             const byteString: string = atob(image1[1]);
             const buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
             const intArray: Uint8Array = new Uint8Array(buffer);
             for (let i: number = 0; i < byteString.length; i++) {
-                intArray[i] = byteString.charCodeAt(i);
+                intArray[i as number] = byteString.charCodeAt(i);
             }
             buffers.push(buffer);
         }
         for (let j: number = 0; j < buffers.length; j++) {
-            const b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            const b: Blob = new Blob([buffers[j as number]], { type: 'application/octet-stream' });
             if (Browser.info.name === 'msie') {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
             }

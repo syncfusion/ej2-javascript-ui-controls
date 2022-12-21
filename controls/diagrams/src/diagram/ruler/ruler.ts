@@ -156,7 +156,7 @@ export function removeRulerMarkers(): void {
     let i: number;
     if (markers && markers.length > 0) {
         for (i = markers.length - 1; i >= 0; i--) {
-            marker = markers[i] as HTMLElement;
+            marker = markers[parseInt(i.toString(), 10)] as HTMLElement;
             if (marker) {
                 marker.parentNode.removeChild(marker);
             }

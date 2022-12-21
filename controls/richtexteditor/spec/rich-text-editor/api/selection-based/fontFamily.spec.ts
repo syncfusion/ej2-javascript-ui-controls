@@ -68,6 +68,43 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
         });
     });
 
+    describe(' EJ2-66999 - Font name dropdown not opened issue - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p id="rte">RTE</p>',
+                toolbarSettings: {
+                    items: ['FontName']
+                },
+                iframeSettings: {
+                    enable: true
+                },
+                fontFamily: {
+                    items: [
+                        { text: 'Segoe UI', value: 'Segoe UI', cssClass: 'e-segoe-ui' },
+                        { text: 'Arial', value: 'Arial,Helvetica,sans-serif', cssClass: 'e-arial' },
+                        { text: 'Georgia', value: 'Georgia,serif', cssClass: 'e-georgia' }
+                    ]
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' EJ2-66999 - Font name dropdown not opened issue', () => {
+            let pEle: HTMLElement = rteObj.inputElement.querySelector('#rte')
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+            item.click();
+            let popup: HTMLElement = document.getElementById(controlId + '_toolbar_FontName-popup');
+            expect(popup.classList.contains('e-popup-open')).toBe(true);
+        });
+    });
+
     describe(' onPropertyChange - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;

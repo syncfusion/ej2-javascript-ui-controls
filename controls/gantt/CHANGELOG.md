@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
+## 20.4.38 (2022-12-21)
 
 ### Gantt
+
+#### Features
+
+- `#I237939`,`#I255626`,`#I398597` - Provided `RTL` support in Gantt chart. Please find the documentation link [here](https://ej2.syncfusion.com/documentation/gantt/global-local/#right-to-left-rtl).
+- Provided `Shimmer` support in Gantt chart. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/gantt/loading-animation).
 
 #### Bug Fixes
 

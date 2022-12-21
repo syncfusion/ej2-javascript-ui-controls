@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable brace-style */
+
 import { TreeMap } from '../treemap';
-import { Browser, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 import { IItemHighlightEventArgs, IItemSelectedEventArgs } from '../model/interface';
 import { itemHighlight, itemSelected } from '../model/constants';
 import { HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
@@ -24,16 +22,16 @@ export class TreeMapHighlight {
     public legendHighlightCollection: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public currentElement: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(treeMap: TreeMap) {
         this.treemap = treeMap;
         this.addEventListener();
     }
 
-    /* eslint-disable max-len */
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Mouse down event in highlight
+     *
+     * @param {PointerEvent} e - Specifies the pointer argument.
+     * @returns {boolean} - return the highlight process is true or false.
      */
     public mouseMove(e: PointerEvent): boolean {
         const treemap: TreeMap = this.treemap;
@@ -61,10 +59,10 @@ export class TreeMapHighlight {
                     if (this.shapeElement !== null && (selectionModule ? this.shapeElement.getAttribute('id') !== selectionModule.legendSelectId : true)) {
                         if (selectionModule ? this.shapeElement !== selectionModule.shapeElement : true) {
                             this.currentElement.push({currentElement: this.shapeElement});
-                            removeShape(this.shapeHighlightCollection, 'highlight');
-                            this.shapeHighlightCollection.push({ legendEle: this.shapeElement, oldFill: collection[index]['legendFill'],
-                                oldOpacity: collection[index]['opacity'], oldBorderColor: collection[index]['borderColor'],
-                                oldBorderWidth: collection[index]['borderWidth']
+                            removeShape(this.shapeHighlightCollection);
+                            this.shapeHighlightCollection.push({ legendEle: this.shapeElement, oldFill: collection[index as number]['legendFill'],
+                                oldOpacity: collection[index as number]['opacity'], oldBorderColor: collection[index as number]['borderColor'],
+                                oldBorderWidth: collection[index as number]['borderWidth']
                             });
                             setColor(
                                 this.shapeElement, highlight.fill, highlight.opacity, highlight.border.color,
@@ -81,13 +79,14 @@ export class TreeMapHighlight {
                 }
                 orders = findHightLightItems(item, [], highlight.mode, treemap);
                 if (this.treemap.legendSettings.visible ? selectionModule ? this.shapeElement ? this.shapeElement.getAttribute('id') !== selectionModule.legendSelectId : true : true : true) {
-                    if (this.treemap.legendSettings.visible ? selectionModule ? this.shapeElement !== selectionModule.shapeElement : true : true) {
+                    if (this.treemap.legendSettings.visible ? selectionModule ?
+                        this.shapeElement !== selectionModule.shapeElement : true : true) {
                         for (let i: number = 0; i < treeMapElement.childElementCount; i++) {
-                            element = treeMapElement.childNodes[i] as Element;
+                            element = treeMapElement.childNodes[i as number] as Element;
                             process = true;
                             item = treemap.layout.renderItems[parseFloat(element.id.split('_Item_Index_')[1])];
                             for (let j: number = 0; j < selectionElements.length; j++) {
-                                if (element.id === selectionElements[j].id) {
+                                if (element.id === selectionElements[j as number].id) {
                                     process = false;
                                     break;
                                 }
@@ -99,7 +98,7 @@ export class TreeMapHighlight {
                         }
                         removeClassNames(document.getElementsByClassName('treeMapHighLight'), 'treeMapHighLight', treemap);
                         for (let k: number = 0; k < highLightElements.length; k++) {
-                            element = highLightElements[k];
+                            element = highLightElements[k as number];
                             applyOptions(
                                 element.childNodes[0] as SVGPathElement,
                                 { border: highlight.border, fill: highlight.fill, opacity: highlight.opacity }
@@ -115,25 +114,26 @@ export class TreeMapHighlight {
                 }
             }
         } else if (targetId.indexOf('_Legend_Shape') > -1 || targetId.indexOf('_Legend_Index') > -1) {
-            if (this.treemap.legendSettings.visible && (selectionModule ? selectionModule.legendSelectId !== targetId : true) && (selectionModule ? selectionModule.shapeSelectId !== targetId : true)) {
+            if (this.treemap.legendSettings.visible && (selectionModule ? selectionModule.legendSelectId !== targetId : true)
+            && (selectionModule ? selectionModule.shapeSelectId !== targetId : true)) {
                 let itemIndex: number;
                 let groupIndex: number;
                 let length: number;
                 const targetEle: Element = document.getElementById(targetId);
                 if (this.shapeTarget === 'highlight') {
-                    removeLegend(this.legendHighlightCollection, 'highlight');
+                    removeLegend(this.legendHighlightCollection);
                 }
                 this.shapeTarget = 'highlight';
                 const index: number = this.treemap.legendSettings.mode === 'Default' ? parseFloat(targetId.split('_Legend_Shape_Index_')[1]) : parseFloat(targetId.split('_Legend_Index_')[1]);
-                const dataLength: number = this.treemap.treeMapLegendModule.legendCollections[index]['legendData'].length;
+                const dataLength: number = this.treemap.treeMapLegendModule.legendCollections[index as number]['legendData'].length;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const collection: any[] = this.treemap.treeMapLegendModule.legendCollections;
                 const legendIndex: number = parseInt(targetId[targetId.length - 1], 10);
                 for (let i: number = 0; i < dataLength; i++) {
                     for (let j: number = 0; j < this.treemap.layout.renderItems.length; j++) {
-                        if (this.treemap.treeMapLegendModule.legendCollections[index]['legendData'][i]['levelOrderName'] === this.treemap.layout.renderItems[j]['levelOrderName']) {
+                        if (this.treemap.treeMapLegendModule.legendCollections[index as number]['legendData'][i as number]['levelOrderName'] === this.treemap.layout.renderItems[j as number]['levelOrderName']) {
                             itemIndex = j;
-                            groupIndex = this.treemap.layout.renderItems[j]['groupIndex'];
+                            groupIndex = this.treemap.layout.renderItems[j as number]['groupIndex'];
                             const nodeEle: Element = document.getElementById(this.treemap.element.id + '_Level_Index_' + groupIndex + '_Item_Index_' + itemIndex + '_RectPath');
                             if (i === 0) {
                                 this.legendHighlightCollection = [];
@@ -163,14 +163,15 @@ export class TreeMapHighlight {
             }
             if ((this.shapeTarget === 'highlight' || this.target === 'highlight') && this.treemap.legendSettings.visible) {
                 if (selectionModule ? this.shapeElement ? this.shapeElement.getAttribute('id') !== selectionModule.legendSelectId : true : true) {
-                    if (selectionModule ? this.shapeElement !== selectionModule.shapeElement : true && selectionModule ? selectionModule.legendSelect : true) {
-                        removeShape(this.shapeHighlightCollection, 'highlight');
+                    if (selectionModule ? this.shapeElement !== selectionModule.shapeElement : true && selectionModule ?
+                        selectionModule.legendSelect : true) {
+                        removeShape(this.shapeHighlightCollection);
                         this.shapeHighlightCollection = [];
                     }
                 }
             }
             if (this.shapeTarget === 'highlight' && this.treemap.legendSettings.visible) {
-                removeLegend(this.legendHighlightCollection, 'highlight');
+                removeLegend(this.legendHighlightCollection);
             }
             this.highLightId = '';
             processHighlight = false;
@@ -211,7 +212,7 @@ export class TreeMapHighlight {
     }
     /**
      * To destroy the hightlight.
-     * 
+     *
      * @returns {void}
      * @private
      */
@@ -238,26 +239,26 @@ export class TreeMapSelection {
     public legendSelectionCollection: any[] = [];
     public shapeSelect: boolean = true;
     public legendSelect: boolean = true;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(treeMap: TreeMap) {
         this.treemap = treeMap;
         this.addEventListener();
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Mouse down event in selection
+     *
+     * @param {PointerEvent} e - Specifies the pointer argument.
+     * @returns {void}
      */
     public mouseDown(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
         let eventArgs: IItemSelectedEventArgs;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const treemap: TreeMap = this.treemap;
         treemap.levelSelection = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const items: any[] = []; const targetId: string = targetEle.id; const labelText : string = targetEle.innerHTML;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let item: any; const selectionElements: Element[] = []; let opacity: string;
+        let item: any; const selectionElements: Element[] = [];
         let treeMapElement: Element; let element: Element; let orders: string[];
         const selection: SelectionSettingsModel = treemap.selectionSettings;
         const highlightModule: TreeMapHighlight = this.treemap.treeMapHighlightModule;
@@ -274,7 +275,7 @@ export class TreeMapSelection {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const collection: any[] = this.treemap.treeMapLegendModule.legendCollections;
                     this.shapeElement = undefined;
-                    removeShape(this.shapeSelectionCollection, 'selection');
+                    removeShape(this.shapeSelectionCollection);
                     if (highlightModule) {
                         highlightModule.shapeTarget = 'selection';
                         highlightModule.shapeHighlightCollection = [];
@@ -283,9 +284,9 @@ export class TreeMapSelection {
                     this.shapeElement = this.treemap.legendSettings.mode === 'Default' ? document.getElementById(this.treemap.element.id + '_Legend_Shape_Index_' + index) : document.getElementById(this.treemap.element.id + '_Legend_Index_' + index);
                     if (this.shapeElement !== null) {
                         this.shapeSelectId = this.shapeElement.getAttribute('id');
-                        this.shapeSelectionCollection.push({ legendEle: this.shapeElement, oldFill: collection[index]['legendFill'],
-                            oldOpacity: collection[index]['opacity'], oldBorderColor: collection[index]['borderColor'],
-                            oldBorderWidth: collection[index]['borderWidth']
+                        this.shapeSelectionCollection.push({ legendEle: this.shapeElement, oldFill: collection[index as number]['legendFill'],
+                            oldOpacity: collection[index as number]['opacity'], oldBorderColor: collection[index as number]['borderColor'],
+                            oldBorderWidth: collection[index as number]['borderWidth']
                         });
                         setColor(
                             this.shapeElement, selection.fill, selection.opacity, selection.border.color,
@@ -294,7 +295,7 @@ export class TreeMapSelection {
                 }
                 orders = findHightLightItems(item, [], selection.mode, treemap);
                 for (let i: number = 0; i < treeMapElement.childElementCount; i++) {
-                    element = treeMapElement.childNodes[i] as Element;
+                    element = treeMapElement.childNodes[i as number] as Element;
                     item = treemap.layout.renderItems[parseFloat(element.id.split('_Item_Index_')[1])];
                     if (orders.indexOf(item['levelOrderName']) > -1) {
                         selectionElements.push(element);
@@ -306,11 +307,11 @@ export class TreeMapSelection {
                 this.treemap.selectionId = targetId;
                 const highLightElements: HTMLCollection = document.getElementsByClassName('treeMapHighLight');
                 for (let k: number = 0; k < selectionElements.length; k++) {
-                    element = selectionElements[k];
+                    element = selectionElements[k as number];
                     if (highLightElements.length > 0) {
                         for (let j: number = 0; j < highLightElements.length; j++) {
-                            if (highLightElements[j].id === element.id) {
-                                highLightElements[j].classList.remove('treeMapHighLight');
+                            if (highLightElements[j as number].id === element.id) {
+                                highLightElements[j as number].classList.remove('treeMapHighLight');
                             }
                             applyOptions(
                                 element.childNodes[0] as SVGPathElement,
@@ -334,7 +335,7 @@ export class TreeMapSelection {
                     });
                 }
             } else {
-                removeShape(this.shapeSelectionCollection, 'selection');
+                removeShape(this.shapeSelectionCollection);
                 this.shapeSelectionCollection = [];
                 this.shapeElement = undefined;
                 this.shapeSelect = true;
@@ -354,15 +355,15 @@ export class TreeMapSelection {
                 this.legendSelect = false;
                 const legendIndex: number = parseInt(targetId[targetId.length - 1], 10);
                 const targetEle: Element = document.getElementById(targetId);
-                removeLegend(this.legendSelectionCollection, 'selection');
+                removeLegend(this.legendSelectionCollection);
                 if (highlightModule) { highlightModule.shapeTarget = 'selection'; }
                 const index: number = this.treemap.legendSettings.mode === 'Default' ? parseFloat(targetId.split('_Legend_Shape_Index_')[1]) : parseFloat(targetId.split('_Legend_Index_')[1]);
-                const dataLength: number = this.treemap.treeMapLegendModule.legendCollections[index]['legendData'].length;
+                const dataLength: number = this.treemap.treeMapLegendModule.legendCollections[index as number]['legendData'].length;
                 for (let k: number = 0; k < dataLength; k++) {
                     for (let l: number = 0; l < this.treemap.layout.renderItems.length; l++) {
-                        if (this.treemap.treeMapLegendModule.legendCollections[index]['legendData'][k]['levelOrderName'] === this.treemap.layout.renderItems[l]['levelOrderName']) {
+                        if (this.treemap.treeMapLegendModule.legendCollections[index as number]['legendData'][k as number]['levelOrderName'] === this.treemap.layout.renderItems[l as number]['levelOrderName']) {
                             itemIndex = l;
-                            groupIndex = this.treemap.layout.renderItems[l]['groupIndex'];
+                            groupIndex = this.treemap.layout.renderItems[l as number]['groupIndex'];
                             const nodeEle: Element = document.getElementById(this.treemap.element.id + '_Level_Index_' + groupIndex + '_Item_Index_' + itemIndex + '_RectPath');
                             if (k === 0) {
                                 pushCollection(
@@ -383,7 +384,7 @@ export class TreeMapSelection {
                     }
                 }
             } else {
-                removeLegend(this.legendSelectionCollection, 'Selection');
+                removeLegend(this.legendSelectionCollection);
                 if (highlightModule) { highlightModule.shapeTarget = 'highlight'; }
                 this.legendSelect = true;
                 this.legendSelectId = '';
@@ -402,8 +403,8 @@ export class TreeMapSelection {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let item: any;
             for (let s: number = 0; s < this.treemap.layout.renderItems.length; s++) {
-                if (levelOrder === this.treemap.layout.renderItems[s]['levelOrderName']) {
-                    item = this.treemap.layout.renderItems[s];
+                if (levelOrder === this.treemap.layout.renderItems[s as number]['levelOrderName']) {
+                    item = this.treemap.layout.renderItems[s as number];
                     break;
                 }
             }
@@ -418,7 +419,7 @@ export class TreeMapSelection {
             const treeMapElement: Element = document.getElementById(layoutID);
             const orders: string[] = findHightLightItems(item, [], selection.mode, this.treemap);
             for (let i: number = 0; i < treeMapElement.childElementCount; i++) {
-                element = treeMapElement.childNodes[i] as Element;
+                element = treeMapElement.childNodes[i as number] as Element;
                 item = this.treemap.layout.renderItems[parseFloat(element.id.split('_Item_Index_')[1])];
                 if (orders.indexOf(item['levelOrderName']) > -1) {
                     selectionElements.push(element);
@@ -433,16 +434,16 @@ export class TreeMapSelection {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const collection: any[] = this.treemap.treeMapLegendModule.legendCollections;
                     this.shapeElement = undefined;
-                    removeShape(this.shapeSelectionCollection, 'selection');
-                    index = getLegendIndex(length, items[m], this.treemap);
+                    removeShape(this.shapeSelectionCollection);
+                    index = getLegendIndex(length, items[m as number], this.treemap);
                     this.shapeElement = this.treemap.legendSettings.mode === 'Default' ? document.getElementById(this.treemap.element.id + '_Legend_Shape_Index_' + index) : document.getElementById(this.treemap.element.id + '_Legend_Index_' + index);
                     if (this.shapeElement !== null) {
                         this.shapeSelectId = this.shapeElement.getAttribute('id');
                         this.treemap.legendId.push(this.shapeSelectId);
                         this.shapeSelectionCollection.push({
-                            legendEle: this.shapeElement, oldFill: collection[index]['legendFill'],
-                            oldOpacity: collection[index]['opacity'], oldBorderColor: collection[index]['borderColor'],
-                            oldBorderWidth: collection[index]['borderWidth']
+                            legendEle: this.shapeElement, oldFill: collection[index as number]['legendFill'],
+                            oldOpacity: collection[index as number]['opacity'], oldBorderColor: collection[index as number]['borderColor'],
+                            oldBorderWidth: collection[index as number]['borderWidth']
                         });
                         setColor(
                             this.shapeElement, selection.fill, selection.opacity, selection.border.color,
@@ -455,11 +456,11 @@ export class TreeMapSelection {
             this.treemap.selectionId = selectionElement.childNodes[0]['id'];
             const highLightElements: HTMLCollection = document.getElementsByClassName('treeMapHighLight');
             for (let k: number = 0; k < selectionElements.length; k++) {
-                element = selectionElements[k];
+                element = selectionElements[k as number];
                 if (highLightElements.length > 0) {
                     for (let j: number = 0; j < highLightElements.length; j++) {
-                        if (highLightElements[j].id === element.id) {
-                            highLightElements[j].classList.remove('treeMapHighLight');
+                        if (highLightElements[j as number].id === element.id) {
+                            highLightElements[j as number].classList.remove('treeMapHighLight');
                         }
                         applyOptions(
                             element.childNodes[0] as SVGPathElement,
@@ -479,7 +480,7 @@ export class TreeMapSelection {
                 }
             }
         } else {
-            removeShape(this.shapeSelectionCollection, 'selection');
+            removeShape(this.shapeSelectionCollection);
             this.shapeElement = undefined;
             this.treemap.levelSelection = [];
             this.shapeSelect = true;
@@ -524,7 +525,6 @@ export class TreeMapSelection {
     /**
      * To destroy the selection.
      *
-     * @param {TreeMap} treeMap - Specifies the treemap instance.
      * @returns {void}
      * @private
      */

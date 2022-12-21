@@ -128,21 +128,21 @@ export class Clipboard implements IAction {
         }
 
         for (let r: number = 0; r < rows.length; r++) {
-            cols = rows[r].split('\t');
+            cols = rows[parseInt(r.toString(), 10)].split('\t');
             cIdx = colIndex;
-            if ((r === rows.length - 1 && rows[r] === '') || isUndefined(grid.getRowByIndex(rIdx))) {
+            if ((r === rows.length - 1 && rows[parseInt(r.toString(), 10)] === '') || isUndefined(grid.getRowByIndex(rIdx))) {
                 cIdx++;
                 break;
             }
             for (let c: number = 0; c < cols.length; c++) {
                 isAvail = grid.getCellFromIndex(rIdx, cIdx);
                 if (isFrozen) {
-                    const fTr: HTMLElement = dataRows[rIdx];
-                    const mTr: HTMLElement = mRows[rIdx];
+                    const fTr: HTMLElement = dataRows[parseInt(rIdx.toString(), 10)];
+                    const mTr: HTMLElement = mRows[parseInt(rIdx.toString(), 10)];
                     isAvail = !fTr.querySelector('[data-colindex="' + cIdx + '"]') ?
                         mTr.querySelector('[data-colindex="' + cIdx + '"]') : true;
                     if (frRows && !isAvail) {
-                        const frTr: HTMLElement = frRows[rIdx];
+                        const frTr: HTMLElement = frRows[parseInt(rIdx.toString(), 10)];
                         isAvail = frTr.querySelector('[data-colindex="' + cIdx + '"]');
                     }
                 }
@@ -151,7 +151,7 @@ export class Clipboard implements IAction {
                     break;
                 }
                 col = grid.getColumnByIndex(cIdx);
-                value = col.getParser() ? col.getParser()(cols[c]) : cols[c];
+                value = col.getParser() ? col.getParser()(cols[parseInt(c.toString(), 10)]) : cols[parseInt(c.toString(), 10)];
                 if (col.allowEditing && !col.isPrimaryKey && !col.template) {
                     const args: BeforePasteEventArgs = {
                         column: col,
@@ -219,7 +219,8 @@ export class Clipboard implements IAction {
                 if (withHeader) {
                     const headerTextArray: string[] = [];
                     for (let i: number = 0; i < this.parent.getVisibleColumns().length; i++) {
-                        headerTextArray[i] = this.parent.getVisibleColumns()[i].headerText;
+                        headerTextArray[parseInt(i.toString(), 10)] = this.parent
+                            .getVisibleColumns()[parseInt(i.toString(), 10)].headerText;
                     }
                     this.getCopyData(headerTextArray, false, '\t', withHeader);
                     this.copyContent += '\n';
@@ -228,12 +229,12 @@ export class Clipboard implements IAction {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].
+                    const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].
                         querySelectorAll('.e-rowcell:not(.e-hide)'));
                     if (isFrozen) {
-                        cells.push(...[].slice.call(mRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
+                        cells.push(...[].slice.call(mRows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         if (frRows) {
-                            cells.push(...[].slice.call(frRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
+                            cells.push(...[].slice.call(frRows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);
@@ -244,7 +245,7 @@ export class Clipboard implements IAction {
                     if (withHeader) {
                         const headers: HTMLElement[] = [];
                         for (let i: number = 0; i < obj.colIndexes.length; i++) {
-                            headers.push(this.parent.getColumnHeaderByIndex(obj.colIndexes[i]) as HTMLElement);
+                            headers.push(this.parent.getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement);
                         }
                         this.getCopyData(headers, false, '\t', withHeader);
                         this.copyContent += '\n';
@@ -253,13 +254,13 @@ export class Clipboard implements IAction {
                         if (i > 0) {
                             this.copyContent += '\n';
                         }
-                        const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[i] as number].
+                        const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[parseInt(i.toString(), 10)] as number].
                             getElementsByClassName('e-cellselectionbackground'));
                         if (isFrozen) {
-                            cells.push(...[].slice.call(mRows[obj.rowIndexes[i] as number]
+                            cells.push(...[].slice.call(mRows[obj.rowIndexes[parseInt(i.toString(), 10)] as number]
                                 .getElementsByClassName('e-cellselectionbackground')));
                             if (frRows) {
-                                cells.push(...[].slice.call(frRows[obj.rowIndexes[i] as number]
+                                cells.push(...[].slice.call(frRows[obj.rowIndexes[parseInt(i.toString(), 10)] as number]
                                     .getElementsByClassName('e-cellselectionbackground')));
                             }
                         }
@@ -293,15 +294,15 @@ export class Clipboard implements IAction {
         const isElement: boolean = typeof cells[0] !== 'string';
         for (let j: number = 0; j < cells.length; j++) {
             if (withHeader && isCell) {
-                const colIdx: number = parseInt((cells[j] as HTMLElement).getAttribute(literals.dataColIndex), 10);
-                this.copyContent += (this.parent.getColumns() as Column[])[colIdx].headerText + '\n';
+                const colIdx: number = parseInt((cells[parseInt(j.toString(), 10)] as HTMLElement).getAttribute(literals.dataColIndex), 10);
+                this.copyContent += (this.parent.getColumns() as Column[])[parseInt(colIdx.toString(), 10)].headerText + '\n';
             }
             if (isElement) {
-                if (!(cells[j] as HTMLElement).classList.contains('e-hide')) {
-                    this.copyContent += (cells[j] as HTMLElement).innerText;
+                if (!(cells[parseInt(j.toString(), 10)] as HTMLElement).classList.contains('e-hide')) {
+                    this.copyContent += (cells[parseInt(j.toString(), 10)] as HTMLElement).innerText;
                 }
             } else {
-                this.copyContent += cells[j];
+                this.copyContent += cells[parseInt(j.toString(), 10)];
             }
             if (j < cells.length - 1) {
                 this.copyContent += splitKey;
@@ -357,14 +358,14 @@ export class Clipboard implements IAction {
             const rowIndexes: number[] = [];
             let i: number;
             for (i = 0; i < rowCellIndxes.length; i++) {
-                if (rowCellIndxes[i].cellIndexes.length) {
-                    rowIndexes.push(rowCellIndxes[i].rowIndex);
+                if (rowCellIndxes[parseInt(i.toString(), 10)].cellIndexes.length) {
+                    rowIndexes.push(rowCellIndxes[parseInt(i.toString(), 10)].rowIndex);
                 }
-                if (rowCellIndxes[i].cellIndexes.length) {
+                if (rowCellIndxes[parseInt(i.toString(), 10)].cellIndexes.length) {
                     if (!str) {
-                        str = JSON.stringify(rowCellIndxes[i].cellIndexes.sort());
+                        str = JSON.stringify(rowCellIndxes[parseInt(i.toString(), 10)].cellIndexes.sort());
                     }
-                    if (str !== JSON.stringify(rowCellIndxes[i].cellIndexes.sort())) {
+                    if (str !== JSON.stringify(rowCellIndxes[parseInt(i.toString(), 10)].cellIndexes.sort())) {
                         break;
                     }
                 }

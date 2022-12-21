@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
@@ -43,14 +42,13 @@ export class MapsTooltip {
         }
         let option: TooltipSettingsModel;
         let currentData: string = '';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const targetId: string = target.id; const item: any = {};
+        const targetId: string = target.id;
         let tooltipEle: HTMLElement;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let templateData: any = [];
         let keyString: string;
         let index: number = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
-        const layer: LayerSettings = <LayerSettings>this.maps.layersCollection[index];
+        const layer: LayerSettings = <LayerSettings>this.maps.layersCollection[index as number];
         const tooltipContent: string[] = []; let markerFill: string;
         const location: MapLocation = getMousePosition(pageX, pageY, this.maps.svgObject);
         this.tooltipTargetID = targetId;
@@ -60,25 +58,25 @@ export class MapsTooltip {
             if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
                 const shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
-                if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
+                if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape as number])) {
                     return;
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const value: any = layer.layerData[shape]['property']; let isShape: boolean = false;
+                const value: any = layer.layerData[shape as number]['property']; let isShape: boolean = false;
                 const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
                     layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
                 if (!isNullOrUndefined(properties)) {
                     for (let k: number = 0; k < properties.length; k++) {
                         for (let i: number = 0; i < layer['dataSource']['length']; i++) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const data: any[] = layer.dataSource[i];
+                            const data: any[] = layer.dataSource[i as number];
                             const dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
                                 (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
                             const dataPathValue: string = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
                                 ? dataPath.toLowerCase() : dataPath;
-                            const propertyValue: string = !isNullOrUndefined(value[properties[k]])
-                                && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
-                                value[properties[k]];
+                            const propertyValue: string = !isNullOrUndefined(value[properties[k as number]])
+                                && isNaN(value[properties[k as number]]) ? value[properties[k as number]].toLowerCase() :
+                                value[properties[k as number]];
                             if (dataPathValue === propertyValue) {
                                 isShape = true; index = i;
                                 k = properties.length;
@@ -87,12 +85,12 @@ export class MapsTooltip {
                         }
                     }
                     index = isShape ? index : null;
-                    if (!isNullOrUndefined(layer.dataSource[index])) {
-                        templateData = JSON.parse(JSON.stringify(layer.dataSource[index]));
+                    if (!isNullOrUndefined(layer.dataSource[index as number])) {
+                        templateData = JSON.parse(JSON.stringify(layer.dataSource[index as number]));
                         for (keyString in value) {
                             // eslint-disable-next-line no-prototype-builtins
                             if (!templateData.hasOwnProperty(keyString)) {
-                                templateData[keyString] = value[keyString];
+                                templateData[keyString as string] = value[keyString as string];
                             }
                         }
                     }
@@ -104,9 +102,9 @@ export class MapsTooltip {
                         const shapePath: string = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
                         currentData = (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(index)) ?
                             formatValue(((option.valuePath.indexOf('.') > -1) ?
-                                (getValueFromObject(layer.dataSource[index], option.valuePath)) :
-                                layer.dataSource[index][option.valuePath]),
-                                        this.maps) : value[shapePath];
+                                (getValueFromObject(layer.dataSource[index as number], option.valuePath)) :
+                                layer.dataSource[index as number][option.valuePath]),
+                                        this.maps) : value[shapePath as string];
                         if (isNullOrUndefined(currentData)) {
                             currentData = (option.valuePath.indexOf('.') > -1) ?
                                 (getValueFromObject(value, option.valuePath)) : value[option.valuePath];
@@ -118,20 +116,20 @@ export class MapsTooltip {
             } else if (targetId.indexOf('_MarkerIndex_') > -1) {
                 const markerIdex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
                 const dataIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
-                const marker: MarkerSettingsModel = layer.markerSettings[markerIdex];
+                const marker: MarkerSettingsModel = layer.markerSettings[markerIdex as number];
                 option = marker.tooltipSettings;
-                templateData = marker.dataSource[dataIndex];
+                templateData = marker.dataSource[dataIndex as number];
                 if (option.visible && !isNaN(markerIdex)) {
                     if (marker.tooltipSettings.format) {
-                        currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex]);
+                        currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex as number]);
                     } else {
                         if (marker.template && !marker.tooltipSettings.valuePath) {
                             currentData =  marker.template.split('>')[1].split('<')[0];
                         } else {
                             currentData =
                             formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
-                                (getValueFromObject(marker.dataSource[dataIndex], marker.tooltipSettings.valuePath)) :
-                                marker.dataSource[dataIndex][marker.tooltipSettings.valuePath]),
+                                (getValueFromObject(marker.dataSource[dataIndex as number], marker.tooltipSettings.valuePath)) :
+                                marker.dataSource[dataIndex as number][marker.tooltipSettings.valuePath]),
                                         this.maps
                             ) as string;
                         }
@@ -141,17 +139,17 @@ export class MapsTooltip {
             } else if (targetId.indexOf('_BubbleIndex_') > -1) {
                 const bubbleIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[0], 10);
                 const dataIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[2], 10);
-                const bubble: BubbleSettingsModel = layer.bubbleSettings[bubbleIndex];
+                const bubble: BubbleSettingsModel = layer.bubbleSettings[bubbleIndex as number];
                 option = bubble.tooltipSettings;
-                templateData = bubble.dataSource[dataIndex];
+                templateData = bubble.dataSource[dataIndex as number];
                 if (option.visible && !isNaN(dataIndex)) {
                     if (bubble.tooltipSettings.format) {
-                        currentData = this.formatter(bubble.tooltipSettings.format, bubble.dataSource[dataIndex]);
+                        currentData = this.formatter(bubble.tooltipSettings.format, bubble.dataSource[dataIndex as number]);
                     } else {
                         currentData =
                         formatValue(((bubble.tooltipSettings.valuePath.indexOf('.') > -1) ?
-                            (getValueFromObject(bubble.dataSource[dataIndex], bubble.tooltipSettings.valuePath)) :
-                            bubble.dataSource[dataIndex][bubble.tooltipSettings.valuePath]),
+                            (getValueFromObject(bubble.dataSource[dataIndex as number], bubble.tooltipSettings.valuePath)) :
+                            bubble.dataSource[dataIndex as number][bubble.tooltipSettings.valuePath]),
                                     this.maps
                         ) as string;
                     }
@@ -188,7 +186,7 @@ export class MapsTooltip {
                 maps: this.maps,
                 element: target, eventArgs: e, content: !isNullOrUndefined(currentData) ? currentData.toString() : ''
             };
-
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             this.maps.trigger(tooltipRender, tooltipArgs, (args: ITooltipRenderEventArgs) => {
                 if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
@@ -205,7 +203,8 @@ export class MapsTooltip {
                             header: '',
                             data: option['data'],
                             template: option['template'],
-                            content: tooltipArgs.content.toString() != currentData.toString() ? [tooltipArgs.content.toString()] : [currentData.toString()],
+                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
+                                [currentData.toString()],
                             shapes: [],
                             location: option['location'],
                             palette: [markerFill],
@@ -220,7 +219,8 @@ export class MapsTooltip {
                             header: '',
                             data: tooltipArgs.options['data'],
                             template: tooltipArgs.options['template'],
-                            content: tooltipArgs.content.toString() != currentData.toString() ? [tooltipArgs.content.toString()] : [currentData.toString()],
+                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
+                                [currentData.toString()],
                             shapes: [],
                             location: tooltipArgs.options['location'],
                             palette: [markerFill],
@@ -301,8 +301,8 @@ export class MapsTooltip {
     private formatter(format: string, data: any = {}): string {
         const keys: string[] = Object.keys(data);
         for (const key of keys) {
-            format = (typeof data[key] === 'object') ? convertStringToValue('', format, data, this.maps) :
-                format.split('${' + key + '}').join(formatValue(data[key], this.maps));
+            format = (typeof data[key as string] === 'object') ? convertStringToValue('', format, data, this.maps) :
+                format.split('${' + key + '}').join(formatValue(data[key as string], this.maps));
         }
         return format;
     }

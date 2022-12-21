@@ -49,7 +49,7 @@ export class StockEvents extends BaseTooltip {
         const stockEventsElementGroup: Element = sChart.renderer.createGroup({ id: this.chartId + '_StockEvents' });
         this.symbolLocations = initialArray(sChart.series.length, sChart.stockEvents.length, new ChartLocation(0, 0));
         for (let i: number = 0; i < sChart.stockEvents.length; i++) {
-            stockEvent = this.stockChart.stockEvents[i];
+            stockEvent = this.stockChart.stockEvents[i as number];
             for (const series of sChart.chart.series as Series[]) {
                 const argsData: IStockEventRenderArgs = {
                     name: stockEventRender, stockChart: sChart, text: stockEvent.text,
@@ -67,7 +67,7 @@ export class StockEvents extends BaseTooltip {
                     if (withIn(stockEventDate , series.xAxis.visibleRange)) {
                         if (stockEvent.seriesIndexes.length > 0) {
                             for (let j: number = 0; j < stockEvent.seriesIndexes.length; j++) {
-                                if (stockEvent.seriesIndexes[j] === series.index) {
+                                if (stockEvent.seriesIndexes[j as number] === series.index) {
                                         stockEventsElementGroup.appendChild(
                                             this.creatEventGroup(stockEventElement, series, stockEvent, i, textSize));
                                  }
@@ -89,7 +89,7 @@ export class StockEvents extends BaseTooltip {
         if (!stockEvent.showOnSeries) {
             symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
         }
-        this.symbolLocations[series.index][i] = symbolLocation;
+        this.symbolLocations[series.index][i as number] = symbolLocation;
         this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
         return stockEventElement;
     }
@@ -101,7 +101,7 @@ export class StockEvents extends BaseTooltip {
         let point: Points;
         let yPixel: number;
         for (let k: number = 0; k < series.points.length; k++) {
-            point = series.points[k];
+            point = series.points[k as number];
             if (closeIndex === point.xValue && point.visible) {
                 pointData = new PointData(point, series);
             } else if (k !== 0 && k !== series.points.length) {
@@ -219,7 +219,7 @@ export class StockEvents extends BaseTooltip {
     public renderStockEventTooltip(targetId: string): void {
         const seriesIndex: number = parseInt((targetId.split('_StockEvents_')[0]).split(this.chartId + '_Series_')[1], 10);
         const pointIndex: number = parseInt(targetId.split('_StockEvents_')[1].replace(/\D+/g, ''), 10);
-        const updatedLocation: ChartLocation = this.symbolLocations[seriesIndex][pointIndex];
+        const updatedLocation: ChartLocation = this.symbolLocations[seriesIndex as number][pointIndex as number];
         const pointLocation: ChartLocation = new ChartLocation(
             updatedLocation.x,
             updatedLocation.y + this.stockChart.toolbarHeight + this.stockChart.titleSize.height);
@@ -239,7 +239,7 @@ export class StockEvents extends BaseTooltip {
             this.stockEventTooltip = new Tooltip(
                 {
                     opacity: 1,
-                    header: '', content: [(this.stockChart.stockEvents[pointIndex].description)],
+                    header: '', content: [(this.stockChart.stockEvents[pointIndex as number].description)],
                     enableAnimation: true, location: pointLocation,
                     theme: this.stockChart.theme,
                     inverted: true,
@@ -248,7 +248,7 @@ export class StockEvents extends BaseTooltip {
             this.stockEventTooltip.areaBounds.y += this.stockChart.toolbarHeight + this.stockChart.titleSize.height;
             this.stockEventTooltip.appendTo('#' + tooltipElement.id);
         } else {
-            this.stockEventTooltip.content = [(this.stockChart.stockEvents[pointIndex].description)];
+            this.stockEventTooltip.content = [(this.stockChart.stockEvents[pointIndex as number].description)];
             this.stockEventTooltip.location = pointLocation;
             this.stockEventTooltip.dataBind();
         }
@@ -341,9 +341,9 @@ function initialArray(numrows: number, numcols: number, initial: ChartLocation):
     for (let i: number = 0; i < numrows; ++i) {
         const columns: ChartLocation[] = [];
         for (let j: number = 0; j < numcols; ++j) {
-            columns[j] = initial;
+            columns[j as number] = initial;
         }
-        arr[i] = columns;
+        arr[i as number] = columns;
     }
     return arr;
 }

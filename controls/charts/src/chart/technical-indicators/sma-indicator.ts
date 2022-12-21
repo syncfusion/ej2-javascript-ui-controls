@@ -35,22 +35,22 @@ export class SmaIndicator extends TechnicalAnalysis {
                 let sum: number = 0;
 
                 for (let i: number = 0; i < indicator.period; i++) {
-                    sum += validData[i][field];
+                    sum += validData[i as number][field as string];
                 }
 
                 average = sum / indicator.period;
 
                 smaPoints.push(this.getDataPoint(
-                    validData[indicator.period - 1][xField], average, validData[indicator.period - 1],
+                    validData[indicator.period - 1][xField as string], average, validData[indicator.period - 1],
                     signalSeries, smaPoints.length));
 
                 let index: number = indicator.period;
                 while (index < validData.length) {
-                    sum -= validData[index - indicator.period][field];
-                    sum += validData[index][field];
+                    sum -= validData[index - indicator.period][field as string];
+                    sum += validData[index as number][field as string];
                     average = sum / indicator.period;
                     smaPoints.push(this.getDataPoint(
-                        validData[index][xField], average, validData[index],
+                        validData[index as number][xField as string], average, validData[index as number],
                         signalSeries, smaPoints.length));
                     index++;
                 }

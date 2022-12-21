@@ -5,7 +5,7 @@
   outline: $btn-focus-outline;
   outline-offset: $btn-focus-outline-offset;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-focus-bgcolor, 50%), $btn-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-focus-bgcolor, 50%), $btn-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
@@ -25,7 +25,7 @@
     outline-offset: $btn-active-outline-offset;
   }
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name != 'bootstrap5' {
@@ -39,7 +39,7 @@
   color: $btn-primary-focus-color;
   outline: $btn-primary-outline;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -61,7 +61,7 @@
     outline: $btn-active-outline;
   }
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-primary-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-primary-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name != 'bootstrap5' {
@@ -81,7 +81,7 @@
 
 @mixin outline-focus {
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-outline-focus-bgcolor, 50%), $btn-outline-default-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-outline-focus-bgcolor, 50%), $btn-outline-default-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
@@ -96,7 +96,7 @@
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-bgcolor;
     border-color: transparent;
-    $color-rgba: rgba(mix(lighten($btn-outline-active-bgcolor, 50%), $btn-outline-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-outline-active-bgcolor, 50%), $btn-outline-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else {
@@ -111,7 +111,7 @@
 
 @mixin outline-primary-focus {
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-outline-primary-focus-bgcolor, 50%), $btn-outline-primary-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-outline-primary-focus-bgcolor, 50%), $btn-outline-primary-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -126,7 +126,7 @@
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-primary-bgcolor;
     border-color: transparent;
-    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-outline-primary-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-outline-primary-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'bootstrap5') {
@@ -144,7 +144,7 @@
 
 @mixin outline-success-focus {
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -159,7 +159,7 @@
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-success-bgcolor;
     border-color: transparent;
-    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else {
@@ -174,7 +174,7 @@
 
 @mixin outline-info-focus {
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-info-hover-bgcolor, 50%), $btn-info-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-info-hover-bgcolor, 50%), $btn-info-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -189,7 +189,7 @@
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-info-bgcolor;
     border-color: transparent;
-    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'bootstrap5') {
@@ -207,7 +207,7 @@
 
 @mixin outline-warning-focus {
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-warning-hover-bgcolor, 50%), $btn-warning-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-warning-hover-bgcolor, 50%), $btn-warning-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -222,7 +222,7 @@
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-warning-bgcolor;
     border-color: transparent;
-    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else {
@@ -237,7 +237,7 @@
 
 @mixin outline-danger-focus {
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-danger-hover-bgcolor, 50%), $btn-danger-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-danger-hover-bgcolor, 50%), $btn-danger-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -252,7 +252,7 @@
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-danger-bgcolor;
     border-color: transparent;
-    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else {
@@ -347,7 +347,7 @@
   border-color: $btn-success-focus-border-color;
   color: $btn-success-hover-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -366,7 +366,7 @@
   border-color: $btn-success-active-border-color;
   color: $btn-success-active-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name != 'bootstrap5' {
@@ -379,7 +379,7 @@
   border-color: $btn-info-focus-border-color;
   color: $btn-info-hover-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-info-focus-bgcolor, 50%), $btn-info-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-info-focus-bgcolor, 50%), $btn-info-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -403,7 +403,7 @@
     border-color: $btn-info-active-border-color;
   }
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name != 'bootstrap5' {
@@ -416,7 +416,7 @@
   border-color: $btn-warning-focus-border-color;
   color: $btn-warning-hover-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-warning-focus-bgcolor, 50%), $btn-warning-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-warning-focus-bgcolor, 50%), $btn-warning-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -440,7 +440,7 @@
   }
   color: $btn-warning-active-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name != 'bootstrap5' {
@@ -453,7 +453,7 @@
   border-color: $btn-danger-focus-border-color;
   color: $btn-danger-hover-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-danger-focus-bgcolor, 50%), $btn-danger-focus-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-danger-focus-bgcolor, 50%), $btn-danger-focus-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -477,7 +477,7 @@
   }
   color: $btn-danger-active-color;
   @if $skin-name == 'bootstrap4' {
-    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
+    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, 15%), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
   @else if $skin-name != 'bootstrap5' {

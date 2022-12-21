@@ -39,7 +39,7 @@ export class HtmlEditor {
     private oldRangeElement: Element;
     private deleteRangeElement: Element;
     private deleteOldRangeElement: Element;
-    private isImageDelete: Boolean = false;
+    private isImageDelete: boolean = false;
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
 
@@ -120,10 +120,10 @@ export class HtmlEditor {
     }
 
     private isTableClassAdded(): void  {
-        let tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
+        const tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
         for (let i: number = 0; i < tableElement.length; i++) {
-            if(!tableElement[i].classList.contains('e-rte-table')){
-                tableElement[i].classList.add('e-rte-table')
+            if (!tableElement[i as number].classList.contains('e-rte-table')){
+                tableElement[i as number].classList.add('e-rte-table');
             }
         }
     }
@@ -133,10 +133,12 @@ export class HtmlEditor {
         const restrictKeys: number[] = [8, 9, 13, 16, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
             112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
         const range: Range = this.parent.getRange();
+        // eslint-disable-next-line
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         let pointer: number;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey) {
             pointer = range.startOffset;
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement.classList.add('currentStartMark') : (range.startContainer as Element).classList.add('currentStartMark');
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
                 pointer = range.startOffset === 0 ? range.startOffset : range.startOffset - 1;
@@ -144,19 +146,19 @@ export class HtmlEditor {
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
             }
-            let previousLength: number = this.parent.inputElement.innerHTML.length;
-            let currentLength: number = this.parent.inputElement.innerHTML.replace(regEx, '').length;
+            const previousLength: number = this.parent.inputElement.innerHTML.length;
+            const currentLength: number = this.parent.inputElement.innerHTML.replace(regEx, '').length;
             if (previousLength > currentLength) {
                 let currentChild: Element = this.parent.inputElement.firstChild as Element;
-                while(!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
+                while (!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
                     currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
                     currentChild = currentChild.nextElementSibling;
                 }
                 if (this.parent.inputElement.querySelector('.currentStartMark').childNodes.length > 1) {
-                    let currentChild = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
+                    const currentChild : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
                     for (let i: number = 0; i < currentChild.length; i++) {
-                        if (currentChild[i].nodeName === '#text' && currentChild[i].textContent.length === 0) {
-                            detach(currentChild[i]);
+                        if (currentChild[i as number].nodeName === '#text' && currentChild[i as number].textContent.length === 0) {
+                            detach(currentChild[i as number]);
                             i--;
                         }
                     }
@@ -166,7 +168,7 @@ export class HtmlEditor {
                     this.parent.inputElement.querySelector('.currentStartMark').childNodes[0] as Element,
                     pointer);
             }
-            let currentElem: Element = this.parent.inputElement.querySelector('.currentStartMark');
+            const currentElem: Element = this.parent.inputElement.querySelector('.currentStartMark');
             if (!isNOU(currentElem)) {
                 currentElem.classList.remove('currentStartMark');
                 if (currentElem.getAttribute('class').trim() === '') {
@@ -285,7 +287,7 @@ export class HtmlEditor {
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(editorValue)) {
             for (let i: number = 0; i < olListStartRegex.length; i++) {
-                if (olListStartRegex[i].test(editorValue)) {
+                if (olListStartRegex[i as number].test(editorValue)) {
                     return true;
                 }
             }
@@ -297,7 +299,7 @@ export class HtmlEditor {
         const ulListStartRegex: RegExp[] = [/^[*]$/, /^[-]$/ ];
         if (!isNullOrUndefined(editorValue)) {
             for (let i: number = 0; i < ulListStartRegex.length; i++) {
-                if (ulListStartRegex[i].test(editorValue)) {
+                if (ulListStartRegex[i as number].test(editorValue)) {
                     return true;
                 }
             }
@@ -309,7 +311,7 @@ export class HtmlEditor {
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
             currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
             currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
-            let checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
+            const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
             if (!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
                 !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') {
                 return;
@@ -488,18 +490,18 @@ export class HtmlEditor {
             const enterSplitText: string[] = e.text.split('\n');
             let contentInnerElem: string = '';
             for (let i: number = 0; i < enterSplitText.length; i++) {
-                if (enterSplitText[i].trim() === '') {
+                if (enterSplitText[i as number].trim() === '') {
                     contentInnerElem += getDefaultValue(this.parent);
                 } else {
                     let contentWithSpace: string = '';
                     let spaceBetweenContent: boolean = true;
-                    const spaceSplit: string[] = enterSplitText[i].split(' ');
+                    const spaceSplit: string[] = enterSplitText[i as number].split(' ');
                     for (let j: number = 0; j < spaceSplit.length; j++) {
-                        if (spaceSplit[j].trim() === '') {
+                        if (spaceSplit[j as number].trim() === '') {
                             contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
                         } else {
                             spaceBetweenContent = false;
-                            contentWithSpace += spaceSplit[j] + ' ';
+                            contentWithSpace += spaceSplit[j as number] + ' ';
                         }
                     }
                     if (i === 0) {
@@ -515,17 +517,17 @@ export class HtmlEditor {
             divElement.innerHTML = contentInnerElem.replace('&para', '&amp;para');
             const paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('span, p');
             for (let i: number = 0; i < paraElem.length ; i++) {
-                const splitTextContent: string[] = paraElem[i].innerHTML.split(' ');
+                const splitTextContent: string[] = paraElem[i as number].innerHTML.split(' ');
                 let resultSplitContent: string = '';
                 for (let j: number = 0 ; j < splitTextContent.length; j++) {
-                    if (splitTextContent[j].match(httpRegex) || splitTextContent[j].match(wwwRegex)) {
-                        resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j] +
-                        '" title="' + splitTextContent[j] + '"target="_blank">' + splitTextContent[j] + ' </a>';
+                    if (splitTextContent[j as number].match(httpRegex) || splitTextContent[j as number].match(wwwRegex)) {
+                        resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j as number] +
+                        '" title="' + splitTextContent[j as number] + '"target="_blank">' + splitTextContent[j as number] + ' </a>';
                     } else {
-                        resultSplitContent += splitTextContent[j] + ' ';
+                        resultSplitContent += splitTextContent[j as number] + ' ';
                     }
                 }
-                paraElem[i].innerHTML = resultSplitContent.trim();
+                paraElem[i as number].innerHTML = resultSplitContent.trim();
             }
             if (!isNullOrUndefined(this.parent.pasteCleanupModule)) {
                 e.callBack(divElement.innerHTML);

@@ -148,7 +148,7 @@ export class SanitizeHtmlHelper {
     private removeXssTags(): void {
         const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
         for (let i: number = 0; i < elements.length; i++) {
-            detach(elements[i]);
+            detach(elements[i as number]);
         }
     }
 
@@ -156,8 +156,8 @@ export class SanitizeHtmlHelper {
         const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
         for (let i: number = 0; i < elements.length; i++) {
             for (let j: number = 0; j < jsEvents.length; j++) {
-                if (elements[i].hasAttribute(jsEvents[j])) {
-                    elements[i].removeAttribute(jsEvents[j]);
+                if (elements[i as number].hasAttribute(jsEvents[j as number])) {
+                    elements[i as number].removeAttribute(jsEvents[j as number]);
                 }
             }
         }
@@ -165,9 +165,9 @@ export class SanitizeHtmlHelper {
 
     private removeXssAttrs(): void {
         for (let i: number = 0; i < this.removeAttrs.length; i++) {
-            const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeAttrs[i].selector);
+            const elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeAttrs[i as number].selector);
             for (let j: number = 0; j < elements.length; j++) {
-                elements[j].removeAttribute(this.removeAttrs[i].attribute);
+                elements[j as number].removeAttribute(this.removeAttrs[i as number].attribute);
             }
         }
     }

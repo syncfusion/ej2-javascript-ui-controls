@@ -31,7 +31,7 @@ export class TooltipRender {
         }
         this.setMouseXY(smithchart, pageX, pageY);
         for (let i: number = 0; i < smithchart.series.length; i++) {
-            const series: SmithchartSeriesModel = smithchart.series[i];
+            const series: SmithchartSeriesModel = smithchart.series[i as number];
             const seriesIndex: number = i;
             let closestPoint: ClosestPoint = new ClosestPoint();
             closestPoint = this.closestPointXY(smithchart, this.mouseX, this.mouseY, series, seriesIndex);
@@ -60,7 +60,7 @@ export class TooltipRender {
 
     private createTooltip(
         smithchart: Smithchart, e: PointerEvent, pointindex: number, seriesindex: number, series: SmithchartSeriesModel): void {
-        const currentPoint: ISmithChartPoint = series.points[pointindex];
+        const currentPoint: ISmithChartPoint = series.points[pointindex as number];
         const pointX: number = currentPoint.resistance;
         const pointY: number = currentPoint.reactance;
         const tooltip: string[] = currentPoint.tooltip ? [currentPoint.tooltip] : null;
@@ -76,7 +76,7 @@ export class TooltipRender {
 
         // eslint-disable-next-line @typescript-eslint/ban-types
         const smithChartTooltipSuccess: Function = (argsData: ISmithChartTooltipEventArgs) => {
-            const markerHeight: number = smithchart.series[seriesindex].marker.height / 2;
+            const markerHeight: number = smithchart.series[seriesindex as number].marker.height / 2;
             let div: Element = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
             if (isNullOrUndefined(div)) {
                 div = createElement('div', {
@@ -110,7 +110,7 @@ export class TooltipRender {
             this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
             this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
             this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
-			this.tooltipElement.textStyle.color = smithchart.themeStyle.tooltipBoldLabel || this.tooltipElement.textStyle.color;
+            this.tooltipElement.textStyle.color = smithchart.themeStyle.tooltipBoldLabel || this.tooltipElement.textStyle.color;
             this.tooltipElement.appendTo(div as HTMLElement);
         };
         smithChartTooltipSuccess.bind(this, smithchart);

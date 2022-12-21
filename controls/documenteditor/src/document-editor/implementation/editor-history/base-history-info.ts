@@ -368,6 +368,9 @@ export class BaseHistoryInfo {
             }
         }
         this.owner.editorModule.reLayout(this.owner.selection, this.owner.selection.isEmpty);
+        if (this.editorHistory.isUndoing && this.action === 'SectionBreak') {
+            this.owner.editorModule.layoutWholeDocument();
+        }
         if (isSelectionChanged) {
             this.documentHelper.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
         }
@@ -492,6 +495,9 @@ export class BaseHistoryInfo {
             case 'SectionBreak':
                 editor.insertSection(this.owner.selection, true);
                 break;
+            case 'SectionBreakContinuous':
+                editor.insertSection(this.owner.selection, true);
+                break;
             case 'TableAutoFitToContents':
                 editor.autoFitTable('FitToContents');
                 break;
@@ -510,10 +516,10 @@ export class BaseHistoryInfo {
         if (isRedoAction && (this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'DeleteTable'
             || this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'InsertRowAbove' ||
             this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight'
-            || this.action === 'MergeCells' || this.action === 'SectionBreak' || this.action === 'TableAutoFitToContents' ||
+            || this.action === 'MergeCells' || this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous' || this.action === 'TableAutoFitToContents' ||
             this.action === 'TableAutoFitToWindow' || this.action === 'TableFixedColumnWidth' || this.action === 'PasteColumn' || this.action === 'PasteOverwrite' || this.action === 'PasteNested')) {
             this.redoAction();
-            if (this.action === 'SectionBreak') {
+            if (this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous') {
                 return;
             }
         }
@@ -552,7 +558,10 @@ export class BaseHistoryInfo {
                 if (deletedNodes.length > 0 && (this.action === 'BackSpace' && isEmptySelection
                     || (!(block instanceof TableWidget) && !(block instanceof HeaderFooterWidget)))) {
                     let lastNode: IWidget = deletedNodes[0];
-                    if (this.action === 'TrackingPageBreak' || (this.action === 'SectionBreak' && lastNode instanceof BodyWidget ||
+                    if (lastNode instanceof BodyWidget && !isNullOrUndefined(deletedNodes[1])) {
+                        lastNode = deletedNodes[1];
+                    }
+                    if (this.action === 'TrackingPageBreak' || ((this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous') && lastNode instanceof BodyWidget ||
                         !isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                         this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
                         lastNode = deletedNodes[1];

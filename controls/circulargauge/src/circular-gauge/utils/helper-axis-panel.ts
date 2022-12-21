@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /**
  * Specifies Circular-Gauge axis-panel Helper methods
  */
@@ -17,7 +15,7 @@ export function calculateSum(from: number, to: number, values: number[]): number
     let sum: number = 0;
     const length: number = values.length;
     for (; from < length; from++) {
-        sum += values[from];
+        sum += values[from as number];
     }
     return sum;
 }

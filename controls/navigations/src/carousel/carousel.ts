@@ -832,14 +832,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(activeSlide) && this.showIndicators) {
             const activeIndicator: HTMLElement = this.element.querySelector(`.${CLS_INDICATOR_BAR}.${CLS_ACTIVE}`) as HTMLElement;
             const activeIndex: number = parseInt(activeIndicator.dataset.index, 10);
-            addClass([allSlides[activeIndex]], CLS_ACTIVE);
+            addClass([allSlides[parseInt(activeIndex.toString(), 10)]], CLS_ACTIVE);
             return;
         } else if (isNullOrUndefined(activeSlide)) {
-            addClass([allSlides[currentIndex]], CLS_ACTIVE);
+            addClass([allSlides[parseInt(currentIndex.toString(), 10)]], CLS_ACTIVE);
             return;
         }
         const activeIndex: number = parseInt(activeSlide.dataset.index, 10);
-        const currentSlide: HTMLElement = allSlides[currentIndex];
+        const currentSlide: HTMLElement = allSlides[parseInt(currentIndex.toString(), 10)];
         const eventArgs: SlideChangingEventArgs = {
             currentIndex: activeIndex,
             nextIndex: currentIndex,
@@ -858,10 +858,10 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             attributes(args.nextSlide, { 'aria-hidden': 'false' });
             const slideIndicators: HTMLElement[] = [].slice.call(this.element.querySelectorAll(`.${CLS_INDICATOR_BAR}`));
             if (slideIndicators.length > 0) {
-                attributes(slideIndicators[activeIndex], { 'aria-current': 'false' });
-                attributes(slideIndicators[currentIndex], { 'aria-current': 'true' });
+                attributes(slideIndicators[parseInt(activeIndex.toString(), 10)], { 'aria-current': 'false' });
+                attributes(slideIndicators[parseInt(currentIndex.toString(), 10)], { 'aria-current': 'true' });
                 removeClass(slideIndicators, CLS_ACTIVE);
-                addClass([slideIndicators[currentIndex]], CLS_ACTIVE);
+                addClass([slideIndicators[parseInt(currentIndex.toString(), 10)]], CLS_ACTIVE);
             }
             this.slideChangedEventArgs = {
                 currentIndex: args.nextIndex,
@@ -873,7 +873,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
             };
             if (this.partialVisible) {
                 const container: HTMLElement = this.element.querySelector('.' + CLS_ITEMS);
-                const slideWidth: number = allSlides[currentIndex].clientWidth;
+                const slideWidth: number = allSlides[parseInt(currentIndex.toString(), 10)].clientWidth;
                 container.style.transitionProperty = 'transform';
                 if (this.loop) {
                     if (this.slideChangedEventArgs.currentIndex === 0 && this.slideChangedEventArgs.slideDirection === 'Next') {
@@ -942,9 +942,9 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         const keys: string[] = Object.keys(attribute);
         for (const key of keys) {
             if (key === 'class') {
-                addClass([element], attribute[key]);
+                addClass([element], attribute[`${key}`]);
             } else {
-                element.setAttribute(key, attribute[key]);
+                element.setAttribute(key, attribute[`${key}`]);
             }
         }
     }
@@ -1058,7 +1058,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private swipeHandler(e: SwipeEventArgs): void {
-        if (this.element.classList.contains(CLS_HOVER)) {
+        if (this.element.classList.contains(CLS_HOVER) || isNullOrUndefined(this.slideItems) || this.slideItems.length <= 1) {
             return;
         }
         const direction: CarouselSlideDirection = (e.swipeDirection === 'Right') ? 'Previous' : 'Next';

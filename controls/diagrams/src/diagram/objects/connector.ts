@@ -1402,7 +1402,7 @@ export class Connector extends NodeBase implements IElement {
             const ports: any = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
             let port: any;
             for (let i: number = 0; ports && i < ports.length; i++) {
-                port = ports[i];
+                port = ports[parseInt(i.toString(), 10)];
                 if (this.targetPortID === port.id && isTarget) {
                     if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.InConnect)) {
                         this.targetPortID = '';
@@ -1482,7 +1482,7 @@ export class Connector extends NodeBase implements IElement {
                 !Point.isEmptyPoint(firstSegment.point1) ? firstSegment.point1 : firstSegment.bezierPoint1];
         }
         const accessContent: string = 'getDescription';
-        const getDescription: Function = diagram[accessContent];
+        const getDescription: Function = diagram[`${accessContent}`];
         //const strokeWidth: number = this.sourceWrapper ? this.sourceWrapper.style.strokeWidth / 2 / 2 : 0;
         srcDecorator = this.getDecoratorElement(
             points[0], anglePoints[1], this.sourceDecorator, true, getDescription);
@@ -1511,12 +1511,12 @@ export class Connector extends NodeBase implements IElement {
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
             container.children.push(
                 this.getAnnotationElement(
-                    this.annotations[i] as PathAnnotation, this.intermediatePoints, bounds,
+                    this.annotations[parseInt(i.toString(), 10)] as PathAnnotation, this.intermediatePoints, bounds,
                     getDescription, diagram.element.id, diagram.annotationTemplate));
         }
         for (let i: number = 0; this.fixedUserHandles !== undefined, i < this.fixedUserHandles.length; i++) {
             container.children.push(
-                this.getfixedUserHandle(this.fixedUserHandles[i] as ConnectorFixedUserHandle, this.intermediatePoints, bounds));
+                this.getfixedUserHandle(this.fixedUserHandles[parseInt(i.toString(), 10)] as ConnectorFixedUserHandle, this.intermediatePoints, bounds));
         }
         this.wrapper = container;
         return container;
@@ -1619,7 +1619,7 @@ export class Connector extends NodeBase implements IElement {
     public getUMLObjectFlow(): void {
         if (this.annotations) {
             for (let i: number = 0; i < this.annotations.length; i++) {
-                this.annotations[i].content = '[' + this.annotations[i].content + ']';
+                this.annotations[parseInt(i.toString(), 10)].content = '[' + this.annotations[parseInt(i.toString(), 10)].content + ']';
             }
         }
     }
@@ -1650,14 +1650,18 @@ export class Connector extends NodeBase implements IElement {
 
     private getBpmnAssociationFlow(): void {
         if (((this.shape as BpmnFlow).association) === 'Default') {
-            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'None';
+            this.style.strokeDashArray = '2 2';
         }
         if (((this.shape as BpmnFlow).association) === 'Directional') {
-            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'OpenArrow';
+            this.style.strokeDashArray = '2 2';
         }
         if (((this.shape as BpmnFlow).association) === 'BiDirectional') {
-            this.targetDecorator.shape = 'Arrow';
-            this.sourceDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'OpenArrow';
+            this.sourceDecorator.shape = 'OpenArrow';
+            this.style.strokeDashArray = '2 2';
+
         }
     }
 
@@ -1686,9 +1690,11 @@ export class Connector extends NodeBase implements IElement {
     private getBpmnMessageFlow(): PathElement {
         const segmentMessage: PathElement = new PathElement();
         this.targetDecorator.shape = 'Arrow';
-        this.targetDecorator.width = 5;
+        this.targetDecorator.width = 10;
         this.targetDecorator.height = 10;
         this.sourceDecorator.shape = 'Circle';
+        this.sourceDecorator.style.fill = 'white';
+        this.targetDecorator.style.fill = 'white';
         if ((((this.shape as BpmnFlow).message) === 'InitiatingMessage') ||
             (((this.shape as BpmnFlow).message) === 'NonInitiatingMessage')) {
             segmentMessage.id = this.id + '_' + ((this.shape as BpmnFlow).message);
@@ -1867,8 +1873,8 @@ export class Connector extends NodeBase implements IElement {
         if (connector.type === 'Bezier') {
             if (this.segments.length > 0) {
                 for (let i: number = 0; i < this.segments.length; i++) {
-                    const segment: BezierSegment = this.segments[i] as BezierSegment;
-                    const connectorSegment: BezierSegment = connector.segments[i] as BezierSegment;
+                    const segment: BezierSegment = this.segments[parseInt(i.toString(), 10)] as BezierSegment;
+                    const connectorSegment: BezierSegment = connector.segments[parseInt(i.toString(), 10)] as BezierSegment;
                     // eslint-disable-next-line max-len
                     const point1: PointModel = !Point.isEmptyPoint(segment.point1) ? connectorSegment.point1 : connectorSegment.bezierPoint1;
                     // eslint-disable-next-line max-len
@@ -1931,7 +1937,7 @@ export class Connector extends NodeBase implements IElement {
         if (connector.bridges.length > 0) {
             if (connector.type === 'Straight' && connector.segments.length < 2) {
                 for (let n: number = 0; n < connector.bridges.length; n++) {
-                    const bridge: Bridge = connector.bridges[n];
+                    const bridge: Bridge = connector.bridges[parseInt(n.toString(), 10)];
                     if (!bridge.rendered) {
                         pathData += ' L' + bridge.startPoint.x + ' ' + bridge.startPoint.y;
                         pathData += bridge.path;
@@ -1940,7 +1946,7 @@ export class Connector extends NodeBase implements IElement {
                 }
             } else if (connector.type === 'Orthogonal' || (connector.type === 'Straight' && connector.segments.length > 1)) {
                 for (let n: number = 0; n < connector.bridges.length; n++) {
-                    const bridge: Bridge = connector.bridges[n];
+                    const bridge: Bridge = connector.bridges[parseInt(n.toString(), 10)];
                     if (bridge.segmentPointIndex === pointIndex) {
                         if (!bridge.rendered) {
                             if (bridge.segmentPointIndex === pointIndex) {
@@ -1980,31 +1986,31 @@ export class Connector extends NodeBase implements IElement {
         let pts: PointModel[] = [];
         let j: number = 0;
         while (j < points.length) {
-            pts.push({ x: points[j].x, y: points[j].y });
+            pts.push({ x: points[parseInt(j.toString(), 10)].x, y: points[parseInt(j.toString(), 10)].y });
             j++;
         }
         for (let m: number = 0; m < connector.bridges.length; m++) {
-            const bridge: Bridge = connector.bridges[m];
+            const bridge: Bridge = connector.bridges[parseInt(m.toString(), 10)];
             bridge.rendered = false;
         }
         pts = this.clipDecorators(connector, pts, diagramAction);
         if (this.cornerRadius > 0 && this.type !== 'Bezier') {
             for (let j: number = 0; j < pts.length - 1; j++) {
-                getPt = pts[j];
+                getPt = pts[parseInt(j.toString(), 10)];
                 if (j === 0) { path = 'M' + getPt.x + ' ' + getPt.y; }
-                const segLength: number = Point.distancePoints(pts[j], pts[j + 1]);
+                const segLength: number = Point.distancePoints(pts[parseInt(j.toString(), 10)], pts[j + 1]);
                 if (segLength > 0) {
                     if (j < pts.length - 2) {
                         if (segLength < this.cornerRadius * 2) {
-                            end = Point.adjustPoint(pts[j], pts[j + 1], false, segLength / 2);
-                        } else { end = Point.adjustPoint(pts[j], pts[j + 1], false, this.cornerRadius); }
+                            end = Point.adjustPoint(pts[parseInt(j.toString(), 10)], pts[j + 1], false, segLength / 2);
+                        } else { end = Point.adjustPoint(pts[parseInt(j.toString(), 10)], pts[j + 1], false, this.cornerRadius); }
 
                     } else { end = pts[j + 1]; }
                     if (j > 0) {
                         if (segLength < this.cornerRadius * 2) {
-                            st = Point.adjustPoint(pts[j], pts[j + 1], true, segLength / 2);
+                            st = Point.adjustPoint(pts[parseInt(j.toString(), 10)], pts[j + 1], true, segLength / 2);
                             if (j < pts.length - 2) { end = null; }
-                        } else { st = Point.adjustPoint(pts[j], pts[j + 1], true, this.cornerRadius); }
+                        } else { st = Point.adjustPoint(pts[parseInt(j.toString(), 10)], pts[j + 1], true, this.cornerRadius); }
                     }
                     if (st) { path += 'Q' + getPt.x + ' ' + getPt.y + ' ' + st.x + ' ' + st.y; }
                     if (end) {
@@ -2027,31 +2033,31 @@ export class Connector extends NodeBase implements IElement {
                 }
                 let direction: string; const segments: BezierSegment[] = (this.segments as BezierSegment[]);
                 for (let j: number = 0; j < segments.length; j++) {
-                    if (pts.length > 2) { segments[j].bezierPoint1 = { x: 0, y: 0 }; segments[j].bezierPoint2 = { x: 0, y: 0 }; }
-                    if (Point.isEmptyPoint(segments[j].point1) && !segments[j].vector1.angle && !segments[j].vector1.distance) {
+                    if (pts.length > 2) { segments[parseInt(j.toString(), 10)].bezierPoint1 = { x: 0, y: 0 }; segments[parseInt(j.toString(), 10)].bezierPoint2 = { x: 0, y: 0 }; }
+                    if (Point.isEmptyPoint(segments[parseInt(j.toString(), 10)].point1) && !segments[parseInt(j.toString(), 10)].vector1.angle && !segments[parseInt(j.toString(), 10)].vector1.distance) {
                         if ((connector.sourceID || this.sourcePortID) && this.sourceWrapper && !isDrawing && !isrezise) {
-                            direction = getDirection(this.sourceWrapper.bounds, pts[j], true);
+                            direction = getDirection(this.sourceWrapper.bounds, pts[parseInt(j.toString(), 10)], true);
                         }
-                        segments[j].bezierPoint1 = getBezierPoints(pts[j], pts[j + 1], direction);
-                    } else if (segments[j].vector1.angle || segments[j].vector1.distance) {
-                        segments[j].bezierPoint1 = Point.transform(pts[j], segments[j].vector1.angle, segments[j].vector1.distance);
+                        segments[parseInt(j.toString(), 10)].bezierPoint1 = getBezierPoints(pts[parseInt(j.toString(), 10)], pts[j + 1], direction);
+                    } else if (segments[parseInt(j.toString(), 10)].vector1.angle || segments[parseInt(j.toString(), 10)].vector1.distance) {
+                        segments[parseInt(j.toString(), 10)].bezierPoint1 = Point.transform(pts[parseInt(j.toString(), 10)], segments[parseInt(j.toString(), 10)].vector1.angle, segments[parseInt(j.toString(), 10)].vector1.distance);
                     } else {
-                        segments[j].bezierPoint1 = {
-                            x: segments[j].point1.x || segments[j].bezierPoint1.x,
-                            y: segments[j].point1.y || segments[j].bezierPoint1.y
+                        segments[parseInt(j.toString(), 10)].bezierPoint1 = {
+                            x: segments[parseInt(j.toString(), 10)].point1.x || segments[parseInt(j.toString(), 10)].bezierPoint1.x,
+                            y: segments[parseInt(j.toString(), 10)].point1.y || segments[parseInt(j.toString(), 10)].bezierPoint1.y
                         };
                     }
-                    if (Point.isEmptyPoint(segments[j].point2) && !segments[j].vector2.angle && !segments[j].vector2.distance) {
+                    if (Point.isEmptyPoint(segments[parseInt(j.toString(), 10)].point2) && !segments[parseInt(j.toString(), 10)].vector2.angle && !segments[parseInt(j.toString(), 10)].vector2.distance) {
                         if ((connector.targetID || this.targetPortID) && this.targetWrapper && !isDrawing && !isrezise) {
                             direction = getDirection(this.targetWrapper.bounds, pts[j + 1], true);
                         }
-                        segments[j].bezierPoint2 = getBezierPoints(pts[j + 1], pts[j], direction);
-                    } else if (segments[j].vector2.angle || segments[j].vector2.distance) {
-                        segments[j].bezierPoint2 = Point.transform(pts[j + 1], segments[j].vector2.angle, segments[j].vector2.distance);
+                        segments[parseInt(j.toString(), 10)].bezierPoint2 = getBezierPoints(pts[j + 1], pts[parseInt(j.toString(), 10)], direction);
+                    } else if (segments[parseInt(j.toString(), 10)].vector2.angle || segments[parseInt(j.toString(), 10)].vector2.distance) {
+                        segments[parseInt(j.toString(), 10)].bezierPoint2 = Point.transform(pts[j + 1], segments[parseInt(j.toString(), 10)].vector2.angle, segments[parseInt(j.toString(), 10)].vector2.distance);
                     } else {
-                        segments[j].bezierPoint2 = {
-                            x: segments[j].point2.x || segments[j].bezierPoint2.x,
-                            y: segments[j].point2.y || segments[j].bezierPoint2.y
+                        segments[parseInt(j.toString(), 10)].bezierPoint2 = {
+                            x: segments[parseInt(j.toString(), 10)].point2.x || segments[parseInt(j.toString(), 10)].bezierPoint2.x,
+                            y: segments[parseInt(j.toString(), 10)].point2.y || segments[parseInt(j.toString(), 10)].bezierPoint2.y
                         };
                     }
                 }
@@ -2063,14 +2069,14 @@ export class Connector extends NodeBase implements IElement {
                 for (let j: number = 0; j < segments.length; j++) {
                     if (j === 0) { path = 'M' + pts[0].x + ' ' + pts[0].y; }
                     const lastPoint: string = (j === segments.length - 1) ? pts[pts.length - 1].x + ' ' + pts[pts.length - 1].y :
-                        segments[j].points[segments[j].points.length - 1].x + ' ' + segments[j].points[segments[j].points.length - 1].y;
+                        segments[parseInt(j.toString(), 10)].points[segments[parseInt(j.toString(), 10)].points.length - 1].x + ' ' + segments[parseInt(j.toString(), 10)].points[segments[parseInt(j.toString(), 10)].points.length - 1].y;
                     path += 'C' +
-                        segments[j].bezierPoint1.x + ' ' + segments[j].bezierPoint1.y + ' ' + segments[j].bezierPoint2.x + ' '
-                        + segments[j].bezierPoint2.y + ' ' + lastPoint;
+                        segments[parseInt(j.toString(), 10)].bezierPoint1.x + ' ' + segments[parseInt(j.toString(), 10)].bezierPoint1.y + ' ' + segments[parseInt(j.toString(), 10)].bezierPoint2.x + ' '
+                        + segments[parseInt(j.toString(), 10)].bezierPoint2.y + ' ' + lastPoint;
                 }
             } else {
                 for (let k: number = 0; k < pts.length; k++) {
-                    getPt = pts[k];
+                    getPt = pts[parseInt(k.toString(), 10)];
                     if (k === 0) { path = 'M' + getPt.x + ' ' + getPt.y; }
                     if (k > 0) {
                         path = this.bridgePath(connector, path, k);
@@ -2108,11 +2114,11 @@ export class Connector extends NodeBase implements IElement {
         const segmentOffset: number = 0.5; let angle: number; let pt: PointModel; let length: number = 0;
         const anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
         for (let i: number = 0; i < anglePoints.length - 1; i++) {
-            length = length + this.distance(anglePoints[i], anglePoints[i + 1]);
+            length = length + this.distance(anglePoints[parseInt(i.toString(), 10)], anglePoints[i + 1]);
             const offsetLength: number = length * segmentOffset;
             if (length >= offsetLength) {
-                angle = findAngle(anglePoints[i], anglePoints[i + 1]);
-                pt = Point.transform(anglePoints[i], angle, offsetLength);
+                angle = findAngle(anglePoints[parseInt(i.toString(), 10)], anglePoints[i + 1]);
+                pt = Point.transform(anglePoints[parseInt(i.toString(), 10)], angle, offsetLength);
             }
         }
         element.offsetX = pt.x;

@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { completeAction, refreshSheetTabs, refreshImagePosition, focus } from '../common/index';
+import { completeAction, refreshSheetTabs, refreshImagePosition } from '../common/index';
 import { skipHiddenIdx, deleteAction, InsertDeleteEventArgs, triggerDataChange, ActionEventArgs } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell, getCellIndexes } from '../../workbook/index';
 
@@ -151,7 +151,7 @@ export class Delete {
         return 'delete';
     }
     private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
-        const sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
         let cell: CellModel;
         const address: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
         for (let i: number = 0; i <= address[2]; i++) {

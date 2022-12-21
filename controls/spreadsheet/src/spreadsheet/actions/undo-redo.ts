@@ -1,10 +1,10 @@
-import { Spreadsheet, locale, deleteImage, createImageElement, positionAutoFillElement, showAggregate, paste, undoRedoForChartDesign, cut, copy, activeSheetChanged } from '../../spreadsheet/index';
+import { Spreadsheet, locale, deleteImage, createImageElement, positionAutoFillElement, showAggregate, paste, undoRedoForChartDesign, cut, copy } from '../../spreadsheet/index';
 import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction, BeforeActionDataInternal } from '../common/index';
-import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
+import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, isImported } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, cellValidation } from '../../workbook/index';
-import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, ValidationModel, getSwapRange } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation } from '../../workbook/index';
+import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange } from '../../workbook/index';
 import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
 import { sortComplete, ConditionalFormatModel, ApplyCFArgs } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
@@ -103,7 +103,8 @@ export class UndoRedo {
         args.beforeDetails = this.beforeActionData;
     }
 
-    private performUndoRedo(args: { isUndo: boolean, isPublic: boolean, preventEvt?: boolean, preventReSelect?: boolean, isFromUpdateAction?: boolean }): void {
+    private performUndoRedo(
+        args: { isUndo: boolean, isPublic: boolean, preventEvt?: boolean, preventReSelect?: boolean, isFromUpdateAction?: boolean }): void {
         let undoRedoArgs: CollaborativeEditArgs;
         if (args.isFromUpdateAction) {
             undoRedoArgs = args as unknown as CollaborativeEditArgs;
@@ -113,7 +114,7 @@ export class UndoRedo {
         this.isUndo = args.isUndo; let preventEvt: boolean;
         if (undoRedoArgs) {
             let actionArgs: ActionEventArgs;
-            const replaceArgs: { replaceValue?: string, value?: string } = {};
+            const replaceArgs: { replaceValue?: string, value?: string, skipFormatCheck?: boolean } = {};
             if (!args.isPublic) {
                 const actionData: BeforeActionData = undoRedoArgs.eventArgs.beforeActionData;
                 delete undoRedoArgs.eventArgs.beforeActionData;
@@ -169,6 +170,7 @@ export class UndoRedo {
                 if (args.isUndo) {
                     replaceArgs.value = (undoRedoArgs.eventArgs as unknown as { replaceValue: string}).replaceValue;
                     replaceArgs.replaceValue = undoRedoArgs.eventArgs.value;
+                    replaceArgs.skipFormatCheck = isImported(this.parent);
                 }
                 this.parent.notify(replaceAll, { ...undoRedoArgs.eventArgs, ...replaceArgs });
                 break;
@@ -186,7 +188,8 @@ export class UndoRedo {
                 updateAction(undoRedoArgs, this.parent, !args.isUndo);
                 break;
             case 'merge':
-                undoRedoArgs.eventArgs.merge = (undoRedoArgs as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction ? undoRedoArgs.eventArgs.merge : !undoRedoArgs.eventArgs.merge;
+                undoRedoArgs.eventArgs.merge = (undoRedoArgs as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction ?
+                    undoRedoArgs.eventArgs.merge : !undoRedoArgs.eventArgs.merge;
                 updateAction(undoRedoArgs, this.parent, false);
                 break;
             case 'clear':
@@ -250,23 +253,25 @@ export class UndoRedo {
         const range: number[] = getRangeIndexes(args.eventArgs.range);
         const updateSortIcon: Function = (idx: number, add: boolean): void => {
             if (sheetIndex === this.parent.activeSheetIndex) {
-                let td: Element = this.parent.getCell(range[0] - 1, this.parent.sortCollection[idx].columnIndex);
+                let td: Element = this.parent.getCell(range[0] - 1, this.parent.sortCollection[idx as number].columnIndex);
                 if (td) {
                     td = select('.e-filter-icon', td);
                     if (td) {
-                        add ? td.classList.add(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`) :
-                            td.classList.remove(`e-sort${this.parent.sortCollection[idx].order === 'Ascending' ? 'asc' : 'desc'}-filter`);
+                        add ? td.classList.add(`e-sort${this.parent.sortCollection[idx as number].order === 'Ascending' ? 'asc' : 'desc'}-filter`) :
+                            td.classList.remove(`e-sort${this.parent.sortCollection[idx as number].order === 'Ascending' ? 'asc' : 'desc'}-filter`);
                     }
                 }
             }
         };
         if (isUndo) {
-            this.parent.notify(updateSortedDataOnCell, { result: args.eventArgs.beforeActionData.cellDetails, range: range, sheet: getSheet(this.parent, sheetIndex),
-                 jsonData: (args.eventArgs.beforeActionData as BeforeActionDataInternal).sortedCellDetails, isUndo: true });
+            this.parent.notify(
+                updateSortedDataOnCell, { result: args.eventArgs.beforeActionData.cellDetails, range: range, sheet:
+                    getSheet(this.parent, sheetIndex), jsonData:
+                    (args.eventArgs.beforeActionData as BeforeActionDataInternal).sortedCellDetails, isUndo: true });
             this.parent.notify(sortComplete, { range: args.eventArgs.range });
             if (this.parent.sortCollection && args.eventArgs.previousSort) {
                 for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
-                    if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
+                    if (this.parent.sortCollection[i as number].sheetIndex === sheetIndex) {
                         updateSortIcon(i, false);
                         this.parent.sortCollection.splice(i, 1);
                         if (args.eventArgs.previousSort.order) {
@@ -285,7 +290,7 @@ export class UndoRedo {
                 let idx: number;
                 if (this.parent.sortCollection) {
                     for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
-                        if (this.parent.sortCollection[i].sheetIndex === sheetIndex) {
+                        if (this.parent.sortCollection[i as number].sheetIndex === sheetIndex) {
                             updateSortIcon(i, false);
                             idx = i; this.parent.sortCollection.splice(i, 1);
                             break;
@@ -433,7 +438,7 @@ export class UndoRedo {
                         updateAction(
                             { eventArgs: <UndoRedoEventArgs>{ range: cf.range, type: cf.type, cFColor: cf.cFColor, value: cf.value,
                                 sheetIdx: eventArgs.cfActionArgs.sheetIdx, cancel: true }, action: 'conditionalFormat' }, this.parent,
-                                false);
+                            false);
                     });
                 }
                 setMaxHgt(sheet, range[0], range[1], getRowHeight(sheet, range[0]));
@@ -711,67 +716,73 @@ export class UndoRedo {
         const cfRule: ConditionalFormatModel[] = []; let cfRefreshAll: boolean;
         let evtArgs: { [key: string]: string | boolean | number[] | number };
         for (let i: number = 0; i < len; i++) {
-            prevCell = getCell(cells[i].rowIndex, cells[i].colIndex, sheet, false, true);
+            prevCell = getCell(cells[i as number].rowIndex, cells[i as number].colIndex, sheet, false, true);
             if (prevCell.style && args && (args.action === 'format' || args.action === 'clipboard')) {
-                if (prevCell.style.borderTop && (!cells[i].style || !(cells[i].style as CellStyleModel).borderTop)) {
-                    this.parent.setBorder({ borderTop: '' }, sheet.name + '!' + getCellAddress(cells[i].rowIndex, cells[i].colIndex));
+                if (prevCell.style.borderTop && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).borderTop)) {
+                    this.parent.setBorder(
+                        { borderTop: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex));
                 }
-                if (prevCell.style.borderLeft && (!cells[i].style || !(cells[i].style as CellStyleModel).borderLeft)) {
-                    this.parent.setBorder({ borderLeft: '' }, sheet.name + '!' + getCellAddress(cells[i].rowIndex, cells[i].colIndex));
+                if (prevCell.style.borderLeft && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).borderLeft)) {
+                    this.parent.setBorder(
+                        { borderLeft: '' }, sheet.name + '!' + getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex));
                 }
-                if (prevCell.style.fontSize && (!cells[i].style || !(cells[i].style as CellStyleModel).fontSize)) {
+                if (prevCell.style.fontSize && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).fontSize)) {
                     prevCell.style.fontSize = '11pt'; select = true;
                     this.parent.notify(
-                        applyCellFormat, <CellFormatArgs>{ style: { fontSize: '11pt' }, rowIdx: cells[i].rowIndex, colIdx:
-                        cells[i].colIndex, lastCell: true, isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true });
+                        applyCellFormat, <CellFormatArgs>{ style: { fontSize: '11pt' }, rowIdx: cells[i as number].rowIndex, colIdx:
+                        cells[i as number].colIndex, lastCell: true, isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true });
                 }
-                if (prevCell.style.fontFamily && (!cells[i].style || !(cells[i].style as CellStyleModel).fontFamily)) {
+                if (prevCell.style.fontFamily && (!cells[i as number].style || !(cells[i as number].style as CellStyleModel).fontFamily)) {
                     select = true; prevCell.style.fontFamily = 'Calibri';
                     this.parent.notify(
-                        applyCellFormat, <CellFormatArgs>{ style: { fontFamily: 'Calibri' }, rowIdx: cells[i].rowIndex, colIdx:
-                        cells[i].colIndex, lastCell: true, isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true });
+                        applyCellFormat, <CellFormatArgs>{ style: { fontFamily: 'Calibri' }, rowIdx: cells[i as number].rowIndex, colIdx:
+                        cells[i as number].colIndex, lastCell: true, isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: true });
                 }
             }
-            setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
-                value: (cells[i].formula && cells[i].formula.toUpperCase().includes('UNIQUE')) ? null : cells[i].value, format: cells[i].format, isLocked: cells[i].isLocked,
-                style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
-                wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
-                colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink, validation: cells[i] && cells[i].validation
+            setCell(cells[i as number].rowIndex, cells[i as number].colIndex, sheet, {
+                value: (cells[i as number].formula && cells[i as number].formula.toUpperCase().includes('UNIQUE')) ? null :
+                    cells[i as number].value, format: cells[i as number].format, isLocked: cells[i as number].isLocked,
+                style: cells[i as number].style && Object.assign({}, cells[i as number].style), formula: cells[i as number].formula,
+                wrap: cells[i as number].wrap, rowSpan: cells[i as number].rowSpan, colSpan: cells[i as number].colSpan,
+                hyperlink: cells[i as number].hyperlink, validation: cells[i as number] && cells[i as number].validation
             });
-            evtArgs = { action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex, cells[i].colIndex],
-                value: cells[i].formula ? cells[i].formula : cells[i].value, sheetIndex: getSheetIndex(this.parent, sheet.name) };
+            evtArgs = { action: 'updateCellValue', address: [cells[i as number].rowIndex, cells[i as number].colIndex,
+                cells[i as number].rowIndex, cells[i as number].colIndex], value: cells[i as number].formula ? cells[i as number].formula :
+                cells[i as number].value, sheetIndex: getSheetIndex(this.parent, sheet.name), skipFormatCheck: isImported(this.parent) };
             this.parent.notify(workbookEditOperation, evtArgs);
             if (cf && !cfRefreshAll) {
                 cfRefreshAll = <boolean>evtArgs.isFormulaDependent;
             }
-            if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell.wrap && !cells[i].wrap)) {
+            if ((args && args.action === 'wrap' && args.eventArgs.wrap) || (prevCell.wrap && !cells[i as number].wrap)) {
                 this.parent.notify(wrapEvent, {
-                    range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
-                        cells[i].colIndex], wrap: false, sheet: sheet
+                    range: [cells[i as number].rowIndex, cells[i as number].colIndex, cells[i as number].rowIndex,
+                        cells[i as number].colIndex], wrap: false, sheet: sheet
                 });
             }
-            if (args && cells[i].hyperlink && args.action === 'clear') {
-                args.eventArgs.range = sheet.name + '!' + getRangeAddress([cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
-                    cells[i].colIndex]);
-                cellElem = this.parent.getCell(cells[i].rowIndex, cells[i].colIndex);
+            if (args && cells[i as number].hyperlink && args.action === 'clear') {
+                args.eventArgs.range = sheet.name + '!' + getRangeAddress(
+                    [cells[i as number].rowIndex, cells[i as number].colIndex, cells[i as number].rowIndex, cells[i as number].colIndex]);
+                cellElem = this.parent.getCell(cells[i as number].rowIndex, cells[i as number].colIndex);
                 if (args.eventArgs.type === 'Clear All' || args.eventArgs.type === 'Clear Hyperlinks') {
-                    this.parent.addHyperlink(cells[i].hyperlink, args.eventArgs.range, cells[i].value);
+                    this.parent.addHyperlink(cells[i as number].hyperlink, args.eventArgs.range, cells[i as number].value);
                 } else if (args.eventArgs.type === 'Clear Formats') {
                     addClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
                 }
             }
-            if (triggerEvt && cells[i].value !== prevCell.value) {
+            if (triggerEvt && cells[i as number].value !== prevCell.value) {
                 this.parent.trigger(
-                    'cellSave', { element: null, value: cells[i].value, oldValue: prevCell.value, formula: cells[i].formula, cancel: false,
-                        address: `${sheet.name}!${getCellAddress(cells[i].rowIndex, cells[i].colIndex)}`,
-                        displayText: this.parent.getDisplayText(cells[i]) });
+                    'cellSave', { element: null, value: cells[i as number].value, oldValue: prevCell.value, formula:
+                        cells[i as number].formula, cancel: false,
+                    address: `${sheet.name}!${getCellAddress(cells[i as number].rowIndex, cells[i as number].colIndex)}`,
+                    displayText: this.parent.getDisplayText(cells[i as number]) });
             }
             if (cf && !cfRefreshAll) {
-                updateCFModel(cf, cfRule, cells[i].rowIndex, cells[i].colIndex);
+                updateCFModel(cf, cfRule, cells[i as number].rowIndex, cells[i as number].colIndex);
             }
         }
         if (isRefresh) {
-            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, false, false, true);
+            this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+                range, false, false, true, false, isImported(this.parent));
             if (cfRule.length || cfRefreshAll) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
             }

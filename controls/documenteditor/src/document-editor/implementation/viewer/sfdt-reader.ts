@@ -4,7 +4,7 @@ import { WList } from '../list/list';
 import { WListLevel } from '../list/list-level';
 import { WAbstractList } from '../list/abstract-list';
 import { WLevelOverride } from '../list/level-override';
-import { WCharacterFormat, WListFormat, WParagraphFormat, WCellFormat, WTableFormat, WSectionFormat, WRowFormat } from '../format/index';
+import { WCharacterFormat, WListFormat, WParagraphFormat, WCellFormat, WTableFormat, WSectionFormat, WRowFormat, WColumnFormat } from '../format/index';
 import { WBorder, WBorders, WShading, WCharacterStyle, WParagraphStyle, WStyles, WStyle, WTabStop } from '../format/index';
 import { LayoutViewer, DocumentHelper } from './viewer';
 import {
@@ -635,7 +635,6 @@ export class SfdtReader {
     private parseTable(block: any, blocks: BlockWidget[], index: number, section: Widget): void {
         const table: TableWidget = new TableWidget();
         table.index = index;
-        table.tableFormat = new WTableFormat(table);
         if (!isNullOrUndefined(block.tableFormat)) {
             this.parseTableFormat(block.tableFormat, table.tableFormat);
         }
@@ -1890,6 +1889,7 @@ export class SfdtReader {
         }
     }
     public parseSectionFormat(data: any, sectionFormat: WSectionFormat): void {
+
         if (!isNullOrUndefined(data.pageWidth)) {
             sectionFormat.pageWidth = data.pageWidth;
         }
@@ -1949,6 +1949,36 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(data.pageNumberStyle)) {
             sectionFormat.pageNumberStyle = data.pageNumberStyle;
+        }
+        if (!isNullOrUndefined(data.columns) && !isNullOrUndefined(data.numberOfColumns) && data.numberOfColumns > 1) {
+            sectionFormat.numberOfColumns = data.numberOfColumns;
+            sectionFormat.equalWidth = data.equalWidth;
+            sectionFormat.lineBetweenColumns = data.lineBetweenColumns;
+            
+            if (data.columns) {
+                for (let i: number = 0; i < data.columns.length; i++) {
+                    let newCol: WColumnFormat = new WColumnFormat();
+                    newCol.width = HelperMethods.convertPointToPixel(data.columns[i].width as number);
+                    newCol.space = HelperMethods.convertPointToPixel(data.columns[i].space as number);
+                    newCol.index = i;
+                    sectionFormat.columns.push(newCol);
+                }
+            }
+        }
+        if (!isNullOrUndefined(data.breakCode)) {
+            sectionFormat.breakCode = data.breakCode;
+        }
+    }
+    private parseColumns(wCols: any, columns: WColumnFormat[]): void {
+        columns = [];
+        if (wCols) {
+            for (let i: number = 0; i < wCols.length; i++) {
+                let newCol: WColumnFormat = new WColumnFormat();
+                newCol.width = HelperMethods.convertPointToPixel(wCols[i].width as number);
+                newCol.space = HelperMethods.convertPointToPixel(wCols[i].space as number);
+                newCol.index = i;
+                columns.push(newCol);
+            }
         }
     }
 

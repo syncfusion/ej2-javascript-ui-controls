@@ -540,7 +540,7 @@ export class DropDownButtons {
             this.tableColumnsDropDown, this.tableCellVerticalAlignDropDown
         ];
         for (let i: number = 0; i < dropDownObj.length; i++) {
-            this.updateCss(dropDownObj[i], e);
+            this.updateCss(dropDownObj[i as number], e);
         }
     }
 

@@ -1206,6 +1206,9 @@ export class ImageResizer {
         }
         if (!isNullOrUndefined(this.imageResizerDivElement)) {
             this.imageResizerDivElement.innerHTML = '';
+            if (!isNullOrUndefined(this.imageResizerDivElement.parentElement)) {
+                this.imageResizerDivElement.parentElement.removeChild(this.imageResizerDivElement);
+            }
         }
         this.imageResizerDivElement = undefined;
         this.resizeContainerDiv = undefined;
@@ -1225,6 +1228,7 @@ export class ImageResizer {
         this.imageResizerPoints = undefined;
         //this.baseHistoryInfo = undefined;
         this.resizeMarkSizeIn = undefined;
+        this.currentPage = undefined;
         this.documentHelper = undefined;
         this.owner = undefined;
     }

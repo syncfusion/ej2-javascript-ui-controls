@@ -106,7 +106,7 @@ export class FilterMenuRenderer {
             columnName: column.field, columnType: column.type
         };
         const filterModel: string = 'filterModel';
-        args[filterModel] = this;
+        args[`${filterModel}`] = this;
         this.parent.trigger(events.actionBegin, args);
 
         const mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
@@ -145,7 +145,7 @@ export class FilterMenuRenderer {
             cssClass: this.parent.cssClass ? 'e-filter-popup' + ' ' + this.parent.cssClass : 'e-filter-popup'
         });
         const isStringTemplate: string = 'isStringTemplate';
-        this.dlgObj[isStringTemplate] = true;
+        this.dlgObj[`${isStringTemplate}`] = true;
         this.renderResponsiveDialog();
         this.dlgObj.appendTo(this.dlgDiv);
     }
@@ -198,7 +198,7 @@ export class FilterMenuRenderer {
             columnName: column.field, columnType: column.type
         };
         const filterModel: string = 'filterModel';
-        args[filterModel] = this;
+        args[`${filterModel}`] = this;
         this.isDialogOpen = true;
         if (!this.isMenuCheck) {
             this.parent.trigger(events.actionComplete, args);
@@ -226,13 +226,13 @@ export class FilterMenuRenderer {
         if (column.filterTemplate) {
             const fltrData: Object = {};
             const valueInString: string = 'value';
-            fltrData[column.field] = fltrData[valueInString] = (<{ values: Object }>fObj).values[column.field];
+            fltrData[column.field] = fltrData[`${valueInString}`] = (<{ values: Object }>fObj).values[column.field];
             if (column.foreignKeyValue) {
                 fltrData[column.foreignKeyValue] = (<{ values: Object }>fObj).values[column.field];
                 fltrData[column.field] = undefined;
             }
             const col: string = 'column';
-            fltrData[col] = column;
+            fltrData[`${col}`] = column;
             const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;

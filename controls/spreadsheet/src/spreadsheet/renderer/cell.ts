@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell } from '../common/index';
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
-import { removeAllChildren } from '../common/index';
+import { removeAllChildren, isImported } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol} from '../../workbook/base/index';
@@ -36,17 +36,25 @@ export class CellRenderer implements ICellRenderer {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (isHiddenCol(sheet, index + 1)) { headerCell.classList.add('e-hide-start'); }
         if (index !== 0 && isHiddenCol(sheet, index - 1)) { headerCell.classList.add('e-hide-end'); }
-        refChild ? row.insertBefore(headerCell, refChild) : row.appendChild(headerCell);
+        if (refChild) {
+            row.insertBefore(headerCell, refChild);
+        } else {
+            row.appendChild(headerCell);
+        }
         this.parent.trigger(
             'beforeCellRender', <CellRenderEventArgs>{ cell: null, element: headerCell, address: headerText, colIndex: index });
-        attributes(headerCell, { 'role': 'columnheader', 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
+        attributes(headerCell, { 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
     }
     public renderRowHeader(index: number, row: Element, refChild?: Element): void {
         const headerCell: Element = this.element.cloneNode() as Element;
         addClass([headerCell], 'e-header-cell');
         attributes(headerCell, { 'role': 'rowheader', 'tabindex': '-1' });
         headerCell.innerHTML = (index + 1).toString();
-        refChild ? row.insertBefore(headerCell, refChild) : row.appendChild(headerCell);
+        if (refChild) {
+            row.insertBefore(headerCell, refChild);
+        } else {
+            row.appendChild(headerCell);
+        }
         this.parent.trigger(
             'beforeCellRender', <CellRenderEventArgs>{ cell: null, element: headerCell, address: `${index + 1}`, rowIndex: index });
     }
@@ -54,12 +62,17 @@ export class CellRenderer implements ICellRenderer {
         const sheet: SheetModel = this.parent.getActiveSheet();
         args.td = this.element.cloneNode() as HTMLTableCellElement;
         args.td.className = 'e-cell';
-        attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        attributes(args.td, { 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
         if (this.checkMerged(args)) {
-            args.refChild ? args.row.insertBefore(args.td, args.refChild) : args.row.appendChild(args.td);
+            if (args.refChild) {
+                args.row.insertBefore(args.td, args.refChild);
+            } else {
+                args.row.appendChild(args.td);
+            }
             return args.td;
         }
         args.isRefresh = false;
+        args.skipFormatCheck = isImported(this.parent);
         this.update(args);
         if (args.checkCF && args.cell && sheet.conditionalFormats && sheet.conditionalFormats.length) {
             this.parent.notify(
@@ -68,7 +81,11 @@ export class CellRenderer implements ICellRenderer {
         if (!args.td.classList.contains('e-cell-template')) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
-        args.refChild ? args.row.insertBefore(args.td, args.refChild) : args.row.appendChild(args.td);
+        if (args.refChild) {
+            args.row.insertBefore(args.td, args.refChild);
+        } else {
+            args.row.appendChild(args.td);
+        }
         const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address, rowIndex: args.rowIdx, colIndex:
             args.colIdx, needHeightCheck: false, row: args.row };
         this.parent.trigger('beforeCellRender', evtArgs);
@@ -142,7 +159,7 @@ export class CellRenderer implements ICellRenderer {
         const formatArgs: { [key: string]: string | boolean | number | CellModel | HTMLElement } = { value: args.cell && args.cell.value,
             type: args.cell && getTypeFromFormat(args.cell.format), format: args.cell && args.cell.format,
             formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell, rowIndex: args.rowIdx,
-            colIndex: args.colIdx, isRowFill: false, td: args.td };
+            colIndex: args.colIdx, isRowFill: false, td: args.td, skipFormatCheck: args.skipFormatCheck };
         if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
         attributes(args.td, { 'aria-label': (formatArgs.formattedText ? formatArgs.formattedText + ' ' : '') + args.address });
         this.parent.refreshNode(
@@ -157,7 +174,9 @@ export class CellRenderer implements ICellRenderer {
                 } else { style = args.cell.style; }
             }
             if (args.cell.chart && args.cell.chart.length > 0) {
-                this.parent.notify(setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx), isUndoRedo: false});
+                this.parent.notify(
+                    setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx),
+                        isUndoRedo: false });
             }
             if (args.cell.hyperlink) {
                 this.parent.notify(
@@ -179,12 +198,12 @@ export class CellRenderer implements ICellRenderer {
             }
             if (args.cell.image) {
                 for (let i: number = 0; i < args.cell.image.length; i++) {
-                    if (args.cell.image[i]) {
+                    if (args.cell.image[i as number]) {
                         this.parent.notify(createImageElement, {
                             options: {
-                                src: args.cell.image[i].src, imageId: args.cell.image[i].id,
-                                height: args.cell.image[i].height, width: args.cell.image[i].width,
-                                top: args.cell.image[i].top, left: args.cell.image[i].left
+                                src: args.cell.image[i as number].src, imageId: args.cell.image[i as number].id,
+                                height: args.cell.image[i as number].height, width: args.cell.image[i as number].width,
+                                top: args.cell.image[i as number].top, left: args.cell.image[i as number].left
                             },
                             range: getRangeAddress([args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]), isPublic: false
                         });
@@ -251,7 +270,7 @@ export class CellRenderer implements ICellRenderer {
         }
         const isFormula: boolean = checkIsFormula(args.cell.formula);
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
-            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing };
+            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing, isDependentRefresh: args.isDependentRefresh };
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
@@ -467,14 +486,14 @@ export class CellRenderer implements ICellRenderer {
         const ranges: RangeModel[] = sheet.ranges;
         let range: number[];
         for (let j: number = 0, len: number = ranges.length; j < len; j++) {
-            if (ranges[j].template) {
-                range = getRangeIndexes(ranges[j].address.length ? ranges[j].address : ranges[j].startCell);
+            if (ranges[j as number].template) {
+                range = getRangeIndexes(ranges[j as number].address.length ? ranges[j as number].address : ranges[j as number].startCell);
                 if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                     if (cell) {
-                        return this.compileCellTemplate(ranges[j].template, cell);
+                        return this.compileCellTemplate(ranges[j as number].template, cell);
                     } else {
                         if (!getCell(rowIdx, colIdx, sheet, true)) {
-                            return this.compileCellTemplate(ranges[j].template, getCell(rowIdx, colIdx, sheet, null, true));
+                            return this.compileCellTemplate(ranges[j as number].template, getCell(rowIdx, colIdx, sheet, null, true));
                         }
                     }
                 }
@@ -556,9 +575,12 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} checkWrap - Specifies the range.
      * @param {boolean} checkHeight - Specifies the checkHeight.
      * @param {boolean} checkCF - Specifies the check for conditional format.
+     * @param {boolean} skipFormatCheck - Specifies whether to skip the format checking while applying the number format.
      * @returns {void}
      */
-    public refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean): void {
+    public refreshRange(
+        range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
+        skipFormatCheck?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
@@ -570,7 +592,7 @@ export class CellRenderer implements ICellRenderer {
                     if (cell) {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
                             cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '', onActionUpdate:
-                            checkHeight };
+                            checkHeight, skipFormatCheck: skipFormatCheck };
                         this.update(args);
                         if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
                             this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [i, j], isAction: true });
@@ -585,7 +607,9 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    public refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean): void {
+    public refresh(
+        rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
+        skipFormatCheck?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) {
             return;
@@ -596,7 +620,7 @@ export class CellRenderer implements ICellRenderer {
                 return;
             }
             const args: CellRenderArgs = { rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(rowIdx, colIdx, sheet), isRefresh: true,
-                lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '' };
+                lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '', skipFormatCheck: skipFormatCheck };
             this.update(args);
             if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], isAction: true });
@@ -643,7 +667,7 @@ export class CellRenderer implements ICellRenderer {
     }
 
     /**
-     * Removes the added event handlers and clears the internal properties of CellRenderer module. 
+     * Removes the added event handlers and clears the internal properties of CellRenderer module.
      *
      * @returns {void}
      */

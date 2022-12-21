@@ -70,10 +70,10 @@ export class L10n {
      */
     public getConstant(prop: string): string {
         // Removed conditional operator because this method does not return correct value when passing 0 as value in localization
-        if (!isNullOrUndefined(this.currentLocale[prop])) {
-            return this.currentLocale[prop];
+        if (!isNullOrUndefined(this.currentLocale[`${prop}`])) {
+            return this.currentLocale[`${prop}`];
         } else {
-            return this.localeStrings[prop] || '';
+            return this.localeStrings[`${prop}`] || '';
         }
     }
 
@@ -86,8 +86,8 @@ export class L10n {
      */
 
     private intGetControlConstant(curObject: Object, locale: string): Object {
-        if ((curObject)[locale]) {
-            return (curObject)[locale][this.controlName];
+        if ((curObject)[`${locale}`]) {
+            return (curObject)[`${locale}`][this.controlName];
         }
         return null;
     }

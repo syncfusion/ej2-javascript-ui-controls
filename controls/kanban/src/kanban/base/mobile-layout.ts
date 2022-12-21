@@ -53,7 +53,7 @@ export class MobileLayout {
             },
             nodeTemplate: this.parent.swimlaneSettings.template,
             nodeClicked: this.treeSwimlaneClick.bind(this),
-            drawNode: this.drawNode.bind(this),
+            drawNode: this.drawNode.bind(this)
         });
         this.treeViewObj.appendTo(swimlaneTree);
         const popupObj: PopupModel = {
@@ -101,6 +101,7 @@ export class MobileLayout {
     }
 
     private drawNode(args: DrawNodeEventArgs): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (this.parent.swimlaneSettings.template && (this as any).parent.isReact) {
             const templateId: string = this.parent.element.id + '_treeviewTemplate';
             const treeViewTemplate: HTMLElement[] = this.parent.templateParser(

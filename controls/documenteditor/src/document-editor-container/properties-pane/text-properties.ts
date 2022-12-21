@@ -374,6 +374,8 @@ export class Text {
         });
         btn.appendTo(button);
         button.setAttribute('title', this.localObj.getConstant(toolTipText));
+        button.setAttribute('aria-label', this.localObj.getConstant(toolTipText));
+        button.setAttribute('aria-pressed', 'false');
         switch (toolTipText) {
             case 'Bold Tooltip':
                 this.boldBtn = btn;
@@ -621,59 +623,71 @@ export class Text {
             if (this.documentEditor.selection.characterFormat.bold) {
                 if (!this.bold.classList.contains('e-btn-toggle')) {
                     this.bold.classList.add('e-btn-toggle');
+                    this.bold.setAttribute('aria-pressed', 'true');
                 }
             } else {
                 if (this.bold.classList.contains('e-btn-toggle')) {
                     this.bold.classList.remove('e-btn-toggle');
+                    this.bold.setAttribute('aria-pressed', 'false');
                 }
             }
             if (this.documentEditor.selection.characterFormat.italic) {
                 if (!this.italic.classList.contains('e-btn-toggle')) {
                     this.italic.classList.add('e-btn-toggle');
+                    this.italic.setAttribute('aria-pressed', 'true');
                 }
             } else {
                 if (this.italic.classList.contains('e-btn-toggle')) {
                     this.italic.classList.remove('e-btn-toggle');
+                    this.italic.setAttribute('aria-pressed', 'false');
                 }
             }
             if (this.documentEditor.selection.characterFormat.underline
                 && this.documentEditor.selection.characterFormat.underline !== 'None') {
                 if (!this.underline.classList.contains('e-btn-toggle')) {
                     this.underline.classList.add('e-btn-toggle');
+                    this.underline.setAttribute('aria-pressed', 'true');
                 }
             } else {
                 if (this.underline.classList.contains('e-btn-toggle')) {
                     this.underline.classList.remove('e-btn-toggle');
+                    this.underline.setAttribute('aria-pressed', 'false');
                 }
             }
             if (this.documentEditor.selection.characterFormat.strikethrough
                 && this.documentEditor.selection.characterFormat.strikethrough !== 'None') {
                 if (!this.strikethrough.classList.contains('e-btn-toggle')) {
                     this.strikethrough.classList.add('e-btn-toggle');
+                    this.strikethrough.setAttribute('aria-pressed', 'true');
                 }
             } else {
                 if (this.strikethrough.classList.contains('e-btn-toggle')) {
                     this.strikethrough.classList.remove('e-btn-toggle');
+                    this.strikethrough.setAttribute('aria-pressed', 'false');
                 }
             }
             if (this.documentEditor.selection.characterFormat.baselineAlignment
                 && this.documentEditor.selection.characterFormat.baselineAlignment === 'Subscript') {
                 if (!this.subscript.classList.contains('e-btn-toggle')) {
                     this.subscript.classList.add('e-btn-toggle');
+                    this.subscript.setAttribute('aria-pressed', 'true');
                 }
             } else {
                 if (this.subscript.classList.contains('e-btn-toggle')) {
                     this.subscript.classList.remove('e-btn-toggle');
+                    this.subscript.setAttribute('aria-pressed', 'false');
                 }
             }
             if (this.documentEditor.selection.characterFormat.baselineAlignment
                 && this.documentEditor.selection.characterFormat.baselineAlignment === 'Superscript') {
                 if (!this.superscript.classList.contains('e-btn-toggle')) {
                     this.superscript.classList.add('e-btn-toggle');
+                    this.superscript.setAttribute('aria-pressed', 'true');
                 }
             } else {
                 if (this.superscript.classList.contains('e-btn-toggle')) {
                     this.superscript.classList.remove('e-btn-toggle');
+                    this.superscript.setAttribute('aria-pressed', 'false');
                 }
             }
             if (this.documentEditor.selection.characterFormat.fontColor) {

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
-import { Pointer, VisibleRangeModel, Axis, NeedleTail, Cap } from './axis';
+import { Pointer, Axis, NeedleTail, Cap } from './axis';
 import { stringToNumber, textElement, appendPath, getAngleFromValue, getLocationFromAngle, getRoundedPathArc, calculateShapes, PathOption, Size, GaugeLocation, TextOption } from '../utils/helper-common';
 import { linear, getCompleteArc } from '../utils/helper-pointer-renderer';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -21,7 +21,6 @@ export class PointerRenderer {
      * @param {CircularGauge} gauge - Specifies the instance of the gauge.
      * @private.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: CircularGauge) {
         this.gauge = gauge;
     }
@@ -43,7 +42,6 @@ export class PointerRenderer {
             id: gauge.element.id + '_Axis_Pointers_' + axisIndex
         });
         let childElement: Element;
-        let range: VisibleRangeModel;
         if (this.gauge.allowComponentRender) {
             axis.pointers.map((pointer: Pointer, pointerIndex: number) => {
                 if (!isNullOrUndefined(pointer.offset) && (<string>pointer.offset).length > 0) {
@@ -51,7 +49,6 @@ export class PointerRenderer {
                 } else {
                     pointer.currentDistanceFromScale = <number>pointer.offset;
                 }
-                range = axis.visibleRange;
                 pointer.pathElement = [];
                 this.calculatePointerRadius(axis, pointer);
                 childElement = gauge.renderer.createGroup({
@@ -129,7 +126,7 @@ export class PointerRenderer {
      * @returns {void}
      */
     private drawNeedlePointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
-        const pointer: Pointer = <Pointer>axis.pointers[index];
+        const pointer: Pointer = <Pointer>axis.pointers[index as number];
         const needle: NeedleTail = <NeedleTail>pointer.needleTail;
         const cap: Cap = <Cap>pointer.cap;
         let pointerRadius: number;
@@ -234,6 +231,12 @@ export class PointerRenderer {
         const checkMinValue: boolean = value === axis.visibleRange.min && pointer.type === 'RangeBar';
         const location: GaugeLocation = this.gauge.midPoint;
         const isClockWise: boolean = axis.direction === 'ClockWise';
+        let radius: number = pointer.roundedCornerRadius;
+        let minRadius: number = (radius * 0.25);
+        if (radius > 0 && radius <= 5) {
+            radius = 6;
+            minRadius = (radius * 0.25);
+        }
         let startAngle: number = getAngleFromValue(
             axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, isClockWise
@@ -243,16 +246,20 @@ export class PointerRenderer {
             axis.startAngle, axis.endAngle, isClockWise
         );
         if (isClockWise) {
-            endAngle = startAngle === endAngle && !checkMinValue ? endAngle + 1 : endAngle;
+            if (startAngle > endAngle) {
+                endAngle = Math.round(startAngle) === Math.round(endAngle) && !checkMinValue ?
+                    Math.round(endAngle) - (pointer.roundedCornerRadius > 0 ? 1.5 : 0.5) : Math.round(endAngle);
+            }
+            else {
+                endAngle = startAngle === endAngle && !checkMinValue ? endAngle + 1 : endAngle;
+            }
         } else {
-            endAngle = startAngle === endAngle && !checkMinValue ? [startAngle, startAngle = endAngle - 1][0]
+            endAngle = Math.round(startAngle) === Math.round(endAngle) && !checkMinValue ?
+                [startAngle, startAngle = (endAngle > startAngle ? endAngle + (pointer.roundedCornerRadius > 0 ? 1.5 : 0.5) : endAngle - 1)][0]
                 : [startAngle, startAngle = endAngle][0];
         }
-        let radius: number = pointer.roundedCornerRadius;
-        let minRadius: number = (radius * 0.25);
-        if (value <= minRadius) {
-            // eslint-disable-next-line no-constant-condition
-            radius = value === 1 || 2 ? 8 : radius;
+        if (value <= (axis.visibleRange.min + axis.visibleRange.interval) && pointer.roundedCornerRadius) {
+            radius = value === axis.visibleRange.min || (axis.visibleRange.min + 1) ? 8 : radius;
             radius /= 2;
             minRadius = radius * 0.25;
         }
@@ -260,21 +267,23 @@ export class PointerRenderer {
             (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
         const oldEndValue: number = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((endAngle * Math.PI) / 180) +
                 (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        let roundStartAngle: number = ((((pointer.currentRadius) * ((startAngle * Math.PI) / 180) +
-                radius) / (pointer.currentRadius)) * 180) / Math.PI;
-        let roundEndAngle: number = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
-                radius) / (pointer.currentRadius)) * 180) / Math.PI;
-        if (roundStartAngle > roundEndAngle && (roundStartAngle - roundEndAngle) <= radius && pointer.type === 'RangeBar') {
+        const angleValue: number = value === axis.maximum && (axis.startAngle === axis.endAngle ||
+            Math.abs(axis.startAngle - axis.endAngle) === 360) && pointer.type === 'RangeBar' ? 45 : 180;
+        let roundStartAngle: number = ((((pointer.currentRadius) * ((startAngle * Math.PI) / angleValue) +
+                radius) / (pointer.currentRadius)) * angleValue) / Math.PI;
+        let roundEndAngle: number = ((((pointer.currentRadius) * ((endAngle * Math.PI) / angleValue) -
+                radius) / (pointer.currentRadius)) * angleValue) / Math.PI;
+        if (roundStartAngle > roundEndAngle && (roundStartAngle - roundEndAngle) <= 36 && pointer.type === 'RangeBar') {
             roundStartAngle = startAngle;
             roundEndAngle = endAngle;
         }
         if (isNullOrUndefined(pointer.currentRadius)) {
             this.calculatePointerRadius(axis, pointer);
         }
-        
+
         pointer.pathElement.map((element: Element) => {
             if (pointer.type === 'RangeBar') {
-                if (pointer.roundedCornerRadius && value && !checkMinValue) {
+                if (radius && !checkMinValue) {
                     element.setAttribute('d', getRoundedPathArc(
                         location, Math.floor(roundStartAngle), Math.ceil(roundEndAngle), oldStartValue, oldEndValue,
                         pointer.currentRadius, pointer.pointerWidth, pointer.pointerWidth
@@ -308,11 +317,11 @@ export class PointerRenderer {
      * @param {Axis} axis - Specifies the axis.
      * @param {Pointer} pointer - Specifies the pointer.
      * @param {number} value - Specifies the value.
-     * @param {Element} Specifies the text element.
+     * @param {Element} element - Specifies the text element.
      * @returns {void}
      * @private
      */
-     public calculateTextElement(axis: Axis, pointer: Pointer, value: number, element: Element): void {
+    public calculateTextElement(axis: Axis, pointer: Pointer, value: number, element: Element): void {
         const textangle: number = getAngleFromValue(value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
         const textlocation: GaugeLocation = getLocationFromAngle( textangle, pointer.currentRadius, this.gauge.midPoint);
         element.setAttribute(
@@ -320,7 +329,7 @@ export class PointerRenderer {
         );
         element.setAttribute('x', String(textlocation.x));
         element.setAttribute('y', String(textlocation.y));
-     }
+    }
 
     /**
      * Method to render the marker pointer of the ciruclar gauge.
@@ -333,7 +342,7 @@ export class PointerRenderer {
      * @returns {void}
      */
     private drawMarkerPointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
-        const pointer: Pointer = <Pointer>axis.pointers[index];
+        const pointer: Pointer = <Pointer>axis.pointers[index as number];
         const min: number = axis.visibleRange.min;
         const max: number = axis.visibleRange.max;
         let gradientMarkerColor: string;
@@ -353,15 +362,14 @@ export class PointerRenderer {
             gauge.midPoint
         );
         if (pointer.markerShape === 'Text') {
-            let style: FontModel = {
+            const style: FontModel = {
                 size: pointer.textStyle.size,
-                color: pointer.textStyle.color,
+                color: pointer.textStyle.color || this.gauge.themeStyle.pointerColor,
                 fontFamily: pointer.textStyle.fontFamily,
                 fontStyle: pointer.textStyle.fontStyle,
                 fontWeight: pointer.textStyle.fontWeight,
                 opacity: pointer.textStyle.opacity
             };
-            style.color = style.color || this.gauge.themeStyle.pointerColor;
             const textOption: TextOption =
                 new TextOption(
                     gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, location.x, location.y, 'middle',
@@ -369,7 +377,7 @@ export class PointerRenderer {
                     (location.x) + ',' + location.y + ')',
                     'auto');
             const textObject: Element = textElement(textOption, style, style.color, parentElement, 'pointer-events : auto; ');
-            textObject['style']['visibility'] = (pointer.animation.enable && (!this.gauge.isPropertyChange || pointer.isPointerAnimation) && this.gauge.animatePointer) ? 'hidden' : 'visible';
+            (textObject as HTMLElement).style.visibility = (pointer.animation.enable && (!this.gauge.isPropertyChange || pointer.isPointerAnimation) && this.gauge.animatePointer) ? 'hidden' : 'visible';
             pointer.pathElement.push(textObject);
         } else {
             pointer.pathElement.push(appendPath(
@@ -400,7 +408,7 @@ export class PointerRenderer {
      * @returns {void}
      */
     private drawRangeBarPointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
-        const pointer: Pointer = <Pointer>axis.pointers[index];
+        const pointer: Pointer = <Pointer>axis.pointers[index as number];
         let gradientBarColor: string;
         if (gauge.gradientModule) {
             gradientBarColor = gauge.gradientModule.getGradientColorString(pointer);
@@ -419,6 +427,7 @@ export class PointerRenderer {
     /**
      * Method to perform the animation of the pointer in circular gauge.
      *
+     * @param {Element} pointerElement - specifies the pointer element.
      * @param {Pointer} pointer - Specifies the pointer.
      * @param {Axis} axis - Specifies the axis.
      * @returns {void}
@@ -426,22 +435,17 @@ export class PointerRenderer {
     private doPointerAnimation(pointerElement: Element, pointer: Pointer, axis: Axis): void {
         const startValue: number = !isNullOrUndefined(pointer.previousValue) ? pointer.previousValue : axis.visibleRange.min;
         const endValue: number = pointer.currentValue;
-        if (pointer.animation.enable && startValue !== endValue && this.gauge.animatePointer) {            
+        if (pointer.animation.enable && startValue !== endValue && this.gauge.animatePointer) {
             pointer.pathElement.map((element: Element) => {
                 if (pointer.type === 'RangeBar') {
-                    this.performRangeBarAnimation(
-                        element as HTMLElement, startValue, endValue, axis, pointer,
-                        pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)
-                    );
+                    this.performRangeBarAnimation(element as HTMLElement, startValue, endValue, axis, pointer);
                 } else {
                     if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
                         this.performTextAnimation(pointerElement as HTMLElement, startValue, endValue, axis, pointer);
                     }
                     else {
                         this.performNeedleAnimation(
-                            element as HTMLElement, startValue, endValue, axis, pointer,
-                            pointer.currentRadius, (pointer.currentRadius - pointer.pointerWidth)
-                        );
+                            element as HTMLElement, startValue, endValue, axis, pointer);
                     }
                 }
             });
@@ -449,6 +453,12 @@ export class PointerRenderer {
     }
 
     /**
+     * @param {HTMLElement} element - specifies the element.
+     * @param {number} start - specifies the start.
+     * @param {number} end - specifies the end.
+     * @param {Axis} axis - specifies the axis.
+     * @param {Pointer} pointer - specfies the pointer.
+     * @returns {void}
      * @private
      */
     public performTextAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
@@ -460,7 +470,7 @@ export class PointerRenderer {
         start = typeof(start) === 'string' ? parseInt(start, 10) : start;
         end = typeof(end) === 'string' ? parseInt(end, 10) : end;
         element = !isNullOrUndefined(element.children[0]) ? element.children[0] as HTMLElement : element;
-        let val: number = Math.abs(start - end);
+        const val: number = Math.abs(start - end);
         new Animation({}).animate(element, {
             duration: pointer.animation.duration,
             progress: (args: AnimationOptions): void => {
@@ -474,10 +484,10 @@ export class PointerRenderer {
                     );
                     element.setAttribute('x', String(textlocation.x));
                     element.setAttribute('y', String(textlocation.y));
-                    element['style']['visibility'] = 'visible';
+                    element.style.visibility = 'visible';
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 this.setPointerValue(axis, pointer, end);
                 pointer.isPointerAnimation = false;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
@@ -492,16 +502,12 @@ export class PointerRenderer {
      * @param {number} start - Specifies the start
      * @param {number} end - Specifies the end
      * @param {Axis} axis - Specifies the axis
-     * @param {Pointer} pointer - Specifies the pointer
-     * @param {number} radius - Specifies the radius
-     * @param {number} innerRadius - Specifies the innerRadius
+     * @param {Pointer} pointer - Specifies the pointer.
      * @returns {void}
      * @private
      */
     public performNeedleAnimation(
-        element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer, radius?: number,
-        innerRadius?: number
-    ): void {
+        element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
         const isClockWise: boolean = axis.direction === 'ClockWise';
         start = typeof(start) === 'string' ? parseInt(start, 10) : start;
         end = typeof(end) === 'string' ? parseInt(end, 10) : end;
@@ -529,7 +535,7 @@ export class PointerRenderer {
                     );
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 this.setPointerValue(axis, pointer, end);
                 pointer.isPointerAnimation = false;
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
@@ -547,83 +553,23 @@ export class PointerRenderer {
      * @param {number} end - Specifies the end.
      * @param {Axis} axis - Specifies the axis.
      * @param {Pointer} pointer - Specifies the pointer.
-     * @param {number} radius - Specifies the radius.
-     * @param {number} innerRadius - Specifies the innerRadius.
      * @returns {void}
      * @private
      */
-    public performRangeBarAnimation(
-        element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer, radius: number, innerRadius?: number): void {
-        const isClockWise: boolean = axis.direction === 'ClockWise';
+    public performRangeBarAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
         start = typeof(start) === 'string' ? parseInt(start, 10) : start;
         end = typeof(end) === 'string' ? parseInt(end, 10) : end;
-        const startAngle: number = getAngleFromValue(
-            start, axis.visibleRange.max, axis.visibleRange.min,
-            axis.startAngle, axis.endAngle, isClockWise
-        );
-        let minAngle: number = getAngleFromValue(
-            axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.min,
-            axis.startAngle, axis.endAngle, isClockWise
-        );
-        let pointAngle: number = getAngleFromValue(
-            end, axis.visibleRange.max, axis.visibleRange.min,
-            axis.startAngle, axis.endAngle, isClockWise
-        );
-        const roundRadius: number = typeof(pointer.roundedCornerRadius) === 'string' ? parseInt(pointer.roundedCornerRadius, 10) : pointer.roundedCornerRadius;
-        let sweepAngle: number;
-        let endAngle: number;
-        let oldStart: number;
-        const minRadius: number = (radius * 0.25);
-        if (roundRadius) {
-            minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
-                roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
-            pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -
-                roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
-            oldStart = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
-                (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
-        }
-        // eslint-disable-next-line prefer-const
-        endAngle = startAngle > pointAngle ? (pointAngle + 360) : pointAngle;
+        let pointerValue: number;
+        let timeStamp: number;
+        const val: number = Math.abs(start - end);
         new Animation({}).animate(element, {
             duration: pointer.animation.duration,
             progress: (arg: AnimationOptions): void => {
-                element.style.animation = 'None';
-                sweepAngle = (start < end || Math.round(startAngle) === Math.round(endAngle)) ?
-                    isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
-                    isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
-                if (isClockWise) {
-                    if (!roundRadius) {
-                        element.setAttribute('d', getCompleteArc(
-                            this.gauge.midPoint, minAngle,
-                            linear(arg.timeStamp, startAngle, sweepAngle, arg.duration) + 0.0001, radius, innerRadius)
-                        );
-                    } else {
-                        element.setAttribute('d', getRoundedPathArc(
-                            this.gauge.midPoint, Math.floor(minAngle),
-                            linear(arg.timeStamp, Math.floor(minAngle), sweepAngle, arg.duration) + 0.0001, oldStart,
-                            linear(arg.timeStamp, Math.floor(minAngle + (roundRadius / 2)), sweepAngle, arg.duration) + 0.0001,
-                            radius, pointer.pointerWidth, pointer.pointerWidth
-                        ));
-                    }
-                } else {
-                    if (!roundRadius) {
-                        element.setAttribute('d', getCompleteArc(
-                            this.gauge.midPoint, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration),
-                            minAngle + 0.0001, radius, innerRadius)
-                        );
-                    } else {
-                        sweepAngle += roundRadius;
-                        element.setAttribute('d', getRoundedPathArc(
-                            this.gauge.midPoint,
-                            linear(arg.timeStamp, Math.floor(oldStart), sweepAngle, arg.duration),
-                            Math.floor(oldStart) + 0.0001,
-                            linear(arg.timeStamp, Math.floor(minAngle - roundRadius - (roundRadius / 2)), sweepAngle, arg.duration),
-                            Math.floor(oldStart + (roundRadius / 2)) + 0.0001, radius, pointer.pointerWidth, pointer.pointerWidth
-                        ));
-                    }
-                }
+                timeStamp = (arg.timeStamp / arg.duration);
+                pointerValue = end > start ? start + (timeStamp * val) : start - (timeStamp * val);
+                this.setPointerValue(axis, pointer, pointerValue);
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 this.setPointerValue(axis, pointer, end);
                 pointer.isPointerAnimation = false;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
@@ -635,7 +581,7 @@ export class PointerRenderer {
      * @returns {void}
      * @private
      */
-     public destroy(): void {
+    public destroy(): void {
         this.gauge = null;
     }
 }

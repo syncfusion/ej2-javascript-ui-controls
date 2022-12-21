@@ -156,7 +156,7 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
      */
 
     private static delayAnimation(model: AnimationModel): void {
-        if(animationMode === 'Disable'){
+        if (animationMode === 'Disable') {
             if (model.begin) {
                 model.begin.call(this, model);
             }
@@ -320,7 +320,9 @@ export interface AnimationOptions extends AnimationModel {
 export function rippleEffect(element: HTMLElement, rippleOptions?: RippleOptions, done?: Function): () => void {
     const rippleModel: RippleOptions = getRippleModel(rippleOptions);
     if (rippleModel.rippleFlag === false || (rippleModel.rippleFlag === undefined && !isRippleEnabled)) {
-        return (() => {});
+        return (() => {
+            // do nothing.
+        });
     }
     element.setAttribute('data-ripple', 'true');
     EventHandler.add(element, 'mousedown', rippleHandler, { parent: element, rippleOptions: rippleModel });
@@ -508,13 +510,17 @@ export function enableRipple(isRipple: boolean): boolean {
 
 /**
  * Defines the Modes of Global animation.
+ *
  * @private
  */
- export let animationMode: string = '';
+export let animationMode: string = '';
 
- /**
-  * Method for set the Global animation modes for Syncfusion Blazor components.
-  */
- export function setGlobalAnimation(value: string): void {
-     animationMode = value;
+/**
+ * Method for set the Global animation modes for Syncfusion Blazor components.
+ *
+ * @param {string} value - Specifies the animation mode.
+ * @returns {void}
+ */
+export function setGlobalAnimation(value: string): void {
+    animationMode = value;
 }

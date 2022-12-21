@@ -1,4 +1,5 @@
 @include export-module('h-scroll-theme') {
+
   /*! h-scroll theme */
   #{&}.e-hscroll {
 
@@ -15,7 +16,6 @@
           box-shadow: $hscroll-device-arrow-rtl-box-shadow;
         }
       }
-
     }
 
     &.e-scroll-device {
@@ -65,14 +65,8 @@
           border: $hscroll-hover-border;
           color: $hscroll-hover-font;
 
-          @if $hscroll-skin == 'material' {
-            border-color: $hscroll-hover-border-color;
-          }
-
-          @if $hscroll-skin == 'highcontrast' {
-            &:active {
-              background: $hscroll-press-bg;
-            }
+          &:active {
+            background: $hscroll-nav-hover-press-bg;
           }
         }
       }
@@ -84,42 +78,21 @@
 
         &:hover {
           background: $hscroll-hover-bg;
-          border: $hscroll-hover-border;
+          border: $hscroll-nav-hover-border;
           color: $hscroll-hover-font;
 
-          @if $hscroll-skin == 'bootstrap4' {
-            .e-icons {
-              color: inherit;
-            }
-          }
-
-          @if $hscroll-skin == 'highcontrast' {
-            border: 2px solid $hscroll-nav-hover-border-color;
-
-            &:active {
-              border: 0;
-            }
+          .e-icons {
+            color: $hscroll-nav-hover-icons-color;
           }
         }
 
         &:focus {
-          background: $hscroll-hover-bg;
-          border: $hscroll-focus-border;
+          background: $hscroll-nav-focus-bg-color;
+          border: $hscroll-nav-focus-border;
           color: $hscroll-hover-font;
 
-          @if $hscroll-skin == 'material' {
-            border-color: $hscroll-hover-border-color;
-          }
-
-          @if $hscroll-skin == 'bootstrap4' {
-            .e-icons {
-              color: inherit;
-            }
-          }
-
-          @if $hscroll-skin == 'highcontrast' {
-            background: $hscroll-nav-focus-bg-color;
-            border: $hscroll-dash-border;
+          .e-icons {
+            color: $hscroll-nav-hover-icons-color;
           }
         }
 
@@ -128,14 +101,12 @@
           border: $hscroll-active-border;
           box-shadow: $hscroll-active-box-shadow;
           color: $hscroll-active-font-color;
-          @if $hscroll-skin == 'highcontrast' {
-            .e-icons {
-              color: $hscroll-nav-active-color;
-            }
+
+          .e-icons {
+            color: $hscroll-nav-active-color;
           }
         }
       }
-
     }
 
     .e-scroll-nav  {
@@ -155,8 +126,7 @@
 
       &:active::after {
         @include hscroll-btn-animation-after;
-     }
-
+      }
     }
   }
 }

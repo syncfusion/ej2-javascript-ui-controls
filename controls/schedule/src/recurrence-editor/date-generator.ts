@@ -48,7 +48,7 @@ export function generateSummary(rule: string, localeObject: L10n, locale: string
     case 'WEEKLY':
         summary += localeObject.getConstant(WEEKS) + ' ' + localeObject.getConstant(ON) + ' ';
         ruleObject.day.forEach((day: string, index: number) => {
-            summary += capitalizeFirstWord(<string>getValue(DAYINDEXOBJECT[day], cldrObj), 'single');
+            summary += capitalizeFirstWord(<string>getValue(DAYINDEXOBJECT[`${day}`], cldrObj), 'single');
             summary += (((ruleObject.day.length - 1) === index) ? '' : ', ');
         });
         break;
@@ -140,7 +140,7 @@ export function generate(startDate: Date, rule: string, excludeDate: string, sta
         return data;
     }
     maxOccurrence = maximumCount;
-    setFirstDayOfWeek(DAYINDEX[startDayOfWeek]);
+    setFirstDayOfWeek(DAYINDEX[parseInt(startDayOfWeek.toString(), 10)]);
     if (ruleObject.until) {
         const end: Date = resetTime(ruleObject.until);
         ruleObject.until = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59);
@@ -420,7 +420,7 @@ function processWeekNo(startDate: Date, endDate: Date, data: number[], ruleObjec
         startDay = dayIndex.indexOf(DAYINDEX[stDate.getDay()]);
         firstWeekSpan = (6 - startDay) + 1;
         for (let index: number = 0; index < weekNos.length; index++) {
-            weekNo = weekNos[index];
+            weekNo = weekNos[parseInt(index.toString(), 10)];
             weekNo = (weekNo > 0) ? weekNo : 53 + weekNo + 1;
             maxDate = (weekNo === 1) ? firstWeekSpan : firstWeekSpan + ((weekNo - 1) * 7);
             minDate = (weekNo === 1) ? firstWeekSpan - 7 : firstWeekSpan + ((weekNo - 2) * 7);
@@ -467,7 +467,7 @@ function processYearDay(startDate: Date, endDate: Date, data: number[], ruleObje
     const expectedDays: string[] = ruleObject.day;
     while (compareDates(stDate, endDate)) {
         for (let index: number = 0; index < ruleObject.yearDay.length; index++) {
-            date = ruleObject.yearDay[index];
+            date = ruleObject.yearDay[parseInt(index.toString(), 10)];
             tempDate = new Date(stDate.getTime());
             if ((date === calendarUtil.getLeapYearDaysCount() || date === -calendarUtil.getLeapYearDaysCount()) &&
                 (!calendarUtil.isLeapYear(calendarUtil.getFullYear(tempDate), 1))) {
@@ -631,7 +631,7 @@ function monthlyDateTypeProcessforMonthFreq(startDate: Date, endDate: Date, data
  */
 function processDateCollectionForByMonthDay(ruleObject: RecRule, recRuleVariables: RuleData, endDate: Date, isByMonth?: boolean, startDate?: Date, data?: number[]): void {
     for (let index: number = 0; index < ruleObject.monthDay.length; index++) {
-        recRuleVariables.date = ruleObject.monthDay[index];
+        recRuleVariables.date = ruleObject.monthDay[parseInt(index.toString(), 10)];
         recRuleVariables.tempDate = calendarUtil.getMonthStartDate(recRuleVariables.tempDate);
         const maxDate: number = calendarUtil.getMonthDaysCount(recRuleVariables.tempDate);
         recRuleVariables.date = recRuleVariables.date > 0 ? recRuleVariables.date : (maxDate + recRuleVariables.date + 1);
@@ -674,7 +674,7 @@ function setNextValidDate(tempDate: Date, ruleObject: RecRule, monthInit: number
     if (ruleObject.month.length) {
         monthInit++;
         monthInit = monthInit % ruleObject.month.length;
-        calendarUtil.setMonth(tempDate, ruleObject.month[monthInit], 1);
+        calendarUtil.setMonth(tempDate, ruleObject.month[parseInt(monthInit.toString(), 10)], 1);
         if (monthInit === 0) {
             calendarUtil.addYears(tempDate, interval, ruleObject.month[0]);
         }
@@ -719,7 +719,7 @@ function getMonthCollection(startDate: Date, endDate: Date, data: number[], rule
         const isHavingNumber: boolean[] = expectedDays.map((item: string) => HASNUMBER.test(item));
         if (isHavingNumber.indexOf(true) > -1) {
             for (let j: number = 0; j <= expectedDays.length - 1; j++) {
-                const expectedDaysArray: string[] = expectedDays[j].match(SPLITNUMBERANDSTRING);
+                const expectedDaysArray: string[] = expectedDays[parseInt(j.toString(), 10)].match(SPLITNUMBERANDSTRING);
                 const position: number = parseInt(expectedDaysArray[0], 10);
                 tempDate = new Date(tempDate.getTime());
                 tempDate = calendarUtil.getMonthStartDate(tempDate);
@@ -777,8 +777,8 @@ function getMonthCollection(startDate: Date, endDate: Date, data: number[], rule
                 index = 0;
                 const datas: number[] = [];
                 for (let week: number = 0; week < monthCollection.length; week++) {
-                    for (let row: number = 0; row < monthCollection[week].length; row++) {
-                        datas.push(monthCollection[week][row]);
+                    for (let row: number = 0; row < monthCollection[parseInt(week.toString(), 10)].length; row++) {
+                        datas.push(monthCollection[parseInt(week.toString(), 10)][parseInt(row.toString(), 10)]);
                     }
                 }
                 monthCollection = [datas];
@@ -970,8 +970,8 @@ function processDateCollectionforByDayWithInteger(startDate: Date, endDate: Date
                     while (calendarUtil.isSameYear(currentMonthDate, tempDate)) {
                         currentMonthDate = new Date(tempDate.getTime());
                         if (ruleObject.month.length === 0 ||
-                            (ruleObject.month.length > 0 && ruleObject.month[i] === calendarUtil.getMonth(currentMonthDate))) {
-                            const expectedDaysArray: string[] = expectedDays[j].match(SPLITNUMBERANDSTRING);
+                            (ruleObject.month.length > 0 && ruleObject.month[parseInt(i.toString(), 10)] === calendarUtil.getMonth(currentMonthDate))) {
+                            const expectedDaysArray: string[] = expectedDays[parseInt(j.toString(), 10)].match(SPLITNUMBERANDSTRING);
                             const position: number = parseInt(expectedDaysArray[0], 10);
                             currentDate = new Date(tempDate.getTime());
                             while (calendarUtil.isSameYear(currentDate, tempDate)
@@ -1088,8 +1088,8 @@ function insertDataCollection(dateCollection: number[][], state: boolean, startD
 function getDateCollectionforBySetPosNull(monthCollection: number[][]): number[][] {
     const datas: number[] = [];
     for (let week: number = 0; week < monthCollection.length; week++) {
-        for (let row: number = 0; row < monthCollection[week].length; row++) {
-            datas.push(new Date(monthCollection[week][row]).getTime());
+        for (let row: number = 0; row < monthCollection[parseInt(week.toString(), 10)].length; row++) {
+            datas.push(new Date(monthCollection[parseInt(week.toString(), 10)][parseInt(row.toString(), 10)]).getTime());
         }
     }
     monthCollection = datas.length > 0 ? [datas] : [];
@@ -1137,8 +1137,8 @@ function insertDateCollectionBasedonIndex(monthCollection: number[][], startDate
  * @private
  */
 function filterDateCollectionByIndex(monthCollection: number[][], index: number, datas: number[]): number[] {
-    for (let week: number = 0; week < monthCollection[index].length; week++) {
-        datas.push(monthCollection[index][week]);
+    for (let week: number = 0; week < monthCollection[parseInt(index.toString(), 10)].length; week++) {
+        datas.push(monthCollection[parseInt(index.toString(), 10)][parseInt(week.toString(), 10)]);
     }
     return datas;
 }
@@ -1184,7 +1184,7 @@ function weekCount(year: number, startDayOfWeek: number, monthCollection: number
     const firstWeekDay: number = (firstOfMonth.getDay() - firstDayOfWeek + 7) % 7;
     const used: number = firstWeekDay + numberOfDaysInMonth;
     const count: number = Math.ceil(used / 7) - 1;
-    const dayData: number = monthCollection[week][count];
+    const dayData: number = monthCollection[parseInt(week.toString(), 10)][parseInt(count.toString(), 10)];
     const chDate: Date = new Date(dayData);
     const state: boolean = validateRules(chDate, ruleObject);
     return (state) ? count : count - 1;
@@ -1207,15 +1207,15 @@ function insertDateCollectionBasedonBySetPos
     : void {
     if (monthCollection.length > 0) {
         for (let week: number = 0; week < monthCollection.length; week++) {
-            monthCollection[week].sort();
+            monthCollection[parseInt(week.toString(), 10)].sort();
             const expectedDays: string[] = ruleObject.day;
             const isHavingNumber: boolean[] = expectedDays.map((item: string) => HASNUMBER.test(item));
             const weekIndex: number = (ruleObject.freq === 'YEARLY' && (ruleObject.validRules.indexOf('BYMONTH') > -1) &&
                 !(isHavingNumber.indexOf(true) > -1)) ?
                 weekCount(new Date(monthCollection[0][0]).getFullYear(), 0, monthCollection, week, ruleObject)
-                : (monthCollection[week].length + ruleObject.setPosition);
+                : (monthCollection[parseInt(week.toString(), 10)].length + ruleObject.setPosition);
             const index: number = ((ruleObject.setPosition < 1) ? weekIndex : ruleObject.setPosition - 1);
-            const dayData: number = monthCollection[week][index];
+            const dayData: number = monthCollection[parseInt(week.toString(), 10)][parseInt(index.toString(), 10)];
             insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
         }
     }
@@ -1239,9 +1239,9 @@ function insertDatasIntoExistingCollection(monthCollection: number[][], state: b
         index = !isNullOrUndefined(index) ? index :
             ((ruleObject.setPosition < 1)
                 ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        monthCollection[index].sort();
-        for (let week: number = 0; week < monthCollection[index].length; week++) {
-            const dayData: number = monthCollection[index][week];
+        monthCollection[parseInt(index.toString(), 10)].sort();
+        for (let week: number = 0; week < monthCollection[parseInt(index.toString(), 10)].length; week++) {
+            const dayData: number = monthCollection[parseInt(index.toString(), 10)][parseInt(week.toString(), 10)];
             insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
         }
     }
@@ -1290,7 +1290,7 @@ function checkDayIndex(day: number, expectedDays: string[]): boolean {
             sortedExpectedDays.push(expectedDaysNumberSplit[0]);
         }
     });
-    return (sortedExpectedDays.indexOf(DAYINDEX[day]) === -1);
+    return (sortedExpectedDays.indexOf(DAYINDEX[parseInt(day.toString(), 10)]) === -1);
 }
 
 /**
@@ -1307,7 +1307,7 @@ function getStartDateForWeek(startDate: Date, expectedDays: string[]): Date {
     if (expectedDays.length > 0) {
         const expectedDaysArr: string[] = [];
         for (let i: number = 0; i <= expectedDays.length - 1; i++) {
-            newstr = getDayString(expectedDays[i]);
+            newstr = getDayString(expectedDays[parseInt(i.toString(), 10)]);
             expectedDaysArr.push(newstr);
         }
         if (expectedDaysArr.indexOf(DAYINDEX[tempDate.getDay()]) === -1) {
@@ -1424,9 +1424,9 @@ function processWeekDays(expectedDays: string[]): { [key: string]: number } {
             while (temp % 7 !== dayIndex.indexOf(expectedDays[0])) {
                 temp++;
             }
-            dayCycle[element] = temp - startIndex;
+            dayCycle[`${element}`] = temp - startIndex;
         } else {
-            dayCycle[element] = dayIndex.indexOf(expectedDays[(<number>index + 1)]) - dayIndex.indexOf(element);
+            dayCycle[`${element}`] = dayIndex.indexOf(expectedDays[(<number>index + 1)]) - dayIndex.indexOf(element);
         }
     });
     return dayCycle;

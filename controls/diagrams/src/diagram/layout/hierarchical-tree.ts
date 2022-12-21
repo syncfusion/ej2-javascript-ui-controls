@@ -93,7 +93,7 @@ export class HierarchicalTree {
             layout.firstLevelNodes.push(layout.nameTable[layout.root]);
         }
         for (i = 0; i < nodes.length; i++) {
-            node = nodes[i];
+            node = nodes[parseInt(i.toString(), 10)];
             if (!node.excludeFromLayout) {
                 layoutInfo = layout.graphNodes[node.id] = this.setUpLayoutInfo(layout, node);
                 layoutInfo.tree.hasSubTree = false;
@@ -101,10 +101,10 @@ export class HierarchicalTree {
                     if (!node.inEdges || !node.inEdges.length) {
                         const parentId: string = 'parentId';
                         const processId: string = 'processId';
-                        if (!node[parentId] && !node[processId]) {
+                        if (!node[`${parentId}`] && !node[`${processId}`]) {
                             rootNodes.push(node as INode);
                         }
-                        if (node.data && String(node.data[uniqueId]) === layout.root) {
+                        if (node.data && String(node.data[`${uniqueId}`]) === layout.root) {
                             layout.firstLevelNodes.push(node as INode);
                         }
                     }
@@ -115,7 +115,7 @@ export class HierarchicalTree {
         if (layout.firstLevelNodes.length === 0) { layout.firstLevelNodes = rootNodes; }
         //Update relationship(parent and children)
         for (i = 0; i < layout.firstLevelNodes.length; i++) {
-            node = layout.firstLevelNodes[i];
+            node = layout.firstLevelNodes[parseInt(i.toString(), 10)];
             //let check: boolean;
             this.updateEdges(layout, node, 1, action, nodes);
         }
@@ -132,9 +132,9 @@ export class HierarchicalTree {
             let bounds: Bounds;
 
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
-                bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[i], 0, layout.firstLevelNodes[i - 1]);
+                bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[parseInt(i.toString(), 10)], 0, layout.firstLevelNodes[i - 1]);
 
-                const rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[i].id];
+                const rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[parseInt(i.toString(), 10)].id];
                 bounds.y = Math.min(bounds.y, rootInfo.y);
                 bounds.x = Math.min(bounds.x, rootInfo.x);
                 if (layout.orientation.indexOf('Left') !== -1) {
@@ -152,11 +152,11 @@ export class HierarchicalTree {
 
             this.updateAnchor(layout, { x: minX, y: minY, right: maxX, bottom: maxY }, viewport);
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
-                this.updateNodes(layout, layout.firstLevelNodes[i], 0);
+                this.updateNodes(layout, layout.firstLevelNodes[parseInt(i.toString(), 10)], 0);
             }
 
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
-                this.updateConnectors(layout, layout.firstLevelNodes[i], 1);
+                this.updateConnectors(layout, layout.firstLevelNodes[parseInt(i.toString(), 10)], 1);
             }
         }
     }
@@ -375,14 +375,14 @@ export class HierarchicalTree {
             }
             index = intersect[0];
             for (i = levelBounds.length - 1; i >= 0; i--) {
-                layout.levels.splice(index, 0, levelBounds[i]);
+                layout.levels.splice(index, 0, levelBounds[parseInt(i.toString(), 10)]);
             }
             index += levelBounds.length;
             layout.levels.splice(index, intersect.length);
         } else {
             index = this.findLevel(layout, levelBounds[levelBounds.length - 1].rBounds, level);
             for (i = levelBounds.length - 1; i >= 0; i--) {
-                layout.levels.splice(index, 0, levelBounds[i]);
+                layout.levels.splice(index, 0, levelBounds[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -392,9 +392,9 @@ export class HierarchicalTree {
         //Shift the sublevels by the distance diff
         if (diff !== 0) {
             for (i = 0; i < intersect.length; i++) {
-                if (layout.levels[intersect[i]].rBounds) {
-                    layout.levels[intersect[i]].rBounds.x -= diff;
-                    layout.levels[intersect[i]].rBounds.right -= diff;
+                if (layout.levels[intersect[parseInt(i.toString(), 10)]].rBounds) {
+                    layout.levels[intersect[parseInt(i.toString(), 10)]].rBounds.x -= diff;
+                    layout.levels[intersect[parseInt(i.toString(), 10)]].rBounds.right -= diff;
                 }
             }
         }
@@ -411,11 +411,11 @@ export class HierarchicalTree {
         max = bottom;
         //Vertically place the assistants as alternate layout(alternatively at both right and left sides of parent)
         for (i = 0; i < info.tree.assistants.length; i++) {
-            asst = layout.graphNodes[info.tree.assistants[i]];
+            asst = layout.graphNodes[info.tree.assistants[parseInt(i.toString(), 10)]];
             if (asst) {
                 asst.tree.children = asst.tree.assistants = [];
                 asst.y = bottom;
-                asstElement = layout.nameTable[info.tree.assistants[i]];
+                asstElement = layout.nameTable[info.tree.assistants[parseInt(i.toString(), 10)]];
                 asstHeight = asstElement.actualSize.height;
                 if (layout.orientation.indexOf('Left') !== -1) {
                     asstHeight = asstElement.actualSize.width;
@@ -447,12 +447,12 @@ export class HierarchicalTree {
         let intersect: number[];
         let levelBounds: Bounds = { x: 0, y: 0, right: 0, bottom: 0 };
         for (i = 0; i < info.tree.assistants.length; i++) {
-            asst = layout.graphNodes[info.tree.assistants[i]];
+            asst = layout.graphNodes[info.tree.assistants[parseInt(i.toString(), 10)]];
             //Arrange assistants at both left and right sides of parent(like alternate layout)
             //Check - By default, distance to be left between parent and child nodes is assumed as 20.
             //It can be modified/customized later.
             if (asst) {
-                asstElement = layout.nameTable[info.tree.assistants[i]];
+                asstElement = layout.nameTable[info.tree.assistants[parseInt(i.toString(), 10)]];
                 asstWidth = asstElement.actualSize.width;
                 if (layout.orientation.indexOf('Left') !== -1) {
                     asstWidth = asstElement.actualSize.height;
@@ -464,7 +464,7 @@ export class HierarchicalTree {
                 }
 
                 //Check - What will happen if update leaf node is called? Since assistants don't have children
-                bounds = this.updateTree(layout, left, asst.y, layout.nameTable[info.tree.assistants[i]], lev + 1);
+                bounds = this.updateTree(layout, left, asst.y, layout.nameTable[info.tree.assistants[parseInt(i.toString(), 10)]], lev + 1);
                 if (!this.hasChild(layout, shape)) {
                     if (i === 0) {
                         levelBounds = bounds;
@@ -538,7 +538,7 @@ export class HierarchicalTree {
             //let h: boolean;
             const h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
             for (i = 0; i < info.tree.children.length; i++) {
-                child = layout.nameTable[info.tree.children[i]];
+                child = layout.nameTable[info.tree.children[parseInt(i.toString(), 10)]];
                 width = child.actualSize.width;
                 height = child.actualSize.height;
                 childWidth = h ? height : width;
@@ -716,21 +716,21 @@ export class HierarchicalTree {
         let bounds: Bounds;
         const h: boolean = layout.orientation.indexOf('Left') !== -1 ? true : false;
         //Arrange left side
-        for (let i: number = 0; i < leftTree.length && leftTree[i].length; i++) {
+        for (let i: number = 0; i < leftTree.length && leftTree[parseInt(i.toString(), 10)].length; i++) {
             right = x;
             if (leftBounds[i - 1]) { bottom = leftBounds[i - 1].bottom + layout.verticalSpacing; }
-            for (let j: number = 0; j < leftTree[i].length; j++) {
-                const child: INode = layout.nameTable[leftTree[i][j]];
+            for (let j: number = 0; j < leftTree[parseInt(i.toString(), 10)].length; j++) {
+                const child: INode = layout.nameTable[leftTree[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)]];
                 const childWidth: number = h ? child.actualSize.height : child.actualSize.width;
                 const childHeight: number = h ? child.actualSize.width : child.actualSize.height;
                 //Update sub tree
                 const childInfo: LayoutInfo = layout.graphNodes[child.id];
                 childInfo.actualLevel = lev + 1 + i;
-                childBounds = this.updateTree(layout, right, bottom, child, lev + 1, layout.nameTable[leftTree[i][j - 1]]);
+                childBounds = this.updateTree(layout, right, bottom, child, lev + 1, layout.nameTable[leftTree[parseInt(i.toString(), 10)][j - 1]]);
                 if (j === 0) {
-                    leftBounds[i] = { x: childBounds.x, y: childBounds.y, right: childBounds.right, bottom: childBounds.bottom };
+                    leftBounds[parseInt(i.toString(), 10)] = { x: childBounds.x, y: childBounds.y, right: childBounds.right, bottom: childBounds.bottom };
                 } else {
-                    this.uniteRects(leftBounds[i], childBounds);
+                    this.uniteRects(leftBounds[parseInt(i.toString(), 10)], childBounds);
                 }
                 if (i === 0 && j === 0) {
                     minTranslation = childInfo.canMoveBy;
@@ -742,19 +742,19 @@ export class HierarchicalTree {
                 right = childBounds.right + layout.horizontalSpacing;
             }
             if (i === 0) {
-                rightMost = leftBounds[i].right;
+                rightMost = leftBounds[parseInt(i.toString(), 10)].right;
             } else {
-                rightMost = Math.max(rightMost, leftBounds[i].right);
+                rightMost = Math.max(rightMost, leftBounds[parseInt(i.toString(), 10)].right);
             }
         }
 
         //Translate to same positions
-        for (let i: number = 0; i < leftTree.length && leftTree[i].length; i++) {
-            if (rightMost !== leftBounds[i].right) {
-                const diff: number = rightMost - leftBounds[i].right;
-                for (let j: number = 0; j < leftTree[i].length; j++) {
-                    const element: INode = layout.nameTable[leftTree[i][j]];
-                    const elementInfo: LayoutInfo = layout.graphNodes[leftTree[i][j]];
+        for (let i: number = 0; i < leftTree.length && leftTree[parseInt(i.toString(), 10)].length; i++) {
+            if (rightMost !== leftBounds[parseInt(i.toString(), 10)].right) {
+                const diff: number = rightMost - leftBounds[parseInt(i.toString(), 10)].right;
+                for (let j: number = 0; j < leftTree[parseInt(i.toString(), 10)].length; j++) {
+                    const element: INode = layout.nameTable[leftTree[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)]];
+                    const elementInfo: LayoutInfo = layout.graphNodes[leftTree[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)]];
                     elementInfo.x += diff;
                 }
                 //leftBounds[i].x += diff;
@@ -762,7 +762,7 @@ export class HierarchicalTree {
             }
             if (i === 0) {
                 bounds = { x: leftBounds[0].x, y: leftBounds[0].y, right: leftBounds[0].right, bottom: leftBounds[0].bottom };
-            } else { this.uniteRects(bounds, leftBounds[i]); }
+            } else { this.uniteRects(bounds, leftBounds[parseInt(i.toString(), 10)]); }
         }
         treeInfo.bounds = bounds;
         return rightMost;
@@ -786,30 +786,30 @@ export class HierarchicalTree {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }
         if (i === rows.length - 1) {
-            if (rows[i].length % 2 === 1 || unique && i === 1) {
-                centered = rightTree[i][Math.floor(rightTree[i].length / 2)];
+            if (rows[parseInt(i.toString(), 10)].length % 2 === 1 || unique && i === 1) {
+                centered = rightTree[parseInt(i.toString(), 10)][Math.floor(rightTree[parseInt(i.toString(), 10)].length / 2)];
                 //let centerObjct: INode;
-                const centerObjct: INode = layout.nameTable[centered];
+                const centerObjct: INode = layout.nameTable[`${centered}`];
                 //let childDimension: Dimensions;
-                const centeredX: number = layout.graphNodes[centered].x;
-                const centeredY: number = layout.graphNodes[centered].y;
+                const centeredX: number = layout.graphNodes[`${centered}`].x;
+                const centeredY: number = layout.graphNodes[`${centered}`].y;
                 const childDimension: Dimensions = this.getDimensions(layout, centerObjct, centeredX, centeredY, lev + 1);
                 diff = undefined;
                 if (!align && unique) {
                     if (max === 1) { i = 0; }
-                    diff = (rightBounds[max].x + rightBounds[max].right) / 2 - (rightBounds[i].x + rightBounds[i].right) / 2;
+                    diff = (rightBounds[parseInt(max.toString(), 10)].x + rightBounds[parseInt(max.toString(), 10)].right) / 2 - (rightBounds[parseInt(i.toString(), 10)].x + rightBounds[parseInt(i.toString(), 10)].right) / 2;
                     if (i === 0) { info.mid += diff; }
                 } else if (!unique && rightX !== undefined) {
                     diff = rightX - layout.horizontalSpacing / 2 - (centeredX + childDimension.width / 2);
                 }
                 if (diff !== undefined) {
-                    this.updateRearBoundsOfTree(layout, rightTree[i], diff, dimensions);
+                    this.updateRearBoundsOfTree(layout, rightTree[parseInt(i.toString(), 10)], diff, dimensions);
                 }
 
                 if (unique) {
                     info.mid = (rightCenter + leftCenter) / 2 + (i === 0 ? diff : 0) - dimensions.width / 2;
                 }
-                if (info.mid === undefined && layout.graphNodes[centered]) { info.mid = centeredX; }
+                if (info.mid === undefined && layout.graphNodes[`${centered}`]) { info.mid = centeredX; }
                 align = false;
                 i++;
             }
@@ -818,7 +818,7 @@ export class HierarchicalTree {
 
     private updateRearBoundsOfTree(layout: ILayout, rightTree: string[], diff: number, dimensions: Dimensions): void {
         for (let j: number = 0; j < rightTree.length; j++) {
-            const childInfo: LayoutInfo = layout.graphNodes[rightTree[j]];
+            const childInfo: LayoutInfo = layout.graphNodes[rightTree[parseInt(j.toString(), 10)]];
             //let child: INode = layout.nameTable[rightTree[j]];
             childInfo.x += diff;
             childInfo.canMoveBy += diff;
@@ -836,17 +836,17 @@ export class HierarchicalTree {
 
     private splitRows(rows: string[][], leftTree: string[][], rightTree: string[][]): void {
         for (let i: number = 0; i < rows.length; i++) {
-            leftTree[i] = []; rightTree[i] = [];
+            leftTree[parseInt(i.toString(), 10)] = []; rightTree[parseInt(i.toString(), 10)] = [];
             let half: number;
-            half = rows[i].length;
-            if (rows[i].length % 2 !== 1) {
-                half = Math.ceil(rows[i].length / 2);
+            half = rows[parseInt(i.toString(), 10)].length;
+            if (rows[parseInt(i.toString(), 10)].length % 2 !== 1) {
+                half = Math.ceil(rows[parseInt(i.toString(), 10)].length / 2);
                 for (let k: number = 0; k < half; k++) {
-                    leftTree[i].push(rows[i][k]);
+                    leftTree[parseInt(i.toString(), 10)].push(rows[parseInt(i.toString(), 10)][parseInt(k.toString(), 10)]);
                 }
             }
-            for (let j: number = leftTree[i].length; j < rows[i].length; j++) {
-                rightTree[i].push(rows[i][j]);
+            for (let j: number = leftTree[parseInt(i.toString(), 10)].length; j < rows[parseInt(i.toString(), 10)].length; j++) {
+                rightTree[parseInt(i.toString(), 10)].push(rows[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)]);
             }
         }
     }
@@ -873,7 +873,7 @@ export class HierarchicalTree {
                 factor = (i % 2 === 0 && info.tree.children.length > 2) ? -1 : 0;
             }
             right = x + this.findOffset(layout, shape, info, type);
-            child = layout.nameTable[info.tree.children[i]];
+            child = layout.nameTable[info.tree.children[parseInt(i.toString(), 10)]];
             childWidth = h ? child.actualSize.height : child.actualSize.width;
             childHeight = h ? child.actualSize.width : child.actualSize.height;
             //Update sub tree
@@ -999,7 +999,7 @@ export class HierarchicalTree {
         let i: number;
         const dummy: string[] = [];
         for (i = 0; i < temp.length; i++) {
-            dummy[i] = temp[i];
+            dummy[parseInt(i.toString(), 10)] = temp[parseInt(i.toString(), 10)];
         }
         return dummy;
     }
@@ -1039,11 +1039,11 @@ export class HierarchicalTree {
         const space: number = layout.horizontalSpacing;
         //Find the minimum distance to move towards previous sub tree
         for (let k: number = 0; k < info.intersect.length; k++) {
-            prevBounds = layout.levels[info.intersect[k]].rBounds;
+            prevBounds = layout.levels[info.intersect[parseInt(k.toString(), 10)]].rBounds;
             dif = bounds.x - (prevBounds.right + space);
             if (info.diff === undefined || dif < info.diff) {
                 info.diff = dif;
-                info.prevBounds = layout.levels[info.intersect[k]].rBounds;
+                info.prevBounds = layout.levels[info.intersect[parseInt(k.toString(), 10)]].rBounds;
             }
         }
     }
@@ -1059,7 +1059,7 @@ export class HierarchicalTree {
         let rBounds: Bounds;
         let l: number;
         l = actualLevel !== undefined ? actualLevel : level;
-        rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
+        rBounds = layout.levels[parseInt(l.toString(), 10)] ? layout.levels[parseInt(l.toString(), 10)].rBounds : null;
         //Performance - We can consider only the intersecting levels
         do {
             if (rBounds && ((bnds.y < rBounds.y && bnds.bottom > rBounds.y)
@@ -1072,11 +1072,11 @@ export class HierarchicalTree {
                 break;
             }
             l--;
-            rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
+            rBounds = layout.levels[parseInt(l.toString(), 10)] ? layout.levels[parseInt(l.toString(), 10)].rBounds : null;
         } while (l >= 0);
 
         l = (actualLevel !== undefined ? actualLevel : level) + 1;
-        rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
+        rBounds = layout.levels[parseInt(l.toString(), 10)] ? layout.levels[parseInt(l.toString(), 10)].rBounds : null;
         do {
             if (rBounds && ((bnds.y < rBounds.y && bnds.bottom > rBounds.y) ||
                 (bnds.y < rBounds.bottom && rBounds.bottom < bnds.bottom) ||
@@ -1084,7 +1084,7 @@ export class HierarchicalTree {
                 intersectingLevels.push(l);
             } else if (rBounds && rBounds.y > bnds.bottom) { break; }
             l++;
-            rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
+            rBounds = layout.levels[parseInt(l.toString(), 10)] ? layout.levels[parseInt(l.toString(), 10)].rBounds : null;
         } while (l <= layout.levels.length);
 
         return intersectingLevels;
@@ -1095,14 +1095,14 @@ export class HierarchicalTree {
         const bnds: Bounds = bounds;
         let l: number; l = 0;
         let rBounds: Bounds;
-        rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
+        rBounds = layout.levels[parseInt(l.toString(), 10)] ? layout.levels[parseInt(l.toString(), 10)].rBounds : null;
         while (l < layout.levels.length) {
             if (rBounds && bnds.bottom < rBounds.y) {
                 return l;
             } else {
                 l++;
             }
-            rBounds = layout.levels[l] ? layout.levels[l].rBounds : null;
+            rBounds = layout.levels[parseInt(l.toString(), 10)] ? layout.levels[parseInt(l.toString(), 10)].rBounds : null;
         }
         return l;
     }
@@ -1118,7 +1118,7 @@ export class HierarchicalTree {
         if (node.outEdges && node.outEdges.length && (node.isExpanded || (action === DiagramAction.Render))) {
             for (j = 0; j < node.outEdges.length; j++) {
                 //let edge: INode;
-                const edge: INode = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
+                const edge: INode = layout.nameTable[layout.nameTable[node.outEdges[parseInt(j.toString(), 10)]].targetID];
                 if (edge && !edge.excludeFromLayout) {
                     if (layoutInfo.tree.children.indexOf(edge.id) === -1) {
                         layoutInfo.tree.children.push(edge.id);
@@ -1268,7 +1268,7 @@ export class HierarchicalTree {
         let direction: string;
         if (node.outEdges.length) {
             for (i = 0; i < node.outEdges.length; i++) {
-                conn = layout.nameTable[node.outEdges[i]];
+                conn = layout.nameTable[node.outEdges[parseInt(i.toString(), 10)]];
                 conn.points = [];
                 target = layout.nameTable[conn.targetID];
                 if (conn.visible) {
@@ -1295,7 +1295,7 @@ export class HierarchicalTree {
         if (info && info.tree.assistants.length) {
             //In-Edge routing of assistant nodes
             for (i = 0; i < info.tree.assistants.length; i++) {
-                target = layout.nameTable[info.tree.assistants[i]];
+                target = layout.nameTable[info.tree.assistants[parseInt(i.toString(), 10)]];
                 conn = layout.nameTable[target.inEdges[0]];
                 this.get3Points(layout, node, target, conn);
                 if (target.isExpanded || this.hasChild(layout, target)) {
@@ -1335,16 +1335,16 @@ export class HierarchicalTree {
         let relative: string;
         if (info.tree.children.length === 5 && i > 2) {
             relative = info.tree.children[1];
-            if (isNaN(layout.graphNodes[relative].treeWidth)) {
-                layout.graphNodes[relative].treeWidth = layout.nameTable[relative].actualSize.width;
+            if (isNaN(layout.graphNodes[`${relative}`].treeWidth)) {
+                layout.graphNodes[`${relative}`].treeWidth = layout.nameTable[`${relative}`].actualSize.width;
             }
             const factor: number = i !== 3 ? 1 : -1;
             if (layout.orientation.indexOf('Left') !== -1) {
-                center = layout.nameTable[relative].offsetY - layout.graphNodes[relative].treeWidth / 2 -
+                center = layout.nameTable[`${relative}`].offsetY - layout.graphNodes[`${relative}`].treeWidth / 2 -
                     (layout.verticalSpacing * factor / 2);
             } else {
-                const center: number = layout.nameTable[relative].offsetX +
-                    layout.graphNodes[relative].treeWidth / 2 + (layout.horizontalSpacing * factor) / 2;
+                const center: number = layout.nameTable[`${relative}`].offsetX +
+                    layout.graphNodes[`${relative}`].treeWidth / 2 + (layout.horizontalSpacing * factor) / 2;
             }
             this.getSegmentsForMultipleRows(layout, node, target, connector);
         } else {
@@ -1424,8 +1424,8 @@ export class HierarchicalTree {
         let segment: OrthogonalSegment;
         for (let i: number = 0; i < points.length - 2; i++) {
             segment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
-            segment.direction = Point.direction(points[i], points[i + 1]) as Direction;
-            segment.length = Point.distancePoints(points[i], points[i + 1]);
+            segment.direction = Point.direction(points[parseInt(i.toString(), 10)], points[i + 1]) as Direction;
+            segment.length = Point.distancePoints(points[parseInt(i.toString(), 10)], points[i + 1]);
             segments.push(segment);
         }
         connector.segments = segments;
@@ -1578,7 +1578,7 @@ export class HierarchicalTree {
             const list: INode[] = [];
             if (this.hasChild(layout, node)) {
                 for (i = 0; i < layout.graphNodes[node.id].tree.children.length; i++) {
-                    child = layout.nameTable[layout.graphNodes[node.id].tree.children[i]];
+                    child = layout.nameTable[layout.graphNodes[node.id].tree.children[parseInt(i.toString(), 10)]];
                     this.updateNodes(layout, child, mod + (layout.graphNodes[node.id].subTreeTranslation || 0), update, dx, dy);
                     list.push(child);
                 }
@@ -1586,7 +1586,7 @@ export class HierarchicalTree {
 
             if (layout.graphNodes[node.id].tree.assistants.length) {
                 for (i = 0; i < layout.graphNodes[node.id].tree.assistants.length; i++) {
-                    child = layout.nameTable[layout.graphNodes[node.id].tree.assistants[i]];
+                    child = layout.nameTable[layout.graphNodes[node.id].tree.assistants[parseInt(i.toString(), 10)]];
                     this.updateNodes(layout, child, mod + (layout.graphNodes[node.id].subTreeTranslation || 0), null, dx, dy);
                 }
             }

@@ -621,17 +621,28 @@
 
       .e-toolbar-items {
         background: $pivotgrid-grp-bg-color;
-       }
+
+        .e-toolbar-item {
+          .e-tbar-btn.e-btn.e-control {
+            @if ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='material') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') or ($skin-name =='bootstrap4') {
+              background: $pivotgrid-grp-bg-color;
+
+              &:hover {
+                @if ($skin-name =='material') or ($skin-name =='material-dark') or ($skin-name =='fabric-dark') or ($skin-name =='bootstrap4') {
+                  background: $pivotgrid-grp-bg-hover-color;
+                }
+              }
+            }
+          }
+        }
+      }
 
       .e-toolbar-item .e-tbar-btn.e-btn {
-        @if($skin-name == 'FluentUI') {
-          line-height: 20px;
-        }
 
         .e-icons.e-btn-icon {
-          font-size: 16px;
-          @if ($skin-name == 'FluentUI') {
-            margin: 4px;
+
+          @if ($skin-name != 'bootstrap5') and ($skin-name != 'tailwind') and ($skin-name != 'FluentUI') {
+            font-size: 16px;
           }
         }
       }
@@ -650,15 +661,28 @@
           }
           overflow: hidden;
           padding-left: 10px;
+
           @if ($pivotgrid-skin == 'bootstrap4') {
-            background-color: $gray-100;
+            background-color: $pivotgrid-grp-bg-color;
             color: $gray-700;
+          }
+
+          @if ($pivotgrid-skin =='FluentUI') {
+            background-color: $pivotgrid-grp-bg-color;
+
+            &:hover {
+              background: $pivotgrid-grp-bg-hover-color;
+            }
           }
 
           .e-menu-icon {
             margin-left: 0;
             margin-right: 0;
-            font-size: 16px;
+
+            @if ($skin-name != 'bootstrap5') and ($skin-name != 'tailwind') {
+              font-size: 16px;
+            }
+
             @if ($pivotgrid-skin == 'bootstrap4') {
               color: $gray-700;
             }
@@ -667,8 +691,12 @@
               color: $pivotgrid-active-color;
             }
 
-            @if ($skin-name == 'bootstrap5') or ($skin-name == 'FluentUI') {
+            @if ($skin-name == 'bootstrap5') {
               line-height: $pivotgrid-menubar-height;
+            }
+
+            @if ($skin-name == 'FluentUI') {
+              line-height: 28px;
             }
 
             @if ($skin-name == 'tailwind') {
@@ -976,6 +1004,10 @@
 
       &.e-excel-filter {
         min-width: $pivotgrid-bigger-excel-dialog-min-width;
+        
+        @if ($skin-name =='FluentUI') or ($skin-name =='fabric') {
+          height: 427px !important;
+        }
       }
     }
 

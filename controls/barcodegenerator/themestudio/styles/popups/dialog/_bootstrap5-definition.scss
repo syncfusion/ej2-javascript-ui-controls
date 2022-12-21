@@ -1,5 +1,5 @@
 //Layout Variables Start
-$dialog-close-button-left: 0 !default;
+$dialog-close-button-left: -5px !default;
 $dialog-header-border: 1px solid $border-light !default;
 $dialog-close-icon-font-size: 16px !default;
 $dialog-bigger-close-icon-font-size: 20px !default;
@@ -19,6 +19,7 @@ $dialog-header-content-padding: 12px 14px 12px 12px !default;
 $dialog-content-padding: 12px !default;
 $dialog-footer-content-padding: 12px !default;
 $dialog-footer-content-border-top: 1px solid $border-light !default;
+$dialog-alert-footer-content-border-top: none !default;
 $dialog-bigger-header-content-padding: 16px !default;
 $dialog-bigger-content-padding: 16px !default;
 $dialog-bigger-footer-content-padding: 16px !default;
@@ -38,12 +39,13 @@ $dialog-bigger-close-icon-top: 0 !default;
 $dialog-bigger-close-icon-margin-left: 0 !default;
 $dialog-bigger-close-icon-margin-right: 0 !default;
 $dialog-bigger-close-button-bottom: 7px !default;
-$dialog-bigger-close-button-left: 0 !default;
+$dialog-bigger-close-button-left: -7px !default;
 $dialog-bigger-close-button-height: 20px !default;
 $dialog-bigger-close-button-width: 20px !default;
 $dialog-resize-handler-width: 15px;
 $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
+
 //Layout Variables End
 
 //Theme Variables Start
@@ -73,6 +75,7 @@ $dialog-close-icon-normal-opacity: initial !default;
 $dialog-close-icon-active-opacity: initial !default;
 $dialog-overlay-bg-color: $overlay-bg-color !default;
 $dialog-overlay-opacity: 1 !default;
+
 //Theme Variables End
 
 $dialog-footer-btn-bg-color: $primary !default;
@@ -82,6 +85,6 @@ $dialog-footer-hover-btn-color: $primary-bg-color-hover !default;
 
 $dialog-footer-flat-btn-bg-color: $secondary-bg-color !default;
 $dialog-footer-flat-hover-btn-bg-color: $secondary-bg-color-hover !default;
-$dialog-footer-flat-btn-border-color: $secondary-bg-color !default;
-$dialog-footer-flat-btn-content-color: $primary-text-color !default;
+$dialog-footer-flat-btn-border-color: $secondary-border-color !default;
+$dialog-footer-flat-btn-content-color: $secondary-text-color !default;
 $dialog-enable-resize-padding-bottom: 15px !default;

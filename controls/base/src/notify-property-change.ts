@@ -98,9 +98,9 @@ function getObject<T>(instance: ClassObject & Object, curKey: string, defaultVal
 (...arg: Object[]) => void): ClassObject {
     // eslint-disable-next-line
     if (!instance.properties.hasOwnProperty(curKey) || !(instance.properties[curKey] instanceof type)) {
-        instance.properties[curKey] = createInstance(type, [instance, curKey, defaultValue]);
+        instance.properties[`${curKey}`] = createInstance(type, [instance, curKey, defaultValue]);
     }
-    return <ClassObject>instance.properties[curKey];
+    return <ClassObject>instance.properties[`${curKey}`];
 }
 /**
  * Returns object array
@@ -128,14 +128,14 @@ function getObjectArray<T>(
     for (let i: number = 0; i < len; i++) {
         let curType: (...arg: Object[]) => void = type;
         if (isFactory) {
-            curType = <(...arg: Object[]) => void>type(defaultValue[i], instance);
+            curType = <(...arg: Object[]) => void>type(defaultValue[parseInt(i.toString(), 10)], instance);
         }
         if (isSetter) {
             const inst: ClassObject = createInstance(curType, [instance, curKey, {}, true]);
-            inst.setProperties(defaultValue[i], true);
+            inst.setProperties(defaultValue[parseInt(i.toString(), 10)], true);
             result.push(inst);
         } else {
-            result.push(createInstance(curType, [instance, curKey, defaultValue[i], false]));
+            result.push(createInstance(curType, [instance, curKey, defaultValue[parseInt(i.toString(), 10)], false]));
         }
     }
     return result;
@@ -152,9 +152,9 @@ function propertyGetter(defaultValue: Object, curKey: string): () => void {
     return function (): Object {
         // eslint-disable-next-line
         if (!this.properties.hasOwnProperty(curKey)) {
-            this.properties[curKey] = defaultValue;
+            this.properties[`${curKey}`] = defaultValue;
         }
-        return this.properties[curKey];
+        return this.properties[`${curKey}`];
     };
 }
 /**
@@ -166,11 +166,11 @@ function propertyGetter(defaultValue: Object, curKey: string): () => void {
  */
 function propertySetter(defaultValue: Object, curKey: string): (arg: Object) => void {
     return function (newValue: Object): void {
-        if (this.properties[curKey] !== newValue) {
+        if (this.properties[`${curKey}`] !== newValue) {
             // eslint-disable-next-line
             let oldVal: Object = this.properties.hasOwnProperty(curKey) ? this.properties[curKey] : defaultValue;
             this.saveChanges(curKey, newValue, oldVal);
-            this.properties[curKey] = newValue;
+            this.properties[`${curKey}`] = newValue;
         }
     };
 }
@@ -215,7 +215,7 @@ function complexFactoryGetter<T>(defaultValue: Object, curKey: string, type: Fun
         const curType: Function = (<(arg: Object) => Function>type)({});
         // eslint-disable-next-line
         if (this.properties.hasOwnProperty(curKey)) {
-            return this.properties[curKey];
+            return this.properties[`${curKey}`];
         } else {
             return getObject(this, curKey, defaultValue, <FunctionConstructor>curType);
         }
@@ -251,7 +251,7 @@ function complexArrayGetter(defaultValue: Object[], curKey: string, type: (...ar
         // eslint-disable-next-line
         if (!this.properties.hasOwnProperty(curKey)) {
             const defCollection: Object[] = getObjectArray(this, curKey, defaultValue, type, false);
-            this.properties[curKey] = defCollection;
+            this.properties[`${curKey}`] = defCollection;
         }
         const ignore: boolean = ((this.controlParent !== undefined && this.controlParent.ignoreCollectionWatch)
             || this.ignoreCollectionWatch);
@@ -259,17 +259,17 @@ function complexArrayGetter(defaultValue: Object[], curKey: string, type: (...ar
         if (!this.properties[curKey].hasOwnProperty('push') && !ignore) {
             ['push', 'pop'].forEach((extendFunc: string) => {
                 const descriptor: PropertyDescriptor = {
-                    value: complexArrayDefinedCallback(extendFunc, curKey, type, this.properties[curKey]).bind(this),
+                    value: complexArrayDefinedCallback(extendFunc, curKey, type, this.properties[`${curKey}`]).bind(this),
                     configurable: true
                 };
-                Object.defineProperty(this.properties[curKey], extendFunc, descriptor);
+                Object.defineProperty(this.properties[`${curKey}`], extendFunc, descriptor);
             });
         }
         // eslint-disable-next-line
         if (!this.properties[curKey].hasOwnProperty('isComplexArray')) {
-            Object.defineProperty(this.properties[curKey], 'isComplexArray', { value: true });
+            Object.defineProperty(this.properties[`${curKey}`], 'isComplexArray', { value: true });
         }
-        return this.properties[curKey];
+        return this.properties[`${curKey}`];
     };
 }
 
@@ -287,7 +287,7 @@ function complexArraySetter(defaultValue: Object[], curKey: string, type: (...ar
         const newValCollection: Object[] = getObjectArray(this, curKey, newValue, type, true);
         this.isComplexArraySetter = false;
         this.saveChanges(curKey, newValCollection, oldValueCollection);
-        this.properties[curKey] = newValCollection;
+        this.properties[`${curKey}`] = newValCollection;
     };
 }
 
@@ -307,7 +307,7 @@ function complexArrayFactorySetter(
         const oldValueCollection: Object[] = this.properties.hasOwnProperty(curKey) ? this.properties[curKey] : defaultValue;
         const newValCollection: Object[] = getObjectArray(this, curKey, newValue, <(...arg: Object[]) => object>type, true, true);
         this.saveChanges(curKey, newValCollection, oldValueCollection);
-        this.properties[curKey] = newValCollection;
+        this.properties[`${curKey}`] = newValCollection;
     };
 }
 
@@ -328,9 +328,9 @@ function complexArrayFactoryGetter(
         // eslint-disable-next-line
         if (!this.properties.hasOwnProperty(curKey)) {
             const defCollection: Object[] = getObjectArray(this, curKey, defaultValue, <FunctionConstructor>curType, false);
-            this.properties[curKey] = defCollection;
+            this.properties[`${curKey}`] = defCollection;
         }
-        return this.properties[curKey];
+        return this.properties[`${curKey}`];
     };
 }
 
@@ -350,13 +350,13 @@ function complexArrayDefinedCallback(
         switch (dFunc) {
         case 'push':
             for (let i: number = 0; i < newValue.length; i++) {
-                Array.prototype[dFunc].apply(prop, [newValue[i]]);
-                const model: Object = getArrayModel(keyString + (prop.length - 1), newValue[i], !this.controlParent, dFunc);
-                this.serverDataBind(model, newValue[i], false, dFunc);
+                Array.prototype[`${dFunc}`].apply(prop, [newValue[parseInt(i.toString(), 10)]]);
+                const model: Object = getArrayModel(keyString + (prop.length - 1), newValue[parseInt(i.toString(), 10)], !this.controlParent, dFunc);
+                this.serverDataBind(model, newValue[parseInt(i.toString(), 10)], false, dFunc);
             }
             break;
         case 'pop':
-            Array.prototype[dFunc].apply(prop);
+            Array.prototype[`${dFunc}`].apply(prop);
             // eslint-disable-next-line
             let model: Object = getArrayModel(keyString + prop.length, null, !this.controlParent, dFunc);
             this.serverDataBind(model, { ejsAction: 'pop' }, false, dFunc);
@@ -378,10 +378,10 @@ function getArrayModel(keyString: string, value: Object, isControlParent: boolea
     let modelObject: Object = keyString;
     if (isControlParent) {
         modelObject = {};
-        modelObject[keyString] = value;
+        modelObject[`${keyString}`] = value;
         if (value && typeof value === 'object') {
             const action: string = 'ejsAction';
-            modelObject[keyString][action] = arrayFunction;
+            modelObject[`${keyString}`][`${action}`] = arrayFunction;
         }
     }
     return modelObject;
@@ -538,14 +538,14 @@ export function Event(): PropertyDecorator {
     return (target: Object, key: string) => {
         const eventDescriptor: Object = {
             set: function (newValue: Function): void {
-                const oldValue: Function = this.properties[key];
+                const oldValue: Function = this.properties[`${key}`];
                 if (oldValue !== newValue) {
                     const finalContext: ParentOption = getParentContext(this, key);
                     if (isUndefined(oldValue) === false) {
                         finalContext.context.removeEventListener(finalContext.prefix, oldValue);
                     }
                     finalContext.context.addEventListener(finalContext.prefix, newValue);
-                    this.properties[key] = newValue;
+                    this.properties[`${key}`] = newValue;
                 }
             },
             get: propertyGetter(undefined, key),
@@ -640,7 +640,7 @@ function getBuilderProperties(component: Function): Object {
         };
         const rex: RegExp = /complex/;
         for (const key of Object.keys(component.prototype.propList)) {
-            for (const prop of component.prototype.propList[key]) {
+            for (const prop of component.prototype.propList[`${key}`]) {
                 if (rex.test(key)) {
                     component.prototype.builderObject[prop.propertyName] = function (value: Function): Object {
                         const childType: ChildInfo = {};

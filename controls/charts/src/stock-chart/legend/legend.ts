@@ -1,27 +1,30 @@
-import { ChartLocation, getUnicodeText, textTrim, withInBounds } from "../../common/utils/helper";
+/* eslint-disable jsdoc/require-param-type */
+/* eslint-disable jsdoc/require-param-description */
+/* eslint-disable valid-jsdoc */
+import { ChartLocation, getUnicodeText, textTrim, withInBounds } from '../../common/utils/helper';
 import { ILegendRegions } from '../../common/model/interface';
-import { BaseLegend, LegendOptions, Location } from "../../common/legend/legend";
-import { ChartDrawType, ChartSeriesType, LegendMode, LegendPosition } from "../../chart/utils/enum";
-import { Alignment, LegendTitlePosition } from "../../common/utils/enum";
+import { BaseLegend, LegendOptions, Location } from '../../common/legend/legend';
+import { ChartDrawType, ChartSeriesType, LegendMode, LegendPosition } from '../../chart/utils/enum';
+import { Alignment, LegendTitlePosition } from '../../common/utils/enum';
 import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';
-import { Series } from "../../chart/series/chart-series";
-import { legendClick, legendRender, regSub, regSup } from "../../common/model/constants";
-import { IStockLegendClickEventArgs, IStockLegendRenderEventArgs, StockChartBorder, StockChartFont, StockMargin } from "../model/base";
-import { Browser } from "@syncfusion/ej2-base";
-import { StockChart } from "../../stock-chart/index";
+import { Series } from '../../chart/series/chart-series';
+import { legendClick, legendRender, regSub, regSup } from '../../common/model/constants';
+import { IStockLegendClickEventArgs, IStockLegendRenderEventArgs, StockChartBorder, StockChartFont, StockMargin } from '../model/base';
+import { Browser } from '@syncfusion/ej2-base';
+import { StockChart } from '../../stock-chart/index';
 import { Axis } from '../../chart/axis/axis';
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
-import { Theme } from "../../common/model/theme";
+import { Theme } from '../../common/model/theme';
 import { ContainerPadding } from '../../common/model/base';
 import { ContainerPaddingModel } from '../../common/model/base-model';
 import { StockChartLegendSettingsModel } from './legend-model';
 import { StockChartFontModel, StockChartBorderModel, StockMarginModel } from '../model/base-model';
-import { LocationModel } from "../../common";
+import { LocationModel } from '../../common';
 
 /**
  * Configures the legends in charts.
  */
- export class StockChartLegendSettings extends ChildProperty<StockChartLegendSettings> {
+export class StockChartLegendSettings extends ChildProperty<StockChartLegendSettings> {
 
     /**
      * If set to true, legend will be visible.
@@ -88,13 +91,13 @@ import { LocationModel } from "../../common";
     public position: LegendPosition;
 
     /**
-    * Mode of legend items
-    * * Series: Legend items generated based on series count.
-    * * Point: Legend items generated based on unique data points. 
-    * * Range: Legend items generated based on range color mapping property. 
-    * * Gradient: Single linear bar generated based on range color mapping property.
-    * This property is applicable for chart component only.
-    */
+     * Mode of legend items
+     * * Series: Legend items generated based on series count.
+     * * Point: Legend items generated based on unique data points.
+     * * Range: Legend items generated based on range color mapping property.
+     * * Gradient: Single linear bar generated based on range color mapping property.
+     * This property is applicable for chart component only.
+     */
     @Property('Series')
     public mode: LegendMode;
 
@@ -113,8 +116,8 @@ import { LocationModel } from "../../common";
      * @default null
      */
 
-     @Property(null)
-     public itemPadding: number;
+    @Property(null)
+    public itemPadding: number;
 
     /**
      * Legend in stock chart can be aligned as follows:
@@ -274,8 +277,8 @@ import { LocationModel } from "../../common";
      * @default false
      */
 
-     @Property(false)
-     public isInversed: boolean;
+    @Property(false)
+    public isInversed: boolean;
 }
 
 /**
@@ -309,6 +312,7 @@ export class StockLegend extends BaseLegend {
     }
     /**
      * To handle mosue move for Stocklegend module
+     * @param e
      */
     private mouseMove(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
@@ -317,6 +321,7 @@ export class StockLegend extends BaseLegend {
     }
     /**
      * To handle mosue end for Stocklegend module
+     * @param e
      */
     private mouseEnd(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
@@ -324,7 +329,7 @@ export class StockLegend extends BaseLegend {
         }
     }
 
-    public getLegendOptions(visibleSeriesCollection: Series[], chart: StockChart): void {
+    public getLegendOptions(visibleSeriesCollection: Series[]): void {
         this.legendCollections = [];
         let seriesType: ChartDrawType | ChartSeriesType;
         let fillColor: string;
@@ -333,7 +338,6 @@ export class StockLegend extends BaseLegend {
         }
         for (const series of visibleSeriesCollection) {
             if (this.legend.mode === 'Series') {
-                series
                 if (series.category !== 'Indicator') {
                     seriesType = <ChartSeriesType>series.type;
                     fillColor = (series.pointColorMapping && series.points.length > 0) ?
@@ -347,7 +351,18 @@ export class StockLegend extends BaseLegend {
             }
         }
     }
-    /** @private */
+    /**
+     * @param availableSize
+     * @param legendBound
+     * @param legend
+     * @param availableSize
+     * @param legendBound
+     * @param legend
+     * @param availableSize
+     * @param legendBound
+     * @param legend
+     * @private
+     */
     public getLegendBounds(availableSize: Size, legendBound: Rect, legend: StockChartLegendSettingsModel): void {
         this.calculateLegendTitle(legend, legendBound);
         const padding: number = legend.padding;
@@ -370,17 +385,17 @@ export class StockLegend extends BaseLegend {
         legendBound.width += extraWidth;
         const shapePadding: number = legend.shapePadding;
         const shapeWidth: number = legend.shapeWidth;
-        let maximum_Width: number = 0;
-        let row_Width: number = 0;
-        let legend_Width: number = 0;
-        let column_Height: number = 0;
-        let row_Count: number = 0;
+        let maximumWidth: number = 0;
+        let rowWidth: number = 0;
+        let legendWidth: number = 0;
+        let columnHeight: number = 0;
+        let rowCount: number = 0;
         let titlePlusArrowSpace: number = 0;
         let legendEventArgs: IStockLegendRenderEventArgs;
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render: boolean = false;
         for (let i: number = 0; i < this.legendCollections.length; i++) {
-            legendOption = this.legendCollections[i];
+            legendOption = this.legendCollections[i as number];
             if (regSup.test(legendOption.text)) {
                 legendOption.text = getUnicodeText(legendOption.text, regSup);
             }
@@ -400,50 +415,105 @@ export class StockLegend extends BaseLegend {
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
             if (legendOption.render) {
                 render = true;
-                legend_Width = shapePadding + shapeWidth + legendOption.textSize.width + (!this.isVertical ? (i==0) ? padding : this.itemPadding : padding);
-                row_Width = row_Width + legend_Width;
+                legendWidth = shapePadding + shapeWidth + legendOption.textSize.width + (!this.isVertical ? (i === 0) ? padding :
+                    this.itemPadding : padding);
+                rowWidth = rowWidth + legendWidth;
                 if (!legend.enablePages && !this.isVertical) {
                     titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
                     titlePlusArrowSpace += arrowWidth;
                 }
-                if (legendBound.width < (padding + row_Width + titlePlusArrowSpace) || this.isVertical) {
-                    maximum_Width = Math.max(maximum_Width, (row_Width + padding + titlePlusArrowSpace - (this.isVertical ? 0 : legend_Width)));
-                    if (row_Count === 0 && (legend_Width !== row_Width)) {
-                        row_Count = 1;
+                if (legendBound.width < (padding + rowWidth + titlePlusArrowSpace) || this.isVertical) {
+                    maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace -
+                        (this.isVertical ? 0 : legendWidth)));
+                    if (rowCount === 0 && (legendWidth !== rowWidth)) {
+                        rowCount = 1;
                     }
-                    row_Width = this.isVertical ? 0 : legend_Width;
-                    row_Count++;
-                    column_Height = (row_Count * (this.maxItemHeight + (this.isVertical ? this.itemPadding : padding))) + padding + titleSpace + verticalArrowSpace;
+                    rowWidth = this.isVertical ? 0 : legendWidth;
+                    rowCount++;
+                    columnHeight = (rowCount * (this.maxItemHeight + (this.isVertical ? this.itemPadding : padding))) +
+                        padding + titleSpace + verticalArrowSpace;
                 }
             }
         }
-        column_Height = Math.max(column_Height, (this.maxItemHeight + padding) + padding + titleSpace);
-        this.isPaging = legendBound.height < column_Height;
+        columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleSpace);
+        this.isPaging = legendBound.height < columnHeight;
         if (this.isPaging && !legend.enablePages) {
             if (this.isVertical) {
                 // eslint-disable-next-line no-self-assign
-                column_Height = column_Height;
+                columnHeight = columnHeight;
             } else {
-                column_Height = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
+                columnHeight = (this.maxItemHeight + padding) + padding + (titlePosition === 'Top' ? titleSpace : 0);
             }
         }
-        this.totalPages = row_Count;
+        this.totalPages = rowCount;
         if (!this.isPaging && !this.isVertical) {
-            row_Width += this.isTitle && titlePosition !== 'Top' ? (this.fivePixel + this.legendTitleSize.width + this.fivePixel) : 0;
+            rowWidth += this.isTitle && titlePosition !== 'Top' ? (this.fivePixel + this.legendTitleSize.width + this.fivePixel) : 0;
         }
         if (render) {
-            this.setBounds(Math.max((row_Width + padding), maximum_Width), column_Height, legend, legendBound);
+            this.setBounds(Math.max((rowWidth + padding), maximumWidth), columnHeight, legend, legendBound);
         } else {
             this.setBounds(0, 0, legend, legendBound);
         }
     }
-    /** @private */
+    /**
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @param legendOptions
+     * @param start
+     * @param textPadding
+     * @param prevLegend
+     * @param rect
+     * @param count
+     * @param firstLegend
+     * @private
+     */
     public getRenderPoint(
         legendOptions: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
         rect: Rect, count: number, firstLegend: number): void {
         const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
         const padding: number = this.legend.padding;
-        if ((previousBound + (legendOptions.textSize.width + textPadding - this.itemPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
+        if ((previousBound + (legendOptions.textSize.width + textPadding - this.itemPadding)) >
+            (rect.x + rect.width + this.legend.shapeWidth / 2) ||
             this.isVertical) {
             legendOptions.location.x = start.x;
             legendOptions.location.y = (count === firstLegend) ? prevLegend.location.y :
@@ -456,12 +526,18 @@ export class StockLegend extends BaseLegend {
             textPadding - this.itemPadding - this.legend.shapeWidth / 2);
         legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle);
     }
-    /** @private */
+    /**
+     * @param index
+     * @param event
+     * @param index
+     * @param event
+     * @private
+     */
     public legendClick(index: number, event: Event | PointerEvent): void {
         const chart: StockChart = <StockChart>this.chart;
         const seriesIndex: number = chart.legendSettings.mode === 'Series' ? index : 0;
-        const targetSeries: Series = chart.visibleSeries[seriesIndex];
-        const targetLegend: LegendOptions = this.legendCollections[index];
+        const targetSeries: Series = chart.visibleSeries[seriesIndex as number];
+        const targetLegend: LegendOptions = this.legendCollections[index as number];
         const legendClickArgs: IStockLegendClickEventArgs = {
             legendText: targetLegend.text, legendShape: targetLegend.shape,
             chart: chart, series: targetSeries, name: legendClick, cancel: false
@@ -469,7 +545,7 @@ export class StockLegend extends BaseLegend {
         this.chart.trigger(legendClick, legendClickArgs);
         targetSeries.legendShape = legendClickArgs.legendShape;
         if (targetSeries.fill !== null) {
-            chart.visibleSeries[index].interior = targetSeries.fill;
+            chart.visibleSeries[index as number].interior = targetSeries.fill;
         }
         if (chart.legendSettings.toggleVisibility) {
             this.changeSeriesVisiblity(targetSeries, targetSeries.visible);
@@ -500,7 +576,7 @@ export class StockLegend extends BaseLegend {
 
     /**
      * To show the tooltip for the trimmed text in legend.
-     *
+     * @param event
      * @returns {void}
      */
     public click(event: Event | PointerEvent): void {
@@ -511,7 +587,7 @@ export class StockLegend extends BaseLegend {
         const pageX: number = this.chart.mouseX;
         let legendRegion: ILegendRegions[] = [];
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',
-        this.legendID + '_shape_'];
+            this.legendID + '_shape_'];
         const targetId: string = (<HTMLElement>event.target).id;
         let seriesIndex: number;
         for (const id of legendItemsId) {
@@ -527,12 +603,15 @@ export class StockLegend extends BaseLegend {
             this.changePage(event, true);
         }
         legendRegion = this.legendRegions.filter((region: ILegendRegions) => {
-            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) * this.translatePage(false, null, 1, 2) : 0)),
-                region.rect));
+            return (withInBounds(pageX, (pageY + (this.isPaging ? (this.currentPageNumber - 1) *
+            this.translatePage(false, null, 1, 2) : 0)),
+                                 region.rect));
         });
     }
 
+    // eslint-disable-next-line jsdoc/require-returns
     /**
+     *
      * Get module name
      */
     protected getModuleName(): string {

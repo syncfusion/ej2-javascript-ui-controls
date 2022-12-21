@@ -267,7 +267,7 @@ export class DiagramEventHandler {
     }
 
     private isMetaKey(evt: PointerEvent | WheelEvent | KeyboardEvent): boolean {
-        //EJ2-55887 - added the beow code to perform pinch zoom in mac os and windows while pinch zoom all browser return ctrl key as true.        
+        //EJ2-55887 - added the beow code to perform pinch zoom in mac os and windows while pinch zoom all browser return ctrl key as true.
         if (evt.type === 'mousewheel') {
             return evt.ctrlKey;
         }
@@ -316,7 +316,7 @@ export class DiagramEventHandler {
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
             // EJ2-64563-Added below code to calculate the bounds x and y value if vertical offset != 0
-            if(this.diagram.scroller.verticalOffset !== 0) {
+            if (this.diagram.scroller.verticalOffset !== 0) {
                 bounds.x = bounds.x - this.diagram.scroller.horizontalOffset;
                 bounds.y = bounds.y - this.diagram.scroller.verticalOffset;
             }
@@ -331,7 +331,7 @@ export class DiagramEventHandler {
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
             // EJ2-64563-Added below code to calculate the bounds x and y value if horizontal offset != 0
-            if(this.diagram.scroller.horizontalOffset !== 0) {
+            if (this.diagram.scroller.horizontalOffset !== 0) {
                 bounds.x = bounds.x - this.diagram.scroller.horizontalOffset;
                 bounds.y = bounds.y - this.diagram.scroller.verticalOffset;
             }
@@ -360,7 +360,7 @@ export class DiagramEventHandler {
     private checkPreviousAction(): void {
         if (this.action !== this.previousAction && this.diagram.selectedItems.userHandles.length) {
             for (let i: number = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
-                if (this.previousAction && this.diagram.selectedItems.userHandles[i]) {
+                if (this.previousAction && this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)]) {
                     this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseLeave);
                     this.previousAction = 'None';
                 }
@@ -372,37 +372,38 @@ export class DiagramEventHandler {
             const currentAction: Actions = (eventName === DiagramEvent.onUserHandleMouseLeave) ? this.previousAction : this.action;
             const arg: UserHandleEventsArgs = { element: undefined };
             for (let i: number = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
-                if ((currentAction === this.diagram.selectedItems.userHandles[i].name) ||
+                if ((currentAction === this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name) ||
                     (eventName === DiagramEvent.onUserHandleMouseUp && currentAction === 'Select')) {
-                    arg.element = this.diagram.selectedItems.userHandles[i];
+                    arg.element = this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)];
                     if (eventName === DiagramEvent.onUserHandleMouseEnter) {
                         this.previousAction = this.action;
                         // EJ2-32213- Added the below code to check whether the userhandle has tooltip content.
-                        // If userhandle has tooltip content then we open the tooltip based on the userhandle shape  
+                        // If userhandle has tooltip content then we open the tooltip based on the userhandle shape
                         if (arg.element.tooltip && arg.element.tooltip.openOn === 'Auto' && arg.element.tooltip.content !== '') {
                             updateTooltip(this.diagram,arg.element );
                             let targetEle: HTMLElement;
-                            if(arg.element.pathData){
-                                targetEle =  document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
+                            if (arg.element.pathData){
+                                targetEle =  document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_userhandle');
                             }
-                            else if(arg.element.source){
-                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_image');
+                            else if (arg.element.source){
+                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_image');
                             }
-                            else if(arg.element.content){
-                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_shape_native_element');
+                            else if (arg.element.content){
+                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_shape_native_element');
                             }
                             else {
-                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_shape_html_element');
+                                targetEle = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_shape_html_element');
                             }
                             if ( arg.element.tooltip.openOn === 'Auto') {
+                                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                                 (this.diagram.tooltipObject as Tooltip).open(targetEle);
                             }
                         }
                     }
                     if (eventName === DiagramEvent.onUserHandleMouseDown) {
-                        this.userHandleObject = this.diagram.selectedItems.userHandles[i].name;
+                        this.userHandleObject = this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name;
                     }
-                    const element: HTMLElement = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
+                    const element: HTMLElement = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_userhandle');
 
                     if (eventName === DiagramEvent.onUserHandleMouseUp) {
                         if (this.commandHandler.isUserHandle(this.currentPosition)
@@ -410,7 +411,7 @@ export class DiagramEventHandler {
                             this.diagram.triggerEvent(eventName, arg);
                         }
                     }
-                    if(eventName === DiagramEvent.onUserHandleMouseLeave){
+                    if (eventName === DiagramEvent.onUserHandleMouseLeave){
                         if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
                             this.diagram.tooltipObject.close();
                         }
@@ -425,7 +426,7 @@ export class DiagramEventHandler {
 
     public mouseDown(evt: PointerEvent): void {
         // EJ2-57541 - Added the below code to check whether diagram tool is instance of node drawing tool or connector drawing tool.
-        // If node or connector drawing tool means then we have returned without perform any operation. 
+        // If node or connector drawing tool means then we have returned without perform any operation.
         if (this.inAction === true && ( (this.tool) instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool )) {
             return;
         }
@@ -478,7 +479,7 @@ export class DiagramEventHandler {
                     }
                 }
                 var targetObject = this.getTargetElement();
-				this.action = this.diagram.findActionToBeDone(targetObject.obj, targetObject.sourceElement, this.currentPosition, targetObject.target);
+                this.action = this.diagram.findActionToBeDone(targetObject.obj, targetObject.sourceElement, this.currentPosition, targetObject.target);
                 //work around - correct it
                 const ctrlKey: boolean = this.isMetaKey(evt);
                 if (ctrlKey && evt.shiftKey && this.diagram.connectorEditingToolModule) {
@@ -711,7 +712,7 @@ export class DiagramEventHandler {
         let childNode: NodeModel | ConnectorModel;
         let rect: Rect = new Rect(this.currentPosition.x, this.currentPosition.y, 8, 8);
         for (let i: number = 0; i < node.children.length; i++) {
-            childNode = this.diagram.getObject(node.children[i]);
+            childNode = this.diagram.getObject(node.children[parseInt(i.toString(), 10)]);
             if (childNode.wrapper.outerBounds.intersects(rect)) {
                 return childNode;
             }
@@ -813,9 +814,9 @@ export class DiagramEventHandler {
                             }
                         }
                         avoidDropChildren = this.diagram.lineRoutingModule
-                            && this.diagram.nameTable["helper"] && this.eventArgs.target && (this.eventArgs.target as Node).isLane
+                            && this.diagram.nameTable['helper'] && this.eventArgs.target && (this.eventArgs.target as Node).isLane
                             && ((this.eventArgs.source instanceof Selector && (this.eventArgs.source as Selector).nodes.length > 0
-                                && ((this.eventArgs.source as Selector).nodes[0] as Node).parentId === "") || ((this.eventArgs.source as Node).parentId === ""));
+                                && ((this.eventArgs.source as Selector).nodes[0] as Node).parentId === '') || ((this.eventArgs.source as Node).parentId === ''));
                         if (avoidDropChildren) {
                             this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.PreventLaneContainerUpdate;
                         }
@@ -825,9 +826,11 @@ export class DiagramEventHandler {
                         if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
                             if (!evt.pageY && (evt instanceof TouchEvent) && evt.changedTouches) {
                                 window.getSelection().removeAllRanges();
+                                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                                 this.diagram.contextMenuModule.contextMenu.open(evt.changedTouches[0].pageY, evt.changedTouches[0].pageX, this.diagram.element);
                                 evt.preventDefault();
                             } else {
+                                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                                 this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
                             }
                             this.diagram.checkMenu = false;
@@ -840,14 +843,14 @@ export class DiagramEventHandler {
                 if (this.eventArgs.clickCount !== 2) {
                     this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
                     if (avoidDropChildren) {
-                        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate
+                        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate;
                         let nodes: NodeModel[] = this.eventArgs.source instanceof Selector
-                            ? (this.eventArgs.source as Selector).nodes : [this.eventArgs.source as Node]
+                            ? (this.eventArgs.source as Selector).nodes : [this.eventArgs.source as Node];
                         if (nodes) {
                             for (let i = 0; i < nodes.length; i++) {
-                                if (!nodes[i].container) {
-                                    this.commandHandler.dropChildToContainer(this.eventArgs.target, nodes[i]);
-                                    this.commandHandler.renderContainerHelper(nodes[i]);
+                                if (!nodes[parseInt(i.toString(), 10)].container) {
+                                    this.commandHandler.dropChildToContainer(this.eventArgs.target, nodes[parseInt(i.toString(), 10)]);
+                                    this.commandHandler.renderContainerHelper(nodes[parseInt(i.toString(), 10)]);
                                 }
                             }
                         }
@@ -888,7 +891,7 @@ export class DiagramEventHandler {
 				  /**
                  * EJ2-45543 Provide Event support to notify the port click
                  */
-				var targetObject = this.getTargetElement();
+			    var targetObject = this.getTargetElement();
                 let arg: IClickEventArgs | IBlazorClickEventArgs = {
                     element: (targetObject.target instanceof PointPort)? targetObject.target : cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
                     position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
@@ -902,28 +905,28 @@ export class DiagramEventHandler {
             }
             this.eventArgs = {};
         }
-        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate
+        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate;
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
     }
-	 /**
+	/**
      * return the clicked element such as node/connector/port/diagram
-     */
+    */
     private getTargetElement (){
         let target: NodeModel | PointPortModel | ShapeAnnotationModel | PathAnnotationModel;
         const objects: IElement[] = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
         const obj: IElement = this.objectFinder.findObjectUnderMouse(this.diagram, objects, this.action, this.inAction, this.eventArgs, this.currentPosition);
         let sourceElement: DiagramElement = null;
-       if (obj !== null) {
-       sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
-       if (sourceElement) {
-           target = this.commandHandler.findTarget(sourceElement, obj);
-         }
-     } var targetObject = {
-         'obj': obj,
-         'sourceElement' : sourceElement,
-         'target' : target
-     };
-     return targetObject;
+        if (obj !== null) {
+            sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
+            if (sourceElement) {
+                target = this.commandHandler.findTarget(sourceElement, obj);
+            }
+        } var targetObject = {
+            'obj': obj,
+            'sourceElement' : sourceElement,
+            'target' : target
+        };
+    return targetObject;
     }
     /* tslint:enable */
 
@@ -972,13 +975,13 @@ export class DiagramEventHandler {
         this.diagram.clearSelectorLayer();
         if (targetNode && !((targetNode as Node).isLane || (targetNode as Node).isPhase || (targetNode as Node).isHeader)) {
             for (let i: number = 0; i < objects.length; i++) {
-                const laneNode: Node = this.diagram.nameTable[(objects[i] as NodeModel).id];
+                const laneNode: Node = this.diagram.nameTable[(objects[parseInt(i.toString(), 10)] as NodeModel).id];
                 if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) { targetNode = laneNode; }
             }
         }
         if (targetNode && (actualShape.isPhase || (actualShape.isLane && (targetNode as SwimLaneModel).isLane))) {
             const id: string = (targetNode as Node).parentId;
-            swimlaneNode = this.diagram.nameTable[id];
+            swimlaneNode = this.diagram.nameTable[`${id}`];
         }
         if (swimlaneNode) {
             shape = (swimlaneNode.shape as SwimLaneModel);
@@ -1020,20 +1023,20 @@ export class DiagramEventHandler {
                     if (this.currentPosition.x < targetNode.wrapper.bounds.center.x) { value -= 1; }
                 }
                 if (shape.lanes.length > (value)) {
-                    lane.header.width = shape.lanes[value].header.width;
-                    lane.header.height = shape.lanes[value].header.height;
+                    lane.header.width = shape.lanes[parseInt(value.toString(), 10)].header.width;
+                    lane.header.height = shape.lanes[parseInt(value.toString(), 10)].header.height;
                 } else {
                     //EJ2-64457 - Not able to add lane in the existing vertical swimlane.
-                    let ind:number;
-                    if(shape.orientation === 'Horizontal')
+                    let ind: number;
+                    if (shape.orientation === 'Horizontal')
                         {
-                            ind = targetNode.rowIndex < 3 ? 0 : value-index-1;                    
-                        }
+                        ind = targetNode.rowIndex < 3 ? 0 : value - index - 1;
+                    }
                     else{
-                            ind = value - 1;
-                        }
-                    lane.header.width = shape.lanes[ind].header.width;
-                    lane.header.height = shape.lanes[ind].header.height;
+                        ind = value - 1;
+                    }
+                    lane.header.width = shape.lanes[parseInt(ind.toString(), 10)].header.width;
+                    lane.header.height = shape.lanes[parseInt(ind.toString(), 10)].header.height;
                 }
                 this.diagram.addLanes(swimlaneNode, [lane], shape.orientation === 'Horizontal' ? value - index : value);
             }
@@ -1120,8 +1123,8 @@ export class DiagramEventHandler {
     /** @private */
     public mouseWheel(evt: WheelEvent): void {
         this.diagram.blazorActions |= BlazorAction.interaction;
-          // EJ2-64831 - Need to provide support to override the mousewheel event
-          let arg: IMouseWheelEventArgs= {
+        // EJ2-64831 - Need to provide support to override the mousewheel event
+        let arg: IMouseWheelEventArgs= {
             event:evt,
            cancel :false
         };
@@ -1135,14 +1138,14 @@ export class DiagramEventHandler {
         if (ctrlKey) {
             // SF-362356 - Command below line to implement smooth scroll in diagram.
             // this.diagram.zoom(up ? (1.2) : 1 / (1.2), mousePosition);
-            // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and 
+            // EJ2-59803 - Added the below code to get the zoom factor value from scroll settings and
             // set it to zoomFactor args in zoomTo method.
             let zoomFactor: number = this.diagram.scrollSettings.zoomFactor;
             if (up) {
-                this.diagram.zoomTo({ type: "ZoomIn", zoomFactor: zoomFactor, focusPoint: mousePosition })
+                this.diagram.zoomTo({ type: 'ZoomIn', zoomFactor: zoomFactor, focusPoint: mousePosition });
             }
             else {
-                this.diagram.zoomTo({ type: "ZoomOut", zoomFactor: zoomFactor, focusPoint: mousePosition })
+                this.diagram.zoomTo({ type: 'ZoomOut', zoomFactor: zoomFactor, focusPoint: mousePosition });
             }
             evt.preventDefault();
         } else {
@@ -1192,7 +1195,7 @@ export class DiagramEventHandler {
             if (this.diagram.commandManager && this.diagram.commands) {
                 const commands: {} = this.diagram.commands;
                 for (const i of Object.keys(commands)) {
-                    command = this.diagram.commands[i];
+                    command = this.diagram.commands[`${i}`];
                     if (command && (command.gesture.keyModifiers || command.gesture.key)) {
                         if ((keycode === command.gesture.key || (key === Keys[command.gesture.key])
                             || this.isDeleteKey(key, i))
@@ -1219,9 +1222,9 @@ export class DiagramEventHandler {
                                         this.diagram.removeElements(this.diagram.currentSymbol);
                                         removeChildNodes(this.diagram.currentSymbol as Node, this.diagram);
                                         delete this.diagram.nameTable[this.diagram.currentSymbol.id];
-                                        const sourceElement: HTMLElement = this.diagram.droppable[source];
-                                        sourceElement.draggable[intDestroy]();
-                                        const element: HTMLElement = this.diagram.droppable[selectedSymbols];
+                                        const sourceElement: HTMLElement = this.diagram.droppable[`${source}`];
+                                        sourceElement.draggable[`${intDestroy}`]();
+                                        const element: HTMLElement = this.diagram.droppable[`${selectedSymbols}`];
                                         element.parentNode.removeChild(element);
                                         const diagramActions: DiagramAction = this.diagram.diagramActions;
                                         this.diagram.diagramActions =
@@ -1239,7 +1242,7 @@ export class DiagramEventHandler {
                                         this.diagram.diagramActions =
                                             this.diagram.removeConstraints(diagramActions, DiagramAction.PreventClearSelection);
                                         this.isMouseDown = false;
-                                    } else if (this.inAction && this.diagram.drawingObject && this.tool && this.tool[inAction]) {
+                                    } else if (this.inAction && this.diagram.drawingObject && this.tool && this.tool[`${inAction}`]) {
                                         this.tool.mouseUp(this.eventArgs);
                                         this.tool = null;
                                         this.isMouseDown = false;
@@ -1288,8 +1291,8 @@ export class DiagramEventHandler {
         if (document.getElementById(this.diagram.element.id + '_editBox')) {
             args.text = (document.getElementById(this.diagram.element.id + '_editBox') as HTMLTextAreaElement).value;
             for (let i: number = 0; i < node.annotations.length; i++) {
-                if (node.annotations[i].id === label.id) {
-                    args.label = node.annotations[i];
+                if (node.annotations[parseInt(i.toString(), 10)].id === label.id) {
+                    args.label = node.annotations[parseInt(i.toString(), 10)];
                     break;
                 }
             }
@@ -1378,62 +1381,62 @@ export class DiagramEventHandler {
                 corner = this.tool.corner;
             }
             switch (position) {
-                case 'right':
-                    point.x = pos.x + 10;
-                    left = 10;
-                    // EJ2-61979 - If node gets resized on southeast or northeast corner means then update the y position along with x position
-                    if (canUpdate) {
-                        if (corner === 'ResizeSouthEast') {
-                            point.y = pos.y + 10;
-                            top = 10;
-                        } else {
-                            point.y = pos.y - 10;
-                            top = -10;
-                        }
+            case 'right':
+                point.x = pos.x + 10;
+                left = 10;
+                // EJ2-61979 - If node gets resized on southeast or northeast corner means then update the y position along with x position
+                if (canUpdate) {
+                    if (corner === 'ResizeSouthEast') {
+                        point.y = pos.y + 10;
+                        top = 10;
+                    } else {
+                        point.y = pos.y - 10;
+                        top = -10;
                     }
-                    break;
-                case 'left':
-                    point.x = pos.x - 10;
-                    left = -10;
-                    // EJ2-61979 - If node gets resized on northwest or southwest corner means then update the y position along with x position
-                    if (canUpdate) {
-                        if (corner === 'ResizeNorthWest') {
-                            point.y = pos.y - 10;
-                            top = -10;
-                        } else {
-                            point.y = pos.y + 10;
-                            top = 10;
-                        }
+                }
+                break;
+            case 'left':
+                point.x = pos.x - 10;
+                left = -10;
+                // EJ2-61979 - If node gets resized on northwest or southwest corner means then update the y position along with x position
+                if (canUpdate) {
+                    if (corner === 'ResizeNorthWest') {
+                        point.y = pos.y - 10;
+                        top = -10;
+                    } else {
+                        point.y = pos.y + 10;
+                        top = 10;
                     }
-                    break;
-                case 'bottom':
-                    point.y = pos.y + 10;
-                    top = 10;
-                    // EJ2-61979 - If node gets resized on southeast or southwest corner means then update the x position along with y position
-                    if (canUpdate) {
-                        if (corner === 'ResizeSouthEast') {
-                            point.x = pos.x + 10;
-                            left = 10;
-                        } else {
-                            point.x = pos.x - 10;
-                            left = -10;
-                        }
+                }
+                break;
+            case 'bottom':
+                point.y = pos.y + 10;
+                top = 10;
+                // EJ2-61979 - If node gets resized on southeast or southwest corner means then update the x position along with y position
+                if (canUpdate) {
+                    if (corner === 'ResizeSouthEast') {
+                        point.x = pos.x + 10;
+                        left = 10;
+                    } else {
+                        point.x = pos.x - 10;
+                        left = -10;
                     }
-                    break;
-                case 'top':
-                    point.y = pos.y - 10;
-                    top = -10;
-                    // EJ2-61979 - If node gets resized on northeast or northwest corner means then update the x position along with y position
-                    if (canUpdate) {
-                        if (corner === 'ResizeNorthEast') {
-                            point.x = pos.x + 10;
-                            left = 10;
-                        } else {
-                            point.x = pos.x - 10;
-                            left = -10;
-                        }
+                }
+                break;
+            case 'top':
+                point.y = pos.y - 10;
+                top = -10;
+                // EJ2-61979 - If node gets resized on northeast or northwest corner means then update the x position along with y position
+                if (canUpdate) {
+                    if (corner === 'ResizeNorthEast') {
+                        point.x = pos.x + 10;
+                        left = 10;
+                    } else {
+                        point.x = pos.x - 10;
+                        left = -10;
                     }
-                    break;
+                }
+                break;
             }
             this.eventArgs.position = { x: point.x, y: point.y };
             this.currentPosition = this.eventArgs.position;
@@ -1450,7 +1453,7 @@ export class DiagramEventHandler {
     private mouseEvents(): void {
         const target: (NodeModel | ConnectorModel)[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
         for (let i: number = 0; i < target.length; i++) {
-            if (this.eventArgs.actualObject === target[i]) {
+            if (this.eventArgs.actualObject === target[parseInt(i.toString(), 10)]) {
                 target.splice(i, 1);
             }
         }
@@ -1507,16 +1510,16 @@ export class DiagramEventHandler {
     private getBlazorCollectionObject(obj: (NodeModel | ConnectorModel)[], arg1: IBlazorMouseEventArgs): void {
         if (obj) {
             for (let i: number = 0; i < obj.length; i++) {
-                if (getObjectType(obj[i]) === Connector) {
-                    arg1.targets.connector.push(cloneBlazorObject(obj[i]));
+                if (getObjectType(obj[parseInt(i.toString(), 10)]) === Connector) {
+                    arg1.targets.connector.push(cloneBlazorObject(obj[parseInt(i.toString(), 10)]));
                 } else {
-                    arg1.targets.node.push(cloneBlazorObject(obj[i]));
+                    arg1.targets.node.push(cloneBlazorObject(obj[parseInt(i.toString(), 10)]));
                 }
             }
         }
     }
 
-    private elementEnter(mousePosition: PointModel, elementOver: Boolean): void {
+    private elementEnter(mousePosition: PointModel, elementOver: boolean): void {
         if (!elementOver) {
             const isPrivateTooltip: number = ((this.hoverElement instanceof Node) &&
                 (this.hoverElement as Node).constraints & NodeConstraints.Tooltip) ||
@@ -1529,7 +1532,7 @@ export class DiagramEventHandler {
             }
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                 // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
-                if(children) {
+                if (children) {
                     updateTooltip(this.diagram, children);
                 } else {
                     updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
@@ -1549,12 +1552,14 @@ export class DiagramEventHandler {
                 (this.diagram.tooltipObject as Tooltip).close();
                 (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
                 if (isBlazor()) {
+                    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                     (this.diagram.tooltipObject as BlazorTooltip).open(targetEle, {});
                 } else {
                     (this.diagram.tooltipObject as Tooltip).dataBind();
                 }
             }
             if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
+                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
                 (this.diagram.tooltipObject as Tooltip).open(targetEle);
             }
         }
@@ -1623,9 +1628,9 @@ export class DiagramEventHandler {
                                 id = obj.wrapper.children[1].id.split('_')[1];
                             }
                             this.diagram.startTextEdit
-                                // eslint-disable-next-line no-unexpected-multiline
-                                (obj, id || (annotation instanceof TextElement ?
-                                    (annotation.id).split((obj as Node).id + '_')[1] : undefined));
+                            // eslint-disable-next-line no-unexpected-multiline
+                            (obj, id || (annotation instanceof TextElement ?
+                                (annotation.id).split((obj as Node).id + '_')[1] : undefined));
                         }
                     }
                 }
@@ -1774,7 +1779,7 @@ export class DiagramEventHandler {
                 !(obj as Node)) && objects && objects.length && (source instanceof Selector)) {
                 currentConnector = source.connectors[0];
                 for (i = objects.length - 1; i >= 0; i--) {
-                    nearNode = objects[i];
+                    nearNode = objects[parseInt(i.toString(), 10)];
                     if ((nearNode instanceof Node) && currentConnector && currentConnector.connectionPadding) {
                         obj = nearNode;
                         wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
@@ -1824,85 +1829,85 @@ export class DiagramEventHandler {
     /** @private */
     public getTool(action: Actions): ToolBase {
         switch (action) {
-            case 'Select':
-                return new SelectTool(this.commandHandler, true);
-            case 'Drag':
-                return new MoveTool(this.commandHandler);
-            case 'Rotate':
-                return new RotateTool(this.commandHandler);
-            case 'LayoutAnimation':
-                return new ExpandTool(this.commandHandler);
-            case 'FixedUserHandle':
-                return new FixedUserHandleTool(this.commandHandler, true);
+        case 'Select':
+            return new SelectTool(this.commandHandler, true);
+        case 'Drag':
+            return new MoveTool(this.commandHandler);
+        case 'Rotate':
+            return new RotateTool(this.commandHandler);
+        case 'LayoutAnimation':
+            return new ExpandTool(this.commandHandler);
+        case 'FixedUserHandle':
+            return new FixedUserHandleTool(this.commandHandler, true);
 
-            case 'Hyperlink':
-                return new LabelTool(this.commandHandler);
-            case 'ResizeSouthEast':
-            case 'ResizeSouthWest':
-            case 'ResizeNorthEast':
-            case 'ResizeNorthWest':
-            case 'ResizeSouth':
-            case 'ResizeNorth':
-            case 'ResizeWest':
-            case 'ResizeEast':
-                return new ResizeTool(this.commandHandler, action);
-            case 'ConnectorSourceEnd':
-            case 'ConnectorTargetEnd':
-            case 'BezierSourceThumb':
-            case 'BezierTargetThumb':
-                return new ConnectTool(this.commandHandler, action);
-            case 'SegmentEnd':
-            case 'OrthoThumb':
-                return new ConnectorEditing(this.commandHandler, action);
-            case 'Draw':
-                const shape: string = 'shape'; const basicShape: string = 'basicShape';
-                const type: string = findObjectType(this.diagram.drawingObject);
-                if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
-                    return new TextDrawingTool(this.commandHandler);
-                } else if(type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Freehand'){
-                    return new FreeHandTool(this.commandHandler);
-                } 
-                else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
-                    (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
-                    !((this.diagram.drawingObject.shape as BasicShapeModel).points)) {
-                    return new PolygonDrawingTool(this.commandHandler);
-                } else if (type === 'Node' ||
-                    (type === 'Node' && this.diagram.drawingObject.shape[shape] === 'Polygon' &&
-                        ((this.diagram.drawingObject.shape as BasicShapeModel).points))) {
-                    return new NodeDrawingTool(this.commandHandler, this.diagram.drawingObject as Node);
-                } else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Polyline') {
-                    return new PolyLineDrawingTool(
-                        this.commandHandler);
-                }
-                else if (type === 'Connector') {
-                    return new ConnectorDrawingTool(
-                        this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
-                }
-                break;
-            case 'Pan':
-                return new ZoomPanTool(this.commandHandler, false);
-            case 'PinchZoom':
-                return new ZoomPanTool(this.commandHandler, true);
-            case 'PortDrag':
-                return new MoveTool(this.commandHandler, 'Port');
-            case 'PortDraw':
+        case 'Hyperlink':
+            return new LabelTool(this.commandHandler);
+        case 'ResizeSouthEast':
+        case 'ResizeSouthWest':
+        case 'ResizeNorthEast':
+        case 'ResizeNorthWest':
+        case 'ResizeSouth':
+        case 'ResizeNorth':
+        case 'ResizeWest':
+        case 'ResizeEast':
+            return new ResizeTool(this.commandHandler, action);
+        case 'ConnectorSourceEnd':
+        case 'ConnectorTargetEnd':
+        case 'BezierSourceThumb':
+        case 'BezierTargetThumb':
+            return new ConnectTool(this.commandHandler, action);
+        case 'SegmentEnd':
+        case 'OrthoThumb':
+            return new ConnectorEditing(this.commandHandler, action);
+        case 'Draw':
+            const shape: string = 'shape'; const basicShape: string = 'basicShape';
+            const type: string = findObjectType(this.diagram.drawingObject);
+             if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
+                return new TextDrawingTool(this.commandHandler);
+            }else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Freehand'){
+                return new FreeHandTool(this.commandHandler);
+            }
+            else if (type === 'Node' && (this.diagram.drawingObject.shape[`${shape}`] === 'Polygon' ||
+                (isBlazor() && this.diagram.drawingObject.shape[`${basicShape}`] === 'Polygon')) &&
+                !((this.diagram.drawingObject.shape as BasicShapeModel).points)) {
+                return new PolygonDrawingTool(this.commandHandler);
+            }else if (type === 'Node' ||
+                (type === 'Node' && this.diagram.drawingObject.shape[`${shape}`] === 'Polygon' &&
+                ((this.diagram.drawingObject.shape as BasicShapeModel).points))) {
+                return new NodeDrawingTool(this.commandHandler, this.diagram.drawingObject as Node);
+            }else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Polyline') {
+                return new PolyLineDrawingTool(
+                    this.commandHandler);
+            }
+            else if (type === 'Connector') {
                 return new ConnectorDrawingTool(
                     this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
-            case 'LabelSelect':
-                return new SelectTool(this.commandHandler, true, 'LabelSelect');
-            case 'LabelDrag':
-                return new LabelDragTool(this.commandHandler);
-            case 'LabelResizeSouthEast':
-            case 'LabelResizeSouthWest':
-            case 'LabelResizeNorthEast':
-            case 'LabelResizeNorthWest':
-            case 'LabelResizeSouth':
-            case 'LabelResizeNorth':
-            case 'LabelResizeWest':
-            case 'LabelResizeEast':
-                return new LabelResizeTool(this.commandHandler, action);
-            case 'LabelRotate':
-                return new LabelRotateTool(this.commandHandler);
+            }
+            break;
+        case 'Pan':
+            return new ZoomPanTool(this.commandHandler, false);
+        case 'PinchZoom':
+            return new ZoomPanTool(this.commandHandler, true);
+        case 'PortDrag':
+            return new MoveTool(this.commandHandler, 'Port');
+        case 'PortDraw':
+            return new ConnectorDrawingTool(
+                this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
+        case 'LabelSelect':
+            return new SelectTool(this.commandHandler, true, 'LabelSelect');
+        case 'LabelDrag':
+            return new LabelDragTool(this.commandHandler);
+        case 'LabelResizeSouthEast':
+        case 'LabelResizeSouthWest':
+        case 'LabelResizeNorthEast':
+        case 'LabelResizeNorthWest':
+        case 'LabelResizeSouth':
+        case 'LabelResizeNorth':
+        case 'LabelResizeWest':
+        case 'LabelResizeEast':
+            return new LabelResizeTool(this.commandHandler, action);
+        case 'LabelRotate':
+            return new LabelRotateTool(this.commandHandler);
 
             //for coverage
             // case 'Custom':
@@ -2108,10 +2113,10 @@ export class DiagramEventHandler {
 
     private updateLaneChildNode(obj: NodeModel): void {
         for (let i: number = 0; i < ((obj.shape as SwimLaneModel).lanes.length); i++) {
-            if ((obj.shape as SwimLaneModel).lanes[i].children && (obj.shape as SwimLaneModel).lanes[i].children.length > 0) {
-                for (let j: number = 0; j < (obj.shape as SwimLaneModel).lanes[i].children.length; j++) {
-                    const id: string = (obj.shape as SwimLaneModel).lanes[i].children[j].id;
-                    const childNode: NodeModel = this.diagram.nameTable[id];
+            if ((obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children && (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children.length > 0) {
+                for (let j: number = 0; j < (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children.length; j++) {
+                    const id: string = (obj.shape as SwimLaneModel).lanes[parseInt(i.toString(), 10)].children[parseInt(j.toString(), 10)].id;
+                    const childNode: NodeModel = this.diagram.nameTable[`${id}`];
                     childNode.offsetX = childNode.wrapper.offsetX;
                     childNode.offsetY = childNode.wrapper.offsetY;
                 }
@@ -2140,7 +2145,7 @@ export class DiagramEventHandler {
                     container.updateColumnWidth(obj.columnIndex, helperObject.width, true, padding);
                     if ((obj as Node).isPhase) {
                         const id: string = (parentNode.shape as SwimLaneModel).phases[obj.columnIndex].header.id;
-                        const node: Node = this.diagram.nameTable[id];
+                        const node: Node = this.diagram.nameTable[`${id}`];
                         if (node.maxWidth < helperObject.width) {
                             node.maxWidth = helperObject.width;
                             node.wrapper.maxWidth = helperObject.width;
@@ -2220,7 +2225,7 @@ export class DiagramEventHandler {
                         },
                         annotations: (target as Node).annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
-                            (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                        (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                         minHeight: 25
                     } as NodeModel,
                     true);
@@ -2307,8 +2312,8 @@ class ObjectFinder {
             actualTarget = actualTarget.concat(layerObjTable[layer.zIndex] || []);
             for (const obj of actualTarget) {
                 const eventHandler: string = 'eventHandler';
-                if (obj.shape.type === 'Bpmn' && (obj as Node).processId && (!(diagram[eventHandler].tool instanceof MoveTool) ||
-                    (diagram[eventHandler].tool instanceof MoveTool) && canAllowDrop(obj))) {
+                if (obj.shape.type === 'Bpmn' && (obj as Node).processId && (!(diagram[`${eventHandler}`].tool instanceof MoveTool) ||
+                    (diagram[`${eventHandler}`].tool instanceof MoveTool) && canAllowDrop(obj))) {
                     const index: number = actualTarget.indexOf(diagram.nameTable[(obj as Node).processId]);
                     if (index > -1) { actualTarget.splice(index, 1); }
                 }
@@ -2319,12 +2324,12 @@ class ObjectFinder {
             }
         }
         for (let i: number = 0; i < actualTarget.length; i++) {
-            let parentObj: NodeModel = diagram.nameTable[(actualTarget[i] as Node).parentId];
+            let parentObj: NodeModel = diagram.nameTable[(actualTarget[parseInt(i.toString(), 10)] as Node).parentId];
             if (parentObj) {
                 const portElement: DiagramElement = this.findElementUnderMouse(parentObj as IElement, pt);
                 for (let j: number = 0; j < parentObj.ports.length; j++) {
-                    if (portElement.id.match('_' + parentObj.ports[j].id + '$')) {
-                        const port: PointPortModel = parentObj.ports[j];
+                    if (portElement.id.match('_' + parentObj.ports[parseInt(j.toString(), 10)].id + '$')) {
+                        const port: PointPortModel = parentObj.ports[parseInt(j.toString(), 10)];
                         if (canDrag(port, diagram) || canDraw(port, diagram)) {
                             return actualTarget as IElement[];
                         }
@@ -2342,10 +2347,10 @@ class ObjectFinder {
         this.checkSwimlane(actualTarget, diagram);
         if (eventArgs && !eventArgs.source) {
             for (let i: number = 0; i < actualTarget.length; i++) {
-                const parentNode: NodeModel = diagram.nameTable[(actualTarget[i] as Node).parentId];
+                const parentNode: NodeModel = diagram.nameTable[(actualTarget[parseInt(i.toString(), 10)] as Node).parentId];
                 if (parentNode && parentNode.shape.type === 'SwimLane') {
                     for (let j: number = 0; j < actualTarget.length; j++) {
-                        const connector: ConnectorModel | NodeModel = actualTarget[j];
+                        const connector: ConnectorModel | NodeModel = actualTarget[parseInt(j.toString(), 10)];
                         if (connector instanceof Connector) { actualTarget.splice(i, 1); }
                     }
                 }
@@ -2357,11 +2362,11 @@ class ObjectFinder {
     public checkSwimlane(actualTarget: (NodeModel | ConnectorModel)[], diagram: Diagram): void {
         let isNode: Boolean;
         for (let m: number = 0; m < actualTarget.length; m++) {
-            let obj: NodeModel | ConnectorModel = actualTarget[m];
+            let obj: NodeModel | ConnectorModel = actualTarget[parseInt(m.toString(), 10)];
             let parentNode: string;
             let node: Node;
             if (obj instanceof Node) {
-                parentNode = (actualTarget[m] as Node).parentId;
+                parentNode = (actualTarget[parseInt(m.toString(), 10)] as Node).parentId;
                 node = obj as Node;
             }
             if (parentNode === '') {
@@ -2371,14 +2376,14 @@ class ObjectFinder {
                     isNode = false;
                 }
             }
-            let parent: NodeModel = diagram.nameTable[parentNode];
+            let parent: NodeModel = diagram.nameTable[`${parentNode}`];
             if (parent && (parent as Node).isLane && diagram.nameTable[(parent as Node).parentId].zIndex > (obj as Node).zIndex) {
-                actualTarget[m] = parent;
+                actualTarget[parseInt(m.toString(), 10)] = parent;
             }
             if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {
-                if ((actualTarget[m] as Node).zIndex < (actualTarget[m - 1] as Node).zIndex) {
-                    let swap: NodeModel | ConnectorModel = actualTarget[m];
-                    actualTarget[m] = actualTarget[m - 1];
+                if ((actualTarget[parseInt(m.toString(), 10)] as Node).zIndex < (actualTarget[m - 1] as Node).zIndex) {
+                    let swap: NodeModel | ConnectorModel = actualTarget[parseInt(m.toString(), 10)];
+                    actualTarget[parseInt(m.toString(), 10)] = actualTarget[m - 1];
                     actualTarget[m - 1] = swap;
                 }
             }
@@ -2386,11 +2391,11 @@ class ObjectFinder {
         if (actualTarget.length >= 2) {
             let parent: string = '';
             for (let i: number = actualTarget.length - 1; i >= 0; i--) {
-                if ((actualTarget[i] as Node).parentId) {
-                    let parent1: string = findParentInSwimlane(actualTarget[i] as Node, diagram, parent);
+                if ((actualTarget[parseInt(i.toString(), 10)] as Node).parentId) {
+                    let parent1: string = findParentInSwimlane(actualTarget[parseInt(i.toString(), 10)] as Node, diagram, parent);
                     let parent2: string = findParentInSwimlane(actualTarget[i - 1] as Node, diagram, parent);
-                    let parentNode1: Node = diagram.nameTable[parent1];
-                    let parentNode2: Node = diagram.nameTable[parent2];
+                    let parentNode1: Node = diagram.nameTable[`${parent1}`];
+                    let parentNode2: Node = diagram.nameTable[`${parent2}`];
                     if (parentNode2 && parent1 !== parent2 && parentNode1.zIndex < parentNode2.zIndex) {
                         actualTarget.splice(i, 1);
                     }
@@ -2456,22 +2461,22 @@ class ObjectFinder {
                 ((canDrawOnce(diagram) || canContinuousDraw(diagram)) && getObjectType(diagram.drawingObject) === Connector)) {
                 const connector: ConnectorModel = diagram.selectedItems.connectors[0];
                 for (let i: number = objects.length - 1; i >= 0; i--) {
-                    outPort = getInOutConnectPorts(objects[i] as Node, false);
-                    inPort = getInOutConnectPorts(objects[i] as Node, true);
-                    const tool: ConnectTool = (diagram[eventHandler].tool as ConnectTool);
-                    const portElement: DiagramElement = this.findTargetElement(objects[i].wrapper, position, undefined);
+                    outPort = getInOutConnectPorts(objects[parseInt(i.toString(), 10)] as Node, false);
+                    inPort = getInOutConnectPorts(objects[parseInt(i.toString(), 10)] as Node, true);
+                    const tool: ConnectTool = (diagram[`${eventHandler}`].tool as ConnectTool);
+                    const portElement: DiagramElement = this.findTargetElement(objects[parseInt(i.toString(), 10)].wrapper, position, undefined);
 
-                    if (action === 'Draw' && portElement && (objects[i] instanceof Node) && !checkPort(objects[i], portElement)) {
-                        if (((tool && tool[endPoint] === 'ConnectorSourceEnd') && !canOutConnect(objects[i] as NodeModel)) ||
-                            ((tool && tool[endPoint] === 'ConnectorTargetEnd') && !canInConnect(objects[i] as NodeModel))) {
+                    if (action === 'Draw' && portElement && (objects[parseInt(i.toString(), 10)] instanceof Node) && !checkPort(objects[parseInt(i.toString(), 10)], portElement)) {
+                        if (((tool && tool[`${endPoint}`] === 'ConnectorSourceEnd') && !canOutConnect(objects[parseInt(i.toString(), 10)] as NodeModel)) ||
+                            ((tool && tool[`${endPoint}`] === 'ConnectorTargetEnd') && !canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel))) {
                             return actualTarget as IElement;
                         }
                     }
                     // eslint-disable-next-line max-len
-                    if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort)) || canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort))) ||
-                        (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] === 'ConnectorTargetEnd' &&
-                            (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))))) {
-                        actualTarget = objects[i];
+                    if (objects[parseInt(i.toString(), 10)] instanceof Node && ((canOutConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortOutConnect(outPort)) || canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort))) ||
+                        (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[`${endPoint}`] === 'ConnectorTargetEnd' &&
+                            (canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort)))))) {
+                        actualTarget = objects[parseInt(i.toString(), 10)];
                         if (connector) {
                             actualTarget = this.isTarget(actualTarget as Node, diagram, action);
                         }
@@ -2481,18 +2486,18 @@ class ObjectFinder {
                 }
             } else if (action === 'ConnectorTargetEnd' && source) {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
-                    inPort = getInOutConnectPorts(objects[i] as Node, true);
-                    if (objects[i] instanceof Node && (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))) {
-                        actualTarget = objects[i];
+                    inPort = getInOutConnectPorts(objects[parseInt(i.toString(), 10)] as Node, true);
+                    if (objects[parseInt(i.toString(), 10)] instanceof Node && (canInConnect(objects[parseInt(i.toString(), 10)] as NodeModel) || (canPortInConnect(inPort)))) {
+                        actualTarget = objects[parseInt(i.toString(), 10)];
                         actualTarget = this.isTarget(actualTarget as Node, diagram, action);
                         eventArg.actualObject = actualTarget as Node;
                         return actualTarget as IElement;
                     }
                 }
-            } else if (source && (action === 'Drag' || (diagram[eventHandler].tool instanceof MoveTool))) {
+            } else if (source && (action === 'Drag' || (diagram[`${eventHandler}`].tool instanceof MoveTool))) {
                 let index: number = 0;
                 for (let i: number = 0; i < objects.length; i++) {
-                    const temp: NodeModel | ConnectorModel = objects[i];
+                    const temp: NodeModel | ConnectorModel = objects[parseInt(i.toString(), 10)];
                     if (source !== temp && (temp instanceof Connector ||
                         !position || temp.wrapper.bounds.containsPoint(position))) {
                         if (canAllowDrop(temp as NodeModel | ConnectorModel)) {
@@ -2518,9 +2523,9 @@ class ObjectFinder {
                     eventArg.actualObject = actualTarget as Node;
                 }
                 return actualTarget as IElement;
-            } else if ((action === 'Select' || action === 'Pan') && diagram[eventHandler].tool) {
+            } else if ((action === 'Select' || action === 'Pan') && diagram[`${eventHandler}`].tool) {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Connector) {
+                    if (objects[parseInt(i.toString(), 10)] instanceof Connector) {
                         const objj1 = objects[i - 1] as NodeModel;
                         if (objects[i - 1] instanceof Node && objj1.ports) {
                             const portElement: DiagramElement = this.findTargetElement(objj1.wrapper, position, undefined);
@@ -2528,8 +2533,8 @@ class ObjectFinder {
                                 return objj1 as IElement;
                             }
                             for (let j: number = 0; j < objj1.ports.length; j++) {
-                                if (portElement && portElement.id.match('_' + objj1.ports[j].id + '$')) {
-                                    if (canDraw(objj1.ports[j], diagram)) {
+                                if (portElement && portElement.id.match('_' + objj1.ports[parseInt(j.toString(), 10)].id + '$')) {
+                                    if (canDraw(objj1.ports[parseInt(j.toString(), 10)], diagram)) {
                                         return objj1 as IElement;
                                     }
                                 }
@@ -2539,7 +2544,7 @@ class ObjectFinder {
                 }
                 actualTarget = objects[objects.length - 1];
                 eventArg.actualObject = actualTarget as Node;
-                if (!diagram[eventHandler].itemClick(actualTarget, true)) {
+                if (!diagram[`${eventHandler}`].itemClick(actualTarget, true)) {
                     if ((actualTarget as Node).parentId) {
                         let obj: Node = actualTarget as Node;
                         const selected: boolean = isSelected(diagram, obj);
@@ -2554,10 +2559,10 @@ class ObjectFinder {
                 }
             } else if (action === 'Pan' || action === 'LayoutAnimation') {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
-                    if (objects[i] instanceof Node || objects[i] instanceof Connector) {
-                        const portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
+                    if (objects[parseInt(i.toString(), 10)] instanceof Node || objects[parseInt(i.toString(), 10)] instanceof Connector) {
+                        const portElement = this.findTargetElement(objects[parseInt(i.toString(), 10)].wrapper, position, undefined);
                         if ((action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
-                            return objects[i] as IElement;
+                            return objects[parseInt(i.toString(), 10)] as IElement;
                         }
                     }
                 }
@@ -2592,7 +2597,7 @@ class ObjectFinder {
     /** @private */
     public findTargetElement(container: Container, position: PointModel, padding?: number): DiagramElement {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
-            const element: DiagramElement = container.children[i];
+            const element: DiagramElement = container.children[parseInt(i.toString(), 10)];
             if (element && element.outerBounds.containsPoint(position, padding || 0)) {
                 if (element instanceof Container) {
                     const target: DiagramElement = this.findTargetElement(element, position);

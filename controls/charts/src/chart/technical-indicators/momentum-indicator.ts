@@ -42,12 +42,12 @@ export class MomentumIndicator extends TechnicalAnalysis {
             if (validData.length >= indicator.period) {
                 for (let i: number = 0; i < validData.length; i++) {
                     upperCollection.push(this.getDataPoint(
-                        validData[i].x, 100, validData[i], upperSeries, upperCollection.length));
+                        validData[i as number].x, 100, validData[i as number], upperSeries, upperCollection.length));
                     if (!(i < length)) {
                         signalCollection.push(this.getDataPoint(
-                            validData[i].x,
-                            (Number(validData[i].close) / Number(validData[i - length].close) * 100),
-                            validData[i], signalSeries, signalCollection.length));
+                            validData[i as number].x,
+                            (Number(validData[i as number].close) / Number(validData[i - length].close) * 100),
+                            validData[i as number], signalSeries, signalCollection.length));
                     }
                 }
             }

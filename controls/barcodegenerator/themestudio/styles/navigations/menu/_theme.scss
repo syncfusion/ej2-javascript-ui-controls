@@ -1,5 +1,6 @@
 @import '../context-menu/theme-mixin.scss';
 @include export-module('menu-theme') {
+
   /*! menu theme */
   .e-menu-wrapper,
   .e-menu-container {
@@ -7,7 +8,7 @@
 
     @at-root {
       & .e-menu {
-        @if $skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
           background-color: $cmenu-ul-bgcolor;
         }
         @else {
@@ -110,7 +111,7 @@
             & .e-menu-icon {
               color: $submenu-color;
             }
-        }
+          }
           @else if $skin-name == 'FluentUI' {
             & .e-caret {
               color: $menu-icon-color;
@@ -233,6 +234,26 @@
 
       &:active {
         background: $cmenu-li-selection-bgcolor;
+      }
+    }
+
+    &.e-inherit {
+      border: 0;
+
+      & .e-menu,
+      & .e-menu .e-menu-item .e-menu-icon,
+      & .e-menu .e-menu-item .e-caret {
+        color: inherit;
+      }
+
+      & .e-menu {
+        background: inherit;
+      }
+
+      & .e-menu .e-menu-item.e-selected,
+      & .e-menu .e-menu-item.e-focused {
+        background: rgba(transparent, .056);
+        color: inherit;
       }
     }
   }

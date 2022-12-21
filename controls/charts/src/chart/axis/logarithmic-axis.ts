@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/tslint/config */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
@@ -58,8 +59,8 @@ export class Logarithmic extends Double {
         let logEnd: number = this.max === 1 ? 1 : logBase(<number>this.max, axis.logBase);
         logEnd = isFinite(logStart) ? logEnd : <number>this.max;
         this.min = Math.floor(logStart / 1);
-        let isRectSeries: boolean = axis.series && axis.series.some((item) => {
-            return (item.type.indexOf("Column") !== -1 || item.type.indexOf("Bar") !== -1) && item.type.indexOf("Range") === -1;
+        const isRectSeries: boolean = axis.series && axis.series.some((item) => {
+            return (item.type.indexOf('Column') !== -1 || item.type.indexOf('Bar') !== -1) && item.type.indexOf('Range') === -1;
         });
         if (isRectSeries) {
             this.min = (this.min <= 0) ? (+this.min - 1) : this.min;
@@ -101,7 +102,7 @@ export class Logarithmic extends Double {
         let niceInterval: number = delta;
         const minInterval: number = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
         for (let j: number = 0, len: number = axis.intervalDivs.length; j < len; j++) {
-            const currentInterval: number = minInterval * axis.intervalDivs[j];
+            const currentInterval: number = minInterval * axis.intervalDivs[j as number];
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {
                 break;
             }
@@ -126,11 +127,11 @@ export class Logarithmic extends Double {
         }
         const axisFormat: string = this.getFormat(axis);
         const isCustomFormat: boolean = axisFormat.match('{value}') !== null;
-        let startValue: number = Math.pow(axis.logBase, axis.visibleRange.min);
+        const startValue: number = Math.pow(axis.logBase, axis.visibleRange.min);
         axis.format = chart.intl.getNumberFormat({
             format: isCustomFormat ? '' : axisFormat,
             useGrouping: chart.useGroupingSeparator,
-            maximumFractionDigits: startValue < 1 ? 20 : 3,
+            maximumFractionDigits: startValue < 1 ? 20 : 3
         });
         axis.startLabel = axis.format(startValue < 1 ? +startValue.toPrecision(1) : startValue);
         axis.endLabel = axis.format(Math.pow(axis.logBase, axis.visibleRange.max));

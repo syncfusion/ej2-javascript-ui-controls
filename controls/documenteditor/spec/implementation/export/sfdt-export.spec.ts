@@ -16501,3 +16501,38 @@ describe('Nested table and word export issue', () => {
 
     });
 });
+
+describe('Sfdt export for character format fontFamilyAscii validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    let exportData: any;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSfdtExport: true  });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Character format in export fontFamilyAscii validation', () => {
+        console.log('Character format in export fontFamilyAscii validation');
+        editor.editor.insertText("font family ascii test.");
+        exportData = JSON.parse(editor.sfdtExportModule.serialize());
+        expect(exportData.characterFormat.fontFamily).toBe('Calibri');
+        expect(exportData.characterFormat.fontFamilyAscii).toBe('Calibri');
+    });
+});

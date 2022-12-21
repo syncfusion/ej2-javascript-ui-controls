@@ -303,8 +303,8 @@ describe('Selection commands', () => {
     });
     it('Apply fontsize tag for text node', () => {
         SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
-        expect((ptag.childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
-        expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for text node', () => {
         SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
@@ -333,45 +333,50 @@ describe('Selection commands', () => {
     });
     it('Re - Apply fontsize tag for text node', () => {
         SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '40px');
-        expect((ptag.childNodes[0] as HTMLElement).style.fontSize).toEqual('40px');
-        expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('40px');
+        expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontname tag for text node', () => {
         SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'monospace');
-        expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.fontFamily).toEqual('monospace');
-        expect((ptag.childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.fontFamily).toEqual('monospace');
+        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Re - Apply fontcolor tag for text node', () => {
         SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(226, 10, 10)');
-        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).style.color).toEqual('rgb(226, 10, 10)');
-        expect((ptag.childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[0] as HTMLElement).style.color).toEqual('rgb(226, 10, 10)');
+        expect((ptag.childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontcolor tag for already applied specific text node', () => {
         fontTag = ptag.childNodes[0].childNodes[0].childNodes[0].childNodes[0];
         let text1: Text = fontTag.childNodes[0] as Text;
         domSelection.setSelectionText(document, text1, text1, 3, 10);
         SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P', 'rgb(102, 102, 0)');
-        expect((ptag.childNodes[0].childNodes[1] as HTMLElement).style.color).toEqual('rgb(102, 102, 0)');
-        expect((ptag.childNodes[0].childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[1] as HTMLElement).style.color).toEqual('rgb(102, 102, 0)');
+        expect((ptag.childNodes[1] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontname tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'fontname', parentDiv, 'P', 'Arial');
-        expect((ptag.childNodes[0].childNodes[1].childNodes[0] as HTMLElement).style.fontFamily).toEqual('Arial');
-        expect((ptag.childNodes[0].childNodes[1].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[1].childNodes[0] as HTMLElement).style.fontFamily).toEqual('Arial');
+        expect((ptag.childNodes[1].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply fontsize tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'fontsize', parentDiv, 'P', '20px');
-        expect((ptag.childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
-        expect((ptag.childNodes[0].childNodes[1].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect((ptag.childNodes[1].childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('20px');
+        expect((ptag.childNodes[1].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
     });
     it('Apply backgroundcolor tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'backgroundcolor', parentDiv, 'P', 'rgb(246, 198, 206)');
-        expect( (ptag.childNodes[0].childNodes[1].childNodes[0] as HTMLElement).style.backgroundColor).toEqual('rgb(246, 198, 206)');
-        expect( (ptag.childNodes[0].childNodes[1].childNodes[0] as HTMLElement).nodeName.toLowerCase()).toEqual('span');
+        expect(
+        (ptag.childNodes[1].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).style.backgroundColor)
+        .toEqual('rgb(246, 198, 206)');
+        expect(
+            (ptag.childNodes[1].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase())
+            .toEqual('span');
     });
     it('Apply uppercase tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'uppercase', parentDiv, 'P');
-        expect(ptag.childNodes[0].childNodes[1].childNodes[0].childNodes[0].textContent).toEqual(' RICH T');
+        expect(ptag.childNodes[1].childNodes[0].childNodes[0].childNodes[0].childNodes[0].textContent)
+        .toEqual(' RICH T');
     });
 
     // spec coverage 

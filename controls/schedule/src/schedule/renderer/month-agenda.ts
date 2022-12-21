@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createElement, addClass, formatUnit, remove } from '@syncfusion/ej2-base';
+import { EventHandler, createElement, addClass, formatUnit, remove } from '@syncfusion/ej2-base';
 import { CellClickEventArgs, NotifyEventArgs, TdData } from '../base/interface';
 import { AgendaBase } from '../event-renderer/agenda-base';
 import { Schedule } from '../base/schedule';
@@ -51,11 +51,18 @@ export class MonthAgenda extends Month {
         }
         const contentArea: HTMLElement = this.getContentAreaElement().firstElementChild as HTMLElement;
         const dateHeader: HTMLElement = this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement;
-        const availHeight: number = this.parent.element.offsetHeight - headerHeight - dateHeader.offsetHeight - contentArea.offsetHeight;
+        const availHeight: number = this.parent.element.offsetHeight - headerHeight - dateHeader.offsetHeight;
+        const contentAreaHeight: number = (this.parent.activeViewOptions.interval > 1) ?
+            Math.round(availHeight * 0.8) : contentArea.offsetHeight;
+        const appContainerHeight: number = availHeight - contentAreaHeight;
         const wrapperContainer: HTMLElement = this.element.querySelector('.' + cls.WRAPPER_CONTAINER_CLASS) as HTMLElement;
         const eventWrapper: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_WRAP_CLASS) as HTMLElement;
         if (this.parent.height !== 'auto') {
-            wrapperContainer.style.height = eventWrapper.style.height = formatUnit(availHeight);
+            if (this.parent.activeViewOptions.interval > 1) {
+                contentArea.style.height = formatUnit(contentAreaHeight);
+                EventHandler.add(contentArea, 'scroll', this.onContentScroll, this);
+            }
+            wrapperContainer.style.height = eventWrapper.style.height = formatUnit(appContainerHeight);
         }
     }
 
@@ -72,7 +79,7 @@ export class MonthAgenda extends Month {
         let count: number = 0;
         for (const date of this.renderDates) {
             const filterData: Record<string, any>[] = this.appointmentFiltering(date);
-            const workCell: Element = this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS)[count];
+            const workCell: Element = this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS)[parseInt(count.toString(), 10)];
             if (filterData.length > 0) {
                 if (!workCell.querySelector('.' + cls.APPOINTMENT_INDICATOR_CLASS)) {
                     workCell.appendChild(createElement('div', { className: cls.APPOINTMENT_INDICATOR_CLASS }));

@@ -74,7 +74,7 @@ export class EditRender {
         const index: number = gObj.getFrozenMode() === 'Right' && gObj.editSettings.mode === 'Normal' ? 1 : 0;
         const form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
-            gObj.element.getElementsByClassName('e-gridform')[index];
+            gObj.element.getElementsByClassName('e-gridform')[parseInt(index.toString(), 10)];
         const isVirtualFrozen: boolean = frzCols && this.parent.enableColumnVirtualization && args.isScroll;
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             const rowIndex: number = parseInt(args.row.getAttribute(literals.dataRowIndex), 10);
@@ -199,8 +199,8 @@ export class EditRender {
         }
         const isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            const col: Column = cols[i];
-            if (this.parent.editModule.checkColumnIsGrouped(col) || (isVirtualFrozen && cols[i].getFreezeTableName() !== 'movable')
+            const col: Column = cols[parseInt(i.toString(), 10)];
+            if (this.parent.editModule.checkColumnIsGrouped(col) || (isVirtualFrozen && cols[parseInt(i.toString(), 10)].getFreezeTableName() !== 'movable')
                 || (args.isCustomFormValidation && (col.commands || col.commandsTemplate || !col.field))) {
                 continue;
             }
@@ -211,7 +211,7 @@ export class EditRender {
                 const cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
                 const cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 const td: Element = cellRenderer.render(
-                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.dataRowIndex) : 0 }, this.parent.enableVirtualization);
+                    cell[parseInt(i.toString(), 10)], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.dataRowIndex) : 0 }, this.parent.enableVirtualization);
                 const div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;

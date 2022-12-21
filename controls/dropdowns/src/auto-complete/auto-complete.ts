@@ -39,7 +39,7 @@ export class AutoComplete extends ComboBox {
      * * groupBy - Group the list items with it's related items by mapping groupBy field
      *
      * {% codeBlock src='autocomplete/fields/index.md' %}{% endcodeBlock %}
-     * 
+     *
      * > For more details about the field mapping refer to [`Data binding`](../../auto-complete/data-binding) documentation.
      *
      * @default { value: null, iconCss: null, groupBy: null}
@@ -267,7 +267,7 @@ export class AutoComplete extends ComboBox {
             // Since defualt value of suggestioncount is 20, checked the condition
             if (this.suggestionCount !== 20) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
-                    if (filterQuery.queries[queryElements].fn === 'onTake') {
+                    if (filterQuery.queries[queryElements as number].fn === 'onTake') {
                         filterQuery.queries.splice(queryElements, 1);
                     }
                 }
@@ -549,8 +549,8 @@ export class AutoComplete extends ComboBox {
             for (let i: number = 0; i < this.liCollections.length; i++) {
                 const isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
-                    revertHighlightSearch(this.liCollections[i]);
-                    highlightSearch(this.liCollections[i], this.queryString, this.ignoreCase, this.filterType);
+                    revertHighlightSearch(this.liCollections[i as number]);
+                    highlightSearch(this.liCollections[i as number], this.queryString, this.ignoreCase, this.filterType);
                 }
             }
         }

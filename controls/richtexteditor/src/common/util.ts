@@ -75,39 +75,39 @@ export function updateTextNode(value: string): string {
         }
         const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
         for (let i: number = 0; i < tableElm.length; i++) {
-            if (tableElm[i].getAttribute('border') === '0') {
-                tableElm[i].removeAttribute('border');
+            if (tableElm[i as number].getAttribute('border') === '0') {
+                tableElm[i as number].removeAttribute('border');
             }
-            const tdElm: NodeListOf<HTMLElement> = tableElm[i].querySelectorAll('td');
+            const tdElm: NodeListOf<HTMLElement> = tableElm[i as number].querySelectorAll('td');
             for (let j: number = 0; j < tdElm.length; j++) {
-                if (tdElm[j].style.borderLeft === 'none') {
-                    tdElm[j].style.removeProperty('border-left');
+                if (tdElm[j as number].style.borderLeft === 'none') {
+                    tdElm[j as number].style.removeProperty('border-left');
                 }
-                if (tdElm[j].style.borderRight === 'none') {
-                    tdElm[j].style.removeProperty('border-right');
+                if (tdElm[j as number].style.borderRight === 'none') {
+                    tdElm[j as number].style.removeProperty('border-right');
                 }
-                if (tdElm[j].style.borderBottom === 'none') {
-                    tdElm[j].style.removeProperty('border-bottom');
+                if (tdElm[j as number].style.borderBottom === 'none') {
+                    tdElm[j as number].style.removeProperty('border-bottom');
                 }
-                if (tdElm[j].style.borderTop === 'none') {
-                    tdElm[j].style.removeProperty('border-top');
+                if (tdElm[j as number].style.borderTop === 'none') {
+                    tdElm[j as number].style.removeProperty('border-top');
                 }
-                if (tdElm[j].style.border === 'none') {
-                    tdElm[j].style.removeProperty('border');
+                if (tdElm[j as number].style.border === 'none') {
+                    tdElm[j as number].style.removeProperty('border');
                 }
             }
-            if (!tableElm[i].classList.contains('e-rte-table')) {
-                tableElm[i].classList.add('e-rte-table');
+            if (!tableElm[i as number].classList.contains('e-rte-table')) {
+                tableElm[i as number].classList.add('e-rte-table');
             }
         }
         const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
-            if (!imageElm[i].classList.contains('e-rte-image')) {
-                imageElm[i].classList.add('e-rte-image');
+            if (!imageElm[i as number].classList.contains('e-rte-image')) {
+                imageElm[i as number].classList.add('e-rte-image');
             }
-            if (!(imageElm[i].classList.contains('e-imginline') ||
-            imageElm[i].classList.contains('e-imgbreak'))) {
-                imageElm[i].classList.add('e-imginline');
+            if (!(imageElm[i as number].classList.contains('e-imginline') ||
+            imageElm[i as number].classList.contains('e-imgbreak'))) {
+                imageElm[i as number].classList.add('e-imginline');
             }
         }
     }

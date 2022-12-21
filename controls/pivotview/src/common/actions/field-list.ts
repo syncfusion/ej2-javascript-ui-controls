@@ -17,14 +17,17 @@ export class FieldList implements IAction {
      */
     private parent: PivotView;
     private element: HTMLElement;
-    /* eslint-disable */
     private handlers: {
         load: Function,
         update: Function
     };
-    private timeOutObj: any;
+    private timeOutObj: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-    /** Constructor for Field List module */
+    /**
+     * Constructor for Field List module.
+     *
+     * @param {PivotView} parent - It represent the parent
+     */
     constructor(parent: PivotView) {
         this.parent = parent;
         this.addEventListener();
@@ -32,10 +35,11 @@ export class FieldList implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - It returns a ModuleName
      * @private
      */
     protected getModuleName(): string {
-        /* eslint-enable */
         return 'fieldList';
     }
 
@@ -46,7 +50,7 @@ export class FieldList implements IAction {
                 ';display:none'
         });
         if (select('#' + this.parent.element.id + 'containerwrapper', document) === null) {
-            let containerWrapper: HTMLElement = createElement('div', {
+            const containerWrapper: HTMLElement = createElement('div', {
                 id: this.parent.element.id + 'containerwrapper',
                 styles: 'height:' + (isNaN(this.parent.height as number) ? this.parent.height : (this.parent.height + 'px'))
             });
@@ -116,7 +120,7 @@ export class FieldList implements IAction {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         }
         if (currentWidth && (!isNullOrUndefined((this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS))))) {
-            let actualWidth: number = currentWidth < 400 ? 400 : currentWidth;
+            const actualWidth: number = currentWidth < 400 ? 400 : currentWidth;
             setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                 left: formatUnit(this.parent.enableRtl ?
                     -Math.abs((actualWidth) -
@@ -124,7 +128,7 @@ export class FieldList implements IAction {
                     (actualWidth) -
                     (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
 
-                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ""
+                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ''
             });
             if (this.parent.enableRtl) {
                 addClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
@@ -134,8 +138,9 @@ export class FieldList implements IAction {
         }
     }
 
-    /* eslint-disable-next-line */
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -150,8 +155,9 @@ export class FieldList implements IAction {
         this.parent.on(events.uiUpdate, this.handlers.update, this);
     }
 
-    /* eslint-disable-next-line */
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -164,6 +170,7 @@ export class FieldList implements IAction {
 
     /**
      * To destroy the Field List.
+     *
      * @returns {void}
      * @hidden
      */

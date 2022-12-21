@@ -90,8 +90,8 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             labelFontFamily: 'HelveticaNeue'
         };
         break;
-	case 'tailwind':
-		style = {
+    case 'tailwind':
+        style = {
             backgroundColor: 'transparent',
             titleFontColor: '#374151',
             subTitleFontColor: '#374151',
@@ -108,8 +108,8 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             labelFontFamily: 'Inter'
         };
         break;
-	case 'tailwinddark':
-		style = {
+    case 'tailwinddark':
+        style = {
             backgroundColor: 'transparent',
             titleFontColor: '#D1D5DB',
             subTitleFontColor: '#D1D5DB',
@@ -123,7 +123,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             fontSize: '14px',
             subtitleFontSize: '12px',
             legendFontSize: '12px',
-            labelFontFamily: 'Inter'  
+            labelFontFamily: 'Inter'
         };
         break;
     case 'bootstrap5':
@@ -141,7 +141,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             fontSize: '14px',
             subtitleFontSize: '12px',
             legendFontSize: '12px',
-            labelFontFamily: 'Helvetica Neue'  
+            labelFontFamily: 'Helvetica Neue'
         };
         break;
     case 'bootstrap5dark':
@@ -159,7 +159,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             fontSize: '14px',
             subtitleFontSize: '12px',
             legendFontSize: '12px',
-            labelFontFamily: 'Helvetica Neue'  
+            labelFontFamily: 'Helvetica Neue'
         };
         break;
     case 'fluent':
@@ -177,7 +177,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             fontSize: '14px',
             subtitleFontSize: '12px',
             legendFontSize: '12px',
-            labelFontFamily: 'Segoe UI'  
+            labelFontFamily: 'Segoe UI'
         };
         break;
     case 'fluentdark':
@@ -195,10 +195,10 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             fontSize: '14px',
             subtitleFontSize: '12px',
             legendFontSize: '12px',
-            labelFontFamily: 'Segoe UI'  
+            labelFontFamily: 'Segoe UI'
         };
         break;
-	default:
+    default:
         style = {
             backgroundColor: '#FFFFFF',
             titleFontColor: '#424242',

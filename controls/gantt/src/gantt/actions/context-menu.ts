@@ -81,6 +81,7 @@ export class ContextMenu {
         this.contextMenu = new Menu({
             items: this.getMenuItems(),
             locale: this.parent.locale,
+            enableRtl: this.parent.enableRtl,
             target: target,
             animationSettings: { effect: 'None' },
             select: this.contextMenuItemClick.bind(this),
@@ -113,92 +114,92 @@ export class ContextMenu {
             }
         }
         switch (this.item) {
-        case 'TaskInformation':
-            if(isNaN(Number(this.rowData.ganttProperties.rowUniqueID))) {
-                this.parent.openEditDialog(this.rowData.ganttProperties.rowUniqueID);
-            } else {
-                this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
-            }
-            break;
-        case 'Above':
-        case 'Below':
-        case 'Child':
-            position = this.item;
-            data = extend({}, {}, this.rowData.taskData, true);
-            taskfields = this.parent.taskFields;
-            if (data[taskfields.startDate]) {
-                this.parent.setRecordValue(taskfields.startDate, this.rowData.ganttProperties.startDate, data, true);
-            }
-            if (data[taskfields.endDate]) {
-                this.parent.setRecordValue(taskfields.endDate, this.rowData.ganttProperties.endDate, data, true);
-            }
-            if (!isNullOrUndefined(taskfields.dependency)) {
-                data[taskfields.dependency] = null;
-            }
-            if (!isNullOrUndefined(taskfields.child) && data[taskfields.child]) {
-                delete data[taskfields.child];
-            }
-            if (!isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
-                data[taskfields.parentID] = null;
-            }
-            if (this.rowData) {
-                const rowIndex: number = this.parent.updatedRecords.indexOf(this.rowData);
-                this.parent.addRecord(data, position, rowIndex);
-            }
-            break;
-        case 'Milestone':
-        case 'ToMilestone':
-            this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
-            break;
-        case 'DeleteTask':
-            this.parent.editModule.deleteRecord(this.rowData);
-            break;
-        case 'ToTask':
-            data = extend({}, {}, this.rowData.taskData, true);
-            taskfields = this.parent.taskFields;
-            if (!isNullOrUndefined(taskfields.duration)) {
-                const ganttProp: ITaskData = this.rowData.ganttProperties;
-                data[taskfields.duration] = '1 ' + ganttProp.durationUnit;
-            } else {
-                data[taskfields.startDate] = new Date(this.rowData.taskData[taskfields.startDate]);
-                const endDate: Date = new Date(this.rowData.taskData[taskfields.startDate]);
-                endDate.setDate(endDate.getDate() + 1);
-                data[taskfields.endDate] = endDate;
-            }
-            if (!isNullOrUndefined(data[taskfields.milestone])) {
-                if (data[taskfields.milestone] === true) {
-                    data[taskfields.milestone] = false;
+            case 'TaskInformation':
+                if (isNaN(Number(this.rowData.ganttProperties.rowUniqueID))) {
+                    this.parent.openEditDialog(this.rowData.ganttProperties.rowUniqueID);
+                } else {
+                    this.parent.openEditDialog(Number(this.rowData.ganttProperties.rowUniqueID));
                 }
-            }
-            this.parent.updateRecordByID(data);
-            break;
-        case 'Cancel':
-            this.parent.cancelEdit();
-            break;
-        case 'Save':
-            this.parent.editModule.cellEditModule.isCellEdit = false;
-            this.parent.treeGrid.grid.saveCell();
-            break;
-        case 'Dependency' + index:
-            this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
-            break;
-        case 'Auto':
-        case 'Manual':
-            this.parent.changeTaskMode(this.rowData);
-            break;
-        case 'Indent':
-            this.parent.indent();
-            break;
-        case 'Outdent':
-            this.parent.outdent();
-            break;
-        case 'Left':
-        case 'Right':
-            this.mergeCall(this.item);
-            break;
-        case 'SplitTask':
-            this.splitTaskCall(args);
-            break;
+                break;
+            case 'Above':
+            case 'Below':
+            case 'Child':
+                position = this.item;
+                data = extend({}, {}, this.rowData.taskData, true);
+                taskfields = this.parent.taskFields;
+                if (data[taskfields.startDate]) {
+                    this.parent.setRecordValue(taskfields.startDate, this.rowData.ganttProperties.startDate, data, true);
+                }
+                if (data[taskfields.endDate]) {
+                    this.parent.setRecordValue(taskfields.endDate, this.rowData.ganttProperties.endDate, data, true);
+                }
+                if (!isNullOrUndefined(taskfields.dependency)) {
+                    data[taskfields.dependency] = null;
+                }
+                if (!isNullOrUndefined(taskfields.child) && data[taskfields.child]) {
+                    delete data[taskfields.child];
+                }
+                if (!isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
+                    data[taskfields.parentID] = null;
+                }
+                if (this.rowData) {
+                    const rowIndex: number = this.parent.updatedRecords.indexOf(this.rowData);
+                    this.parent.addRecord(data, position, rowIndex);
+                }
+                break;
+            case 'Milestone':
+            case 'ToMilestone':
+                this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
+                break;
+            case 'DeleteTask':
+                this.parent.editModule.deleteRecord(this.rowData);
+                break;
+            case 'ToTask':
+                data = extend({}, {}, this.rowData.taskData, true);
+                taskfields = this.parent.taskFields;
+                if (!isNullOrUndefined(taskfields.duration)) {
+                    const ganttProp: ITaskData = this.rowData.ganttProperties;
+                    data[taskfields.duration] = '1 ' + ganttProp.durationUnit;
+                } else {
+                    data[taskfields.startDate] = new Date(this.rowData.taskData[taskfields.startDate]);
+                    const endDate: Date = new Date(this.rowData.taskData[taskfields.startDate]);
+                    endDate.setDate(endDate.getDate() + 1);
+                    data[taskfields.endDate] = endDate;
+                }
+                if (!isNullOrUndefined(data[taskfields.milestone])) {
+                    if (data[taskfields.milestone] === true) {
+                        data[taskfields.milestone] = false;
+                    }
+                }
+                this.parent.updateRecordByID(data);
+                break;
+            case 'Cancel':
+                this.parent.cancelEdit();
+                break;
+            case 'Save':
+                this.parent.editModule.cellEditModule.isCellEdit = false;
+                this.parent.treeGrid.grid.saveCell();
+                break;
+            case 'Dependency' + index:
+                this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
+                break;
+            case 'Auto':
+            case 'Manual':
+                this.parent.changeTaskMode(this.rowData);
+                break;
+            case 'Indent':
+                this.parent.indent();
+                break;
+            case 'Outdent':
+                this.parent.outdent();
+                break;
+            case 'Left':
+            case 'Right':
+                this.mergeCall(this.item);
+                break;
+            case 'SplitTask':
+                this.splitTaskCall(args);
+                break;
         }
         args.type = 'Content';
         args.rowData = this.rowData;
@@ -221,6 +222,11 @@ export class ContextMenu {
         };
         // eslint-disable-next-line
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
             this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
         });
     }
@@ -241,6 +247,11 @@ export class ContextMenu {
             target: this.targetElement
         };
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
             if (eventArgs.cancel === false) {
                 this.parent.chartRowsModule.mergeTask(this.rowData[taskSettings.id], segmentIndexes);
             }
@@ -249,14 +260,30 @@ export class ContextMenu {
     // eslint-disable-next-line
     private getClickedDate(element: HTMLElement): Date {
         // context menu click position
-        const ganttElementPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.element);
+        let ganttElementPositionLeft: number ;
         // task left position
-        const pageLeft: number = ganttElementPosition.left + this.parent.ganttChartModule.chartElement.offsetLeft +
-            this.rowData.ganttProperties.left - this.parent.ganttChartModule.scrollElement.scrollLeft;
-
-        // difference from task start date to current click position.
-        const currentTaskDifference: number = this.clickedPosition - pageLeft;
-
+        if (this.parent.enableRtl) {
+            const box: ClientRect = this.parent.element.getBoundingClientRect();
+            const scrollLeft: number = window.pageXOffset || document.documentElement.scrollLeft ||
+            document.body.scrollLeft;
+            const clientLeft: number = document.documentElement.clientLeft || document.body.clientLeft || 0;
+            ganttElementPositionLeft = box.left + scrollLeft - clientLeft;
+        }
+        else {
+            ganttElementPositionLeft = this.parent.getOffsetRect(this.parent.element).left;
+        }
+        let pageLeft: number;
+        let currentTaskDifference: number;
+        if (this.parent.enableRtl) {
+            pageLeft = Math.abs(ganttElementPositionLeft + this.parent.ganttChartModule.chartElement.offsetWidth -
+                 this.rowData.ganttProperties.left - this.parent.ganttChartModule.scrollElement.scrollLeft);
+            currentTaskDifference = Math.abs(this.clickedPosition - pageLeft);
+        }
+        else {
+            pageLeft = ganttElementPositionLeft + this.parent.ganttChartModule.chartElement.offsetLeft +
+                this.rowData.ganttProperties.left - this.parent.ganttChartModule.scrollElement.scrollLeft;
+            currentTaskDifference = this.clickedPosition - pageLeft;
+        }
         let splitTaskDuration: number = Math.ceil(currentTaskDifference / this.parent.perDayWidth);
         const startDate: Date = this.rowData.ganttProperties.startDate;
         if (!isNullOrUndefined(this.parent.timelineSettings.bottomTier) && this.parent.timelineSettings.bottomTier.unit === 'Hour') {
@@ -328,11 +355,11 @@ export class ContextMenu {
                 // let target: EventTarget = target;
                 if (!item.separator) {
                     if ((target.classList.contains('e-gantt-unscheduled-taskbar')) && ((item.text === this.getLocale('splitTask')) || (item.text === this.getLocale('mergeTask')))) {
-                            this.hideItems.push(item.text);
-                        }
-                        else {
-                            this.updateItemStatus(item, target, rowIndex);
-                        }
+                        this.hideItems.push(item.text);
+                    }
+                    else {
+                        this.updateItemStatus(item, target, rowIndex);
+                    }
                 }
             }
             args.rowData = this.rowData;
@@ -378,114 +405,114 @@ export class ContextMenu {
             }
         } else {
             switch (key) {
-            case 'TaskInformation':
-                if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
-                    this.updateItemVisibility(item.text);
-                }
-                break;
-            case 'Add':
-                if (!this.parent.editSettings.allowAdding || !this.parent.editModule) {
-                    this.updateItemVisibility(item.text);
-                }
-                break;
-            case 'Save':
-            case 'Cancel':
-                this.hideItems.push(item.text);
-                break;
-            case 'Convert':
-                if (this.rowData.hasChildRecords) {
-                    this.hideItems.push(item.text);
-                } else if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
-                    this.updateItemVisibility(item.text);
-                } else {
-                    if (!this.rowData.ganttProperties.isMilestone) {
-                        subMenu.push(
-                            this.createItemModel(cons.content, 'ToMilestone', this.getLocale('toMilestone')));
-                    } else {
-                        subMenu.push(
-                            this.createItemModel(cons.content, 'ToTask', this.getLocale('toTask')));
-                    }
-                    item.items = subMenu;
-                }
-                break;
-            case 'DeleteDependency':
-            {
-                const items: ContextMenuItemModel[] = this.getPredecessorsItems();
-                if (this.rowData.hasChildRecords) {
-                    this.hideItems.push(item.text);
-                } else if (!this.parent.editSettings.allowDeleting || items.length === 0 || !this.parent.editModule) {
-                    this.updateItemVisibility(item.text);
-                } else if (items.length > 0) {
-                    item.items = items;
-                }
-                break;
-            }
-            case 'DeleteTask':
-                if (!this.parent.editSettings.allowDeleting || !this.parent.editModule) {
-                    this.updateItemVisibility(item.text);
-                }
-                break;
-            case 'TaskMode':
-                if (this.parent.taskMode !== 'Custom') {
-                    this.updateItemVisibility(item.text);
-                } else {
-                    if (this.rowData.ganttProperties.isAutoSchedule) {
-                        subMenu.push(
-                            this.createItemModel(cons.content, 'Manual', this.getLocale('manual')));
-                    } else {
-                        subMenu.push(
-                            this.createItemModel(cons.content, 'Auto', this.getLocale('auto')));
-                    }
-                    item.items = subMenu;
-                }
-                break;
-            case 'Indent':
-            {
-               if (!this.parent.allowSelection || !this.parent.editModule || !this.parent.editSettings) {
-                   this.hideItems.push(item.text);
-               } else {
-                   const index: number = this.parent.selectedRowIndex;
-                   const isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
-                   this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-                   const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
-                   if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
-                       this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
-                       this.updateItemVisibility(item.text);
-                   }
-               }
-               break;
-            }
-            case 'Outdent':
-            {
-                if (!this.parent.allowSelection || !this.parent.editModule || !this.parent.editSettings) {
-                    this.hideItems.push(item.text);
-                } else {
-                    const ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
-                    const isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
-                    this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-                    if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
-                        this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[ind].level === 0) {
+                case 'TaskInformation':
+                    if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     }
-                }
-                break;
-            }
-            case 'SplitTask':
-            {
-                const taskSettings: TaskFieldsModel = this.parent.taskFields;
-                if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
-                        this.parent.currentViewData[rowIndex].hasChildRecords) {
-                    this.updateItemVisibility(item.text);
-                }
-                break;
-            }
-            case 'MergeTask':
-                if (this.parent.readOnly || !taskbarElement) {
-                    this.updateItemVisibility(item.text);
-                } else {
-                    this.mergeItemVisiblity(target as HTMLElement, item);
-                }
-                break;
+                    break;
+                case 'Add':
+                    if (!this.parent.editSettings.allowAdding || !this.parent.editModule) {
+                        this.updateItemVisibility(item.text);
+                    }
+                    break;
+                case 'Save':
+                case 'Cancel':
+                    this.hideItems.push(item.text);
+                    break;
+                case 'Convert':
+                    if (this.rowData.hasChildRecords) {
+                        this.hideItems.push(item.text);
+                    } else if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
+                        this.updateItemVisibility(item.text);
+                    } else {
+                        if (!this.rowData.ganttProperties.isMilestone) {
+                            subMenu.push(
+                                this.createItemModel(cons.content, 'ToMilestone', this.getLocale('toMilestone')));
+                        } else {
+                            subMenu.push(
+                                this.createItemModel(cons.content, 'ToTask', this.getLocale('toTask')));
+                        }
+                        item.items = subMenu;
+                    }
+                    break;
+                case 'DeleteDependency':
+                    {
+                        const items: ContextMenuItemModel[] = this.getPredecessorsItems();
+                        if (this.rowData.hasChildRecords) {
+                            this.hideItems.push(item.text);
+                        } else if (!this.parent.editSettings.allowDeleting || items.length === 0 || !this.parent.editModule) {
+                            this.updateItemVisibility(item.text);
+                        } else if (items.length > 0) {
+                            item.items = items;
+                        }
+                        break;
+                    }
+                case 'DeleteTask':
+                    if (!this.parent.editSettings.allowDeleting || !this.parent.editModule) {
+                        this.updateItemVisibility(item.text);
+                    }
+                    break;
+                case 'TaskMode':
+                    if (this.parent.taskMode !== 'Custom') {
+                        this.updateItemVisibility(item.text);
+                    } else {
+                        if (this.rowData.ganttProperties.isAutoSchedule) {
+                            subMenu.push(
+                                this.createItemModel(cons.content, 'Manual', this.getLocale('manual')));
+                        } else {
+                            subMenu.push(
+                                this.createItemModel(cons.content, 'Auto', this.getLocale('auto')));
+                        }
+                        item.items = subMenu;
+                    }
+                    break;
+                case 'Indent':
+                    {
+                        if (!this.parent.allowSelection || !this.parent.editModule || !this.parent.editSettings) {
+                            this.hideItems.push(item.text);
+                        } else {
+                            const index: number = this.parent.selectedRowIndex;
+                            const isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                                this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                            const prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+                            if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
+                                this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
+                                this.updateItemVisibility(item.text);
+                            }
+                        }
+                        break;
+                    }
+                case 'Outdent':
+                    {
+                        if (!this.parent.allowSelection || !this.parent.editModule || !this.parent.editSettings) {
+                            this.hideItems.push(item.text);
+                        } else {
+                            const ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
+                            const isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                                this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                            if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
+                                this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[ind].level === 0) {
+                                this.updateItemVisibility(item.text);
+                            }
+                        }
+                        break;
+                    }
+                case 'SplitTask':
+                    {
+                        const taskSettings: TaskFieldsModel = this.parent.taskFields;
+                        if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
+                            this.parent.currentViewData[rowIndex].hasChildRecords) {
+                            this.updateItemVisibility(item.text);
+                        }
+                        break;
+                    }
+                case 'MergeTask':
+                    if (this.parent.readOnly || !taskbarElement) {
+                        this.updateItemVisibility(item.text);
+                    } else {
+                        this.mergeItemVisiblity(target as HTMLElement, item);
+                    }
+                    break;
             }
         }
     }
@@ -524,9 +551,9 @@ export class ContextMenu {
     private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
         const firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
-        if(!isNullOrUndefined(firstMenuItem)){
+        if (!isNullOrUndefined(firstMenuItem)) {
             addClass([firstMenuItem], 'e-focused');
-            }
+        }
     }
 
     private getMenuItems(): ContextMenuItemModel[] {
@@ -565,81 +592,81 @@ export class ContextMenu {
     private buildDefaultItems(item: string, iconCSS?: string): void {
         let contentMenuItem: ContextMenuItemModel;
         switch (item) {
-        case 'AutoFitAll':
-        case 'AutoFit':
-        case 'SortAscending':
-        case 'SortDescending':
-            this.headerMenuItems.push(item);
-            break;
-        case 'TaskInformation':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('taskInformation'), this.getIconCSS(cons.editIcon, iconCSS));
-            break;
-        case 'Indent':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('indent'), this.getIconCSS(cons.indentIcon, iconCSS));
-            break;
-        case 'Outdent':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('outdent'), this.getIconCSS(cons.outdentIcon, iconCSS));
-            break;
-        case 'Save':
-            contentMenuItem = this.createItemModel(
-                cons.editIcon, item, this.getLocale('save'), this.getIconCSS(cons.saveIcon, iconCSS));
-            break;
-        case 'Cancel':
-            contentMenuItem = this.createItemModel(
-                cons.editIcon, item, this.getLocale('cancel'), this.getIconCSS(cons.cancelIcon, iconCSS));
-            break;
-        case 'Add':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('add'), this.getIconCSS(cons.addIcon, iconCSS));
-            //Sub item menu
-            contentMenuItem.items = [];
-            contentMenuItem.items.push(
-                this.createItemModel(cons.content, 'Above', this.getLocale('above'), this.getIconCSS(cons.addAboveIcon, iconCSS)));
-            contentMenuItem.items.push(
-                this.createItemModel(cons.content, 'Below', this.getLocale('below'), this.getIconCSS(cons.addBelowIcon, iconCSS)));
-            if (this.parent.viewType !== 'ResourceView') {
+            case 'AutoFitAll':
+            case 'AutoFit':
+            case 'SortAscending':
+            case 'SortDescending':
+                this.headerMenuItems.push(item);
+                break;
+            case 'TaskInformation':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('taskInformation'), this.getIconCSS(cons.editIcon, iconCSS));
+                break;
+            case 'Indent':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('indent'), this.getIconCSS(cons.indentIcon, iconCSS));
+                break;
+            case 'Outdent':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('outdent'), this.getIconCSS(cons.outdentIcon, iconCSS));
+                break;
+            case 'Save':
+                contentMenuItem = this.createItemModel(
+                    cons.editIcon, item, this.getLocale('save'), this.getIconCSS(cons.saveIcon, iconCSS));
+                break;
+            case 'Cancel':
+                contentMenuItem = this.createItemModel(
+                    cons.editIcon, item, this.getLocale('cancel'), this.getIconCSS(cons.cancelIcon, iconCSS));
+                break;
+            case 'Add':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('add'), this.getIconCSS(cons.addIcon, iconCSS));
+                //Sub item menu
+                contentMenuItem.items = [];
                 contentMenuItem.items.push(
-                    this.createItemModel(cons.content, 'Child', this.getLocale('child')));
-            }
-            contentMenuItem.items.push(this.createItemModel(
-                cons.content, 'Milestone',
-                this.getLocale('milestone')));
-            break;
-        case 'DeleteTask':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('deleteTask'),
-                this.getIconCSS(cons.deleteIcon, iconCSS));
-            break;
-        case 'DeleteDependency':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('deleteDependency'));
-            contentMenuItem.items = [];
-            contentMenuItem.items.push({});
-            break;
-        case 'Convert':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('convert'));
-            contentMenuItem.items = [];
-            contentMenuItem.items.push({});
-            break;
-        case 'TaskMode':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('changeScheduleMode'));
-            contentMenuItem.items = [];
-            contentMenuItem.items.push({});
-            break;
-        case 'SplitTask':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('splitTask'));
-            break;
-        case 'MergeTask':
-            contentMenuItem = this.createItemModel(
-                cons.content, item, this.getLocale('mergeTask'));
-            contentMenuItem.items = [];
-            contentMenuItem.items.push({});
+                    this.createItemModel(cons.content, 'Above', this.getLocale('above'), this.getIconCSS(cons.addAboveIcon, iconCSS)));
+                contentMenuItem.items.push(
+                    this.createItemModel(cons.content, 'Below', this.getLocale('below'), this.getIconCSS(cons.addBelowIcon, iconCSS)));
+                if (this.parent.viewType !== 'ResourceView') {
+                    contentMenuItem.items.push(
+                        this.createItemModel(cons.content, 'Child', this.getLocale('child')));
+                }
+                contentMenuItem.items.push(this.createItemModel(
+                    cons.content, 'Milestone',
+                    this.getLocale('milestone')));
+                break;
+            case 'DeleteTask':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('deleteTask'),
+                    this.getIconCSS(cons.deleteIcon, iconCSS));
+                break;
+            case 'DeleteDependency':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('deleteDependency'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
+                break;
+            case 'Convert':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('convert'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
+                break;
+            case 'TaskMode':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('changeScheduleMode'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
+                break;
+            case 'SplitTask':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('splitTask'));
+                break;
+            case 'MergeTask':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('mergeTask'));
+                contentMenuItem.items = [];
+                contentMenuItem.items.push({});
         }
         if (contentMenuItem) {
             this.contentMenuItems.push(contentMenuItem);

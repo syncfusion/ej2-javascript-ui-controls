@@ -50,11 +50,12 @@ export class EventTooltip {
             let resCollection: TdData;
             if (this.parent.activeView.isTimelineView()) {
                 const index: number = parseInt(args.target.getAttribute('data-group-index') as string, 10);
-                resCollection = this.parent.resourceBase.lastResourceLevel[index];
+                resCollection = this.parent.resourceBase.lastResourceLevel[parseInt(index.toString(), 10)];
             } else {
                 const rowIndex: number = (args.target.parentNode as HTMLTableRowElement).sectionRowIndex;
                 const cellIndex: number = (args.target as HTMLTableCellElement).cellIndex;
-                resCollection = this.parent.activeView.getColumnLevels()[rowIndex][cellIndex];
+                resCollection =
+                    this.parent.activeView.getColumnLevels()[parseInt(rowIndex.toString(), 10)][parseInt(cellIndex.toString(), 10)];
             }
             const data: ResourceDetails = {
                 resource: resCollection.resource,

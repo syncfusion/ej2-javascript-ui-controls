@@ -37,16 +37,16 @@ export class PieSeries extends PieBase {
         point.endAngle = this.startAngle % 360;
         point.symbolLocation = degreeToLocation(point.midAngle, (this.radius + this.innerRadius) / 2, this.center);
         if (!redraw) {
-            let element: Element = chart.renderer.drawPath(option);
-            element.setAttribute("tabindex",  point.index === 0 ? "0" : "");
-            element.setAttribute('aria-label', (point.x + ": " + point.y + '%. ' + series.name));
+            const element: Element = chart.renderer.drawPath(option);
+            element.setAttribute('tabindex',  point.index === 0 ? '0' : '');
+            element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             point.degree = degree;
             point.start = start;
         } else {
-            let element: Element = chart.renderer.drawPath(option);
-            element.setAttribute("tabindex",  point.index === 0 ? "0" : "");
-            element.setAttribute('aria-label', (point.x + ": " + point.y + '%. ' + series.name));
+            const element: Element = chart.renderer.drawPath(option);
+            element.setAttribute('tabindex',  point.index === 0 ? '0' : '');
+            element.setAttribute('aria-label', (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             this.refresh(point, degree, start, chart, option);
         }
@@ -71,7 +71,7 @@ export class PieSeries extends PieBase {
         const srcElem: Element = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
         if (!isNaN(id.series) && srcElem) {
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
-                const point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex];
+                const point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex as number];
                 const opacity: number = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 const innerPie: string = this.getPathArc(
@@ -99,7 +99,7 @@ export class PieSeries extends PieBase {
                     seriousGroup.appendChild(createBorderEle);
                     if (point.isExplode && createBorderEle) {
                         const borderExplode: string = srcElem.getAttribute('transform');
-                        if (borderExplode) { createBorderEle.setAttribute('transform', borderExplode) };
+                        if (borderExplode) { createBorderEle.setAttribute('transform', borderExplode); }
                     }
                 }
             }

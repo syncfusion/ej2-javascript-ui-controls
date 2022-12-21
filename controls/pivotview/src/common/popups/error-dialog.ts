@@ -12,32 +12,36 @@ export class ErrorDialog {
     public parent: PivotCommon;
     /** @hidden */
     public errorPopUp: Dialog;
-    /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
+     *
+     * @param {PivotCommon} parent - parent.
      * @hidden
      */
-    constructor(parent: PivotCommon) {  /* eslint-disable-line */
+    constructor(parent: PivotCommon) {
         this.parent = parent;
     }
 
-    /* eslint-disable-next-line */
     /**
      * Creates the error dialog for the unexpected action done.
+     *
      * @function createErrorDialog
+     * @param {string} title - title.
+     * @param {string} description - description.
+     * @param {HTMLElement} target - target.
      * @returns {void}
      * @hidden
      */
     public createErrorDialog(title: string, description: string, target?: HTMLElement): void {
-        let errorDialog: HTMLElement = createElement('div', {
+        const errorDialog: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_ErrorDialog',
             className: cls.ERROR_DIALOG_CLASS
         });
         this.parent.element.appendChild(errorDialog);
-        let zIndex: number = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
+        const zIndex: number = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
             this.parent.renderMode === 'Popup' && this.parent.control ? (this.parent.control as PivotFieldList).dialogRenderer.fieldListDialog.zIndex + 1 :
             (this.parent.moduleName === 'pivotfieldlist' && this.parent.renderMode === 'Fixed' && this.parent.control ? 1000002 :
-            (this.parent.moduleName === 'pivotview' && this.parent.control ? 1000002 : 1000001)));
+                (this.parent.moduleName === 'pivotview' && this.parent.control ? 1000002 : 1000001)));
         this.errorPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,
@@ -50,7 +54,7 @@ export class ErrorDialog {
             width: 'auto',
             height: 'auto',
             zIndex: zIndex,
-            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
+            position: { X: 'center', Y: 'center' },
             buttons: [
                 {
                     click: this.closeErrorDialog.bind(this),

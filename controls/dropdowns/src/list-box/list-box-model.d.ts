@@ -94,6 +94,24 @@ export interface ListBoxModel extends DropDownBaseModel{
     height?: number | string;
 
     /**
+     * Specifies a value that indicates whether the component is enabled or not.
+     *
+     * @default true
+     * @deprecated
+     */
+    enabled?: boolean;
+
+    /**
+        * Enable or disable persisting component's state between page reloads.
+        * If enabled, following list of states will be persisted.
+        * 1. value
+        *
+        * @default false
+        * @deprecated
+        */
+    enablePersistence?: boolean;
+
+    /**
      * If 'allowDragAndDrop' is set to true, then you can perform drag and drop of the list item.
      * ListBox contains same 'scope' property enables drag and drop between multiple ListBox.
      *

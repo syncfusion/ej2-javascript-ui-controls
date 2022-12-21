@@ -477,6 +477,9 @@ export class WParagraphFormat {
         if (!isNullOrUndefined(this.listFormat)) {
             this.listFormat.clearFormat();
         }
+        if (!isNullOrUndefined(this.borders)) {
+            this.borders.clearFormat();
+        }
         if (!isNullOrUndefined(this.uniqueParagraphFormat) && this.uniqueParagraphFormat.referenceCount === 0) {
             WParagraphFormat.uniqueParagraphFormats.remove(this.uniqueParagraphFormat);
         }
@@ -484,22 +487,29 @@ export class WParagraphFormat {
         this.baseStyle = undefined;
     }
     public destroy(): void {
-        this.clearFormat();
+        if (!isNullOrUndefined(this.uniqueParagraphFormat)) {
+            WParagraphFormat.uniqueParagraphFormats.remove(this.uniqueParagraphFormat);
+        }
+        this.uniqueParagraphFormat = undefined;
+
         if (!isNullOrUndefined(this.listFormat)) {
             this.listFormat.destroy();
         }
         this.listFormat = undefined;
 
-        if (this.tabs !== undefined) {
+        if (this.tabs && this.tabs.length > 0) {
             for (let i: number = 0; i < this.tabs.length; i++) {
                 this.tabs[i].destroy();
             }
+            this.tabs = [];
             this.tabs = undefined;
         }
         if (!isNullOrUndefined(this.borders)) {
             this.borders.destroy();
         }
         this.borders = undefined;
+        this.baseStyle = undefined;
+        this.ownerBase = undefined;
     }
     public copyFormat(format: WParagraphFormat): void {
         if (!isNullOrUndefined(format)) {

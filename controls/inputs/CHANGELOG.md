@@ -2,27 +2,18 @@
 
 ## [Unreleased]
 
-## 20.3.57 (2022-11-15)
+## 20.4.38 (2022-12-21)
 
-### NumericTextBox
+### Rating `Preview`
 
-#### Bug Fixes
+**Key features**:
 
-- `#I417969` - The issue "Clear button does not working after the component is enabled" has been resolved.
+The Rating component lets the user provide a star rating or view other people’s ratings on a numeric scale for any service provided, such as for movies, applications, or products.
 
-### TextBox
-
-#### Bug Fixes
-
-- `#I415324` - The issue "Refresh method is not working properly in TextBox component" has been resolved.
-
-## 20.3.50 (2022-10-18)
-
-### TextBox
-
-#### Bug Fixes
-
-- `#FB15052` - Issue with "Form Validator wrongly validates while clearing the components value using clear icon" has been resolved.
+- **Precision** - Different precision modes to provide more accurate rating.
+- **Tooltip and Label** - Provide more expressive rating with tooltip and label.
+- **Template** - Support to customize the rating item to heart, svg or any content that precisely match our unique needs.
+- **Accessibility** - The Rating provides built-in compliance with the `WAI-ARIA` specifications and it is achieved through attributes.
 
 ## 19.4.38 (2021-12-17)
 

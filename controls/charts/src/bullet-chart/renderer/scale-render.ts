@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
@@ -89,7 +90,7 @@ export class ScaleGroup {
         const range: number = (bullet.orientation === 'Horizontal') ? initialRect.width : initialRect.height;
         const fillRange: number = (bullet.orientation === 'Horizontal') ? initialRect.height : initialRect.width;
         for (let i: number = 0; i < ranges.length; i++) {
-            area = (range) * ((ranges[i].end - start) / max);
+            area = (range) * ((ranges[i as number].end - start) / max);
             if (bullet.orientation === 'Horizontal') {
                 locX -= (enableRtl) ? area : 0;
             } else {
@@ -98,8 +99,8 @@ export class ScaleGroup {
             rect = new RectOption(
                 bullet.svgObject.id + '_range_' + i,
                 // tslint:disable-next-line:no-string-literal
-                ranges[i].color || this.bulletChart.themeStyle.rangeStrokes[i]['color'],
-                { width: 1 }, ranges[i].opacity,
+                ranges[i as number].color || this.bulletChart.themeStyle.rangeStrokes[i as number]['color'],
+                { width: 1 }, ranges[i as number].opacity,
                 new Rect(locX, locY, ((bullet.orientation === 'Horizontal') ? area : fillRange),
                          ((bullet.orientation === 'Horizontal') ? fillRange : area)));
             const svgRect: Element = bullet.renderer.drawRectangle(rect);
@@ -111,7 +112,7 @@ export class ScaleGroup {
                 locY += (!enableRtl) ? 0 : area;
             }
             bullet.rangeCollection.push(area);
-            start = ranges[i].end;
+            start = ranges[i as number].end;
         }
         return this.bulletChart.rangeCollection;
     }
@@ -149,7 +150,7 @@ export class ScaleGroup {
         const featureBarSize: number = (isHorizontal ? bulletChart.initialClipRect.height : bulletChart.initialClipRect.width) / dataCount;
         let bounds: IFeatureMeasureType;
         for (let i: number = 0; i < dataCount; i++) {
-            data = bulletChart.dataSource[i];
+            data = bulletChart.dataSource[i as number];
             categoryValue = data[bulletChart.categoryField];
             if (isHorizontal) {
                 lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
@@ -175,7 +176,7 @@ export class ScaleGroup {
                 featueGroup.appendChild(svgRect);
                 this.feature = svgRect as HTMLElement;
                 this.scaleSettingsGroup.appendChild(featueGroup);
-                this.featureBarBounds[i] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
+                this.featureBarBounds[i as number] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
                 // Drawing category text element
                 if (!isNullOrUndefined(categoryValue)) {
                     const categoryTextSize: Size = measureText(categoryValue, bulletChart.categoryLabelStyle);
@@ -215,7 +216,7 @@ export class ScaleGroup {
         const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
-        svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i].value + ', target: ' + this.bulletChart.dataSource[i].target));
+        svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i as number].value + ', target: ' + this.bulletChart.dataSource[i as number].target));
         return svgRect;
     }
 
@@ -230,12 +231,12 @@ export class ScaleGroup {
         const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
-        svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i].value + ', target: ' + this.bulletChart.dataSource[i].target));
+        svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i as number].value + ', target: ' + this.bulletChart.dataSource[i as number].target));
         return svgRect;
     }
 
     private drawcategory(lPointX: number, lPointY: number, categoryValue: string): TextOption {
-        let fontsize: number = parseInt(this.bulletChart.categoryLabelStyle.size);
+        const fontsize: number = parseInt(this.bulletChart.categoryLabelStyle.size);
         const categoryOptions: TextOption = {
             'id': '',
             'anchor': 'middle',
@@ -283,11 +284,11 @@ export class ScaleGroup {
         const featureBarSize: number = (isHorizontal ? rect.height : rect.width) / dataCount;
         let svgElement: Element;
         for (let k: number = 0; k < dataCount; k++) {
-            value = bulletChart.dataSource[k][bulletChart.targetField];
+            value = bulletChart.dataSource[k as number][bulletChart.targetField];
             values = values.concat(value);
             for (let i: number = 0; i < values.length; i++) {
                 targetType = targetTypes[i % targetTypeLength];
-                if (values[i] >= minimum && values[i] <= maximum) {
+                if (values[i as number] >= minimum && values[i as number] <= maximum) {
                     if (isHorizontal) {
                         temp = pointY - (featureBarSize * k) - (featureBarSize / 2);
                     } else {
@@ -295,13 +296,13 @@ export class ScaleGroup {
                     }
                     y1 = temp - targetWidth * 1.5;
                     y2 = temp + targetWidth * 1.5;
-                    temp = (scaleLength / (delta / (delta - (maximum - values[i]))));
+                    temp = (scaleLength / (delta / (delta - (maximum - values[i as number]))));
                     if (isHorizontal) {
                         x1 = pointX + (bulletChart.enableRtl ? (scaleLength - temp) : temp);
                     } else {
                         x1 = pointX - (bulletChart.enableRtl ? (scaleLength - temp) : temp);
                     }
-                    svgElement = this.getTargetElement(targetType, isHorizontal, x1, y1, y2, values[i], k);
+                    svgElement = this.getTargetElement(targetType, isHorizontal, x1, y1, y2, values[i as number], k);
                     this.comparative.push(svgElement);
                     comparativeGroup.appendChild(svgElement);
                     y1 = 0;
@@ -487,7 +488,7 @@ export class ScaleGroup {
         let y: number;
         let centerX: number;
         let centerY: number;
-        const targetBarelement: HTMLElement = (<HTMLElement>this.comparative[index]);
+        const targetBarelement: HTMLElement = (<HTMLElement>this.comparative[index as number]);
         if (!targetBarelement) {
             return null;
         }

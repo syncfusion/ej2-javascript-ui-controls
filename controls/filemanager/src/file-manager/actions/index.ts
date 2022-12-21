@@ -3,3 +3,4 @@
  */
 export * from './toolbar';
 export * from './breadcrumb-bar';
+export * from './virtualization';

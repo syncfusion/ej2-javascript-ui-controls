@@ -166,6 +166,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         }
     }
 
+    // eslint-disable-next-line
     protected mouseDownHandler(e : MouseEvent & TouchEvent, canvas?: HTMLCanvasElement, panStart?: any, zoomState?: number): void {
         if (e.buttons === 1 || e.buttons === 2 || e.type === 'touchstart') {
             if (e.type === 'touchstart') {
@@ -320,10 +321,10 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
                 return this.point(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top, new Date().getTime());
             }
             // image editor
-            else if (this.scale === 1) {   
+            else if (this.scale === 1) {
                 return this.point(((e.touches[0].clientX - rect.left) * this.canvasRatio.width) / this.scale,
-                ((e.touches[0].clientY - rect.top) * this.canvasRatio.height) / this.scale,
-                new Date().getTime());
+                                  ((e.touches[0].clientY - rect.top) * this.canvasRatio.height) / this.scale,
+                                  new Date().getTime());
             } else {
                 return this.point((e.touches[0].clientX - rect.left) + this.panStart.startX / (this.canvasRatio.width
                                    * this.scale),
@@ -483,19 +484,12 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private enableOrDisable(isDisable: boolean): void {
         this.disabled = isDisable;
         if (isDisable) {
-            this.reDraw('0.5');
+            this.canvasContext.canvas.style.filter = "opacity(0.5)";
             this.isRead(true);
         } else {
-            this.reDraw('1');
+            this.canvasContext.canvas.style.filter = "";
             this.isRead(false);
         }
-    }
-
-    private reDraw(opacity?: string): void {
-        const data: ImageData = this.canvasContext.getImageData(0, 0, this.element.width, this.element.height);
-        this.canvasContext.clearRect(0, 0, this.element.width, this.element.height);
-        this.element.style.opacity = opacity;
-        this.canvasContext.putImageData(data, 0, 0);
     }
 
     private updateSnapCollection(isClear?: boolean): void {
@@ -580,7 +574,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         const arr: string[] = url.split(','); const type: string = arr[0].match(/:(.*?);/)[1];
         const bstr: string = atob(arr[1]); let n: number = bstr.length; const u8arr: Uint8Array = new Uint8Array(n);
         while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+            u8arr[n as number] = bstr.charCodeAt(n);
         }
         return new Blob([u8arr], { type: type });
     }
@@ -684,7 +678,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         if (this.clearArray) {
             let empty: boolean = false;
             for (let i: number = 0; i < this.clearArray.length; i++) {
-                if (this.clearArray[i] === this.incStep) {
+                if (this.clearArray[i as number] === this.incStep) {
                     this.isSignatureEmpty = true;
                     empty = true;
                 }
@@ -935,7 +929,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             const data: Uint8ClampedArray = imgData.data;
             for (let i: number = 0; i < data.length; i += 4) {
                 if (data[i + 3] < 255) {
-                    data[i] = 255 - data[i];
+                    data[i as number] = 255 - data[i as number];
                     data[i + 1] = 255 - data[i + 1];
                     data[i + 2] = 255 - data[i + 2];
                     data[i + 3] = 255 - data[i + 3];
@@ -1110,7 +1104,7 @@ export interface Dimension {
 /**
  * Interface for active object in the imageEditor.
  */
- export interface ActivePoint {
+export interface ActivePoint {
     /**
      * Gets mouse down x-point.
      */

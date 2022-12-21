@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
 /**
  * Helper functions for maps control
@@ -62,7 +60,7 @@ export function calculateSize(maps: Maps): Size {
     const containerHeight: number = maps.element.clientHeight;
     const containerElementWidth: number = stringToNumber(maps.element.style.width, containerWidth);
     const containerElementHeight: number = stringToNumber(maps.element.style.height, containerHeight);
-    let availableSize: Size = new Size(0,0);
+    let availableSize: Size = new Size(0, 0);
     if (maps.width === '0px' || maps.width === '0%' || maps.height === '0%' || maps.height === '0px') {
         availableSize = new Size(0, 0);
     } else {
@@ -723,13 +721,13 @@ export function renderTextElement(
     htmlObject.style['-o-user-select'] = 'none';
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
-            height = (measureText(option.text[i], style).height);
+            height = (measureText(option.text[i as number], style).height);
             tspanElement = renderer.createTSpan(
                 {
                     'x': option.x, 'id': option.id,
                     'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
                 },
-                isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]
+                isMinus ? option.text[option.text.length - (i + 1)] : option.text[i as number]
             );
             htmlObject.appendChild(tspanElement);
         }
@@ -759,14 +757,14 @@ export function convertElement(element: HTMLCollection, markerId: string, data: 
         elementLength--;
     }
     let templateHtml: string = childElement.innerHTML;
-    let templateSplitValue: string;
     const properties: string[] = Object.keys(data);
+    const regExp: RegExpConstructor = RegExp;
     for (let i: number = 0; i < properties.length; i++) {
-        if (typeof data[properties[i]] === 'object') {
+        if (typeof data[properties[i as number]] === 'object') {
             templateHtml = convertStringToValue(templateHtml, '', data, mapObj);
             // eslint-disable-next-line @typescript-eslint/ban-types
-        } else if ((<String>properties[i]).toLowerCase() !== 'latitude' && (<string>properties[i]).toLowerCase() !== 'longitude') {
-            templateHtml = templateHtml.replace(new RegExp('{{:' + <string>properties[i] + '}}', 'g'), data[properties[i].toString()]);
+        } else if ((<String>properties[i as number]).toLowerCase() !== 'latitude' && (<string>properties[i as number]).toLowerCase() !== 'longitude') {
+            templateHtml = templateHtml.replace(new regExp('{{:' + <string>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
         }
     }
     childElement.innerHTML = templateHtml;
@@ -804,16 +802,18 @@ export function formatValue(value: string, maps: Maps): string {
 export function convertStringToValue(stringTemplate: string, format: string, data: any, maps: Maps): string {
     let templateHtml: string = (stringTemplate === '') ? format : stringTemplate;
     const templateValue: string[] = (stringTemplate === '') ? templateHtml.split('${') : templateHtml.split('{{:');
+    const regExp: RegExpConstructor = RegExp;
     for (let i: number = 0; i < templateValue.length; i++) {
-        if ((templateValue[i].indexOf('}}') > -1 && templateValue[i].indexOf('.') > -1) ||
-            (templateValue[i].indexOf('}') > -1 && templateValue[i].search('.') > -1)) {
-            const split: string[] = (stringTemplate === '') ? templateValue[i].split('}') : templateValue[i].split('}}');
+        if ((templateValue[i as number].indexOf('}}') > -1 && templateValue[i as number].indexOf('.') > -1) ||
+            (templateValue[i as number].indexOf('}') > -1 && templateValue[i as number].search('.') > -1)) {
+            const split: string[] = (stringTemplate === '') ? templateValue[i as number].split('}') : templateValue[i as number].split('}}');
             for (let j: number = 0; j < split.length; j++) {
-                if (split[j].indexOf('.') > -1) {
-                    const templateSplitValue: string = (getValueFromObject(data, split[j])).toString();
+                if (split[j as number].indexOf('.') > -1) {
+                    const templateSplitValue: string = (getValueFromObject(data, split[j as number])).toString();
+
                     templateHtml = (stringTemplate === '') ?
-                        templateHtml.split('${' + split[j] + '}').join(formatValue(templateSplitValue, maps)) :
-                        templateHtml.replace(new RegExp('{{:' + split[j] + '}}', 'g'), templateSplitValue);
+                        templateHtml.split('${' + split[j as number] + '}').join(formatValue(templateSplitValue, maps)) :
+                        templateHtml.replace(new regExp('{{:' + split[j as number] + '}}', 'g'), templateSplitValue);
                 }
             }
         }
@@ -836,11 +836,12 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
     let templateHtml: string = labelEle.outerHTML;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const properties: any[] = Object.keys(data);
+    const regExp: RegExpConstructor = RegExp;
     for (let i: number = 0; i < properties.length; i++) {
         // eslint-disable-next-line @typescript-eslint/ban-types
-        templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i] + '}}', 'g'), data[properties[i].toString()]);
+        templateHtml = templateHtml.replace(new regExp('{{:' + <String>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
     }
-    let templateEle: HTMLElement = createElement('div', {
+    const templateEle: HTMLElement = createElement('div', {
         id: labelId,
         innerHTML: templateHtml
     });
@@ -860,7 +861,8 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
  * @returns {Element} - Returns the element
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: any, markerCollection: Element, maps: Maps): Element {
+export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: any,
+                            markerCollection: Element, maps: Maps): Element {
     let markerEle: Element; let x: number; let y: number;
     const size: Size = <Size>shapeCustom['size'];
     const borderColor: string = shapeCustom['borderColor'];
@@ -913,7 +915,7 @@ export function getValueFromObject(data: any, value: string): any {
         }
         else {
             for (let i: number = 0; i < splits.length && !isNullOrUndefined(data); i++) {
-                data = data[splits[i]];
+                data = data[splits[i as number]];
             }
         }
     }
@@ -949,7 +951,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
         const shape: MarkerType = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
             (getValueFromObject(data, eventArgs.shapeValuePath).toString()) as MarkerType :
             data[eventArgs.shapeValuePath]);
-        eventArgs.shape = (shape.toString() !== "") ? shape : eventArgs.shape;
+        eventArgs.shape = (shape.toString() !== '') ? shape : eventArgs.shape;
         if (data[eventArgs.shapeValuePath] === 'Image') {
             eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
                 ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
@@ -958,7 +960,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
     }
     else {
         const shapes: MarkerType = (!isNullOrUndefined(eventArgs.shapeValuePath)) ? ((eventArgs.shapeValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.shapeValuePath).toString() as MarkerType) : eventArgs.shape) : eventArgs.shape;
-        eventArgs.shape = (shapes.toString() !== "") ? shapes : eventArgs.shape;
+        eventArgs.shape = (shapes.toString() !== '') ? shapes : eventArgs.shape;
         const shapeImage: string = (!isNullOrUndefined(eventArgs.imageUrlValuePath)) ?
             ((eventArgs.imageUrlValuePath.indexOf('.') > -1) ? getValueFromObject(data, eventArgs.imageUrlValuePath).toString() as MarkerType : (!isNullOrUndefined(data[eventArgs.imageUrlValuePath]) ?
                 data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl)) : eventArgs.imageUrl;
@@ -979,7 +981,8 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
  * @param {boolean} zoomCheck - Specifies the boolean value
  * @returns {void}
  */
-export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps: Maps, layerIndex: number, markerCollection: Element,
+export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps: Maps,
+                                layerIndex: number, markerCollection: Element,
                                 layerElement: Element, check: boolean, zoomCheck: boolean): void {
     let bounds1: DOMRect;
     let bounds2: DOMRect;
@@ -1009,20 +1012,20 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
     maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
         for (let o: number = 0; o < markerTemplate.childElementCount; o++) {
             indexCollection = [];
-            if (markerTemplate.childNodes[o]['style']['visibility'] !== 'hidden') {
-                tempElement = markerTemplate.childNodes[o] as Element;
+            if (markerTemplate.childNodes[o as number]['style']['visibility'] !== 'hidden') {
+                tempElement = markerTemplate.childNodes[o as number] as Element;
                 bounds1 = tempElement.getBoundingClientRect() as DOMRect;
                 indexCollection.push(o as number);
                 if (!isNullOrUndefined(bounds1)) {
                     for (let p: number = o + 1; p < markerTemplate.childElementCount; p++) {
-                        if (markerTemplate.childNodes[p]['style']['visibility'] !== 'hidden') {
-                            tempElement = markerTemplate.childNodes[p] as Element;
+                        if (markerTemplate.childNodes[p as number]['style']['visibility'] !== 'hidden') {
+                            tempElement = markerTemplate.childNodes[p as number] as Element;
                             bounds2 = tempElement.getBoundingClientRect() as DOMRect;
                             if (!isNullOrUndefined(bounds2)) {
                                 if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
                                     || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
                                     colloideBounds.push(bounds2);
-                                    markerTemplate.childNodes[p]['style']['visibility'] = 'hidden';
+                                    markerTemplate.childNodes[p as number]['style']['visibility'] = 'hidden';
                                     indexCollection.push(p as number);
                                 }
                             }
@@ -1039,13 +1042,11 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                             container['top'] : (container['bottom'] - container['top'])));
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const translate: any = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
-                        const transPoint: Point = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
-                            maps.translatePoint : translate['location'];
-                        const dataIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                        const markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
-                        const markerSetting: MarkerSettingsModel = currentLayer.markerSettings[markerIndex];
+                        const dataIndex: number = parseInt(markerTemplate.childNodes[o as number]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                        const markerIndex: number = parseInt(markerTemplate.childNodes[o as number]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                        const markerSetting: MarkerSettingsModel = currentLayer.markerSettings[markerIndex as number];
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const markerData: any = markerSetting.dataSource[dataIndex];
+                        const markerData: any = markerSetting.dataSource[dataIndex as number];
                         let factor: number; let location: Point;
                         const longitude: number = (!isNullOrUndefined(markerSetting.longitudeValuePath)) ?
                             Number(getValueFromObject(markerData, markerSetting.longitudeValuePath)) :
@@ -1059,9 +1060,10 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                             factor = maps.mapLayerPanel.calculateFactor(currentLayer);
                             location = convertGeoToPoint(latitude, longitude, factor, currentLayer, maps);
                         } else if (maps.isTileMap && !maps.zoomSettings.enable) {
-                            location = convertTileLatLongToPoint(new Point(longitude, latitude), maps.tileZoomLevel, maps.tileTranslatePoint, true);
+                            location = convertTileLatLongToPoint(new Point(longitude, latitude), maps.tileZoomLevel,
+                                                                 maps.tileTranslatePoint, true);
                         }
-                        markerTemplate.childNodes[o]['style']['visibility'] = 'hidden';
+                        markerTemplate.childNodes[o as number]['style']['visibility'] = 'hidden';
                         const clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
                         if (eventArg.cancel) {
                             shapeCustom = {
@@ -1128,34 +1130,34 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         maps.svgObject.appendChild(layerElement) as Element;
         maps.element.appendChild(maps.svgObject) as Element;
         for (let o: number = 0; o < clusterGroup.childElementCount; o++) {
-            if (clusterGroup.childNodes[o]['style']['visibility'] !== 'hidden') {
-                tempElement = clusterGroup.childNodes[o] as Element;
+            if (clusterGroup.childNodes[o as number]['style']['visibility'] !== 'hidden') {
+                tempElement = clusterGroup.childNodes[o as number] as Element;
                 bounds1 = tempElement.getBoundingClientRect() as DOMRect;
                 if (!isNullOrUndefined(bounds1) && !(tempElement.id.indexOf('_datalabel_') > -1)) {
                     for (let p: number = o + 1; p < clusterGroup.childElementCount; p++) {
-                        if (clusterGroup.childNodes[p]['style']['visibility'] !== 'hidden') {
-                            tempElement1 = clusterGroup.childNodes[p] as Element;
+                        if (clusterGroup.childNodes[p as number]['style']['visibility'] !== 'hidden') {
+                            tempElement1 = clusterGroup.childNodes[p as number] as Element;
                             bounds2 = tempElement1.getBoundingClientRect() as DOMRect;
                             if (!isNullOrUndefined(bounds2) && !(tempElement1.id.indexOf('_datalabel_') > -1)) {
                                 if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
                                     || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
                                     clusterColloideBounds.push(tempElement1);
                                     clusterColloideBounds.push(clusterGroup.childNodes[p - 1] as Element);
-                                    clusterGroup.childNodes[p]['style']['visibility'] = 'hidden';
+                                    clusterGroup.childNodes[p as number]['style']['visibility'] = 'hidden';
                                     clusterGroup.childNodes[p - 1]['style']['visibility'] = 'hidden';
-                                    indexCollection.push(p as number);
+                                    indexCollection.push(p);
                                 }
                             }
                         }
                     }
                     if (clusterColloideBounds.length > 0) {
-                        tempElement = clusterGroup.childNodes[o] as Element;
+                        tempElement = clusterGroup.childNodes[o as number] as Element;
                         for (let i: number = 0; i < clusterColloideBounds.length; i++) {
                             if (tempElement.tagName === 'g') {
                                 tempElement.childNodes[0].textContent = tempElement.childNodes[0].textContent + ',' +
-                                    clusterColloideBounds[i].textContent;
+                                    clusterColloideBounds[i as number].textContent;
                             } else {
-                                tempElement.textContent = tempElement.textContent + ',' + clusterColloideBounds[i].textContent;
+                                tempElement.textContent = tempElement.textContent + ',' + clusterColloideBounds[i as number].textContent;
                             }
                             clusterGroup.childNodes[o - 1].textContent = ((+(clusterGroup.childNodes[o - 1].textContent)) + (+(clusterColloideBounds[i + 1].textContent))).toString();
                             i++;
@@ -1174,12 +1176,12 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection);
             layerElement.appendChild(markerCollection);
         }
-        const markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex +'_markerCluster');
+        const markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster');
         if (!isNullOrUndefined(markerCluster)) {
             markerCluster.remove();
         }
         if (zoomCheck) {
-            let layerGroupElement: HTMLElement = document.getElementById(maps.element.id + '_Layer_Collections');
+            const layerGroupElement: HTMLElement = document.getElementById(maps.element.id + '_Layer_Collections');
             if (!isNullOrUndefined(layerGroupElement)) {
                 layerGroupElement.appendChild(layerElement);
             }
@@ -1200,16 +1202,16 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
     const markerIndex: number = sameMarkerData[0].markerIndex;
     const dataIndex: number = sameMarkerData[0].dataIndex;
     const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
+    const marker: MarkerSettingsModel = maps.layers[layerIndex as number].markerSettings[markerIndex as number];
     const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
-    const clusterEle: Element = maps.layers[layerIndex].markerClusterSettings.shape === 'Balloon' ? getElement(clusterId + '_Group') : getElement(clusterId);
+    const clusterEle: Element = maps.layers[layerIndex as number].markerClusterSettings.shape === 'Balloon' ? getElement(clusterId + '_Group') : getElement(clusterId);
     const clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
     clusterEleLabel.setAttribute('visibility', 'visible');
     let markerEle: Element;
     const markerDataLength: number = sameMarkerData[0].data.length;
     for (let i: number = 0; i < markerDataLength; i++) {
-        markerEle = marker.shape === 'Balloon' ? getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index'] + '_Group') : getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle = marker.shape === 'Balloon' ? getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index'] + '_Group') : getElement(markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index']);
         markerEle['style']['visibility'] = 'hidden';
     }
     removeElement(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_markerClusterConnectorLine');
@@ -1232,9 +1234,9 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     const getElementFunction: any = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     const getQueryConnect: string = isDom ? '' : '#';
     const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
+    const marker: MarkerSettingsModel = maps.layers[layerIndex as number].markerSettings[markerIndex as number];
     const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
-    const clusterEle: Element = maps.layers[layerIndex].markerClusterSettings.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + clusterId + '_Group') : getElementFunction(getQueryConnect + '' + clusterId);
+    const clusterEle: Element = maps.layers[layerIndex as number].markerClusterSettings.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + clusterId + '_Group') : getElementFunction(getQueryConnect + '' + clusterId);
     const clusterEleLabel: Element = getElementFunction(getQueryConnect + '' + clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'hidden');
     clusterEleLabel.setAttribute('visibility', 'hidden');
@@ -1275,7 +1277,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
         const x1: number = centerX + radius * Math.sin((Math.PI * 2 * newAngle) / 360);
         const y1: number = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
         path += start + 'L ' + (x1) + ' ' + y1 + ' ';
-        markerEle = marker.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index'] + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
+        markerEle = marker.shape === 'Balloon' ? getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index'] + '_Group') : getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i as number]['index']);
         if (markerEle.parentElement.id.indexOf('Template_Group') > -1) {
             markerEle['style']['transform'] = '';
             markerEle['style']['left'] = maps.isTileMap ? x1 - (width / 2) + 'px' : (x1 - (width / 2) - 10) + 'px';
@@ -1287,7 +1289,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
         markerEle['style']['visibility'] = 'visible';
         newAngle += angle;
     }
-    const connectorLine: ConnectorLineSettingsModel = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
+    const connectorLine: ConnectorLineSettingsModel = maps.layers[layerIndex as number].markerClusterSettings.connectorLineSettings;
     const options: PathOption = {
         d: path, id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_markerClusterConnectorLine', stroke: connectorLine.color,
         'fill-opacity': connectorLine.opacity, 'stroke-opacity': connectorLine.opacity, 'stroke-width': connectorLine.width
@@ -1371,7 +1373,7 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
             templateElement, markerID, data, markerIndex, maps
         );
         for (let i: number = 0; i < markerElement.children.length; i++) {
-            (<HTMLElement>markerElement.children[i]).style.pointerEvents = 'none';
+            (<HTMLElement>markerElement.children[i as number]).style.pointerEvents = 'none';
         }
         markerElement.style.left = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x -  maps.mapAreaRect.x + 'px';
         markerElement.style.top = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y - maps.mapAreaRect.y + 'px';
@@ -1404,7 +1406,7 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
 export function maintainSelection(elementId: string[], elementClass: Element, element: Element, className: string): void {
     if (elementId) {
         for (let index: number = 0; index < elementId.length; index++) {
-            if (element.getAttribute('id') === elementId[index]) {
+            if (element.getAttribute('id') === elementId[index as number]) {
                 if (index === 0 || element.tagName === 'g') {
                     if (!isNullOrUndefined(elementClass) && !isNullOrUndefined(elementClass.id)) {
                         document.body.appendChild(elementClass);
@@ -1703,6 +1705,7 @@ export function drawStar(maps: Maps, options: PathOption, size: Size, location: 
  * @param {PathOption} options - Specifies the path options
  * @param {Size} size - Specifies the size
  * @param {MapLocation} location - Specifies the map location
+ * @param {string} type - Specifies the type.
  * @param {Element} element - Specifies the element
  * @returns {Element} - Returns the element
  * @private
@@ -1726,7 +1729,7 @@ export function drawBalloon(maps: Maps, options: PathOption, size: Size, locatio
     }
     else {
         pathElement = balloon;
-    }    
+    }
     return pathElement;
 }
 /**
@@ -1764,9 +1767,9 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
         data = {};
         for (const field of fields) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((<any>temp)[field]) {
+            if ((<any>temp)[field as string]) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data[field] = (<any>temp)[field];
+                data[field as string] = (<any>temp)[field as string];
             }
         }
         newData.push(data);
@@ -1788,13 +1791,13 @@ export function checkShapeDataFields(dataSource: any[], properties: any, dataPat
                                      layer: LayerSettingsModel): number {
     if (!(isNullOrUndefined(properties))) {
         for (let i: number = 0; i < dataSource.length; i++) {
-            const shapeDataPath: string = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i], dataPath) :
-                dataSource[i][dataPath]);
+            const shapeDataPath: string = ((dataPath.indexOf('.') > -1) ? getValueFromObject(dataSource[i as number], dataPath) :
+                dataSource[i as number][dataPath as string]);
             const shapePath: string = checkPropertyPath(shapeDataPath, propertyPath, properties);
-            const shapeDataPathValue: string = !isNullOrUndefined(shapeDataPath) && isNaN(properties[shapePath])
+            const shapeDataPathValue: string = !isNullOrUndefined(shapeDataPath) && isNaN(properties[shapePath as string])
                 ? (typeof shapeDataPath === 'string' ? shapeDataPath.toLowerCase() : shapeDataPath) : shapeDataPath;
-            const propertiesShapePathValue: string = !isNullOrUndefined(properties[shapePath]) && isNaN(properties[shapePath])
-                ? properties[shapePath].toLowerCase() : properties[shapePath];
+            const propertiesShapePathValue: string = !isNullOrUndefined(properties[shapePath as string]) && isNaN(properties[shapePath as string])
+                ? properties[shapePath as string].toLowerCase() : properties[shapePath as string];
             if (shapeDataPathValue === propertiesShapePathValue) {
                 return i;
             }
@@ -1813,17 +1816,16 @@ export function checkShapeDataFields(dataSource: any[], properties: any, dataPat
 export function checkPropertyPath(shapeData: string, shapePropertyPath: string | string[], shape: any): string {
     if (!isNullOrUndefined(shapeData) && !isNullOrUndefined(shape)) {
         if (!isNullOrUndefined(shapePropertyPath)) {
-            let length: number;
             const properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
                 shapePropertyPath : [shapePropertyPath]) as string[];
             for (let i: number = 0; i < properties.length; i++) {
                 const shapeDataValue: string = !isNullOrUndefined(shapeData) && typeof shapeData === 'string' ?
                     shapeData.toLowerCase() : shapeData;
-                const shapePropertiesValue: string = !isNullOrUndefined(shape[properties[i]])
-                    && isNaN(shape[properties[i]])
-                    ? shape[properties[i]].toLowerCase() : shape[properties[i]];
+                const shapePropertiesValue: string = !isNullOrUndefined(shape[properties[i as number]])
+                    && isNaN(shape[properties[i as number]])
+                    ? shape[properties[i as number]].toLowerCase() : shape[properties[i as number]];
                 if (shapeDataValue === shapePropertiesValue) {
-                    return properties[i];
+                    return properties[i as number];
                 }
             }
         }
@@ -1841,7 +1843,7 @@ export function checkPropertyPath(shapeData: string, shapePropertyPath: string |
 export function filter(points: MapLocation[], start: number, end: number): MapLocation[] {
     const pointObject: MapLocation[] = [];
     for (let i: number = 0; i < points.length; i++) {
-        const point: MapLocation = points[i];
+        const point: MapLocation = points[i as number];
         if (start <= point.y && end >= point.y) {
             pointObject.push(point);
         }
@@ -1890,8 +1892,8 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
     let ySum: number = 0;
 
     for (let i: number = min; i <= max - 1; i++) {
-        startX = points[i].x;
-        startY = type === 'Mercator' || geometryType === 'Normal' ? points[i].y : -(points[i].y);
+        startX = points[i as number].x;
+        startY = type === 'Mercator' || geometryType === 'Normal' ? points[i as number].y : -(points[i as number].y);
         if (i === max - 1) {
             startX1 = points[0].x;
             startY1 = type === 'Mercator' || geometryType === 'Normal' ? points[0].y : -(points[0].y);
@@ -1918,7 +1920,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
     let topMaxPoint: MapLocation = { x: 0, y: 0 };
     let height: number = 0;
     for (let i: number = min; i <= max - 1; i++) {
-        const point: MapLocation = points[i];
+        const point: MapLocation = points[i as number];
         point.y = type === 'Mercator' || geometryType === 'Normal' ? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
@@ -2183,9 +2185,10 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                         mapObject.zoomTranslatePoint.x = x;
                         mapObject.zoomTranslatePoint.y = y;
                     } else {
-                        if (!isNullOrUndefined(mapObject.previousProjection) && (mapObject.mapScaleValue === 1 || mapObject.mapScaleValue <= 1.05) && !mapObject.zoomModule.isDragZoom) {
+                        if (!isNullOrUndefined(mapObject.previousProjection) && (mapObject.mapScaleValue === 1
+                            || mapObject.mapScaleValue <= 1.05) && !mapObject.zoomModule.isDragZoom) {
                             scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
-                            scaleFactor = scaleFactor > 1.05 ? 1: scaleFactor;
+                            scaleFactor = scaleFactor > 1.05 ? 1 : scaleFactor;
                             mapWidth *= scaleFactor;
                             x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
                             mapHeight *= scaleFactor;
@@ -2200,8 +2203,10 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             }
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ?
+                mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ?
+                mapObject.translatePoint.y : y;
         }
     }
     scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
@@ -2252,9 +2257,11 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor !== 1 &&
         mapObject.zoomSettings.zoomFactor ===
         mapObject.mapScaleValue ? mapObject.zoomSettings.zoomFactor :
-        mapObject.zoomSettings.zoomFactor !== mapObject.mapScaleValue && !mapObject.centerPositionChanged ? mapObject.mapScaleValue : mapObject.zoomSettings.zoomFactor;
+        mapObject.zoomSettings.zoomFactor !== mapObject.mapScaleValue && !mapObject.centerPositionChanged ?
+            mapObject.mapScaleValue : mapObject.zoomSettings.zoomFactor;
     if (mapObject.zoomSettings.shouldZoomInitially && !mapObject.isZoomByPosition) {
-        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale === 1)
+        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence
+                                                                    || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale === 1)
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
         zoomFactorValue = mapObject.mapScaleValue;
         if (!isNullOrUndefined(mapObject.markerCenterLatitude) && !isNullOrUndefined(mapObject.markerCenterLongitude)) {
@@ -2279,7 +2286,8 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         const point: Point = checkZoomMethod ? calculateCenterFromPixel(mapObject, layer) :
             convertGeoToPoint(
                 latitude, longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-        if ((!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) && !mapObject.zoomNotApplied) {
+        if ((!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) &&
+             !mapObject.zoomNotApplied) {
             if (mapObject.previousProjection !== mapObject.projectionType) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
@@ -2297,8 +2305,10 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             y = -point.y + topPosition + mapObject.mapAreaRect.y / zoomFactor;
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ?
+                mapObject.translatePoint.y : y;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ?
+                mapObject.translatePoint.x : x;
         }
         scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     } else {
@@ -2334,8 +2344,10 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             }
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : leftPosition;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : topPosition;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x !== 0 && !mapObject.zoomNotApplied) ?
+                mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y !== 0 && !mapObject.zoomNotApplied) ?
+                mapObject.translatePoint.y : topPosition;
         }
     }
     scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue === 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
@@ -2402,6 +2414,7 @@ export function Internalize(maps: Maps, value: number): string {
  * Function to compile the template function for maps.
  *
  * @param {string} template - Specifies the template
+ * @param {Maps} maps - Specifies the Maps instance.
  * @returns {Function} - Returns the function
  * @private
  */
@@ -2409,11 +2422,10 @@ export function Internalize(maps: Maps, value: number): string {
 export function getTemplateFunction(template: string, maps: Maps): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let e: any;
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } else if ((maps as any).isVue || (maps as any).isVue3) {
             templateFn = templateComplier(template);
         }
@@ -2444,9 +2456,9 @@ export function getElement(id: string): Element {
 export function getShapeData(targetId: string, map: Maps): { shapeData: any, data: any } {
     const layerIndex: number = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
     const shapeIndex: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
-    const layer: LayerSettings = map.layersCollection[layerIndex] as LayerSettings;
+    const layer: LayerSettings = map.layersCollection[layerIndex as number] as LayerSettings;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const shapeData: any = layer.layerData[shapeIndex]['property'];
+    const shapeData: any = layer.layerData[shapeIndex as number]['property'];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: any;
     if (layer.dataSource) {
@@ -2542,12 +2554,11 @@ export function querySelector(args: string, elementSelector: string): Element {
  * @returns {Element} - Returns the element
  */
 export function getTargetElement(layerIndex: number, name: string, enable: boolean, map: Maps): Element {
-    let shapeIndex: number;
     let targetId: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const shapeData: any[] = <any[]>map.layers[layerIndex].shapeData['features'];
+    const shapeData: any[] = <any[]>map.layers[layerIndex as number].shapeData['features'];
     for (let i: number = 0; i < shapeData.length; i++) {
-        if (shapeData[i]['properties'].name === name) {
+        if (shapeData[i as number]['properties'].name === name) {
             targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_undefined';
             break;
         }
@@ -2623,7 +2634,8 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
         maps: map
     };
     map.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
-        eventArgs.border.opacity = isNullOrUndefined(selectionSettings.border.opacity) ? selectionSettings.opacity : selectionSettings.border.opacity;
+        eventArgs.border.opacity = isNullOrUndefined(selectionSettings.border.opacity) ? selectionSettings.opacity :
+            selectionSettings.border.opacity;
         map.shapeSelectionItem.push(eventArgs.shapeData);
         if (!getElement('ShapeselectionMap')) {
             document.body.appendChild(createStyle('ShapeselectionMap',
@@ -2731,8 +2743,8 @@ export function showTooltip(
     const str: string[] = text.split(' ');
     let demo: number = str[0].length;
     for (let i: number = 1; i < str.length; i++) {
-        if (demo < str[i].length) {
-            demo = str[i].length;
+        if (demo < str[i as number].length) {
+            demo = (str[i as number]).length;
         }
     }
     if (!tooltip) {
@@ -2803,7 +2815,7 @@ export function wordWrap(
 //     if (touches) {
 //         touchList = [];
 //         for (let i: number = 0, length: number = touches.length; i < length; i++) {
-//             touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: null });
+//             touchList.push({ pageX: touches[i as number].clientX, pageY: touches[i as number].clientY, pointerId: null });
 //         }
 //     } else {
 //         touchList = touchList ? touchList : [];
@@ -2811,8 +2823,8 @@ export function wordWrap(
 //             touchList.push({ pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId });
 //         } else {
 //             for (let i: number = 0, length: number = touchList.length; i < length; i++) {
-//                 if (touchList[i].pointerId === e.pointerId) {
-//                     touchList[i] = { pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId };
+//                 if (touchList[i as number].pointerId === e.pointerId) {
+//                     touchList[i as number] = { pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId };
 //                 } else {
 //                     touchList.push({ pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId });
 //                 }
@@ -2861,7 +2873,6 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
  * @private
  */
 export function drawSymbol(location: Point, shape: string, size: Size, url: string, options: PathOption): Element {
-    const functionName: string = 'Path';
     const renderer: SvgRenderer = new SvgRenderer('');
     const temp: IShapes = renderLegendShape(location, size, shape, options, url);
     const htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
@@ -2888,7 +2899,7 @@ export function renderLegendShape(location: MapLocation, size: Size, shape: stri
     const x: number = location.x + (-shapeWidth / 2);
     const y: number = location.y + (-shapeHeight / 2);
     options['stroke'] = (shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross') ? options['fill'] : options['stroke'];
-    options['stroke-width'] = (options['stroke-width'] === 0 && (shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross')) ? 1: options['stroke-width'];
+    options['stroke-width'] = (options['stroke-width'] === 0 && (shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross')) ? 1 : options['stroke-width'];
     switch (shape) {
     case 'Circle':
     case 'Bubble':
@@ -3020,25 +3031,25 @@ export function getElementOffset(childElement: HTMLElement, parentElement: HTMLE
 export function changeBorderWidth(element: Element, index: number, scale: number, maps: Maps): void {
     let childNode: HTMLElement;
     for (let l: number = 0; l < element.childElementCount; l++) {
-        childNode = element.childNodes[l] as HTMLElement;
+        childNode = element.childNodes[l as number] as HTMLElement;
         if (childNode.id.indexOf('_NavigationGroup') > -1) {
             changeNavaigationLineWidth(childNode, index, scale, maps);
         } else {
             let currentStroke: number;
             let value: number = 0;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const borderWidthValue: any = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
-            const borderWidth: number = (<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width;
-            const circleRadius: number = (<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.circleRadius;
-            if (maps.layersCollection[index].shapeSettings.borderWidthValuePath) {
+            const borderWidthValue: string = maps.layersCollection[index as number].shapeSettings.borderWidthValuePath;
+            const borderWidth: number = (<LayerSettingsModel>maps.layersCollection[index as number]).shapeSettings.border.width;
+            const circleRadius: number = (<LayerSettingsModel>maps.layersCollection[index as number]).shapeSettings.circleRadius;
+            if (maps.layersCollection[index as number].shapeSettings.borderWidthValuePath) {
                 value = checkShapeDataFields(
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    <any[]>maps.layersCollection[index].dataSource, maps.layersCollection[index].layerData[l]['property'],
-                    maps.layersCollection[index].shapeDataPath, maps.layersCollection[index].shapePropertyPath, maps.layersCollection[index]
+                    <any[]>maps.layersCollection[index as number].dataSource, maps.layersCollection[index as number].layerData[l as number]['property'],
+                    maps.layersCollection[index as number].shapeDataPath, maps.layersCollection[index as number].shapePropertyPath, maps.layersCollection[index as number]
                 );
                 if (value !== null) {
-                    if (maps.layersCollection[index].dataSource[value][borderWidthValue]) {
-                        currentStroke = maps.layersCollection[index].dataSource[value][borderWidthValue];
+                    if (maps.layersCollection[index as number].dataSource[value as number][borderWidthValue as string]) {
+                        currentStroke = maps.layersCollection[index as number].dataSource[value as number][borderWidthValue as string];
                     } else {
                         currentStroke = (isNullOrUndefined(borderWidth) ? 0 : borderWidth);
                     }
@@ -3067,9 +3078,9 @@ export function changeBorderWidth(element: Element, index: number, scale: number
 export function changeNavaigationLineWidth(element: Element, index: number, scale: number, maps: Maps): void {
     let node: HTMLElement;
     for (let m: number = 0; m < element.childElementCount; m++) {
-        node = element.childNodes[m] as HTMLElement;
+        node = element.childNodes[m as number] as HTMLElement;
         if (node.tagName === 'path') {
-            const currentStroke: number = ((<LayerSettingsModel>maps.layersCollection[index])
+            const currentStroke: number = ((<LayerSettingsModel>maps.layersCollection[index as number])
                 .navigationLineSettings[parseFloat(node.id.split('_NavigationIndex_')[1].split('_')[0])].width);
             node.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
@@ -3086,7 +3097,7 @@ export function targetTouches(event: PointerEvent | TouchEvent): ITouches[] {
     const targetTouches: ITouches[] = [];
     const touches: TouchList = (<TouchEvent & PointerEvent>event).touches;
     for (let i: number = 0; i < touches.length; i++) {
-        targetTouches.push({ pageX: touches[i].pageX, pageY: touches[i].pageY });
+        targetTouches.push({ pageX: touches[i as number].pageX, pageY: touches[i as number].pageY });
     }
     return targetTouches;
 }
@@ -3256,7 +3267,7 @@ export function animate(element: Element, delay: number, duration: number, proce
             window.cancelAnimationFrame(clearAnimation);
             end.call(this, { element: element });
             if (element.id.indexOf('Marker') > -1) {
-                let markerElement: Element = getElementByID(element.id.split('_Layer')[0] + '_Markers_Group');
+                const markerElement: Element = getElementByID(element.id.split('_Layer')[0] + '_Markers_Group');
                 (markerElement as HTMLElement).style.cssText = markerStyle;
             }
         }

@@ -4,7 +4,6 @@ import { FontModel, BorderModel, PaletteCollectionModel } from '../model/base-mo
 import { HeatMap } from '../heatmap';
 import { RgbColor } from '../utils/colorMapping';
 import { BubbleTooltipData } from '../model/base';
-import { Save } from '@syncfusion/ej2-file-utils';
 
 /**
  * Function to check whether target object implement specific interface
@@ -609,20 +608,20 @@ export class DrawSvgCanvas {
         }
         if (typeof options.text !== 'string' && options.text.length > 1) {
             for (let i: number = 1, len: number = options.text.length; i < len; i++) {
-                height = (measureText(options.text[i], font).height);
+                height = (measureText(options.text[i as number], font).height);
                 if (!this.heatMap.enableCanvasRendering) {
                     tspanElement = this.heatMap.renderer.createTSpan(
                         {
                             'x': options.x, 'id': options.id + i,
                             'y': (options.y) + (i * height)
                         },
-                        options.text[i]
+                        options.text[i as number]
                     );
                     htmlObject.appendChild(tspanElement);
                 } else {
                     options.id = options.id + i;
                     options.y += height;
-                    this.heatMap.canvasRenderer.createText(options, options.text[i]);
+                    this.heatMap.canvasRenderer.createText(options, options.text[i as number]);
                 }
             }
         }
@@ -677,7 +676,7 @@ export class DrawSvgCanvas {
     /* tslint:disable */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getOptionValue<T>(options: any, key: string): T {
-        return options[key] as T;
+        return options[key as string] as T;
     }
 
     private setAttributes(canvas: CanvasRenderer, options: RectOption | CircleOption | PathAttributes) {
@@ -756,7 +755,7 @@ export class DrawSvgCanvas {
         for (let i: number = 0; i < dataSplit.length; i = i + 3) {
             const x1: number = parseFloat(dataSplit[i + 1]);
             const y1: number = parseFloat(dataSplit[i + 2]);
-            switch (dataSplit[i]) {
+            switch (dataSplit[i as number]) {
             case 'M':
                 canvas.ctx.moveTo(x1, y1);
                 break;
@@ -766,7 +765,7 @@ export class DrawSvgCanvas {
             case 'A':
             case 'a':
                 canvas.ctx.arc(options.x, options.y, options.radius, (options.start * 0.0174533), (options.end * 0.0174533), false);
-                i = dataSplit[i] === 'a' ? i + 13 : i + 5;
+                i = dataSplit[i as number] === 'a' ? i + 13 : i + 5;
                 break;
             case 'Z':
                 canvas.ctx.closePath();
@@ -819,7 +818,7 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
     const labelCollection: string[] = [];
     let text: string;
     for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
-        text = textCollection[i];
+        text = textCollection[i as number];
         if (measureText(label.concat(text), font).width < maximumWidth) {
             label = label.concat((label === '' ? '' : ' ') + text);
         } else {
@@ -940,13 +939,11 @@ export function showTooltip(
     x = (x + width > areaWidth) ? x - width : x;
     x = x < 0 ? 5 : x;
     if (!tooltip) {
-        tooltip = createElement('div', {
-            id: id,
-            styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
+        tooltip = createElement('div', { id: id });
+        tooltip.style.cssText = 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
                 'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
-                'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: Segoe UI'
-        });
+                'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: Segoe UI';
         tooltip.innerText = text;
         element.appendChild(tooltip);
     } else {
@@ -1053,7 +1050,7 @@ export function getTooltipText(tooltipCollection: CanvasTooltip[], xPosition: nu
     let region: Rect;
     let text: string;
     for (let i: number = 0; i < length; i++) {
-        tooltip = tooltipCollection[i];
+        tooltip = tooltipCollection[i as number];
         region = tooltip.region;
         if (xPosition >= region.x && xPosition <= (region.x + region.width) && yPosition >= region.y
          && yPosition <= (region.y + region.height))
@@ -1160,10 +1157,9 @@ export function colorNameToHex(color: string): string {
     const element : HTMLElement = document.getElementById('heatmapmeasuretext');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    const isRGBValue: RegExpExecArray = exp.exec(color);
+    const isRGBValue: string[] = color.replace(/[()RGBrgba ]/g, '').split(',');
     return convertToHexCode(
-        new RgbColor(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
+        new RgbColor(parseInt(isRGBValue[0], 10), parseInt(isRGBValue[1], 10), parseInt(isRGBValue[2], 10))
     );
 }
 
@@ -1213,7 +1209,6 @@ export function convertHexToColor(hex: string): RgbColor {
  * @returns {string} returns the size
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function formatValue(isCustom: boolean, format: string, tempInterval: number, formatFun: Function): string {
     return isCustom ? format.replace('{value}', formatFun(tempInterval))
         : formatFun(tempInterval);

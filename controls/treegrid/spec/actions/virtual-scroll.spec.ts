@@ -36,6 +36,7 @@ describe('TreeGrid Virtual Scroll', () => {
           parentIdMapping: 'ParentID',
           idMapping: 'TaskID',
           height: 200,
+          enableVirtualMaskRow: false,
           
     queryCellInfo: (args: QueryCellInfoEventArgs) => {
         if (parseInt(args.cell.innerHTML, 0) > 1000) {
@@ -233,6 +234,7 @@ describe('TreeGrid Virtual Scroll', () => {
               dataSource: virtualData.slice(0,1000),
               parentIdMapping: 'ParentID',
               idMapping: 'TaskID',
+              enableVirtualMaskRow: false,
               height: 200,
               enableVirtualization: true,
             columns: [{ field: 'FIELD1', headerText: 'Player Name', width: 140 },
@@ -806,6 +808,7 @@ describe('TreeGrid Virtual Scroll', () => {
                 dataSource: editVirtualData,
                 childMapping: 'Crew',
                 enableVirtualization: true,
+                enableVirtualMaskRow: false,
                 treeColumnIndex: 1,
                 allowFiltering: true,
                 filterSettings: {
@@ -860,6 +863,7 @@ describe('TreeGrid Virtual Scroll', () => {
             enableVirtualization: true,
             allowSorting: true,
             allowFiltering: true,
+            enableVirtualMaskRow: false,
             childMapping: 'Crew',
             toolbar: ['Indent', 'Outdent','Add', 'Delete', 'Update', 'Cancel'],
             editSettings: {
@@ -1244,5 +1248,86 @@ describe('TreeGrid Virtual Scroll', () => {
       destroy(TreeGridObj);
     });
   });
+
+  describe('EJ2-64501 - virutalization shimmer effect check', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                allowSorting: true,
+                toolbar: ['Search'],
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name',  width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120,  textAlign: 'Right' },                   
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Show Mask Row', () => {
+      gridObj.grid.showMaskRow();
+      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
+  });
+  it('Remove Mask Row', () => {
+      gridObj.grid.removeMaskRow();
+      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+  });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+
+  describe('EJ2-64501 - Freeze direction with virutalization shimmer effect check', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: editVirtualData,
+                childMapping: 'Crew',
+                enableVirtualization: true,
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                allowSorting: true,
+                toolbar: ['Search'],
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', width: 140, freeze: 'Left', textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', freeze: 'Left', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD4', headerText: 'TMID', width: 120, freeze: 'Right',  textAlign: 'Right' },                   
+                   ]
+            },
+        done
+      );
+    });
+
+    it('Show Mask Row', () => {
+      gridObj.grid.showMaskRow();
+      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
+  });
+  it('Remove Mask Row', () => {
+      gridObj.grid.removeMaskRow();
+      expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+  });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 
 });

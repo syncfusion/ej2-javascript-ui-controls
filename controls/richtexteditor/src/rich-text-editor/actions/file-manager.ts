@@ -100,6 +100,7 @@ export class FileManager {
         this.setCssClass({cssClass: this.parent.cssClass});
     }
 
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         if (this.dialogObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {

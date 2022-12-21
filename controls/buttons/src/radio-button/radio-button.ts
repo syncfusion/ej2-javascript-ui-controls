@@ -157,7 +157,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         let input: HTMLInputElement; let instance: RadioButton;
         const radioGrp: NodeListOf<Element> = this.getRadioGroup();
         for (let i: number = 0; i < radioGrp.length; i++) {
-            input = radioGrp[i] as HTMLInputElement;
+            input = radioGrp[i as number] as HTMLInputElement;
             if (input !== this.element) {
                 instance = getInstance(input, RadioButton) as RadioButton; instance.checked = false;
                 if (this.tagName === 'EJS-RADIOBUTTON') { instance.angularValue = this.value; }
@@ -219,7 +219,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     public getSelectedValue(): string {
         let input: HTMLInputElement; const radioGrp: NodeListOf<Element> = this.getRadioGroup();
         for (let i: number = 0, len: number = radioGrp.length; i < len; i++) {
-            input = radioGrp[i] as HTMLInputElement;
+            input = radioGrp[i as number] as HTMLInputElement;
             if (input.checked ) { return input.value; }
         }
         return '';
@@ -462,11 +462,11 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 if (ATTRIBUTES.indexOf(key) > -1) {
                     const wrapper: Element = this.element.parentElement;
                     if (key === 'class') {
-                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                        addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
                     } else if (key === 'title' || key === 'style') {
-                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                        wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else {
-                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                        this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }
             }

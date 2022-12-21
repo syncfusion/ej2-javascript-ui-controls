@@ -5,7 +5,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, BeforeOpenEventArgs, ButtonPropsModel, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base/kanban';
-import { CardClickEventArgs, DialogEventArgs, EJ2Instance, ActionEventArgs } from '../base/interface';
+import { CardClickEventArgs, DialogEventArgs, EJ2Instance } from '../base/interface';
 import { CurrentAction } from '../base/type';
 import { DialogFieldsModel } from '../models/index';
 import * as events from '../base/constant';
@@ -169,12 +169,12 @@ export class KanbanDialog {
                 if (this.parent.actionModule.hideColumnKeys.length > 0) {
                     currentKeys = [];
                     for (let i: number = 0; i < this.parent.columns.length; i++) {
-                        if (this.parent.layoutModule.isColumnVisible(this.parent.columns[i])) {
-                            const isNumeric: boolean = typeof this.parent.columns[i].keyField === 'number';
+                        if (this.parent.layoutModule.isColumnVisible(this.parent.columns[i as number])) {
+                            const isNumeric: boolean = typeof this.parent.columns[i as number].keyField === 'number';
                             if (isNumeric) {
-                                currentKeys = currentKeys.concat(this.parent.columns[i].keyField.toString());
+                                currentKeys = currentKeys.concat(this.parent.columns[i as number].keyField.toString());
                             } else {
-                                currentKeys = currentKeys.concat((this.parent.columns[i].keyField as string).split(',').map((e: string) => e.trim()));
+                                currentKeys = currentKeys.concat((this.parent.columns[i as number].keyField as string).split(',').map((e: string) => e.trim()));
                             }
                         }
                     }
@@ -249,7 +249,7 @@ export class KanbanDialog {
                     if (columnName === this.parent.cardSettings.headerField) {
                         value = this.getIDType() === 'string' ? value : parseInt(value as string, 10);
                     }
-                    cardObj[columnName] = value;
+                    cardObj[columnName as string] = value;
                 }
             }
         }

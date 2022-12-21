@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-schedule",
-	"version": "20.3.58",
+	"version": "20.5.7",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-schedule.umd.min.js",
@@ -46,23 +46,15 @@
 	"keywords": [
 		"ej2",
 		"syncfusion",
-		"web-components",
+		"JavaScript",
 		"TypeScript",
 		"schedule",
-		"TypeScript-scheduler",
-		"resources",
-		"multiple-resources",
-		"grouping",
-		"views",
-		"Typescript-calendar",
-		"appointments",
-		"events",
-		"tasks",
-		"recurrence",
-		"data-binding",
-		"timezone",
-		"recurrence-editor",
-		"agenda"
+		"scheduler",
+		"events-calendar",
+		"events-scheduler",
+		"appointment-calendar",
+		"appointments-planner",
+		"resources-scheduler"
 	],
 	"repository": {
 		"type": "git",

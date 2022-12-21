@@ -43,25 +43,27 @@ export class ClearFormat {
         const data: { [key: string]: string } = this.parent.selectionTags;
         const keys: string[] = Object.keys(data);
         for (let num: number = 0; num < keys.length; num++ ) {
-            const key: string = keys[num];
+            const key: string = keys[num as number];
             // eslint-disable-next-line
             if (data.hasOwnProperty(key) && data[key] !== '') {
-                const expString: string = this.replaceRegex(data[key]);
+                const expString: string = this.replaceRegex(data[`${key}`]);
                 let regExp: RegExp;
-                const startExp: number = data[key].length;
-                const endExp: number = (data[key] === '<sup>' || data[key] === '<sub>') ? data[key].length + 1 : data[key].length;
-                if (data[key] === '<sup>') {
+                const startExp: number = data[`${key}`].length;
+                const endExp: number = (data[`${key}`] === '<sup>' || data[`${key}`] === '<sub>') ? data[`${key}`].length + 1 : data[`${key}`].length;
+                if (data[`${key}`] === '<sup>') {
                     // eslint-disable-next-line
                     regExp = new RegExp('<sup>(.*?)<\/sup>', 'ig');
-                } else if (data[key] === '<sub>') {
+                } else if (data[`${key}`] === '<sub>') {
                     // eslint-disable-next-line
                     regExp = new RegExp('<sub>(.*?)<\/sub>', 'ig');
                 } else {
+                    // eslint-disable-next-line
                     regExp = new RegExp(expString + '(.*?)' + expString, 'ig');
                 }
                 const val: RegExpMatchArray = text.match(regExp);
-                for (let index: number = 0; val && index < val.length && val[index] !== ''; index++) {
-                    text = text.replace(val[index], val[index].substr(startExp, val[index].length - endExp - startExp ));
+                for (let index: number = 0; val && index < val.length && val[index as number] !== ''; index++) {
+                    // eslint-disable-next-line max-len
+                    text = text.replace(val[index as number], val[index as number].substr(startExp, val[index as number].length - endExp - startExp ));
                 }
             }
         }
@@ -78,20 +80,20 @@ export class ClearFormat {
         let str: string = '';
         for (let len: number = 0; len < lines.length; len++) {
             for (let num: number = 0; num < tags.length; num++) {
-                const data: { [key: string]: string } =  tags[num];
+                const data: { [key: string]: string } =  tags[num as number];
                 const keys: string[] = Object.keys(data);
                 for (let index: number = 0; index < keys.length; index++ ) {
-                    const key: string = keys[index];
+                    const key: string = keys[index as number];
                     // eslint-disable-next-line
                     if (data.hasOwnProperty(key) && data[key] !== '') {
-                        if (lines[len].indexOf(data[key]) === 0) {
-                            lines[len] = lines[len].replace(data[key], '');
-                            lines[len] = this.clearFormatLines([lines[len]]);
+                        if (lines[len as number].indexOf(data[`${key}`]) === 0) {
+                            lines[len as number] = lines[len as number].replace(data[`${key}`], '');
+                            lines[len as number] = this.clearFormatLines([lines[len as number]]);
                         }
                     }
                 }
             }
-            str = str + lines[len] + ((len !== lines.length - 1) ? '\n' : '');
+            str = str + lines[len as number] + ((len !== lines.length - 1) ? '\n' : '');
         }
         return str;
     }

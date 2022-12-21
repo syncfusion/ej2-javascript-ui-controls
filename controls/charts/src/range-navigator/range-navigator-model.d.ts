@@ -304,6 +304,7 @@ export interface RangeNavigatorModel extends ComponentModel{
 
     /**
      * Triggers before window resize.
+     *
      * @event
      * @blazorProperty 'BeforeResize'
      */

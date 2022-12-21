@@ -22,13 +22,13 @@ export class CommonKeyboardInteraction {
         altJ: 'alt+J'
     };
     private keyboardModule: KeyboardEvents;
-    /* eslint-disable */
-    private timeOutObj: any;
+    private timeOutObj: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     /**
      * Constructor
+     *
+     * @param {PivotCommon} parent - It contains the parent data
      */
     constructor(parent: PivotCommon) {
-        /* eslint-enable */
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
         this.keyboardModule = new KeyboardEvents(this.parent.element, {
@@ -39,30 +39,30 @@ export class CommonKeyboardInteraction {
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'shiftF':
-                this.processFilter(e);
-                break;
-            case 'shiftS':
-                this.processSort(e);
-                break;
-            case 'shiftE':
-                this.processEdit(e);
-                break;
-            case 'delete':
-                this.processDelete(e);
-                break;
-            case 'enter':
-                this.processEnter(e);
-                break;
-            case 'escape':
-                this.processClose(e);
-                break;
-            case 'upArrow':
-            case 'downArrow':
-                this.processFilterNodeSelection(e);
-                break;
-            case 'altJ':
-                this.processComponentFocus(e);
+        case 'shiftF':
+            this.processFilter(e);
+            break;
+        case 'shiftS':
+            this.processSort(e);
+            break;
+        case 'shiftE':
+            this.processEdit(e);
+            break;
+        case 'delete':
+            this.processDelete(e);
+            break;
+        case 'enter':
+            this.processEnter(e);
+            break;
+        case 'escape':
+            this.processClose(e);
+            break;
+        case 'upArrow':
+        case 'downArrow':
+            this.processFilterNodeSelection(e);
+            break;
+        case 'altJ':
+            this.processComponentFocus(e);
         }
     }
     private processComponentFocus(e: Event): void {
@@ -74,16 +74,16 @@ export class CommonKeyboardInteraction {
         }
     }
     private getButtonElement(target: HTMLElement): HTMLElement {
-        let allPivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+        const allPivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
         for (let i: number = 0, len: number = allPivotButtons.length; i < len; i++) {
-            if (allPivotButtons[i].getAttribute('data-uid') === target.getAttribute('data-uid')) {
-                return allPivotButtons[i];
+            if (allPivotButtons[i as number].getAttribute('data-uid') === target.getAttribute('data-uid')) {
+                return allPivotButtons[i as number];
             }
         }
         return target;
     }
     private processEnter(e: Event): void {
-        let target: HTMLElement = e.target as HTMLElement;
+        const target: HTMLElement = e.target as HTMLElement;
         if (target && closest(target, '.' + cls.PIVOT_BUTTON_CLASS)) {
             if (target.querySelector('.' + cls.AXISFIELD_ICON_CLASS) && closest(target, '.' + cls.VALUE_AXIS_CLASS)) {
                 (target.querySelector('.' + cls.AXISFIELD_ICON_CLASS) as HTMLElement).click();
@@ -101,7 +101,7 @@ export class CommonKeyboardInteraction {
         }
     }
     private processSort(e: Event): void {
-        let target: HTMLElement = (e.target as HTMLElement);
+        const target: HTMLElement = (e.target as HTMLElement);
         if (target && closest(target, '.' + cls.PIVOT_BUTTON_CLASS) && target.querySelector('.' + cls.SORT_CLASS) &&
             !closest(target, '.' + cls.VALUE_AXIS_CLASS) && !closest(target, '.' + cls.AXIS_FILTER_CLASS)) {
             (target.querySelector('.' + cls.SORT_CLASS) as HTMLElement).click();
@@ -111,7 +111,7 @@ export class CommonKeyboardInteraction {
         }
     }
     private processEdit(e: Event): void {
-        let target: Element = (e.target as HTMLElement);
+        const target: Element = (e.target as HTMLElement);
         if (target && closest(target, '.' + cls.PIVOT_BUTTON_CLASS) && target.querySelector('.' + cls.CALC_EDIT)) {
             (target.querySelector('.' + cls.CALC_EDIT) as HTMLElement).click();
             e.preventDefault();
@@ -119,7 +119,7 @@ export class CommonKeyboardInteraction {
         }
     }
     private processFilter(e: Event): void {
-        let target: Element = e.target as Element;
+        const target: Element = e.target as Element;
         if (target && closest(target, '.' + cls.PIVOT_BUTTON_CLASS) && target.querySelector('.' + cls.FILTER_COMMON_CLASS) &&
             !closest(target, '.' + cls.VALUE_AXIS_CLASS)) {
             (target.querySelector('.' + cls.FILTER_COMMON_CLASS) as HTMLElement).click();
@@ -128,8 +128,8 @@ export class CommonKeyboardInteraction {
                 (this.parent.control as PivotView).groupingBarModule && closest(target, '.' + cls.GROUP_ROW_CLASS) &&
                 this.parent.filterDialog && this.parent.filterDialog.dialogPopUp &&
                 !this.parent.filterDialog.dialogPopUp.isDestroyed && this.parent.filterDialog.dialogPopUp.element) {
-                let dialogElement: HTMLElement = this.parent.filterDialog.dialogPopUp.element;
-                let isExcelFilter: boolean = this.parent.filterDialog.allowExcelLikeFilter;
+                const dialogElement: HTMLElement = this.parent.filterDialog.dialogPopUp.element;
+                const isExcelFilter: boolean = this.parent.filterDialog.allowExcelLikeFilter;
                 clearTimeout(this.timeOutObj);
                 this.timeOutObj = setTimeout(() => {
                     if (dialogElement && dialogElement.classList.contains('e-popup-open')) {
@@ -146,11 +146,11 @@ export class CommonKeyboardInteraction {
         }
     }
     private processFilterNodeSelection(e: KeyboardEventArgs): void {
-        let target: Element = e.target as Element;
+        const target: Element = e.target as Element;
         if (target && closest(target, '.' + cls.SELECT_ALL_CLASS) && e.keyCode === 40) {
-            let memberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.EDITOR_TREE_CONTAINER_CLASS) as HTMLElement;
+            const memberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.EDITOR_TREE_CONTAINER_CLASS) as HTMLElement;
             if (memberEditorTree && memberEditorTree.querySelector('li')) {
-                let firstLi: HTMLElement = memberEditorTree.querySelector('li');
+                const firstLi: HTMLElement = memberEditorTree.querySelector('li');
                 if (memberEditorTree.querySelector('li#_active')) {
                     removeClass([memberEditorTree.querySelector('li#_active')], ['e-hover', 'e-node-focus']);
                     memberEditorTree.querySelector('li#_active').removeAttribute('id');
@@ -162,14 +162,14 @@ export class CommonKeyboardInteraction {
                 return;
             }
         } else if (target && closest(target, '.' + cls.EDITOR_TREE_CONTAINER_CLASS) && e.keyCode === 38) {
-            let memberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_CONTAINER_CLASS) as HTMLElement;
+            const memberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_CONTAINER_CLASS) as HTMLElement;
             if (memberEditorTree.querySelector('li#_active.e-hover.e-node-focus') && memberEditorTree.querySelector('li') &&
                 memberEditorTree.querySelector('li').classList.contains('e-prev-active-node') &&
                 memberEditorTree.querySelector('li') === memberEditorTree.querySelector('li#_active.e-hover.e-node-focus')) {
                 removeClass(memberEditorTree.querySelectorAll('li.e-prev-active-node'), 'e-prev-active-node');
-                let allMemberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.SELECT_ALL_CLASS) as HTMLElement;
+                const allMemberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.SELECT_ALL_CLASS) as HTMLElement;
                 if (allMemberEditorTree && allMemberEditorTree.querySelector('li')) {
-                    let firstLi: HTMLElement = allMemberEditorTree.querySelector('li');
+                    const firstLi: HTMLElement = allMemberEditorTree.querySelector('li');
                     firstLi.setAttribute('id', '_active');
                     addClass([firstLi], ['e-hover', 'e-node-focus']);
                     allMemberEditorTree.focus();
@@ -186,7 +186,7 @@ export class CommonKeyboardInteraction {
         }
     }
     private processDelete(e: Event): void {
-        let target: Element = e.target as Element;
+        const target: Element = e.target as Element;
         if (target && closest(target, '.' + cls.PIVOT_BUTTON_CLASS) && target.querySelector('.' + cls.REMOVE_CLASS)) {
             (target.querySelector('.' + cls.REMOVE_CLASS) as HTMLElement).click();
             e.preventDefault();
@@ -194,16 +194,16 @@ export class CommonKeyboardInteraction {
         }
     }
     private processClose(e: Event): void {
-        let target: Element = e.target as Element;
+        const target: Element = e.target as Element;
         if (target && closest(target, '.e-popup.e-popup-open')) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
+            const dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
             if (dialogInstance && !dialogInstance.closeOnEscape) {
-                let button: string = dialogInstance.element.getAttribute('data-fieldName');
+                const button: string = dialogInstance.element.getAttribute('data-fieldName');
                 dialogInstance.hide();
                 if (this.parent.element) {
-                    let pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-pivot-button'));
-                    for (let item of pivotButtons) {
+                    const pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-pivot-button'));
+                    for (const item of pivotButtons) {
                         if (item.getAttribute('data-uid') === button) {
                             item.focus();
                             break;
@@ -218,6 +218,7 @@ export class CommonKeyboardInteraction {
 
     /**
      * To destroy the keyboard module.
+     *
      * @returns {void}
      * @private
      */

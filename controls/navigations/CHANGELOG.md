@@ -2,14 +2,30 @@
 
 ## [Unreleased]
 
-## 20.3.60 (2022-12-06)
+## 20.4.38 (2022-12-21)
+
+### Toolbar
+
+#### New Features
+
+- `#I348957` - Provided option to specify `tabindex` attribute to control the tab key order of the toolbar elements.
+
+### Tab
+
+#### New Features
+
+- `#I348957` - Provided option to specify `tabindex` attribute to control the tab key order of tab header elements.
+
+#### Bug Fixes
+
+- `#I422226` - An issue with while using underscore on tab id wrong content shown has been resolved.
+- `#F179266` - Tab height does not change dynamically when `heightAdjustMode` has set as `Fill` mode has been resolved.
 
 ### TreeView
 
 #### Bug Fixes
 
 - `#I415237` - The TreeView performance issue in Vue3 framework has been resolved.
-- `#I422386` - The background contrast accessibility issue in the TreeView component has been resolved.
 
 ## 20.3.58 (2022-11-22)
 

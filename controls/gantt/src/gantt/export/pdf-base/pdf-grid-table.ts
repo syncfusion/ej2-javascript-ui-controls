@@ -395,7 +395,7 @@ export class PdfTreeGridCellCollection {
         if (index < 0 || index >= this.count) {
             throw new Error('IndexOutOfRangeException');
         }
-        return this.cells[index];
+        return this.cells[index as number];
     }
     /**
      * Gets the cells `count`.[Read-Only].
@@ -550,7 +550,7 @@ export class PdfTreeGridRow {
         const columns: PdfTreeGridColumn[] = this.treegrid.columns.columns;
         let totalWidth: number = 0;
         for (let i: number = 0; i < columns.length; i++) {
-            const column: PdfTreeGridColumn = columns[i];
+            const column: PdfTreeGridColumn = columns[i as number];
             totalWidth += column.width;
         }
         return totalWidth;
@@ -642,7 +642,7 @@ export class PdfTreeGridRowCollection {
      * @private
      */
     public getRow(index: number): PdfTreeGridRow {
-        return this.rows[index];
+        return this.rows[index as number];
     }
 }
 /**
@@ -685,7 +685,7 @@ export class PdfTreeGridHeaderCollection {
      * @private
      */
     public getHeader(index: number): PdfTreeGridRow {
-        return (this.rows[index]);
+        return (this.rows[index as number]);
     }
     /**
      * Gets the `number of header` in the 'PdfGrid'.[Read-Only]
@@ -860,7 +860,7 @@ export class PdfTreeGridColumnCollection {
      */
     public getColumn(index: number): PdfTreeGridColumn {
         if (index >= 0 && index <= this.columns.length) {
-            return this.columns[index];
+            return this.columns[index as number];
         } else {
             throw Error('can not get the column from the index: ' + index);
         }
@@ -876,7 +876,7 @@ export class PdfTreeGridColumnCollection {
         let totalWidth: number = 0;
         this.treegrid.measureColumnsWidth();
         for (let i: number = 0, count: number = this.internalColumns.length; i < count; i++) {
-            totalWidth += this.internalColumns[i].width;
+            totalWidth += this.internalColumns[i as number].width;
         }
         return totalWidth;
     }
@@ -891,18 +891,18 @@ export class PdfTreeGridColumnCollection {
         const widths: number[] = [];
         let subFactor: number = this.count;
         for (let i: number = 0; i < this.count; i++) {
-            widths[i] = this.internalColumns[i].width;
-            if (this.internalColumns[i].width > 0) {
-                totalWidth -= this.internalColumns[i].width;
+            widths[i as number] = this.internalColumns[i as number].width;
+            if (this.internalColumns[i as number].width > 0) {
+                totalWidth -= this.internalColumns[i as number].width;
                 subFactor--;
             } else {
-                widths[i] = 0;
+                widths[i as number] = 0;
             }
         }
         for (let i: number = 0; i < this.count; i++) {
             const width: number = totalWidth / subFactor;
-            if (widths[i] <= 0) {
-                widths[i] = width;
+            if (widths[i as number] <= 0) {
+                widths[i as number] = width;
             }
         }
         return widths;

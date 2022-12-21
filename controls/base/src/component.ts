@@ -6,10 +6,16 @@ import { ChildProperty } from './child-property';
 import { Property, NotifyPropertyChanges } from './notify-property-change';
 import { onIntlChange, rightToLeft, defaultCulture } from './internationalization';
 import { createElement, addClass, removeClass, ElementProperties, select } from './dom';
-import {validateLicense} from './validate-lic';
+import { validateLicense, createLicenseOverlay, componentList } from './validate-lic';
 let componentCount: number = 0;
 let lastPageID: number;
 let lastHistoryLen: number = 0;
+// Decalre the static variable to count the instance
+let instancecount: number = 0;
+// Decalre the static variable to find if control limit exceed or not
+let isvalid: boolean = true;
+// We have added styles to inline type so here declare the static variable to detect if banner is added or not
+let isBannerAdded: boolean = false;
 export let versionBasedStatePersistence: boolean = false;
 
 /**
@@ -172,6 +178,11 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             }
             this.preRender();
             this.injectModules();
+            // Checked weather cases are valid or not. If control leads to more than five counts  
+            if (!isvalid && !isBannerAdded) {
+                createLicenseOverlay();
+                isBannerAdded = true;
+            }
             this.render();
             if (!this.mount) {
                 this.trigger('created');
@@ -277,8 +288,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             this.prototype.injectedModules = [];
         }
         for (let i: number = 0; i < moduleList.length; i++) {
-            if (this.prototype.injectedModules.indexOf(moduleList[i]) === -1) {
-                this.prototype.injectedModules.push(moduleList[i]);
+            if (this.prototype.injectedModules.indexOf(moduleList[parseInt(i.toString(), 10)]) === -1) {
+                this.prototype.injectedModules.push(moduleList[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -301,7 +312,15 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.localObserver = new Observer(this);
         // tslint:disable-next-line:no-function-constructor-with-string-args
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
-        validateLicense();
+        // Based on the considered control list we have count the instance
+        if (!validateLicense()) {
+            if (componentList.indexOf(this.getModuleName()) !== -1) {
+                instancecount = instancecount + 1;
+                if (instancecount > 5) {
+                    isvalid = false;
+                }
+            }
+        }
         if (!isUndefined(selector)) {
             this.appendTo();
         }
@@ -371,7 +390,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         }
     }
 
-    //tslint:disable-next-line
+    // eslint-disable-next-line
     protected renderReactTemplates(callback?: any): void {
         if (!isNullOrUndefined(callback)) {
             callback();
@@ -446,9 +465,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
                     }).map((str: string): string => {
                         return str.replace(key + '.', '');
                     });
-                    newObj[key] = this.iterateJsonProperties(this.getActualProperties(value), newList);
+                    newObj[`${key}`] = this.iterateJsonProperties(this.getActualProperties(value), newList);
                 } else {
-                    newObj[key] = value;
+                    newObj[`${key}`] = value;
                 }
             }
         }

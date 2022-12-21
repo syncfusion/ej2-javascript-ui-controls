@@ -79,10 +79,10 @@ export class Crud {
                 ['Agenda', 'MonthAgenda', 'Year', 'TimelineYear'].indexOf(this.parent.currentView) === -1) {
                 templateNames = [];
                 for (let i: number = 0, len: number = this.crudObj.sourceEvent.length; i < len; i++) {
-                    templateNames.push('eventTemplate_' + this.crudObj.sourceEvent[i].groupIndex);
-                    if (this.crudObj.targetEvent[i] && this.crudObj.sourceEvent[i].groupIndex !==
-                        this.crudObj.targetEvent[i].groupIndex) {
-                        templateNames.push('eventTemplate_' + this.crudObj.targetEvent[i].groupIndex);
+                    templateNames.push('eventTemplate_' + this.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex);
+                    if (this.crudObj.targetEvent[parseInt(i.toString(), 10)] && this.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex !==
+                        this.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex) {
+                        templateNames.push('eventTemplate_' + this.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex);
                     }
                 }
             }
@@ -123,7 +123,7 @@ export class Crud {
                     const groupIndex: number = this.parent.eventBase.getGroupIndexFromEvent(data);
                     if (groupIndex > -1 && this.parent.crudModule.crudObj.sourceEvent.filter((tdData: TdData) => tdData.groupIndex === groupIndex).length === 0
                         && this.crudObj.isCrudAction) {
-                        this.crudObj.sourceEvent.push(this.parent.resourceBase.lastResourceLevel[groupIndex]);
+                        this.crudObj.sourceEvent.push(this.parent.resourceBase.lastResourceLevel[parseInt(groupIndex.toString(), 10)]);
                     }
                 }
                 this.crudObj.targetEvent = this.crudObj.sourceEvent;
@@ -320,8 +320,8 @@ export class Crud {
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 const occurrenceEvents: Record<string, any>[] = (occurrenceData instanceof Array ? occurrenceData : [occurrenceData]);
                 for (let a: number = 0, count: number = occurrenceArgs.changedRecords.length; a < count; a++) {
-                    const childEvent: Record<string, any> = occurrenceArgs.changedRecords[a];
-                    const parentEvent: Record<string, any> = occurrenceEvents[a].parent as Record<string, any>;
+                    const childEvent: Record<string, any> = occurrenceArgs.changedRecords[parseInt(a.toString(), 10)];
+                    const parentEvent: Record<string, any> = occurrenceEvents[parseInt(a.toString(), 10)].parent as Record<string, any>;
                     const parentException: string = parentEvent[fields.recurrenceException] as string;
                     let editedData: Record<string, Date>;
                     let exceptionDate: string;
@@ -386,8 +386,8 @@ export class Crud {
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 const followEvents: Record<string, any>[] = followData instanceof Array ? followData : [followData];
                 for (let a: number = 0, count: number = followArgs.changedRecords.length; a < count; a++) {
-                    const childEvent: Record<string, any> = followArgs.changedRecords[a];
-                    const parentEvent: Record<string, any> = followEvents[a].parent as Record<string, any>;
+                    const childEvent: Record<string, any> = followArgs.changedRecords[parseInt(a.toString(), 10)];
+                    const parentEvent: Record<string, any> = followEvents[parseInt(a.toString(), 10)].parent as Record<string, any>;
                     const followData: { [key: string]: Record<string, any>[] } = this.parent.eventBase.getEventCollections(parentEvent, childEvent) as { [key: string]: Record<string, any>[] };
                     let isSpanned: boolean;
                     switch (action) {
@@ -457,8 +457,8 @@ export class Crud {
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 const seriesEvents: Record<string, any>[] = seriesData instanceof Array ? seriesData : [seriesData];
                 for (let a: number = 0, count: number = seriesArgs.changedRecords.length; a < count; a++) {
-                    const childEvent: Record<string, any> = seriesArgs.changedRecords[a];
-                    const parentEvent: Record<string, any> = seriesEvents[a];
+                    const childEvent: Record<string, any> = seriesArgs.changedRecords[parseInt(a.toString(), 10)];
+                    const parentEvent: Record<string, any> = seriesEvents[parseInt(a.toString(), 10)];
                     const eventCollections: { [key: string]: Record<string, any>[] } = this.parent.eventBase.getEventCollections(parentEvent);
                     const deletedEvents: Record<string, any>[] = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
@@ -516,12 +516,12 @@ export class Crud {
                 const fields: EventFieldsMapping = this.parent.eventFields;
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 for (let a: number = 0, count: number = deleteArgs.deletedRecords.length; a < count; a++) {
-                    let isDelete: boolean = isNullOrUndefined(deleteArgs.deletedRecords[a][this.parent.eventFields.recurrenceRule]);
+                    let isDelete: boolean = isNullOrUndefined(deleteArgs.deletedRecords[parseInt(a.toString(), 10)][this.parent.eventFields.recurrenceRule]);
                     if (!isDelete) {
-                        const parentEvent: Record<string, any> = deleteData[a].parent as Record<string, any>;
+                        const parentEvent: Record<string, any> = deleteData[parseInt(a.toString(), 10)].parent as Record<string, any>;
                         const isEdited: Record<string, any>[] = editParams.changedRecords.filter((obj: Record<string, any>) =>
                             obj[fields.id] === parentEvent[fields.id]) as Record<string, any>[];
-                        const editedDate: Date = deleteArgs.deletedRecords[a][fields.startTime] as Date;
+                        const editedDate: Date = deleteArgs.deletedRecords[parseInt(a.toString(), 10)][fields.startTime] as Date;
                         if (isEdited.length > 0) {
                             const editedData: Record<string, any> = isEdited[0];
                             editedData[fields.recurrenceException] =
@@ -533,10 +533,10 @@ export class Crud {
                         if (isEdited.length === 0) {
                             editParams.changedRecords.push(this.parent.eventBase.processTimezone(parentEvent, true));
                         }
-                        isDelete = deleteArgs.deletedRecords[a][fields.id] !== parentEvent[fields.id];
+                        isDelete = deleteArgs.deletedRecords[parseInt(a.toString(), 10)][fields.id] !== parentEvent[fields.id];
                     }
                     if (isDelete) {
-                        editParams.deletedRecords.push(deleteArgs.deletedRecords[a]);
+                        editParams.deletedRecords.push(deleteArgs.deletedRecords[parseInt(a.toString(), 10)]);
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;

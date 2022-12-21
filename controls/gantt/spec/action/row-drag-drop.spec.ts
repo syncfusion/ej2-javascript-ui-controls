@@ -1,7 +1,7 @@
 /**
  * Gantt Drag and drop spec
  */
-import { Gantt, Edit, Selection, IGanttData, RowDD, Filter, Toolbar, ColumnMenu, Sort} from '../../src/index';
+import { Gantt, Edit, Selection, IGanttData, RowDD, Filter, Toolbar, ColumnMenu} from '../../src/index';
 import { dragSelfReferenceData, normalResourceData, resourceCollection, editingData, projectData,projectResources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 
@@ -716,7 +716,7 @@ describe('Gantt Drag and Drop support', () => {
                 info: 'Measure the total property area alloted for construction',
               },
           ];
-          
+
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
@@ -914,187 +914,9 @@ describe('Gantt filter after drag and drop', () => {
   //        }
   //   };
   //  });
-});
 
-describe('Row Drag and drop after sorting', () => {
-    Gantt.Inject(Sort, RowDD);
-    let ganttObj: Gantt;
-    let selfData: object[] = [
-        {
-            taskID: 1,
-            taskName: 'Project Schedule',
-            startDate: new Date('02/04/2019 08:00'),
-            endDate: new Date('03/10/2019'),
-        },
-        {
-            taskID: 2,
-            taskName: 'Planning',
-            startDate: new Date('02/04/2019'),
-            endDate: new Date('02/10/2019'),
-            parentID: 1,
-        },
-        {
-            taskID: 3,
-            taskName: 'Plan timeline',
-            startDate: new Date('02/04/2019'),
-            endDate: new Date('02/10/2019'),
-            duration: 6,
-            progress: '60',
-            parentID: 2,
-            BaselineStartDate: new Date('02/04/2019'), BaselineEndDate: new Date('02/07/2019'),
-            resources: [{ resourceId: 1, resourceUnit: 50 }]
-        },
-        {
-            taskID: 4,
-            taskName: 'Plan budget',
-            startDate: new Date('02/04/2019'),
-            endDate: new Date('02/10/2019'),
-            duration: 6,
-            progress: 90,
-            parentID: 2,
-            resources: [{ resourceId: 1, resourceUnit: 50 }]
-        },
-        {
-            taskID: 5,
-            taskName: 'Allocate resources',
-            startDate: new Date('02/04/2019'),
-            endDate: new Date('02/10/2019'),
-            duration: 6,
-            progress: '75',
-            parentID: 2,
-            resources: [{ resourceId: 2, resourceUnit: 50 }]
-        },
-        {
-            taskID: 6,
-            taskName: 'Planning complete',
-            startDate: new Date('02/06/2019'),
-            endDate: new Date('02/10/2019'),
-            duration: 0,
-            predecessor: '3FS,4SS,5SF',
-            parentID: 2,
-            resources: [{ resourceId: 2, resourceUnit: 50 }]
-        },
-        {
-            taskID: 7,
-            taskName: 'Design',
-            startDate: new Date('02/13/2019'),
-            endDate: new Date('02/17/2019'),
-            parentID: 1,
-            predecessor: '6FF',
-        },
-        {
-            taskID: 8,
-            taskName: 'Software Specification',
-            startDate: new Date('02/13/2019'),
-            endDate: new Date('02/15/2019'),
-            duration: 3,
-            progress: '60',
-            predecessor: '6FF',
-            parentID: 7,
-        },
-    ];
-    beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {
-                dataSource: selfData,
-                resources: resourceCollection,
-                height: '450px',
-                highlightWeekends: true,
-                viewType: 'ResourceView',
-                renderBaseline: true,
-                allowSelection: true,
-                treeColumnIndex: 1,
-                allowSorting: true,
-                taskFields: {
-                    id: 'taskID',
-                    name: 'taskName',
-                    startDate: 'startDate',
-                    endDate: 'endDate',
-                    duration: 'duration',
-                    progress: 'progress',
-                    resourceInfo: 'resources',
-                    dependency: 'predecessor',
-                    baselineStartDate: "BaselineStartDate",
-                    baselineEndDate: "BaselineEndDate",
-                    parentID: 'parentID'
-                },
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                columns: [
-                    { field: 'taskID', width: 60 },
-                    { field: 'taskName', width: 250 },
-                    { field: 'startDate' },
-                    { field: 'endDate' },
-                    { field: 'duration' },
-                    { field: 'predecessor' },
-                    { field: 'progress' },
-                ],
-                resourceFields: {
-                    id: 'resourceId',
-                    name: 'resourceName',
-                    unit: 'resourceUnit',
-                    group: 'resourceGroup'
-                },
-                sortSettings: {
-                    columns: [{ field: 'taskID', direction: 'Ascending' },
-                    { field: 'taskName', direction: 'Ascending' }]
-                },
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
-                allowRowDragAndDrop: true,
-                selectedRowIndex: 1,
-                selectionSettings: {
-                    mode: 'Row',
-                    type: 'Single',
-                    enableToggle: true
-                },
-                tooltipSettings: {
-                    showTooltip: true
-                },
-                allowFiltering: true,
-                gridLines: "Both",
-                showColumnMenu: true,
-                timelineSettings: {
-                    showTooltip: true,
-                    topTier: {
-                        unit: 'Week',
-                        format: 'dd/MM/yyyy'
-                    },
-                    bottomTier: {
-                        unit: 'Day',
-                        count: 1
-                    }
-                },
-                readOnly: false,
-                taskbarHeight: 20,
-                rowHeight: 40,
-                allowUnscheduledTasks: true,
-                projectStartDate: new Date('01/28/2019'),
-                projectEndDate: new Date('03/10/2019'),
-            }, done);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
-    it('Drag and drop', function () {
-        ganttObj.actionComplete = (args: any): void => {
-            if (args.requestType === 'rowDropped') {
-                expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('Unassigned Task');
-            }
-        };
-        ganttObj.dataBind();
-        ganttObj.reorderRows([1], 3, 'below')
-    });
+
+ 
 });
 describe('RowDrag and drop and enableVirtualization', () => {
     let ganttObj_self: Gantt;
@@ -1150,4 +972,6 @@ describe('RowDrag and drop and enableVirtualization', () => {
         expect(ganttObj_self.dataSource[1].TaskID).toBe(4);
     });
 });
+
+
 

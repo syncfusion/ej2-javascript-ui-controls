@@ -312,8 +312,8 @@ export interface InsertDeleteModelArgs {
     definedNames?: DefineNameModel[];
     isUndoRedo?: boolean;
     refreshSheet?: boolean;
-    conditionalFormats?:ConditionalFormatModel[];
-    prevAction?:string;
+    conditionalFormats?: ConditionalFormatModel[];
+    prevAction?: string;
 }
 
 /**
@@ -408,7 +408,7 @@ export interface ActionEventArgs {
  *
  * @hidden
  */
- export interface CFormattingEventArgs {
+export interface CFormattingEventArgs {
     range?: string;
     type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
     cFColor?: CFColor;
@@ -473,6 +473,7 @@ export interface CellUpdateArgs {
     requestType?: string;
     cellDelete?: boolean;
     isFormulaDependent?: boolean;
+    skipFormatCheck?: boolean;
 }
 /** @hidden */
 export interface NumberFormatArgs {
@@ -495,6 +496,7 @@ export interface NumberFormatArgs {
     skipRowFill?: boolean;
     dataUpdate?: boolean;
     formatApplied?: boolean;
+    skipFormatCheck?: boolean;
 }
 /** @hidden */
 export interface DateFormatCheckArgs {

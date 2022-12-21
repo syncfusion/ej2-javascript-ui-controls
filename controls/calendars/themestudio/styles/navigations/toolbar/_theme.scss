@@ -49,112 +49,73 @@
           background: $tbar-default-bg;
           box-shadow: $tbar-btn-box-shadow;
           color: $tbar-default-font;
+          border: $tbar-ext-btn-border;
 
           .e-toolbar-item .e-tbar-btn-text {
             color: $tbar-default-font;
           }
-          @if $tbar-skin == 'bootstrap' {
-            margin: 1px 0;
-          }
-
-          @if $tbar-skin == 'highcontrast' {
-            border: 2px $tbar-border-type $ext-tbar-btn-border-color;
-          }
 
           &:focus {
             background: $tbar-focus-bg;
-            border-color: $tbar-focus-border-color;
             border-radius: $tbar-btn-border-radius;
             color: $tbar-hover-font-color;
+            border-color: $tbar-btn-focus-border-color;
+            border-style: $tbar-border-nav-type;
+            border-width: $tbar-btn-hover-border-size;
+            box-shadow: $tbar-ext-btn-focus-box-shadow;
 
-            @if $tbar-skin == 'bootstrap' {
-              border: 1px solid $tbar-focus-border-color;
-              margin: 0;
+            .e-icons {
+              color: $tbar-ext-btn-icon-hover-font;
             }
 
-            @if $tbar-skin == 'bootstrap4' {
-              border: 1px solid $tbar-focus-border-color;
-              box-shadow: $tbar-focus-btn-box-shadow;
-            }
-
-            @if $tbar-skin == 'bootstrap5' {
-              .e-toolbar-item .e-tbar-btn-text,
-              .e-icons {
-                color: $tbar-active-icon-color;
-              }
-            }
-
-            @if $tbar-skin == 'highcontrast' {
-              border: $tbar-dash-border;
-
-              &:active {
-                background: $ext-tbar-btn-focus-active-bg-color;
-              }
+            .e-tbar-btn-text {
+              color: $tbar-ext-btn-text-hover-font;
             }
           }
 
           &:hover {
             background: $tbar-hover-bg;
-            border-color: $tbar-hover-border-color;
             border-radius: $tbar-btn-border-radius;
             color: $tbar-hover-font-color;
+            border-color: $tbar-ext-btn-hover-border-color;
+            border-style: $tbar-border-nav-type;
+            border-width: $tbar-ext-btn-hover-border-size;
 
-            @if $tbar-skin == 'bootstrap' {
-              border: 1px solid $tbar-hover-border-color;
-            }
-
-            @if $tbar-skin == 'highcontrast' {
-              border: 2px $tbar-border-type $ext-tbar-btn-hover-border-color;
+            &:active {
 
               .e-icons {
-                color: $tbar-hover-font;
+                color: $tbar-ext-btn-icon-hover-active-font;
               }
 
-              &:focus {
-
-                .e-icons,
-                .e-tbar-btn-text {
-                  color: $tbar-hover-font;
-                }
-              }
-
-              &:active {
-
-                .e-icons,
-                .e-tbar-btn-text {
-                  color: $tbar-select-font;
-                }
+              .e-tbar-btn-text {
+                color: $tbar-ext-btn-text-hover-active-font;
               }
             }
 
-            @if $tbar-skin == 'bootstrap5' {
-              .e-toolbar-item .e-tbar-btn-text,
-              .e-icons {
-                color: $tbar-active-icon-color;
-              }
+            .e-icons {
+              color: $tbar-ext-btn-icon-hover-font;
+            }
+
+            .e-tbar-btn-text {
+              color: $tbar-ext-btn-text-hover-font;
             }
           }
 
           &:active {
             background: $tbar-btn-press-bg;
-            border-color: $tbar-press-border-color;
             border-radius: $tbar-btn-border-radius;
             box-shadow: $tbar-btn-pressed-box-shadow;
             color: $tbar-btn-active-font-color;
+            border-color: $tbar-press-border-color;
+            border-style: $tbar-border-nav-type;
+            border-width: $tbar-ext-btn-active-border-size;
 
-            @if $tbar-skin == 'bootstrap' {
-              border-left: 1px solid $tbar-press-border-color;
+            .e-icons {
+              color: $tbar-ext-btn-icon-active-font;
             }
-            @if $tbar-skin == 'highcontrast' {
-              .e-icons,
-              .e-tbar-btn-text {
-                color: $tbar-pressed-font;
-              }
-            }
-            @if $tbar-skin == 'bootstrap5' {
-              .e-icons {
-                color: $tbar-active-icon-color;
-              }
+
+            .e-tbar-btn-text {
+              color: $tbar-ext-btn-text-active-font;
             }
           }
         }
@@ -163,9 +124,6 @@
 
     .e-tbar-btn.e-btn .e-icons {
       color: $tbar-default-icon-color;
-      @if $tbar-skin == 'bootstrap5' {
-        padding-bottom: 4px;
-      }
     }
 
     .e-toolbar-pop {
@@ -175,43 +133,63 @@
 
       .e-toolbar-item {
 
-        @if $tbar-skin == 'bootstrap4' {
-          .e-tbar-btn:hover,
-          .e-tbar-btn:active,
-          .e-tbar-btn:focus {
-            background: $primary;
-            box-shadow: none;
-            color: $primary-font;
+        .e-tbar-btn {
+          background: $tbar-popup-btn-bg;
+        }
 
-            .e-icons,
-            .e-tbar-btn-text {
-              color: inherit;
-            }
+        .e-tbar-btn:hover {
+          background: $tbar-popup-btn-hover-bg;
+          box-shadow: $tbar-popup-btn-hover-box-shadow;
+          color: $tbar-popup-btn-hover-color;
+          border-color: $tbar-hover-border-color;
+          border-style: $tbar-border-nav-type;
+          border-width: $tbar-popup-btn-hover-border-size;
+
+          .e-icons {
+            color: $tbar-popup-btn-hover-icons-color;
           }
 
-          .e-tbar-btn {
-            background: $tbar-popup-btn-bg-color;
+          .e-tbar-btn-text {
+            color: $tbar-popup-btn-hover-text-color;
           }
         }
 
-        @if $tbar-skin == 'tailwind' or $tbar-skin == 'bootstrap5' {
-          .e-tbar-btn {
-            background: $tbar-popup-btn-bg-color;
+        .e-tbar-btn:active {
+          background: $tbar-popup-btn-active-bg;
+          box-shadow: $tbar-popup-btn-active-box-shadow;
+          color: $tbar-popup-btn-active-color;
+          border-color: $tbar-press-border-color;
+          border-style: $tbar-border-nav-type;
+          border-width: $tbar-popup-btn-hover-border-size;
 
-            &:focus {
-              background: $tbar-focus-bg;
-            }
+          .e-icons {
+            color: $tbar-popup-btn-active-icons-color;
+          }
 
-            &:hover {
-              background: $tbar-hover-bg;
-            }
+          .e-tbar-btn-text {
+            color: $tbar-popup-btn-active-text-color;
           }
         }
 
-        @if $tbar-skin == 'highcontrast' or $tbar-skin == 'fabric' or $tbar-skin == 'FluentUI' {
-          .e-btn:focus {
-            outline: none;
+        .e-tbar-btn:focus {
+          background: $tbar-popup-btn-focus-bg;
+          box-shadow: $tbar-popup-btn-focus-box-shadow;
+          color: $tbar-popup-btn-focus-color;
+          border-color: $tbar-btn-focus-border-color;
+          border-style: $tbar-border-nav-type;
+          border-width: $tbar-popup-btn-hover-border-size;
+
+          .e-icons {
+            color: $tbar-popup-btn-focus-icons-color;
           }
+
+          .e-tbar-btn-text {
+            color: $tbar-popup-btn-focus-text-color;
+          }
+        }
+
+        .e-btn:focus {
+          outline: $tbar-popup-btn-focus-outline;
         }
 
         &:not(.e-separator) {
@@ -229,25 +207,22 @@
       .e-hor-nav.e-nav-active,
       .e-hor-nav.e-nav-active:not(.e-expended-nav) {
         background: $tbar-pressed-bg;
-        border: $tbar-nav-press-border;
         box-shadow: $tbar-nav-pressed-box-shadow;
+        border-color: $tbar-popup-nav-pressed-border-color;
+        border-style: $tbar-border-nav-type;
+        border-width: $tbar-popup-nav-pressed-border-size;
 
-        @if $tbar-skin != 'bootstrap4' {
-          border-left: $border-size $tbar-border-nav-active-type $tbar-pressed-bg;
-        }
-
-        @if $tbar-skin == 'highcontrast' {
-          &:focus {
-            border: $tbar-dash-border;
-          }
+        &:focus {
+          border-color: $tbar-popup-nav-pressed-focus-border-color;
+          border-style: $tbar-border-nav-type;
+          border-width: $tbar-popup-nav-pressed-focus-border-size;
         }
 
         .e-icons {
           color: $tbar-active-font-color;
-          @if $tbar-skin == 'bootstrap4' {
-            &:active {
-              color: inherit;
-            }
+
+          &:active {
+            color: $tbar-popup-nav-pressed-icons-active-color;
           }
         }
       }
@@ -257,87 +232,33 @@
       background: $tbar-items-default-bg;
       box-shadow: $tbar-btn-box-shadow;
       color: $tbar-default-font;
-
-      @if $tbar-skin == 'bootstrap' {
-        margin: 1px 0;
-      }
-
-      @if $tbar-skin == 'highcontrast' {
-        border: 2px $tbar-border-type $tbar-btn-border-color;
-      }
+      border: $tbar-btn-border;
 
       &:focus {
         background: $tbar-focus-bg;
-        @if $tbar-skin == 'bootstrap4' {
-          box-shadow: $tbar-focus-btn-box-shadow;
-        }
-        @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
-          border: 1px solid $tbar-focus-border-color;
-          margin: 0;
-        }
-        border-color: $tbar-focus-border-color;
         border-radius: $tbar-btn-border-radius;
         color: $tbar-hover-font;
-        @if $tbar-skin == 'highcontrast' {
-          border: $tbar-dash-border;
+        border-color: $tbar-btn-focus-border-color;
+        border-style: $tbar-border-nav-type;
+        border-width: $tbar-btn-hover-border-size;
+        box-shadow: $tbar-ext-btn-focus-box-shadow;
 
-          &:active {
-            background: $tbar-btn-focus-active-bg-color;
-          }
+        .e-icons {
+          color: $tbar-btn-icons-focus-color;
         }
-        @if $tbar-skin == 'bootstrap5' {
-          .e-icons,
-          .e-tbar-btn-text {
-            color: $tbar-active-icon-color;
-            padding-bottom: 4px;
-          }
+
+        .e-tbar-btn-text {
+          color: $tbar-btn-text-focus-color;
         }
       }
 
       &:hover {
         background: $tbar-hover-bg;
-        @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
-          border: 1px solid $tbar-hover-border-color;
-        }
         border-color: $tbar-hover-border-color;
+        border-style: $tbar-border-nav-type;
+        border-width: $tbar-btn-hover-border-size;
         border-radius: $tbar-btn-border-radius;
         color: $tbar-hover-font;
-
-        @if $tbar-skin == 'bootstrap4' {
-          .e-icons,
-          .e-tbar-btn-text {
-            color: inherit;
-          }
-        }
-
-        @if $tbar-skin == 'highcontrast' {
-          border: 2px $tbar-border-type $tbar-btn-hover-border-color;
-
-          .e-icons {
-            color: $tbar-hover-font;
-          }
-
-          &:focus {
-            .e-icons,
-            .e-tbar-btn-text {
-              color: $tbar-hover-font;
-            }
-          }
-
-          &:active {
-            .e-icons,
-            .e-tbar-btn-text {
-              color: $tbar-select-font;
-            }
-          }
-        }
-        @if $tbar-skin == 'bootstrap5' {
-          .e-icons,
-          .e-tbar-btn-text {
-            color: $tbar-active-icon-color;
-            padding-bottom: 4px;
-          }
-        }
       }
     }
 
@@ -348,14 +269,7 @@
 
         &.e-overlay {
           background: $tbar-default-bg;
-
-          @if $tbar-skin == 'highcontrast' {
-            opacity: 1;
-          }
-
-          @if $tbar-skin == 'bootstrap4' {
-            opacity: .65;
-          }
+          opacity: $tbar-btn-overlay-opacity;
 
           .e-tbar-btn-text {
             color: $tbar-default-font-overlay;
@@ -366,22 +280,49 @@
           }
         }
 
-        @if $tbar-skin != 'bootstrap5' {
-          @if $tbar-skin != 'highcontrast' and $tbar-skin != 'bootstrap4' {
-            .e-tbar-btn-text {
-              color: $tbar-default-font;
-            }
-          }
+        .e-tbar-btn-text {
+          color: $tbar-btn-text-color;
         }
 
-        @if $tbar-skin == 'bootstrap4' {
-          .e-tbar-btn {
-            &:hover,
+        .e-tbar-btn {
+
+          &.e-active {
+            .e-tbar-btn-text {
+              color: $tbar-btn-pressed-text-color;
+            }
+
             &:focus {
-              .e-icons,
-              .e-tbar-btn-text {
-                color: inherit;
+              box-shadow: $tbar-btn-pressed-focus-box-shadow;
+            }
+          }
+
+          &:hover {
+            .e-icons {
+              color: $tbar-btn-icons-focus-color;
+            }
+
+            .e-tbar-btn-text {
+              color: $tbar-btn-text-focus-color;
+            }
+
+            &:active {
+              .e-icons {
+                color: $tbar-btn-hover-active-icons-color;
               }
+  
+              .e-tbar-btn-text {
+                color: $tbar-btn-hover-active-text-color;
+              }
+            }
+          }
+
+          &:focus {
+            .e-icons {
+              color: $tbar-btn-icons-focus-color;
+            }
+
+            .e-tbar-btn-text {
+              color: $tbar-btn-text-focus-color;
             }
           }
         }
@@ -417,13 +358,11 @@
         @include tbar-btn-animation;
       }
 
-      @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
-        &.e-nav-active {
-          &:active,
-          &:focus,
-          &:hover {
-            border-bottom-right-radius: 0;
-          }
+      &.e-nav-active {
+        &:active,
+        &:focus,
+        &:hover {
+          border-bottom-right-radius: $tbar-popup-nav-active-border-bottom-right-radius;
         }
       }
 
@@ -431,13 +370,10 @@
         border: $tbar-nav-press-border;
         box-shadow: $tbar-nav-pressed-box-shadow;
         color: $tbar-select-font;
+        background: $tbar-popup-nav-active-bg;
 
-        @if $tbar-skin == 'bootstrap4' {
-          background: $tbar-hover-bg;
-
-          .e-icons {
-            color: inherit;
-          }
+        .e-icons {
+          color: $tbar-popup-nav-active-icons-color;
         }
 
         &::after {
@@ -446,68 +382,37 @@
       }
 
       &:hover {
-        background: $tbar-hover-bg;
+        background: $tbar-popup-nav-hover-bg;
         border-left: $tbar-nav-hover-border;
+        color: $tbar-popup-nav-hover-color;
 
-        @if $tbar-skin == 'bootstrap4' {
-          background: $tbar-popup-hover-bg;
-
-          .e-icons {
-            color: inherit;
-          }
+        .e-icons {
+          color: $tbar-popup-nav-hover-icons-color;
         }
 
-        @if $tbar-skin == 'bootstrap5' {
-          color: $tbar-active-icon-color;
-
-          .e-icons {
-            color: inherit;
-          }
-        }
-        @else {
-          color: $tbar-hover-font;
+        &:not(.e-nav-active) {
+          border-color: $tbar-popup-nav-hover-border-color;
+          border-style: $tbar-border-nav-type;
+          border-width: $tbar-popup-nav-hover-border-size;
         }
 
-        @if $tbar-skin == 'highcontrast' {
-          &:not(.e-nav-active) {
-            border: 2px $tbar-border-type $tbar-nav-hover-color;
-          }
-
-          &:active {
-            background: $tbar-nav-hover-active-bg-color;
-            border: 0;
-          }
+        &:active {
+          background: $tbar-popup-nav-hover-active-bg;
+          border-color: $tbar-popup-nav-hover-active-border-color;
+          border-style: $tbar-border-nav-type;
+          border-width: $tbar-popup-nav-hover-active-border-size;
         }
       }
 
       &:focus {
-        background: $tbar-hover-bg;
-        border-left: $tbar-nav-focus-border;
+        background: $tbar-popup-nav-focus-bg;
+        color: $tbar-popup-nav-focus-color;
+        border-color: $tbar-popup-nav-focus-border-color;
+        border-style: $tbar-border-nav-type;
+        border-width: $tbar-popup-nav-focus-border-size;
 
-        @if $tbar-skin != 'bootstrap' {
-          border-color: $tbar-pressed-border;
-        }
-
-        @if $tbar-skin == 'bootstrap4' {
-          .e-icons {
-            color: inherit;
-          }
-        }
-
-        @if $tbar-skin == 'bootstrap5' {
-          color: $tbar-active-icon-color;
-
-          .e-icons {
-            color: inherit;
-          }
-        }
-        @else {
-          color: $tbar-pressed-font;
-        }
-
-        @if $tbar-skin == 'highcontrast' {
-          background: inherit;
-          border: $tbar-dash-border;
+        .e-icons {
+          color: $tbar-popup-nav-hover-icons-color;
         }
       }
     }
@@ -515,34 +420,20 @@
     .e-tbar-btn {
 
       &:active {
-        background: $tbar-press-bg;
-        @if $tbar-skin == 'bootstrap5' {
-          background: $tbar-active-bg;
-        }
-        @if $tbar-skin == 'bootstrap' {
-          border-left: 1px solid $tbar-press-border-color;
-        }
+        background: $tbar-btn-active-bg;
         border-color: $tbar-press-border-color;
+        border-style: $tbar-border-nav-type;
+        border-width: $tbar-btn-active-border-size;
         border-radius: $tbar-btn-border-radius;
         box-shadow: $tbar-btn-pressed-box-shadow;
         color: $tbar-press-font;
 
-        @if $tbar-skin == 'bootstrap4' {
-          background: $tbar-active-btn-bg;
-          border: 1px solid $tbar-active-border-color;
-
-          .e-icons,
-          .e-tbar-btn-text {
-            color: inherit;
-          }
+        .e-icons {
+          color: $tbar-btn-active-icons-color;
         }
-        @if $tbar-skin == 'highcontrast' {
-          color: $tbar-pressed-font;
 
-          .e-icons,
-          .e-tbar-btn-text {
-            color: $tbar-pressed-font;
-          }
+        .e-tbar-btn-text {
+          color: $tbar-btn-active-text-color;
         }
       }
     }

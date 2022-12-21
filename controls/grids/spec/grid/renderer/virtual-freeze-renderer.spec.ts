@@ -478,7 +478,7 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
             destroy(gridObj);
         });
     });
-
+    
     describe('EJ2-64251-Frozen rows are not emptied even if filtering returns no record', () => {
         let gridObj: Grid;
         let firstCol: Column;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach, remove } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';
 import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -355,18 +355,19 @@ export class Kanban extends Component<HTMLElement> {
      *
      * @event dataStateChange
      */
-     @Event()
-     public dataStateChange: EmitType<DataStateChangeEventArgs>;
- 
-     /**
-      * Triggers when the grid data is added, deleted and updated.
-      * Invoke the done method from the argument to start render after edit operation.
-      *
-      * @event dataSourceChanged
-      */
-     @Event()
-     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
-     protected needsID: boolean;
+    @Event()
+    public dataStateChange: EmitType<DataStateChangeEventArgs>;
+
+    /**
+     * Triggers when the grid data is added, deleted and updated.
+     *
+     * Invoke the done method from the argument to start render after edit operation.
+     *
+     * @event dataSourceChanged
+     */
+    @Event()
+    public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
+    protected needsID: boolean;
 
     /**
      * Constructor for creating the Kanban widget
@@ -705,7 +706,7 @@ export class Kanban extends Component<HTMLElement> {
      * @returns {Object[]} Returns the collection of card objects based on given inputs.
      */
     public getColumnData(columnKey: string | number, dataSource?: Record<string, any>[]): Record<string, any>[] {
-        return this.layoutModule.getColumnCards(dataSource)[columnKey] as Record<string, any>[] || [];
+        return this.layoutModule.getColumnCards(dataSource)[`${columnKey}`] as Record<string, any>[] || [];
     }
 
     /**
@@ -716,7 +717,7 @@ export class Kanban extends Component<HTMLElement> {
      * @returns {Object[]} Returns the collection of card objects based on given inputs.
      */
     public getSwimlaneData(keyField: string): Record<string, any>[] {
-        return this.layoutModule.getSwimlaneCards()[keyField] as Record<string, any>[] || [];
+        return this.layoutModule.getSwimlaneCards()[`${keyField}`] as Record<string, any>[] || [];
     }
 
     /**

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable valid-jsdoc */
 import { Chart } from '../chart';
 import { AnimationOptions, Animation, Browser, createElement } from '@syncfusion/ej2-base';
@@ -172,7 +173,7 @@ export class Crosshair {
                 this.elementID + '_VerticalLine', 'none', crosshair.line.width,
                 crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine, crosshair.opacity, crosshair.dashArray, verticalCross
             );
-            this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);   
+            this.drawCrosshairLine(options, cross, this.valueX, chartRect.y, 0, chartRect.height, verticalCross);
             this.renderAxisTooltip(chart, chartRect, <Element>axisTooltipGroup);
             crosshairsvg.appendChild(axisTooltipGroup);
             if (!chart.tooltip.enable) {
@@ -245,7 +246,7 @@ export class Crosshair {
         let direction: string;
         let axisRect: Rect;
         for (let k: number = 0, length: number = chart.axisCollections.length; k < length; k++) {
-            axis = chart.axisCollections[k];
+            axis = chart.axisCollections[k as number];
             axisRect = !axis.placeNextToAxisLine ? axis.rect : axis.updatedRect;
             if (axis.crosshairTooltip.enable) {
                 if ((this.valueX <= (axisRect.x + axisRect.width) && axisRect.x <= this.valueX) ||
@@ -288,18 +289,18 @@ export class Crosshair {
                     textElem.textContent = text;
                     textElem.setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0)).toString());
                     textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / 4).toString());
-                    if (this.chart.theme === 'Fluent' || this.chart.theme === "FluentDark") {
-                        
+                    if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark') {
+
                         const shadowId: string = this.chart.element.id + '_shadow';
                         pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
                         let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
                         shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
                         shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-            
+
                         const defElement: Element = this.chart.renderer.createDefs();
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
                         axisGroup.appendChild(defElement);
-            
+
                         defElement.innerHTML = shadow;
                         pathElement.setAttribute('stroke', '#cccccc');
                         pathElement.setAttribute('stroke-width', '0.5');

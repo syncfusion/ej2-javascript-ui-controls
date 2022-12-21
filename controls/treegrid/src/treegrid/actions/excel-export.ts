@@ -194,8 +194,8 @@ export class ExcelExport {
     /* eslint-disable-next-line */
       private finalPageSetup(workbook: any): void {
         for (let i: number = 0; i < workbook.worksheets.length; i++) {
-            if (workbook.worksheets[i].rows) {
-                workbook.worksheets[i].pageSetup = { isSummaryRowBelow: false };
+            if (workbook.worksheets[parseInt(i.toString(), 10)].rows) {
+                workbook.worksheets[parseInt(i.toString(), 10)].pageSetup = { isSummaryRowBelow: false };
             }
         }
     }

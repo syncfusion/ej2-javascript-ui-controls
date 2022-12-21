@@ -39,7 +39,7 @@ export class SplineAreaSeries extends SplineBase {
         realPoints = this.filterEmptyPoints(series);
         let emptyPointDirection:  string = '';
         for (let i: number = 0; i < realPoints.length; i++) {
-            point = realPoints[i];
+            point = realPoints[i as number];
             if (point.x === null || point.x === '') {
                 continue;
             } else {
@@ -54,15 +54,15 @@ export class SplineAreaSeries extends SplineBase {
         const origin: number = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(<number>series.yAxis.visibleRange.min, 0);
         for (let i: number = 0; i < pointsLength; i++) {
-            point = points[i];
+            point = points[i as number];
             point.symbolLocations = [];
             point.regions = [];
             previous = this.getPreviousIndex(points, point.index - 1, series);
             if (point.visible &&
-                withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
+                withInRange(points[previous as number], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
                 if (firstPoint) {
-                    controlPt1 = series.drawPoints[previous].controlPoint1;
-                    controlPt2 = series.drawPoints[previous].controlPoint2;
+                    controlPt1 = series.drawPoints[previous as number].controlPoint1;
+                    controlPt2 = series.drawPoints[previous as number].controlPoint2;
                     pt2 = getCoordinate(point.xValue, point.yValue, xAxis, yAxis, isInverted, series);
                     bpt1 = getCoordinate(controlPt1.x, controlPt1.y, xAxis, yAxis, isInverted, series);
                     bpt2 = getCoordinate(controlPt2.x, controlPt2.y, xAxis, yAxis, isInverted, series);
@@ -97,10 +97,10 @@ export class SplineAreaSeries extends SplineBase {
             series, ''
         );
 
-         /**
-          * To draw border for the path directions of area
-          */
-        if (series.border.width != 0) {
+        /**
+         * To draw border for the path directions of area
+         */
+        if (series.border.width !== 0) {
             emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
             this.appendLinePath(
                 new PathOption(

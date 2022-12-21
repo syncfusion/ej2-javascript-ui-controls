@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
@@ -9,7 +10,7 @@ import { Rect, Size, PathOption, measureText, TextOption } from '@syncfusion/ej2
 import { ChartLocation, degreeToLocation, isOverlap, stringToNumber, getAngle, appendChildElement } from '../../common/utils/helper';
 import { textTrim, subtractThickness, Thickness, getElement } from '../../common/utils/helper';
 import { removeElement, RectOption, textElement, showTooltip } from '../../common/utils/helper';
-import { ColorValue, colorNameToHex, convertHexToColor, containsRect } from '../../common/utils/helper';
+import { ColorValue, colorNameToHex, convertHexToColor, containsRect, textWrap, CircleOption } from '../../common/utils/helper';
 import { AccumulationLabelPosition } from '../model/enum';
 import { AccPoints, getSeriesFromIndex, AccumulationSeries } from '../model/acc-base';
 import { IAccTextRenderEventArgs } from '../model/pie-interface';
@@ -19,6 +20,7 @@ import { textRender } from '../../common/model/constants';
 import { AccumulationChart } from '../accumulation';
 import { getFontStyle, createTemplate, measureElementRect, templateAnimate } from '../../common/utils/helper';
 import { AccumulationBase } from './accumulation-base';
+import { AccumulationLegend } from './legend';
 
 /**
  * AccumulationDataLabel module used to render `dataLabel`.
@@ -80,7 +82,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         point: AccPoints, position: AccumulationLabelPosition, textSize: Size,
         labelRadius: number, margin: number, endAngle: number = 0): void {
         const labelAngle: number = endAngle || point.midAngle;
-        const space: number = 10;
+        const space: number = 20;
 
         const location: ChartLocation = degreeToLocation(labelAngle, labelRadius, this.isCircular() ? this.center :
             this.getLabelLocation(point, position));
@@ -99,6 +101,67 @@ export class AccumulationDataLabel extends AccumulationBase {
                 point.labelRegion.x += space;
             }
         }
+    }
+
+    // eslint-disable-next-line jsdoc/require-returns
+    /**
+     * Method to get data label collection
+     */
+    public calculateLabelCollection(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): void {
+        if (point.argsData.template !== null) {
+            return null;
+        }
+        const position : AccumulationLabelPosition = point.labelPosition || dataLabel.position;
+        const labelRadius : number = this.isCircular() ? (!this.isVariousRadius() ? this.accumulation.pieSeriesModule.labelRadius :
+            this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point)) :
+            this.getLabelDistance(point, dataLabel);
+        const radius : number = (!this.isVariousRadius() ? (this.accumulation.pieSeriesModule.radius - this.accumulation.pieSeriesModule.innerRadius) :
+            this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], point));
+        const location : ChartLocation = degreeToLocation(point.midAngle, labelRadius, this.isCircular() ? this.center :
+            this.getLabelLocation(point, position));
+        const padding : number = 20;
+        let maxWidth : number = dataLabel.maxWidth;
+        if (!maxWidth) {
+            if (position === 'Outside') {
+                maxWidth = this.isCircular() ? (location.x >= this.center.x) ? (this.areaRect.x + this.areaRect.width - location.x) : (location.x  - this.areaRect.x) :
+                    (location.x >= point.region.x) ? (this.areaRect.x + this.areaRect.width - location.x) : (location.x  - this.areaRect.x);
+            }
+            else {
+                maxWidth = this.isCircular() ? (radius - padding) : point.region.width;
+            }
+        }
+        if ((point.label.indexOf('<br>') !== -1)) {
+            point.labelCollection = point.label.split('<br>');
+        }
+        else if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
+            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font);
+        }
+        else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
+            point.labelCollection = textWrap(point.label, maxWidth, point.argsData.font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip');
+        }
+        else {
+            point.labelCollection[0] = point.label;
+        }
+    }
+    // eslint-disable-next-line jsdoc/require-returns
+    /**
+     * To calculate label collection text size
+     */
+    public getTextSize(labelCollection : string[], dataLabel: AccumulationDataLabelSettingsModel): Size {
+        let height : number = 0;
+        const font : FontModel = dataLabel.font;
+        let width : number = dataLabel.maxWidth ? dataLabel.maxWidth : 0;
+        let textSize : Size;
+        for (let i: number = 0 ; i < labelCollection.length ; i++)
+        {
+            textSize = measureText(labelCollection[i as number], font);
+            width = Math.max(textSize.width, width);
+            height += textSize.height;
+        }
+        if (dataLabel.textOverflow === 'Clip' && dataLabel.textWrap !== 'Normal' && dataLabel.maxWidth) {
+            width = dataLabel.maxWidth;
+        }
+        return (new Size (width, height));
     }
 
     /**
@@ -123,12 +186,16 @@ export class AccumulationDataLabel extends AccumulationBase {
             // `4` is padding adding to height and width of label region.
             point.labelRegion.height -= 4;
             point.labelRegion.width -= 4;
-            if (previousPoint && previousPoint.labelRegion && (isOverlap(point.labelRegion, previousPoint.labelRegion)
+            if (previousPoint && previousPoint.labelRegion && !dataLabel.enableRotation && (isOverlap(point.labelRegion, previousPoint.labelRegion)
                 || this.isOverlapping(point, points)) || !circular && !containsRect(point.region, point.labelRegion)) {
                 point.labelPosition = 'Outside';
                 if (!circular) {
                     labelRadius = this.getLabelDistance(point, dataLabel);
                 }
+                this.calculateLabelCollection(point, dataLabel);
+                textSize = this.getTextSize(point.labelCollection, dataLabel);
+                textSize.height += 4;  // 4 for calculation with padding for smart label shape
+                textSize.width += 4;
                 this.getLabelRegion(point, point.labelPosition, textSize, labelRadius, this.marginValue);
                 previousPoint = this.findPreviousPoint(points, point.index, point.labelPosition);
                 if (previousPoint && (isOverlap(point.labelRegion, previousPoint.labelRegion) ||
@@ -144,7 +211,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         }
         if (this.isOverlapping(point, points) && (this.accumulation.type === 'Pyramid' || this.accumulation.type === 'Funnel')) {
             const position: string = 'OutsideLeft';
-            const space: number = 10;
+            const space: number = 20;
             const labelAngle: number = point.midAngle || 0;
             const labelRadius: number = circular ? this.radius : this.getLabelDistance(point, dataLabel);
             const location: ChartLocation = degreeToLocation(labelAngle, -labelRadius, this.isCircular() ? this.center :
@@ -176,7 +243,8 @@ export class AccumulationDataLabel extends AccumulationBase {
                     if (isTouch) {
                         removeElement(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
                     }
-                    const point: AccPoints = getSeriesFromIndex(seriesIndex, (this.accumulation).visibleSeries).points[pointIndex];
+                    const point: AccPoints = getSeriesFromIndex(seriesIndex,
+                                                                (this.accumulation).visibleSeries).points[pointIndex as number];
                     showTooltip(
                         point.text || point.y.toString(), x, y, this.areaRect.width,
                         this.accumulation.element.id + '_EJ2_Datalabel_Tooltip',
@@ -200,7 +268,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     private findPreviousPoint(points: AccPoints[], index: number, position: AccumulationLabelPosition): AccPoints {
         let point: AccPoints = points[0];
         for (let i: number = index - 1; i >= 0; i--) {
-            point = points[i];
+            point = points[i as number];
             if (point.visible && point.labelVisible && point.labelRegion && point.labelPosition === position) {
                 return point;
             }
@@ -214,8 +282,9 @@ export class AccumulationDataLabel extends AccumulationBase {
      */
     private isOverlapping(currentPoint: AccPoints, points: AccPoints[]): boolean {
         for (let i: number = currentPoint.index - 1; i >= 0; i--) {
-            if (points[i].visible && points[i].labelVisible && points[i].labelRegion && currentPoint.labelRegion &&
-                currentPoint.labelVisible && isOverlap(currentPoint.labelRegion, points[i].labelRegion)) {
+            if (points[i as number].visible && points[i as number].labelVisible &&
+                points[i as number].labelRegion && currentPoint.labelRegion &&
+                currentPoint.labelVisible && isOverlap(currentPoint.labelRegion, points[i as number].labelRegion)) {
                 return true;
             }
         }
@@ -224,7 +293,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     /**
      * To get text trimmed while exceeds the accumulation chart area.
      */
-    private textTrimming(point: AccPoints, rect: Rect, font: FontModel, position: string): void {
+    private textTrimming(point: AccPoints, rect: Rect, font: FontModel, position: string, dataLabel: AccumulationDataLabelSettingsModel): void {
         if (isOverlap(point.labelRegion, rect)) {
             let size: number = point.labelRegion.width;
             if (position === 'Right') {
@@ -246,12 +315,24 @@ export class AccumulationDataLabel extends AccumulationBase {
                 this.setPointVisibileFalse(point);
             }
             if (point.labelVisible && point.labelRegion) {
-                if (size < point.labelRegion.width) {
-                    point.label = textTrim(size - (this.marginValue * 2), point.label, font);
+                if ((point.label.indexOf('<br>') !== -1)) {
+                    point.labelCollection = point.label.split('<br>');
+                }
+                else if (size < point.labelRegion.width) {
+                    if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
+                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font);
+                    }
+                    else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
+                        point.labelCollection = textWrap(point.label, size - (this.marginValue * 2), font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip');
+                    }
                     point.labelRegion.width = size;
                 }
-                if (point.label.length === 3 && point.label.indexOf('...') > -1) {
-                    this.setPointVisibileFalse(point);
+                for (let i: number = 0 ; i < point.labelCollection.length ; i++)
+                {
+                    if (point.labelCollection[i as number].length === 3 && point.labelCollection[i as number].indexOf('...') > -1) {
+                        this.setPointVisibileFalse(point);
+                        break;
+                    }
                 }
             }
         }
@@ -353,7 +434,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         line2.x = Math.round(line2.x);
         line2.y = Math.round(line2.y);
         for (let i: number = 0; i < rectPoints.length; i++) {
-            if (this.isLinesIntersect(line1, line2, rectPoints[i], rectPoints[(i + 1) % rectPoints.length])) {
+            if (this.isLinesIntersect(line1, line2, rectPoints[i as number], rectPoints[(i + 1) % rectPoints.length])) {
                 return true;
             }
         }
@@ -472,7 +553,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      */
     private getBezierPoint(t: number, controlPoints: ChartLocation[], index: number, count: number): ChartLocation {
         if (count === 1) {
-            return controlPoints[index];
+            return controlPoints[index as number];
         }
         const p0: ChartLocation = this.getBezierPoint(t, controlPoints, index, count - 1);
         const p1: ChartLocation = this.getBezierPoint(t, controlPoints, index + 1, count - 1);
@@ -496,18 +577,19 @@ export class AccumulationDataLabel extends AccumulationBase {
      */
     private getEdgeOfLabel(labelshape: Rect, angle: number, middle: ChartLocation, border: number = 1, point?: AccPoints): ChartLocation {
         const edge: ChartLocation = new ChartLocation(labelshape.x, labelshape.y);
+        const space : number = 10;
         if (angle >= 90 && angle <= 270) {
-            edge.x += labelshape.width + border / 2;
+            edge.x += labelshape.width + border / 2 + space;
             edge.y += labelshape.height / 2;
             middle.x = edge.x + 10;
             middle.y = edge.y;
         } else if (point && point.region && point.region.x > point.labelRegion.x) {
-            edge.x += border * 2 + labelshape.width;
+            edge.x += border * 2 + labelshape.width + space;
             edge.y += labelshape.height / 2;
             middle.x = edge.x + 10;
             middle.y = edge.y;
         } else {
-            edge.x -= border / 2;
+            edge.x -= space - border / 2;
             edge.y += labelshape.height / 2;
             middle.x = edge.x - 10;
             middle.y = edge.y;
@@ -521,7 +603,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @returns {number} Get label distance.
      */
     private getLabelDistance(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): number {
-        if (point.labelPosition && dataLabel.position !== point.labelPosition || dataLabel.connectorStyle.length) {
+        if (point.labelPosition && dataLabel.position !== point.labelPosition || (dataLabel.connectorStyle.length && dataLabel.position === 'Outside')) {
             const length: number = stringToNumber(dataLabel.connectorStyle.length || '70px', this.accumulation.initialClipRect.width);
             if (length < this.accumulation.initialClipRect.width) {
                 return length;
@@ -629,6 +711,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         point.argsData = argsData;
         const isTemplate: boolean = argsData.template !== null;
         point.labelVisible = !argsData.cancel; point.text = point.label = argsData.text;
+        point.labelCollection = [];
         this.marginValue = argsData.border.width ? (5 + argsData.border.width) : 1;
         const childElement: HTMLElement = createElement('div', {
             id: this.accumulation.element.id + '_Series_' + 0 + '_DataLabel_' + point.index,
@@ -636,13 +719,11 @@ export class AccumulationDataLabel extends AccumulationBase {
                 getFontStyle(dataLabel.font) + ';border:' + argsData.border.width + 'px solid ' + argsData.border.color + ';'
         });
         this.calculateLabelSize(isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw);
-        
     }
     private getDatalabelText(labelFormat: string, chart: AccumulationChart, labelText: string): string {
         if (Number(labelText)) {
-            let format: Function;
             const customLabelFormat: boolean = labelFormat.match('{value}') !== null;
-            format = chart.intl.getNumberFormat({
+            const format: Function = chart.intl.getNumberFormat({
                 format: customLabelFormat ? '' : labelFormat,
                 useGrouping: chart.useGroupingSeparator
             });
@@ -656,11 +737,11 @@ export class AccumulationDataLabel extends AccumulationBase {
     public calculateLabelSize(
         isTemplate: boolean, childElement: HTMLElement, point: AccPoints, points: AccPoints[],
         argsData: IAccTextRenderEventArgs, datalabelGroup: Element, id: string,
-        dataLabel: AccumulationDataLabelSettingsModel, redraw?: boolean, clientRect?: ClientRect, isReactCallback?: boolean
-        ): void {
-        const textSize: Size = isTemplate ? (isReactCallback ? { width: clientRect.width, height: clientRect.height } : this.getTemplateSize(
-            childElement, point, argsData, redraw, isTemplate, points, datalabelGroup, id, dataLabel
-            )) : measureText(point.label, dataLabel.font);
+        dataLabel: AccumulationDataLabelSettingsModel, redraw?: boolean, clientRect?: ClientRect, isReactCallback?: boolean ): void {
+        this.calculateLabelCollection(point, dataLabel);
+        const textSize: Size = isTemplate ? (isReactCallback ? { width: clientRect.width, height: clientRect.height } :
+            this.getTemplateSize(childElement, point, argsData, redraw, isTemplate, points, datalabelGroup, id, dataLabel
+            )) : this.getTextSize(point.labelCollection, dataLabel);
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
         point.textSize = textSize;
@@ -698,41 +779,41 @@ export class AccumulationDataLabel extends AccumulationBase {
                     } else {
                         location = new ChartLocation(
                             point.labelRegion.x + this.marginValue, point.labelRegion.y
-                            + (point.textSize.height * 3 / 4) + this.marginValue);
+                            + (point.textSize.height * 3 / (point.labelCollection.length * 4)) + this.marginValue);
                         element = getElement(id + 'shape_' + point.index);
                         const startLocation: ChartLocation = element ? new ChartLocation(
                             +element.getAttribute('x'), +element.getAttribute('y')
                         ) : null;
-                        dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
-                            id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1,
-                            point.labelRegion, dataLabel.rx, dataLabel.ry));
-                        appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
-                                           false, false, null, this.accumulation.duration);
                         const textWidth: number = point.textSize.width;
                         const textHeight: number = point.textSize.height;
-                        let rotate: string;
-                        if (angle !== 0 && dataLabel.enableRotation) {
-                            if (point.labelPosition === 'Outside') {
-                                degree = 0;
-                            } else {
-                                if (point.midAngle >= 90 && point.midAngle <= 270) {
+                        if (dataLabel.enableRotation) {
+                            if (angle === 0) {
+                                if (point.labelPosition === 'Outside') {
+                                    degree = 0;
+                                }
+                                else if (point.midAngle >= 90 && point.midAngle <= 260) {
                                     degree = point.midAngle + 180;
-                                } else { degree = point.midAngle; }
-                            }
-                            rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ','
-                            + (location.y - (textHeight / 4)) + ')';
-                        } else {
-                            if (angle) {
+                                } else {
+                                    degree = point.midAngle;
+                                }
+                            } else {
                                 degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
-                            } else { degree = 0; }
-                            rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
+                            }
+                        } else {
+                            degree = 0;
                         }
+                        const rotate: string = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
                         point.transform = rotate;
+                        dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
+                            id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1,
+                            point.labelRegion, dataLabel.rx, dataLabel.ry, rotate));
+                        appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
+                                           false, false, null, this.accumulation.duration);
                         textElement(
                             this.accumulation.renderer,
                             new TextOption(
                                 id + 'text_' + point.index, location.x, location.y,
-                                this.accumulation.enableRtl ? 'end' : 'start', point.label, rotate, 'auto', degree
+                                this.accumulation.enableRtl ? 'end' : 'start', point.labelCollection, rotate, 'auto', degree
                             ),
                             point.argsData.font, point.argsData.font.color || this.getSaturatedColor(point, point.argsData.color),
                             datalabelGroup, false, redraw, true, false, this.accumulation.duration
@@ -760,6 +841,44 @@ export class AccumulationDataLabel extends AccumulationBase {
                 }
             }
         }
+        if (this.accumulation.type === 'Pie' && dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Clip') {
+            this.dataLabelClipPath(dataLabel, parent);
+        }
+    }
+
+    /**
+     * To calculate data label clip path
+     */
+    private dataLabelClipPath(dataLabel: AccumulationDataLabelSettingsModel, parent: HTMLElement) : void {
+        const id : string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
+        const clippath : Element = this.accumulation.renderer.createClipPath({ id: id + 'clipPath' });
+        let clipRect : Element;
+        const radius : number = this.accumulation.pieSeriesModule.pieBaseRadius;
+        if (dataLabel.position === 'Inside') {
+            clipRect = this.accumulation.renderer.drawCircle(new CircleOption(id + 'clipPath_rect', 'transparent', { width: 0 }, 0, this.center.x, this.center.y, radius));
+        }
+        else if (dataLabel.maxWidth) {
+            let x : number = this.center.x - radius - stringToNumber((dataLabel.connectorStyle.length || '4%'), radius) - dataLabel.maxWidth;
+            const y : number = this.center.y - radius - stringToNumber((dataLabel.connectorStyle.length || '4%'), radius) - dataLabel.maxWidth;
+            const height : number = (radius + stringToNumber((dataLabel.connectorStyle.length || '4%') , radius) + dataLabel.maxWidth) * 2 ;
+            let width : number = height ;
+            if (this.accumulation.legendSettings.visible) {
+                const legendModule: AccumulationLegend = this.accumulation.accumulationLegendModule;
+                if (legendModule.position === 'Left') {
+                    width = (legendModule.legendBounds.x + legendModule.legendBounds.width - x) > 0 ? (width - (legendModule.legendBounds.width - x)) : width;
+                    x = (legendModule.legendBounds.x + legendModule.legendBounds.width) < x ? x : (legendModule.legendBounds.x + legendModule.legendBounds.width);
+                }
+                else if (legendModule.position === 'Right') {
+                    width = (x + width - legendModule.legendBounds.x) > 0 ? (width - (x + width - legendModule.legendBounds.x)) : width;
+                }
+            }
+            clipRect = this.accumulation.renderer.drawRectangle(new RectOption(id + 'clipPath_rect', 'transparent', { width: 0 }, 0, new Rect(x, y, height, width), 0, 0));
+        }
+        if (dataLabel.position === 'Inside' || dataLabel.maxWidth) {
+            clippath.appendChild(clipRect);
+            appendChildElement(false, this.accumulation.svgObject, clippath);
+            parent.style.cssText = 'clip-path:url(#' + clippath.id + ')';
+        }
     }
 
     /**
@@ -777,25 +896,25 @@ export class AccumulationDataLabel extends AccumulationBase {
                 this.setPointVisibileFalse(point);
             }
         }
-
-        if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible && point.labelVisible && point.labelRegion) {
+        if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible &&
+            point.labelVisible && point.labelRegion  && (!dataLabel.maxWidth ? dataLabel.textOverflow === 'Clip' ? dataLabel.textWrap !== 'Normal' : true : false)) {
             const rect: Rect = this.accumulation.accumulationLegendModule.legendBounds;
-            if (this.accumulation.visibleSeries[0].type != "Pie" && this.accumulation.legendSettings.position == 'Left'
+            if (this.accumulation.visibleSeries[0].type !== 'Pie' && this.accumulation.legendSettings.position === 'Left'
                 && dataLabel.position === 'Outside') {
                 point.labelRegion.x = point.labelRegion.x + rect.width;
             }
             const padding: number = this.accumulation.legendSettings.border.width / 2;
             this.textTrimming(
                 point, new Rect(rect.x - padding, rect.y - padding, rect.width + (2 * padding), rect.height + (2 * padding)),
-                dataLabel.font, this.accumulation.accumulationLegendModule.position);
+                dataLabel.font, this.accumulation.accumulationLegendModule.position, dataLabel);
         }
-        if (point.labelVisible && point.labelRegion) {
+        if (point.labelVisible && point.labelRegion && (!dataLabel.maxWidth ? dataLabel.textOverflow === 'Clip' ? dataLabel.textWrap !== 'Normal' : true : false)) {
             const position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
                 (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
 
-            this.textTrimming(point, this.areaRect, dataLabel.font, position);
+            this.textTrimming(point, this.areaRect, dataLabel.font, position, dataLabel);
         }
-        if (point.labelVisible && point.labelRegion && ((point.labelRegion.y + point.labelRegion.height >
+        if (point.labelVisible && point.labelRegion && !dataLabel.maxWidth  && dataLabel.textOverflow !== 'Clip' &&  ((point.labelRegion.y + point.labelRegion.height >
             this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
                 point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
             this.setPointVisibileFalse(point);
@@ -868,7 +987,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         } else {
             saturatedColor = this.getLabelBackground(point);
         }
-        saturatedColor = (saturatedColor === 'transparent') ? ((this.accumulation.theme.indexOf('Dark') > -1 || this.accumulation.theme == "HighContrast") ? 'black' : 'white') : saturatedColor;
+        saturatedColor = (saturatedColor === 'transparent') ? ((this.accumulation.theme.indexOf('Dark') > -1 || this.accumulation.theme === 'HighContrast') ? 'black' : 'white') : saturatedColor;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(saturatedColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
@@ -978,7 +1097,7 @@ export class AccumulationDataLabel extends AccumulationBase {
          * If one point's angle is increased, its successive points in that half point also increased until it reaced optimum position.
          */
         for (let i: number = rightSideRenderPoints.length - 1; i >= 0; i--) {
-            currentPoint = rightSideRenderPoints[i];
+            currentPoint = rightSideRenderPoints[i as number];
             nextPoint = rightSideRenderPoints[i + 1];
             // A point checked for overlapping, label visibility
             if (this.isOverlapWithNext(currentPoint, rightSideRenderPoints, i) && currentPoint.labelVisible
@@ -993,11 +1112,11 @@ export class AccumulationDataLabel extends AccumulationBase {
                 }
                 if (!this.isIncreaseAngle) {
                     for (let k: number = i + 1; k < rightSideRenderPoints.length; k++) {
-                        this.increaseAngle(rightSideRenderPoints[k - 1], rightSideRenderPoints[k], series, true);
+                        this.increaseAngle(rightSideRenderPoints[k - 1], rightSideRenderPoints[k as number], series, true);
                     }
                 } else {
                     for (let k: number = i + 1; k > 0; k--) {
-                        this.decreaseAngle(rightSideRenderPoints[k], rightSideRenderPoints[k - 1], series, true);
+                        this.decreaseAngle(rightSideRenderPoints[k as number], rightSideRenderPoints[k - 1], series, true);
                     }
                 }
             } else {
@@ -1031,7 +1150,7 @@ export class AccumulationDataLabel extends AccumulationBase {
          * If one point's angle is increased, its successive points in that half point also increased until it reaced optimum position.
          */
         for (let i: number = 0; i < leftSideRenderPoints.length; i++) {
-            currentPoint = leftSideRenderPoints[i];
+            currentPoint = leftSideRenderPoints[i as number];
             previousPoint = leftSideRenderPoints[i - 1];
             // A point checked
             if (this.isOverlapWithPrevious(currentPoint, leftSideRenderPoints, i) && currentPoint.labelVisible
@@ -1042,16 +1161,16 @@ export class AccumulationDataLabel extends AccumulationBase {
                 }
                 if (!this.isIncreaseAngle) {
                     for (let k: number = i; k > 0; k--) {
-                        this.decreaseAngle(leftSideRenderPoints[k], leftSideRenderPoints[k - 1], series, false);
+                        this.decreaseAngle(leftSideRenderPoints[k as number], leftSideRenderPoints[k - 1], series, false);
                         leftSideRenderPoints.filter((point: AccPoints, index: number) => {
-                            if (point.isLabelUpdated && leftSideRenderPoints[index].labelAngle - 10 < 100) {
+                            if (point.isLabelUpdated && leftSideRenderPoints[index as number].labelAngle - 10 < 100) {
                                 this.isIncreaseAngle = true;
                             }
                         });
                     }
                 } else {
                     for (let k: number = i; k < leftSideRenderPoints.length; k++) {
-                        this.increaseAngle(leftSideRenderPoints[k - 1], leftSideRenderPoints[k], series, false);
+                        this.increaseAngle(leftSideRenderPoints[k - 1], leftSideRenderPoints[k as number], series, false);
                     }
                 }
             } else {
@@ -1173,8 +1292,9 @@ export class AccumulationDataLabel extends AccumulationBase {
     private isOverlapWithPrevious(currentPoint: AccPoints, points: AccPoints[], currentPointIndex?: number): boolean {
         for (let i: number = 0; i < currentPointIndex; i++) {
             if (i !== points.indexOf(currentPoint) &&
-                points[i].visible && points[i].labelVisible && points[i].labelRegion && currentPoint.labelRegion &&
-                currentPoint.labelVisible && isOverlap(currentPoint.labelRegion, points[i].labelRegion)) {
+                points[i as number].visible && points[i as number].labelVisible &&
+                points[i as number].labelRegion && currentPoint.labelRegion &&
+                currentPoint.labelVisible && isOverlap(currentPoint.labelRegion, points[i as number].labelRegion)) {
                 return true;
             }
         }
@@ -1183,8 +1303,9 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     private isOverlapWithNext(point: AccPoints, points: AccPoints[], pointIndex?: number): boolean {
         for (let i: number = pointIndex; i < points.length; i++) {
-            if (i !== points.indexOf(point) && points[i].visible && points[i].labelVisible && points[i].labelRegion &&
-                point.labelRegion && point.labelVisible && isOverlap(point.labelRegion, points[i].labelRegion)) {
+            if (i !== points.indexOf(point) && points[i as number].visible &&
+                points[i as number].labelVisible && points[i as number].labelRegion &&
+                point.labelRegion && point.labelVisible && isOverlap(point.labelRegion, points[i as number].labelRegion)) {
                 return true;
             }
         }
@@ -1224,6 +1345,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         } else if (point.midAngle > 0 && point.midAngle < 90) {
             increasedLocation = new ChartLocation(startPoint.x + height * (Math.cos((point.midAngle) * Math.PI / 180)),
                                                   startPoint.y + height * (Math.sin((point.midAngle) * Math.PI / 180)));
+        // eslint-disable-next-line no-dupe-else-if
         } else if (point.midAngle > 0 && point.midAngle < 90) {
             increasedLocation = new ChartLocation(startPoint.x - height * (Math.cos((point.midAngle - 90) * Math.PI / 180)),
                                                   startPoint.y + height * (Math.sin((point.midAngle - 90) * Math.PI / 180)));

@@ -85,11 +85,11 @@ export class CellColor {
         let nextColor: string;
         if (this.heatMap.isColorRange && this.heatMap.paletteSettings.type === 'Gradient') {
             for (i = 0; i < colorMapping.length; i++) {
-                const offset: number = Number(colorMapping[i].endValue);
-                if (value <= offset && value >= Number (colorMapping[i].startValue)) {
+                const offset: number = Number(colorMapping[i as number].endValue);
+                if (value <= offset && value >= Number (colorMapping[i as number].startValue)) {
                     nextOffset = offset;
-                    previousColor = this.heatMap.colorCollection[i].minColor;
-                    nextColor =  this.heatMap.colorCollection[i].maxColor;
+                    previousColor = this.heatMap.colorCollection[i as number].minColor;
+                    nextColor =  this.heatMap.colorCollection[i as number].maxColor;
                     break;
                 } else if (colorMapping[0].startValue !== this.heatMap.dataSourceMinValue && value < colorMapping[0].startValue) {
                     nextOffset = colorMapping[0].startValue;
@@ -111,7 +111,7 @@ export class CellColor {
             }
         } else {
             for (i = 1; i < colorMapping.length; i++) {
-                const offset: number = Number(colorMapping[i].value);
+                const offset: number = Number(colorMapping[i as number].value);
                 if (value <= offset) {
                     nextOffset = offset;
                     previousColor = this.getEqualColor(colorMapping, previousOffset);
@@ -164,8 +164,8 @@ export class CellColor {
 
     protected getEqualColor(list: ColorCollection[], offset: number): string {
         for (let i: number = 0; i < list.length; i++) {
-            if (Number(list[i].value) === offset) {
-                let color: string = list[i].color;
+            if (Number(list[i as number].value) === offset) {
+                let color: string = list[i as number].color;
                 if (color.indexOf('rgb') !== -1) {
                     color = this.convertToHex(color);
                 } else if (color.indexOf('#') === -1) {
@@ -232,7 +232,8 @@ export class CellColor {
         heatMap.legendColorCollection = [];
         let range: number;
         for (let j: number = 0; j < this.heatMap.paletteSettings.palette.length; j++) {
-            if (this.heatMap.paletteSettings.palette[j].startValue === null || this.heatMap.paletteSettings.palette[j].endValue === null) {
+            if (this.heatMap.paletteSettings.palette[j as number].startValue === null ||
+                this.heatMap.paletteSettings.palette[j as number].endValue === null) {
                 this.heatMap.isColorRange = false;
                 break;
             } else {
@@ -258,15 +259,15 @@ export class CellColor {
                 for (let index: number = 0; index < tempcolorMapping.offsets.length; index++) {
                     heatMap.colorCollection.push(new ColorCollection(
                         (Math.round(((minValue) + (index * range)) * 100) / 100),
-                        tempcolorMapping.offsets[index].color, tempcolorMapping.offsets[index ].label,
-                        tempcolorMapping.offsets[index ].startValue, tempcolorMapping.offsets[index].endValue,
-                        tempcolorMapping.offsets[index].minColor, tempcolorMapping.offsets[index].maxColor));
+                        tempcolorMapping.offsets[index as number].color, tempcolorMapping.offsets[index as number].label,
+                        tempcolorMapping.offsets[index as number].startValue, tempcolorMapping.offsets[index as number].endValue,
+                        tempcolorMapping.offsets[index as number].minColor, tempcolorMapping.offsets[index as number].maxColor));
                     heatMap.legendColorCollection.push(new LegendColorCollection(
-                        Math.round(((minValue) + (index * range)) * 100) / 100, tempcolorMapping.offsets[index].color,
-                        tempcolorMapping.offsets[index].label, tempcolorMapping.offsets[index].startValue,
-                        tempcolorMapping.offsets[index].endValue,
-                        tempcolorMapping.offsets[index].minColor,
-                        tempcolorMapping.offsets[index].maxColor, false));
+                        Math.round(((minValue) + (index * range)) * 100) / 100, tempcolorMapping.offsets[index as number].color,
+                        tempcolorMapping.offsets[index as number].label, tempcolorMapping.offsets[index as number].startValue,
+                        tempcolorMapping.offsets[index as number].endValue,
+                        tempcolorMapping.offsets[index as number].minColor,
+                        tempcolorMapping.offsets[index as number].maxColor, false));
                 }
             }
         } else {
@@ -326,11 +327,11 @@ export class CellColor {
         returnCollection.isLabel = true;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         returnCollection.offsets = offsets.sort((a: any, b: any) => {
-            if (isNullOrUndefined(a[label]) && isNullOrUndefined(b[label])) {
+            if (isNullOrUndefined(a[label as string]) && isNullOrUndefined(b[label as string])) {
                 returnCollection.isLabel = false;
             }
-            if (!isNullOrUndefined(a[key]) && !isNullOrUndefined(b[key])) {
-                return a[key] - b[key];
+            if (!isNullOrUndefined(a[key as string]) && !isNullOrUndefined(b[key as string])) {
+                return a[key as string] - b[key as string];
             } else {
                 returnCollection.isCompact = false;
                 return a;
@@ -359,18 +360,20 @@ export class CellColor {
                 color = this.heatMap.isColorRange ? this.heatMap.colorCollection[0].minColor : this.heatMap.colorCollection[0].color;
             } else if (this.heatMap.paletteSettings.type === 'Fixed') {
                 for (let y: number = 0; y < this.heatMap.colorCollection.length; y++) {
-                    compareValue = this.heatMap.isColorRange ? this.heatMap.paletteSettings.palette[y].startValue :
+                    compareValue = this.heatMap.isColorRange ? this.heatMap.paletteSettings.palette[y as number].startValue :
                         this.heatMap.colorCollection[y + 1] ? this.heatMap.colorCollection[y + 1].value :
-                            this.heatMap.colorCollection[y].value;
+                            this.heatMap.colorCollection[y as number].value;
                     const singleValue: boolean = this.heatMap.dataSourceMinValue === this.heatMap.dataSourceMaxValue;
                     if (this.heatMap.isColorRange) {
                         let legendRange: LegendRange[];
-                        if ((text <= this.heatMap.colorCollection[y].endValue && text >= this.heatMap.colorCollection[y].startValue)) {
+                        if ((text <= this.heatMap.colorCollection[y as number].endValue &&
+                            text >= this.heatMap.colorCollection[y as number].startValue)) {
                             if (this.heatMap.legendVisibilityByCellType) {
                                 legendRange = this.heatMap.legendModule.legendRange;
                             }
-                            color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
-                                this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].minColor;
+                            color = (this.heatMap.legendVisibilityByCellType && legendRange[y as number] &&
+                                    !legendRange[y as number].visible) ?
+                                this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y as number].minColor;
                             break;
                         } else {
                             color = this.heatMap.paletteSettings.fillColor.minColor;
@@ -382,8 +385,9 @@ export class CellColor {
                             if (this.heatMap.legendVisibilityByCellType) {
                                 legendRange = this.heatMap.legendModule.legendRange;
                             }
-                            color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
-                                this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].color;
+                            color = (this.heatMap.legendVisibilityByCellType && legendRange[y as number] &&
+                                    !legendRange[y as number].visible) ?
+                                this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y as number].color;
                             break;
                         }
                     }

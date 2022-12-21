@@ -55,8 +55,8 @@ export function findSegmentPoints(element: PathElement): PointModel[] {
     const pts: PointModel[] = [];
     let sample: SVGPoint; let sampleLength: number;
     const measureWindowElement: string = 'measureElement';
-    window[measureWindowElement].style.visibility = 'visible';
-    const svg: SVGSVGElement = window[measureWindowElement].children[2];
+    window[`${measureWindowElement}`].style.visibility = 'visible';
+    const svg: SVGSVGElement = window[`${measureWindowElement}`].children[2];
     const pathNode: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
     pathNode.setAttributeNS(null, 'd', element.data);
     const pathBounds: Rect = element.absoluteBounds; // || pathNode.getBBox();
@@ -67,7 +67,7 @@ export function findSegmentPoints(element: PathElement): PointModel[] {
         sample = pathNode.getPointAtLength(sampleLength);
         pts.push({ x: sample.x, y: sample.y });
     }
-    window[measureWindowElement].style.visibility = 'hidden';
+    window[`${measureWindowElement}`].style.visibility = 'hidden';
     return pts;
 
 }
@@ -83,7 +83,7 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
     let collection: SVGElement[] | HTMLCollection = [];
     if (Browser.info.name === 'msie' || Browser.info.name === 'edge') {
         for (let i: number = 0; i < node.childNodes.length; i++) {
-            child = node.childNodes[i] as SVGElement;
+            child = node.childNodes[parseInt(i.toString(), 10)] as SVGElement;
             if (child.nodeType === 1) {
                 collection.push(child);
             }
@@ -133,13 +133,13 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
 export function measurePath(data: string): Rect {
     if (data) {
         const measureWindowElement: string = 'measureElement';
-        window[measureWindowElement].style.visibility = 'visible';
-        const svg: SVGSVGElement = window[measureWindowElement].children[2];
+        window[`${measureWindowElement}`].style.visibility = 'visible';
+        const svg: SVGSVGElement = window[`${measureWindowElement}`].children[2];
         const element: SVGPathElement = getChildNode(svg)[0] as SVGPathElement;
         element.setAttribute('d', data);
         const bounds: SVGRect = element.getBBox();
         const svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
-        window[measureWindowElement].style.visibility = 'hidden';
+        window[`${measureWindowElement}`].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
@@ -249,9 +249,9 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
     for (j = 0; j < eachLine.length; j++) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         txt = '';
-        words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[j]] : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[parseInt(j.toString(), 10)]] : eachLine;
         for (i = 0; i < words.length; i++) {
-            txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
+            txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
             newText = txtValue + ' ' + (words[i + 1] || '');
             const width: number = bBoxText(newText, text);
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
@@ -285,7 +285,7 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
     let k: number = 0; let txtWidth: number;
     let width: number;
     for (k = 0; k < childNodes.length; k++) {
-        txtWidth = childNodes[k].width;
+        txtWidth = childNodes[parseInt(k.toString(), 10)].width;
         width = txtWidth;
         if (text.textAlign === 'left') {
             txtWidth = 0;
@@ -300,8 +300,8 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
         } else {
             txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
         }
-        childNodes[k].dy = text.fontSize * 1.2;
-        childNodes[k].x = txtWidth;
+        childNodes[parseInt(k.toString(), 10)].dy = text.fontSize * 1.2;
+        childNodes[parseInt(k.toString(), 10)].x = txtWidth;
         if (!wrapBounds) {
             wrapBounds = {
                 x: txtWidth,
@@ -403,14 +403,14 @@ export function measureText(
 // eslint-disable-next-line
 export function measureImage(source: string, contentSize: Size, id?: string, callback?: Function): Size {
     const measureWindowElement: string = 'measureElement';
-    window[measureWindowElement].style.visibility = 'visible';
-    const imageElement: HTMLImageElement = window[measureWindowElement].children[1];
+    window[`${measureWindowElement}`].style.visibility = 'visible';
+    const imageElement: HTMLImageElement = window[`${measureWindowElement}`].children[1];
     imageElement.setAttribute('src', source);
     const bounds: ClientRect = imageElement.getBoundingClientRect();
     const width: number = bounds.width;
     const height: number = bounds.height;
     contentSize = new Size(width, height);
-    window[measureWindowElement].style.visibility = 'hidden';
+    window[`${measureWindowElement}`].style.visibility = 'hidden';
 
     const element: HTMLElement = document.createElement('img');
     element.setAttribute('src', source);
@@ -909,7 +909,7 @@ export function getScrollerWidth(): number {
 export function addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
     touchList = [];
     for (let i: number = 0, length: number = touches.length; i < length; i++) {
-        touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: null });
+        touchList.push({ pageX: touches[parseInt(i.toString(), 10)].clientX, pageY: touches[parseInt(i.toString(), 10)].clientY, pointerId: null });
     }
 
     return touchList;
@@ -1048,7 +1048,7 @@ export function getContent(
         }
         if (compiledString) {
             for (let i: number = 0; i < compiledString.length; i++) {
-                div.appendChild(compiledString[i]);
+                div.appendChild(compiledString[parseInt(i.toString(), 10)]);
             }
         }
     } else {
@@ -1071,10 +1071,10 @@ export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
     const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
         // Added below condition to check whether svg is undefined or not
-        if (svg && keys[i] !== 'style') {
-            svg.setAttribute(keys[i], attributes[keys[i]]);
+        if (svg && keys[parseInt(i.toString(), 10)] !== 'style') {
+            svg.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
         } else {
-            applyStyleAgainstCsp(svg, attributes[keys[i]]);
+            applyStyleAgainstCsp(svg, attributes[keys[parseInt(i.toString(), 10)]]);
         }
     }
 }
@@ -1090,7 +1090,7 @@ export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
 export function applyStyleAgainstCsp(svg: SVGElement | HTMLElement, attributes: string): void {
     const keys: string[] = attributes.split(';');
     for (let i: number = 0; i < keys.length; i++) {
-        const attribute: string[] = keys[i].split(':');
+        const attribute: string[] = keys[parseInt(i.toString(), 10)].split(':');
         if (attribute.length === 2) {
             svg.style[attribute[0].trim()] = attribute[1].trim();
         }
@@ -1108,10 +1108,10 @@ export function applyStyleAgainstCsp(svg: SVGElement | HTMLElement, attributes: 
 export function setAttributeHtml(element: HTMLElement, attributes: Object): void {
     const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        if (keys[i] !== 'style') {
-            element.setAttribute(keys[i], attributes[keys[i]]);
+        if (keys[parseInt(i.toString(), 10)] !== 'style') {
+            element.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
         } else {
-            applyStyleAgainstCsp(element, attributes[keys[i]]);
+            applyStyleAgainstCsp(element, attributes[keys[parseInt(i.toString(), 10)]]);
         }
     }
 }
@@ -1124,7 +1124,7 @@ export function setAttributeHtml(element: HTMLElement, attributes: Object): void
  */
 export function createMeasureElements(): void {
     const measureWindowElement: string = 'measureElement';
-    if (!window[measureWindowElement]) {
+    if (!window[`${measureWindowElement}`]) {
         const divElement: HTMLElement = createHtmlElement('div', {
             id: 'measureElement',
             style: 'visibility:hidden ; height: 0px ; width: 0px; overflow: hidden;'
@@ -1148,19 +1148,19 @@ export function createMeasureElements(): void {
         const tSpan: SVGTextElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         tSpan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         svg.appendChild(tSpan);
-        window[measureWindowElement] = divElement;
-        window[measureWindowElement].usageCount = 1;
+        window[`${measureWindowElement}`] = divElement;
+        window[`${measureWindowElement}`].usageCount = 1;
         document.body.appendChild(divElement);
         const measureElementCount: string = 'measureElementCount';
-        if (!window[measureElementCount]) {
-            window[measureElementCount] = 1;
+        if (!window[`${measureElementCount}`]) {
+            window[`${measureElementCount}`] = 1;
         } else {
-            window[measureElementCount]++;
+            window[`${measureElementCount}`]++;
         }
 
 
     } else {
-        window[measureWindowElement].usageCount += 1;
+        window[`${measureWindowElement}`].usageCount += 1;
     }
 }
 

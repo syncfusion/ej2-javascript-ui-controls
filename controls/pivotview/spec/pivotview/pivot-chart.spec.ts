@@ -481,7 +481,7 @@ describe('Chart - ', () => {
             }, 2000);
         })
         it('onExport', (done: Function) => {
-            pivotGridObj.chartExport('JPEG', 'jp');
+            pivotGridObj.chartExport('JPEG', { fileName: 'jp' });
             setTimeout(() => {
                 pivotGridObj.pivotChartModule.destroy();
                 expect(pivotGridObj.chart.isDestroyed).toBeTruthy(true);

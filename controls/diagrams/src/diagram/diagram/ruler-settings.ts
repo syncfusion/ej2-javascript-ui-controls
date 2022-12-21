@@ -75,6 +75,7 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default null
      * @deprecated
      */
@@ -98,11 +99,13 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
  * });
  * diagram.appendTo('#diagram');
  * ```
+ *
  * @default {}
  */
 export class RulerSettings extends ChildProperty<RulerSettings> {
     /**
      * Enables or disables both horizontal and vertical ruler.
+     *
      * @default false
      */
     @Property(false)
@@ -110,6 +113,7 @@ export class RulerSettings extends ChildProperty<RulerSettings> {
 
     /**
      * Updates the gridlines relative to the ruler ticks.
+     *
      * @default true
      */
     @Property(true)
@@ -117,6 +121,7 @@ export class RulerSettings extends ChildProperty<RulerSettings> {
 
     /**
      * Defines the appearance of horizontal ruler
+     *
      * @default {}
      */
     @Complex<DiagramRulerModel>({ orientation: 'Horizontal' }, DiagramRuler)
@@ -124,6 +129,7 @@ export class RulerSettings extends ChildProperty<RulerSettings> {
 
     /**
      * Defines the appearance of vertical ruler
+     *
      * @default {}
      */
     @Complex<DiagramRulerModel>({ orientation: 'Vertical' }, DiagramRuler)

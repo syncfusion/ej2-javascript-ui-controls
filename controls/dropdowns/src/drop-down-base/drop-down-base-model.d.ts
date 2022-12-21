@@ -75,16 +75,6 @@ export interface DropDownBaseModel extends ComponentModel{
     fields?: FieldSettingsModel;
 
     /**
-     * Enable or disable persisting component's state between page reloads.
-     * If enabled, following list of states will be persisted.
-     * 1. value
-     *
-     * @default false
-     * @deprecated
-     */
-    enablePersistence?: boolean;
-
-    /**
      * Accepts the template design and assigns it to each list item present in the popup.
      * We have built-in `template engine`
      *
@@ -134,14 +124,6 @@ export interface DropDownBaseModel extends ComponentModel{
      * @deprecated
      */
     sortOrder?: SortOrder;
-
-    /**
-     * Specifies a value that indicates whether the component is enabled or not.
-     *
-     * @default true
-     * @deprecated
-     */
-    enabled?: boolean;
 
     /**
      * Accepts the list items either through local or remote service and binds it to the component.

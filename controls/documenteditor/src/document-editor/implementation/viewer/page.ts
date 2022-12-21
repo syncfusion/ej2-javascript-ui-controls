@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
+import { WTableFormat, WRowFormat, WCellFormat, WColumnFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
@@ -451,6 +451,31 @@ export abstract class Widget implements IWidget {
         this.height = undefined;
         this.index = undefined;
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.childWidgets) {
+            while (this.childWidgets.length > 0) {
+                let child: IWidget = this.childWidgets.pop();
+                if (child instanceof LineWidget || child instanceof Widget) {
+                    child.componentDestroy();
+                }
+            }
+        }
+        this.childWidgets = undefined;
+        if (this.margin) {
+            this.margin.destroy();
+        }
+        this.margin = undefined;
+        this.x = undefined;
+        this.y = undefined;
+        this.width = undefined;
+        this.height = undefined;
+        this.index = undefined;
+        this.containerWidget = undefined;
+    }
 }
 /** 
  * @private
@@ -525,6 +550,21 @@ export abstract class BlockContainer extends Widget {
         }
         return hierarchicalIndex;
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.sectionFormatIn) {
+            this.sectionFormatIn.destroy();
+        }
+        this.sectionFormatIn = undefined;
+        this.floatingElements = [];
+        this.removedHeaderFooters = [];
+        this.footNoteReference = undefined;
+        this.page = undefined;
+        super.componentDestroy();
+    }
 }
 /** 
  * @private
@@ -550,7 +590,11 @@ export class BodyWidget extends BlockContainer {
                 hierarchicalIndex = 'EN' + ';' + hierarchicalIndex;
             }
         } else {
-            hierarchicalIndex = node.index + ';' + hierarchicalIndex;
+            if (this.page && this.page.bodyWidgets.indexOf(this) !== -1) {
+                hierarchicalIndex = this.page.bodyWidgets.indexOf(this) + ';' + hierarchicalIndex;
+            } else {
+                hierarchicalIndex = node.index + ';' + hierarchicalIndex;
+            }
         }
         if (!isNullOrUndefined(node.page)) {
             documentHelper = this.page.documentHelper;
@@ -630,10 +674,10 @@ export class BodyWidget extends BlockContainer {
         this.destroy();
     }
     public destroy(): void {
-        // if (this.sectionFormat) {
-        //     this.sectionFormat.destroy();
+        // if (this.sectionFormatIn) {
+        //     this.sectionFormatIn.destroy();
         // }
-        this.sectionFormat = undefined;
+        this.sectionFormatIn = undefined;
         if (this.page && this.page.headerWidgetIn) {
             this.page.headerWidgetIn.page = undefined;
         }
@@ -642,6 +686,13 @@ export class BodyWidget extends BlockContainer {
         }
         this.page = undefined;
         super.destroy();
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        super.componentDestroy();
     }
 }
 /** 
@@ -721,6 +772,14 @@ export class HeaderFooterWidget extends BlockContainer {
     public destroyInternal(viewer: LayoutViewer): void {
         this.page = undefined;
         super.destroy();
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        super.componentDestroy();
+        this.parentHeaderFooter = undefined;
     }
 }
 /** 
@@ -821,6 +880,18 @@ export abstract class BlockWidget extends Widget {
         }
         return isPageBreak;
     }
+    public isColumnBreak(): boolean {
+        let isColumnBreak: boolean = false;
+        if (this instanceof ParagraphWidget) {
+            let paragraph: ParagraphWidget = this as ParagraphWidget;
+            if (paragraph != null && paragraph.childWidgets.length === 1 &&
+                (paragraph.firstChild as LineWidget).children.length === 1) {
+                let columnBreak: ElementBox = (paragraph.firstChild as LineWidget).children[0] as ElementBox;
+                isColumnBreak = columnBreak.isColumnBreak;
+            }
+        }
+        return isColumnBreak;
+    }
     public getHierarchicalIndex(hierarchicalIndex: string): string {
         let node: BlockWidget = this;
         hierarchicalIndex = node.containerWidget.childWidgets.indexOf(node) + ';' + hierarchicalIndex;
@@ -880,7 +951,13 @@ export abstract class BlockWidget extends Widget {
                 let firstRow: TableRowWidget = this.firstChild as TableRowWidget;
                 padding = (firstRow.firstChild as TableCellWidget).leftMargin + ((firstRow).lastChild as TableCellWidget).rightMargin;
             }
-            return sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin) + padding;
+            if (bodyWidget instanceof BodyWidget && sectionFormat.columns.length > 1) {
+                let colIndex: number = bodyWidget.page.bodyWidgets.indexOf(bodyWidget);
+                return HelperMethods.convertPixelToPoint((sectionFormat.columns[colIndex] as WColumnFormat).width);
+            }
+            else {
+                return sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin) + padding;
+            }
         }
     }
     public get bidi(): boolean {
@@ -892,6 +969,14 @@ export abstract class BlockWidget extends Widget {
         }
         return false;
 
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        super.componentDestroy();
+        this.contentControlProperties = undefined;
     }
 }
 /** 
@@ -940,6 +1025,22 @@ export class FootNoteWidget extends BlockContainer {
         this.block = undefined;
         super.destroy();
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.bodyWidgets && this.bodyWidgets.length > 0) {
+            for (let i: number = 0; i < this.bodyWidgets.length; i++) {
+                let bodyWidget: BodyWidget = this.bodyWidgets[i] as BodyWidget;
+                bodyWidget.componentDestroy();
+            }
+            this.bodyWidgets = [];
+        }
+        this.bodyWidgets = undefined;
+        this.block = undefined;
+        super.componentDestroy();
+    }
 }
 
 /** 
@@ -970,6 +1071,12 @@ export class ParagraphWidget extends BlockWidget {
     public get isEndsWithPageBreak(): boolean {
         if (this.childWidgets.length > 0) {
             return (this.lastChild as LineWidget).isEndsWithPageBreak;
+        }
+        return false;
+    }
+    public get isEndsWithColumnBreak(): boolean{
+        if (this.childWidgets.length > 0) {
+            return (this.lastChild as LineWidget).isEndsWithColumnBreak;
         }
         return false;
     }
@@ -1573,12 +1680,28 @@ export class ParagraphWidget extends BlockWidget {
         // if (this.paragraphFormat) {
         //     this.paragraphFormat.destroy();
         // }
+
         this.paragraphFormat = undefined;
         // if (this.characterFormat) {
         //     this.characterFormat.destroy();
         // }
         this.characterFormat = undefined;
         super.destroy();
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.paragraphFormat) {
+            this.paragraphFormat.destroy();
+        }
+        this.paragraphFormat = undefined;
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+        }
+        this.characterFormat = undefined;
+        super.componentDestroy();
     }
 }
 /** 
@@ -2620,6 +2743,34 @@ export class TableWidget extends BlockWidget {
         this.isDefaultFormatUpdated = undefined;
         super.destroy();
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.tableFormat) {
+            this.tableFormat.destroy();
+        }
+        this.tableFormat = undefined;
+        if (this.spannedRowCollection) {
+            this.spannedRowCollection.destroy();
+        }
+        this.spannedRowCollection = undefined;
+        if (this.tableHolder) {
+            this.tableHolder.destroy();
+        }
+        this.tableHolder = undefined;
+        this.flags = undefined;
+        this.leftMargin = undefined;
+        this.topMargin = undefined;
+        this.rightMargin = undefined;
+        this.bottomMargin = undefined;
+        this.headerHeight = undefined;
+        this.description = undefined;
+        this.title = undefined;
+        this.isDefaultFormatUpdated = undefined;
+        super.componentDestroy();
+    }
 }
 /** 
  * @private
@@ -3059,10 +3210,22 @@ export class TableRowWidget extends BlockWidget {
         //     this.rowFormat.destroy();
         // }
         this.rowFormat = undefined;
-        this.rowFormat = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         super.destroy();
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.rowFormat) {
+            this.rowFormat.destroy();
+        }
+        this.rowFormat = undefined;
+        this.topBorderWidth = undefined;
+        this.bottomBorderWidth = undefined;
+        super.componentDestroy();
     }
 }
 /** 
@@ -3941,6 +4104,20 @@ export class TableCellWidget extends BlockWidget {
         this.columnIndex = undefined;
         super.destroy();
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.cellFormat) {
+            this.cellFormat.destroy();
+        }
+        this.cellFormat = undefined;
+        this.contentControlProperties = undefined;
+        this.rowIndex = undefined;
+        this.columnIndex = undefined;
+        super.componentDestroy();
+    }
 }
 /** 
  * @private
@@ -4051,6 +4228,15 @@ export class LineWidget implements IWidget {
         }
         return false;
     }
+    get isEndsWithColumnBreak(): boolean{
+        if (this.children.length > 0) {
+            let lastElement: ElementBox = this.children[this.children.length - 1];
+            if (lastElement instanceof TextElementBox) {
+                return lastElement.isColumnBreak;
+            }
+        }
+        return false;
+    }
     /**
      * @private
      */
@@ -4074,7 +4260,7 @@ export class LineWidget implements IWidget {
      */
     public isFirstLine(): boolean {
         let index: number = this.indexInOwner;
-        if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && (this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithPageBreak))) {
+        if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && ((this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithColumnBreak || (this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithPageBreak)))) {
             return index === 0;
         }
         return false;
@@ -4247,6 +4433,26 @@ export class LineWidget implements IWidget {
         this.x = undefined;
         this.y = undefined;
         this.width = undefined;
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (!isNullOrUndefined(this.children)) {
+            for (let i: number = 0; i < this.children.length; i++) {
+                let elementBox: ElementBox = this.children[i];
+                elementBox.componentDestroy();
+            }
+            this.children = [];
+        }
+        this.children = undefined;
+        this.paragraph = undefined;
+        this.layoutedElements = [];
+        this.layoutedElements = undefined;
+        this.x = undefined;
+        this.y = undefined;
+        this.width = undefined;
         this.height = undefined;
     }
 }
@@ -4347,6 +4553,13 @@ export abstract class ElementBox {
         }
         return false;
     }
+    get isColumnBreak(): boolean {
+        if (this instanceof TextElementBox) {
+            return this.text === String.fromCharCode(14);
+        }
+        return false;
+    }
+    
     /**
      * @private
      * Method to indicate whether current element is trackable.
@@ -4655,6 +4868,30 @@ export abstract class ElementBox {
         this.width = undefined;
         this.height = undefined;
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+        }
+        this.characterFormat = undefined;
+        if (this.margin) {
+            this.margin.destroy();
+        }
+        this.margin = undefined;
+        if (this.padding) {
+            this.padding.destroy();
+        }
+        this.padding = undefined;
+        this.contentControlProperties = undefined;
+        this.line = undefined;
+        this.x = undefined;
+        this.y = undefined;
+        this.width = undefined;
+        this.height = undefined;
+    }
 }
 /** 
  * @private
@@ -4775,6 +5012,21 @@ export class FieldElementBox extends ElementBox {
         this.fieldSeparatorInternal = undefined;
         super.destroy();
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.formFieldData) {
+            this.formFieldData.destroy();
+        }
+        this.formFieldData = undefined;
+        this.fieldCodeType = undefined;
+        this.fieldBeginInternal = undefined;
+        this.fieldEndInternal = undefined;
+        this.fieldSeparatorInternal = undefined;
+        super.componentDestroy();
+    }
 }
 /** 
  * @private
@@ -4800,6 +5052,14 @@ export abstract class FormField {
      * @private
      */
     public abstract clone(): FormField;
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.name = undefined;
+        this.helpText = undefined;
+        this.statusText = undefined;
+    }
     /**
      * @private
      */
@@ -4882,6 +5142,14 @@ export class TextFormField extends FormField {
             this.type = info.type;
         }
     }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.format = undefined;
+        this.defaultValue = undefined;
+        super.destroy();
+    }
 }
 /** 
  * @private
@@ -4954,6 +5222,12 @@ export class CheckBoxFormField extends FormField {
             this.sizeType = info.sizeType;
         }
     }
+    /**
+     * @private
+     */
+    public destroy(): void {
+        super.destroy();
+    }
 
 }
 /** 
@@ -5006,6 +5280,14 @@ export class DropDownFormField extends FormField {
         if (!isNullOrUndefined(info.helpText)) {
             this.helpText = info.helpText;
         }
+    }
+    /**
+     * @private
+     */
+     public destroy(): void {
+        this.dropdownItems = [];
+        this.dropdownItems = undefined;
+        super.destroy();
     }
 }
 /** 
@@ -5093,6 +5375,13 @@ export class TextElementBox extends ElementBox {
         this.text = undefined;
         super.destroy();
     }
+    /**
+     * @private
+     */
+    public componentDestroy(): void {
+        this.text = undefined;
+        super.componentDestroy();
+    }
 }
 /** 
  * @private
@@ -5119,14 +5408,62 @@ export class Footnote {
      * @private
      */
     public clear(): void {
-        this.separator = [];
-        this.continuationSeparator = [];
-        this.continuationNotice = [];
+        if (this.separator) {
+            for (let i: number = 0; i < this.separator.length; i++){
+                let bodyWidget: BlockWidget = this.separator[i];
+                bodyWidget.destroy();
+            }
+            this.separator = [];
+        }
+        if (this.continuationSeparator) {
+            for (let i: number = 0; i < this.continuationSeparator.length; i++){
+                let bodyWidget: BlockWidget = this.continuationSeparator[i];
+                bodyWidget.destroy();
+            }
+            this.continuationSeparator = [];
+        }
+        if (this.continuationNotice) {
+            for (let i: number = 0; i < this.continuationNotice.length; i++){
+                let bodyWidget: BlockWidget = this.continuationNotice[i];
+                bodyWidget.destroy();
+            }
+            this.continuationNotice = [];
+        }
     }
     public destroy(): void {
         this.separator = [];
         this.continuationSeparator = [];
         this.continuationNotice = [];
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.separator) {
+            for (let i: number = 0; i < this.separator.length; i++){
+                let bodyWidget: BlockWidget = this.separator[i];
+                bodyWidget.componentDestroy();
+            }
+            this.separator = [];
+        }
+        this.separator = undefined;
+        if (this.continuationSeparator) {
+            for (let i: number = 0; i < this.continuationSeparator.length; i++){
+                let bodyWidget: BlockWidget = this.continuationSeparator[i];
+                bodyWidget.componentDestroy();
+            }
+            this.continuationSeparator = [];
+        }
+        this.continuationSeparator = undefined;
+        if (this.continuationNotice) {
+            for (let i: number = 0; i < this.continuationNotice.length; i++){
+                let bodyWidget: BlockWidget = this.continuationNotice[i];
+                bodyWidget.componentDestroy();
+            }
+            this.continuationNotice = [];
+        }
+        this.continuationNotice = undefined;
     }
 }
 
@@ -5194,7 +5531,24 @@ export class FootnoteElementBox extends TextElementBox {
         this.symbolCode = '';
         this.symbolFontName = '';
         this.customMarker = '';
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        this.symbolCode = '';
+        this.symbolFontName = '';
+        this.customMarker = '';
+        if (this.bodyWidget) {
+            this.bodyWidget.componentDestroy();
+        }
         this.bodyWidget = undefined;
+        super.componentDestroy();
     }
 }
 /** 
@@ -5222,6 +5576,21 @@ export class ErrorTextElementBox extends TextElementBox {
     public destroy(): void {
         this.start = undefined;
         this.end = undefined;
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.startIn) {
+            this.startIn.destroy();
+        }
+        this.startIn = undefined;
+        if (this.endIn) {
+            this.endIn.destroy();
+        }
+        this.endIn = undefined;
+        super.componentDestroy();
     }
 }
 /** 
@@ -5271,6 +5640,15 @@ export class FieldTextElementBox extends TextElementBox {
         fieldSpan.height = this.height;
         return fieldSpan;
     }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        this.fieldText = undefined;
+        this.fieldBegin = undefined;
+        super.componentDestroy();
+    }
 }
 /** 
  * @private
@@ -5291,6 +5669,14 @@ export class TabElementBox extends TextElementBox {
     public destroy(): void {
         this.tabText = undefined;
         this.tabLeader = undefined;
+    }
+    /**
+     * @private
+     */
+     public componentDestroy(): void {
+        this.tabText = undefined;
+        this.tabLeader = undefined;
+        super.componentDestroy();
     }
     constructor() {
         super();
@@ -5380,6 +5766,15 @@ export class BookmarkElementBox extends ElementBox {
         this.name = undefined;
         this.reference = undefined;
         this.bookmarkTypeIn = undefined;
+    }
+    /**
+     * @private
+     */
+     public componentDestroy(): void {
+        this.name = undefined;
+        this.reference = undefined;
+        this.bookmarkTypeIn = undefined;
+        super.componentDestroy();
     }
     /**
      * Clones the bookmark element box.
@@ -5479,6 +5874,18 @@ export class ContentControl extends ElementBox {
         this.contentControlProperties = undefined;
         this.contentControlWidgetType = undefined;
         super.destroy();
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.contentControlProperties) {
+            this.contentControlProperties.destroy();
+            this.contentControlProperties = undefined;
+        }
+        this.contentControlWidgetType = undefined;
+        super.componentDestroy();
     }
 }
 /** 
@@ -5582,6 +5989,14 @@ export class ContentControlProperties {
      * @private
      */
     public destroy(): void {
+        if (this.characterFormat) {
+            this.characterFormat.destroy();
+            this.characterFormat = undefined;
+        }
+        if (this.xmlMapping) {
+            this.xmlMapping.destroy();
+            this.xmlMapping = undefined;
+        }
         this.lockContentControl = undefined;
         this.lockContents = undefined;
         this.tag = undefined;
@@ -8172,6 +8587,10 @@ export class CommentCharacterElementBox extends ElementBox {
         if (this.commentMark) {
             this.removeCommentMark();
         }
+        this.commentMark = undefined;
+        this.commentInternal = undefined;
+        this.commentId = undefined;
+        super.componentDestroy();
     }
 }
 
@@ -8265,7 +8684,29 @@ export class CommentElementBox extends CommentCharacterElementBox {
     }
 
     public destroy(): void {
+        if (this.replyComments && this.replyComments.length > 0) {
+            for (let i: number = 0; i < this.replyComments.length; i++) {
+                let replyComment: CommentElementBox = this.replyComments[i] as CommentElementBox;
+                replyComment.destroy();
+            }
+            this.replyComments = [];
+        }
+        this.replyComments = undefined;
+        if (this.commentStartIn) {
+            this.commentStartIn.destroy();
+            this.commentStartIn = undefined;
+        }
+        if (this.commentEndIn) {
+            this.commentEndIn.destroy();
+            this.commentEndIn = undefined;
+        }
+        this.commentId = undefined;
+        this.createdDate = undefined;
+        this.initialIn = undefined;
+        this.textIn = undefined;
+        this.authorIn = undefined;
         this.ownerComment = undefined;
+        super.destroy();
     }
 }
 
@@ -8432,6 +8873,29 @@ export class Page {
             if (!isNullOrUndefined(this.documentHelper.pages)) {
                 this.documentHelper.removePage(this);
             }
+        }
+        this.documentHelper = undefined;
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public componentDestroy(): void {
+        if (this.headerWidgetIn) {
+            this.headerWidgetIn.componentDestroy();
+            this.headerWidgetIn = undefined;
+        }
+        if (this.footerWidgetIn) {
+            this.footerWidgetIn.componentDestroy();
+            this.footerWidgetIn = undefined;
+        }
+        if (this.bodyWidgets) {
+            for (let i: number = 0; i < this.bodyWidgets.length; i++) {
+                let bodyWidget: BodyWidget = this.bodyWidgets[i];
+                bodyWidget.componentDestroy();
+            }
+            this.bodyWidgets = [];
+            this.bodyWidgets = undefined;
         }
         this.documentHelper = undefined;
     }

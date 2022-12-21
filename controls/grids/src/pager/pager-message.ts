@@ -98,8 +98,9 @@ export class PagerMessage implements IRender {
     private format(str: string, args: number[]): string {
         let regx: RegExp;
         for (let i: number = 0; i < args.length; i++) {
+            // eslint-disable-next-line security/detect-non-literal-regexp
             regx = new RegExp('\\{' + (i) + '\\}', 'gm');
-            str = str.replace(regx, args[i].toString());
+            str = str.replace(regx, args[parseInt(i.toString(), 10)].toString());
         }
         return str;
     }

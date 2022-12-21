@@ -82,7 +82,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         () => {
                             this.parent.refreshReactColumnTemplateByUid(col.uid);
                         },
-                    0);
+                        0);
                     break;
                 }
             }
@@ -124,22 +124,43 @@ export class RowRenderer<T> implements IRowRenderer<T> {
 
         const cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
         for (let i: number = 0, len: number = row.cells.length; i < len; i++) {
-            const cell: Cell<T> = row.cells[i]; cell.isSelected = row.isSelected;
+            const cell: Cell<T> = row.cells[parseInt(i.toString(), 10)]; cell.isSelected = row.isSelected;
             cell.isColumnSelected = (<{ isSelected?: boolean }>cell.column).isSelected;
-            const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
+            const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[parseInt(i.toString(), 10)].cellType
+                || CellType.Data);
             const attrs: {} = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
-            if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
+            if (row.isExpand && row.cells[parseInt(i.toString(), 10)].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            let td: Element = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand, isEdit);
-            if (row.cells[i].cellType !== CellType.Filter) {
-                if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
-                    this.parent.trigger(queryCellInfo, extend(
-                        cellArgs, <QueryCellInfoEventArgs>{
-                            cell: td, column: <{}>cell.column, colSpan: 1,
-                            rowSpan: 1, foreignKeyData: row.cells[i].foreignKeyData,
-                            requestType: this.parent.requestTypeAction
-                        }));
+            let td: Element = cellRenderer.render(row.cells[parseInt(i.toString(), 10)], row.data, attrs, row.isExpand, isEdit);
+            if (row.cells[parseInt(i.toString(), 10)].cellType !== CellType.Filter) {
+                if (row.cells[parseInt(i.toString(), 10)].cellType === CellType.Data
+                    || row.cells[parseInt(i.toString(), 10)].cellType === CellType.CommandColumn) {
+                    const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                        this.parent.parentDetails.parentInstObj.isReact;
+                    if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
+                        this.parent.parentDetails.parentInstObj.requireTemplateRef)) && cell.isTemplate) {
+                        // eslint-disable-next-line @typescript-eslint/no-this-alias
+                        const thisRef: RowRenderer<T> = this;
+                        thisRef.parent.renderTemplates(function(): void {
+                            const ariaAttr: string = td.getAttribute('aria-label');
+                            td.setAttribute('aria-label', (td as HTMLElement).innerText + ariaAttr);
+                            thisRef.parent.trigger(queryCellInfo, extend(
+                                cellArgs, <QueryCellInfoEventArgs>{
+                                    cell: td, column: <{}>cell.column, colSpan: 1,
+                                    rowSpan: 1, foreignKeyData: row.cells[parseInt(i.toString(), 10)].foreignKeyData,
+                                    requestType: thisRef.parent.requestTypeAction
+                                }));
+                        });
+                    }
+                    else {
+                        this.parent.trigger(queryCellInfo, extend(
+                            cellArgs, <QueryCellInfoEventArgs>{
+                                cell: td, column: <{}>cell.column, colSpan: 1,
+                                rowSpan: 1, foreignKeyData: row.cells[parseInt(i.toString(), 10)].foreignKeyData,
+                                requestType: this.parent.requestTypeAction
+                            }));
+                    }
                     let isRowSpanned: boolean = false;
                     if (row.index > 0 && this.isSpan) {
                         const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
@@ -147,16 +168,17 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             this.parent.getRowsObject()[row.index].cells : this.parent.getRowsObject()[row.index - 1].cells;
                         const uid: string = 'uid';
                         const prevRowCell: Cell<Column> = prevRowCells.filter((cell: Cell<Column>) =>
-                            cell.column.uid === row.cells[i].column[uid])[0];
+                            cell.column.uid === row.cells[parseInt(i.toString(), 10)].column[`${uid}`])[0];
                         isRowSpanned = prevRowCell.isRowSpanned ? prevRowCell.isRowSpanned : prevRowCell.rowSpanRange > 1;
                     }
-                    if (cellArgs.colSpan > 1 || row.cells[i].cellSpan > 1 || cellArgs.rowSpan > 1 || isRowSpanned) {
+                    if (cellArgs.colSpan > 1 || row.cells[parseInt(i.toString(), 10)].cellSpan > 1 || cellArgs.rowSpan > 1
+                        || isRowSpanned) {
                         this.isSpan = true;
                         const cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
                         td = cellMerge.render(cellArgs, row, i, td);
                     }
                 }
-                if (!row.cells[i].isSpanned) {
+                if (!row.cells[parseInt(i.toString(), 10)].isSpanned) {
                     tr.appendChild(td);
                 }
             }
@@ -164,15 +186,28 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         const args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             const eventArg: RowDataBoundEventArgs = extend(rowArgs, args); eventArg.isSelectable = true;
-            this.parent.trigger(rowDataBound, eventArg);
+            const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
+            const cellTemplate: NodeListOf<Element> = eventArg.row.querySelectorAll('.e-templatecell');
+            if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
+                this.parent.parentDetails.parentInstObj.requireTemplateRef)) && cellTemplate.length) {
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                const thisRef: RowRenderer<T> = this;
+                thisRef.parent.renderTemplates(function(): void {
+                    thisRef.parent.trigger(rowDataBound, eventArg);
+                });
+            }
+            else {
+                this.parent.trigger(rowDataBound, eventArg);
+            }
             row.isSelectable = eventArg.isSelectable;
             const isDraggable: boolean = this.parent.isRowDragable();
             if (this.parent.allowPaging && this.parent.selectionSettings.persistSelection) {
                 const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
-                const pKey: string = row.data ? row.data[primaryKey] : null;
+                const pKey: string = row.data ? row.data[`${primaryKey}`] : null;
                 const SelectedRecords: Object[] = eventArg.isSelectable ? this.parent.partialSelectedRecords :
                     this.parent.disableSelectedRecords;
-                if (!SelectedRecords.some((data: Object) => data[primaryKey] === pKey)) {
+                if (!SelectedRecords.some((data: Object) => data[`${primaryKey}`] === pKey)) {
                     SelectedRecords.push(row.data);
                 }
             }
@@ -182,12 +217,12 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 const isDrag: Element = eventArg.row.querySelector('.e-rowdragdrop');
                 const cellIdx: number = this.parent.groupSettings.columns.length + (isDrag || this.parent.isDetail() ? 1 : 0);
                 for (let i: number = 0; i < chkBox.length; i++) {
-                    (chkBox[i] as HTMLElement).firstElementChild.classList.add('e-checkbox-disabled');
-                    (chkBox[i] as HTMLElement).querySelector('.e-frame').classList.remove('e-check');
+                    (chkBox[parseInt(i.toString(), 10)] as HTMLElement).firstElementChild.classList.add('e-checkbox-disabled');
+                    (chkBox[parseInt(i.toString(), 10)] as HTMLElement).querySelector('.e-frame').classList.remove('e-check');
                 }
                 if (row.cells.length) {
                     for (let i: number = cellIdx; i < row.cells.length; i++) {
-                        const cell: Element = eventArg.row.querySelector('.e-rowcell[data-colindex="' + row.cells[i].index + '"]');
+                        const cell: Element = eventArg.row.querySelector('.e-rowcell[data-colindex="' + row.cells[parseInt(i.toString(), 10)].index + '"]');
                         if (cell) {
                             removeClass([cell], ['e-selectionbackground', 'e-active']);
                         }
@@ -224,7 +259,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             for (let i: number = 0; i < this.parent.aggregates.length; i++) {
                 const property: string = 'properties';
                 const column: string = 'columns';
-                if (this.parent.aggregates[i][property][column][0].footerTemplate) {
+                if (this.parent.aggregates[parseInt(i.toString(), 10)][`${property}`][`${column}`][0].footerTemplate) {
                     const summarycell: NodeList = [].slice.call(tr.getElementsByClassName('e-summarycell'));
                     if (summarycell.length) {
                         const lastSummaryCell: Element = (summarycell[summarycell.length - 1]) as Element;
@@ -264,6 +299,14 @@ export class RowRenderer<T> implements IRowRenderer<T> {
 
         if (row.isAltRow) {
             classes.push('e-altrow');
+        }
+
+        if (row.isCaptionRow) {
+            classes.push('e-groupcaptionrow');
+        }
+
+        if (row.isAggregateRow && row.parentUid) {
+            classes.push('e-groupfooterrow');
         }
 
         if (!isNullOrUndefined(row.index)) {

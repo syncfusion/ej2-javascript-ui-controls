@@ -265,7 +265,7 @@ export type TextWrap =
  * *Ellipsis - Specifies an ellipsis (“...”) to the clipped text.
  * *clip - Specifies to break a word once it is too long to fit on a line by itself.
  */
- export type LabelOverflow =
+export type LabelOverflow =
  /** Specifies an ellipsis (“...”) to the clipped text. */
  'Ellipsis' |
  /** Specifies the text is clipped and not accessible. */

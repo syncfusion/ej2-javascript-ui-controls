@@ -131,6 +131,7 @@ describe('MultiSelect - changeonblur', () => {
                     changeCount = changeCount + 1;
                 }
             });
+            setTimeout(() => {
             multiObj.appendTo('#newlist');
             expect(isNotLocalChange).toBe(true);
             expect(changeCount).toBe(0);
@@ -139,6 +140,7 @@ describe('MultiSelect - changeonblur', () => {
             expect(isNotLocalChange).toBe(false);
             expect(changeCount).toBe(1);
             multiObj.destroy();
+            }, 100)
         });
 
         it(' change event not trigger in remote data', (done) => {

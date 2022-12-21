@@ -21,6 +21,7 @@ const CONTROL: string = 'e-control';
 const NUMERIC_FOCUS: string = 'e-input-focus';
 const HIDDENELEMENT: string = 'e-numeric-hidden';
 const wrapperAttributes: string[] = ['title', 'style', 'class'];
+let selectionTimeOut: number = 0;
 
 /**
  * Represents the NumericTextBox component that allows the user to enter only numeric values.
@@ -344,9 +345,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             const input: HTMLElement = this.createElement('input');
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
-                const attributeName: string = this.element.attributes[index].nodeName;
+                const attributeName: string = this.element.attributes[index as number].nodeName;
                 if (attributeName !== 'id' && attributeName !== 'class') {
-                    input.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    input.setAttribute(this.element.attributes[index as number].nodeName, this.element.attributes[index as number].nodeValue);
                     input.innerHTML = this.element.innerHTML;
                 }
                 else if (attributeName === 'class') {
@@ -362,7 +363,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             setValue('ej2_instances', ejInstance, this.element);
 
         }
-        attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
+        attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off'});
         const localeText: object = {
             incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder
         };
@@ -563,14 +564,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         let attr: { [key: string]: string } = {};
         if (!isDynamic) {
             for (let a: number = 0; a < this.element.attributes.length; a++) {
-                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+                attr[this.element.attributes[a as number].name] = this.element.getAttribute(this.element.attributes[a as number].name);
             }
         } else {
             attr = this.htmlAttributes;
         }
         for (const key of Object.keys(attr)) {
             if (key.indexOf('data') === 0 ) {
-                this.hiddenInput.setAttribute(key, attr[key]);
+                this.hiddenInput.setAttribute(key, attr[`${key}`]);
             }
         }
     }
@@ -578,7 +579,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(pro) < 0 ) {
-                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                    this.element.setAttribute(pro, this.htmlAttributes[`${pro}`]);
                 }
             }
         }
@@ -598,17 +599,17 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             for (const pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(pro) > -1 ) {
                     if (pro === 'class') {
-                        const updatedClassValue : string = this.getNumericValidClassList(this.htmlAttributes[pro]);
+                        const updatedClassValue : string = this.getNumericValidClassList(this.htmlAttributes[`${pro}`]);
                         if (updatedClassValue !== '') {
                             addClass([this.container], updatedClassValue.split(' '));
                         }
                     } else if (pro === 'style') {
                         let numericStyle: string = this.container.getAttribute(pro);
-                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                            this.htmlAttributes[pro];
+                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[`${pro}`]) :
+                            this.htmlAttributes[`${pro}`];
                         this.container.setAttribute(pro, numericStyle);
                     } else {
-                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                        this.container.setAttribute(pro, this.htmlAttributes[`${pro}`]);
                     }
                 }
             }
@@ -847,7 +848,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 const numericObject: Object = getNumericObject(this.locale);
                 const decimalSeparator: string = getValue('decimal', numericObject);
                 const ignoreKeyCode: number = decimalSeparator.charCodeAt(0);
-                if (this.element.value[prevPos] === ' ' && this.element.selectionStart > 0 && !iOS) {
+                if (this.element.value[prevPos as number] === ' ' && this.element.selectionStart > 0 && !iOS) {
                     if (isNullOrUndefined(this.prevVal)) {
                         this.element.value = this.element.value.trim();
                     } else if (prevPos !== 0) {
@@ -1176,6 +1177,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (this.decimals && this.validateDecimalOnType) {
             fractionRule = '{0,' + this.decimals + '}';
         }
+        // eslint-disable-next-line detect-non-literal-regexp
         return new RegExp('^(-)?(((\\d+(' + decimalSeparator + '\\d' + fractionRule +
             ')?)|(' + decimalSeparator + '\\d' + fractionRule + ')))?$');
     }
@@ -1199,6 +1201,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private focusHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+        clearTimeout(selectionTimeOut);
         this.focusEventArgs = {event: event, value: this.value, container: this.container };
         this.trigger('focus', this.focusEventArgs);
         if (!this.enabled || this.readonly) {
@@ -1215,7 +1218,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     this.element.setSelectionRange(0, formatValue.length);
                 } else {
                     const delay: number = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                    setTimeout(
+                    selectionTimeOut = setTimeout(
                         () => {
                             this.element.setSelectionRange(0, formatValue.length);
                         },
@@ -1397,14 +1400,23 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
         const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
             'aria-disabled', 'autocapitalize','spellcheck', 'aria-autocomplete', 'tabindex', 
-            'aria-valuemin', 'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+            'aria-valuemin', 'aria-valuemax', 'aria-valuenow', 'aria-invalid'];
         for (let i: number = 0; i < attrArray.length; i++) {
-            this.element.removeAttribute(attrArray[i]);
+            this.element.removeAttribute(attrArray[i as number]);
         }
         this.element.classList.remove('e-input');
         this.container.insertAdjacentElement('afterend', this.element);
         detach(this.container);
-        super.destroy();
+            this.spinUp = null;
+            this.spinDown = null;
+            this.container = null;
+            this.hiddenInput = null;
+            this.changeEventArgs = null;
+            this.blurEventArgs = null;
+            this.focusEventArgs = null;
+            this.inputWrapper = null;
+            Input.destroy();
+            super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns */
     /**

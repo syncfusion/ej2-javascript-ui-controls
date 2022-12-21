@@ -1,7 +1,7 @@
 /**
  * Common utility methods
  */
- export interface IKeyValue extends CSSStyleDeclaration {
+export interface IKeyValue extends CSSStyleDeclaration {
     // eslint-disable-next-line
     [key: string]: any;
 }
@@ -80,7 +80,7 @@ export function getValue(nameSpace: string, obj: any): any {
     const splits: string[] =  nameSpace.replace(/\[/g, '.').replace(/\]/g, '').split('.');
 
     for (let i: number = 0; i < splits.length && !isUndefined(value); i++) {
-        value = value[splits[i]];
+        value = value[splits[parseInt(i.toString(), 10)]];
     }
     return value;
 }
@@ -105,15 +105,15 @@ export function setValue(nameSpace: string, value: any, obj: any): any {
     let key: string;
 
     for (i = 0; i < length; i++) {
-        key = keys[i];
+        key = keys[parseInt(i.toString(), 10)];
 
         if (i + 1 === length) {
-            fromObj[key] = value === undefined ? {} : value;
-        } else if (isNullOrUndefined(fromObj[key])) {
-            fromObj[key] = {};
+            fromObj[`${key}`] = value === undefined ? {} : value;
+        } else if (isNullOrUndefined(fromObj[`${key}`])) {
+            fromObj[`${key}`] = {};
         }
 
-        fromObj = fromObj[key];
+        fromObj = fromObj[`${key}`];
     }
 
     return start;
@@ -128,12 +128,13 @@ export function setValue(nameSpace: string, value: any, obj: any): any {
  */
 // eslint-disable-next-line
 export function deleteObject(obj: any, key: string): void {
-    delete obj[key];
+    delete obj[`${key}`];
 }
 /**
- *@private 
+ *@private
  */
- export const containerObject: any = typeof window !== "undefined" ? window : {};
+// eslint-disable-next-line
+export const containerObject: any = typeof window !== 'undefined' ? window : {};
 /**
  * Check weather the given argument is only object.
  *
@@ -174,11 +175,11 @@ export function merge(source: Object, destination: Object): void {
         const keys: string[] = Object.keys(destination);
         const deepmerge: string = 'deepMerge';
         for (const key of keys) {
-            if (!isNullOrUndefined(temrObj[deepmerge]) && (temrObj[deepmerge].indexOf(key) !== -1) &&
-                (isObject(tempProp[key]) || Array.isArray(tempProp[key]))) {
-                extend(temrObj[key], temrObj[key], tempProp[key], true);
+            if (!isNullOrUndefined(temrObj[`${deepmerge}`]) && (temrObj[`${deepmerge}`].indexOf(key) !== -1) &&
+                (isObject(tempProp[`${key}`]) || Array.isArray(tempProp[`${key}`]))) {
+                extend(temrObj[`${key}`], temrObj[`${key}`], tempProp[`${key}`], true);
             } else {
-                temrObj[key] = tempProp[key];
+                temrObj[`${key}`] = tempProp[`${key}`];
             }
         }
     }
@@ -207,8 +208,8 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
         // eslint-disable-next-line
         let obj1: { [key: string]: Object } = arguments[i];
         Object.keys(obj1).forEach((key: string) => {
-            const src: Object = result[key];
-            const copy: Object = obj1[key];
+            const src: Object = result[`${key}`];
+            const copy: Object = obj1[`${key}`];
             let clone: Object;
             const isArrayChanged: boolean = Array.isArray(copy) && Array.isArray(src) && (copy.length !== src.length);
             // eslint-disable-next-line
@@ -220,15 +221,16 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
                     if (Array.isArray(clone) && clone.hasOwnProperty('isComplexArray')) {
                         extend(clone, {}, copy, deep);
                     } else {
-                        result[key] = extend(clone, {}, copy, deep);
+                        result[`${key}`] = extend(clone, {}, copy, deep);
                     }
                 } else {
                     /* istanbul ignore next */
                     clone = isBlazor() ? src && Object.keys(copy).length : src ? src : [];
-                    result[key] = extend([], clone, copy, (clone && (clone as any).length) || (copy &&(copy as any).length));
+                    // eslint-disable-next-line
+                    result[`${key}`] = extend([], clone, copy, (clone && (clone as any).length) || (copy && (copy as any).length));
                 }
             } else {
-                result[key] = copy;
+                result[`${key}`] = copy;
             }
         });
     }
@@ -299,7 +301,7 @@ export function queryParams(data: any): string {
     const array: string[] = [];
     const keys: string[] = Object.keys(data);
     for (const key of keys) {
-        array.push(encodeURIComponent(key) + '=' + encodeURIComponent('' + data[key]));
+        array.push(encodeURIComponent(key) + '=' + encodeURIComponent('' + data[`${key}`]));
     }
     return array.join('&');
 }
@@ -366,7 +368,7 @@ export function print(element: Element, printWindow?: Window): Window {
     const blinks: HTMLElement[] = [].slice.call(document.getElementsByTagName('body')[0].querySelectorAll('link, style'));
     if (blinks.length) {
         for (let l: number = 0, len: number = blinks.length; l < len; l++) {
-            links.push(blinks[l]);
+            links.push(blinks[parseInt(l.toString(), 10)]);
         }
     }
     let reference: string = '';
@@ -375,7 +377,7 @@ export function print(element: Element, printWindow?: Window): Window {
     }
     div.appendChild(element.cloneNode(true) as Element);
     for (let i: number = 0, len: number = links.length; i < len; i++) {
-        reference += links[i].outerHTML;
+        reference += links[parseInt(i.toString(), 10)].outerHTML;
     }
     printWindow.document.write('<!DOCTYPE html> <html><head>' + reference + '</head><body>' + div.innerHTML +
         '<script> (function() { window.ready = true; })(); </script>' + '</body></html>');
@@ -439,8 +441,8 @@ export function isBlazor(): boolean {
  */
 export function getElement(element: object): HTMLElement {
     const xPath: string = 'xPath';
-    if (!(element instanceof Node) && isBlazor() && !isNullOrUndefined(element[xPath])) {
-        return document.evaluate(element[xPath], document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+    if (!(element instanceof Node) && isBlazor() && !isNullOrUndefined(element[`${xPath}`])) {
+        return document.evaluate(element[`${xPath}`], document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
     }
     return element as HTMLElement;
 }
@@ -458,8 +460,8 @@ export function getElement(element: object): HTMLElement {
 export function getInstance(element: string | HTMLElement, component: any): Object {
     // eslint-disable-next-line
     let elem: any = (typeof (element) === 'string') ? document.querySelector(element) : element;
-    if (elem[instances]) {
-        for (const inst of elem[instances]) {
+    if (elem[`${instances}`]) {
+        for (const inst of elem[`${instances}`]) {
             if (inst instanceof component) {
                 return inst;
             }
@@ -479,10 +481,10 @@ export function getInstance(element: string | HTMLElement, component: any): Obje
 export function addInstance(element: string | HTMLElement, instance: Object): void {
     // eslint-disable-next-line
     let elem: any = (typeof (element) === 'string') ? document.querySelector(element) : element;
-    if (elem[instances]) {
-        elem[instances].push(instance);
+    if (elem[`${instances}`]) {
+        elem[`${instances}`].push(instance);
     } else {
-        elem[instances] = [instance];
+        elem[`${instances}`] = [instance];
     }
 }
 
@@ -515,7 +517,7 @@ interface TimeoutHandler {
 function combineArray(num: Int16Array): string {
     let ret: string = '';
     for (let i: number = 0; i < 5; i++) {
-        ret += (i ? ',' : '') + num[i];
+        ret += (i ? ',' : '') + num[parseInt(i.toString(), 10)];
     }
     return ret;
 }

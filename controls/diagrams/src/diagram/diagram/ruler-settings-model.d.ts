@@ -69,6 +69,7 @@ export interface DiagramRulerModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default null
      * @deprecated
      */
@@ -83,24 +84,28 @@ export interface RulerSettingsModel {
 
     /**
      * Enables or disables both horizontal and vertical ruler.
+     *
      * @default false
      */
     showRulers?: boolean;
 
     /**
      * Updates the gridlines relative to the ruler ticks.
+     *
      * @default true
      */
     dynamicGrid?: boolean;
 
     /**
      * Defines the appearance of horizontal ruler
+     *
      * @default {}
      */
     horizontalRuler?: DiagramRulerModel;
 
     /**
      * Defines the appearance of vertical ruler
+     *
      * @default {}
      */
     verticalRuler?: DiagramRulerModel;

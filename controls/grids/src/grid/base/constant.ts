@@ -557,4 +557,6 @@ export const beforeCheckboxfilterRenderer: string = 'beforeCheckboxfilterRendere
 /** @hidden */
 export const commandColumnDestroy: string = 'commandColumnDestroy';
 /** @hidden */
-export const batchCnfrmDlgCancel: string = 'cancelcnfrmDlg'
+export const batchCnfrmDlgCancel: string = 'cancelcnfrmDlg';
+/** @hidden */
+export const refreshVirtualLazyLoadCache: string = 'refresh-Virtual-LazyLoad-Cache';

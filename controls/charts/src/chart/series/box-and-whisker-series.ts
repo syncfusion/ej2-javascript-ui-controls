@@ -186,7 +186,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         parentElement.appendChild(element);
         for (let i: number = 0; i < point.outliers.length; i++) {
             location = getPoint(
-                (point.xValue + median), point.outliers[i], series.xAxis, series.yAxis,
+                (point.xValue + median), point.outliers[i as number], series.xAxis, series.yAxis,
                 series.chart.requireInvertedAxis
             );
             size = new Size(series.marker.width, series.marker.height);
@@ -261,7 +261,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         } else if (integerRank > count - 1) {
             value = yValues[count - 1];
         } else {
-            value = fractionRank * (yValues[integerRank] - yValues[integerRank - 1]) + yValues[integerRank - 1];
+            value = fractionRank * (yValues[integerRank as number] - yValues[integerRank - 1]) + yValues[integerRank - 1];
         }
         return value;
     }
@@ -283,7 +283,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         const rank: number = percentile * (count - 1);
         const integerRank: number = Math.floor(Math.abs(rank));
         const fractionRank: number = rank - integerRank;
-        value = fractionRank * (yValues[integerRank + 1] - yValues[integerRank]) + yValues[integerRank];
+        value = fractionRank * (yValues[integerRank + 1] - yValues[integerRank as number]) + yValues[integerRank as number];
         return value;
     }
     /**
@@ -321,18 +321,18 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         const interquartile: number = quartile.upperQuartile - quartile.lowerQuartile;
         const rangeIQR: number = 1.5 * interquartile;
         for (let i: number = 0; i < count; i++) {
-            if (yValues[i] < quartile.lowerQuartile - rangeIQR) {
-                quartile.outliers.push(yValues[i]);
+            if (yValues[i as number] < quartile.lowerQuartile - rangeIQR) {
+                quartile.outliers.push(yValues[i as number]);
             } else {
-                quartile.minimum = yValues[i];
+                quartile.minimum = yValues[i as number];
                 break;
             }
         }
         for (let i: number = count - 1; i >= 0; i--) {
-            if (yValues[i] > quartile.upperQuartile + rangeIQR) {
-                quartile.outliers.push(yValues[i]);
+            if (yValues[i as number] > quartile.upperQuartile + rangeIQR) {
+                quartile.outliers.push(yValues[i as number]);
             } else {
-                quartile.maximum = yValues[i];
+                quartile.maximum = yValues[i as number];
                 break;
             }
         }

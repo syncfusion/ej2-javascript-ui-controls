@@ -103,15 +103,15 @@ export class Selection {
     private getCheckboxcolumnIndex(): number {
         let mappingUid: string; let columnIndex: number; const stackedHeader: string = 'stackedHeader';
         const columnModel: string = 'columnModel';
-        const columns: ColumnModel[] = this.parent[stackedHeader] ? this.parent[columnModel] :  <ColumnModel[]>(this.parent.columns);
+        const columns: ColumnModel[] = this.parent[`${stackedHeader}`] ? this.parent[`${columnModel}`] :  <ColumnModel[]>(this.parent.columns);
         for (let col: number = 0; col < columns.length; col++) {
-            if ((<ColumnModel>columns[col]).showCheckbox) {
-                mappingUid = (<ColumnModel>columns[col]).uid;
+            if ((<ColumnModel>columns[parseInt(col.toString(), 10)]).showCheckbox) {
+                mappingUid = (<ColumnModel>columns[parseInt(col.toString(), 10)]).uid;
             }
         }
         const headerCelllength: number = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv').length;
         for (let j: number = 0; j < headerCelllength; j++) {
-            const headercell: Element = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv')[j];
+            const headercell: Element = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv')[parseInt(j.toString(), 10)];
             if (headercell.getAttribute('e-mappinguid') === mappingUid) {
                 columnIndex = j;
             }
@@ -184,15 +184,15 @@ export class Selection {
 
     public selectCheckboxes(rowIndexes: number[]): void {
         for (let i: number = 0; i < rowIndexes.length; i++) {
-            let record: ITreeData = this.parent.getCurrentViewRecords()[rowIndexes[i]];
+            let record: ITreeData = this.parent.getCurrentViewRecords()[rowIndexes[parseInt(i.toString(), 10)]];
             const flatRecord: ITreeData = getParentData(this.parent, record.uniqueID);
             record = flatRecord;
             const checkboxState: string = (record.checkboxState === 'uncheck') ? 'check' : 'uncheck';
             record.checkboxState = checkboxState;
             const keys: string[] = Object.keys(record);
             for (let j: number = 0; j < keys.length; j++) {
-                if (Object.prototype.hasOwnProperty.call(flatRecord, keys[j])) {
-                    flatRecord[keys[j]] = record[keys[j]];
+                if (Object.prototype.hasOwnProperty.call(flatRecord, keys[parseInt(j.toString(), 10)])) {
+                    flatRecord[keys[parseInt(j.toString(), 10)]] = record[keys[parseInt(j.toString(), 10)]];
                 }
             }
             this.traverSelection(record, checkboxState, false);
@@ -216,11 +216,11 @@ export class Selection {
             }
             length = childRecords.length;
             for (let count: number = 0; count < length; count++) {
-                if (!childRecords[count].isSummaryRow) {
-                    if (childRecords[count].hasChildRecords) {
-                        this.traverSelection(childRecords[count], checkboxState, true);
+                if (!childRecords[parseInt(count.toString(), 10)].isSummaryRow) {
+                    if (childRecords[parseInt(count.toString(), 10)].hasChildRecords) {
+                        this.traverSelection(childRecords[parseInt(count.toString(), 10)], checkboxState, true);
                     } else {
-                        this.updateSelectedItems(childRecords[count], checkboxState);
+                        this.updateSelectedItems(childRecords[parseInt(count.toString(), 10)], checkboxState);
                     }
                 }
             }
@@ -248,7 +248,7 @@ export class Selection {
         let indeter: number = 0; let checkChildRecords: number = 0;
         if (!isNullOrUndefined(record)) {
             for (let i: number = 0; i < childRecords.length; i++) {
-                const currentRecord: ITreeData = getParentData(this.parent, childRecords[i].uniqueID);
+                const currentRecord: ITreeData = getParentData(this.parent, childRecords[parseInt(i.toString(), 10)].uniqueID);
                 const checkBoxRecord: ITreeData = currentRecord;
                 if (!isNullOrUndefined(checkBoxRecord)) {
                     if (checkBoxRecord.checkboxState === 'indeterminate') {
@@ -290,7 +290,7 @@ export class Selection {
             if (this.parent.grid.searchSettings.key.length) {
                 this.searchingRecords = filterResult;
             }
-            else{
+            else {
                 if (this.filteredList !== filterResult) {
                     this.filteredList = filterResult;
                     multiFilterCheckState = true;
@@ -301,7 +301,7 @@ export class Selection {
             }
         }
         if (this.filteredList.length > 0){
-            if (!this.parent.filterSettings.columns.length && this.filteredList.length && !this.parent.grid.searchSettings.key.length) {
+            if (!this.parent.filterSettings.columns.length && this.filteredList.length && !this.parent.grid.searchSettings.key.length){
                 this.filteredList = [];
             }
             if (this.searchingRecords.length && !isNullOrUndefined(checkAll)) {
@@ -309,7 +309,8 @@ export class Selection {
             }
         }
         let data: ITreeData[];
-        if (this.parent.filterModule.filteredResult.length === 0 && this.parent.getCurrentViewRecords().length === 0 &&
+        if (!(isNullOrUndefined(this.parent.filterModule)) &&
+        this.parent.filterModule.filteredResult.length === 0 && this.parent.getCurrentViewRecords().length === 0 &&
         this.parent.filterSettings.columns.length > 0) {
             data = this.filteredList;
         }
@@ -321,21 +322,21 @@ export class Selection {
         if (!isNullOrUndefined(checkAll)) {
             for (let i: number = 0; i < data.length; i++) {
                 if (checkAll) {
-                    if (data[i].checkboxState === 'check') {
+                    if (data[parseInt(i.toString(), 10)].checkboxState === 'check') {
                         continue;
                     }
                     if (multiFilterCheckState) {
                         continue;
                     }
-                    data[i].checkboxState = 'check';
-                    this.updateSelectedItems(data[i], data[i].checkboxState);
+                    data[parseInt(i.toString(), 10)].checkboxState = 'check';
+                    this.updateSelectedItems(data[parseInt(i.toString(), 10)], data[parseInt(i.toString(), 10)].checkboxState);
                 } else {
-                    index = this.selectedItems.indexOf(data[i]);
+                    index = this.selectedItems.indexOf(data[parseInt(i.toString(), 10)]);
                     if (index > -1) {
-                        data[i].checkboxState = 'uncheck';
-                        this.updateSelectedItems(data[i], data[i].checkboxState);
+                        data[parseInt(i.toString(), 10)].checkboxState = 'uncheck';
+                        this.updateSelectedItems(data[parseInt(i.toString(), 10)], data[parseInt(i.toString(), 10)].checkboxState);
                         if (this.parent.autoCheckHierarchy) {
-                            this.updateParentSelection(data[i]);
+                            this.updateParentSelection(data[parseInt(i.toString(), 10)]);
                         }
                     }
                 }
@@ -371,12 +372,12 @@ export class Selection {
         let checkedRecord: ITreeData;
         const recordIndex: number = this.parent.getCurrentViewRecords().indexOf(record[0]);
         const checkboxRecord: ITreeData = getParentData(this.parent, currentRecord.uniqueID);
-        const tr: HTMLElement = this.parent.getRows()[recordIndex];
+        const tr: HTMLElement = this.parent.getRows()[parseInt(recordIndex.toString(), 10)];
         let checkbox: HTMLElement;
         if (recordIndex > -1) {
             let movableTr: Element;
             if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
-                movableTr = this.parent.getMovableDataRows()[recordIndex];
+                movableTr = this.parent.getMovableDataRows()[parseInt(recordIndex.toString(), 10)];
             }
             checkbox = <HTMLElement>tr.querySelectorAll('.e-frame')[0] ? <HTMLElement>tr.querySelectorAll('.e-frame')[0]
                 : <HTMLElement>movableTr.querySelectorAll('.e-frame')[0];
@@ -439,8 +440,9 @@ export class Selection {
                     childLength = childData.length;
                     this.selectedIndexes = [];
                     for (let i: number = 0; i < childLength; i++) {
-                        if (!rows[i].classList.contains('e-summaryrow')) {
-                            this.updateSelectedItems(childData[i], childData[i].checkboxState);
+                        if (!rows[parseInt(i.toString(), 10)].classList.contains('e-summaryrow')) {
+                            this.updateSelectedItems(childData[parseInt(i.toString(), 10)],
+                                                     childData[parseInt(i.toString(), 10)].checkboxState);
                         }
                     }
                 } else if (requestType === 'delete' || args.action === 'add') {
@@ -452,13 +454,13 @@ export class Selection {
                     }
                     for (let i: number = 0; i < updatedData.length; i++) {
                         if (requestType === 'delete') {
-                            const index: number = this.parent.flatData.indexOf(updatedData[i]);
+                            const index: number = this.parent.flatData.indexOf(updatedData[parseInt(i.toString(), 10)]);
                             const checkedIndex: number = this.selectedIndexes.indexOf(index);
                             this.selectedIndexes.splice(checkedIndex, 1);
-                            this.updateSelectedItems(updatedData[i], 'uncheck');
+                            this.updateSelectedItems(updatedData[parseInt(i.toString(), 10)], 'uncheck');
                         }
-                        if (!isNullOrUndefined(updatedData[i].parentItem)) {
-                            this.updateParentSelection(updatedData[i].parentItem);
+                        if (!isNullOrUndefined(updatedData[parseInt(i.toString(), 10)].parentItem)) {
+                            this.updateParentSelection(updatedData[parseInt(i.toString(), 10)].parentItem);
                         }
                     }
                 } else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
@@ -478,10 +480,12 @@ export class Selection {
                             let child: ITreeData[] = findChildrenRecords(record);
                             child = this.getFilteredChildRecords (child);
                             for (let i: number = 0; i < child.length; i++) {
-                                if (child[i].hasChildRecords) {
-                                    this.updateParentSelection(child[i]);
-                                } else if (!(child[i].hasChildRecords) && !isNullOrUndefined(child[i])) {
-                                    this.updateSelectedItems(child[i], child[i].checkboxState);
+                                if (child[parseInt(i.toString(), 10)].hasChildRecords) {
+                                    this.updateParentSelection(child[parseInt(i.toString(), 10)]);
+                                } else if (!(child[parseInt(i.toString(), 10)].hasChildRecords) &&
+                                           !isNullOrUndefined(child[parseInt(i.toString(), 10)])) {
+                                    this.updateSelectedItems(child[parseInt(i.toString(), 10)],
+                                                             child[parseInt(i.toString(), 10)].checkboxState);
                                 }
                             }
                         }

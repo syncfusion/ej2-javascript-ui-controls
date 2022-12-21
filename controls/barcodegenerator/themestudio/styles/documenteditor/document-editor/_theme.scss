@@ -1,7 +1,20 @@
 @include export-module('documenteditor-theme') {
-    // sass-lint:disable-all
+    /* stylelint-disable */
     .e-de-background {
         background-color: $de-background;
+    }
+    .e-de-column-label {
+        font-size: $de-border-dlg-settinglabels-fontsize;
+        font-weight: $de-border-dlg-border-label-fontweight;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .e-de-column-label.e-de-rtl {
+        font-size: $de-border-dlg-settinglabels-fontsize;
+        font-weight: $de-border-dlg-border-label-fontweight;
+        padding-left: 50px;
+        padding-right: 50px;
     }
     .e-de-ff-sub-header {
         display: block;
@@ -847,7 +860,6 @@
         }
 
         @if $skin-name != 'bootstrap5' {
-            // sass-lint:disable-all
             .e-de-style-font-color-picker .e-split-btn-wrapper .e-split-colorpicker.e-split-btn,
             .e-de-style-font-color-picker .e-btn.e-icon-btn,
             .e-de-dlg-clr-picker .e-split-btn-wrapper .e-split-colorpicker.e-split-btn,
@@ -867,7 +879,6 @@
             .e-de-toc-dlg-style-input {
                 margin-top: 18px;
             }
-            // sass-lint:disable-all
             .e-de-list-container {
                 background: $de-style-btn-color !important;
             }
@@ -1736,7 +1747,6 @@
             width: $de-insert-big-spellchecker-width;
         }
     }
-    // sass-lint:disable-all
     .e-de-dlg-spellcheck-listview {
         @if $skin-name !='tailwind' {
             border: 1px solid $de-spellcheck-listview-border-color;
@@ -1763,7 +1773,6 @@
         margin-bottom: $de-spellcheck-container-gap;
         display: flex;
     }
-    // sass-lint:disable-all
     .e-dlg-spellcheck-listitem {
         font-size: 15px !important;
     }

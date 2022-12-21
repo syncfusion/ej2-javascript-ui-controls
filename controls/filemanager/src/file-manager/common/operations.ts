@@ -20,7 +20,7 @@ export function read(parent: IFileManager, event: string, path: string): void {
     // eslint-disable-next-line
     const itemData: Object[] = parent.itemData;
     for (let i: number = 0; i < itemData.length; i++) {
-        if (isNOU(getValue('hasChild', itemData[i]))) { setValue('hasChild', false, itemData[i]); }
+        if (isNOU(getValue('hasChild', itemData[i as number]))) { setValue('hasChild', false, itemData[i as number]); }
     }
     // eslint-disable-next-line
     const data: Object = { action: 'read', path: path, showHiddenItems: parent.showHiddenItems, data: itemData };

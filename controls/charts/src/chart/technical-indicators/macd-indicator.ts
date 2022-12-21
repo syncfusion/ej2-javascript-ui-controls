@@ -93,13 +93,13 @@ export class MacdIndicator extends TechnicalAnalysis {
         const emaValues: number[] = [];
         const emaPercent: number = (2 / (period + 1));
         for (let i: number = 0; i < period; i++) {
-            sum += Number(validData[i][field]);
+            sum += Number(validData[i as number][field as string]);
         }
         initialEMA = (sum / period);
         emaValues.push(initialEMA);
         let emaAvg: number = initialEMA;
         for (let j: number = period; j < validData.length; j++) {
-            emaAvg = (Number(validData[j][field]) - emaAvg) * emaPercent + emaAvg;
+            emaAvg = (Number(validData[j as number][field as string]) - emaAvg) * emaPercent + emaAvg;
             emaValues.push(emaAvg);
         }
         return emaValues;
@@ -115,7 +115,7 @@ export class MacdIndicator extends TechnicalAnalysis {
         let macdIndex: number = 0;
         while (dataMACDIndex < validData.length) {
             macdCollection.push(this.getDataPoint(
-                validData[dataMACDIndex].x, macdPoints[macdIndex], validData[dataMACDIndex], series,
+                validData[dataMACDIndex as number].x, macdPoints[macdIndex as number], validData[dataMACDIndex as number], series,
                 macdCollection.length));
             dataMACDIndex++;
             macdIndex++;
@@ -134,7 +134,7 @@ export class MacdIndicator extends TechnicalAnalysis {
         const signalCollection: Points[] = [];
         while (dataSignalIndex < validData.length) {
             signalCollection.push(this.getDataPoint(
-                validData[dataSignalIndex].x, signalEma[signalIndex], validData[dataSignalIndex], series,
+                validData[dataSignalIndex as number].x, signalEma[signalIndex as number], validData[dataSignalIndex as number], series,
                 signalCollection.length));
             dataSignalIndex++;
             signalIndex++;
@@ -149,7 +149,7 @@ export class MacdIndicator extends TechnicalAnalysis {
         const macdPoints: number[] = [];
         const diff: number = indicator.fastPeriod - indicator.slowPeriod;
         for (let i: number = 0; i < longEma.length; i++) {
-            macdPoints.push((shortEma[i + diff] - longEma[i]));
+            macdPoints.push((shortEma[i + diff] - longEma[i as number]));
         }
         return macdPoints;
     }
@@ -167,8 +167,9 @@ export class MacdIndicator extends TechnicalAnalysis {
 
         while (dataHistogramIndex < validData.length) {
             histogramCollection.push(this.getDataPoint(
-                validData[dataHistogramIndex].x, macdPoints[histogramIndex + (indicator.period - 1)] - signalEma[histogramIndex],
-                validData[dataHistogramIndex], series, histogramCollection.length, indicator));
+                validData[dataHistogramIndex as number].x, macdPoints[histogramIndex + (indicator.period - 1)] -
+                signalEma[histogramIndex as number],
+                validData[dataHistogramIndex as number], series, histogramCollection.length, indicator));
             dataHistogramIndex++;
             histogramIndex++;
         }

@@ -133,12 +133,12 @@ export class LinkCommand {
         const finalinlineNodes: Node[] = [];
         let cloneNode: Node;
         for (let index: number = 0; index < nodes.length; index++) {
-            nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index] as HTMLElement);
-            txtArray[index] = nodes[index];
+            nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
+            txtArray[index as number] = nodes[index as number];
         }
         for (let i: number = 0; i < txtArray.length; i++) {
             let check: boolean = true;
-            currentNode = txtArray[i];
+            currentNode = txtArray[i as number];
             while (check === true) {
                 if (currentNode.parentNode.nodeName === 'A') {
                     const anchorEle: HTMLElement = currentNode.parentNode as HTMLElement;
@@ -147,7 +147,7 @@ export class LinkCommand {
                 }
                 if (this.isBlockNode(currentNode.parentNode as Element) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1
                 || range.startContainer.nodeType === 3) {
-                    inlineNodes[i] = currentNode;
+                    inlineNodes[i as number] = currentNode;
                     check = false;
                 } else {
                     currentNode = currentNode.parentNode;
@@ -157,10 +157,11 @@ export class LinkCommand {
 
         for (let i: number = 0, j : number = 0; i < inlineNodes.length; i++) {
             if (i === 0) {
-                finalinlineNodes[j] = inlineNodes[i];
+                finalinlineNodes[j as number] = inlineNodes[i as number];
             }
             if (inlineNodes.length > 1 && i < inlineNodes.length - 1) {
-                if ((inlineNodes[i].parentElement === inlineNodes[i + 1].parentElement) && (inlineNodes[i] === inlineNodes[i + 1])) {
+                if ((inlineNodes[i as number].parentElement === inlineNodes[i + 1].parentElement) &&
+                    (inlineNodes[i as number] === inlineNodes[i + 1])) {
                     continue;
                 } else {
                     finalinlineNodes[j + 1] = inlineNodes[i + 1];
@@ -169,49 +170,49 @@ export class LinkCommand {
             }
         }
         let j: number = 0;
-        anchorNodes[j] = this.createAchorNode(e);
+        anchorNodes[j as number] = this.createAchorNode(e);
         for (let i: number = 0; i < finalinlineNodes.length; i++) {
             if (i === 0) {
-                cloneNode = finalinlineNodes[i].cloneNode(true);
-                anchorNodes[i].appendChild(cloneNode);
+                cloneNode = finalinlineNodes[i as number].cloneNode(true);
+                anchorNodes[i as number].appendChild(cloneNode);
             }
             if (i < finalinlineNodes.length - 1) {
-                if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
+                if (finalinlineNodes[i as number].parentNode === finalinlineNodes[i + 1].parentNode) {
                     const cln: Node = finalinlineNodes[i + 1].cloneNode(true);
-                    anchorNodes[j].appendChild(cln);
+                    anchorNodes[j as number].appendChild(cln);
                 } else {
                     j = j + 1;
-                    anchorNodes[j] = this.createAchorNode(e);
+                    anchorNodes[j as number] = this.createAchorNode(e);
                     cloneNode = finalinlineNodes[i + 1].cloneNode(true);
-                    anchorNodes[j].appendChild(cloneNode);
+                    anchorNodes[j as number].appendChild(cloneNode);
                 }
             }
         }
         this.parent.nodeSelection.setRange(document, save.range);
         for (let i: number = 0, j: number = 0, k: number = 0; i <= finalinlineNodes.length; i++) {
             if (i === 0) {
-                finalinlineNodes[i].parentNode.insertBefore(anchorNodes[j], finalinlineNodes[i].nextSibling);
+                finalinlineNodes[i as number].parentNode.insertBefore(anchorNodes[j as number], finalinlineNodes[i as number].nextSibling);
                 if (this.parent.domNode.blockNodes().length === 1) {
-                    this.parent.nodeSelection.setSelectionNode(this.parent.currentDocument, anchorNodes[j]);
+                    this.parent.nodeSelection.setSelectionNode(this.parent.currentDocument, anchorNodes[j as number]);
                 }
-                removeNodes[k] = finalinlineNodes[i];
+                removeNodes[k as number] = finalinlineNodes[i as number];
                 k++;
             }
             if (i < finalinlineNodes.length - 1) {
-                if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
-                    removeNodes[k] = finalinlineNodes[i + 1];
+                if (finalinlineNodes[i as number].parentNode === finalinlineNodes[i + 1].parentNode) {
+                    removeNodes[k as number] = finalinlineNodes[i + 1];
                     k++;
                 } else {
                     j = j + 1;
-                    finalinlineNodes[i + 1].parentNode.insertBefore(anchorNodes[j], finalinlineNodes[i + 1]);
-                    removeNodes[k] = finalinlineNodes[i + 1];
+                    finalinlineNodes[i + 1].parentNode.insertBefore(anchorNodes[j as number], finalinlineNodes[i + 1]);
+                    removeNodes[k as number] = finalinlineNodes[i + 1];
                     k++;
                 }
             }
         }
         for (let i: number = 0; i < removeNodes.length; i++) {
-            if (removeNodes[i].parentNode) {
-                removeNodes[i].parentNode.removeChild(removeNodes[i]);
+            if (removeNodes[i as number].parentNode) {
+                removeNodes[i as number].parentNode.removeChild(removeNodes[i as number]);
             }
         }
     }
@@ -233,8 +234,8 @@ export class LinkCommand {
     private getSelectionNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
-            if (nodeCollection[index].nodeType !== 3 || nodeCollection[index].textContent.trim() === '') {
-                if (nodeCollection[index].nodeName !== 'IMG') {
+            if (nodeCollection[index as number].nodeType !== 3 || nodeCollection[index as number].textContent.trim() === '') {
+                if (nodeCollection[index as number].nodeName !== 'IMG') {
                     nodeCollection.splice(index, 1);
                     index--;
                 }
@@ -250,7 +251,7 @@ export class LinkCommand {
     private removeText(text: string, val: string): string {
         const arr: string[] = text.split(' ');
         for (let i: number = 0; i < arr.length; i++) {
-            if (arr[i] === val) {
+            if (arr[i as number] === val) {
                 arr.splice(i, 1);
                 i--;
             }
@@ -258,6 +259,7 @@ export class LinkCommand {
         return arr.join(' ') + ' ';
     }
     private openLink(e: IHtmlItem): void {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         document.defaultView.open(e.item.url, e.item.target);
         this.callBack(e);
     }
@@ -281,10 +283,10 @@ export class LinkCommand {
             e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         } else {
             for (let i: number = 0; i < blockNodes.length; i++) {
-                const linkNode : NodeListOf<HTMLAnchorElement> = (blockNodes[i] as HTMLElement).querySelectorAll('a');
+                const linkNode : NodeListOf<HTMLAnchorElement> = (blockNodes[i as number] as HTMLElement).querySelectorAll('a');
                 for (let j: number = 0; j < linkNode.length; j++) {
-                    if (document.getSelection().containsNode(linkNode[j], true)) {
-                        linkNode[j].outerHTML = linkNode[j].innerHTML;
+                    if (document.getSelection().containsNode(linkNode[j as number], true)) {
+                        linkNode[j as number].outerHTML = linkNode[j as number].innerHTML;
                     }
                 }
             }

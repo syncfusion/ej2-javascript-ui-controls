@@ -85,7 +85,7 @@ export class BaseTooltip extends ChartData {
     public createElement(): HTMLDivElement {
         const tooltipDiv: HTMLDivElement = document.createElement('div');
         tooltipDiv.id = this.element.id + '_tooltip'; tooltipDiv.className = 'ejSVGTooltip';
-        tooltipDiv.style.pointerEvents = 'none'; 
+        tooltipDiv.style.pointerEvents = 'none';
         tooltipDiv.style.position = 'absolute';
         tooltipDiv.style.zIndex = '1';
         return tooltipDiv;
@@ -116,7 +116,7 @@ export class BaseTooltip extends ChartData {
         let item: PointData | AccPointData;
         let series: Series;
         for (let i: number = 0, len: number = this.previousPoints.length; i < len; i++) {
-            item = this.previousPoints[i];
+            item = this.previousPoints[i as number];
             if (item.series.isRectSeries) {
                 if (item.series.visible) {
                     this.highlightPoint(item.series, item.point.index, false);
@@ -135,10 +135,10 @@ export class BaseTooltip extends ChartData {
             if ((!isSelectedElement || isSelectedElement && element.getAttribute('class')
                 && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
                 if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
-                    element.setAttribute('fill', (highlight ? this.chart.highlightColor : series.pointColorMapping !== '' ? ((series as Series).points[0]).color : (series as Series).interior));
+                    element.setAttribute('fill', (highlight && this.chart.highlightColor !== "transparent" ? this.chart.highlightColor : series.pointColorMapping !== '' ? ((series as Series).points[0]).color : (series as Series).points[pointIndex].color || (series as Series).interior));
                 }
                 else {
-                    element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+                    element.setAttribute('opacity', (highlight && this.chart.highlightColor !== "transparent" ? series.opacity / 2 : series.opacity).toString());
                 }
             } else {
                 element.setAttribute('opacity', series.opacity.toString());
@@ -157,7 +157,8 @@ export class BaseTooltip extends ChartData {
     // tslint:disable-next-line:max-func-body-length
     public createTooltip(
         chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
-        point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect, crosshairEnabled: boolean = false, extraPoints: PointData[] = null,
+        point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect,
+        crosshairEnabled: boolean = false, extraPoints: PointData[] = null,
         templatePoint: Points | AccPoints = null, customTemplate?: string
     ): void {
         const series: Series = <Series>this.currentPoints[0].series;
@@ -182,7 +183,7 @@ export class BaseTooltip extends ChartData {
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                     areaBounds: bounds,
                     palette: this.findPalette(),
-                    template: customTemplate ||this.template,
+                    template: customTemplate || this.template,
                     data: templatePoint,
                     theme: chart.theme,
                     offset: offset,

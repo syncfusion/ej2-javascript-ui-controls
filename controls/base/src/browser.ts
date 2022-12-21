@@ -48,7 +48,7 @@ export class Browser {
         const keys: string[] = Object.keys(REGX_BROWSER);
         let clientInfo: string[] = [];
         for (const key of keys) {
-            clientInfo = Browser.userAgent.match(REGX_BROWSER[key]);
+            clientInfo = Browser.userAgent.match(REGX_BROWSER[`${key}`]);
             if (clientInfo) {
                 browserInfo.name = (clientInfo[1].toLowerCase() === 'opr' ? 'opera' : clientInfo[1].toLowerCase());
                 browserInfo.name = (clientInfo[1].toLowerCase() === 'crios' ? 'chrome' : browserInfo.name);
@@ -92,9 +92,9 @@ export class Browser {
                 isPointer: 'pointercancel', isTouch: 'touchcancel', isDevice: 'mouseleave'
             }
         };
-        return (Browser.isPointer ? events[event].isPointer :
-            (Browser.isTouch ? events[event].isTouch + (!Browser.isDevice ? ' ' + events[event].isDevice : '')
-                : events[event].isDevice));
+        return (Browser.isPointer ? events[`${event}`].isPointer :
+            (Browser.isTouch ? events[`${event}`].isTouch + (!Browser.isDevice ? ' ' + events[`${event}`].isDevice : '')
+                : events[`${event}`].isDevice));
     }
 
     /**
@@ -153,10 +153,10 @@ export class Browser {
             browserDetails['isTouch'] = true;
             browserDetails['isPointer'] = true;
         }
-        if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[key]) {
-            return (<{ [key: string]: Object }>browserDetails)[key] = regX.test(Browser.userAgent);
+        if ('undefined' === typeof (<{ [key: string]: Object }>browserDetails)[`${key}`]) {
+            return (<{ [key: string]: Object }>browserDetails)[`${key}`] = regX.test(Browser.userAgent);
         }
-        return (<{ [key: string]: Object }>browserDetails)[key];
+        return (<{ [key: string]: Object }>browserDetails)[`${key}`];
     }
 
     //Properties

@@ -106,7 +106,7 @@ export class NumberParser {
         } else {
             value = parser.convertValueParts(value, options.symbolRegex, numOptions.symbolMatch);
             value = parser.convertValueParts(value, numOptions.numberParseRegex, numOptions.numericPair);
-            value = value.indexOf('-') !== -1 ? value.replace('-.','-0.') : value;
+            value = value.indexOf('-') !== -1 ? value.replace('-.', '-0.') : value;
             if (value.indexOf('.') === 0) {
                 value = '0' + value;
             }
@@ -145,7 +145,7 @@ export class NumberParser {
         }
     }
     private static convertMaxFracDigits(value: string, options: NumericParts, ret: number, isNegative: boolean): number {
-        let decimalSplitValue: string[] = value.split('.');
+        const decimalSplitValue: string[] = value.split('.');
         if (decimalSplitValue[1] && decimalSplitValue[1].length > options.maximumFractionDigits) {
             ret = +(ret.toFixed(options.custom ?
                 (isNegative ? options.nData.maximumFractionDigits : options.pData.maximumFractionDigits) : options.maximumFractionDigits));

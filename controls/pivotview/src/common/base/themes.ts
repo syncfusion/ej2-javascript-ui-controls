@@ -3,9 +3,9 @@ import { IFontMapping } from '@syncfusion/ej2-charts';
 /**
  * Specifies Chart Themes
  */
-export namespace Theme {    /* eslint-disable-line */
+export namespace Theme { // eslint-disable-line @typescript-eslint/no-namespace
     /** @private */
-    export let axisLabelFont: IFontMapping = {
+    export const axisLabelFont: IFontMapping = {
         size: '12px',
         fontWeight: 'Normal',
         color: null,
@@ -13,7 +13,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let axisTitleFont: IFontMapping = {
+    export const axisTitleFont: IFontMapping = {
         size: '14px',
         fontWeight: 'Normal',
         color: null,
@@ -21,7 +21,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let chartTitleFont: IFontMapping = {
+    export const chartTitleFont: IFontMapping = {
         size: '15px',
         fontWeight: '500',
         color: null,
@@ -29,7 +29,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let chartSubTitleFont: IFontMapping = {
+    export const chartSubTitleFont: IFontMapping = {
         size: '11px',
         fontWeight: '500',
         color: null,
@@ -37,7 +37,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let crosshairLabelFont: IFontMapping = {
+    export const crosshairLabelFont: IFontMapping = {
         size: '13px',
         fontWeight: 'Normal',
         color: null,
@@ -45,7 +45,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let tooltipLabelFont: IFontMapping = {
+    export const tooltipLabelFont: IFontMapping = {
         size: '13px',
         fontWeight: 'Normal',
         color: null,
@@ -53,7 +53,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let legendLabelFont: IFontMapping = {
+    export const legendLabelFont: IFontMapping = {
         size: '13px',
         fontWeight: 'Normal',
         color: null,
@@ -61,7 +61,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let stripLineLabelFont: IFontMapping = {
+    export const stripLineLabelFont: IFontMapping = {
         size: '12px',
         fontWeight: 'Regular',
         color: '#353535',
@@ -69,7 +69,7 @@ export namespace Theme {    /* eslint-disable-line */
         fontFamily: 'Segoe UI'
     };
     /** @private */
-    export let stockEventFont: IFontMapping = {
+    export const stockEventFont: IFontMapping = {
         size: '13px',
         fontWeight: 'Normal',
         color: null,

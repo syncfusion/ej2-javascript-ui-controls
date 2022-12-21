@@ -66,6 +66,7 @@ export class Range extends ChildProperty<Range> {
      * * InvertedTriangle
      * * SeriesType
      * * Image
+     *
      * @default 'Rectangle'
      */
     @Property('Rectangle')
@@ -73,6 +74,7 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     *
      * @default ''
      */
 

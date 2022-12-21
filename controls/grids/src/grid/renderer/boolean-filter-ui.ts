@@ -65,7 +65,7 @@ export class BooleanFilterUI implements IFilterMUI {
         ));
         this.ddOpen = this.openPopup.bind(this);
         this.ddComplete = this.actionComplete(fields);
-        this.dropInstance.addEventListener(literals.open, this.ddOpen);
+        this.dropInstance.addEventListener(literals['open'], this.ddOpen);
         this.dropInstance.addEventListener(events.actionComplete, this.ddComplete);
         this.dropInstance.appendTo(this.elem);
     }
@@ -95,7 +95,7 @@ export class BooleanFilterUI implements IFilterMUI {
 
     private destroy(): void {
         if (!this.dropInstance || this.dropInstance.isDestroyed) { return; }
-        this.dropInstance.removeEventListener(literals.open, this.ddOpen);
+        this.dropInstance.removeEventListener(literals['open'], this.ddOpen);
         this.dropInstance.removeEventListener(events.actionComplete, this.ddComplete);
         this.dropInstance.destroy();
         this.parent.off(events.filterMenuClose, this.destroy);

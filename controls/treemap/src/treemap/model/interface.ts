@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
-/* eslint-disable @typescript-eslint/naming-convention */
 import { TreeMap } from '../../treemap/treemap';
 import { BorderModel, FontModel } from '../model/base-model';
 import { LegendShape, LegendPosition } from '../utils/enum';
@@ -67,17 +65,14 @@ export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
     /**
      * Defines the current rendering item.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     currentItem: Object;
     /**
      * Defines all the items for rendering.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     RenderItems?: Object[];
     /**
      * Defines the options for the treemap item rendering.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     options: Object;
     /**
      * Defines the header text of the treemap item.
@@ -97,7 +92,6 @@ export interface IDrillStartEventArgs extends ITreeMapEventArgs {
     /**
      * Defines the current drill-down.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     item: Object;
     /**
      * Defines the current element of drill-down.
@@ -118,7 +112,6 @@ export interface IDrillStartEventArgs extends ITreeMapEventArgs {
     /**
      * Defines the child values of the item in the drill start event.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     childItems: Object;
 }
 
@@ -134,7 +127,6 @@ export interface IDrillEndEventArgs extends ITreeMapEventArgs {
     /**
      * Defines all the items for rendering.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     renderItems: Object[];
 }
 
@@ -152,7 +144,6 @@ export interface IItemClickEventArgs extends ITreeMapEventArgs {
      *
      * @isGenericType true
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     item: Object;
     /**
      * Defines the original mouse event arguments.
@@ -211,12 +202,10 @@ export interface IItemDataEventArgs {
     /**
      * Defines the options provided in the event arguments
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     options?: Object;
     /**
      * Specifies the rect element in the event.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     rect?: Object;
 }
 
@@ -234,7 +223,6 @@ export interface IItemMoveEventArgs extends ITreeMapEventArgs {
      *
      * @isGenericType true
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     item: Object;
     /**
      * Defines the original mouse event arguments.
@@ -314,7 +302,6 @@ export interface IItemSelectedEventArgs extends ITreeMapEventArgs {
     /**
      * Specifies the current selected item.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     items: Object[];
     /**
      * Specifies the current selected elements.
@@ -343,7 +330,6 @@ export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
     /**
      * Defines the current item which is highlighted.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     items: Object[];
     /**
      * Defines the current highlighted elements.
@@ -363,12 +349,10 @@ export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
     /**
      * Defines the current treemap item in which the tooltip appears.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     item: Object;
     /**
      * Defines the options for customizing the tooltip.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     options: Object;
     /**
      * Defines the current tooltip element.
@@ -387,7 +371,6 @@ export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
     /**
      * Defines the location of the tooltip rendering event.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     location: Object;
     /**
      * Defines the text rendered in the tooltip.
@@ -396,7 +379,6 @@ export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
     /**
      * Defines the data for rendering the tooltip.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     data: Object;
     /**
      * Defines the text style for customizing the tooltip text.
@@ -489,7 +471,6 @@ export interface IFontMapping {
  * @private
  */
 export interface IShapes {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     renderOption?: Object;
     functionName?: string;
 }
@@ -546,7 +527,7 @@ export interface IThemeStyle {
     /**
      * Defines the font size of the texts in the subtitle of the TreeMap, supporting the theme.
      */
-     subtitleFontSize?: string;
+    subtitleFontSize?: string;
     /**
      * Defines the font size of the legend texts in the treemap, supporting the theme.
      */

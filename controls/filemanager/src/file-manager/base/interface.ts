@@ -1,7 +1,7 @@
 import { Component, EmitType, L10n } from '@syncfusion/ej2-base';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { FileManagerModel } from '../base/file-manager-model';
-import { ToolbarSettingsModel, AjaxSettingsModel } from '../models/index';
+import { ToolbarSettingsModel, AjaxSettingsModel, VirtualizationSettingsModel } from '../models/index';
 import { TreeView, ContextMenu, MenuItemModel, ItemModel } from '@syncfusion/ej2-navigations';
 import { DetailsView } from '../layout/details-view';
 import { Toolbar } from '../actions/toolbar';
@@ -11,7 +11,7 @@ import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
 import { LargeIconsView } from '../layout';
 import { NavigationPaneSettingsModel } from '../models/navigation-pane-settings-model';
 import { Uploader } from '@syncfusion/ej2-inputs';
-import { BreadCrumbBar } from '../actions';
+import { BreadCrumbBar, Virtualization } from '../actions';
 import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
 /**
@@ -532,6 +532,7 @@ export interface IFileManager extends Component<HTMLElement> {
     contextMenuSettings: ContextMenuSettingsModel;
     contextmenuModule?: IContextMenu;
     navigationPaneSettings: NavigationPaneSettingsModel;
+   // virtualizationSettings:  VirtualizationSettingsModel;
     targetPath: string;
     activeModule: string;
     selectedNodes: string[];
@@ -540,6 +541,7 @@ export interface IFileManager extends Component<HTMLElement> {
     navigationpaneModule: ITreeView;
     largeiconsviewModule: LargeIconsView;
     breadcrumbbarModule: BreadCrumbBar;
+    virtualizationModule: Virtualization;
     toolbarSelection: boolean;
     duplicateItems: string[];
     // eslint-disable-next-line

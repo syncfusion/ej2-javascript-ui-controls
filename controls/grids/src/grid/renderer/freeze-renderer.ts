@@ -452,11 +452,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             const len: number = movablefirstcell.length;
             for (let i: number = 0; i < len; i++) {
                 const cells: string = 'cells';
-                const element: Element = movablefirstcell[i][cells][0];
+                const element: Element = movablefirstcell[parseInt(i.toString(), 10)][`${cells}`][0];
                 if (element) {
                     addClass([element], ['e-movablefirst']);
-                    if (movablefirstcell[i][cells][0].rowSpan > 1) {
-                        i = i + (movablefirstcell[i][cells][0].rowSpan - 1);
+                    if (movablefirstcell[parseInt(i.toString(), 10)][`${cells}`][0].rowSpan > 1) {
+                        i = i + (movablefirstcell[parseInt(i.toString(), 10)][`${cells}`][0].rowSpan - 1);
                     }
                 }
             }
@@ -538,7 +538,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     private updateResizeHandler(): void {
         const elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().getElementsByClassName('e-rhandler'));
         for (let i: number = 0; i < elements.length; i++) {
-            elements[i].style.height = elements[i].parentElement.offsetHeight + 'px';
+            elements[parseInt(i.toString(), 10)].style.height = elements[parseInt(i.toString(), 10)].parentElement.offsetHeight + 'px';
         }
     }
 
@@ -555,26 +555,26 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         const width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) {
             if (isModeChg && ((!this.parent.rowHeight && tBody.className === 'e-hide') || (wrapMode === 'Header' && isContReset) ||
-                ((wrapMode === 'Content' && tHead.contains(fRows[i])) || (wrapMode === 'Header' && tBody.contains(fRows[i])))) ||
+                ((wrapMode === 'Content' && tHead.contains(fRows[parseInt(i.toString(), 10)])) || (wrapMode === 'Header' && tBody.contains(fRows[parseInt(i.toString(), 10)])))) ||
                 isStackedHdr) {
-                fRows[i].style.height = null;
-                mRows[i].style.height = null;
+                fRows[parseInt(i.toString(), 10)].style.height = null;
+                mRows[parseInt(i.toString(), 10)].style.height = null;
             }
-            if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
-                height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
-                width[i] = mRows[i].getBoundingClientRect().height;
+            if (!isNullOrUndefined(fRows[parseInt(i.toString(), 10)]) && !isNullOrUndefined(mRows[parseInt(i.toString(), 10)])) {
+                height[parseInt(i.toString(), 10)] = fRows[parseInt(i.toString(), 10)].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
+                width[parseInt(i.toString(), 10)] = mRows[parseInt(i.toString(), 10)].getBoundingClientRect().height;
             }
-            fRowHgt = height[i];
-            mRowHgt = width[i];
-            if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
-                (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                this.parent.resizeModule.isFrozenColResized === false))) {
-                fRows[i].style.height = mRowHgt + 'px';
+            fRowHgt = height[parseInt(i.toString(), 10)];
+            mRowHgt = width[parseInt(i.toString(), 10)];
+            if (!isNullOrUndefined(fRows[parseInt(i.toString(), 10)]) && fRows[parseInt(i.toString(), 10)].childElementCount
+                && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing
+                && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized === false))) {
+                fRows[parseInt(i.toString(), 10)].style.height = mRowHgt + 'px';
             }
-            if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
-                (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                this.parent.resizeModule.isFrozenColResized === true))) {
-                mRows[i].style.height = fRowHgt + 'px';
+            if (mRows && !isNullOrUndefined(mRows[parseInt(i.toString(), 10)]) && mRows[parseInt(i.toString(), 10)].childElementCount
+                && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing
+                && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized === true))) {
+                mRows[parseInt(i.toString(), 10)].style.height = fRowHgt + 'px';
             }
         }
         if (isWrap && this.parent.height !== 'auto') {
@@ -610,12 +610,12 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         const fTr: NodeListOf<Element> = [].slice.call(this.getFrozenHeader().getElementsByClassName('e-columnheader'));
         const mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
         for (let i: number = 0, len: number = fTr.length; i < len; i++) {
-            fRowSpan = this.getRowSpan(fTr[i]);
-            mRowSpan = this.getRowSpan(mTr[i]);
+            fRowSpan = this.getRowSpan(fTr[parseInt(i.toString(), 10)]);
+            mRowSpan = this.getRowSpan(mTr[parseInt(i.toString(), 10)]);
             if (fRowSpan.min > 1) {
-                this.updateStackedHdrRowHgt(i, fRowSpan.max, fTr[i], mTr);
+                this.updateStackedHdrRowHgt(i, fRowSpan.max, fTr[parseInt(i.toString(), 10)], mTr);
             } else if (mRowSpan.min > 1) {
-                this.updateStackedHdrRowHgt(i, mRowSpan.max, mTr[i], fTr);
+                this.updateStackedHdrRowHgt(i, mRowSpan.max, mTr[parseInt(i.toString(), 10)], fTr);
             }
         }
         if (this.parent.allowResizing) {
@@ -631,7 +631,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             if (i === 0) {
                 minRowSpan = (row.children[0] as HTMLTableDataCellElement).rowSpan;
             }
-            rSpan = (row.children[i] as HTMLTableDataCellElement).rowSpan;
+            rSpan = (row.children[parseInt(i.toString(), 10)] as HTMLTableDataCellElement).rowSpan;
             minRowSpan = Math.min(rSpan, minRowSpan);
             maxRowSpan = Math.max(rSpan, minRowSpan);
         }
@@ -681,13 +681,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     protected filterRenderer(ele: Element, frozenColumn: number, total?: number): Element {
         const clone: Element = ele.cloneNode(true) as Element;
         clone.innerHTML = '';
-        let end: number = total ? total : this.parent.getColumns().length;
-        if (this.parent.allowRowDragAndDrop && this.parent.getFrozenColumns()) {
-            end += 1;
-            frozenColumn += 1;
-        }
+        const end: number = total ? total : this.parent.getColumns().length;
         for (let i: number = frozenColumn; i < end; i++) {
-            clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
+            clone.appendChild(ele.removeChild(ele.children[parseInt(frozenColumn.toString(), 10)]));
         }
         return clone;
     }

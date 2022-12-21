@@ -200,5 +200,39 @@
     & .e-bottom-toolbar {
       border-top: $image-editor-border;
     }
+
+    & .e-contextual-toolbar-wrapper {
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+      width: 100%;
+      z-index: 1;
+
+      & .e-toolbar {
+        height: 126px !important; /* stylelint-disable-line declaration-no-important */
+      }
+
+      &.e-hide {
+        display: none;
+      }
+
+      & .e-toolbar-item {
+        height: auto !important; /* stylelint-disable-line declaration-no-important */
+
+        & .filterwrapper {
+          border: 2px solid transparent;
+          height: 100px;
+        }
+      }
+
+      & .e-toolbar-item:hover .filterwrapper,
+      & .e-toolbar-item.e-selected .filterwrapper{
+        border-top: 2px solid;
+      }
+
+      & .e-slider-container {
+        margin-left: calc(50% - 137px);
+        height: 54px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
   }
 }

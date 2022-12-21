@@ -14,20 +14,21 @@ export class AxisTableRenderer {
     private leftAxisPanel: HTMLElement;
     private rightAxisPanel: HTMLElement;
 
-    /* eslint-disable-next-line */
     /** Constructor for render module */
-    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
+
+    constructor(parent: PivotFieldList) {
         this.parent = parent;
     }
 
     /**
      * Initialize the axis table rendering
+     *
      * @returns {void}
      * @private
      */
     public render(): void {
         if (!this.parent.isAdaptive) {
-            let axisTable: Element = createElement('div', {
+            const axisTable: Element = createElement('div', {
                 className: cls.AXIS_TABLE_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_AXIS_TABLE_CLASS : '')
             });
             this.leftAxisPanel = createElement('div', { className: cls.LEFT_AXIS_PANEL_CLASS });
@@ -41,33 +42,33 @@ export class AxisTableRenderer {
         this.parent.axisFieldModule.render();
     }
     private renderAxisTable(): void {
-        let fieldLabels: string[] = ['filters', 'rows', 'columns', 'values'];
+        const fieldLabels: string[] = ['filters', 'rows', 'columns', 'values'];
         for (let len: number = 0, lnt: number = fieldLabels.length; len < lnt; len++) {
-            let axis: HTMLElement = createElement('div', {
-                className: cls.FIELD_LIST_CLASS + '-' + fieldLabels[len]
+            const axis: HTMLElement = createElement('div', {
+                className: cls.FIELD_LIST_CLASS + '-' + fieldLabels[len as number]
             });
-            let axisTitleWrapper: HTMLElement = createElement('div', {
+            const axisTitleWrapper: HTMLElement = createElement('div', {
                 className: cls.AXIS_ICON_CLASS + '-container'
             });
-            let axisTitle: HTMLElement = createElement('div', {
+            const axisTitle: HTMLElement = createElement('div', {
                 className: cls.AXIS_HEADER_CLASS,
-                attrs: { title: this.parent.localeObj.getConstant(fieldLabels[len]) },
-                innerHTML: this.parent.localeObj.getConstant(fieldLabels[len])
+                attrs: { title: this.parent.localeObj.getConstant(fieldLabels[len as number]) },
+                innerHTML: this.parent.localeObj.getConstant(fieldLabels[len as number])
             });
-            axisTitleWrapper.appendChild(this.getIconupdate(fieldLabels[len]));
+            axisTitleWrapper.appendChild(this.getIconupdate(fieldLabels[len as number]));
             axisTitleWrapper.appendChild(axisTitle);
-            let axisContent: HTMLElement = createElement('div', { className: cls.AXIS_CONTENT_CLASS + ' ' + 'e-' + fieldLabels[len] });
+            const axisContent: HTMLElement = createElement('div', { className: cls.AXIS_CONTENT_CLASS + ' ' + 'e-' + fieldLabels[len as number] });
             let localePrompt: string;
-            if (fieldLabels[len] === 'rows') {
+            if (fieldLabels[len as number] === 'rows') {
                 localePrompt = this.parent.localeObj.getConstant('dropRowPrompt');
-            } else if (fieldLabels[len] === 'columns') {
+            } else if (fieldLabels[len as number] === 'columns') {
                 localePrompt = this.parent.localeObj.getConstant('dropColPrompt');
-            } else if (fieldLabels[len] === 'values') {
+            } else if (fieldLabels[len as number] === 'values') {
                 localePrompt = this.parent.localeObj.getConstant('dropValPrompt');
             } else {
                 localePrompt = this.parent.localeObj.getConstant('dropFilterPrompt');
             }
-            let axisPrompt: HTMLElement = createElement('span', {
+            const axisPrompt: HTMLElement = createElement('span', {
                 className: cls.AXIS_PROMPT_CLASS,
                 innerHTML: localePrompt
             });
@@ -85,11 +86,11 @@ export class AxisTableRenderer {
         }
     }
     private getIconupdate(axis: string): HTMLElement {
-        let axisWrapper: HTMLElement = createElement('span', {
+        const axisWrapper: HTMLElement = createElement('span', {
             attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
             className: cls.AXIS_ICON_CLASS + '-icon-container'
         });
-        let axisElement: HTMLElement = createElement('span', {
+        const axisElement: HTMLElement = createElement('span', {
             attrs: {
                 'tabindex': '-1', 'aria-disabled': 'false'
             },
@@ -107,11 +108,11 @@ export class AxisTableRenderer {
         EventHandler.remove(element, 'mouseleave', this.updateDropIndicator);
     }
     private updateDropIndicator(e: MouseEvent): void {
-        let parentElement: HTMLElement = this.parent.dialogRenderer.parentElement;
+        const parentElement: HTMLElement = this.parent.dialogRenderer.parentElement;
         if (this.parent.isDragging && (e.target as HTMLElement).classList.contains(cls.AXIS_CONTENT_CLASS) && e.type === 'mouseover') {
             removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
             removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS + '-last')), cls.INDICATOR_HOVER_CLASS);
-            let element: HTMLElement[] =
+            const element: HTMLElement[] =
                 [].slice.call((e.target as HTMLElement).querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS));
             if (element.length > 0) {
                 addClass([element[element.length - 1].querySelector('.' + cls.DROP_INDICATOR_CLASS + '-last')], cls.INDICATOR_HOVER_CLASS);

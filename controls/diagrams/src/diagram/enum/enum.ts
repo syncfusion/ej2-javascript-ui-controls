@@ -818,14 +818,14 @@ export type TextDecoration =
 /**
  * Defines how to open the annotation hyperlink in the new tab, current tab or new window
  */
- export type LinkTarget = 
+export type LinkTarget =
  /**Opens hyperlink in the same tab */
  'CurrentTab' |
  /**Opens hyperlink in the new tab */
  'NewTab'   |
  /**Opens hyperlink in the new window*/
  'NewWindow';
-    
+
 /**
  * Defines how the text has to be aligned
  * Left - Aligns the text at the left of the text bounds
@@ -1058,8 +1058,8 @@ export enum ElementAction {
     ElementIsPort = 1 << 1,
     /** Enable the element action as Group  */
     ElementIsGroup = 1 << 2,
-     /** Enable the element action if swimlaneHeader is rendered  */
-     HorizontalLaneHeader = 1 << 3,
+    /** Enable the element action if swimlaneHeader is rendered  */
+    HorizontalLaneHeader = 1 << 3,
 
 }
 
@@ -1822,7 +1822,7 @@ export type Segments =
     'Polyline' |
     /** Bezier - Sets the segment type as Bezier */
     'Bezier' |
-     /** FreeHand - Sets the segment type as FreeHand */
+    /** FreeHand - Sets the segment type as FreeHand */
     'Freehand' ;
 
 /**
@@ -1882,7 +1882,7 @@ export type DecoratorShapes =
  * OutdentedArrow - Sets the segmentThumb shape as Outdented Arrow
  * DoubleArrow - Sets the segmentThumb shape as DoubleArrow
  */
- export type SegmentThumbShapes =
+export type SegmentThumbShapes =
 
  /** Rhombus - Sets the segmentThumb shape as Rhombus */
  'Rhombus'  |
@@ -2417,7 +2417,7 @@ export enum DiagramAction {
     /** Indicates whether drag is initiated by mouse  */
     DragUsingMouse = 1 << 15,
     /** Indicates whether decorator property is changed or not */
-    DecoratorPropertyChange = 1 << 16, 
+    DecoratorPropertyChange = 1 << 16,
     /** Avoid dropping of child nodes into the swim lane */
     PreventLaneContainerUpdate = 1 << 17
 }
@@ -2556,7 +2556,7 @@ export enum DiagramEvent {
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
-    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick','elementDraw','mouseWheel'
+    'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw','mouseWheel'
 }
 /**
  * @private
@@ -2836,4 +2836,5 @@ export enum BezierSmoothness {
     SymmetricDistance = 1 << 2,
     /** Enables the symmetric for bezier segment to the distance and angle between the control point as same. */
     Default = 1 << 1 | 1 << 2
+
 }

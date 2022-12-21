@@ -211,6 +211,7 @@ export class BlazorTooltip {
      *  @private
      */
     public open(target: HTMLElement, showAnimation: TooltipAnimationSettings, e?: Event): void {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
         if (isNullOrUndefined(this.animation.open)) {
             this.animation.open = this.element.tooltip && this.element.tooltip.animation &&
                 this.element.tooltip.animation.open as TooltipAnimationSettings;

@@ -439,7 +439,7 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-            expect(group.getAttribute('x')).toBe('535');
+            expect(group.getAttribute('x')).toBe('545');
             expect(group.getAttribute('y') === '220.0535226455787' ||
                 group.getAttribute('y') === '218.801509705248').toBe(true);
             done();
@@ -470,7 +470,8 @@ describe('Funnel Series checking', () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_connector_2');
             expect(group.getAttribute('d') == 'M 403.9392523364486 282.31962616822426 L 445.4392523364486 282.31962616822426 L 455.4392523364486 282.31962616822426' ||
-                group.getAttribute('d') === 'M 403.9392523364486 282.00841121495324 L 445.4392523364486 282.00841121495324 L 455.4392523364486 282.00841121495324').toBe(true);
+                group.getAttribute('d') === 'M 403.9392523364486 282.00841121495324 L 445.4392523364486 282.00841121495324 L 455.4392523364486 282.00841121495324' || 
+                group.getAttribute('d') === 'M 403.9392523364486 282.00841121495324 L 446.4392523364486 282.00841121495324 L 456.4392523364486 282.00841121495324').toBe(true);
             done();
 
             //reset default connector style
@@ -493,7 +494,8 @@ describe('Funnel Series checking', () => {
             expect(group.getAttribute('stroke-width')).toBe('5');
             expect(group.getAttribute('stroke-dasharray')).toBe('');
             expect(group.getAttribute('d') == 'M360.20532319391634,351.89176172370094 L363.29907319391634,350.8504383185467 L366.39282319391634,349.8091149133925 L369.48657319391634,348.76779150823836 L372.58032319391634,347.72646810308413 L375.67407319391634,346.6851446979299 L378.76782319391634,345.64382129277567 L381.86157319391634,344.60249788762155 L384.95532319391634,343.5611744824673 L388.04907319391634,342.5198510773131 L391.14282319391634,341.47852767215886 L394.23657319391634,340.4372042670047 L397.33032319391634,339.39588086185046 L400.42407319391634,338.3545574566962 L403.51782319391634,337.31323405154205 L406.61157319391634,336.2719106463879 L409.70532319391634,335.23058724123365' ||
-                group.getAttribute('d') == 'M360.20532319391634,351.7816223067174 L363.29907319391634,350.9282213772708 L366.39282319391634,350.07482044782427 L369.48657319391634,349.22141951837773 L372.58032319391634,348.36801858893114 L375.67407319391634,347.5146176594846 L378.76782319391634,346.66121673003806 L381.86157319391634,345.80781580059147 L384.95532319391634,344.95441487114493 L388.04907319391634,344.1010139416984 L391.14282319391634,343.2476130122518 L394.23657319391634,342.39421208280527 L397.33032319391634,341.54081115335873 L400.42407319391634,340.68741022391214 L403.51782319391634,339.8340092944656 L406.61157319391634,338.980608365019 L409.70532319391634,338.1272074355725').toBe(true);
+                group.getAttribute('d') == 'M360.20532319391634,351.7816223067174 L363.29907319391634,350.9282213772708 L366.39282319391634,350.07482044782427 L369.48657319391634,349.22141951837773 L372.58032319391634,348.36801858893114 L375.67407319391634,347.5146176594846 L378.76782319391634,346.66121673003806 L381.86157319391634,345.80781580059147 L384.95532319391634,344.95441487114493 L388.04907319391634,344.1010139416984 L391.14282319391634,343.2476130122518 L394.23657319391634,342.39421208280527 L397.33032319391634,341.54081115335873 L400.42407319391634,340.68741022391214 L403.51782319391634,339.8340092944656 L406.61157319391634,338.980608365019 L409.70532319391634,338.1272074355725' ||
+                group.getAttribute('d') == 'M360.20532319391634,351.7816223067174 L363.61157319391634,350.9282213772708 L367.01782319391634,350.07482044782427 L370.42407319391634,349.22141951837773 L373.83032319391634,348.36801858893114 L377.23657319391634,347.5146176594846 L380.64282319391634,346.66121673003806 L384.04907319391634,345.80781580059147 L387.45532319391634,344.95441487114493 L390.86157319391634,344.1010139416984 L394.26782319391634,343.2476130122518 L397.67407319391634,342.39421208280527 L401.08032319391634,341.54081115335873 L404.48657319391634,340.68741022391214 L407.89282319391634,339.8340092944656 L411.29907319391634,338.980608365019 L414.70532319391634,338.1272074355725').toBe(true);
             done();
 
             //reset default connector style
@@ -530,7 +532,7 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-            expect(group.getAttribute('x')).toBe('528.5901162790698');
+            expect(group.getAttribute('x')).toBe('538.5901162790698');
             expect(group.getAttribute('y') === '219.55988372093023'
                 || group.getAttribute('y') === '218.30717054263565');
             done();
@@ -547,7 +549,7 @@ describe('Funnel Series checking', () => {
         chart.loaded = () => {
             //debugger
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-            expect(group.getAttribute('x')).toBe('535');
+            expect(group.getAttribute('x')).toBe('545');
             expect(group.getAttribute('y') == '254.70691318327977' ||
                 group.getAttribute('y') === '256.6099678456592').toBe(true);
             done();
@@ -580,7 +582,7 @@ describe('Funnel Series checking', () => {
     it('Checking overlapped labels for outside position', (done: Function) => {
         chart.loaded = () => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-            expect(group.getAttribute('x')).toBe('535');
+            expect(group.getAttribute('x')).toBe('545');
             expect(group.getAttribute('y') === '264.8065916398714' ||
                 group.getAttribute('y') === '263.683922829582').toBe(true);
             done();
@@ -679,7 +681,7 @@ describe('Funnel Series checking', () => {
             //  debugger
             let group: Element = getElement(sliceid + '3');
 
-            expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0');
+            expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0_point_3');
             expect(group.getAttribute('transform')).toBe(null);
             done();
         };
@@ -703,7 +705,7 @@ describe('Funnel Series checking', () => {
             let pointElement: Element = getElement(sliceid + '3');
             trigger.clickEvent(pointElement);
             let group: Element = getElement(sliceid + '3');
-            expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0');
+            expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0_point_3');
             expect(group.getAttribute('transform')).toBe('translate(30, 0)');
             done();
         };
@@ -806,7 +808,7 @@ describe('Funnel Series checking', () => {
     it('Checking overlapped labels are placed at outside left position for position as inside',(done:Function) =>{
         loaded = (args: Object): void => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_6');
-            expect(group.getAttribute('x') === '47.20472756410254'|| group.getAttribute('x') === '478.79527243589746').toBe(true);
+            expect(group.getAttribute('x') === '47.20472756410254'|| group.getAttribute('x') === '488.79527243589746').toBe(true);
             expect(group.getAttribute('y') === '202.79615384615386' ||
                 group.getAttribute('y') === '180.75128205128203' || group.getAttribute('y') === '191.76666666666668').toBe(true);
             done();
@@ -823,7 +825,7 @@ describe('Funnel Series checking', () => {
     it('Checking data label with Legend position',(done:Function) =>{
         loaded = (args: Object): void => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_11');
-            expect(group.getAttribute('x') === '117.5' || group.getAttribute('x') === '549.0679086538461').toBe(true);
+            expect(group.getAttribute('x') === '117.5' || group.getAttribute('x') === '559.0679086538461').toBe(true);
             expect(group.getAttribute('y') === '115.57051282051282' ||
                 group.getAttribute('y') === '84.35897435897436').toBe(true);
             done();
@@ -857,7 +859,7 @@ describe('Funnel Series checking', () => {
     it('Checking overlapped labels are placed at outside left position for position as outside ',(done:Function) =>{
         loaded = (args: Object): void => {
             let group: Element = getElement('ej2container_datalabel_Series_0_text_6');
-            expect(group.getAttribute('x') === '448'|| group.getAttribute('x') === '478.79527243589746').toBe(true);
+            expect(group.getAttribute('x') === '458'|| group.getAttribute('x') === '488.79527243589746').toBe(true);
             expect(group.getAttribute('y') === '215.4' ||
                 group.getAttribute('y') === '209.09846153846155' || group.getAttribute('y') === '219.47384615384613').toBe(true);
             done();

@@ -62,20 +62,20 @@ export class XhtmlValidation {
             /<input(.*?)>/gi, /<link(.*?)>/gi, /<meta(.*?)>/gi, /<param(.*?)>/gi, /<source(.*?)>/gi,
             /<track(.*?)>/gi, /<wbr(.*?)>/gi ];
         for (let j: number = 0; j < imgRegexp.length; j++) {
-            valueTemp = imgRegexp[j].exec(currentValue);
+            valueTemp = imgRegexp[j as number].exec(currentValue);
             while ((valueTemp) !== null) {
                 valueDupe.push(valueTemp[0].toString());
-                valueTemp = imgRegexp[j].exec(currentValue);
+                valueTemp = imgRegexp[j as number].exec(currentValue);
             }
             valueOriginal = valueDupe.slice(0);
             for (let i: number = 0; i < valueDupe.length; i++) {
-                if (valueDupe[i].indexOf('/') === -1 || valueDupe[i].lastIndexOf('/') !== valueDupe[i].length - 2) {
-                    valueDupe[i] = valueDupe[i].substr(0, valueDupe[i].length - 1) + ' /' +
-                    valueDupe[i].substr(valueDupe[i].length - 1, valueDupe[i].length);
+                if (valueDupe[i as number].indexOf('/') === -1 || valueDupe[i as number].lastIndexOf('/') !== valueDupe[i as number].length - 2) {
+                    valueDupe[i as number] = valueDupe[i as number].substr(0, valueDupe[i as number].length - 1) + ' /' +
+                    valueDupe[i as number].substr(valueDupe[i as number].length - 1, valueDupe[i as number].length);
                 }
             }
             for (let g: number = 0; g <= valueDupe.length - 1; g++) {
-                currentValue = currentValue.replace(valueOriginal[g], valueDupe[g]);
+                currentValue = currentValue.replace(valueOriginal[g as number], valueDupe[g as number]);
             }
         }
         return currentValue;
@@ -95,7 +95,7 @@ export class XhtmlValidation {
 
     private clean(node: HTMLElement): string {
         for (let n: number = 0; n < node.childNodes.length; n++) {
-            const child: HTMLElement = node.childNodes[n] as HTMLElement;
+            const child: HTMLElement = node.childNodes[n as number] as HTMLElement;
             if (child.nodeType === 8 || child.nodeName === 'V:IMAGE') {
                 node.removeChild(child);
                 n--;
@@ -109,8 +109,8 @@ export class XhtmlValidation {
     private ImageTags(): void {
         const imgNodes: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('IMG');
         for (let i: number = imgNodes.length - 1; i >= 0; i--) {
-            if (!imgNodes[i].hasAttribute('alt')) {
-                const img: Element = imgNodes[i];
+            if (!imgNodes[i as number].hasAttribute('alt')) {
+                const img: Element = imgNodes[i as number];
                 img.setAttribute('alt', '');
             }
         }
@@ -119,14 +119,14 @@ export class XhtmlValidation {
     private removeTags(): void {
         const removeAttribute: string[][] = [['br', 'ul'], ['br', 'ol'], ['table', 'span'], ['div', 'span'], ['p', 'span']];
         for (let i: number = 0; i < removeAttribute.length; i++) {
-            this.RemoveElementNode(removeAttribute[i][0], removeAttribute[i][1]);
+            this.RemoveElementNode(removeAttribute[i as number][0], removeAttribute[i as number][1]);
         }
     }
 
     private RemoveElementNode(rmvNode: string, parentNode: string): void {
         const parentArray: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll(parentNode);
         for (let i: number = 0; i < parentArray.length; i++) {
-            const rmvArray: NodeListOf<HTMLElement> = parentArray[i].querySelectorAll(rmvNode);
+            const rmvArray: NodeListOf<HTMLElement> = parentArray[i as number].querySelectorAll(rmvNode);
             for (let j: number = rmvArray.length; j > 0; j--) {
                 detach(rmvArray[j - 1]);
             }
@@ -137,28 +137,28 @@ export class XhtmlValidation {
         for (let i: number = underlineEle.length - 1; i >= 0; i--) {
             const spanEle: HTMLElement = this.parent.createElement('span');
             spanEle.style.textDecoration = 'underline';
-            spanEle.innerHTML = underlineEle[i].innerHTML;
-            underlineEle[i].parentNode.insertBefore(spanEle, underlineEle[i]);
-            detach(underlineEle[i]);
+            spanEle.innerHTML = underlineEle[i as number].innerHTML;
+            underlineEle[i as number].parentNode.insertBefore(spanEle, underlineEle[i as number]);
+            detach(underlineEle[i as number]);
         }
         const strongEle: NodeListOf<HTMLElement> = this.currentElement.querySelectorAll('strong');
         for (let i: number = strongEle.length - 1; i >= 0; i--) {
             const boldEle: HTMLElement = this.parent.createElement('b');
-            boldEle.innerHTML = strongEle[i].innerHTML;
-            strongEle[i].parentNode.insertBefore(boldEle, strongEle[i]);
-            detach(strongEle[i]);
+            boldEle.innerHTML = strongEle[i as number].innerHTML;
+            strongEle[i as number].parentNode.insertBefore(boldEle, strongEle[i as number]);
+            detach(strongEle[i as number]);
         }
         const attrArray: string[] = ['language', 'role', 'target', 'contenteditable', 'cellspacing',
             'cellpadding', 'border', 'valign', 'colspan'];
         for (let i: number = 0; i <= attrArray.length; i++) {
-            this.RemoveAttributeByName(attrArray[i]);
+            this.RemoveAttributeByName(attrArray[i as number]);
         }
     }
     private RemoveAttributeByName(attrName: string): void {
         if (this.currentElement.firstChild !== null) {
             if (this.currentElement.firstChild.nodeType !== 3) {
                 for (let i: number = 0; i < this.currentElement.childNodes.length; i++) {
-                    const ele: Node = this.currentElement.childNodes[i];
+                    const ele: Node = this.currentElement.childNodes[i as number];
                     if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
                         ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
                         if ((ele as HTMLElement).hasAttribute(attrName)) {
@@ -166,7 +166,7 @@ export class XhtmlValidation {
                         }
                         if (ele.hasChildNodes()) {
                             for (let j: number = 0; j < ele.childNodes.length; j++) {
-                                const childEle: Node = ele.childNodes[j];
+                                const childEle: Node = ele.childNodes[j as number];
                                 if (childEle.nodeType !== 3 && childEle.nodeName !== 'TABLE' && childEle.nodeName !== 'TBODY' &&
                                     childEle.nodeName !== 'THEAD' && childEle.nodeName !== 'TH' && childEle.nodeName !== 'TR' &&
                                     childEle.nodeName !== 'TD' && (childEle as HTMLElement).hasAttribute(attrName)) {
@@ -174,12 +174,12 @@ export class XhtmlValidation {
                                 }
                                 if (childEle.hasChildNodes()) {
                                     for (let k: number = 0; k < childEle.childNodes.length; k++) {
-                                        if (childEle.childNodes[k].nodeType !== 3 && childEle.childNodes[k].nodeName !== 'TABLE' &&
-                                            childEle.childNodes[k].nodeName !== 'TBODY' && childEle.childNodes[k].nodeName !== 'THEAD' &&
-                                            childEle.childNodes[k].nodeName !== 'TH' && childEle.childNodes[k].nodeName !== 'TR'
-                                            && childEle.childNodes[k].nodeName !== 'TD'
-                                            && (childEle.childNodes[k] as HTMLElement).hasAttribute(attrName)) {
-                                            (childEle.childNodes[k] as HTMLElement).removeAttribute(attrName);
+                                        if (childEle.childNodes[k as number].nodeType !== 3 && childEle.childNodes[k as number].nodeName !== 'TABLE' &&
+                                            childEle.childNodes[k as number].nodeName !== 'TBODY' && childEle.childNodes[k as number].nodeName !== 'THEAD' &&
+                                            childEle.childNodes[k as number].nodeName !== 'TH' && childEle.childNodes[k as number].nodeName !== 'TR'
+                                            && childEle.childNodes[k as number].nodeName !== 'TD'
+                                            && (childEle.childNodes[k as number] as HTMLElement).hasAttribute(attrName)) {
+                                            (childEle.childNodes[k as number] as HTMLElement).removeAttribute(attrName);
                                         }
                                     }
                                 }

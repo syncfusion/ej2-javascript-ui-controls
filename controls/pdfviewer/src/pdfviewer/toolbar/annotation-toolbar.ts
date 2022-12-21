@@ -2768,6 +2768,7 @@ export class AnnotationToolbar {
     }
     private createDropDownListForSize(fontSelectElement: HTMLElement): void {
         // eslint-disable-next-line max-len
+        let proxy: any = this;
         const fontSize: string[] = ['8px', '9px', '10px', '11px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '36px', '48px', '72px', '96px'];
         if(!this.pdfViewer.enableRtl){
             this.fontSize = new ComboBox({
@@ -2792,8 +2793,9 @@ export class AnnotationToolbar {
         this.fontSize.value = '16px';
         this.fontSize.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font size'));
-        this.fontSize.addEventListener('change', function(args: any): void {
-            this.onFontSizeChange(this, args.isInteracted);
+        this.fontSize.addEventListener('change', function(args: any): void {            
+            let isUserInteracted : boolean = args.isInteracted;
+            proxy.onFontSizeChange(proxy, isUserInteracted);
         });
     }
 

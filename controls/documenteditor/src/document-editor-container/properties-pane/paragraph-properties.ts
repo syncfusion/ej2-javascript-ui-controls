@@ -166,6 +166,10 @@ export class Paragraph {
         });
         btn.appendTo(buttonElement);
         buttonElement.setAttribute('title', this.localObj.getConstant(toolTipText));
+        buttonElement.setAttribute('aria-label', this.localObj.getConstant(toolTipText));
+        if (this.localObj.getConstant(toolTipText) != 'Decrease indent' && this.localObj.getConstant(toolTipText) != 'Increase indent' && this.localObj.getConstant(toolTipText) != 'Borders') {
+            buttonElement.setAttribute('aria-pressed', 'false');
+        }
         switch (toolTipText) {
         case 'Align left Tooltip':
             this.leftAlignmentBtn = btn;
@@ -594,8 +598,10 @@ export class Paragraph {
     public toggleHiddenMarks(): void {
         if(this.container.documentEditorSettings.showHiddenMarks) {
             classList(this.showHiddenMarks, ['e-btn-toggle'], []);
+            this.showHiddenMarks.setAttribute('aria-pressed', 'true');
         } else {
             classList(this.showHiddenMarks, [], ['e-btn-toggle']);
+            this.showHiddenMarks.setAttribute('aria-pressed', 'false');
         }
     }
     private leftAlignmentAction(): void {
@@ -879,12 +885,28 @@ export class Paragraph {
             classList(this.justify, [], ['e-btn-toggle']);
             if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Left') {
                 classList(this.leftAlignment, ['e-btn-toggle'], []);
+                this.leftAlignment.setAttribute('aria-pressed', 'true');
+                this.rightAlignment.setAttribute('aria-pressed', 'false');
+                this.centerAlignment.setAttribute('aria-pressed', 'false');
+                this.justify.setAttribute('aria-pressed', 'false');
             } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Right') {
                 classList(this.rightAlignment, ['e-btn-toggle'], []);
+                this.leftAlignment.setAttribute('aria-pressed', 'false');
+                this.rightAlignment.setAttribute('aria-pressed', 'true');
+                this.centerAlignment.setAttribute('aria-pressed', 'false');
+                this.justify.setAttribute('aria-pressed', 'false');
             } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Center') {
                 classList(this.centerAlignment, ['e-btn-toggle'], []);
+                this.leftAlignment.setAttribute('aria-pressed', 'false');
+                this.rightAlignment.setAttribute('aria-pressed', 'false');
+                this.centerAlignment.setAttribute('aria-pressed', 'true');
+                this.justify.setAttribute('aria-pressed', 'false');
             } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Justify') {
                 classList(this.justify, ['e-btn-toggle'], []);
+                this.leftAlignment.setAttribute('aria-pressed', 'false');
+                this.rightAlignment.setAttribute('aria-pressed', 'false');
+                this.centerAlignment.setAttribute('aria-pressed', 'false');
+                this.justify.setAttribute('aria-pressed', 'true');
             }
             this.toggleHiddenMarks();
         }
@@ -920,6 +942,10 @@ export class Paragraph {
         if (this.centerAlignmentBtn) {
             this.centerAlignmentBtn.destroy();
             this.centerAlignmentBtn = undefined;
+        }
+        if (this.showHiddenMarksBtn) {
+            this.showHiddenMarksBtn.destroy();
+            this.showHiddenMarksBtn = undefined;
         }
         if (this.justifyBtn) {
             this.justifyBtn.destroy();

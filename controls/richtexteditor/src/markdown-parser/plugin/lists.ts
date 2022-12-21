@@ -74,22 +74,23 @@ export class MDLists {
         const regex: RegExp = this.getListRegex();
         this.currentAction = this.getAction(parents[0].text as string);
         for (let i: number = 0; i < parents.length; i++) {
-            let prevIndex: number = event.event.shiftKey ? (parents[i].line as number) - 1 : (parents[i].line as number) - 1;
+            // eslint-disable-next-line max-len
+            let prevIndex: number = event.event.shiftKey ? (parents[i as number].line as number) - 1 : (parents[i as number].line as number) - 1;
             let prevLine: string = this.selection.getLine(textArea, prevIndex);
             if (prevLine && (!event.event.shiftKey && isNotFirst || (event.event.shiftKey))) {
                 const prevLineSplit: string[] = prevLine.split('. ');
                 const tabSpace: string = '\t';
                 const tabSpaceLength: number = event.event.shiftKey ? -tabSpace.length : tabSpace.length;
-                const splitTab: string[] = (parents[i].text as string).split('\t');
+                const splitTab: string[] = (parents[i as number].text as string).split('\t');
                 if (event.event.shiftKey && splitTab.length === 1) {
                     break;
                 }
                 if (this.currentAction === 'OL' && /^\d+$/.test(prevLineSplit[0].trim()) && listFormat) {
                     event.event.preventDefault();
-                    parents[i].text = event.event.shiftKey ? splitTab.splice(1, splitTab.length).join('\t') : tabSpace + parents[i].text;
-                    const curTabSpace: string = this.getTabSpace(parents[i].text as string);
+                    parents[i as number].text = event.event.shiftKey ? splitTab.splice(1, splitTab.length).join('\t') : tabSpace + parents[i as number].text;
+                    const curTabSpace: string = this.getTabSpace(parents[i as number].text as string);
                     let prevTabSpace: string = this.getTabSpace(prevLine);
-                    const splitText: string[] = (parents[i].text as string).split('. ');
+                    const splitText: string[] = (parents[i as number].text as string).split('. ');
                     if (curTabSpace === prevTabSpace) {
                         this.changeTextAreaValue(
                             splitText, this.nextOrderedListValue(prevLineSplit[0].trim()),
@@ -114,16 +115,17 @@ export class MDLists {
                     }
                 } else if (this.currentAction === 'UL' && regex.test(prevLine.trim()) || !listFormat) {
                     event.event.preventDefault();
-                    parents[i].text = event.event.shiftKey ? splitTab.splice(1, splitTab.length).join('\t') : tabSpace + parents[i].text;
-                    textArea.value = textArea.value.substr(0, parents[i].start as number) + parents[i].text + '\n' +
-                        textArea.value.substr(parents[i].end as number, textArea.value.length);
+                    parents[i as number].text = event.event.shiftKey ? splitTab.splice(1, splitTab.length).join('\t') : tabSpace + parents[i as number].text;
+                    textArea.value = textArea.value.substr(0, parents[i as number].start as number) + parents[i as number].text + '\n' +
+                        textArea.value.substr(parents[i as number].end as number, textArea.value.length);
                 }
                 start = i === 0 ? start + tabSpaceLength : start;
                 addedLength += tabSpaceLength;
                 if (parents.length !== 1) {
                     for (let j: number = i; j < parents.length; j++) {
-                        parents[j].start = j !== 0 ? (parents[j].start as number) + tabSpaceLength : parents[j].start;
-                        parents[j].end = (parents[j].end as number) + tabSpaceLength;
+                        // eslint-disable-next-line max-len
+                        parents[j as number].start = j !== 0 ? (parents[j as number].start as number) + tabSpaceLength : parents[j as number].start;
+                        parents[j as number].end = (parents[j as number].end as number) + tabSpaceLength;
                     }
                 }
             }
@@ -138,10 +140,10 @@ export class MDLists {
         splitText.splice(0, 1);
         const textAreaLength: number = this.selection.getAllParents(textArea.value).length;
         let changedList: string = '';
-        const curTabSpace: string = this.getTabSpace(parents[k].text as string);
+        const curTabSpace: string = this.getTabSpace(parents[k as number].text as string);
         // eslint-disable-next-line
         let prefixNumber: number = parseInt(prefix.split('.')[0], null);
-        let nestedTabSpace: string = this.getTabSpace(parents[k].text as string);
+        let nestedTabSpace: string = this.getTabSpace(parents[k as number].text as string);
         let nestedlistorder: boolean = true;
         let nestedListStart: boolean = true;
         let curTabSpaceLength: number;
@@ -196,15 +198,15 @@ export class MDLists {
                 nestedTabSpace = this.getTabSpace(nextLine);
             }
         }
-        parents[k].text = this.getTabSpace(parents[k].text as string) + prefix + splitText.join('. ') + '\n';
-        textArea.value = textArea.value.substr(0, parents[k].start as number) + parents[k].text + changedList;
+        parents[k as number].text = this.getTabSpace(parents[k as number].text as string) + prefix + splitText.join('. ') + '\n';
+        textArea.value = textArea.value.substr(0, parents[k as number].start as number) + parents[k as number].text + changedList;
     }
 
     private getTabSpace(line: string): string {
         const split: string[] = line.split('\t');
         let tabs: string = '';
         for (let i: number = 0; i < split.length; i++) {
-            if (split[i] === '') {
+            if (split[i as number] === '') {
                 tabs += '\t';
             } else {
                 break;
@@ -250,6 +252,7 @@ export class MDLists {
         const ol: string = line.split('. ')[0];
         // eslint-disable-next-line
         const currentState: Boolean = /^\d+$/.test(ol.trim());
+        // eslint-disable-next-line
         const ul: string = line.trim().split(new RegExp('^(' + this.selection.replaceSpecialChar(this.syntax.UL).trim() + ')'))[1];
         return (currentState ? 'OL' : ul ? 'UL' : 'NOTLIST');
     }
@@ -363,41 +366,41 @@ export class MDLists {
             } else {
                 regex = this.currentAction === 'OL' ? this.syntax.OL : this.syntax[this.currentAction];
             }
-            if (!this.selection.isStartWith(parents[i].text as string, regex)) {
-                if (parents[i].text === '' && i === 0) {
+            if (!this.selection.isStartWith(parents[i as number].text as string, regex)) {
+                if (parents[i as number].text === '' && i === 0) {
                     this.selection.save(start, end);
                     if (parents.length !== 1) {
                         for (let j: number = i; j < parents.length; j++) {
-                            parents[j].start = j !== 0 ? 1 + (parents[j].start as number) : parents[j].start;
-                            parents[j].end = 1 + (parents[j].end as number);
+                            parents[j as number].start = j !== 0 ? 1 + (parents[j as number].start as number) : parents[j as number].start;
+                            parents[j as number].end = 1 + (parents[j as number].end as number);
                         }
                     }
                 }
                 const preLineTabSpaceLength: number = !isNullOrUndefined(parents[i - 1]) ?
                     this.getTabSpace(parents[i - 1].text as string).length : 0;
                 const replace: { [key: string]: number | string } = this.appliedLine(
-                    parents[i].text as string,
+                    parents[i as number].text as string,
                     regex, perfixObj, preLineTabSpaceLength);
                 prefix = replace.line ? prefix : regex;
-                parents[i].text = replace.line ? replace.line : prefix + parents[i].text;
+                parents[i as number].text = replace.line ? replace.line : prefix + parents[i as number].text;
                 replace.space = replace.space ? replace.space : 0;
-                textArea.value = textArea.value.substr(0, parents[i].start as number + endLength) + parents[i].text + '\n' +
-                    textArea.value.substr(parents[i].end as number, textArea.value.length);
+                textArea.value = textArea.value.substr(0, parents[i as number].start as number + endLength) + parents[i as number].text + '\n' +
+                    textArea.value.substr(parents[i as number].end as number, textArea.value.length);
                 start = i === 0 ? (start + prefix.length + (replace.space as number)) > 0 ?
                     start + prefix.length + (replace.space as number) : 0 : start;
                 addedLength += prefix.length + (replace.space as number);
                 if (parents.length !== 1) {
                     for (let j: number = i; j < parents.length; j++) {
-                        parents[j].start = j !== 0 ? prefix.length +
-                            (parents[j].start as number) + (replace.space as number) : parents[j].start;
-                        parents[j].end = prefix.length + (parents[j].end as number) + (replace.space as number);
+                        parents[j as number].start = j !== 0 ? prefix.length +
+                            (parents[j as number].start as number) + (replace.space as number) : parents[j as number].start;
+                        parents[j as number].end = prefix.length + (parents[j as number].end as number) + (replace.space as number);
                     }
                 }
                 this.restore(textArea, start, end + addedLength, null);
             } else {
-                parents[i].text = (parents[i].text as string).replace(regex, '');
-                textArea.value = textArea.value.substr(0, parents[i].start as number + endLength) + parents[i].text + '\n' +
-                    textArea.value.substr(parents[i].end as number + endLength, textArea.value.length);
+                parents[i as number].text = (parents[i as number].text as string).replace(regex, '');
+                textArea.value = textArea.value.substr(0, parents[i as number].start as number + endLength) + parents[i as number].text + '\n' +
+                    textArea.value.substr(parents[i as number].end as number + endLength, textArea.value.length);
                 endLength -= regex.length;
                 startLength = regex.length;
                 this.restore(textArea, start - startLength, end + endLength, null);
@@ -409,6 +412,7 @@ export class MDLists {
         line: string, prefixPattern: string, perfixObj: {[key: string]: number },
         preTabSpaceLength: number): { [key: string]: number | string } {
         const points: { [key: string]: number | string } = {};
+        // eslint-disable-next-line
         const regex: RegExp = new RegExp('^[' + this.syntax.UL.trim() + ']');
         const lineSplit: string[] = line.split('. ');
         const currentPrefix: string = lineSplit[0] + '. ';
@@ -467,10 +471,11 @@ export class MDLists {
         let regex: string = '';
         const configKey: string[] = Object.keys(this.syntax);
         for (let j: number = 0; j < configKey.length; j++) {
-            const syntax: string = this.selection.replaceSpecialChar(this.syntax[configKey[j]]);
+            const syntax: string = this.selection.replaceSpecialChar(this.syntax[configKey[j as number]]);
             regex += regex === '' ? '^(' + syntax + ')|^(' + syntax.trim() + ')' :
                 '|^(' + syntax + ')|^(' + syntax.trim() + ')';
         }
+        // eslint-disable-next-line
         return new RegExp(regex);
     }
 }

@@ -38,7 +38,7 @@ export function isCountRequired(parent: TreeGrid | IGrid) : boolean {
  */
 export function isCheckboxcolumn(parent: TreeGrid) : boolean {
     for (let i: number = 0; i < parent.columns.length; i++) {
-        if ((parent.columns[i] as ColumnModel).showCheckbox) {
+        if ((parent.columns[parseInt(i.toString(), 10)] as ColumnModel).showCheckbox) {
             return true;
         }
     }
@@ -68,9 +68,9 @@ export function findParentRecords(records: Object): Object {
     const datas: Object[] = [];
     const recordsLength: number = Object.keys(records).length;
     for (let i: number = 0, len: number = recordsLength; i < len; i++) {
-        const hasChild: boolean = getObject('hasChildRecords', records[i]);
+        const hasChild: boolean = getObject('hasChildRecords', records[parseInt(i.toString(), 10)]);
         if (hasChild) {
-            datas.push(records[i]);
+            datas.push(records[parseInt(i.toString(), 10)]);
         }
     }
     return datas;
@@ -128,10 +128,11 @@ export function findChildrenRecords(records: ITreeData): Object[] {
         const childRecords: ITreeData[] = records.childRecords.filter((item: ITreeData) => !item.isSummaryRow);
         const keys: string[] = Object.keys(childRecords);
         for (let i: number = 0, len: number = keys.length; i < len; i++) {
-            datas.push(childRecords[i]);
-            if (childRecords[i].hasChildRecords || (!isNullOrUndefined(childRecords[i].childRecords) &&
-         childRecords[i].childRecords.length)) {
-                datas = [...datas, ...findChildrenRecords(childRecords[i])];
+            datas.push(childRecords[parseInt(i.toString(), 10)]);
+            if (childRecords[parseInt(i.toString(), 10)].hasChildRecords ||
+             (!isNullOrUndefined(childRecords[parseInt(i.toString(), 10)].childRecords) &&
+         childRecords[parseInt(i.toString(), 10)].childRecords.length)) {
+                datas = [...datas, ...findChildrenRecords(childRecords[parseInt(i.toString(), 10)])];
             }
         }
     }
@@ -157,9 +158,9 @@ export function isOffline(parent: TreeGrid) : boolean {
 export function extendArray(array: Object[]): Object[] {
     const objArr: Object[] = []; let obj: Object ; let keys: string[];
     for (let i: number = 0; array && i < array.length; i++) {
-        keys = Object.keys(array[i]); obj = {};
+        keys = Object.keys(array[parseInt(i.toString(), 10)]); obj = {};
         for (let j: number = 0; j < keys.length; j++) {
-            obj[keys[j]] = array[i][keys[j]];
+            obj[keys[parseInt(j.toString(), 10)]] = array[parseInt(i.toString(), 10)][keys[parseInt(j.toString(), 10)]];
         }
         objArr.push(obj);
     }
@@ -185,10 +186,10 @@ export function getPlainData(value: ITreeData): ITreeData {
 export function getParentData(parent: TreeGrid, value: string, requireFilter?: boolean) : ITreeData {
     if (requireFilter) {
         const idFilter: string = 'uniqueIDFilterCollection';
-        return parent[idFilter][value];
+        return parent[`${idFilter}`][`${value}`];
     } else {
         const id: string = 'uniqueIDCollection';
-        return parent[id][value];
+        return parent[`${id}`][`${value}`];
     }
 }
 

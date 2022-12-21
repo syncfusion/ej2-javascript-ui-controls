@@ -1416,6 +1416,31 @@
       & .e-frozen-row {
         right: 0;
       }
+
+      & .e-column-header {
+
+        & .e-table th {
+
+          &.e-header-cell.e-hide-start {
+            border-left-color: transparent;
+
+            &::after {
+              border-left: $spreadsheet-border;
+              border-right: none;
+              left: .5px;
+            }
+          }
+
+          &.e-hide-end.e-header-cell {
+
+            &::before {
+              border-left: none;
+              border-right: $spreadsheet-border;
+              right: .5px;
+            }
+          }
+        }
+      }
     }
 
     .e-sheet-panel {

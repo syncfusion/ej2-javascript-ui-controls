@@ -43,3 +43,43 @@ describe('Field updation inside the positioned table validation', () => {
     expect(editor.documentHelper.pages[7].bodyWidgets[0].floatingElements[7].y).not.toBe(editor.documentHelper.pages[7].bodyWidgets[0].floatingElements[8].y);
   });
 });
+//https://syncfusion.atlassian.net/browse/EJ2-59507
+describe('Para indent validation in weblayout', () => {
+  let editor: DocumentEditor;
+  let documentHelper: DocumentHelper;
+  beforeAll(() => {
+    let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
+    document.body.innerHTML = '';
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection);
+    editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true, layoutType: 'Continuous' });
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.appendTo('#container');
+    editor.selection.selectAll();
+    documentHelper = editor.documentHelper;
+  });
+  beforeEach(() => {
+  });
+  afterAll((done) => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    document.body.innerHTML = '';
+    documentHelper = undefined;
+    setTimeout(() => {
+      done();
+    }, 1000);
+  });
+  it('Para indent validation in weblayout', () => {
+    console.log('Para indent validation in weblayout');
+    editor.openBlank();
+    editor.editor.insertText('hello');
+    for (let i = 0; i < 23; i++) {
+      editor.editor.increaseIndent();
+    }
+    expect(documentHelper.selection.start.paragraph.x).toBeCloseTo(922);
+  });
+});

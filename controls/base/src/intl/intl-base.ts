@@ -922,7 +922,7 @@ export namespace IntlBase {
         cOptions.nlead = pattern[1];
         cOptions.nend = pattern[10];
         let integerPart: string = pattern[6];
-        const spaceCapture: boolean = integerPart.match(/\ $/g)? true : false;
+        const spaceCapture: boolean = integerPart.match(/\ $/g) ? true : false;
         const spaceGrouping: boolean = integerPart.replace(/\ $/g, '').indexOf(' ') !== -1;
         cOptions.useGrouping = integerPart.indexOf(',') !== -1 || spaceGrouping;
         integerPart = integerPart.replace(/,/g, '');
@@ -958,7 +958,7 @@ export namespace IntlBase {
                 cOptions.groupData = NumberFormat.getGroupingDetails(symbolPattern.split(';')[0]);
             }
             cOptions.nlead = cOptions.nlead.replace(/'/g, '');
-            cOptions.nend = spaceCapture? ' ' + cOptions.nend.replace(/'/g, '') : cOptions.nend.replace(/'/g, '');
+            cOptions.nend = spaceCapture ? ' ' + cOptions.nend.replace(/'/g, '') : cOptions.nend.replace(/'/g, '');
         }
         return cOptions;
     }
@@ -974,7 +974,7 @@ export namespace IntlBase {
     export function isCurrencyPercent(parts: string[], actual: string, symbol: string): NegativeData {
         const options: NegativeData = { nlead: parts[0], nend: parts[1] };
         for (let i: number = 0; i < 2; i++) {
-            const part: string = parts[i];
+            const part: string = parts[parseInt(i.toString(), 10)];
             const loc: number = part.indexOf(actual);
             if ((loc !== -1) && ((loc < part.indexOf('\'')) || (loc > part.lastIndexOf('\'')))) {
                 // eslint-disable-next-line
@@ -1193,7 +1193,7 @@ export namespace IntlBase {
         integer = hash + integer;
         pattern = '';
         for (let x: number = integer.length - 1; x > 0; x = x - 3) {
-            pattern = ',' + integer[x - 2] + integer[x - 1] + integer[x] + pattern;
+            pattern = ',' + integer[x - 2] + integer[x - 1] + integer[parseInt(x.toString(), 10)] + pattern;
         }
         pattern = pattern.slice(1);
         return temp[1] ? (pattern + '.' + temp[1]) : pattern;
@@ -1214,9 +1214,9 @@ export namespace IntlBase {
         }
         iCulture = iCulture.slice(0, 2).toUpperCase() + iCulture.substr(2);
         if (mapper) {
-            firstDay = mapper[iCulture] || mapper[iCulture.slice(0, 2)] || defaultFirstDay;
+            firstDay = mapper[`${iCulture}`] || mapper[iCulture.slice(0, 2)] || defaultFirstDay;
         }
-        return firstDayMapper[firstDay];
+        return firstDayMapper[`${firstDay}`];
     }
     /**
      * @private

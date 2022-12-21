@@ -21,11 +21,11 @@ export class Border extends ChildProperty<Border> {
     @Property(1)
     public width: number;
 
-     /**
+    /**
      * Gets and sets the dash-array of the border.
      */
-      @Property('')
-      public dashArray: string;
+    @Property('')
+    public dashArray: string;
 
 }
 

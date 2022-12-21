@@ -531,8 +531,8 @@ export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     /**
      * Defines the right and left position of text for the data-label in event argument.
      */
-     offsetX: number;
-     /**
+    offsetX: number;
+    /**
      * Defines the top and bottom position of text for the data-label in event argument.
      */
     offsetY: number;

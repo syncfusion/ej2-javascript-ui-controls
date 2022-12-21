@@ -340,8 +340,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      *
      * @default 0
      */
-     @Property(0)
-     public hoverDelay: number;
+    @Property(0)
+    public hoverDelay: number;
 
     /**
      * Specifies whether to show the sub menu or not on click.
@@ -474,7 +474,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             const ul: Element = this.createElement('ul');
             const wrapper: HTMLElement = this.createElement('EJS-MENU', { className: 'e-' + this.getModuleName() + '-wrapper' });
             for (let idx: number = 0, len: number = ele.attributes.length; idx < len; idx++) {
-                ul.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
+                ul.setAttribute(ele.attributes[idx as number].nodeName, ele.attributes[idx as number].nodeValue);
             }
             ele.parentNode.insertBefore(wrapper, ele);
             detach(ele);
@@ -501,10 +501,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         this.wireEvents();
         this.renderComplete();
         const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+        // eslint-disable-next-line
         if (this.template && this.enableScrolling && ((this as any).isReact || (this as any).isAngular)) {
             requestAnimationFrame(() => {
                 addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
-            })
+            });
         }
     }
 
@@ -565,7 +566,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let target: HTMLElement;
             const targetElems: HTMLElement[] = selectAll(this.target);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
-                target = targetElems[i];
+                target = targetElems[i as number];
                 if (this.isMenu) {
                     EventHandler.add(target, 'click', this.menuHeaderClickHandler, this);
                 } else {
@@ -716,10 +717,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
         }
-        const cli: Element = cul.children[fliIdx];
+        const cli: Element = cul.children[fliIdx as number];
         fliIdx = this.isValidLI(cli, fliIdx, e.action);
-        cul.children[fliIdx].classList.add(FOCUSED);
-        (cul.children[fliIdx] as HTMLElement).focus();
+        cul.children[fliIdx as number].classList.add(FOCUSED);
+        (cul.children[fliIdx as number] as HTMLElement).focus();
     }
 
     private isValidLI(cli: Element, index: number, action: string): number {
@@ -731,7 +732,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 index--;
             }
         }
-        cli = cul.children[index];
+        cli = cul.children[index as number];
         if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
             index = this.isValidLI(cli, index, action);
         }
@@ -740,10 +741,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getUlByNavIdx(navIdxLen: number = this.navIdx.length): HTMLElement {
         if (this.isMenu) {
-            const popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen];
+            const popup: Element = [this.getWrapper()].concat([].slice.call(selectAll('.' + POPUP)))[navIdxLen as number];
             return isNullOrUndefined(popup) ? null : select('.e-menu-parent', popup) as HTMLElement;
         } else {
-            return this.getWrapper().children[navIdxLen] as HTMLElement;
+            return this.getWrapper().children[navIdxLen as number] as HTMLElement;
         }
     }
 
@@ -865,6 +866,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.isCMenu = false;
                     }
                     if (this.isMenu && trgtpopUp && popupId.length) {
+                        // eslint-disable-next-line
                         trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
                         trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
@@ -872,7 +874,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     const submenus: NodeListOf<Element> = liElem && liElem.querySelectorAll('.e-menu-item');
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
-                    } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi && this.keyType !== "left") {
+                    } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi && this.keyType !== 'left') {
                         let ele: HTMLElement = (e && (e.target as Element).classList.contains('e-vscroll'))
                             ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
                         if (ele) {
@@ -894,8 +896,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     } else if (isOpen && this.isMenu && e && e.target &&
                         this.navIdx.length !== 0 && closest(e.target as Element, '.e-menu-parent.e-control')) {
                         this.closeMenu(0, e);
-                    } else if(isOpen && !this.isMenu && selectAll('.e-menu-parent', wrapper)[ulIndex - 1] && e.which === 3) {
-                        this.closeMenu(null, e);    
+                    } else if (isOpen && !this.isMenu && selectAll('.e-menu-parent', wrapper)[ulIndex - 1] && e.which === 3) {
+                        this.closeMenu(null, e);
                     } else {
                         if (isOpen && (this.keyType === 'right' || this.keyType === 'click')) {
                             this.afterCloseMenu(e as MouseEvent);
@@ -903,7 +905,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             const cul: Element = this.getUlByNavIdx(); const sli: Element = this.getLIByClass(cul, SELECTED);
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false'); sli.classList.remove(SELECTED);
-                                if (observedCloseArgs.isFocused  && liElem || this.keyType === "left") {
+                                if (observedCloseArgs.isFocused  && liElem || this.keyType === 'left') {
                                     sli.classList.add(FOCUSED); (sli as HTMLElement).focus();
                                 }
                             }
@@ -967,7 +969,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             canOpen = false;
             const filter: string[] = this.filter.split(' ');
             for (let i: number = 0, len: number = filter.length; i < len; i++) {
-                if (closest(target, '.' + filter[i])) {
+                if (closest(target, '.' + filter[i as number])) {
                     canOpen = true;
                     break;
                 }
@@ -1055,7 +1057,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             const menuIconElemStyle: CSSStyleDeclaration = getComputedStyle(menuIconElem);
             const blankIconIndent: number = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
             for (let i: number = 0; i < blankIconElem.length; i++) {
-                (blankIconElem[i] as HTMLElement).style.textIndent = blankIconIndent + 'px';
+                (blankIconElem[i as number] as HTMLElement).style.textIndent = blankIconIndent + 'px';
             }
         }
     }
@@ -1153,15 +1155,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth + 2
                             : this.left - this.popupWrapper.offsetWidth + (this.lItem as HTMLElement).offsetWidth;
                     }
+                    // eslint-disable-next-line
                     if (this.template && ((this as any).isReact || (this as any).isAngular)) {
                         requestAnimationFrame(() => {
                             this.collision();
                             this.popupWrapper.style.display = '';
-                        })
+                        });
                     } else {
                         this.collision();
                         this.popupWrapper.style.display = '';
-                    }  
+                    }
                 } else {
                     this.popupObj.collision = { X: 'none', Y: 'none' };
                     this.popupWrapper.style.display = '';
@@ -1216,7 +1219,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
                 (li as HTMLElement).focus(); cul = this.getUlByNavIdx();
                 const index: number = this.isValidLI(cul.children[0], 0, this.action);
-                cul.children[index].classList.add(FOCUSED); (cul.children[index] as HTMLElement).focus();
+                cul.children[index as number].classList.add(FOCUSED); (cul.children[index as number] as HTMLElement).focus();
             }
         });
     }
@@ -1239,7 +1242,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         this.popupWrapper.style.left = this.left + 'px';
     }
-    
+
     protected setBlankIconStyle(menu: HTMLElement): void {
         const blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
         if (!blankIconList.length) { return; }
@@ -1355,7 +1358,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 };
                 if (this.isMenu && !(<obj>args.curData)[this.getField('separator', level)]) {
                     (<obj>args.curData.htmlAttributes)['aria-label'] = (<obj>args.curData)[args.fields.text as string] ?
-                       (<obj>args.curData)[args.fields.text as string] : (<obj>args.curData)[args.fields.id as string];
+                        (<obj>args.curData)[args.fields.text as string] : (<obj>args.curData)[args.fields.id as string];
                 }
                 if (args.curData[(<obj>args.fields)[fields.iconCss] as string] === '') {
                     args.curData[(<obj>args.fields)[fields.iconCss] as string] = null;
@@ -1386,6 +1389,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     args.item.removeAttribute('data-uid');
                     if (args.item.classList.contains('e-level-1')) { args.item.classList.remove('e-level-1'); }
                     if (args.item.classList.contains('e-has-child')) { args.item.classList.remove('e-has-child'); }
+                    args.item.removeAttribute('aria-level');
                 }
                 const eventArgs: MenuEventArgs = { item: args.curData, element: args.item as HTMLElement };
                 this.trigger('beforeItemRender', eventArgs);
@@ -1471,7 +1475,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let li: Element;
         for (let i: number = 0; i < element.length; i++) {
             classList.forEach((className: string) => {
-                li = select('.' + className, element[i]);
+                li = select('.' + className, element[i as number]);
                 if (li) {
                     li.classList.remove(className);
                 }
@@ -1480,10 +1484,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     protected getField(propName: string, level: number = 0): string {
-        const fieldName: object = (<obj>this.fields)[propName];
+        const fieldName: object = (<obj>this.fields)[`${propName}`];
         return typeof fieldName === 'string' ? fieldName :
-            (!(<obj>fieldName)[level] ? (fieldName as obj)[(<objColl>fieldName).length - 1].toString()
-                : (<obj>fieldName)[level].toString());
+            (!(<obj>fieldName)[level as number] ? (fieldName as obj)[(<objColl>fieldName).length - 1].toString()
+                : (<obj>fieldName)[level as number].toString());
     }
 
     private getFields(level: number = 0): FieldsMap {
@@ -1499,7 +1503,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private hasField(items: MenuItemModel[], field: string): boolean {
         for (let i: number = 0, len: number = items.length; i < len; i++) {
-            if ((<obj>items[i])[field]) {
+            if ((<obj>items[i as number])[`${field}`]) {
                 return true;
             }
         }
@@ -1565,7 +1569,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             const culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
                                 [wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
                                 : this.getIdx(wrapper, cul);
-                            if (this.navIdx[culIdx] === this.cliIdx) {
+                            if (this.navIdx[culIdx as number] === this.cliIdx) {
                                 this.showSubMenu = false;
                             }
                             if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
@@ -1660,8 +1664,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getLIByClass(ul: Element, classname: string): Element {
         for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
-            if (ul.children[i].classList.contains(classname)) {
-                return ul.children[i];
+            if (ul.children[i as number].classList.contains(classname)) {
+                return ul.children[i as number];
             }
         }
         return null;
@@ -1710,13 +1714,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         navIdx = navIdx.slice();
         const idx: number = navIdx.pop();
         const items: MenuItemModel[] = this.getItems(navIdx);
-        return items[idx];
+        return items[idx as number];
     }
 
     private getItems(navIdx: number[]): objColl {
         let items: objColl = this.items as objColl;
         for (let i: number = 0; i < navIdx.length; i++) {
-            items = (<obj>items[navIdx[i]])[this.getField('children', i)] as objColl;
+            items = (<obj>items[navIdx[i as number]])[this.getField('children', i)] as objColl;
         }
         return items;
     }
@@ -1725,7 +1729,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         const items: objColl = this.getItems(navIdx);
         items.splice(0, items.length);
         for (let i: number = 0; i < newItems.length; i++) {
-            items.splice(i, 0, newItems[i]);
+            items.splice(i, 0, newItems[i as number]);
         }
     }
 
@@ -1747,7 +1751,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private updateItemsByNavIdx(): void {
         let items: MenuItemModel[] = this.items; let count: number = 0;
         for (let index: number = 0; index < this.navIdx.length; index++) {
-            items = items[index].items;
+            items = items[index as number].items;
             if (!items) { break; }
             count++;
             const ul: HTMLUListElement = <HTMLUListElement>this.getUlByNavIdx(count);
@@ -1840,11 +1844,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 } else {
                     const keys: string[] = Object.keys(newProp.items);
                     for (let i: number = 0; i < keys.length; i++) {
-                        navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i]));
+                        navIdx = this.getChangedItemIndex(newProp, [], Number(keys[i as number]));
                         if (navIdx.length <= this.getWrapper().children.length) {
                             idx = navIdx.pop();
                             item = this.getItems(navIdx);
-                            this.insertAfter([item[idx]], item[idx].text);
+                            this.insertAfter([item[idx as number]], item[idx as number].text);
                             this.removeItem(item, navIdx, idx);
                             this.setItems(item as objColl, navIdx);
                         }
@@ -1863,7 +1867,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         } else {
             if (this.enableScrolling) {
                 const wrapper1: HTMLElement = this.getWrapper() as HTMLElement;
-                let ul1: HTMLElement = wrapper1.children[0] as HTMLElement;
+                const ul1: HTMLElement = wrapper1.children[0] as HTMLElement;
                 if (this.element.classList.contains('e-vertical')) {
                     destroyScroll(getInstance(ul1, VScroll) as VScroll, ul1);
                 } else {
@@ -1880,9 +1884,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getChangedItemIndex(newProp: MenuBaseModel, index: number[], idx: number): number[] {
         index.push(idx);
-        const key: string = Object.keys((<objColl>newProp.items)[idx]).pop();
+        const key: string = Object.keys((<objColl>newProp.items)[idx as number]).pop();
         if (key === 'items') {
-            const item: MenuItemModel = (<objColl>newProp.items)[idx];
+            const item: MenuItemModel = (<objColl>newProp.items)[idx as number];
             const popStr: string = Object.keys(item.items).pop();
             if (popStr) {
                 this.getChangedItemIndex(item, index, Number(popStr));
@@ -1899,7 +1903,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         item.splice(idx, 1);
         const uls: HTMLCollection = this.getWrapper().children;
         if (navIdx.length < uls.length) {
-            detach(uls[navIdx.length].children[idx]);
+            detach(uls[navIdx.length].children[idx as number]);
         }
     }
 
@@ -1917,7 +1921,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let touchModule: Touch;
             const targetElems: HTMLElement[] = selectAll(targetSelctor);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
-                target = targetElems[i];
+                target = targetElems[i as number];
                 if (this.isMenu) {
                     EventHandler.remove(target, 'click', this.menuHeaderClickHandler);
                 } else {
@@ -2015,7 +2019,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             } else {
                 const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
                 if (this.currentTarget) {
-                    if (!(this.currentTarget.classList.contains("e-numerictextbox") || this.currentTarget.classList.contains("e-textbox") || this.currentTarget.tagName === 'INPUT')) {
+                    if (!(this.currentTarget.classList.contains('e-numerictextbox') || this.currentTarget.classList.contains('e-textbox') || this.currentTarget.tagName === 'INPUT')) {
                         if (ele) {
                             (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
                         } else {
@@ -2072,7 +2076,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let item: MenuItemModel | obj;
         level = isCallBack ? level + 1 : 0;
         for (let i: number = 0, len: number = items.length; i < len; i++) {
-            item = items[i];
+            item = items[i as number];
             if ((isUniqueId ? (<obj>item)[this.getField('itemId', level)] : (<obj>item)[this.getField('text', level)]) === data) {
                 nIndex.push(i);
                 break;
@@ -2110,12 +2114,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let navIdx: number[];
         const disabled: string = DISABLED; let skipItem: boolean;
         for (let i: number = 0; i < items.length; i++) {
-            navIdx = this.getIndex(items[i], isUniqueId);
+            navIdx = this.getIndex(items[i as number], isUniqueId);
             if (this.navIdx.length) {
                 if (navIdx.length !== 1) {
                     skipItem = false;
                     for (let i: number = 0, len: number = navIdx.length - 1; i < len; i++) {
-                        if (navIdx[i] !== this.navIdx[i]) {
+                        if (navIdx[i as number] !== this.navIdx[i as number]) {
                             skipItem = true; break;
                         }
                     }
@@ -2129,24 +2133,24 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (ul) {
                 if (enable) {
                     if (this.isMenu) {
-                        ul.children[idx].classList.remove(disabled);
-                        ul.children[idx].removeAttribute('aria-disabled');
+                        ul.children[idx as number].classList.remove(disabled);
+                        ul.children[idx as number].removeAttribute('aria-disabled');
                     } else {
                         if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
                             ul.children[idx + 1].classList.remove(disabled);
                         } else {
-                            ul.children[idx].classList.remove(disabled);
+                            ul.children[idx as number].classList.remove(disabled);
                         }
                     }
                 } else {
                     if (this.isMenu) {
-                        ul.children[idx].classList.add(disabled);
-                        ul.children[idx].setAttribute('aria-disabled', 'true');
+                        ul.children[idx as number].classList.add(disabled);
+                        ul.children[idx as number].setAttribute('aria-disabled', 'true');
                     } else {
                         if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
                             ul.children[idx + 1].classList.add(disabled);
                         } else {
-                            ul.children[idx].classList.add(disabled);
+                            ul.children[idx as number].classList.add(disabled);
                         }
                     }
                 }
@@ -2181,7 +2185,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let index: number;
         let navIdx: number[];
         for (let i: number = 0; i < items.length; i++) {
-            navIdx = this.getIndex(items[i], isUniqueId);
+            navIdx = this.getIndex(items[i as number], isUniqueId);
             index = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
             if (ul) {
@@ -2189,13 +2193,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
                         ul.children[index + 1].classList.add(HIDE);
                     } else {
-                        ul.children[index].classList.add(HIDE);
+                        ul.children[index as number].classList.add(HIDE);
                     }
                 } else {
                     if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
                         ul.children[index + 1].classList.remove(HIDE);
                     } else {
-                        ul.children[index].classList.remove(HIDE);
+                        ul.children[index as number].classList.remove(HIDE);
                     }
                 }
             }
@@ -2214,10 +2218,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let navIdx: number[];
         let iitems: MenuItemModel[];
         for (let i: number = 0; i < items.length; i++) {
-            navIdx = this.getIndex(items[i], isUniqueId);
+            navIdx = this.getIndex(items[i as number], isUniqueId);
             idx = navIdx.pop();
             iitems = this.getItems(navIdx);
-            if(!isNullOrUndefined(idx)) {
+            if (!isNullOrUndefined(idx)) {
                 this.removeItem(iitems, navIdx, idx);
             }
         }
@@ -2257,14 +2261,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             navIdx = this.getIndex(text, isUniqueId);
             idx = navIdx.pop();
             iitems = this.getItems(navIdx);
-            menuitem = new MenuItem(iitems[0] as MenuItem, 'items', items[i], true);
+            menuitem = new MenuItem(iitems[0] as MenuItem, 'items', items[i as number], true);
             iitems.splice(isAfter ? idx + 1 : idx, 0, menuitem);
             const uls: Element[] = this.isMenu ? [this.getWrapper()].concat(this.getPopups()) : [].slice.call(this.getWrapper().children);
             if (!isNullOrUndefined(idx) && navIdx.length < uls.length) {
                 idx = isAfter ? idx + 1 : idx;
-                li = this.createItems(iitems).children[idx];
+                li = this.createItems(iitems).children[idx as number];
                 const ul: Element = this.isMenu ? select('.e-menu-parent', uls[navIdx.length]) : uls[navIdx.length];
-                ul.insertBefore(li, ul.children[idx]);
+                ul.insertBefore(li, ul.children[idx as number]);
             }
         }
     }

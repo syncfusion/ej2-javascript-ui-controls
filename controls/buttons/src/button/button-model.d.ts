@@ -13,9 +13,11 @@ export interface ButtonModel extends ComponentModel{
      * * Left: The icon will be positioned to the left of the text content.
      * * Right: The icon will be positioned to the right of the text content.
      *
-     * @default "left"
+     * @isenumeration true
+     * @default IconPosition.Left
+     * @asptype IconPosition
      */
-    iconPosition?: IconPosition;
+    iconPosition?: string | IconPosition;
 
     /**
      * Defines class/multiple classes separated by a space for the Button that is used to include an icon.

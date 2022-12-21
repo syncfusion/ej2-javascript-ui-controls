@@ -420,4 +420,74 @@
     content: '\e7af';
     font-family: 'e-icons';
   }
+
+  .e-de-e-paragraph-mark::before{
+    content: '\e844';
+    font-family: 'e-icons';
+  }
+    
+  .e-de-ctnr-columns::before {
+    content: '\e89d';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctnr-page-size::before {
+    content: '\e89a';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctnr-page-break-column::before {
+    content: '\e8b4';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctnr-page-break-text-wrapping::before {
+    content: '\e8b6';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctnr-section-break-continuous::before {
+    content: '\e8b5';
+    font-family: 'e-icons';
+  }
+  
+  .e-de-ctnr-section-break-even-page::before {
+    content: '\e8b3';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctnr-section-break-odd-page::before {
+    content: '\e8b2';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctnr-columns-one::before {
+    content: '\e8b9';
+    font-family: 'e-icons';
+    font-size: $de-column-presets-font-size;
+  }
+
+  .e-de-ctnr-columns-two::before {
+    content: '\e8ba';
+    font-family: 'e-icons';
+    font-size: $de-column-presets-font-size;
+  }
+
+  .e-de-ctnr-columns-three::before {
+    content: '\e8bb';
+    font-family: 'e-icons';
+    font-size: $de-column-presets-font-size;
+  }
+
+  .e-de-ctnr-columns-right::before {
+    content: '\e8b7';
+    font-family: 'e-icons';
+    font-size: $de-column-presets-font-size;
+  }
+
+  .e-de-ctnr-columns-left::before {
+    content: '\e8b8';
+    font-family: 'e-icons';
+    font-size: $de-column-presets-font-size;
+  }
 }

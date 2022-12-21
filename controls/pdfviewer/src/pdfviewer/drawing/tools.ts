@@ -476,7 +476,7 @@ export class SelectTool extends ToolBase {
                     }
                     else if (this.pdfViewerBase.currentTarget && this.pdfViewerBase.currentTarget.id && this.commandHandler.formFields && event.type === 'mousedown') {
                         for (var i = 0; i < this.commandHandler.formFields.length; i++) {
-                            let formField = this.commandHandler.formFields[i];
+                            let formField = this.commandHandler.formFields[parseInt(i.toString(), 10)];
                             if (this.pdfViewerBase.currentTarget && this.pdfViewerBase.currentTarget.id === formField.id) {
                                 // eslint-disable-next-line
                                 let field = {

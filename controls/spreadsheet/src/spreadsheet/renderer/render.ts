@@ -4,8 +4,8 @@ import { Spreadsheet } from '../base/index';
 import { extend, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, skipHiddenIdx } from '../../workbook/index';
-import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact, updateTranslate } from '../common/index';
-import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
+import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate } from '../common/index';
+import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit } from '../common/index';
 import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdatedScrollPosition } from '../common/index';
 
 /**
@@ -316,12 +316,15 @@ export class Render {
                 });
                 break;
             }
-            if (this.parent && this.parent[isReact]) { this.parent[renderReactTemplates](); }
+            if (this.parent && (this.parent as { isReact?: boolean }).isReact) {
+                this.parent['renderReactTemplates']();
+            }
         });
         this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh, skipTranslate: args.skipTranslate });
     }
 
-    private updateTopLeftScrollPosition(args: { top?: number, left?: number, rowIndex?: number, colIndex?: number, sheet?: SheetModel }): void {
+    private updateTopLeftScrollPosition(
+        args: { top?: number, left?: number, rowIndex?: number, colIndex?: number, sheet?: SheetModel }): void {
         const topLeftCell: number[] = getCellIndexes(args.sheet.topLeftCell);
         const paneTopLeftCell: number[] = getCellIndexes(args.sheet.paneTopLeftCell);
         if (args.sheet.frozenRows) {
@@ -413,7 +416,7 @@ export class Render {
         endIdx += freezeCount;
         const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = endIdx; i >= startIdx; i--) {
-            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
+            if ((sheet[`${layout}`])[i as number] && (sheet[`${layout}`])[i as number].hidden) {
                 startIdx--;
                 if (startIdx < freezeCount) { startIdx = skipHiddenIdx(sheet, freezeCount, true, layout); break; }
             }

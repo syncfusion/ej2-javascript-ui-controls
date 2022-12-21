@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable max-len */
 /**
  * Maps base document
  */
@@ -1036,8 +1036,8 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      *
      * @default false
      */
-     @Property(false)
-     public useMarkerShape: boolean;
+    @Property(false)
+    public useMarkerShape: boolean;
     /**
      * Enables or disables the toggle visibility for legend in maps.
      *

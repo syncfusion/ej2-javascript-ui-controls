@@ -159,10 +159,10 @@ export class Zoom {
             };
             currentScale = Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1);
             if (axis.orientation === 'Horizontal') {
-                offset = (xDifference != 0 ? xDifference : (chart.previousMouseMoveX - chart.mouseX)) / axis.rect.width / currentScale;
+                offset = (xDifference !== 0 ? xDifference : (chart.previousMouseMoveX - chart.mouseX)) / axis.rect.width / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition + offset, 0, (1 - axis.zoomFactor));
             } else {
-                offset = (yDifference != 0 ? yDifference : (chart.previousMouseMoveY - chart.mouseY)) / axis.rect.height / currentScale;
+                offset = (yDifference !== 0 ? yDifference : (chart.previousMouseMoveY - chart.mouseY)) / axis.rect.height / currentScale;
                 argsData.currentZoomPosition = minMax(axis.zoomPosition - offset, 0, (1 - axis.zoomFactor));
             }
             if (!argsData.cancel) {
@@ -317,16 +317,16 @@ export class Zoom {
         }
         let argsData: IZoomCompleteEventArgs;
         for (let i: number = 0; i < zoomCompleteCollection.length; i++) {
-            if (!zoomCompleteCollection[i].cancel) {
+            if (!zoomCompleteCollection[i as number].cancel) {
                 argsData = {
                     cancel: false, name: zoomComplete,
-                    axis: chart.axisCollections[i],
-                    previousZoomFactor: zoomCompleteCollection[i].previousZoomFactor,
-                    previousZoomPosition: zoomCompleteCollection[i].previousZoomPosition,
-                    currentZoomFactor: chart.axisCollections[i].zoomFactor,
-                    currentZoomPosition: chart.axisCollections[i].zoomPosition,
-                    currentVisibleRange: chart.axisCollections[i].visibleRange,
-                    previousVisibleRange: zoomCompleteCollection[i].previousVisibleRange
+                    axis: chart.axisCollections[i as number],
+                    previousZoomFactor: zoomCompleteCollection[i as number].previousZoomFactor,
+                    previousZoomPosition: zoomCompleteCollection[i as number].previousZoomPosition,
+                    currentZoomFactor: chart.axisCollections[i as number].zoomFactor,
+                    currentZoomPosition: chart.axisCollections[i as number].zoomPosition,
+                    currentVisibleRange: chart.axisCollections[i as number].visibleRange,
+                    previousVisibleRange: zoomCompleteCollection[i as number].previousVisibleRange
                 };
                 chart.trigger(zoomComplete, argsData);
             }
@@ -465,7 +465,7 @@ export class Zoom {
         const zoomedAxisCollection: IAxisData[] = [];
         this.zoomCompleteEvtCollection = [];
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
-            const axis: Axis = chart.axisCollections[index];
+            const axis: Axis = chart.axisCollections[index as number];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                 (axis.orientation === 'Vertical' && mode !== 'X')) {
                 currentZF = axis.zoomFactor;
@@ -478,21 +478,21 @@ export class Zoom {
                 };
                 if (axis.orientation === 'Horizontal') {
                     value = pinchRect.x - this.offset.x;
-                    axisTrans = axis.rect.width / this.zoomAxes[index].delta;
-                    rangeMin = value / axisTrans + this.zoomAxes[index].min;
+                    axisTrans = axis.rect.width / this.zoomAxes[index as number].delta;
+                    rangeMin = value / axisTrans + this.zoomAxes[index as number].min;
                     value = pinchRect.x + pinchRect.width - this.offset.x;
-                    rangeMax = value / axisTrans + this.zoomAxes[index].min;
+                    rangeMax = value / axisTrans + this.zoomAxes[index as number].min;
                 } else {
                     value = pinchRect.y - this.offset.y;
-                    axisTrans = axis.rect.height / this.zoomAxes[index].delta;
-                    rangeMin = (value * -1 + axis.rect.height) / axisTrans + this.zoomAxes[index].min;
+                    axisTrans = axis.rect.height / this.zoomAxes[index as number].delta;
+                    rangeMin = (value * -1 + axis.rect.height) / axisTrans + this.zoomAxes[index as number].min;
                     value = pinchRect.y + pinchRect.height - this.offset.y;
-                    rangeMax = (value * -1 + axis.rect.height) / axisTrans + this.zoomAxes[index].min;
+                    rangeMax = (value * -1 + axis.rect.height) / axisTrans + this.zoomAxes[index as number].min;
                 }
                 selectionMin = Math.min(rangeMin, rangeMax);
                 selectionMax = Math.max(rangeMin, rangeMax);
-                currentZP = (selectionMin - this.zoomAxes[index].actualMin) / this.zoomAxes[index].actualDelta;
-                currentZF = (selectionMax - selectionMin) / this.zoomAxes[index].actualDelta;
+                currentZP = (selectionMin - this.zoomAxes[index as number].actualMin) / this.zoomAxes[index as number].actualDelta;
+                currentZF = (selectionMax - selectionMin) / this.zoomAxes[index as number].actualDelta;
                 argsData.currentZoomPosition = currentZP < 0 ? 0 : currentZP;
                 argsData.currentZoomFactor = currentZF > 1 ? 1 : (currentZF < 0.03) ? 0.03 : currentZF;
                 if (!argsData.cancel) {
@@ -562,12 +562,12 @@ export class Zoom {
         let range: IZoomAxisRange;
         let axisRange: VisibleRangeModel;
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
-            const axis: Axis = chart.axisCollections[index];
+            const axis: Axis = chart.axisCollections[index as number];
             axisRange = axis.visibleRange;
-            if (this.zoomAxes[index]) {
+            if (this.zoomAxes[index as number]) {
                 if (!chart.delayRedraw) {
-                    this.zoomAxes[index].min = axisRange.min;
-                    this.zoomAxes[index].delta = axisRange.delta;
+                    this.zoomAxes[index as number].min = axisRange.min;
+                    this.zoomAxes[index as number].delta = axisRange.delta;
                 }
             } else {
                 range = {
@@ -576,7 +576,7 @@ export class Zoom {
                     min: axisRange.min,
                     delta: axisRange.delta
                 };
-                this.zoomAxes[index] = range;
+                this.zoomAxes[index as number] = range;
             }
         }
     }
@@ -609,7 +609,7 @@ export class Zoom {
         });
         this.toolkitElements.appendChild(defElement);
         const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' : this.chart.theme === 'Fluent' ? '#F3F2F1' :
-            (this.chart.theme === "FluentDark" ? "#252423" : '#fafafa');
+            (this.chart.theme === 'FluentDark' ? '#252423' : '#fafafa');
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
             this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
@@ -853,7 +853,7 @@ export class Zoom {
         if (touches) {
             touchList = [];
             for (let i: number = 0, length: number = touches.length; i < length; i++) {
-                touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: null });
+                touchList.push({ pageX: touches[i as number].clientX, pageY: touches[i as number].clientY, pointerId: null });
             }
         } else {
             touchList = touchList ? touchList : [];
@@ -861,8 +861,8 @@ export class Zoom {
                 touchList.push({ pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId });
             } else {
                 for (let i: number = 0, length: number = touchList.length; i < length; i++) {
-                    if (touchList[i].pointerId === e.pointerId) {
-                        touchList[i] = { pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId };
+                    if (touchList[i as number].pointerId === e.pointerId) {
+                        touchList[i as number] = { pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId };
                     } else {
                         touchList.push({ pageX: e.clientX, pageY: e.clientY, pointerId: e.pointerId });
                     }

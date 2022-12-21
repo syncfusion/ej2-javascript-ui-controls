@@ -27,12 +27,12 @@ export class BarSeries extends ColumnBase {
             pointBar.regions = [];
             if (pointBar.visible && withInRange(series.points[pointBar.index - 1], pointBar, series.points[pointBar.index + 1], series)) {
                 rect = this.getRectangle(pointBar.xValue + sideBySideInfo.start, pointBar.yValue,
-                    pointBar.xValue + sideBySideInfo.end, origin, series);
+                                         pointBar.xValue + sideBySideInfo.end, origin, series);
                 rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : rect.height;
                 rect.y = series.columnWidthInPixel ? rect.y - (((series.columnWidthInPixel / 2) * series.rectCount) -
                     (series.columnWidthInPixel * series.index)) : rect.y;
                 argsData = this.triggerEvent(series, pointBar, series.interior,
-                    { width: series.border.width, color: series.border.color });
+                                             { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {
                     this.updateSymbolLocation(pointBar, rect, series);
                     this.drawRectangle(series, pointBar, rect, argsData);

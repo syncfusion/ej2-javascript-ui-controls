@@ -171,10 +171,10 @@ export class PasteCleanup {
         const enterSplitText: string[] = value.split('\n');
         let contentInnerElem: string = '';
         for (let i: number = 0; i < enterSplitText.length; i++) {
-            if (enterSplitText[i].trim() === '') {
+            if (enterSplitText[i as number].trim() === '') {
                 contentInnerElem += getDefaultValue(this.parent);
             } else {
-                const contentWithSpace: string = this.makeSpace(enterSplitText[i]);
+                const contentWithSpace: string = this.makeSpace(enterSplitText[i as number]);
                 contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
             }
         }
@@ -185,11 +185,11 @@ export class PasteCleanup {
         let spaceBetweenContent: boolean = true;
         const spaceSplit: string[] = enterSplitText.split(' ');
         for (let j: number = 0; j < spaceSplit.length; j++) {
-            if (spaceSplit[j].trim() === '') {
+            if (spaceSplit[j as number].trim() === '') {
                 contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
             } else {
                 spaceBetweenContent = false;
-                contentWithSpace += spaceSplit[j] + ' ';
+                contentWithSpace += spaceSplit[j as number] + ' ';
             }
         }
         return contentWithSpace;
@@ -202,18 +202,18 @@ export class PasteCleanup {
             const imgName: string[] = [];
             const uploadImg: Element[] = [];
             for (let i: number = 0; i < allImgElm.length; i++) {
-                if (allImgElm[i].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
-                    base64Src.push(allImgElm[i].getAttribute('src'));
+                if (allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+                    base64Src.push(allImgElm[i as number].getAttribute('src'));
                     imgName.push(getUniqueID('rte_image'));
-                    uploadImg.push(allImgElm[i]);
+                    uploadImg.push(allImgElm[i as number]);
                 }
             }
             const fileList: File[] = [];
             for (let i: number = 0; i < base64Src.length; i++) {
-                fileList.push(this.base64ToFile(base64Src[i], imgName[i]));
+                fileList.push(this.base64ToFile(base64Src[i as number], imgName[i as number]));
             }
             for (let i: number = 0; i < fileList.length; i++) {
-                this.uploadMethod(fileList[i], uploadImg[i]);
+                this.uploadMethod(fileList[i as number], uploadImg[i as number]);
             }
             if (isNOU(this.parent.insertImageSettings.path) &&
                 this.parent.insertImageSettings.saveFormat === 'Blob') {
@@ -224,19 +224,19 @@ export class PasteCleanup {
         }
         const allImgElmId: NodeListOf<Element> = elm.querySelectorAll('.pasteContent_Img');
         for (let i: number = 0; i < allImgElmId.length; i++) {
-            allImgElmId[i].classList.remove('pasteContent_Img');
-            if (allImgElmId[i].getAttribute('class').trim() === '') {
-                allImgElm[i].removeAttribute('class');
+            allImgElmId[i as number].classList.remove('pasteContent_Img');
+            if (allImgElmId[i as number].getAttribute('class').trim() === '') {
+                allImgElm[i as number].removeAttribute('class');
             }
         }
     }
 
     private getBlob(allImgElm: NodeListOf<HTMLImageElement>): void {
         for (let i: number = 0; i < allImgElm.length; i++) {
-            if (!isNOU(allImgElm[i].getAttribute('src')) &&
-        allImgElm[i].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
-                const blopUrl: string = URL.createObjectURL(convertToBlob(allImgElm[i].getAttribute('src')));
-                allImgElm[i].setAttribute('src', blopUrl);
+            if (!isNOU(allImgElm[i as number].getAttribute('src')) &&
+        allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+                const blopUrl: string = URL.createObjectURL(convertToBlob(allImgElm[i as number].getAttribute('src')));
+                allImgElm[i as number].setAttribute('src', blopUrl);
             }
         }
     }
@@ -433,7 +433,7 @@ export class PasteCleanup {
         let strLen: number = decodeStr.length;
         const decodeArr: Uint8Array = new Uint8Array(strLen);
         while (strLen--) {
-            decodeArr[strLen] = decodeStr.charCodeAt(strLen);
+            decodeArr[strLen as number] = decodeStr.charCodeAt(strLen);
         }
         if (Browser.isIE || navigator.appVersion.indexOf('Edge') > -1) {
             const blob: Blob = new Blob([decodeArr], { type: extension });
@@ -586,6 +586,7 @@ export class PasteCleanup {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         if (this.popupObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {
@@ -613,8 +614,8 @@ export class PasteCleanup {
 
     private cleanAppleClass (elem: HTMLElement): HTMLElement {
         const appleClassElem: NodeListOf<Element> = elem.querySelectorAll('br.Apple-interchange-newline');
-        for (let i = 0; i < appleClassElem.length; i++) {
-            detach(appleClassElem[i]);
+        for (let i : number = 0; i < appleClassElem.length; i++) {
+            detach(appleClassElem[i as number]);
         }
         return elem;
     }
@@ -642,24 +643,24 @@ export class PasteCleanup {
         clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
         const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
         for (let i: number = 0; i < allImg.length; i++) {
-            allImg[i].classList.add('pasteContent_Img');
+            allImg[i as number].classList.add('pasteContent_Img');
             if (this.parent.insertImageSettings.width !== 'auto') {
-                allImg[i].setAttribute('width', this.parent.insertImageSettings.width);
+                allImg[i as number].setAttribute('width', this.parent.insertImageSettings.width);
             }
             if (this.parent.insertImageSettings.minWidth !== '0' && this.parent.insertImageSettings.minWidth !== 0) {
-                allImg[i].style.minWidth = this.parent.insertImageSettings.minWidth.toString();
+                allImg[i as number].style.minWidth = this.parent.insertImageSettings.minWidth.toString();
             }
             if (this.parent.insertImageSettings.maxWidth !== null) {
-                allImg[i].style.maxWidth = this.parent.getInsertImgMaxWidth().toString();
+                allImg[i as number].style.maxWidth = this.parent.getInsertImgMaxWidth().toString();
             }
             if (this.parent.insertImageSettings.height !== 'auto') {
-                allImg[i].setAttribute('height', this.parent.insertImageSettings.height);
+                allImg[i as number].setAttribute('height', this.parent.insertImageSettings.height);
             }
             if (this.parent.insertImageSettings.minHeight !== '0' && this.parent.insertImageSettings.minHeight !== 0) {
-                allImg[i].style.minHeight = this.parent.insertImageSettings.minHeight.toString();
+                allImg[i as number].style.minHeight = this.parent.insertImageSettings.minHeight.toString();
             }
             if (this.parent.insertImageSettings.maxHeight !== null) {
-                allImg[i].style.maxHeight = this.parent.insertImageSettings.maxHeight.toString();
+                allImg[i as number].style.maxHeight = this.parent.insertImageSettings.maxHeight.toString();
             }
         }
         this.addTempClass(clipBoardElem);
@@ -687,16 +688,16 @@ export class PasteCleanup {
     private addTempClass(clipBoardElem: HTMLElement): void {
         const allChild: HTMLCollection = clipBoardElem.children;
         for (let i: number = 0; i < allChild.length; i++) {
-            allChild[i].classList.add('pasteContent_RTE');
+            allChild[i as number].classList.add('pasteContent_RTE');
         }
     }
 
     private removeTempClass(): void {
         const classElm: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.pasteContent_RTE');
         for (let i: number = 0; i < classElm.length; i++) {
-            classElm[i].classList.remove('pasteContent_RTE');
-            if (classElm[i].getAttribute('class') === '') {
-                classElm[i].removeAttribute('class');
+            classElm[i as number].classList.remove('pasteContent_RTE');
+            if (classElm[i as number].getAttribute('class') === '') {
+                classElm[i as number].removeAttribute('class');
             }
         }
     }
@@ -719,13 +720,13 @@ export class PasteCleanup {
                 if (!isNOU(clipBoardElem.firstElementChild)) {
                     const spanElm: HTMLElement = this.parent.createElement('span') as HTMLElement;
                     for (let i: number = 0, j: number = 0; i < firstElm.childNodes.length; i++, j++) {
-                        if (firstElm.childNodes[i].nodeName === '#text') {
-                            spanElm.appendChild(firstElm.childNodes[i]);
+                        if (firstElm.childNodes[i as number].nodeName === '#text') {
+                            spanElm.appendChild(firstElm.childNodes[i as number]);
                             clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
                             i--;
-                        } else if (firstElm.childNodes[i].nodeName !== '#text' && j === 0) {
-                            for (let k: number = 0; k < firstElm.childNodes[i].childNodes.length; k++) {
-                                spanElm.appendChild(firstElm.childNodes[i].childNodes[k]);
+                        } else if (firstElm.childNodes[i as number].nodeName !== '#text' && j === 0) {
+                            for (let k: number = 0; k < firstElm.childNodes[i as number].childNodes.length; k++) {
+                                spanElm.appendChild(firstElm.childNodes[i as number].childNodes[k as number]);
                                 clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
                                 k--;
                             }
@@ -763,26 +764,26 @@ export class PasteCleanup {
 
     private getTextContent(clipBoardElem: HTMLElement): void {
         for (let i: number = 0; i < this.blockNode.length; i++) {
-            const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.blockNode[i]);
+            const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.blockNode[i as number]);
             for (let j: number = 0; j < inElem.length; j++) {
                 let parElem: HTMLElement;
-                for (let k: number = 0, l: number = 0, preNode: string; k < inElem[j].childNodes.length; k++, l++) {
-                    if (inElem[j].childNodes[k].nodeName === 'DIV' || inElem[j].childNodes[k].nodeName === 'P' ||
-            (inElem[j].childNodes[k].nodeName === '#text' &&
-            (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
-            inElem[j].childNodes[k].textContent.trim() === '')) {
-                        parElem = inElem[j].childNodes[k].parentElement;
-                        inElem[j].childNodes[k].parentElement.parentElement.insertBefore(
-                            inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
+                for (let k: number = 0, l: number = 0, preNode: string; k < inElem[j as number].childNodes.length; k++, l++) {
+                    if (inElem[j as number].childNodes[k as number].nodeName === 'DIV' || inElem[j as number].childNodes[k as number].nodeName === 'P' ||
+            (inElem[j as number].childNodes[k as number].nodeName === '#text' &&
+            (inElem[j as number].childNodes[k as number].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
+            inElem[j as number].childNodes[k as number].textContent.trim() === '')) {
+                        parElem = inElem[j as number].childNodes[k as number].parentElement;
+                        inElem[j as number].childNodes[k as number].parentElement.parentElement.insertBefore(
+                            inElem[j as number].childNodes[k as number], inElem[j as number].childNodes[k as number].parentElement);
                         k--;
                     } else {
-                        parElem = inElem[j].childNodes[k].parentElement;
+                        parElem = inElem[j as number].childNodes[k as number].parentElement;
                         if (preNode === 'text') {
                             const previousElem: Element = parElem.previousElementSibling;
-                            previousElem.appendChild(inElem[j].childNodes[k]);
+                            previousElem.appendChild(inElem[j as number].childNodes[k as number]);
                         } else {
                             const divElement: HTMLElement = this.parent.createElement('div', { id: 'newDiv' });
-                            divElement.appendChild(inElem[j].childNodes[k]);
+                            divElement.appendChild(inElem[j as number].childNodes[k as number]);
                             parElem.parentElement.insertBefore(divElement, parElem);
                         }
                         k--;
@@ -796,9 +797,9 @@ export class PasteCleanup {
         }
         const allElems: NodeListOf<Element> = clipBoardElem.querySelectorAll('*');
         for (let i: number = 0; i < allElems.length; i++) {
-            const allAtr: NamedNodeMap = allElems[i].attributes;
+            const allAtr: NamedNodeMap = allElems[i as number].attributes;
             for (let j: number = 0; j < allAtr.length; j++) {
-                allElems[i].removeAttribute(allAtr[j].name);
+                allElems[i as number].removeAttribute(allAtr[j as number].name);
                 j--;
             }
         }
@@ -806,13 +807,13 @@ export class PasteCleanup {
 
     private detachInlineElements(clipBoardElem: HTMLElement): void {
         for (let i: number = 0; i < this.inlineNode.length; i++) {
-            const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.inlineNode[i]);
+            const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.inlineNode[i as number]);
             for (let j: number = 0; j < inElem.length; j++) {
                 let parElem: HTMLElement;
-                for (let k: number = 0; k < inElem[j].childNodes.length; k++) {
-                    parElem = inElem[j].childNodes[k].parentElement;
-                    inElem[j].childNodes[k].parentElement.parentElement.insertBefore(
-                        inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
+                for (let k: number = 0; k < inElem[j as number].childNodes.length; k++) {
+                    parElem = inElem[j as number].childNodes[k as number].parentElement;
+                    inElem[j as number].childNodes[k as number].parentElement.parentElement.insertBefore(
+                        inElem[j as number].childNodes[k as number], inElem[j as number].childNodes[k as number].parentElement);
                     k--;
                 }
                 if (!isNOU(parElem)) {
@@ -839,8 +840,8 @@ export class PasteCleanup {
     private removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i].tagName !== 'BR') {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
+            if (emptyElements[i as number].tagName !== 'BR') {
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);
                 }
@@ -853,19 +854,19 @@ export class PasteCleanup {
         const groupingTags: string[] = [...deniedTags];
         const keys: string[] = Object.keys(pasteCleanupGroupingTags);
         const values: string[][] = keys.map((key: string) => {
-            return pasteCleanupGroupingTags[key];
+            return pasteCleanupGroupingTags[`${key}`];
         });
         const addTags: string[] = [];
         for (let i: number = 0; i < groupingTags.length; i++) {
             //The value split using '[' because to retrieve the tag name from the user given format which may contain tag with attributes
-            if (groupingTags[i].split('[').length > 1) {
-                groupingTags[i] = groupingTags[i].split('[')[0].trim();
+            if (groupingTags[i as number].split('[').length > 1) {
+                groupingTags[i as number] = groupingTags[i as number].split('[')[0].trim();
             }
-            if (keys.indexOf(groupingTags[i]) > -1) {
-                for (let j: number = 0; j < values[keys.indexOf(groupingTags[i])].length; j++) {
-                    if (groupingTags.indexOf(values[keys.indexOf(groupingTags[i])][j]) < 0 &&
-                        addTags.indexOf(values[keys.indexOf(groupingTags[i])][j]) < 0) {
-                        addTags.push(values[keys.indexOf(groupingTags[i])][j]);
+            if (keys.indexOf(groupingTags[i as number]) > -1) {
+                for (let j: number = 0; j < values[keys.indexOf(groupingTags[i as number])].length; j++) {
+                    if (groupingTags.indexOf(values[keys.indexOf(groupingTags[i as number])][j as number]) < 0 &&
+                        addTags.indexOf(values[keys.indexOf(groupingTags[i as number])][j as number]) < 0) {
+                        addTags.push(values[keys.indexOf(groupingTags[i as number])][j as number]);
                     }
                 }
             }
@@ -876,25 +877,25 @@ export class PasteCleanup {
     //Filter Attributes in Denied Tags
     private attributesfilter(deniedTags: string[]): string[] {
         for (let i: number = 0; i < deniedTags.length; i++) {
-            if (deniedTags[i].split('[').length > 1) {
-                const userAttributes: string[] = deniedTags[i].split('[')[1].split(']')[0].split(',');
+            if (deniedTags[i as number].split('[').length > 1) {
+                const userAttributes: string[] = deniedTags[i as number].split('[')[1].split(']')[0].split(',');
                 const allowedAttributeArray: string[] = [];
                 const deniedAttributeArray: string[] = [];
                 for (let j: number = 0; j < userAttributes.length; j++) {
                     // eslint-disable-next-line
                     userAttributes[j].indexOf('!') < 0 ? allowedAttributeArray.push(userAttributes[j].trim())
-                        : deniedAttributeArray.push(userAttributes[j].split('!')[1].trim());
+                        : deniedAttributeArray.push(userAttributes[j as number].split('!')[1].trim());
                 }
                 const allowedAttribute: string = allowedAttributeArray.length > 1 ?
                     (allowedAttributeArray.join('][')) : (allowedAttributeArray.join());
                 const deniedAttribute: string = deniedAttributeArray.length > 1 ?
                     deniedAttributeArray.join('][') : (deniedAttributeArray.join());
                 if (deniedAttribute.length > 0) {
-                    const select: string = allowedAttribute !== '' ? deniedTags[i].split('[')[0] +
-            '[' + allowedAttribute + ']' : deniedTags[i].split('[')[0];
-                    deniedTags[i] = select + ':not([' + deniedAttribute + '])';
+                    const select: string = allowedAttribute !== '' ? deniedTags[i as number].split('[')[0] +
+            '[' + allowedAttribute + ']' : deniedTags[i as number].split('[')[0];
+                    deniedTags[i as number] = select + ':not([' + deniedAttribute + '])';
                 } else {
-                    deniedTags[i] = deniedTags[i].split('[')[0] + '[' + allowedAttribute + ']';
+                    deniedTags[i as number] = deniedTags[i as number].split('[')[0] + '[' + allowedAttribute + ']';
                 }
             }
         }
@@ -909,14 +910,14 @@ export class PasteCleanup {
         deniedTags = this.tagGrouping(deniedTags);
         for (let i: number = 0; i < deniedTags.length; i++) {
             const removableElement: NodeListOf<Element> = clipBoardElem.querySelectorAll(
-                deniedTags[i]
+                deniedTags[i as number]
             );
             for (let j: number = removableElement.length - 1; j >= 0; j--) {
-                const parentElem: Node = removableElement[j].parentNode;
-                while (removableElement[j].firstChild) {
-                    parentElem.insertBefore(removableElement[j].firstChild, removableElement[j]);
+                const parentElem: Node = removableElement[j as number].parentNode;
+                while (removableElement[j as number].firstChild) {
+                    parentElem.insertBefore(removableElement[j as number].firstChild, removableElement[j as number]);
                 }
-                parentElem.removeChild(removableElement[j]);
+                parentElem.removeChild(removableElement[j as number]);
             }
         }
         return clipBoardElem;
@@ -931,9 +932,9 @@ export class PasteCleanup {
         }
         for (let i: number = 0; i < deniedAttrs.length; i++) {
             const removableAttrElement: NodeListOf<HTMLElement> = clipBoardElem.
-                querySelectorAll('[' + deniedAttrs[i] + ']');
+                querySelectorAll('[' + deniedAttrs[i as number] + ']');
             for (let j: number = 0; j < removableAttrElement.length; j++) {
-                removableAttrElement[j].removeAttribute(deniedAttrs[i]);
+                removableAttrElement[j as number].removeAttribute(deniedAttrs[i as number]);
             }
         }
         return clipBoardElem;
@@ -948,17 +949,17 @@ export class PasteCleanup {
         for (let i: number = 0; i < styleElement.length; i++) {
             let allowedStyleValue: string = '';
             const allowedStyleValueArray: string[] = [];
-            const styleValue: string[] = styleElement[i].getAttribute('style').split(';');
+            const styleValue: string[] = styleElement[i as number].getAttribute('style').split(';');
             for (let k: number = 0; k < styleValue.length; k++) {
-                if (allowedStyleProps.indexOf(styleValue[k].split(':')[0].trim()) >= 0) {
-                    allowedStyleValueArray.push(styleValue[k]);
+                if (allowedStyleProps.indexOf(styleValue[k as number].split(':')[0].trim()) >= 0) {
+                    allowedStyleValueArray.push(styleValue[k as number]);
                 }
             }
-            styleElement[i].removeAttribute('style');
+            styleElement[i as number].removeAttribute('style');
             allowedStyleValue = allowedStyleValueArray.join(';').trim() === '' ?
                 allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
             if (allowedStyleValue) {
-                styleElement[i].setAttribute('style', allowedStyleValue);
+                styleElement[i as number].setAttribute('style', allowedStyleValue);
             }
         }
         return clipBoardElem;

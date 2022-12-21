@@ -1,7 +1,8 @@
 @import 'mixin.scss';
 @include export-module('button-theme') {
+
   /*! button theme */
-  // sass-lint:disable no-vendor-prefixes
+  /* stylelint-disable property-no-vendor-prefix */
   .e-btn,
   .e-css.e-btn {
     -webkit-tap-highlight-color: transparent;
@@ -26,7 +27,7 @@
 
       &:focus:not(:focus-visible) { //mouse click
         @if $skin-name == 'FluentUI' {
-          outline: none !important; // sass-lint:disable-line no-important
+          outline: none !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
@@ -90,7 +91,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -128,7 +129,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -145,8 +146,8 @@
           }
 
           &:focus:not(:focus-visible) { //mouse click
-            @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+            @if $skin-name == 'FluentUI'{
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -164,7 +165,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -178,11 +179,11 @@
         &.e-warning {
           &:focus {
             outline: $btn-focus-outline-round;
-           }
+          }
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -200,7 +201,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -225,12 +226,12 @@
         }
 
         &:focus {
-          @include  primary-focus;
+          @include primary-focus;
         }
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -248,7 +249,7 @@
           background-color: $btn-primary-active-bgcolor;
           border-color: $btn-primary-active-border-color;
           @if $skin-name == 'bootstrap4' {
-            $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
+            $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
           @else if $skin-name != 'bootstrap5' {
@@ -284,7 +285,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -326,7 +327,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -368,7 +369,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -410,7 +411,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -428,7 +429,7 @@
           background-color: $btn-danger-active-bgcolor;
           border-color: $btn-danger-active-border-color;
           @if $skin-name == 'bootstrap4' {
-            $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
+            $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, 15%), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
           @else if $skin-name != 'bootstrap5' {
@@ -464,7 +465,7 @@
           border-color: $btn-flat-focus-border-color;
           color: $btn-flat-focus-color;
           @if $skin-name == 'bootstrap4' {
-            $color-rgba: rgba(mix(lighten($btn-flat-focus-bgcolor, 50%), $btn-flat-focus-border-color, .15), .5);
+            $color-rgba: rgba(mix(lighten($btn-flat-focus-bgcolor, 50%), $btn-flat-focus-border-color, 15%), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
           @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5') {
@@ -477,7 +478,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -487,7 +488,7 @@
           border-color: $btn-flat-active-border-color;
           color: $btn-flat-active-color;
           @if $skin-name == 'bootstrap4' {
-            $color-rgba: rgba(mix(lighten($btn-flat-active-bgcolor, 50%), $btn-flat-active-border-color, .15), .5);
+            $color-rgba: rgba(mix(lighten($btn-flat-active-bgcolor, 50%), $btn-flat-active-border-color, 15%), .5);
             box-shadow: 0 0 0 .25em $color-rgba;
           }
           @else if $skin-name != 'bootstrap5' {
@@ -522,7 +523,7 @@
             border-color: $btn-flat-primary-focus-border-color;
             color: $btn-flat-primary-focus-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-primary-focus-bgcolor, 50%), $btn-flat-primary-focus-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-primary-focus-bgcolor, 50%), $btn-flat-primary-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -535,7 +536,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -545,7 +546,7 @@
             border-color: $btn-flat-primary-active-border-color;
             color: $btn-flat-primary-active-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-primary-active-bgcolor, 50%), $btn-flat-primary-active-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-primary-active-bgcolor, 50%), $btn-flat-primary-active-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
           }
@@ -579,7 +580,7 @@
             border-color: $btn-flat-success-focus-border-color;
             color: $btn-flat-success-focus-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-success-focus-bgcolor, 50%), $btn-flat-success-focus-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-success-focus-bgcolor, 50%), $btn-flat-success-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -595,7 +596,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -605,7 +606,7 @@
             border-color: $btn-flat-success-active-border-color;
             color: $btn-flat-success-active-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-success-active-bgcolor, 50%), $btn-flat-success-active-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-success-active-bgcolor, 50%), $btn-flat-success-active-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if $skin-name != 'bootstrap5' {
@@ -641,7 +642,7 @@
             border-color: $btn-flat-info-focus-border-color;
             color: $btn-flat-info-focus-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-info-focus-bgcolor, 50%), $btn-flat-info-focus-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-info-focus-bgcolor, 50%), $btn-flat-info-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -657,7 +658,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -667,7 +668,7 @@
             border-color: $btn-flat-info-active-border-color;
             color: $btn-flat-info-active-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-info-active-bgcolor, 50%), $btn-flat-info-active-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-info-active-bgcolor, 50%), $btn-flat-info-active-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if $skin-name != 'bootstrap5' {
@@ -703,7 +704,7 @@
             border-color: $btn-flat-warning-focus-border-color;
             color: $btn-flat-warning-focus-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-warning-focus-bgcolor, 50%), $btn-flat-warning-focus-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-warning-focus-bgcolor, 50%), $btn-flat-warning-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -719,7 +720,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -729,7 +730,7 @@
             border-color: $btn-flat-warning-active-border-color;
             color: $btn-flat-warning-active-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-warning-active-bgcolor, 50%), $btn-flat-warning-active-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-warning-active-bgcolor, 50%), $btn-flat-warning-active-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if $skin-name != 'bootstrap5' {
@@ -765,7 +766,7 @@
             border-color: $btn-flat-danger-focus-border-color;
             color: $btn-flat-danger-focus-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-danger-focus-bgcolor, 50%), $btn-flat-danger-focus-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-danger-focus-bgcolor, 50%), $btn-flat-danger-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
@@ -781,7 +782,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -791,7 +792,7 @@
             border-color: $btn-flat-danger-active-border-color;
             color: $btn-flat-danger-active-color;
             @if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-flat-danger-active-bgcolor, 50%), $btn-flat-danger-active-border-color, .15), .5);
+              $color-rgba: rgba(mix(lighten($btn-flat-danger-active-bgcolor, 50%), $btn-flat-danger-active-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba;
             }
             @else if $skin-name != 'bootstrap5' {
@@ -835,7 +836,7 @@
 
         &:focus:not(:focus-visible) { //mouse click
           @if $skin-name == 'FluentUI' {
-            outline: none !important; // sass-lint:disable-line no-important
+            outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -876,7 +877,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -924,7 +925,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -972,7 +973,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -1020,7 +1021,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -1068,7 +1069,7 @@
 
           &:focus:not(:focus-visible) { //mouse click
             @if $skin-name == 'FluentUI' {
-              outline: none !important; // sass-lint:disable-line no-important
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
           }
 
@@ -1105,11 +1106,37 @@
         }
 
         &:focus:not(:focus-visible) {
-          outline: none !important; // sass-lint:disable-line no-important
+          outline: none !important; /* stylelint-disable-line declaration-no-important */
         }
 
         &:disabled {
           @include link-disabled;
+        }
+      }
+
+      &.e-inherit {
+        color: inherit;
+        background: inherit;
+        border-color: transparent;
+        box-shadow: none;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &.e-active {
+          background: rgba(transparent, .056);
+          border-color: transparent;
+          box-shadow: none;
+          color: inherit;
+          outline: none;
+        }
+
+        &:disabled {
+          background: inherit;
+          color: inherit;
+          border-color: transparent;
+          box-shadow: none;
+          opacity: .5;
         }
       }
     }

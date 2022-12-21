@@ -140,7 +140,7 @@ describe('accumulation on-property-change checking on', () => {
         expect(temp === 157 || temp === 156).toBe(true);
         dataLabel = getElement('acc-chart_datalabel_Series_0_text_1');
         temp = parseInt(dataLabel.getAttribute('x'), 10);
-        expect(temp === 326 || temp === 327).toBe(true);
+        expect(temp === 336 || temp === 327).toBe(true);
         temp = parseInt(dataLabel.getAttribute('y'), 10);
         expect(temp === 60 || temp === 59).toBe(true);
         done();
@@ -157,11 +157,11 @@ describe('accumulation on-property-change checking on', () => {
         accumulation.isMultiSelect = true;
         accumulation.dataBind();
         let slice: Element = getElement('acc-chart_Series_0_Point_3');
-        expect(slice.getAttribute('class')).toBe('acc-chart_ej2_chart_selection_series_0');
+        expect(slice.getAttribute('class')).toBe('acc-chart_ej2_chart_selection_series_0'+'_point_3');
         slice = getElement('acc-chart_Series_0_Point_5');
         expect(slice.getAttribute('class')).toBe('acc-chart_ej2_deselected');
         slice = getElement('acc-chart_Series_0_Point_7');
-        expect(slice.getAttribute('class')).toBe('acc-chart_ej2_chart_selection_series_0');
+        expect(slice.getAttribute('class')).toBe('acc-chart_ej2_chart_selection_series_0'+'_point_7');
         done();
     });
     it('Multiple Selection false change checking', (done: Function) => {
@@ -170,7 +170,7 @@ describe('accumulation on-property-change checking on', () => {
         let slice: Element = getElement('acc-chart_Series_0_Point_3');
         expect(slice.getAttribute('class')).toBe('acc-chart_ej2_deselected');
         slice = getElement('acc-chart_Series_0_Point_7');
-        expect(slice.getAttribute('class')).toBe('acc-chart_ej2_chart_selection_series_0');
+        expect(slice.getAttribute('class')).toBe('acc-chart_ej2_chart_selection_series_0'+'_point_7');
         done();
     });
     it('Annotation change checking', (done: Function) => {

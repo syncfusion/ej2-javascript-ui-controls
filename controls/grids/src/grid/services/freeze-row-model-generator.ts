@@ -37,7 +37,8 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
         const row: Row<Column>[] = this.parent.enableVirtualization && !notifyArgs.isFrozenRowsRender ? virtualRows
             : this.rowModelGenerator.generateRows(data, notifyArgs);
         for (let i: number = 0, len: number = row.length; i < len; i++) {
-            row[i].cells = splitFrozenRowObjectCells(this.parent, row[i].cells, tableName);
+            row[parseInt(i.toString(), 10)].cells =
+                splitFrozenRowObjectCells(this.parent, row[parseInt(i.toString(), 10)].cells, tableName);
         }
         return row;
     }

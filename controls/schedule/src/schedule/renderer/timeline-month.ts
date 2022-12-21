@@ -98,7 +98,7 @@ export class TimelineMonth extends Month {
             for (const data of this.colLevels[this.colLevels.length - 1]) {
                 data.className = [cls.WORK_CELLS_CLASS];
                 if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                    const resLevel: TdData = this.parent.resourceBase.renderedResources[row];
+                    const resLevel: TdData = this.parent.resourceBase.renderedResources[parseInt(row.toString(), 10)];
                     data.workDays = (resLevel.resourceData[resLevel.resource.workDaysField] as number[]) || this.parent.workDays;
                     data.className = data.className.concat(resLevel.className);
                     data.groupIndex = resLevel.groupIndex;
@@ -108,10 +108,10 @@ export class TimelineMonth extends Month {
                     date: new Date(+data.date), colSpan: data.colSpan, groupIndex: data.groupIndex, workDays: data.workDays,
                     type: 'monthCells', className: data.className
                 };
-                if (!slotDatas[row]) {
-                    slotDatas[row] = [];
+                if (!slotDatas[parseInt(row.toString(), 10)]) {
+                    slotDatas[parseInt(row.toString(), 10)] = [];
                 }
-                slotDatas[row].push(slotData);
+                slotDatas[parseInt(row.toString(), 10)].push(slotData);
             }
         }
         return slotDatas;
@@ -156,7 +156,7 @@ export class TimelineMonth extends Month {
     public getAdjustedDate(startTime: Date): Date {
         const timeSlots: TdData[] = this.colLevels[this.colLevels.length - 1];
         for (let i: number = 0; i < timeSlots.length; i++) {
-            if (timeSlots[i].date.getTime() > startTime.getTime()) {
+            if (timeSlots[parseInt(i.toString(), 10)].date.getTime() > startTime.getTime()) {
                 return timeSlots[i - 1].date;
             }
         }

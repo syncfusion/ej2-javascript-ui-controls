@@ -1,5 +1,5 @@
 import { Property, Event, Component, EmitType, Internationalization, extend } from '@syncfusion/ej2-base';
-import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';
+import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';
 import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';
@@ -45,10 +45,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public globalize: Internationalization;
     /** @hidden */
     public localeObj: L10n;
-    /* eslint-disable*/
     /** @hidden */
-    public isAdaptive: Boolean;
-    /* eslint-enable*/
+    public isAdaptive: boolean;
     /** @hidden */
     public pivotFieldList: IFieldListOptions | IOlapFieldListOptions;
     /** @hidden */
@@ -89,7 +87,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public isPopupView: boolean = false;
     /** @hidden */
     public filterTargetID: HTMLElement;
-    /* eslint-disable-next-line*/
     private defaultLocale: Object;
     private captionData: FieldOptionsModel[][];
 
@@ -131,31 +128,29 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public destroyEngine: boolean = false;
 
     //Property Declarations
-
-    /* eslint-disable */
-    /** 
+    /**
      * Allows the following pivot report information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list.
      * * `catalog`: Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. **Note: It is applicable only for OLAP data source.**
      * * `cube`: Allows you to set the SSAS cube name as string type that used to retrieve data for pivot table rendering. **Note: It is applicable only for OLAP data source.**
      * * `providerType`: Allows to set the provider type to identify the given connection is either Relational or SSAS to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
      * * `url`: Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
-     * * `localeIdentifier`: Allows you to set the specific culture code as number type to render pivot table with desired localization. 
+     * * `localeIdentifier`: Allows you to set the specific culture code as number type to render pivot table with desired localization.
      * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicale only for OLAP data source.**
      * * `dataSource`: Allows you to set the data source to the pivot report either as JSON data collection or from remote data server using DataManager to the render the pivot that and field list. **Note: It is applicable only for relational data source.**
      * * `rows`: Allows specific fields associated with field information that needs to be displayed in row axis of pivot table.
      * * `columns`: Allows specific fields associated with field information that needs to be displayed in column axis of pivot table.
      * * `values`: Allows specific fields associated with field information that needs to be displayed as aggregated numeric values in pivot table.
      * * `filters`: Allows to filter the values in other axis based on the collection of filter fields in pivot table.
-     * * `excludeFields`: Allows you to restrict the specific field(s) from displaying it in the field list UI. 
+     * * `excludeFields`: Allows you to restrict the specific field(s) from displaying it in the field list UI.
      * You may also be unable to render the pivot table with this field(s) by doing so. **Note: It is applicable only for relational data source.**
-     * * `expandAll`: Allows you to either expand or collapse all the headers that are displayed in the pivot table. 
+     * * `expandAll`: Allows you to either expand or collapse all the headers that are displayed in the pivot table.
      * By default, all the headers are collapsed in the pivot table. **Note: It is applicable only for Relational data.**
      * * `valueAxis`: Allows you to set the value fields that to be plotted either in row or column axis in the pivot table.
      * * `filterSettings`: Allows specific fields associated with either selective or conditional-based filter members that used to be displayed in the pivot table.
-     * * `sortSettings`: Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table. 
+     * * `sortSettings`: Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table.
      * By default, the data source containing fields are display with Ascending order alone. To use this option, it requires the `enableSorting` property to be **true**.
      * * `enableSorting`: Allows to perform sort operation to order members of a specific fields either in ascending or descending that used to be displayed in the pivot table.
-     * * `formatSettings`: Allows specific fields used to display the values with specific format that used to be displayed in the pivot table. 
+     * * `formatSettings`: Allows specific fields used to display the values with specific format that used to be displayed in the pivot table.
      * For example, to display a specific field with currency formatted values in the pivot table, the set the `format` property to be **C**.
      * * `drilledMembers`: Allows specific fields to with specify the headers that used to be either expanded or collapsed in the pivot table.
      * * `valueSortSettings`: Allows to sort individual value field and its aggregated values either in row or column axis to ascending or descending order.
@@ -169,13 +164,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * * `showGrandTotals`: Allows to show or hide grand totals in both rows and columns axis of the pivot table.
      * * `showRowGrandTotals`: Allows to show or hide grand totals in row axis of the pivot table.
      * * `showColumnGrandTotals`: Allows to show or hide grand totals in column axis of the pivot table.
-     * * `showHeaderWhenEmpty`: Allows the undefined headers to be displayed in the pivot table, when the specific field(s) are not defined in the raw data. 
+     * * `showHeaderWhenEmpty`: Allows the undefined headers to be displayed in the pivot table, when the specific field(s) are not defined in the raw data.
      * For example, if the raw data for the field ‘Country’ is defined as “United Kingdom” and “State” is not defined means, it will be shown as “United Kingdom >> Undefined” in the header section.
      * * `alwaysShowValueHeader`: Allows to show the value field header always in pivot table, even if it holds a single field in the value field axis.
      * * `conditionalFormatSettings`: Allows a collection of values fields to change the appearance of the pivot table value cells with different style properties such as background color, font color, font family, and font size based on specific conditions.
      * * `emptyCellsTextContent`: Allows to show custom string to the empty value cells that used to display in the pivot table. You can fill empty value cells with any value like “0”, ”-”, ”*”, “(blank)”, etc.
-     * * `groupSettings`: Allows specific fields to group their data on the basis of their type. 
-     * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc. 
+     * * `groupSettings`: Allows specific fields to group their data on the basis of their type.
+     * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc.
      * You can perform custom group to the string type fields that used to displayed in the pivot table.
      * * `authentication`: Allows you to set the credential information to access the specified SSAS cube. Note: It is applicable only for OLAP data source.
      */
@@ -184,35 +179,39 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Allows to show field list either in static or popup mode. The available modes are:
-     * * `Popup`: To display the field list icon in pivot table UI to invoke the built-in dialog. 
+     * * `Popup`: To display the field list icon in pivot table UI to invoke the built-in dialog.
      * It hepls to display over the pivot table UI without affecting any form of UI shrink within a web page.
      * * `Fixed`: To display the field list in a static position within a web page.
+     *
      * @default 'Popup'
      */
     @Property('Popup')
     public renderMode: Mode;
 
     /**
-     * Allows you to set the specific target element to the fieldlist dialog. 
-     * This helps the field list dialog to display the appropriate position on its target element.  
+     * Allows you to set the specific target element to the fieldlist dialog.
+     * This helps the field list dialog to display the appropriate position on its target element.
      * > To use thsi option, set the property `renderMode` to be **Popup**.
+     *
      * @default null
      */
     @Property()
     public target: HTMLElement | string;
 
     /**
-     * Allows you to add the CSS class name to the field list element. 
+     * Allows you to add the CSS class name to the field list element.
      * Use this class name, you can customize the field list easily at your end.
+     *
      * @default ''
      */
     @Property('')
     public cssClass: string;
 
     /**
-     * Allows the built-in calculated field dialog to be displayed in the component. 
-     * You can view the calculated field dialog by clicking the "Calculated Field" button in the field list UI. 
+     * Allows the built-in calculated field dialog to be displayed in the component.
+     * You can view the calculated field dialog by clicking the "Calculated Field" button in the field list UI.
      * This dialog will helps you to create a new calculated field in the pivot table, based on available fields from the bound data source or using simple formula with basic arithmetic operators at runtime.
+     *
      * @default false
      */
     @Property(false)
@@ -225,62 +224,66 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public enableFieldSearching: boolean;
 
     /**
-     * Allows you to create a pivot button with "Values" as a caption used to display in the field list UI. 
+     * Allows you to create a pivot button with "Values" as a caption used to display in the field list UI.
      * It helps you to plot the value fields to either column or row axis during runtime.
-     * > The showValuesButton property is enabled by default for the OLAP data source. 
+     * > The showValuesButton property is enabled by default for the OLAP data source.
      * And the pivot button can be displayed with "Measures" as a caption used to display in the field list UI.
+     *
      * @default false
      */
     @Property(false)
     public showValuesButton: boolean;
 
     /**
-     * Allows the pivot table component to be updated only on demand, meaning, 
-     * you can perform a variety of operations such as drag-and-drop fields between row, column, value and filter axes, 
+     * Allows the pivot table component to be updated only on demand, meaning,
+     * you can perform a variety of operations such as drag-and-drop fields between row, column, value and filter axes,
      * apply sorting and filtering inside the Field List, resulting the field list UI would be updated on its own, but not the pivot table.
-     * On clicking the “Apply” button in the Field List, the pivot table will updates the last modified report. 
+     * On clicking the “Apply” button in the Field List, the pivot table will updates the last modified report.
      * This helps to improve the performance of the pivot table component rendering.
+     *
      * @default false
      */
     @Property(false)
     public allowDeferLayoutUpdate: boolean;
 
     /**
-     * Allows you to set the limit for displaying members while loading large data in the member filter dialog. 
+     * Allows you to set the limit for displaying members while loading large data in the member filter dialog.
      * Based on this limit, initial loading will be completed quickly without any performance constraint.
      * A message with remaining member count, that are not currently shown in the member filter dialog UI, will be displayed in the member editor.
      * > This property is not applicable to user-defined hierarchies in the OLAP data source.
-     * @default 1000    
+     *
+     * @default 1000
      */
     @Property(1000)
     public maxNodeLimitInMemberEditor: number;
 
     /**
-     * Allows to load members inside the member filter dialog on-demand. 
-     * The first level members will be loaded from the OLAP cube to display the member editor by default. 
+     * Allows to load members inside the member filter dialog on-demand.
+     * The first level members will be loaded from the OLAP cube to display the member editor by default.
      * As a result, the member editor will be opened quickly, without any performance constraints.
-     * You can use either of the following actions to load  your next level members. The actions are: 
-     * * By clicking on the respective member's expander button. By doing so, only the child members of the respective member will be loaded. 
+     * You can use either of the following actions to load  your next level members. The actions are:
+     * * By clicking on the respective member's expander button. By doing so, only the child members of the respective member will be loaded.
      * * Choose the level from the drop-down button. By doing so, all the members up to the level chosen will be loaded from the cube.
-     * 
      * Also, searching members will only be considered for the level members that are loaded.
      * > This property is applicable only for OLAP data source.
-     * @default true    
+     *
+     * @default true
      */
     @Property(true)
     public loadOnDemandInMemberEditor: boolean;
 
     /**
-     * Allows the appearance of the loading indicator to be customized with either an HTML string or the element’s ID, 
+     * Allows the appearance of the loading indicator to be customized with either an HTML string or the element’s ID,
      * that can be used to displayed with custom formats in the field list UI.
+     *
      * @default null
      */
     @Property()
     public spinnerTemplate: string;
 
     /**
-     * Allows you to show a menu with built-in aggregate options displayed in the pivot button's dropdown icon of fieldList UI. 
-     * These aggregate options help to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… easily at runtime. 
+     * Allows you to show a menu with built-in aggregate options displayed in the pivot button's dropdown icon of fieldList UI.
+     * These aggregate options help to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… easily at runtime.
      * The available aggregate options are:
      * * `Sum`: Allows to display the pivot table values with sum.
      * * `Product`: Allows to display the pivot table values with product.
@@ -304,8 +307,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * * `PercentageOfParentTotal`: Allows to display the pivot table values with percentage of total of all values based on selected field.
      * * `PercentageOfParentColumnTotal`: Allows to display the pivot table values with percentage of its parent total in each column.
      * * `PercentageOfParentRowTotal`: Allows to display the pivot table values with percentage of its parent total in each row.
-     * 
+     *
      * > It is applicable ony for Relational data.
+     *
      * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar',
      * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
      * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
@@ -315,10 +319,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public aggregateTypes: AggregateTypes[];
 
     /**
-     * Allows values with a specific country currency format to be displayed in the pivot table. 
-     * Standard currency codes referred to as ISO 4217 can be used for the formatting of currency values. 
-     * For example, to display "US Dollar($)" currency values, set the `currencyCode` to **USD**. 
+     * Allows values with a specific country currency format to be displayed in the pivot table.
+     * Standard currency codes referred to as ISO 4217 can be used for the formatting of currency values.
+     * For example, to display "US Dollar($)" currency values, set the `currencyCode` to **USD**.
      * > It is applicable ony for Relational data.
+     *
      * @private
      */
     @Property('USD')
@@ -328,56 +333,64 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /**
      * It allows any customization of Pivot Field List properties on initial rendering.
      * Based on the changes, the pivot field list will be redered.
-     * @event
+     *
+     * @event load
      */
     @Event()
     public load: EmitType<LoadEventArgs>;
 
     /**
-     * It triggers before the pivot engine starts to populate and allows to customize the pivot datasource settings. 
-     * @event
+     * It triggers before the pivot engine starts to populate and allows to customize the pivot datasource settings.
+     *
+     * @event enginePopulating
      */
     @Event()
     public enginePopulating: EmitType<EnginePopulatingEventArgs>;
 
     /**
      * It triggers before the filtering applied.
-     * @event
+     *
+     * @event memberFiltering
      */
     @Event()
     public memberFiltering: EmitType<MemberFilteringEventArgs>;
 
     /**
      * It triggers after the pivot engine populated and allows to customize the pivot datasource settings.
-     * @event
+     *
+     * @event enginePopulated
      */
     @Event()
     public enginePopulated: EmitType<EnginePopulatedEventArgs>;
 
     /**
      * It trigger when a field getting dropped into any axis.
-     * @event
+     *
+     * @event onFieldDropped
      */
     @Event()
     public onFieldDropped: EmitType<FieldDroppedEventArgs>;
 
     /**
      * It triggers before a field drops into any axis.
-     * @event
+     *
+     * @event fieldDrop
      */
     @Event()
     public fieldDrop: EmitType<FieldDropEventArgs>;
 
     /**
      * It trigger when a field drag (move) starts.
-     * @event
+     *
+     * @event fieldDragStart
      */
     @Event()
     public fieldDragStart: EmitType<FieldDragStartEventArgs>;
 
     /**
      * It allows to change the each cell value during engine populating.
-     * @event
+     *
+     * @event aggregateCellInfo
      * @deprecated
      */
     @Event()
@@ -385,57 +398,64 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     /**
      * It triggers before member editor dialog opens.
-     * @event
+     *
+     * @event memberEditorOpen
      */
     @Event()
     public memberEditorOpen: EmitType<MemberEditorOpenEventArgs>;
 
     /**
      * It triggers before a calculated field created/edited during runtime.
-     * @event
+     *
+     * @event calculatedFieldCreate
      */
     @Event()
     public calculatedFieldCreate: EmitType<CalculatedFieldCreateEventArgs>;
 
     /**
      * It triggers before aggregate type context menu opens.
-     * @event
+     *
+     * @event aggregateMenuOpen
      */
     @Event()
     public aggregateMenuOpen: EmitType<AggregateMenuOpenEventArgs>;
 
     /**
      * It triggers before removing the field from any axis during runtime.
-     * @event
+     *
+     * @event fieldRemove
      */
     @Event()
     public fieldRemove: EmitType<FieldRemoveEventArgs>;
 
-    /** 
+    /**
      * It trigger when the Pivot Field List rendered.
-     * @event
+     *
+     * @event dataBound
      */
     @Event()
     public dataBound: EmitType<Object>;
 
-    /** 
+    /**
      * It trigger when the Pivot Field List component is created..
-     * @event
+     *
+     * @event created
      */
     @Event()
     public created: EmitType<Object>;
 
-    /** 
+    /**
      * It trigger when the Pivot Field List component getting destroyed.
-     * @event
+     *
+     * @event destroyed
      */
     @Event()
     public destroyed: EmitType<Object>;
-    /* eslint-enable */
 
     /**
      * It triggers before service get invoked from client.
-     * @event
+     *
+     * @event beforeServiceInvoke
      */
     @Event()
     public beforeServiceInvoke: EmitType<BeforeServiceInvokeEventArgs>;
@@ -444,12 +464,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * It triggers when UI action begins in the Pivot FieldList. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
      * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
-     * Button actions such as 
+     * Button actions such as
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and
      * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
-     * @event
+     *
+     * @event actionBegin
      */
     @Event()
     public actionBegin: EmitType<PivotActionBeginEventArgs>;
@@ -458,12 +479,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * It triggers when UI action in the Pivot FieldList completed. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
      * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
-     * Button actions such as 
+     * Button actions such as
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and
      * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
-     * @event
+     *
+     * @event actionComplete
      */
     @Event()
     public actionComplete: EmitType<PivotActionCompleteEventArgs>;
@@ -472,39 +494,43 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * It triggers when UI action failed to achieve the desired results in the Pivot FieldList. The UI actions used to trigger this event such as
      * sorting fields through icon click in the field list tree,
      * [`Calculated field`](../../pivotview/field-list/#calculated-fields) UI,
-     * Button actions such as 
+     * Button actions such as
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
-     * [`filtering`](../../pivotview/field-list/#filtering-members) and 
+     * [`filtering`](../../pivotview/field-list/#filtering-members) and
      * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
-     * @event
+     *
+     * @event actionFailure
      */
     @Event()
     public actionFailure: EmitType<PivotActionFailureEventArgs>;
 
     /**
      * It triggers before the sorting performed.
-     * @event
+     *
+     * @event onHeadersSort
      */
     @Event()
     public onHeadersSort: EmitType<HeadersSortEventArgs>;
 
     /**
      * Constructor for creating the widget
+     *
      * @param  {PivotFieldListModel} options - options
      * @param  {string|HTMLElement} element - element
      */
-    constructor(options?: PivotFieldListModel, element?: string | HTMLElement) {    /* eslint-disable-line */
+    constructor(options?: PivotFieldListModel, element?: string | HTMLElement) {
         super(options, <string | HTMLElement>element);
     }
 
     /**
      * To provide the array of modules needed for control rendering
+     *
      * @returns {ModuleDeclaration[]} - ModuleDeclaration[]
      * @hidden
      */
     public requiredModules(): ModuleDeclaration[] {
-        let modules: ModuleDeclaration[] = [];
+        const modules: ModuleDeclaration[] = [];
         if (this.allowCalculatedField) {
             modules.push({ args: [this], member: 'calculatedField' });
         }
@@ -521,11 +547,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal',
             'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
     }
-    /* eslint-disable-next-line */
+
     /**
      * For internal use only - Initialize the event handler;
+     *
      * @private
      */
+
     protected preRender(): void {
         if (this.dataSourceSettings && this.dataSourceSettings.providerType === 'SSAS') {
             this.olapEngineModule = new OlapEngine();
@@ -537,7 +565,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.renderModule = new Render(this);
-        /* eslint-disable */
         this.defaultLocale = {
             staticFieldList: 'Pivot Field List',
             fieldList: 'Field List',
@@ -692,25 +719,25 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             no: 'No',
             None: 'None'
         };
-        /* eslint-enable */
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
         this.captionData = [];
         this.wireEvent();
     }
 
-    private frameCustomProperties(fieldListData?: IOlapField[], fieldList?: IOlapFieldListOptions): ICustomProperties | IOlapCustomProperties { /* eslint-disable-line */
+    private frameCustomProperties(fieldListData?: IOlapField[], fieldList?: IOlapFieldListOptions)
+        : ICustomProperties | IOlapCustomProperties {
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
-        let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
-        let isPaging: boolean = this.pivotGridModule ? this.pivotGridModule.enablePaging : false;
-        let isVirtualization: boolean = this.pivotGridModule ? this.pivotGridModule.enableVirtualization : false;
-        let localeObj: L10n = this.pivotGridModule ? this.pivotGridModule.localeObj :
+        const pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
+        const isPaging: boolean = this.pivotGridModule ? this.pivotGridModule.enablePaging : false;
+        const isVirtualization: boolean = this.pivotGridModule ? this.pivotGridModule.enableVirtualization : false;
+        const localeObj: L10n = this.pivotGridModule ? this.pivotGridModule.localeObj :
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
-        let isDrillThrough: boolean = this.pivotGridModule ?
+        const isDrillThrough: boolean = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
-        let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
+        const enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
         let customProperties: ICustomProperties | IOlapCustomProperties;
         if (this.dataType === 'olap') {
             customProperties = {
@@ -740,9 +767,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         return customProperties;
     }
 
-    /* eslint-disable */
     /**
      * Initialize the control rendering
+     *
      * @returns {void}
      * @private
      */
@@ -752,10 +779,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.guid = PivotUtil.generateUUID();
                 this.getEngine('initialRender', null, null, null, null, null, null);
             } else {
-                this.request.open("GET", this.dataSourceSettings.url, true);
+                this.request.open('GET', this.dataSourceSettings.url, true);
                 this.request.withCredentials = false;
                 this.request.onreadystatechange = this.onReadyStateChange.bind(this);
-                this.request.setRequestHeader("Content-type", "text/plain");
+                this.request.setRequestHeader('Content-type', 'text/plain');
                 this.request.send(null);
             }
         } else {
@@ -764,22 +791,28 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     *
      * @hidden
+     *
      */
-    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: FetchRawDataArgs, editArgs?: UpdateRawDataArgs): void {
+
+    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields,
+                     filterItem?: IFilter, memberName?: string, rawDataArgs?: FetchRawDataArgs, editArgs?: UpdateRawDataArgs): void {
         this.currentAction = action;
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
-        let customProperties: any = {
-            pageSettings: (this.pivotGridModule && this.pivotGridModule.enableVirtualization) ? this.pivotGridModule.pageSettings : undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const customProperties: any = {
+            pageSettings: (this.pivotGridModule && this.pivotGridModule.enableVirtualization) ?
+                this.pivotGridModule.pageSettings : undefined,
             enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
-        this.request.open("POST", this.dataSourceSettings.url, true);
-        let params: BeforeServiceInvokeEventArgs = {
+        this.request.open('POST', this.dataSourceSettings.url, true);
+        const params: BeforeServiceInvokeEventArgs = {
             request: this.request,
             dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
             action: action,
@@ -811,37 +844,40 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         });
         this.request.withCredentials = false;
         this.request.onreadystatechange = this.onSuccess.bind(this);
-        this.request.setRequestHeader("Content-type", "application/json");
+        this.request.setRequestHeader('Content-type', 'application/json');
         this.request.send(JSON.stringify(params));
     }
 
     private onSuccess(): void {
         if (this.request.readyState === XMLHttpRequest.DONE) {
             try {
-                let engine: any = JSON.parse(this.request.responseText);
+                /* eslint-disable */
+                const engine: any = JSON.parse(this.request.responseText);
                 if (this.currentAction === 'fetchFieldMembers') {
-                    let currentMembers: any = JSON.parse(engine.members);
-                    let dateMembers: any = [];
-                    let formattedMembers: any = {};
-                    let members: any = {};
+                    const currentMembers: any = JSON.parse(engine.members);
+                    const dateMembers: any = [];
+                    const formattedMembers: any = {};
+                    const members: any = {};
+                /* eslint-enable */
                     for (let i: number = 0; i < currentMembers.length; i++) {
-                        dateMembers.push({ formattedText: currentMembers[i].FormattedText, actualText: currentMembers[i].ActualText });
-                        formattedMembers[currentMembers[i].FormattedText] = {};
-                        members[currentMembers[i].ActualText] = {};
+                        dateMembers.push({ formattedText: currentMembers[i as number].FormattedText,
+                            actualText: currentMembers[i as number].ActualText });
+                        formattedMembers[currentMembers[i as number].FormattedText] = {};
+                        members[currentMembers[i as number].ActualText] = {};
                     }
                     this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                     this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
                     this.engineModule.fieldList[engine.memberName].members = members;
                     this.pivotButtonModule.updateFilterEvents();
                 } else {
-                    let fList: IFieldListOptions = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    const fList: IFieldListOptions = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
                     if (this.engineModule.fieldList) {
-                        let keys: string[] = Object.keys(this.engineModule.fieldList);
+                        const keys: string[] = Object.keys(this.engineModule.fieldList);
                         for (let i: number = 0; i < keys.length; i++) {
-                            if (this.engineModule.fieldList[keys[i]] && fList[keys[i]]) {
-                                fList[keys[i]].dateMember = this.engineModule.fieldList[keys[i]].dateMember;
-                                fList[keys[i]].formattedMembers = this.engineModule.fieldList[keys[i]].formattedMembers;
-                                fList[keys[i]].members = this.engineModule.fieldList[keys[i]].members;
+                            if (this.engineModule.fieldList[keys[i as number]] && fList[keys[i as number]]) {
+                                fList[keys[i as number]].dateMember = this.engineModule.fieldList[keys[i as number]].dateMember;
+                                fList[keys[i as number]].formattedMembers = this.engineModule.fieldList[keys[i as number]].formattedMembers;
+                                fList[keys[i as number]].members = this.engineModule.fieldList[keys[i as number]].members;
                             }
                         }
                     }
@@ -854,16 +890,18 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.engineModule.rowFirstLvl = JSON.parse(engine.pivotCount).RowFirstLevel;
                     this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
                     let rowPos: number;
-                    let pivotValues: any = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const pivotValues: any = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
                     for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {
-                        if (pivotValues[rCnt] && pivotValues[rCnt][0] && pivotValues[rCnt][0].axis === 'row') {
+                        if (pivotValues[rCnt as number] && pivotValues[rCnt as number][0] && pivotValues[rCnt as number][0].axis === 'row') {
                             rowPos = rCnt;
                             break;
                         }
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-                    let valueSort: any = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const valueSort: any = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
                     this.engineModule.valueSortSettings = {
                         headerText: valueSort.HeaderText,
                         headerDelimiter: valueSort.HeaderDelimiter,
@@ -881,7 +919,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.calculatedFieldModule.endDialog();
                     this.calculatedFieldModule.isRequireUpdate = false;
                 }
-                if (this.pivotGridModule && this.pivotGridModule.calculatedFieldModule && this.pivotGridModule.calculatedFieldModule.isRequireUpdate) {
+                if (this.pivotGridModule && this.pivotGridModule.calculatedFieldModule &&
+                    this.pivotGridModule.calculatedFieldModule.isRequireUpdate) {
                     this.pivotGridModule.calculatedFieldModule.endDialog();
                     this.pivotGridModule.calculatedFieldModule.isRequireUpdate = false;
                 }
@@ -893,10 +932,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (this.request.readyState === XMLHttpRequest.DONE) {
             let dataSource: string[][] | IDataSet[] = [];
             if (this.dataSourceSettings.type === 'CSV') {
-                let jsonObject: string[] = this.request.responseText.split(/\r?\n|\r/);
+                const jsonObject: string[] = this.request.responseText.split(/\r?\n|\r/);
                 for (let i: number = 0; i < jsonObject.length; i++) {
-                    if (!isNullOrUndefined(jsonObject[i]) && jsonObject[i] !== '') {
-                        (dataSource as string[][]).push(jsonObject[i].split(','));
+                    if (!isNullOrUndefined(jsonObject[i as number]) && jsonObject[i as number] !== '') {
+                        (dataSource as string[][]).push(jsonObject[i as number].split(','));
                     }
                 }
             } else {
@@ -935,18 +974,24 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     *
      * Binding events to the Pivot Field List element.
+     *
      * @hidden
      */
+
     private wireEvent(): void {
         this.on(events.initialLoad, this.generateData, this);
         this.on(events.dataReady, this.fieldListRender, this);
     }
 
     /**
+     *
      * Unbinding events from the element on widget destroy.
+     *
      * @hidden
      */
+
     private unWireEvent(): void {
         if (this.pivotGridModule && this.pivotGridModule.isDestroyed) { return; }
         this.off(events.initialLoad, this.generateData);
@@ -955,126 +1000,136 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Get the properties to be maintained in the persisted state.
+     *
      * @returns {string}
      */
+
     public getPersistData(): string {
-        let keyEntity: string[] = ['dataSourceSettings'];
+        const keyEntity: string[] = ['dataSourceSettings'];
         return this.addOnPersist(keyEntity);
     }
 
     /**
      * Get component name.
+     *
      * @returns string
      * @private
      */
+
     public getModuleName(): string {
         return 'pivotfieldlist';
     }
 
     /**
      * Called internally if any of the property value changed.
+     *
      * @hidden
      */
+
     public onPropertyChanged(newProp: PivotFieldListModel, oldProp: PivotFieldListModel): void {
         let requireRefresh: boolean = false;
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'locale':
-                    super.refresh();
-                    break;
-                case 'dataSourceSettings':
-                    if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && newProp.dataSourceSettings.groupSettings && newProp.dataSourceSettings.groupSettings.length === 0) {
-                        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
-                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
-                            this.savedDataSourceSettings = undefined;
-                        }
-                        if (newProp.dataSourceSettings.dataSource && (newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0 && !isNullOrUndefined(this.staticPivotGridModule)) {
-                            this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { filters: [] } }, true);
-                        }
-                        this.engineModule.fieldList = null;
-                        if (!isNullOrUndefined(this.staticPivotGridModule)) {
-                            this.staticPivotGridModule.pivotValues = [];
-                        }
-                        this.initEngine();
+            case 'locale':
+                super.refresh();
+                break;
+            case 'dataSourceSettings':
+                if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && newProp.dataSourceSettings.groupSettings
+                && newProp.dataSourceSettings.groupSettings.length === 0) {
+                    if (!isNullOrUndefined(this.savedDataSourceSettings)) {
+                        PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
+                        this.savedDataSourceSettings = undefined;
                     }
-                    if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
-                        if (this.isPopupView && this.pivotGridModule &&
-                            this.pivotGridModule.showGroupingBar && this.pivotGridModule.groupingBarModule) {
-                            let filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.filters);
-                            let values: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.values);
-                            let rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.rows);
-                            let columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.columns);
-                            this.pivotGridModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values, filters: filters } }, true);
-                            this.pivotGridModule.axisFieldModule.render();
-                        } else if (!this.isPopupView && this.staticPivotGridModule && !this.staticPivotGridModule.isDestroyed) {
-                            let pivot: PivotView = this.staticPivotGridModule;
-                            if (pivot.showGroupingBar && pivot.groupingBarModule) {
-                                pivot.axisFieldModule.render();
-                            }
-                            if (pivot.showFieldList && pivot.pivotFieldListModule) {
-                                let rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.rows);
-                                let columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.columns);
-                                let values: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.values);
-                                let filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.filters);
-                                pivot.pivotFieldListModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values, filters: filters } }, true);
-                                pivot.pivotFieldListModule.axisFieldModule.render();
-                                if (pivot.pivotFieldListModule.treeViewModule.fieldTable && !pivot.isAdaptive) {
-                                    pivot.pivotFieldListModule.notify(events.treeViewUpdate, {});
-                                }
-                            }
-                        }
-                        this.axisFieldModule.render();
-                        if (this.treeViewModule.fieldTable && !this.isAdaptive) {
-                            this.notify(events.treeViewUpdate, {});
-                        }
+                    if (newProp.dataSourceSettings.dataSource && (newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0
+                    && !isNullOrUndefined(this.staticPivotGridModule)) {
+                        this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
+                        this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                        this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                        this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
+                        this.staticPivotGridModule.setProperties({ dataSourceSettings: { filters: [] } }, true);
                     }
-                    break;
-                case 'aggregateTypes':
-                    if (this.axisFieldModule) {
-                        this.axisFieldModule.render();
+                    this.engineModule.fieldList = null;
+                    if (!isNullOrUndefined(this.staticPivotGridModule)) {
+                        this.staticPivotGridModule.pivotValues = [];
                     }
-                    if (this.pivotGridModule && this.pivotGridModule.axisFieldModule) {
-                        this.pivotGridModule.setProperties({ aggregateTypes: newProp.aggregateTypes }, true);
+                    this.initEngine();
+                }
+                if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
+                    if (this.isPopupView && this.pivotGridModule &&
+                        this.pivotGridModule.showGroupingBar && this.pivotGridModule.groupingBarModule) {
+                        const filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.filters);
+                        const values: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.values);
+                        const rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.rows);
+                        const columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(this.dataSourceSettings.columns);
+                        this.pivotGridModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values
+                            , filters: filters } }, true);
                         this.pivotGridModule.axisFieldModule.render();
+                    } else if (!this.isPopupView && this.staticPivotGridModule && !this.staticPivotGridModule.isDestroyed) {
+                        const pivot: PivotView = this.staticPivotGridModule;
+                        if (pivot.showGroupingBar && pivot.groupingBarModule) {
+                            pivot.axisFieldModule.render();
+                        }
+                        if (pivot.showFieldList && pivot.pivotFieldListModule) {
+                            const rows: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.rows);
+                            const columns: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.columns);
+                            const values: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.values);
+                            const filters: IFieldOptions[] = PivotUtil.cloneFieldSettings(pivot.dataSourceSettings.filters);
+                            pivot.pivotFieldListModule.setProperties({ dataSourceSettings: { rows: rows, columns: columns, values: values,
+                                filters: filters } }, true);
+                            pivot.pivotFieldListModule.axisFieldModule.render();
+                            if (pivot.pivotFieldListModule.treeViewModule.fieldTable && !pivot.isAdaptive) {
+                                pivot.pivotFieldListModule.notify(events.treeViewUpdate, {});
+                            }
+                        }
                     }
-                    break;
-                case 'showValuesButton':
-                    if (this.axisFieldModule) {
-                        this.axisFieldModule.render();
+                    this.axisFieldModule.render();
+                    if (this.treeViewModule.fieldTable && !this.isAdaptive) {
+                        this.notify(events.treeViewUpdate, {});
                     }
-                    if (this.pivotGridModule && this.pivotGridModule.showGroupingBar &&
-                        this.pivotGridModule.groupingBarModule && this.pivotGridModule.axisFieldModule) {
-                        this.pivotGridModule.setProperties({ showValuesButton: newProp.showValuesButton }, true);
-                        this.pivotGridModule.axisFieldModule.render();
-                    }
-                    break;
-                case 'enableRtl':
-                    if (this.enableRtl) {
-                        addClass([this.element], cls.RTL);
-                    } else {
-                        removeClass([this.element], cls.RTL);
-                    }
-                    requireRefresh = true;
-                    break;
-                case 'enableFieldSearching':
-                    this.refresh();
+                }
+                break;
+            case 'aggregateTypes':
+                if (this.axisFieldModule) {
+                    this.axisFieldModule.render();
+                }
+                if (this.pivotGridModule && this.pivotGridModule.axisFieldModule) {
+                    this.pivotGridModule.setProperties({ aggregateTypes: newProp.aggregateTypes }, true);
+                    this.pivotGridModule.axisFieldModule.render();
+                }
+                break;
+            case 'showValuesButton':
+                if (this.axisFieldModule) {
+                    this.axisFieldModule.render();
+                }
+                if (this.pivotGridModule && this.pivotGridModule.showGroupingBar &&
+                    this.pivotGridModule.groupingBarModule && this.pivotGridModule.axisFieldModule) {
+                    this.pivotGridModule.setProperties({ showValuesButton: newProp.showValuesButton }, true);
+                    this.pivotGridModule.axisFieldModule.render();
+                }
+                break;
+            case 'enableRtl':
+                if (this.enableRtl) {
+                    addClass([this.element], cls.RTL);
+                } else {
+                    removeClass([this.element], cls.RTL);
+                }
+                requireRefresh = true;
+                break;
+            case 'enableFieldSearching':
+                this.refresh();
             }
             if (requireRefresh) {
                 this.fieldListRender();
             }
         }
     }
-    /* eslint-disable */
     private initEngine(): void {
         if (this.dataType === 'pivot') {
-            let data: any = !isNullOrUndefined(this.dataSourceSettings.dataSource) ? (this.dataSourceSettings.dataSource as IDataSet[])[0] :
-                !isNullOrUndefined(this.engineModule.data) ? (this.engineModule.data as IDataSet[])[0] : undefined;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data: any = !isNullOrUndefined(this.dataSourceSettings.dataSource) ? (this.dataSourceSettings.dataSource as IDataSet[])[0]
+                : !isNullOrUndefined(this.engineModule.data) ? (this.engineModule.data as IDataSet[])[0] : undefined;
             if (data && this.pivotCommon) {
-                let isArray: boolean = Object.prototype.toString.call(data) == '[object Array]';
+                const isArray: boolean = Object.prototype.toString.call(data) === '[object Array]';
                 if (isArray && this.dataSourceSettings.type === 'JSON') {
                     this.pivotCommon.errorDialog.createErrorDialog(
                         this.localeObj.getConstant('error'), this.localeObj.getConstant('invalidJSON'));
@@ -1086,32 +1141,33 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 }
             }
         }
-        let args: EnginePopulatingEventArgs = {
+        const args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
         };
-        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
         control.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
             PivotUtil.updateDataSourceSettings(this, observedArgs.dataSourceSettings);
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                    let pivotDataSet: IDataSet[];
-                    pivotDataSet = this.dataSourceSettings.dataSource as IDataSet[];
+                    const pivotDataSet: IDataSet[] = this.dataSourceSettings.dataSource as IDataSet[];
                     this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet)) as IDataSet[];
-                    let dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
+                    const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
                     dataSourceSettings.dataSource = [];
                     this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
                 }
-                let customProperties: ICustomProperties = this.frameCustomProperties();
+                const customProperties: ICustomProperties = this.frameCustomProperties();
                 customProperties.enableValueSorting = this.staticPivotGridModule ?
                     this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
                 if (this.dataSourceSettings.mode !== 'Server') {
-                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.aggregateCellInfo ? this.getValueCellInfo.bind(this) : undefined, this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
+                    this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.aggregateCellInfo
+                        ? this.getValueCellInfo.bind(this) : undefined, this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
                 }
                 this.pivotFieldList = this.engineModule.fieldList;
-                let eventArgs: EnginePopulatedEventArgs = {
+                const eventArgs: EnginePopulatedEventArgs = {
                     pivotFieldList: this.pivotFieldList,
                     pivotValues: this.engineModule.pivotValues
                 };
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const this$: PivotFieldList = this;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
@@ -1121,12 +1177,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 });
             } else if (this.dataType === 'olap') {
                 this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions,
-                    this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList), this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
+                                                   this.frameCustomProperties(this.olapEngineModule.fieldListData,
+                                                                              this.olapEngineModule.fieldList), this.onHeadersSort ?
+                                                       this.getHeaderSortInfo.bind(this) : undefined);
                 this.pivotFieldList = this.olapEngineModule.fieldList;
-                let eventArgs: EnginePopulatedEventArgs = {
+                const eventArgs: EnginePopulatedEventArgs = {
                     pivotFieldList: this.pivotFieldList,
                     pivotValues: this.olapEngineModule.pivotValues
                 };
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 const this$: PivotFieldList = this;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
@@ -1137,7 +1196,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
         });
     }
-    /* eslint-enable */
 
     private generateData(): void {
         this.pivotFieldList = {};
@@ -1163,13 +1221,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private getValueCellInfo(aggregateObj: AggregateEventArgs): AggregateEventArgs {
-        let args: AggregateEventArgs = aggregateObj;
+        const args: AggregateEventArgs = aggregateObj;
         this.trigger(events.aggregateCellInfo, args);
         return args;
     }
 
     private getHeaderSortInfo(sortingObj: HeadersSortEventArgs): HeadersSortEventArgs {
-        let args: HeadersSortEventArgs = sortingObj;
+        const args: HeadersSortEventArgs = sortingObj;
         this.trigger(events.onHeadersSort, args);
         return args;
     }
@@ -1201,12 +1259,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.fieldListSpinnerElement = this.element.querySelector('.e-pivotfieldlist-container');
         }
         if (this.spinnerTemplate) {
-            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate, cssClass: this.cssClass ? this.cssClass : undefined }, this.createElement);
+            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate, cssClass: this.cssClass
+                ? this.cssClass : undefined }, this.createElement);
         } else {
-            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, cssClass: this.cssClass ? this.cssClass : undefined }, this.createElement);
+            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, cssClass: this.cssClass ? this.cssClass : undefined },
+                          this.createElement);
         }
-        let args: CommonArgs;
-        args = {
+        const args: CommonArgs = {
             pivotEngine: this.dataType === 'olap' ? this.olapEngineModule : this.engineModule,
             dataSourceSettings: this.dataSourceSettings as IDataOptions,
             id: this.element.id,
@@ -1233,10 +1292,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.getFields(dataSourceSettings);
         if (this.captionData.length > 0) {
             let lnt: number = this.captionData.length;
-            let engineModule: OlapEngine | PivotEngine = this.dataType === 'olap' ? this.olapEngineModule : this.engineModule;
+            const engineModule: OlapEngine | PivotEngine = this.dataType === 'olap' ? this.olapEngineModule : this.engineModule;
             while (lnt--) {
-                if (this.captionData[lnt]) {
-                    for (let obj of this.captionData[lnt]) {
+                if (this.captionData[lnt as number]) {
+                    for (const obj of this.captionData[lnt as number]) {
                         if (obj) {
                             if (engineModule.fieldList[obj.name]) {
                                 if (obj.caption) {
@@ -1255,32 +1314,35 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
     private getFields(dataSourceSettings: DataSourceSettingsModel): void {
         this.captionData =
-            [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values, dataSourceSettings.filters] as FieldOptionsModel[][];  /* eslint-disable-line */
+            [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values,
+                dataSourceSettings.filters] as FieldOptionsModel[][];
     }
 
-    /* eslint-disable */
     /**
      * Updates the PivotEngine using dataSource from Pivot Field List component.
+     *
      * @function updateDataSource
      * @returns {void}
      * @hidden
      */
+
     public updateDataSource(isTreeViewRefresh?: boolean, isEngineRefresh?: boolean): void {
         if (this.pivotGridModule) {
             this.pivotGridModule.showWaitingPopup();
         }
         showSpinner(this.fieldListSpinnerElement as HTMLElement);
-        let pivot: PivotFieldList = this;
-        let control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const pivot: PivotFieldList = this;
+        const control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
         //setTimeout(() => {
         let isOlapDataRefreshed: boolean = false;
-        let pageSettings: IPageSettings = pivot.pivotGridModule && (pivot.pivotGridModule.enableVirtualization || pivot.pivotGridModule.enablePaging) ?
-            pivot.pivotGridModule.pageSettings : undefined;
-        let isCalcChange: boolean = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
-        let isSorted: boolean = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
-        let isAggChange: boolean = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
-        let isFiltered: boolean = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
-        let args: EnginePopulatingEventArgs = {
+        const pageSettings: IPageSettings = pivot.pivotGridModule && (pivot.pivotGridModule.enableVirtualization
+            || pivot.pivotGridModule.enablePaging) ? pivot.pivotGridModule.pageSettings : undefined;
+        const isCalcChange: boolean = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
+        const isSorted: boolean = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
+        const isAggChange: boolean = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
+        const isFiltered: boolean = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
+        const args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(pivot.dataSourceSettings)
         };
         control.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
@@ -1290,21 +1352,20 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
             if (isNullOrUndefined(isEngineRefresh)) {
                 if (pivot.dataType === 'pivot') {
-                    let customProperties: ICustomProperties = pivot.frameCustomProperties();
+                    const customProperties: ICustomProperties = pivot.frameCustomProperties();
                     if (!isSorted) {
                         customProperties.enableValueSorting = pivot.staticPivotGridModule ?
                             pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
                     }
                     else {
                         if (pivot.pivotGridModule) {
-                            pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true)
+                            pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                         }
                         pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                         customProperties.enableValueSorting = false;
                     }
                     customProperties.savedFieldList = pivot.pivotFieldList;
                     if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
-                        let interopArguments: any = {};
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                             if (control.dataSourceSettings.mode === 'Server') {
@@ -1340,22 +1401,25 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         }
                     } else {
                         if (pivot.dataSourceSettings.mode === 'Server') {
-                            if (isSorted)
+                            if (isSorted) {
                                 control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
-                            else if (isAggChange)
+                            } else if (isAggChange) {
                                 control.getEngine('onAggregation', null, null, pivot.lastAggregationInfo, null, null, null);
-                            else if (isCalcChange)
+                            } else if (isCalcChange) {
                                 control.getEngine('onCalcOperation', null, null, null, pivot.lastCalcFieldInfo, null, null);
-                            else if (isFiltered)
+                            } else if (isFiltered) {
                                 control.getEngine('onFilter', null, null, null, null, pivot.lastFilterInfo, null);
-                            else
+                            } else {
                                 control.getEngine('onDrop', null, null, null, null, null, null);
+                            }
                             pivot.lastSortInfo = {};
                             pivot.lastAggregationInfo = {};
                             pivot.lastCalcFieldInfo = {};
                             pivot.lastFilterInfo = {};
                         } else {
-                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.aggregateCellInfo ? pivot.getValueCellInfo.bind(pivot) : undefined, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
+                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties,
+                                                            pivot.aggregateCellInfo ? pivot.getValueCellInfo.bind(pivot) : undefined,
+                                                            pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
                         }
                     }
                 } else {
@@ -1370,16 +1434,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         });
         //});
     }
-    /* eslint-enable */
     private enginePopulatedEventMethod(pivot: PivotFieldList, isTreeViewRefresh: boolean, isOlapDataRefreshed: boolean): void {
-        let control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
-        let eventArgs: EnginePopulatedEventArgs = {
+        const control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
+        const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
             pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
             pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
         };
         control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-            let dataSource: IDataSet[] | DataManager | string[][] = pivot.dataSourceSettings.dataSource;
             pivot.dataSourceSettings = observedArgs.dataSourceSettings;
             pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
             pivot.pivotFieldList = observedArgs.pivotFieldList;
@@ -1405,7 +1467,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             } else if (this.isPopupView && pivot.allowDeferLayoutUpdate) {
                 pivot.pivotGridModule.engineModule = pivot.engineModule;
                 pivot.pivotGridModule.setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions    /* eslint-disable-line */
+                    dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions
                 }, true);
                 pivot.pivotGridModule.notify(events.uiUpdate, pivot);
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
@@ -1422,7 +1484,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement as HTMLElement;
             }
         });
-        let actionName: string = this.getActionCompleteName();
+        const actionName: string = this.getActionCompleteName();
         this.actionObj.actionName = actionName;
         if (this.actionObj.actionName) {
             this.actionCompleteMethod();
@@ -1430,7 +1492,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private updateOlapDataSource(pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean): boolean {
-        let customProperties: IOlapCustomProperties =
+        const customProperties: IOlapCustomProperties =
             pivot.frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList);
         customProperties.savedFieldList = pivot.pivotFieldList;
         if (isCalcChange || isSorted) {
@@ -1447,7 +1509,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.olapEngineModule.onSort(pivot.dataSourceSettings as IDataOptions);
             }
         } else {
-            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.onHeadersSort ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
+            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.onHeadersSort
+                ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
         }
         pivot.lastSortInfo = {};
         pivot.lastAggregationInfo = {};
@@ -1457,6 +1520,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Updates the Pivot Field List component using dataSource from PivotView component.
+     *
      * @function update
      * @param {PivotView} control - Pass the instance of pivot table component.
      * @returns {void}
@@ -1495,6 +1559,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Updates the PivotView component using dataSource from Pivot Field List component.
+     *
      * @function updateView
      * @param {PivotView} control - Pass the instance of pivot table component.
      * @returns {void}
@@ -1510,7 +1575,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (!this.pivotChange) {
                 control.pivotValues = this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues;
             }
-            let eventArgs: FieldListRefreshedEventArgs = {
+            const eventArgs: FieldListRefreshedEventArgs = {
                 dataSourceSettings: PivotUtil.getClonedDataSourceSettings(control.dataSourceSettings),
                 pivotValues: control.pivotValues
             };
@@ -1523,14 +1588,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    /* eslint-disable-next-line */
     /**
      * Called internally to trigger populate event.
+     *
      * @hidden
      */
+
     public triggerPopulateEvent(): void {
-        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
-        let eventArgs: EnginePopulatedEventArgs = {
+        const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: this.dataSourceSettings as IDataOptions,
             pivotFieldList: this.dataType === 'olap' ? this.olapEngineModule.fieldList : this.engineModule.fieldList,
             pivotValues: this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues
@@ -1547,27 +1613,29 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     /** @hidden */
+
     public actionBeginMethod(): boolean {
-        let eventArgs: PivotActionBeginEventArgs = {
+        const eventArgs: PivotActionBeginEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings),
             actionName: this.actionObj.actionName,
             fieldInfo: this.actionObj.fieldInfo,
             cancel: false
-        }
-        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        };
+        const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
         control.trigger(events.actionBegin, eventArgs);
         return eventArgs.cancel;
     }
 
     /** @hidden */
+
     public actionCompleteMethod(): void {
-        let eventArgs: PivotActionCompleteEventArgs = {
+        const eventArgs: PivotActionCompleteEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings),
             actionName: this.actionObj.actionName,
             fieldInfo: this.actionObj.fieldInfo,
             actionInfo: this.actionObj.actionInfo
-        }
-        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        };
+        const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
         control.trigger(events.actionComplete, eventArgs);
         this.actionObj.actionName = '';
         this.actionObj.actionInfo = undefined;
@@ -1575,24 +1643,31 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     /** @hidden */
+
     public actionFailureMethod(error: Error): void {
-        let eventArgs: PivotActionFailureEventArgs = {
+        const eventArgs: PivotActionFailureEventArgs = {
             actionName: this.actionObj.actionName,
             errorInfo: error
-        }
-        let control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        };
+        const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
         control.trigger(events.actionFailure, eventArgs);
     }
 
     /** @hidden */
-    public getActionCompleteName(): any {
-        let actionName: string = (this.actionObj.actionName == events.openCalculatedField) ? events.calculatedFieldApplied : (this.actionObj.actionName == events.editCalculatedField) ? events.calculatedFieldEdited : (this.actionObj.actionName == events.sortField) ? events.fieldSorted
-            : (this.actionObj.actionName == events.filterField) ? events.fieldFiltered : (this.actionObj.actionName == events.removeField) ? events.fieldRemoved : (this.actionObj.actionName == events.aggregateField) ? events.fieldAggregated : this.actionObj.actionName == events.sortFieldTree ? events.fieldTreeSorted : this.actionObj.actionName;
+
+    public getActionCompleteName(): string {
+        const actionName: string = (this.actionObj.actionName === events.openCalculatedField) ? events.calculatedFieldApplied :
+            (this.actionObj.actionName === events.editCalculatedField) ? events.calculatedFieldEdited :
+                (this.actionObj.actionName === events.sortField) ? events.fieldSorted : (this.actionObj.actionName === events.filterField)
+                    ? events.fieldFiltered : (this.actionObj.actionName === events.removeField) ? events.fieldRemoved
+                        : (this.actionObj.actionName === events.aggregateField) ? events.fieldAggregated :
+                            this.actionObj.actionName === events.sortFieldTree ? events.fieldTreeSorted : this.actionObj.actionName;
         return actionName;
     }
 
     /**
      * Destroys the Field Table component.
+     *
      * @function destroy
      * @returns {void}
      */
@@ -1602,8 +1677,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.engineModule.fieldList = {};
             this.engineModule.rMembers = null;
             this.engineModule.cMembers = null;
-            (this.engineModule as any).valueMatrix = null;
-            (this.engineModule as any).indexMatrix = null;
+            (this.engineModule as PivotEngine).valueMatrix = null;
+            (this.engineModule as PivotEngine).indexMatrix = null;
             this.engineModule = {} as PivotEngine;
         }
         if (this.olapEngineModule && !this.destroyEngine) {

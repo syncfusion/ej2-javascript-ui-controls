@@ -38,7 +38,7 @@ export class Aggregate implements IAction {
         const instance: ICellRenderer<{}> = new SummaryCellRenderer(this.parent, this.locator);
         const type: CellType[] = [CellType.Summary, CellType.CaptionSummary, CellType.GroupSummary];
         for (let i: number = 0; i < type.length; i++) {
-            cellFac.addCellRenderer(type[i], instance);
+            cellFac.addCellRenderer(type[parseInt(i.toString(), 10)], instance);
         }
         this.footerRenderer = new FooterRenderer(this.parent, this.locator);
         this.footerRenderer.renderPanel();
@@ -122,9 +122,12 @@ export class Aggregate implements IAction {
         this.removeEventListener();
     }
 
-    public refresh(data: Object): void {
+    public refresh(data: Object, element?: Element): void {
         const editedData: Object[] = data instanceof Array ? data : [data];
         this.parent.notify(refreshFooterRenderer, editedData);
+        if (element) {
+            (<{row?: Element}>editedData).row = element;
+        }
         if (this.parent.groupSettings.columns.length > 0) {
             this.parent.notify(groupAggregates, editedData);
         }
@@ -140,8 +143,8 @@ export class Aggregate implements IAction {
  */
 export function summaryIterator(aggregates: AggregateRowModel[], callback: Function): void {
     for (let i: number = 0; i < aggregates.length; i++) {
-        for (let j: number = 0; j < aggregates[i].columns.length; j++) {
-            callback(aggregates[i].columns[j], aggregates[i]);
+        for (let j: number = 0; j < aggregates[parseInt(i.toString(), 10)].columns.length; j++) {
+            callback(aggregates[parseInt(i.toString(), 10)].columns[parseInt(j.toString(), 10)], aggregates[parseInt(i.toString(), 10)]);
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { applyMerge, activeCellMergedRange, MergeArgs } from '../../workbook/common/index';
-import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, focus } from '../common/index';
+import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, focus, isImported } from '../common/index';
 import { checkPrevMerge, checkMerge, DialogBeforeOpenEventArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow } from '../../workbook/index';
@@ -42,7 +42,8 @@ export class Merge {
             });
             return;
         }
-        (this.parent.serviceLocator.getService('cell') as ICellRenderer).refresh(args.rowIdx, args.colIdx, args.lastCell, args.element);
+        (this.parent.serviceLocator.getService('cell') as ICellRenderer).refresh(
+            args.rowIdx, args.colIdx, args.lastCell, args.element, false, false, isImported(this.parent));
     }
     private hideHandler(args: { rowIdx: number, colIdx: number, model: string, start: number, end: number, isEnd?: boolean,
         hide: boolean }): void {

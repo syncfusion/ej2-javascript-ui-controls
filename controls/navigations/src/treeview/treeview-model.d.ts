@@ -71,6 +71,12 @@ export interface FieldsSettingsModel {
     query?: Query;
 
     /**
+     * Specifies whether the node can be selected by users or not 
+     * When set to false, the user interaction is prevented for the corresponding node. 
+     */
+    selectable?: string;
+
+    /**
      * Specifies the mapping field for selected state of the TreeView node.
      */
     selected?: string;
@@ -186,10 +192,10 @@ export interface TreeViewModel extends ComponentModel{
     allowMultiSelection?: boolean;
 
     /**
-     * Enables or disables text wrapping when text exceeds the bounds in the TreeView node.  
-     * When the allowTextWrap property is set to true, the TreeView node text content will wrap to the next line 
+     * Enables or disables text wrapping when text exceeds the bounds in the TreeView node.
+     * When the allowTextWrap property is set to true, the TreeView node text content will wrap to the next line
      * when it exceeds the width of the TreeView node.
-     * The TreeView node height will be adjusted automatically based on the TreeView node content.  
+     * The TreeView node height will be adjusted automatically based on the TreeView node content.
      *
      * @default false
      */
@@ -204,19 +210,46 @@ export interface TreeViewModel extends ComponentModel{
     animation?: NodeAnimationSettingsModel;
 
     /**
-     * The `checkedNodes` property is used to set the nodes that need to be checked or
-     * get the ID of nodes that are currently checked in the TreeView component.
+     * The `checkedNodes` property is used to set the nodes that need to be checked.
+     * This property returns the checked nodes ID in the TreeView component.
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
      * [checkedNodes](../../treeview/check-box#checked-nodes).
-     *
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * showCheckBox: true,
+     * checkedNodes: ['01-01','02']
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default []
      */
     checkedNodes?: string[];
 
     /**
-     * Specifies the CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
-     *
+     * Specifies one or more than one CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * cssClass: 'e-custom e-tree'
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
+     * ```css
+     * .e-custom .e-tree {
+     * max-width: 600px;
+     * }
+     * .e-custom .e-list-item {
+     * padding: 10px 0;
+     * }
+     * ```
      * @default ''
      */
     cssClass?: string;
@@ -230,16 +263,41 @@ export interface TreeViewModel extends ComponentModel{
     disabled?: boolean;
 
     /**
-     * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
-     * for the draggable element movement. By default, the draggable element movement occurs in the entire page.
-     *
+     * Specifies the target in which the draggable element can be moved and dropped.
+     * By default, the draggable element movement occurs in the page.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * dragArea: '.control_wrapper'
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
+     * ```css
+     * .control_wrapper {
+     * width: 500px;
+     * margin-left: 100px;
+     * }
+     * ```
      * @default null
      */
     dragArea?: HTMLElement | string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
-     *
+     * Specifies whether to allow rendering of untrusted HTML values in the TreeView component.
+     * While enable this property, it sanitize suspected untrusted strings and script, and update in the TreeView component.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * enableHtmlSanitizer: true
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default false
      */
     enableHtmlSanitizer?: boolean;
@@ -257,20 +315,40 @@ export interface TreeViewModel extends ComponentModel{
     /**
      * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
-     *
+     * ```html
+     * <div id='tree'></div>
+     * ```
+     * ```typescript
+     * <script>
+     * var treeObj =  new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * expandedNodes: ['01','01-01','02']
+     * });
+     * treeObj.appendTo('#tree');
+     * </script>
+     * ```
      * @default []
      */
     expandedNodes?: string[];
 
     /**
-     * Specifies the action on which the node expands or collapses. The available actions are,
-     * * `Auto` - In desktop, the expand/collapse operation happens when you double-click the node, and in mobile devices it
-     * happens on single-click.
-     * * `Click` - The expand/collapse operation happens when you single-click the node in both desktop and mobile devices.
-     * * `DblClick` - The expand/collapse operation happens when you double-click the node in both desktop and mobile devices.
-     * * `None` - The expand/collapse operation will not happen when you single-click or double-click the node in both desktop
-     *  and mobile devices.
-     *
+     * Specifies the action on which the node expands or collapses.
+     * The available actions :
+     * `Click` - The expand/collapse operation happens when you single-click on the node in desktop.
+     * `DblClick` - The expand/collapse operation happens when you double-click on the node in desktop.
+     * `None` - The expand/collapse operation will not happen.
+     * In mobile devices, the node expand/collapse action happens on single tap.
+     * Here ExpandOn attribute is set to single click property also can use double click and none property.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * expandOn: 'Click'
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default 'Auto'
      */
     expandOn?: ExpandOnSettings;
@@ -327,7 +405,17 @@ export interface TreeViewModel extends ComponentModel{
      * it we can select only a single node.
      * For more information on selectedNodes, refer to
      * [selectedNodes](../../treeview/multiple-selection#selected-nodes).
-     *
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * allowMultiSelection: true,
+     * selectedNodes: ['01','02']
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default []
      */
     selectedNodes?: string[];
@@ -367,14 +455,14 @@ export interface TreeViewModel extends ComponentModel{
     fullRowNavigable?: boolean;
 
     /**
-     * Triggers when any TreeView action failed to fetch the desired results.
+     * Event callback that is raised while any TreeView action failed to fetch the desired results.
      *
      * @event
      */
     actionFailure?: EmitType<FailureEventArgs>;
 
     /**
-     * Triggers when the TreeView control is created successfully.
+     * Event callback that is raised when the TreeView component is created successfully.
      *
      * @event
      */
@@ -382,14 +470,14 @@ export interface TreeViewModel extends ComponentModel{
     created?: EmitType<Object>;
 
     /**
-     * Triggers when data source is populated in the TreeView.
+     * Event callback that is raised when data source is populated in the TreeView.
      *
      * @event
      */
     dataBound?: EmitType<DataBoundEventArgs>;
 
     /**
-     * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
+     * Event callback that is raised when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
      *
      * @event
@@ -397,14 +485,14 @@ export interface TreeViewModel extends ComponentModel{
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
     /**
-     * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
+     * Event callback that is raised before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
      *
      * @event
      */
     drawNode?: EmitType<DrawNodeEventArgs>;
 
     /**
-     * Triggers when the TreeView control is destroyed successfully.
+     * Event callback that is raised when the TreeView control is destroyed successfully.
      *
      * @event
      */
@@ -412,49 +500,49 @@ export interface TreeViewModel extends ComponentModel{
     destroyed?: EmitType<Object>;
 
     /**
-     * Triggers when key press is successful. It helps to customize the operations at key press.
+     * Event callback that is raised when key press is successful. It helps to customize the operations at key press.
      *
      * @event
      */
     keyPress?: EmitType<NodeKeyPressEventArgs>;
 
     /**
-     * Triggers when the TreeView node is checked/unchecked successfully.
+     * Event callback that is raised when the TreeView node is checked/unchecked successfully.
      *
      * @event
      */
     nodeChecked?: EmitType<NodeCheckEventArgs>;
 
     /**
-     * Triggers before the TreeView node is to be checked/unchecked.
+     * Event callback that is raised before the TreeView node is to be checked/unchecked.
      *
      * @event
      */
     nodeChecking?: EmitType<NodeCheckEventArgs>;
 
     /**
-     * Triggers when the TreeView node is clicked successfully.
+     * Event callback that is raised when the TreeView node is clicked successfully.
      *
      * @event
      */
     nodeClicked?: EmitType<NodeClickEventArgs>;
 
     /**
-     * Triggers when the TreeView node collapses successfully.
+     * Event callback that is raised when the TreeView node collapses successfully.
      *
      * @event
      */
     nodeCollapsed?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers before the TreeView node collapses.
+     * Event callback that is raised before the TreeView node collapses.
      *
      * @event
      */
     nodeCollapsing?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers when the TreeView node is dragged (moved) continuously.
+     * Event callback that is raised when the TreeView node is dragged (moved) continuously.
      *
      * @deprecated
      * @event
@@ -462,63 +550,63 @@ export interface TreeViewModel extends ComponentModel{
     nodeDragging?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Triggers when the TreeView node drag (move) starts.
+     * Event callback that is raised when the TreeView node drag (move) starts.
      *
      * @event
      */
     nodeDragStart?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Triggers when the TreeView node drag (move) is stopped.
+     * Event callback that is raised when the TreeView node drag (move) is stopped.
      *
      * @event
      */
     nodeDragStop?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Triggers when the TreeView node is dropped on target element successfully.
+     * Event callback that is raised when the TreeView node is dropped on target element successfully.
      *
      * @event
      */
     nodeDropped?: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Triggers when the TreeView node is renamed successfully.
+     * Event callback that is raised when the TreeView node is renamed successfully.
      *
      * @event
      */
     nodeEdited?: EmitType<NodeEditEventArgs>;
 
     /**
-     * Triggers before the TreeView node is renamed.
+     * Event callback that is raised before the TreeView node is renamed.
      *
      * @event
      */
     nodeEditing?: EmitType<NodeEditEventArgs>;
 
     /**
-     * Triggers when the TreeView node expands successfully.
+     * Event callback that is raised when the TreeView node expands successfully.
      *
      * @event
      */
     nodeExpanded?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers before the TreeView node is to be expanded.
+     * Event callback that is raised before the TreeView node is to be expanded.
      *
      * @event
      */
     nodeExpanding?: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers when the TreeView node is selected/unselected successfully.
+     * Event callback that is raised when the TreeView node is selected/unselected successfully.
      *
      * @event
      */
     nodeSelected?: EmitType<NodeSelectEventArgs>;
 
     /**
-     * Triggers before the TreeView node is selected/unselected.
+     * Event callback that is raised before the TreeView node is selected/unselected.
      *
      * @event
      */

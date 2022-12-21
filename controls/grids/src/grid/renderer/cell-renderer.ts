@@ -75,11 +75,10 @@ export class CellRenderer implements ICellRenderer<Column> {
             if (isReactCompiler || isReactChild) {
                 const copied: Object = { 'index': attributes[literals[0]] };
                 cell.column.getColumnTemplate()(
-                    extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
-                this.parent.renderTemplates();
+                    extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[`${str}`], null, node);
             } else {
                 result = cell.column.getColumnTemplate()(
-                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], undefined, undefined, this.parent['root']);
+                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
             }
             if (!isReactCompiler && !isReactChild) {
                 appendChildren(node, result);
@@ -149,7 +148,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             const newTD: Element = this.refreshCell(cell, data, attributes, isEdit);
             this.cloneAttributes(newTD, td);
             if (parentRow.cells.length !== cellIndex - 1) {
-                parentRow.insertBefore(newTD, parentRow.cells[cellIndex]);
+                parentRow.insertBefore(newTD, parentRow.cells[parseInt(cellIndex.toString(), 10)]);
             } else {
                 parentRow.appendChild(newTD);
             }
@@ -173,7 +172,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let attr: any;
         while (i--) {
-            attr = attrs[i];
+            attr = attrs[parseInt(i.toString(), 10)];
             target.setAttribute(attr.name, attr.value);
         }
     }
@@ -257,7 +256,7 @@ export class CellRenderer implements ICellRenderer<Column> {
      * @returns {Element} returns the element
      */
     public appendHtml(node: Element, innerHtml: string | Element, property: string = 'innerHTML'): Element {
-        node[property] = innerHtml as string;
+        node[`${property}`] = innerHtml as string;
         return node;
     }
 

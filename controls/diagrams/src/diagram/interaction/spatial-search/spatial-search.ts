@@ -94,7 +94,7 @@ export class SpatialSearch {
 
     private objectIndex(objects: IGroupable[], node: IGroupable): number {
         for (let i: number = 0; i < objects.length; i++) {
-            if ((objects[i]).id === node.id) {
+            if ((objects[parseInt(i.toString(), 10)]).id === node.id) {
                 return i;
             }
         }
@@ -299,7 +299,8 @@ export class SpatialSearch {
                 if (quad.fourth) {
                     this.findRight(quad.fourth);
                 }
-            }
+            } 
+            // EJ2-65880 - Exception occurs on dragging outside the canvas
             {
                 if (quad.first) {
                     this.findRight(quad.first);

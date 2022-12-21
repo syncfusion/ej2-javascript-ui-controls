@@ -89,7 +89,7 @@ export class Gregorian implements CalendarUtil {
         date.setDate(1);
         date.setFullYear(date.getFullYear());
         date.setMonth(interval - 1);
-        const maxDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        const maxDay: number = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
         date.setDate(Math.min(startDate, maxDay));
     }
     public addYears(date: Date, interval: number): void {
@@ -184,7 +184,7 @@ export class Islamic implements CalendarUtil {
         const hDate: Record<string, any> = this.getHijriDate(date);
         const day: number[] = [];
         for (let i: number = 0; i < days.length; i++) {
-            const gDate: Date = HijriParser.toGregorian(hDate.year as number, (hDate.month as number), days[i]);
+            const gDate: Date = HijriParser.toGregorian(hDate.year as number, (hDate.month as number), days[parseInt(i.toString(), 10)]);
             day.push(gDate.getDate());
         }
         return day;

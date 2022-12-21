@@ -111,6 +111,7 @@ export class Formats {
     }
 
     private removeCodeContent(range: Range): void {
+        // eslint-disable-next-line
         const regEx: RegExp = new RegExp(String.fromCharCode(65279), 'g');
         if (!isNOU(range.endContainer.textContent.match(regEx))) {
             const pointer: number = range.endContainer.textContent.charCodeAt(range.endOffset - 1) === 65279 ?
@@ -232,7 +233,7 @@ export class Formats {
                 selectedNodes.push(formatsNodes[0]);
             }
             for (let i: number = 0; i < selectedNodes.length; i++) {
-                let currentNode: Node = selectedNodes[i];
+                let currentNode: Node = selectedNodes[i as number];
                 let previousCurrentNode: Node;
                 while (!this.parent.domNode.isBlockNode(currentNode as Element) && currentNode !== this.parent.editableElement) {
                     previousCurrentNode = currentNode;
@@ -243,8 +244,8 @@ export class Formats {
                 }
             }
             for (let i: number = 0; i < currentFormatNodes.length; i++) {
-                if (!this.parent.domNode.isBlockNode(currentFormatNodes[i] as Element)) {
-                    let currentNode: Node = currentFormatNodes[i];
+                if (!this.parent.domNode.isBlockNode(currentFormatNodes[i as number] as Element)) {
+                    let currentNode: Node = currentFormatNodes[i as number];
                     let previousNode: Node = currentNode;
                     while (currentNode === this.parent.editableElement) {
                         previousNode = currentNode;
@@ -286,11 +287,11 @@ export class Formats {
             let parentNode: Element;
             let replaceHTML: string;
             if (e.subCommand.toLowerCase() === 'blockquote') {
-                parentNode = this.getParentNode(formatsNodes[i]) as Element;
+                parentNode = this.getParentNode(formatsNodes[i as number]) as Element;
                 replaceHTML = this.parent.domNode.isList(parentNode) ||
                     parentNode.tagName === 'TABLE' ? parentNode.outerHTML : parentNode.innerHTML;
             } else {
-                parentNode = formatsNodes[i] as Element;
+                parentNode = formatsNodes[i as number] as Element;
                 replaceHTML = parentNode.innerHTML;
             }
             if ((e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
@@ -354,10 +355,10 @@ export class Formats {
         const preNodes: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('PRE');
         if (!isNOU(preNodes)) {
             for (let i: number = 0; i < preNodes.length; i++) {
-                const previousSib: Element = (preNodes[i] as HTMLElement).previousElementSibling;
+                const previousSib: Element = (preNodes[i as number] as HTMLElement).previousElementSibling;
                 if (!isNOU(previousSib) && previousSib.tagName === 'PRE') {
-                    previousSib.insertAdjacentHTML('beforeend', '<br>' + (preNodes[i] as HTMLElement).innerHTML);
-                    detach(preNodes[i]);
+                    previousSib.insertAdjacentHTML('beforeend', '<br>' + (preNodes[i as number] as HTMLElement).innerHTML);
+                    detach(preNodes[i as number]);
                 }
             }
         }
@@ -367,7 +368,7 @@ export class Formats {
         const ignoreAttr: string[] = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
         tagName = tagName.toLowerCase();
         for (let i: number = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
-            (element as HTMLElement).style.removeProperty(ignoreAttr[i]);
+            (element as HTMLElement).style.removeProperty(ignoreAttr[i as number]);
         }
     }
 }

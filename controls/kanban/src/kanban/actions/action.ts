@@ -60,7 +60,7 @@ export class Action {
             this.addButtonClick(target);
         } else if (target.classList.contains(cls.FROZEN_SWIMLANE_ROW_CLASS)) {
             const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_CLASS));
-            let targetIcon: HTMLElement = this.parent.layoutModule.frozenSwimlaneRow.querySelector('.' + cls.ICON_CLASS);
+            const targetIcon: HTMLElement = this.parent.layoutModule.frozenSwimlaneRow.querySelector('.' + cls.ICON_CLASS);
             this.rowExpandCollapse(e, swimlaneRows[this.parent.layoutModule.frozenOrder]);
             const isCollapsed: boolean = targetIcon.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS) ? true : false;
             if (isCollapsed) {
@@ -85,8 +85,10 @@ export class Action {
             newData[this.parent.sortSettings.field] = 1;
             if (closest(target, '.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
                 const card: Element = this.parent.sortSettings.direction === 'Ascending' ?
-                    target.nextElementSibling.classList.contains(cls.BORDER_CLASS) ? target.nextElementSibling.nextElementSibling.lastElementChild : target.nextElementSibling.lastElementChild
-                    : target.nextElementSibling.classList.contains(cls.BORDER_CLASS) ? target.nextElementSibling.nextElementSibling.firstElementChild : target.nextElementSibling.firstElementChild;
+                    target.nextElementSibling.classList.contains(cls.BORDER_CLASS) ?
+                        target.nextElementSibling.nextElementSibling.lastElementChild : target.nextElementSibling.lastElementChild
+                    : target.nextElementSibling.classList.contains(cls.BORDER_CLASS) ?
+                        target.nextElementSibling.nextElementSibling.firstElementChild : target.nextElementSibling.firstElementChild;
                 const data: Record<string, any> = this.parent.getCardDetails(card) as Record<string, any>;
                 newData[this.parent.sortSettings.field] = data[this.parent.sortSettings.field] as number + 1;
             }
@@ -153,7 +155,7 @@ export class Action {
 
     public rowExpandCollapse(e: Event | HTMLElement, isFrozenElem?: HTMLElement): void {
         const headerTarget: HTMLElement = (e instanceof HTMLElement) ? e : e.target as HTMLElement;
-        let currentSwimlaneHeader: HTMLElement = !isNullOrUndefined(isFrozenElem) ? isFrozenElem : headerTarget;
+        const currentSwimlaneHeader: HTMLElement = !isNullOrUndefined(isFrozenElem) ? isFrozenElem : headerTarget;
         const args: ActionEventArgs = { cancel: false, target: headerTarget, requestType: 'rowExpandCollapse' };
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
@@ -236,7 +238,7 @@ export class Action {
                 });
             }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
-            (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: true }, true);
+            (this.parent.columns[colIndex as number] as Base<HTMLElement>).setProperties({ isExpanded: true }, true);
             target.querySelector('.e-header-icon').setAttribute('aria-label', target.getAttribute('data-key') + ' Expand');
         } else {
             addClass(colGroup, cls.COLLAPSED_CLASS);
@@ -248,8 +250,8 @@ export class Action {
             for (const row of targetRow) {
                 const targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 const index: number = (targetCol as HTMLTableCellElement).cellIndex;
-                const text: string = (this.parent.columns[index].showItemCount ? '[' +
-                    targetCol.querySelectorAll('.' + cls.CARD_CLASS).length + '] ' : '') + this.parent.columns[index].headerText;
+                const text: string = (this.parent.columns[index as number].showItemCount ? '[' +
+                    targetCol.querySelectorAll('.' + cls.CARD_CLASS).length + '] ' : '') + this.parent.columns[index as number].headerText;
                 targetCol.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                 addClass([targetCol, target], cls.COLLAPSED_CLASS);
                 target.setAttribute('aria-expanded', 'false');
@@ -263,7 +265,7 @@ export class Action {
                 });
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
-            (this.parent.columns[colIndex] as Base<HTMLElement>).setProperties({ isExpanded: false }, true);
+            (this.parent.columns[colIndex as number] as Base<HTMLElement>).setProperties({ isExpanded: false }, true);
             target.querySelector('.e-header-icon').setAttribute('aria-label', key + ' Collapse');
         }
     }
@@ -297,7 +299,7 @@ export class Action {
                     start = curIndex; end = lastIndex;
                 }
                 for (i = start; i <= end; i++) {
-                    const card: HTMLElement = allCards[i];
+                    const card: HTMLElement = allCards[i as number];
                     addClass([card], cls.CARD_SELECTION_CLASS);
                     card.setAttribute('aria-selected', 'true');
                     card.setAttribute('tabindex', '0');
@@ -306,7 +308,7 @@ export class Action {
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
                     this.lastCardSelection = card;
                     if (select === 'prev') {
-                        this.lastCardSelection = allCards[start];
+                        this.lastCardSelection = allCards[start as number];
                     }
                 }
             } else {
@@ -370,10 +372,12 @@ export class Action {
      * @private
      * @hidden
      */
-     public SingleCardSelection(data: Record<string, any>): void {
+    public SingleCardSelection(data: Record<string, any>): void {
         if (this.parent.cardSettings.selectionType !== 'None' && data[this.parent.cardSettings.headerField]) {
-            let card: HTMLElement = this.parent.element.querySelector('.e-card[data-id=\"' +
-                data[this.parent.cardSettings.headerField].toString() + '"\]')
+            // eslint-disable-next-line no-useless-escape
+            const card: HTMLElement = this.parent.element.querySelector('.e-card[data-id=\"' +
+                // eslint-disable-next-line no-useless-escape
+                data[this.parent.cardSettings.headerField].toString() + '"\]');
             if (card) {
                 addClass([card], cls.CARD_SELECTION_CLASS);
                 card.setAttribute('aria-selected', 'true');

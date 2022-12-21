@@ -1,30 +1,9 @@
 @include export-module('tab-material3-icons') {
+
   /*! tab icons */
   #{&}.e-tab {
 
     .e-tab-header {
-
-      .e-toolbar-items.e-hscroll.e-rtl {
-
-        .e-nav-left-arrow::before {
-          content: '\e748';
-        }
-
-        .e-nav-right-arrow::before {
-          content: '\e765';
-        }
-      }
-
-      .e-scroll-nav {
-
-        .e-nav-left-arrow::before {
-          content: '\e765';
-        }
-
-        .e-nav-right-arrow::before {
-          content: '\e748';
-        }
-      }
 
       .e-close-icon::before {
         content: '\e7e7';
@@ -32,16 +11,12 @@
       }
 
       .e-popup-up-icon::before {
-        content: '\e776';
-
         @media screen and (max-width: 480px) {
           content: '\e770';
         }
       }
 
       .e-popup-down-icon::before {
-        content: '\e729';
-
         @media screen and (max-width: 480px) {
           content: '\e770';
         }
@@ -65,17 +40,6 @@
     &.e-vertical-tab {
 
       .e-tab-header {
-
-        .e-scroll-nav {
-
-          .e-nav-up-arrow::before {
-            content: '\e776';
-          }
-
-          .e-nav-down-arrow::before {
-            content: '\e729';
-          }
-        }
 
         .e-popup-up-icon {
 
@@ -138,4 +102,3 @@
     }
   }
 }
-  

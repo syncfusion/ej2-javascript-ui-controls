@@ -3108,7 +3108,7 @@ describe('Keyboard interaction', () => {
             setTimeout(() => { done(); }, 500);
         });
         it('Tab key with enabled virtual scroll', (done: DoneFn) => {
-            keyModule.keyActionHandler({ action: 'tab', target: schObj.element.querySelector('.e-schedule-toolbar'),
+            keyModule.keyActionHandler({ action: 'tab', target: schObj.element.querySelector('.e-schedule-toolbar button'),
                 shiftKey: false, preventDefault: (): void => { /** Null */ } });
             expect(schObj.element.querySelector('.e-resource-cells').getAttribute('tabindex')).toBe('-1');
             expect(schObj.element.querySelectorAll('.e-resource-cells')[1].getAttribute('tabindex')).toBe('0');
@@ -3789,7 +3789,7 @@ describe('Keyboard interaction', () => {
                 showQuickInfo: false,
                 selectedDate: new Date(2017, 10, 1)
             };
-            schObj = util.createSchedule(model, defaultData, done);            
+            schObj = util.createSchedule(model, defaultData, done);
         });
         afterAll(() => {
             util.destroy(schObj);

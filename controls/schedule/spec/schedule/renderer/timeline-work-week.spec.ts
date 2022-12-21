@@ -660,6 +660,19 @@ describe('Schedule timeline work week view', () => {
                 toEqual('<span>10/2/17, 12:00 AM</span>');
         });
 
+        it('dateRange template', () => {
+            const model: ScheduleModel = {
+                currentView: 'TimelineWorkWeek', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], 
+                selectedDate: new Date(2017, 9, 5),
+                dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">9-9</div>');
+            schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/2/17, 12:00 AM-10/6/17, 12:00 AM</div>');
+        });
+
         it('cell template', () => {
             const templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
             const model: ScheduleModel = {

@@ -1687,7 +1687,7 @@ describe('MaskedTextBox Component', () => {
             }
             document.body.innerHTML = '';
         });
-        it('Floating label MaskedTextBox', (done: Function) => {
+        it('Floating label MaskedTextBox - Auto', (done: Function) => {
             maskBox = new MaskedTextBox({
                 mask: '9999 9999 9999 9999',
                 placeholder: 'Enter card number',
@@ -1712,9 +1712,9 @@ describe('MaskedTextBox Component', () => {
                     expect(input.selectionStart === 0 && input.selectionEnd == 0).toEqual(true);
                     done();
                 },
-                10);
+                200);
         });
-        it('Floating label MaskedTextBox', () => {
+        it('Floating label MaskedTextBox - Never', () => {
             maskBox = new MaskedTextBox({
                 mask: '9999 9999 9999 9999',
                 placeholder: 'Enter card number',
@@ -1743,7 +1743,7 @@ describe('MaskedTextBox Component', () => {
             maskBox.dataBind();
             expect(input.hasAttribute('disabled') && input.hasAttribute('aria-disabled')).toEqual(true);
         });
-        it('Floating label MaskedTextBox', () => {
+        it('Floating label MaskedTextBox - Always', () => {
             maskBox = new MaskedTextBox({
                 mask: '9999 9999 9999 9999',
                 placeholder: 'Enter card number',
@@ -2562,7 +2562,7 @@ describe('MaskedTextBox Component', () => {
                     expect(input.selectionStart === 0 && input.selectionEnd == 0).toEqual(true);
                     done();
                 },
-                10);
+                200);
         });
         it('Floating label MaskedTextBox: Never', () => {
             maskBox = new MaskedTextBox({
@@ -3270,6 +3270,53 @@ describe('EJ2-41360- Masked Textbox focus behavior checking', function () {
         setTimeout(() => {
             expect(isFocus).toBe(true);
             done();    
+        }, 200);
+    });
+});
+describe('EJ2-54142', function () {
+    let maskBox: any;
+    let isBlurTriggerd: boolean = false;
+    let isChangeTriggered: boolean = false;
+    beforeEach(function () {
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(function () {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+        isBlurTriggerd = false;
+        isChangeTriggered = false;
+    });
+    it('Testing blur event and change event firing', function (done : Function) {
+        maskBox = new MaskedTextBox({
+            mask: "000-0000-000",
+            placeholder : "Enter phone number",
+            value: "22222",
+            showClearButton: true,
+            cssClass: "e-static-clear",
+            change: (args: MaskChangeEventArgs) => {
+                isChangeTriggered = true;
+                expect(args.value=="").toBe(true);
+            },
+            blur: (args : MaskBlurEventArgs) => {
+                isBlurTriggerd = true;
+                expect(args==undefined).toBe(true);
+            }
+        });
+        maskBox.appendTo('#mask1');
+        expect(isBlurTriggerd).toBe(false);
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        expect(maskBox.inputObj.container.classList.contains('e-static-clear')).toBe(true);
+        expect(maskBox.inputObj.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+        (<HTMLInputElement>document.getElementsByClassName('e-clear-icon-hide')[0]).dispatchEvent(clickEvent);
+         expect(maskBox.value === '').toEqual(true);
+         maskBox.blur();
+         setTimeout(() => {
+         expect(maskBox.inputObj.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
+         done();    
         }, 100);
     });
 });
@@ -3331,49 +3378,5 @@ describe('EJ2-48023', function () {
         focusEvent.initEvent('blur');
         input.dispatchEvent(focusEvent);
         expect(isBlurTriggerd).toBe(true);
-    });
-    describe('EJ2-54142', function () {
-        let maskBox: any;
-        let isBlurTriggerd: boolean = false;
-        let isChangeTriggered: boolean = false;
-        beforeEach(function () {
-            let ele: HTMLElement = createElement('input', { id: 'mask1' });
-            document.body.appendChild(ele);
-        });
-        afterEach(function () {
-            if (maskBox) {
-                maskBox.destroy();
-            }
-            document.body.innerHTML = '';
-            isBlurTriggerd = false;
-            isChangeTriggered = false;
-        });
-        it('Testing blur event and change event firing', function () {
-            maskBox = new MaskedTextBox({
-                mask: "000-0000-000",
-                placeholder : "Enter phone number",
-                value: "22222",
-                showClearButton: true,
-                cssClass: "e-static-clear",
-                change: (args: MaskChangeEventArgs) => {
-                    isChangeTriggered = true;
-                    expect(args.value=="").toBe(true);
-                },
-                blur: (args : MaskBlurEventArgs) => {
-                    isBlurTriggerd = true;
-                    expect(args==undefined).toBe(true);
-                }
-            });
-            maskBox.appendTo('#mask1');
-            expect(isBlurTriggerd).toBe(false);
-            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
-            clickEvent.initEvent('mousedown', true, true);
-            expect(maskBox.inputObj.container.classList.contains('e-static-clear')).toBe(true);
-            expect(maskBox.inputObj.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
-            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon-hide')[0]).dispatchEvent(clickEvent);
-             expect(maskBox.value === '').toEqual(true);
-             maskBox.blur();
-             expect(maskBox.inputObj.clearButton.classList.contains('e-clear-icon-hide')).toBe(true);
-        });
     });
 });

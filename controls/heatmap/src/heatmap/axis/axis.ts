@@ -228,7 +228,6 @@ export class Axis extends ChildProperty<Axis> {
     /** @private */
     public max: number = 0;
     /** @private */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     public format: Function;
     /** @private */
     public angle: number;
@@ -292,13 +291,14 @@ export class Axis extends ChildProperty<Axis> {
     private multiLevelLabelSize(innerPadding: number, index: number): Size {
         const labelSize: Size = new Size(0, 0);
         const multiLevel: MultiLevelLabelsModel[] = this.multiLevelLabels;
-        const categoryLabel: MultiLevelCategoriesModel[] = multiLevel[index].categories;
+        const categoryLabel: MultiLevelCategoriesModel[] = multiLevel[index as number].categories;
         for (let i: number = 0; i < categoryLabel.length; i++) {
-            const size: Size = measureText(categoryLabel[i].text, multiLevel[index].textStyle);
+            const size: Size = measureText(categoryLabel[i as number].text, multiLevel[index as number].textStyle);
             labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
             labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
         }
-        const size: number = (this.orientation === 'Horizontal') ? this.xAxisMultiLabelHeight[index] : this.yAxisMultiLabelHeight[index];
+        const size: number = (this.orientation === 'Horizontal') ? this.xAxisMultiLabelHeight[index as number] :
+            this.yAxisMultiLabelHeight[index as number];
         if (this.opposedPosition) {
             this.farSizes.push(size );
         } else {
@@ -330,8 +330,8 @@ export class Axis extends ChildProperty<Axis> {
                     if ((labelSize.width > gap - padding)  && (multiLevel.overflow === 'Wrap') && !isVertical) {
                         height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle).length));
                     }
-                    multiLevelLabelsHeight[index] = !multiLevelLabelsHeight[index] ? height + padding :
-                        ((multiLevelLabelsHeight[index] < height) ? height + padding  : multiLevelLabelsHeight[index]);
+                    multiLevelLabelsHeight[index as number] = !multiLevelLabelsHeight[index as number] ? height + padding :
+                        ((multiLevelLabelsHeight[index as number] < height) ? height + padding  : multiLevelLabelsHeight[index as number]);
                 }
             });
         });
@@ -369,9 +369,9 @@ export class Axis extends ChildProperty<Axis> {
             let startX: number = heatmap.initialClipRect.x + ((!axis.isInversed) ? 0 : heatmap.initialClipRect.width);
             let previousEnd: number; let previousStart: number; this.clearMultipleRow();
             for (let i: number = 0, len: number = labels.length; i < len; i++) {
-                const label: string = labels[i]; const elementSize: Size = measureText(label, axis.textStyle);
+                const label: string = labels[i as number]; const elementSize: Size = measureText(label, axis.textStyle);
                 const axisInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
-                    axis.dateTimeAxisLabelInterval[i] * interval : interval;
+                    axis.dateTimeAxisLabelInterval[i as number] * interval : interval;
                 let startPoint: number = startX + (!axis.isInversed ?
                     ((interval - elementSize.width) / 2) : -((interval + elementSize.width) / 2));
                 startPoint = startPoint < heatmap.initialClipRect.x ? heatmap.initialClipRect.x : startPoint;
@@ -409,18 +409,18 @@ export class Axis extends ChildProperty<Axis> {
         for (let i: number = 0; i < labels.length; i++) {
             const multipleRow : MultipleRow [] = this.multipleRow; let label : string;
             if (axis.enableTrim) {
-                label = textTrim(axis.maxLabelLength, labels[i], axis.textStyle);
-            } else { label = labels[i]; }
+                label = textTrim(axis.maxLabelLength, labels[i as number], axis.textStyle);
+            } else { label = labels[i as number]; }
             const size: Size = (axis.angle % 180 === 0) ?
-                measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, labels[i], axis.angle);
+                measureText(label, axis.textStyle) : rotateTextSize(axis.textStyle, labels[i as number], axis.angle);
             labelSize.width = (labelSize.width > size.width) ? labelSize.width : size.width;
             if (axis.labelIntersectAction === 'MultipleRows' && axis.orientation === 'Horizontal' && i > 0 && axis.labelRotation === 0) {
-                if (multipleRow[i].end >= heatmap.initialClipRect.width && i < labels.length - 1) {
-                    multipleRow[i].row = multipleRow[i].row + 1;
+                if (multipleRow[i as number].end >= heatmap.initialClipRect.width && i < labels.length - 1) {
+                    multipleRow[i as number].row = multipleRow[i as number].row + 1;
                 }
                 for (let k: number = 1; k <= axis.multilevel.length; k++) {
-                    if (multipleRow[i].start < multipleRow[i - 1].end) {
-                        if (axis.multilevel[k] < multipleRow[i].start) {
+                    if (multipleRow[i as number].start < multipleRow[i - 1].end) {
+                        if (axis.multilevel[k as number] < multipleRow[i as number].start) {
                             count = k;
                             break;
                         } else if (k === axis.multilevel.length - 1) {
@@ -429,8 +429,8 @@ export class Axis extends ChildProperty<Axis> {
                         }
                     } else if (size.width < interval) {
                         for (let j: number = 1; j <= axis.multilevel.length; j++) {
-                            if (axis.multilevel[j] < multipleRow[i].start) {
-                                count = j; multipleRow[j].row = count;
+                            if (axis.multilevel[j as number] < multipleRow[i as number].start) {
+                                count = j; multipleRow[j as number].row = count;
                                 break;
                             }
                         }
@@ -438,11 +438,11 @@ export class Axis extends ChildProperty<Axis> {
                 }
                 labelSize.height = (labelSize.height > ((size.height * count) + (((size.height * 0.5) / 2) * (count - 1)))) ?
                     labelSize.height : ((size.height * count) + (((size.height * 0.5) / 2) * count));
-                this.multipleRow[i].index = count; axis.multilevel[count] = multipleRow[i].end;
+                this.multipleRow[i as number].index = count; axis.multilevel[count as number] = multipleRow[i as number].end;
             } else {
                 if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && i === 0 &&
                     axis.labelRotation === 0) {
-                    axis.multilevel[1] = multipleRow[i].end;
+                    axis.multilevel[1] = multipleRow[i as number].end;
                 }
                 labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
             }
@@ -530,7 +530,7 @@ export class Axis extends ChildProperty<Axis> {
         }
         if (labels && labels.length > 0) {
             for (let i: number = min; i <= max; i = i + interval) {
-                const value: string = !isNullOrUndefined(labels[i]) ? labels[i].toString() : i.toString();
+                const value: string = !isNullOrUndefined(labels[i as number]) ? labels[i as number].toString() : i.toString();
                 this.axisLabels.push(value);
             }
         } else {
@@ -539,8 +539,8 @@ export class Axis extends ChildProperty<Axis> {
             }
         }
         for (let i: number = min; i <= max; i++) {
-            this.tooltipLabels.push(!isNullOrUndefined(labels[i]) ? labels[i].toString() : i.toString());
-            this.labelValue.push(!isNullOrUndefined(labels[i]) ? labels[i].toString() : i.toString());
+            this.tooltipLabels.push(!isNullOrUndefined(labels[i as number]) ? labels[i as number].toString() : i.toString());
+            this.labelValue.push(!isNullOrUndefined(labels[i as number]) ? labels[i as number].toString() : i.toString());
         }
         this.min = min;
         this.max = max;
@@ -562,9 +562,7 @@ export class Axis extends ChildProperty<Axis> {
             skeleton: 'full',
             type: 'dateTime'
         };
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const dateParser: Function = heatmap.intl.getDateParser(option);
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const dateFormatter: Function = heatmap.intl.getDateFormat(option);
         let min: number;
         let max: number;

@@ -39,7 +39,7 @@ export class AreaSeries extends MultiColoredSeries {
         let point: Points;
         let emptyPointDirection:  string = '';
         for (let i: number = 0; i < visiblePoints.length; i++) {
-            point = visiblePoints[i];
+            point = visiblePoints[i as number];
             currentXValue = point.xValue;
             point.symbolLocations = [];
             point.regions = [];
@@ -75,7 +75,7 @@ export class AreaSeries extends MultiColoredSeries {
             }
             direction = direction.concat(direction + ' ' + 'Z');
         }
-      
+
         this.appendLinePath(
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index, series.interior,
@@ -91,9 +91,9 @@ export class AreaSeries extends MultiColoredSeries {
         );
 
         /**
-          * To draw border for the path directions of area
-          */ 
-        if (series.border.width != 0) {
+         * To draw border for the path directions of area
+         */
+        if (series.border.width !== 0) {
             emptyPointDirection = this.removeEmptyPointsBorder(direction);
             this.appendLinePath(
                 new PathOption(
@@ -107,7 +107,7 @@ export class AreaSeries extends MultiColoredSeries {
         }
         this.renderMarker(series);
     }
-    
+
     /**
      * To destroy the area series.
      *

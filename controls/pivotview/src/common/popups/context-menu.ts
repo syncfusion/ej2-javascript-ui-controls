@@ -17,15 +17,18 @@ export class PivotContextMenu {
     /** @hidden */
     public fieldElement: HTMLElement;
 
-    /* eslint-disable */
-    /** Constructor for render module */
+    /**
+     * Constructor for render module
+     *
+     * @param {PivotView | PivotFieldList} parent - parent
+     * */
     constructor(parent: PivotView | PivotFieldList) {
-        /* eslint-enable */
         this.parent = parent;
         this.parent.contextMenuModule = this;
     }
     /**
      * Initialize the pivot table rendering
+     *
      * @returns {void}
      * @private
      */
@@ -33,12 +36,12 @@ export class PivotContextMenu {
         this.renderContextMenu();
     }
     private renderContextMenu(): void {
-        let menuItems: MenuItemModel[] = [
+        const menuItems: MenuItemModel[] = [
             { text: this.parent.localeObj.getConstant('addToFilter'), id: this.parent.element.id + '_Filters' },
             { text: this.parent.localeObj.getConstant('addToRow'), id: this.parent.element.id + '_Rows' },
             { text: this.parent.localeObj.getConstant('addToColumn'), id: this.parent.element.id + '_Columns' },
             { text: this.parent.localeObj.getConstant('addToValue'), id: this.parent.element.id + '_Values' }];
-        let menuOptions: ContextMenuModel = {
+        const menuOptions: ContextMenuModel = {
             cssClass: cls.PIVOT_CONTEXT_MENU_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             items: menuItems,
             enableRtl: this.parent.enableRtl,
@@ -46,7 +49,7 @@ export class PivotContextMenu {
             beforeOpen: this.onBeforeMenuOpen.bind(this),
             select: this.onSelectContextMenu.bind(this)
         };
-        let cMenu: HTMLElement = createElement('ul', {
+        const cMenu: HTMLElement = createElement('ul', {
             id: this.parent.element.id + '_PivotContextMenu'
         });
         this.parent.element.appendChild(cMenu);
@@ -55,25 +58,25 @@ export class PivotContextMenu {
         this.menuObj.appendTo(cMenu);
     }
     private onBeforeMenuOpen(args: MenuEventArgs): void {
-        let items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));
-        let fieldType: SummaryTypes | string = this.parent.dataType === 'olap' ? this.fieldElement.getAttribute('data-type') :
+        const items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));
+        const fieldType: SummaryTypes | string = this.parent.dataType === 'olap' ? this.fieldElement.getAttribute('data-type') :
             this.fieldElement.querySelector('.' + cls.PIVOT_BUTTON_CONTENT_CLASS).getAttribute('data-type') as SummaryTypes;
         removeClass(items, cls.MENU_DISABLE);
         if (fieldType === 'CalculatedField' || fieldType === 'isMeasureFieldsAvail') {
-            for (let item of items) {
+            for (const item of items) {
                 if (item.textContent !== this.parent.localeObj.getConstant('addToValue')) {
                     addClass([item], cls.MENU_DISABLE);
                 }
             }
         } else if (fieldType === 'isMeasureAvail') {
-            for (let item of items) {
+            for (const item of items) {
                 if (item.textContent !== this.parent.localeObj.getConstant('addToRow') &&
                     item.textContent !== this.parent.localeObj.getConstant('addToColumn')) {
                     addClass([item], cls.MENU_DISABLE);
                 }
             }
         } else if (this.parent.dataType === 'olap') {
-            for (let item of items) {
+            for (const item of items) {
                 if (item.textContent === this.parent.localeObj.getConstant('addToValue')) {
                     addClass([item], cls.MENU_DISABLE);
                     break;
@@ -83,8 +86,8 @@ export class PivotContextMenu {
     }
     private onSelectContextMenu(menu: MenuEventArgs): void {
         if (menu.element.textContent !== null) {
-            let fieldName: string = this.fieldElement.getAttribute('data-uid');
-            let dropClass: string = menu.item.id.replace(this.parent.element.id + '_', '').toLowerCase();
+            const fieldName: string = this.fieldElement.getAttribute('data-uid');
+            const dropClass: string = menu.item.id.replace(this.parent.element.id + '_', '').toLowerCase();
             this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
                 ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
             this.parent.pivotCommon.dataSourceUpdate.btnElement = this.fieldElement;
@@ -96,6 +99,7 @@ export class PivotContextMenu {
 
     /**
      * To destroy the pivot button event listener
+     *
      * @returns {void}
      * @hidden
      */

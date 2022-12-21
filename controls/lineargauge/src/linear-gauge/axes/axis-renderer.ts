@@ -1,7 +1,6 @@
 import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Tick, Pointer, Range } from './axis';
-import { animationComplete } from '../model/constant';
 import { AxisModel } from './axis-model';
 import { Animations } from './animation';
 import { Size, Rect, valueToCoefficient, PathOption, textElement,
@@ -11,15 +10,15 @@ import { MarkerType } from '../utils/enum';
 import { FontModel } from '../model/base-model';
 
 /**
+ * To render the axis elements.
+ *
  * @private
- * To render the axis elements
  */
 
 export class AxisRenderer extends Animations {
     private htmlObject: Element;
     private axisObject: Element;
     private axisElements: Element[];
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
         super(gauge);
     }
@@ -36,7 +35,7 @@ export class AxisRenderer extends Animations {
             transform: 'translate( 0, 0 )'
         });
         for (let i: number = 0; i < this.gauge.axes.length; i++) {
-            axis = <Axis>this.gauge.axes[i];
+            axis = <Axis>this.gauge.axes[i as number];
             major = <Tick>axis.majorTicks;
             minor = <Tick>axis.minorTicks;
             this.htmlObject = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_Axis_Group_' + i });
@@ -59,10 +58,9 @@ export class AxisRenderer extends Animations {
 
     public axisAlign(axes: AxisModel[]): void {
         let nearAxisWidth: number = 0; let farAxisWidth: number = 0;
-        let axis: Axis;
         let tranX: number; let transY: number;
         if (this.gauge.orientation === 'Vertical') {
-            axes.forEach((axis: Axis, axisIndex: number) => {
+            axes.forEach((axis: Axis) => {
                 if (!axis.opposedPosition) {
                     nearAxisWidth += axis.bounds.width;
                 } else {
@@ -77,7 +75,7 @@ export class AxisRenderer extends Animations {
                 this.gauge.containerObject.setAttribute('transform', 'translate(' + tranX + ',0)');
             }
         } else {
-            axes.forEach((axis: Axis, axisIndex: number) => {
+            axes.forEach((axis: Axis) => {
                 if (!axis.opposedPosition) {
                     nearAxisWidth += axis.bounds.height;
                 } else {
@@ -154,85 +152,85 @@ export class AxisRenderer extends Animations {
         const labelLength: number = axis.visibleLabels.length - 1;
         const labelElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup_' + axisIndex });
         for (let i: number = 0; i < axis.visibleLabels.length; i++) {
-            labelSize = axis.visibleLabels[i].size;
-            labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, <Range[]>axis.ranges) : null;
+            labelSize = axis.visibleLabels[i as number].size;
+            labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i as number].value, <Range[]>axis.ranges) : null;
             labelColor = isNullOrUndefined(labelColor) ? (axis.labelStyle.font.color || fontColor) : labelColor;
             if (this.gauge.orientation === 'Vertical') {
-                pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.height) + rect.y;
+                pointY = (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.height) + rect.y;
                 pointX = axis.labelStyle.position === 'Auto' ? (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x) : bounds.x;
                 pointY += (labelSize.height / 4);
-                axis.visibleLabels[i].x = pointX;
-                axis.visibleLabels[i].y = pointY;
+                axis.visibleLabels[i as number].x = pointX;
+                axis.visibleLabels[i as number].y = pointY;
             } else {
                 if ((i === 0 || i === labelLength) && this.gauge.edgeLabelPlacement !== 'None') {
                     if (this.gauge.edgeLabelPlacement === 'Shift') {
-                        pointX = i === 0 ? (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x + (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2))
-                            : (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x - (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2));
+                        pointX = i === 0 ? (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x + (!axis.isInversed ? (axis.visibleLabels[i as number].size.width / 2) : (-axis.visibleLabels[i as number].size.width / 2))
+                            : (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x - (!axis.isInversed ? (axis.visibleLabels[i as number].size.width / 2) : (-axis.visibleLabels[i as number].size.width / 2));
                         if (this.gauge.allowMargin) {
                             if (i === labelLength) {
-                                if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    pointX += (axis.visibleLabels[i].size.width / 2);
-                                } else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    pointX -= (axis.visibleLabels[i].size.width / 2);
+                                if (!axis.isInversed && (pointX - (axis.visibleLabels[i as number].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX += (axis.visibleLabels[i as number].size.width / 2);
+                                } else if (axis.isInversed && (pointX + (axis.visibleLabels[i as number].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX -= (axis.visibleLabels[i as number].size.width / 2);
                                 }
                             }
                         }
                     } else if (this.gauge.edgeLabelPlacement === 'Trim') {
-                        pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
+                        pointX = (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
                         if (i === labelLength) {
                             if (!this.gauge.allowMargin) {
                                 if (!axis.isInversed && this.gauge.margin.right <= 10) {
-                                    const maxWidth: number = axis.visibleLabels[i].size.width * 0.75;
-                                    axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
-                                } else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    const maxWidth: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
-                                    axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                    const maxWidth: number = axis.visibleLabels[i as number].size.width * 0.75;
+                                    axis.visibleLabels[i as number].text = textTrim(maxWidth, axis.visibleLabels[i as number].text, axis.labelStyle.font);
+                                } else if (axis.isInversed && (pointX + (axis.visibleLabels[i as number].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    const maxWidth: number = axis.visibleLabels[i as number].size.width - ((pointX + (axis.visibleLabels[i as number].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    axis.visibleLabels[i as number].text = textTrim(maxWidth, axis.visibleLabels[i as number].text, axis.labelStyle.font);
                                 }
                             } else {
-                                if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    const width: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
-                                    axis.visibleLabels[i].text = textTrim(width, axis.visibleLabels[i].text, axis.labelStyle.font);
-                                } else if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    const width: number = axis.visibleLabels[i].size.width - ((axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2)) - (pointX - (axis.visibleLabels[i].size.width / 2)) + 2);
-                                    axis.visibleLabels[i].text = textTrim(width, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                if (axis.isInversed && (pointX + (axis.visibleLabels[i as number].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    const width: number = axis.visibleLabels[i as number].size.width - ((pointX + (axis.visibleLabels[i as number].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    axis.visibleLabels[i as number].text = textTrim(width, axis.visibleLabels[i as number].text, axis.labelStyle.font);
+                                } else if (!axis.isInversed && (pointX - (axis.visibleLabels[i as number].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    const width: number = axis.visibleLabels[i as number].size.width - ((axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2)) - (pointX - (axis.visibleLabels[i as number].size.width / 2)) + 2);
+                                    axis.visibleLabels[i as number].text = textTrim(width, axis.visibleLabels[i as number].text, axis.labelStyle.font);
                                 }
                             }
                         }
                     } else if (this.gauge.edgeLabelPlacement === 'Auto') {
                         if (!this.gauge.allowMargin) {
-                            pointX = i === labelLength ? (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x - (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2)) :
-                                (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x + (!axis.isInversed ? (axis.visibleLabels[i].size.width / 2) : (-axis.visibleLabels[i].size.width / 2));
+                            pointX = i === labelLength ? (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x - (!axis.isInversed ? (axis.visibleLabels[i as number].size.width / 2) : (-axis.visibleLabels[i as number].size.width / 2)) :
+                                (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x + (!axis.isInversed ? (axis.visibleLabels[i as number].size.width / 2) : (-axis.visibleLabels[i as number].size.width / 2));
                             if (i === labelLength) {
-                                if (!axis.isInversed && (pointX - (axis.visibleLabels[i].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    pointX += (axis.visibleLabels[i].size.width / 2);
-                                    const maxWidth: number = axis.visibleLabels[i].size.width * 0.75;
-                                    axis.visibleLabels[i].text = textTrim(maxWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
-                                } else if (axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                    pointX -= (axis.visibleLabels[i].size.width / 2);
-                                    const widthValue: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
-                                    axis.visibleLabels[i].text = textTrim(widthValue, axis.visibleLabels[i].text, axis.labelStyle.font);
+                                if (!axis.isInversed && (pointX - (axis.visibleLabels[i as number].size.width / 2)) < (axis.visibleLabels[i - 1].x + (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX += (axis.visibleLabels[i as number].size.width / 2);
+                                    const maxWidth: number = axis.visibleLabels[i as number].size.width * 0.75;
+                                    axis.visibleLabels[i as number].text = textTrim(maxWidth, axis.visibleLabels[i as number].text, axis.labelStyle.font);
+                                } else if (axis.isInversed && (pointX + (axis.visibleLabels[i as number].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                    pointX -= (axis.visibleLabels[i as number].size.width / 2);
+                                    const widthValue: number = axis.visibleLabels[i as number].size.width - ((pointX + (axis.visibleLabels[i as number].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                    axis.visibleLabels[i as number].text = textTrim(widthValue, axis.visibleLabels[i as number].text, axis.labelStyle.font);
                                 }
                             }
                         } else {
-                            pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
-                            if (i === labelLength && axis.isInversed && (pointX + (axis.visibleLabels[i].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
-                                const labelWidth: number = axis.visibleLabels[i].size.width - ((pointX + (axis.visibleLabels[i].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
-                                axis.visibleLabels[i].text = textTrim(labelWidth, axis.visibleLabels[i].text, axis.labelStyle.font);
+                            pointX = (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
+                            if (i === labelLength && axis.isInversed && (pointX + (axis.visibleLabels[i as number].size.width / 2)) > (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2))) {
+                                const labelWidth: number = axis.visibleLabels[i as number].size.width - ((pointX + (axis.visibleLabels[i as number].size.width / 2)) - (axis.visibleLabels[i - 1].x - (axis.visibleLabels[i - 1].size.width / 2)) + 2);
+                                axis.visibleLabels[i as number].text = textTrim(labelWidth, axis.visibleLabels[i as number].text, axis.labelStyle.font);
                             }
                         }
                     }
                     pointY = bounds.y;
-                    axis.visibleLabels[i].x = pointX;
-                    axis.visibleLabels[i].y = pointY;
+                    axis.visibleLabels[i as number].x = pointX;
+                    axis.visibleLabels[i as number].y = pointY;
                     anchor = 'middle';
                     baseline = '';
                 } else {
-                    pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
+                    pointX = (valueToCoefficient(axis.visibleLabels[i as number].value, axis, this.gauge.orientation, range) * rect.width) + rect.x;
                     pointY = bounds.y;
                     anchor = 'middle';
                     baseline = '';
-                    axis.visibleLabels[i].x = pointX;
-                    axis.visibleLabels[i].y = pointY;
+                    axis.visibleLabels[i as number].x = pointX;
+                    axis.visibleLabels[i as number].y = pointY;
                 }
             }
             const style: FontModel = {
@@ -246,7 +244,7 @@ export class AxisRenderer extends Animations {
             style.fontFamily = style.fontFamily || this.gauge.themeStyle.labelFontFamily;
             style.fontStyle = style.fontStyle || this.gauge.themeStyle.labelStyle;
             style.fontWeight = style.fontWeight || this.gauge.themeStyle.labelWeight;
-            options = new TextOption(this.gauge.element.id + '_Axis_'+ axisIndex +'_Label_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
+            options = new TextOption(this.gauge.element.id + '_Axis_' + axisIndex + '_Label_' + i, pointX, pointY, anchor, axis.visibleLabels[i as number].text, null, baseline);
             textElement(options, style, labelColor, labelElement);
         }
         axisObject.appendChild(labelElement);
@@ -258,7 +256,7 @@ export class AxisRenderer extends Animations {
         let pointerClipRectGroup: Element;
         const pointesGroup: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_PointersGroup_' + axisIndex });
         for (let i: number = 0; i < axis.pointers.length; i++) {
-            pointer = <Pointer>axis.pointers[i];
+            pointer = <Pointer>axis.pointers[i as number];
             clipId = 'url(#' + this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + '_' + pointer.type + 'ClipRect_' + i + ')';
             if (!(isNullOrUndefined(pointer.bounds))) {
                 pointerClipRectGroup = this.gauge.renderer.createGroup({
@@ -268,7 +266,7 @@ export class AxisRenderer extends Animations {
                     pointer.startValue = axis.visibleRange.min;
                 }
                 if (pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && !this.gauge.gaugeResized) {
-                    pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum: pointer.startValue;
+                    pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
                     if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
                         pointerClipRectGroup.setAttribute('clip-path', clipId);
                     }
@@ -316,8 +314,8 @@ export class AxisRenderer extends Animations {
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
                 this.gauge.renderer.drawPath(options) as SVGAElement));
         parentElement.appendChild(pointerElement);
-        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] != pointer.currentValue) && !this.gauge.gaugeResized) {
-            pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum: pointer.startValue;
+        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
+            pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
             pointer.animationComplete = false;
             this.performMarkerAnimation(pointerElement, axis, pointer);
         }
@@ -333,8 +331,7 @@ export class AxisRenderer extends Animations {
         let pointerElement: Element;
         let path: string = '';
         let options: PathOption;
-        let box: Rect; let radius: number;
-        let bottomRadius: number; let topRadius: number;
+        let box: Rect;
         const size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         const pointerID: string = this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer' + '_' + pointerIndex;
         let gradientBarColor: string;
@@ -348,8 +345,8 @@ export class AxisRenderer extends Animations {
         if (this.gauge.container.type === 'Normal' || this.gauge.container.width === 0) {
             rectOptions = new RectOption(
                 pointerID, (gradientBarColor) ?
-                gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
-                pointer.border, pointer.opacity, pointer.bounds, null, null);
+                    gradientBarColor : pointer.color || this.gauge.themeStyle.pointerColor,
+                pointer.border, pointer.opacity, pointer.bounds);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions) as SVGAElement;
         } else {
@@ -377,8 +374,8 @@ export class AxisRenderer extends Animations {
             parentElement.appendChild(pointerElement);
         }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
-        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] != pointer.currentValue) && !this.gauge.gaugeResized) {
-            pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum: pointer.startValue;
+        if ((pointer.animationDuration > 0 && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
+            pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
             if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0 && this.gauge.container.width > 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(
                     new RectOption(
@@ -399,7 +396,7 @@ export class AxisRenderer extends Animations {
         let options: PathOption;
         const rangeElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_RangesGroup_' + axisIndex });
         for (let j: number = 0; j < axis.ranges.length; j++) {
-            range = <Range>axis.ranges[j];
+            range = <Range>axis.ranges[j as number];
             if (!(isNullOrUndefined(range.path))) {
                 options = new PathOption(
                     this.gauge.element.id + '_AxisIndex_' + axisIndex + '_Range_' + j, range.interior, (range.start !== range.end) ? range.border.width : 0,
@@ -413,6 +410,7 @@ export class AxisRenderer extends Animations {
     /**
      * @private
      */
+
     public destroy(): void {
         this.htmlObject = null;
         this.axisObject = null;
@@ -420,8 +418,3 @@ export class AxisRenderer extends Animations {
         this.gauge = null;
     }
 }
-
-
-
-
-

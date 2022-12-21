@@ -35,7 +35,6 @@ export interface ButtonPropsModel {
      * @event 'object'
      * @blazorProperty 'OnClick'
      */
-    /* eslint-disable */
     click?: EmitType<Object>;
 
 }
@@ -294,7 +293,6 @@ export interface DialogModel extends ComponentModel{
      * @event 'object'
      * @blazorProperty 'Created'
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
@@ -304,7 +302,6 @@ export interface DialogModel extends ComponentModel{
      * @blazorProperty 'Opened'
      * @blazorType OpenEventArgs
      */
-    /* eslint-disable */
     open?: EmitType<Object>;
 
     /**
@@ -332,7 +329,6 @@ export interface DialogModel extends ComponentModel{
      * @blazorProperty 'Closed'
      * @blazorType CloseEventArgs
      */
-    /* eslint-disable */
     close?: EmitType<Object>;
 
     /**
@@ -352,7 +348,6 @@ export interface DialogModel extends ComponentModel{
      * @blazorProperty 'OnDragStart'
      * @blazorType DragStartEventArgs
      */
-    /* eslint-disable */
     dragStart?: EmitType<Object>;
 
     /**
@@ -362,7 +357,6 @@ export interface DialogModel extends ComponentModel{
      * @blazorProperty 'OnDragStop'
      * @blazorType DragStopEventArgs
      */
-    /* eslint-disable */
     dragStop?: EmitType<Object>;
 
     /**
@@ -372,7 +366,6 @@ export interface DialogModel extends ComponentModel{
      * @blazorProperty 'OnDrag'
      * @blazorType DragEventArgs
      */
-    /* eslint-disable */
     drag?: EmitType<Object>;
 
     /**
@@ -381,7 +374,6 @@ export interface DialogModel extends ComponentModel{
      * @event 'object'
      * @blazorProperty 'OnOverlayClick'
      */
-    /* eslint-disable */
     overlayClick?: EmitType<Object>;
 
     /**
@@ -390,7 +382,6 @@ export interface DialogModel extends ComponentModel{
      * @event 'object'
      * @blazorProperty 'OnResizeStart'
      */
-    /* eslint-disable */
     resizeStart?: EmitType<Object>;
 
     /**
@@ -399,7 +390,6 @@ export interface DialogModel extends ComponentModel{
      * @event 'object'
      * @blazorProperty 'Resizing'
      */
-    /* eslint-disable */
     resizing?: EmitType<Object>;
 
     /**
@@ -408,7 +398,6 @@ export interface DialogModel extends ComponentModel{
      * @event 'object'
      * @blazorProperty 'OnResizeStop'
      */
-    /* eslint-disable */
     resizeStop?: EmitType<Object>;
 
     /**

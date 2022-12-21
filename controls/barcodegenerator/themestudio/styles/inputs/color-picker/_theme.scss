@@ -84,7 +84,7 @@
       }
     }
 
-    & .e-split-btn-wrapper .e-split-colorpicker+.e-dropdown-btn {
+    & .e-split-btn-wrapper .e-split-colorpicker + .e-dropdown-btn {
       @if $skin-name == 'bootstrap4' {
         border-color: $gray-400;
       }
@@ -94,12 +94,12 @@
       @if $skin-name == 'bootstrap4' {
         background-color: $cpicker-handler-tooltip-color;
         color: $gray-700;
-        }
+      }
       @else if $skin-name == 'bootstrap5' {
         background-color: transparent;
         color: $cpicker-split-btn-icon-color;
-        }
       }
+    }
 
     & .e-icon-btn {
       &:hover {
@@ -117,7 +117,7 @@
         @if $skin-name == 'bootstrap4' {
           background-color: $cpicker-handler-tooltip-color;
           border-color: $gray-700;
-          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, .15), .5);
+          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, 15%), .5);
           box-shadow: 0 0 0 .2rem $color-rgba;
           color: $gray-700;
         }
@@ -132,7 +132,7 @@
       &:active {
         @if $skin-name == 'bootstrap4' {
           background-color: $gray-600;
-          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, .15), .5);
+          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, 15%), .5);
           box-shadow: 0 0 0 .2rem $color-rgba;
           color: $cpicker-handler-tooltip-color;
         }

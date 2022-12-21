@@ -128,7 +128,7 @@ export class PdfTimeline {
         this.topTierPoint = extend({}, {}, startPoint, true) as PointF;
         for (let index: number = this.prevTopTierIndex; index <= this.topTierIndex; index++) {
             if (this.topTier.length > index) {
-                const pHeader: TimelineFormat = this.topTier[index];
+                const pHeader: TimelineFormat = this.topTier[index as number];
                 if (pHeader.completedWidth > 0) {
                     //Primary header Event Arguments
                     /* eslint-disable-next-line */
@@ -141,7 +141,7 @@ export class PdfTimeline {
         this.bottomTierPoint.y = pixelToPoint(startPoint.y + this.topTierHeight);
         for (let index: number = this.prevBottomTierIndex; index <= this.bottomTierIndex; index++) {
             if (this.bottomTier.length > index) {
-                const secondHeader: TimelineFormat = this.bottomTier[index];
+                const secondHeader: TimelineFormat = this.bottomTier[index as number];
                 if (secondHeader.completedWidth > 0) {
                     //Secondary header Event Arguments
                     /* eslint-disable-next-line */
@@ -195,8 +195,7 @@ export class PdfTimeline {
         let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
         if (ganttStyle.font) {
             font = ganttStyle.font;
-        }
-        const textBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
+        }        const textBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.fontColor);
         const pLeft: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
         const pTop: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
         /* eslint-disable-next-line */

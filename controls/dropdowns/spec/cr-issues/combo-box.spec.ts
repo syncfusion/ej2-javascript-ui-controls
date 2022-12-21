@@ -998,7 +998,7 @@ describe('ComboBox', () => {
         it('Select item from list of calling refresh method', () => {
             comboObj.inputElement = undefined;
             comboObj.destroy();
-            expect(document.getElementsByClassName(comboObj.inputWrapper.container.className).length == 0).toBe(true)
+            expect(comboObj.inputWrapper === null).toBe(true)
         });
     });
 });

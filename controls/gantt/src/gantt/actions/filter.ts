@@ -35,12 +35,12 @@ export class Filter {
     private updateCustomFilters(): void {
         const settings: TaskFieldsModel = this.parent.taskFields;
         for (let i: number = 0; i < this.parent.ganttColumns.length; i++) {
-            const column: ColumnModel = this.parent.ganttColumns[i];
+            const column: ColumnModel = this.parent.ganttColumns[i as number];
             if (((column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') &&
                 (column.field === settings.startDate || column.field === settings.endDate
                     || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) ||
                 (column.field === settings.duration && column.editType === 'stringedit')) {
-                this.initiateFiltering(this.parent.ganttColumns[i]);
+                this.initiateFiltering(this.parent.ganttColumns[i as number]);
             }
         }
     }
@@ -109,6 +109,7 @@ export class Filter {
                 const flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
                 dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue'), format: format });
+                dropDateInstance.enableRtl = this.parent.enableRtl;
                 dropDateInstance.appendTo(flValInput);
             },
             write: (args: {
@@ -134,6 +135,7 @@ export class Filter {
                 const flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
                 args.target.appendChild(flValInput);
                 dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue'), format: format });
+                dropInstance.enableRtl = this.parent.enableRtl;
                 dropInstance.appendTo(flValInput);
             },
             write: (args: {
@@ -158,6 +160,7 @@ export class Filter {
                 flValInput.setAttribute('placeholder', this.parent.localeObj.getConstant('enterValue'));
                 args.target.appendChild(flValInput);
                 textBoxInstance = new TextBox();
+                textBoxInstance.enableRtl = this.parent.enableRtl;
                 textBoxInstance.appendTo(flValInput);
             },
             write: (args: {

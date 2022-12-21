@@ -157,6 +157,7 @@ $de-table-separator-line-width: 100% !default;
 $de-table-options-font-size: $text-sm !default;
 $de-table-options-padding-bottom: 8px !default;
 $de-table-options-padding-top: 12px !default;
+
 //Page setup
 $de-page-setup-dlg-width: 380px !default;
 $de-page-setup-dlg-height: auto !default;
@@ -474,7 +475,7 @@ $de-de-rtl-btn-div-e-de-rtl-margin-left: 12px !default;
 $de-para-dlg-spacing-div-mrgn-left: 40px !default;
 
 // Color variable
-$de-background: $content-bg-color-alt4  !default;
+$de-background: $content-bg-color-alt4 !default;
 $search-result-highlight-bg-color: $transparent !default;
 $search-result-hightlight-bdr-clr-hvr: $primary !default;
 $search-result-hightlight-bdr-clr: $primary !default;
@@ -504,10 +505,10 @@ $de-input-color: $content-text-color !default;
 $de-op-bg-color: $content-bg-color-alt1 !default;
 $de-font-color-border: 1px $content-bg-color-alt1 !default;
 $de-font-color-border-radius: 4px !default;
-$de-bullet-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-number-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-multilevel-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-list-dialog-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-bullet-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-number-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-multilevel-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-list-dialog-hover-color: rgba(0, 0, 0, .12) !default;
 $de-op-container-messagediv-color: $content-text-color !default;
 $de-checkbox-wrapper-color: $content-text-color !default;
 $bookmark-listview-border-color: $border-light !default;
@@ -560,5 +561,9 @@ $de-style-btn-color: $icon-color;
 $de-style-btn-hover-color: $white;
 $de-style-dlg-btn-border-color: $border-light;
 $de-style-dlg-btn-bg-color: $content-bg-color;
+
 // Table properties
 $de-row-height-bottom-margin: 4px;
+
+//Columns Dialog
+$de-column-presets-font-size: 60px !default;

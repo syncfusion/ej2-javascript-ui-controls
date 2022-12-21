@@ -20,3 +20,5 @@ export * from './rowdrop-settings';
 export * from './rowdrop-settings-model';
 export * from './infinite-scroll-settings';
 export * from './infinite-scroll-settings-model';
+export * from './loading-indicator';
+export * from './loading-indicator-model';

@@ -7,7 +7,6 @@ import { CriticalPath } from '../actions/critical-path';
 import { TimelineViewMode } from '../base/enum';
 import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, ZoomTimelineSettings } from '../base/interface';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { TaskbarEdit } from '../actions/taskbar-edit';
 /**
  * Configures the `Timeline` of the gantt.
  */
@@ -142,13 +141,18 @@ export class Timeline {
         currentLevel = this.parent.zoomingLevels.findIndex((tempLevel: ZoomTimelineSettings) => {
             return tempLevel.level === currentLevel;
         });
-        let newTimeline: ZoomTimelineSettings = this.parent.zoomingLevels[currentLevel];
+        let newTimeline: ZoomTimelineSettings = this.parent.zoomingLevels[currentLevel as number];
         const args: ZoomEventArgs = {
             requestType: isZoomIn ? 'beforeZoomIn' : 'beforeZoomOut',
             timeline: newTimeline,
             cancel: false
         };
         this.parent.trigger('actionBegin', args);
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            this.parent.showMaskRow();
+        } else {
+            this.parent.showSpinner();
+        }
         if (!args.cancel) {
             newTimeline = args.timeline;
             this.changeTimelineSettings(newTimeline);
@@ -168,12 +172,12 @@ export class Timeline {
                 'topTier' : 'bottomTier' : null;
         Object.keys(this.customTimelineSettings).forEach((property: string) => {
             if (property !== skipProperty) {
-                this.customTimelineSettings[property] = (typeof newTimeline[property] === 'object'
-                    && !isNullOrUndefined(newTimeline[property])) ? { ...newTimeline[property] } : newTimeline[property];
+                this.customTimelineSettings[property as string] = (typeof newTimeline[property as string] === 'object'
+                    && !isNullOrUndefined(newTimeline[property as string])) ? { ...newTimeline[property as string] } : newTimeline[property as string];
             } else {
                 const value: string = property === 'topTier' ? 'bottomTier' : 'topTier';
                 const assignValue: string = 'bottomTier';
-                this.customTimelineSettings[value] = { ...newTimeline[assignValue] };
+                this.customTimelineSettings[value as string] = { ...newTimeline[assignValue as string] };
             }
         });
         this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
@@ -190,6 +194,11 @@ export class Timeline {
                 timeline: this.parent.currentZoomingLevel
             };
             this.parent.trigger('actionComplete', args);
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+                this.parent.hideMaskRow();
+            } else {
+                this.parent.hideSpinner();
+            }
         }
 
     }
@@ -224,15 +233,15 @@ export class Timeline {
             return;
         }
         for (let i: number = 0; i < sortedCollectons.length; i++) {
-            firstValue = sortedCollectons[i];
+            firstValue = sortedCollectons[i as number];
             if (i === sortedCollectons.length - 1) {
-                zoomingLevel = sortedCollectons[i];
+                zoomingLevel = sortedCollectons[i as number];
                 break;
             } else {
                 secondValue = sortedCollectons[i + 1];
             }
             if (perDayWidth >= firstValue.perDayWidth) {
-                zoomingLevel = sortedCollectons[i];
+                zoomingLevel = sortedCollectons[i as number];
                 break;
             }
             if (perDayWidth < firstValue.perDayWidth && perDayWidth > secondValue.perDayWidth) {
@@ -256,6 +265,11 @@ export class Timeline {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+            this.parent.showMaskRow();
+        } else {
+            this.parent.showSpinner();
+        }
         this.changeTimelineSettings(newTimeline);
     }
     
@@ -382,10 +396,10 @@ export class Timeline {
         for (let i: number = 0; i < collections.length; i++) {
             const perDayWidth: number =
                 this.getPerDayWidth(
-                    collections[i].timelineUnitSize,
-                    collections[i].bottomTier.count,
-                    collections[i].bottomTier.unit);
-            collections[i].perDayWidth = perDayWidth;
+                    collections[i as number].timelineUnitSize,
+                    collections[i as number].bottomTier.count,
+                    collections[i as number].bottomTier.unit);
+            collections[i as number].perDayWidth = perDayWidth;
         }
     }
     /**
@@ -408,7 +422,7 @@ export class Timeline {
             }
 
         }
-        this.parent.currentZoomingLevel = this.parent.zoomingLevels[zoomLevel];
+        this.parent.currentZoomingLevel = this.parent.zoomingLevels[zoomLevel as number];
         return zoomLevel;
     }
     /**
@@ -438,16 +452,16 @@ export class Timeline {
         const sortedUnitLevels: ZoomTimelineSettings[] = sameUnitLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings)  =>
             (a.bottomTier.count < b.bottomTier.count) ? 1 : -1);
         for (let i: number = 0; i < sortedUnitLevels.length; i++) {
-            firstValue = sortedUnitLevels[i];
+            firstValue = sortedUnitLevels[i as number];
             if (i === sortedUnitLevels.length - 1) {
-                level = sortedUnitLevels[i].level;
+                level = sortedUnitLevels[i as number].level;
                 break;
             } else {
                 secondValue = sortedUnitLevels[i + 1];
             }
 
             if (count >= firstValue.bottomTier.count) {
-                currentZoomCollection = sortedUnitLevels[i];
+                currentZoomCollection = sortedUnitLevels[i as number];
                 checkSameCountLevels = sortedUnitLevels.filter((tempLevel: ZoomTimelineSettings) => {
                     return tempLevel.bottomTier.count === currentZoomCollection.bottomTier.count;
                 });
@@ -517,15 +531,15 @@ export class Timeline {
         const sortedZoomLevels: ZoomTimelineSettings[] = zoomLevels.sort((a: ZoomTimelineSettings, b: ZoomTimelineSettings) =>
             (a.timelineUnitSize < b.timelineUnitSize) ? 1 : -1);
         for (let i: number = 0; i < sortedZoomLevels.length; i++) {
-            firstValue = sortedZoomLevels[i];
+            firstValue = sortedZoomLevels[i as number];
             if (i === sortedZoomLevels.length - 1) {
-                level = sortedZoomLevels[i].level;
+                level = sortedZoomLevels[i as number].level;
                 break;
             } else {
                 secondValue = sortedZoomLevels[i + 1];
             }
             if (width >= firstValue.timelineUnitSize) {
-                level = sortedZoomLevels[i].level;
+                level = sortedZoomLevels[i as number].level;
                 break;
             } else if (width < firstValue.timelineUnitSize && width > secondValue.timelineUnitSize) {
                 level = sortedZoomLevels[i + 1].level;
@@ -783,11 +797,11 @@ export class Timeline {
     public extendFunction(cloneObj: Object, propertyCollection: string[], innerProperty?: Object): Object {
         const tempObj: Object = {};
         for (let index: number = 0; index < propertyCollection.length; index++) {
-            tempObj[propertyCollection[index]] = cloneObj[propertyCollection[index]];
+            tempObj[propertyCollection[index as number]] = cloneObj[propertyCollection[index as number]];
         }
         if (innerProperty) {
             Object.keys(innerProperty).forEach((key: string) => {
-                tempObj[key] = this.extendFunction(cloneObj[key], innerProperty[key], null);
+                tempObj[key as string] = this.extendFunction(cloneObj[key as string], innerProperty[key as string], null);
             });
         }
         return tempObj;
@@ -1013,7 +1027,7 @@ export class Timeline {
      * @returns {boolean} .
      */
     private isWeekendHeaderCell(mode: string, tier: string, day: Date): boolean {
-        return (mode === 'Day' || mode === 'Hour' || mode === 'Minutes') && (this.customTimelineSettings[tier].count === 1 ||
+        return (mode === 'Day' || mode === 'Hour' || mode === 'Minutes') && (this.customTimelineSettings[tier as string].count === 1 ||
             mode === 'Hour' || mode === 'Minutes') &&
             this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
     }
@@ -1352,9 +1366,9 @@ export class Timeline {
                 const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
-               if (!isNullOrUndefined(maxStartLeft) && ((minStartDate < this.timelineStartDate) ||(!isNullOrUndefined(this.parent.editModule.taskbarEditModule))&& (!isNullOrUndefined(this.parent.editModule.taskbarEditModule.taskBarEditAction))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
-                    isChanged = 'prevTimeSpan';
-
+                if (!isNullOrUndefined(maxStartLeft) && ((minStartDate < this.timelineStartDate) ||
+                   (!isNullOrUndefined(this.parent.editModule.taskbarEditModule)) &&
+                   (!isNullOrUndefined(this.parent.editModule.taskbarEditModule.taskBarEditAction))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {                    isChanged = 'prevTimeSpan';
                     minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {
                     minStartDate = this.timelineStartDate;

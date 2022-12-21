@@ -1,11 +1,11 @@
 @include export-module('recurrence-editor-layout') {
+
   /*! Recurrence-Editor component layout */
   .e-recurrenceeditor {
     .e-editor {
       display: flex;
       flex-flow: row wrap;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 0 auto;
       max-width: 1240px;
     }
 
@@ -35,7 +35,7 @@
       .e-week-position {
         min-width: $recurrence-week-position-min-width;
         position: relative;
-        right: $recurrence-week-position-right;
+        right: 20px;
       }
 
       .e-day-position {
@@ -57,7 +57,7 @@
 
     .e-form-right,
     .e-input-wrapper-side.e-form-right {
-      padding: 0 0 10px 8px;
+      padding: 0 0 10px;
     }
 
     .e-input-wrapper {
@@ -75,8 +75,8 @@
     }
 
     &.e-rtl {
-      .e-end-on>div,
-      .e-month-expander>div>div {
+      .e-end-on > div,
+      .e-month-expander > div > div {
         float: right;
       }
 
@@ -96,8 +96,8 @@
       }
 
       .e-week-position {
-        position: relative;
-        right: $recurrence-week-position-right-rtl;
+        left: 20px;
+        right: 0;
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-label,
@@ -110,25 +110,22 @@
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {
-        padding-left: 8px;
-        padding-right: 0;
+        padding: 0 0 0 8px;
       }
 
       .e-input-wrapper.e-end-on-date,
       .e-input-wrapper.e-end-on-count {
-        padding-left: 0;
-        padding-right: 8px;
+        padding: 0 8px 0 0;
       }
 
       .e-recurrenceeditor {
         .e-recurrence-table {
           &.e-month-expand-wrapper td:first-child {
-            width: 0;
+            width: 30px;
           }
         }
       }
     }
-
 
     .e-days {
       .e-week-expander-label {
@@ -159,11 +156,11 @@
     }
 
     .e-month-expander tr:first-child .e-input-wrapper {
-      margin-bottom: 11px;
+      padding-bottom: 11px;
     }
 
     .e-month-expander-checkbox-wrapper.e-input-wrapper {
-      margin-top: -3px;
+      padding-top: 3px;
 
       .e-month-type .e-label {
         display: none;
@@ -188,10 +185,9 @@
         .e-end-on-left {
           padding-right: 16px;
         }
-
       }
 
-      &.e-non-week>.e-input-wrapper {
+      &.e-non-week > .e-input-wrapper {
         margin: 0;
       }
 
@@ -230,11 +226,7 @@
 
       .e-form-right,
       .e-input-wrapper-side.e-form-right {
-        padding: 0 0 10px 12px;
-      }
-
-      .e-recurrence-table .e-week-position {
-        right: 24px;
+        padding: 0 0 10px;
       }
 
       .e-input-wrapper-side .e-days .e-form-left {
@@ -247,8 +239,7 @@
 
       .e-week-position {
         min-width: $recurrence-week-position-bgr-min-width;
-        padding-left: 55px;
-        padding-right: 0;
+        right: 0;
       }
 
       .e-day-position {
@@ -291,7 +282,7 @@
 
       .e-recurrence-table {
         &.e-month-expand-wrapper td:first-child {
-          width: 0;
+          width: 30px;
         }
       }
 
@@ -314,9 +305,9 @@
           padding: 0 12px 10px 0;
         }
 
-        .e-recurrence-table .e-monthday-element {
-          padding-left: 0;
-          padding-right: 64px;
+        .e-recurrence-table .e-monthday-element,
+        .e-recurrence-table .e-day-position {
+          padding: 0 64px 0 0;
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-label,
@@ -329,22 +320,16 @@
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-left {
-          padding-left: 12px;
-          padding-right: 0;
+          padding: 0 0 0 12px;
         }
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 0;
-          padding-right: 12px;
+          padding: 0 12px 0 0;
         }
 
         .e-recurrence-table .e-week-position {
-          right: 33px;
-        }
-
-        .e-week-position {
-          padding-left: 46px;
+          left: 0;
         }
       }
     }
@@ -387,8 +372,7 @@
 
       .e-input-wrapper.e-end-on-date,
       .e-input-wrapper.e-end-on-count {
-        padding-left: 10px;
-        padding-right: 0;
+        padding: 0 0 0 10px;
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {
@@ -408,7 +392,20 @@
         .e-end-on-left {
           padding-right: 0;
         }
+      }
 
+      .e-recurrence-table .e-monthday-element,
+      .e-recurrence-table .e-day-position {
+        padding-left: 20px;
+      }
+
+      .e-recurrence-table .e-monthday-element {
+        margin-left: 20px;
+      }
+
+      .e-week-position {
+        right: 0;
+        padding-right: 10px;
       }
 
       &.e-rtl {
@@ -418,31 +415,20 @@
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 0;
-          padding-right: 10px;
+          padding: 0 10px 0 0;
         }
 
         .e-recurrence-table .e-monthday-element {
-          padding-left: 0;
+          padding: 0 20px 0 0;
+        }
+
+        .e-recurrence-table .e-day-position {
+          padding: 0 50px 0 0;
         }
 
         .e-week-position {
-          padding-left: 16px;
-          padding-right: 0;
+          left: 0;
         }
-      }
-
-      .e-recurrence-table .e-monthday-element {
-        padding-left: 20px;
-      }
-
-      .e-week-position {
-        padding-left: 0;
-        padding-right: 0;
-      }
-
-      .e-week-position {
-        padding-left: 0;
       }
     }
 
@@ -461,6 +447,22 @@
 
       .e-footer-content {
         padding: 16px 8px;
+      }
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .e-recurrenceeditor {
+
+      .e-editor {
+
+        .e-input-wrapper-side.e-end-on {
+          width: 100%;
+        }
+
+        .e-input-wrapper-side.e-non-week {
+          width: 65%;
+        }
       }
     }
   }
@@ -506,8 +508,7 @@
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 10px;
-          padding-right: 0;
+          padding: 0 0 0 10px;
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-left {
@@ -524,7 +525,11 @@
         }
 
         .e-input-wrapper-side.e-non-week {
-          width: 100%;
+          width: 65%;
+        }
+
+        .e-recurrence-table .e-day-position {
+          padding-left: 50px;
         }
       }
 
@@ -535,8 +540,7 @@
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 0;
-          padding-right: 10px;
+          padding: 0 10px 0 0;
         }
       }
     }

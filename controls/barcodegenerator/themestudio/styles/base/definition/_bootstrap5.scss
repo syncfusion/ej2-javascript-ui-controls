@@ -40,7 +40,6 @@ $green:   #198754 !default;
 $teal:    #20c997 !default;
 $cyan:    #0dcaf0 !default;
 
-
 $primary:       $blue !default;
 $secondary:     $gray-600 !default;
 $success:       $green !default;
@@ -62,8 +61,6 @@ $success-light-alt: tint-color($success, 80%) !default;
 $info-light-alt: tint-color($info, 80%) !default;
 $warning-light-alt: tint-color($warning, 80%) !default;
 $danger-light-alt: tint-color($danger, 80%) !default;
-
-
 
 // backgroundcolor
 $content-bg-color: $white !default;
@@ -102,7 +99,6 @@ $spreadsheet-selection-4: #4caf51;
 $spreadsheet-selection-5: #fe9800;
 $spreadsheet-selection-6: #3f52b5;
 
-
 // text-color
 $content-text-color: $gray-900 !default;
 $content-text-color-alt1: $gray-800 !default;
@@ -114,7 +110,7 @@ $content-text-color-focus: $gray-900 !default;
 $content-text-color-selected: $primary-text-color !default;
 $content-text-color-dragged: $gray-900 !default;
 $content-text-color-disabled: $gray-500 !default;
-$placeholder-text-color: $gray-600  !default;
+$placeholder-text-color: $gray-600 !default;
 $flyout-text-color: $gray-900 !default;
 $flyout-text-color-hover: $gray-900 !default;
 $flyout-text-color-pressed: $primary-text-color !default;
@@ -150,8 +146,6 @@ $tooltip-bg-color: $gray-900 !default;
 $tooltip-border: $gray-900;
 $toooltip-text-color: #f9fafb !default;
 
-
-
 // shadow
 $shadow: 0 .8px 16px rgba($black, .15) !default;
 $shadow-sm: 0 2px 4px rgba($black, .075) !default;
@@ -170,10 +164,8 @@ $danger-shadow-focus: 0 0 0 4px rgba(tint-color($danger, 15%), .5) !default;
 $info-shadow-focus: 0 0 0 4px rgba(tint-color($info, 15%), .5) !default;
 $warning-shadow-focus: 0 0 0 4px rgba(tint-color($warning, 15%), .5) !default;
 
-
 // fontfamily
 $font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !default;
-
 
 // default font Size
 $text-xxs: 10px !default;
@@ -209,7 +201,6 @@ $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
 
-
 // font Weight
 $font-weight-lighter:         lighter !default;
 $font-weight-light:           300 !default;
@@ -217,7 +208,6 @@ $font-weight-normal:          400 !default;
 $font-weight-medium:          500 !default;
 $font-weight-bold:            700 !default;
 $font-weight-bolder:          bolder !default;
-
 
 // Secondary-button
 
@@ -236,8 +226,6 @@ $secondary-text-color-focus: $secondary-text-color-hover !default;
 $secondary-bg-color-disabled: rgba($secondary-bg-color, .65) !default;
 $secondary-border-color-disabled: $secondary-bg-color-disabled !default;
 $secondary-text-color-disabled: rgba($secondary-text-color, .65) !default;
-
-
 
 // Primary-button
 
@@ -334,7 +322,6 @@ $danger-outline: $danger-bg-color !default;
 $success-outline: $success-bg-color !default;
 $info-outline: $info-bg-color !default;
 
-
 // chart series
 
 $series-1: $gray-200;
@@ -355,3 +342,126 @@ $theme-name: 'bootstrap5' !default;
 //Diagram Palette color
 $diagram-palette-background: $white !default;
 $diagram-palette-hover-background: $content-bg-color-hover !default;
+
+//Message component
+
+//Message Default
+$msg-color: #41464b !default;
+$msg-bg-color: #e2e3e5 !default;
+$msg-border-color: #d3d6d8 !default;
+$msg-color-alt1: $gray-900 !default;
+$msg-bg-color-alt1: $transparent !default;
+$msg-border-color-alt1: #9ca3af !default;
+$msg-color-alt2: $white !default;
+$msg-bg-color-alt2: $gray-600 !default;
+$msg-border-color-alt2:$gray-600 !default;
+
+$msg-icon-color: $gray-900 !default;
+$msg-icon-color-alt1: $gray-900 !default;
+$msg-icon-color-alt2: $white !default;
+
+$msg-close-icon-color: $icon-color !default;
+$msg-close-icon-color-alt1: $icon-color !default;
+$msg-close-icon-color-alt2: $white !default;
+
+//Message Danger
+$msg-danger-color: #842029 !default;
+$msg-danger-bg-color: tint-color($danger, 80%) !default;
+$msg-danger-border-color: #f5c2c7 !default;
+$msg-danger-color-alt1: $red !default;
+$msg-danger-bg-color-alt1: $transparent !default;
+$msg-danger-border-color-alt1:$red !default;
+$msg-danger-color-alt2: $white !default;
+$msg-danger-bg-color-alt2: $red !default;
+$msg-danger-border-color-alt2: $red !default;
+
+$msg-danger-icon-color: #842029 !default;
+$msg-danger-icon-color-alt1: $red !default;
+$msg-danger-icon-color-alt2: $white !default;
+
+$msg-danger-close-icon-color: $icon-color !default;
+$msg-danger-close-icon-color-alt1: $icon-color !default;
+$msg-danger-close-icon-color-alt2: $white !default;
+
+//Message success
+$msg-success-color: #0f5132 !default;
+$msg-success-bg-color: tint-color($success, 80%) !default;
+$msg-success-border-color:#badbcc !default;
+$msg-success-color-alt1: darken($green, 10%) !default;
+$msg-success-bg-color-alt1: $transparent !default;
+$msg-success-border-color-alt1: $green !default;
+$msg-success-color-alt2: $white !default;
+$msg-success-bg-color-alt2: $green !default;
+$msg-success-border-color-alt2: $green !default;
+
+$msg-success-icon-color: darken($green, 10%) !default;
+$msg-success-icon-color-alt1: darken($green, 10%) !default;
+$msg-success-icon-color-alt2: $white !default;
+
+$msg-success-close-icon-color: $icon-color !default;
+$msg-success-close-icon-color-alt1: $icon-color !default;
+$msg-success-close-icon-color-alt2: $white !default;
+
+//Message warning
+$msg-warning-color: #664d03 !default;
+$msg-warning-bg-color: tint-color($warning, 80%) !default;
+$msg-warning-border-color: #ffecb5 !default;
+$msg-warning-color-alt1: #866500 !default;
+$msg-warning-bg-color-alt1: $transparent !default;
+$msg-warning-border-color-alt1: #866500 !default;
+$msg-warning-color-alt2: $gray-900 !default;
+$msg-warning-bg-color-alt2: $yellow !default;
+$msg-warning-border-color-alt2: $yellow !default;
+
+$msg-warning-icon-color: #866500 !default;
+$msg-warning-icon-color-alt1: darken($yellow, 25%) !default;
+$msg-warning-icon-color-alt2: $gray-900 !default;
+
+$msg-warning-close-icon-color: $icon-color !default;
+$msg-warning-close-icon-color-alt1: $icon-color !default;
+$msg-warning-close-icon-color-alt2: $gray-900 !default;
+
+//Message Info
+$msg-info-color: #055160 !default;
+$msg-info-bg-color: #cff4fc !default;
+$msg-info-border-color: #b5effb !default;
+$msg-info-color-alt1: #066477 !default;
+$msg-info-bg-color-alt1: $transparent !default;
+$msg-info-border-color-alt1: #066477 !default;
+$msg-info-color-alt2: $gray-900 !default;
+$msg-info-bg-color-alt2: $cyan !default;
+$msg-info-border-color-alt2: $cyan !default;
+
+$msg-info-icon-color: darken($cyan, 25%) !default;
+$msg-info-icon-color-alt1: darken($cyan, 25%) !default;
+$msg-info-icon-color-alt2: $gray-900 !default;
+
+$msg-info-close-icon-color: $icon-color !default;
+$msg-info-close-icon-color-alt1: $icon-color !default;
+$msg-info-close-icon-color-alt2: $gray-900 !default;
+
+//App bar
+//Light
+$appbar-bg-color-alt1: $gray-100 !default;
+$appbar-color-alt1: $gray-900 !default;
+$appbar-border-color-alt1: $gray-100 !default;
+$appbar-hover-bg-color-alt1: rgba(transparent, .056) !default;
+
+//Dark
+$appbar-bg-color-alt2: $gray-900 !default;
+$appbar-color-alt2: $white !default;
+$appbar-border-color-alt2: $gray-900 !default;
+$appbar-hover-bg-color-alt2: rgba(255, 255, 255, .08) !default;
+
+//shadow
+$appbar-bottom-shadow: none !default;
+$appbar-top-shadow: none !default;
+
+//rating
+$rating-selected-color: $primary !default;
+$rating-unrated-color: $gray-600 !default;
+$rating-selected-disabled-color: $gray-500 !default;
+$rating-unrated-disabled-color: $gray-400 !default;
+$rating-selected-hover-color: $gray-600 !default;
+$rating-unrated-hover-color: $primary !default;
+$rating-pressed-color: lighten($primary, 15%) !default;

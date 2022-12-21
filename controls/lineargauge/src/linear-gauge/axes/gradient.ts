@@ -120,7 +120,6 @@ export class RadialGradient extends ChildProperty<RadialGradient> {
 export class Gradient {
 
     private gauge: LinearGauge;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: LinearGauge) {
         this.gauge = control;
     }
@@ -130,6 +129,7 @@ export class Gradient {
      *
      * @private
      */
+
     private getLinearGradientColor(element: Range | Pointer): string {
         const render: SvgRenderer = new SvgRenderer('');
         const colorStop: ColorStopModel[] = element.linearGradient.colorStop;
@@ -156,6 +156,7 @@ export class Gradient {
      *
      * @private
      */
+
     private getRadialGradientColor(element: Range | Pointer): string {
         const render: SvgRenderer = new SvgRenderer('');
         const colorStop: ColorStopModel[] = element.radialGradient.colorStop;
@@ -189,15 +190,17 @@ export class Gradient {
      *
      * @private
      */
+
     private getGradientColor(colorStop: ColorStopModel[]): GradientColor[] {
         const colors: GradientColor[] = [];
         const length: number = colorStop.length;
         for (let j: number = 0; j < length; j++) {
+            const gradientColorStop: ColorStopModel = colorStop[j as number];
             const color: GradientColor = {
-                color: colorStop[j].color,
-                colorStop: colorStop[j].offset,
-                opacity: (colorStop[j].opacity) ? (colorStop[j].opacity).toString() : '1',
-                style: colorStop[j].style
+                color: gradientColorStop.color,
+                colorStop: gradientColorStop.offset,
+                opacity: gradientColorStop.opacity ? (gradientColorStop.opacity).toString() : '1',
+                style: gradientColorStop.style
             };
             colors.push(color);
         }
@@ -209,6 +212,7 @@ export class Gradient {
      *
      * @private
      */
+
     public getGradientColorString(element: Pointer | Range): string {
         let gradientColor: string;
         if ((element.linearGradient || element.radialGradient)) {
@@ -227,6 +231,7 @@ export class Gradient {
     /**
      * Get module name.
      */
+
     protected getModuleName(): string {
         return 'Gradient';
     }

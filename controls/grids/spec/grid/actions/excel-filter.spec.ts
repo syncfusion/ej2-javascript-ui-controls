@@ -847,7 +847,7 @@ describe('Excel Filter =>', () => {
                         actionComplete = (args?: any): void => {
                             if (flag) {
                                 flag = false;
-                                expect(gridObj.focusModule.getContent().matrix.current[1]).toBe(4);
+                                expect(document.activeElement.getAttribute('data-colindex')).toBe('4');
                                 done();
                             }
                             done();

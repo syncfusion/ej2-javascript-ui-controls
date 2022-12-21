@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { RevisionCollection } from './implementation/track-changes/track-changes';import { NotesDialog } from './implementation/dialogs/notes-dialog';import { FootNoteWidget } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange } from './base/constants';import { Optimized, Regular, HelperMethods } from './index';import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { RevisionCollection } from './implementation/track-changes/track-changes';import { NotesDialog } from './implementation/dialogs/notes-dialog';import { FootNoteWidget } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange } from './base/constants';import { Optimized, Regular, HelperMethods } from './index';import { ColumnsDialog } from './implementation/dialogs/columns-dialog';import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -20,12 +20,12 @@ export interface DocumentEditorSettingsModel {
     fontFamilies?: string[];
 
     /**
-     * Form field settings.
+     * Gets or sets the form field settings.
      */
     formFieldSettings?: FormFieldSettingsModel;
 
     /**
-     * Collaborative editing settings.
+     * Gets ot sets the collaborative editing settings.
      */
     collaborativeEditingSettings?: CollaborativeEditingSettingsModel;
 
@@ -40,7 +40,7 @@ export interface DocumentEditorSettingsModel {
      *
      * @default true
      * @aspType bool
-     * @returns {boolean} - `true` use optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
+     * @returns {boolean} Returns `true` if uses optimized text measuring approach to match Microsoft Word pagination; otherwise, `false`
      */
     enableOptimizedTextMeasuring?: boolean;
 
@@ -54,9 +54,10 @@ export interface DocumentEditorSettingsModel {
 
     /**
      * Gets or sets a value indicating whether to show the hidden characters like spaces, tab, paragraph marks, and breaks.
+     *
      * @default false
      * @aspType bool
-     * @returns {boolean} - `false` hide the hidden characters like spaces, tab, paragraph marks, and breaks. Otherwise `true`.
+     * @returns {boolean} Returns `false` if hides the hidden characters like spaces, tab, paragraph marks, and breaks. Otherwise `true`.
      */
     showHiddenMarks?: boolean;
 
@@ -83,14 +84,14 @@ export interface DocumentSettingsModel {
 export interface DocumentEditorModel extends ComponentModel{
 
     /**
-     * Default Paste Formatting Options
+     * Gets or sets the default Paste Formatting Options
      *
      * @default KeepSourceFormatting
      */
     defaultPasteOption?: PasteOptions;
 
     /**
-     * Layout Type
+     * Gets or sets the Layout Type.
      *
      * @default Pages
      */
@@ -112,7 +113,7 @@ export interface DocumentEditorModel extends ComponentModel{
     userColor?: string;
 
     /**
-     * Gets or sets the page gap value in document editor
+     * Gets or sets the page gap value in document editor.
      *
      * @default 20
      */
@@ -126,21 +127,21 @@ export interface DocumentEditorModel extends ComponentModel{
     documentName?: string;
 
     /**
-     * Defines the width of the DocumentEditor component
+     * Defines the width of the DocumentEditor component.
      *
      * @default '100%'
      */
     width?: string;
 
     /**
-     * Defines the height of the DocumentEditor component
+     * Defines the height of the DocumentEditor component.
      *
      * @default '200px'
      */
     height?: string;
 
     /**
-     * Sfdt Service URL
+     * Gets or sets the Sfdt Service URL.
      *
      * @default ''
      */
@@ -299,6 +300,13 @@ export interface DocumentEditorModel extends ComponentModel{
      *
      * @default false
      */
+    enableColumnsDialog?: boolean;
+
+    /**
+     * Gets or sets a value indicating whether font dialog is enabled or not.
+     *
+     * @default false
+     */
     enablePageSetupDialog?: boolean;
 
     /**
@@ -344,35 +352,35 @@ export interface DocumentEditorModel extends ComponentModel{
     enableSpellCheck?: boolean;
 
     /**
-     * Gets or set a value indicating whether comment is enabled or not
+     * Gets or sets a value indicating whether comment is enabled or not
      *
      * @default false
      */
     enableComment?: boolean;
 
     /**
-     * Gets or set a value indicating whether track changes is enabled or not
+     * Gets or sets a value indicating whether track changes is enabled or not
      *
      * @default false
      */
     enableTrackChanges?: boolean;
 
     /**
-     * Gets or set a value indicating whether form fields is enabled or not.
+     * Gets or sets a value indicating whether form fields is enabled or not.
      *
      * @default false
      */
     enableFormField?: boolean;
 
     /**
-     * Gets or Sets a value indicating whether tab key can be accepted as input or not.
+     * Gets or sets a value indicating whether tab key can be accepted as input or not.
      *
      * @default false
      */
     acceptTab?: boolean;
 
     /**
-     * Gets or Sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
+     * Gets or sets a value indicating whether holding Ctrl key is required to follow hyperlink on click. The default value is true.
      *
      * @default true
      */
@@ -400,7 +408,7 @@ export interface DocumentEditorModel extends ComponentModel{
     enableLocalPaste?: boolean;
 
     /**
-     * Enable partial lock and edit module.
+     * Enables the partial lock and edit module.
      *
      * @default false
      */
@@ -426,70 +434,70 @@ export interface DocumentEditorModel extends ComponentModel{
     serverActionSettings?: ServerActionSettingsModel;
 
     /**
-     * Add custom headers to XMLHttpRequest.
+     * Adds the custom headers to XMLHttpRequest.
      *
      * @default []
      */
     headers?: object[];
 
     /**
-     * Show comment in the document.
+     * Shows the comment in the document.
      *
      * @default false
      */
     showComments?: boolean;
 
     /**
-     * Shows revision changes in the document.
+     * Shows the revision changes in the document.
      *
      * @default false
      */
     showRevisions?: boolean;
 
     /**
-     * Triggers whenever document changes in the document editor.
+     * Triggers whenever the document changes in the document editor.
      *
      * @event documentChange
      */
     documentChange?: EmitType<DocumentChangeEventArgs>;
 
     /**
-     * Triggers whenever container view changes in the document editor.
+     * Triggers whenever the container view changes in the document editor.
      *
      * @event viewChange
      */
     viewChange?: EmitType<ViewChangeEventArgs>;
 
     /**
-     * Triggers whenever zoom factor changes in the document editor.
+     * Triggers whenever the zoom factor changes in the document editor.
      *
      * @event zoomFactorChange
      */
     zoomFactorChange?: EmitType<ZoomFactorChangeEventArgs>;
 
     /**
-     * Triggers whenever selection changes in the document editor.
+     * Triggers whenever the selection changes in the document editor.
      *
      * @event selectionChange
      */
     selectionChange?: EmitType<SelectionChangeEventArgs>;
 
     /**
-     * Triggers whenever hyperlink is clicked or tapped in the document editor.
+     * Triggers whenever the hyperlink is clicked or tapped in the document editor.
      *
      * @event requestNavigate
      */
     requestNavigate?: EmitType<RequestNavigateEventArgs>;
 
     /**
-     * Triggers whenever content changes in the document editor.
+     * Triggers whenever the content changes in the document editor.
      *
      * @event contentChange
      */
     contentChange?: EmitType<ContentChangeEventArgs>;
 
     /**
-     * Triggers whenever key is pressed in the document editor.
+     * Triggers whenever the key is pressed in the document editor.
      *
      * @event keyDown
      */
@@ -503,7 +511,7 @@ export interface DocumentEditorModel extends ComponentModel{
     searchResultsChange?: EmitType<SearchResultsChangeEventArgs>;
 
     /**
-     * Triggers when the component is created
+     * Triggers when the component is created.
      *
      * @event created
      */
@@ -531,21 +539,21 @@ export interface DocumentEditorModel extends ComponentModel{
     customContextMenuBeforeOpen?: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
     /**
-     * Triggers before opening comment pane.
+     * Triggers before opening the comment pane.
      *
      * @event beforePaneSwitch
      */
     beforePaneSwitch?: EmitType<BeforePaneSwitchEventArgs>;
 
     /**
-     * Triggers after inserting comment.
+     * Triggers after inserting the comment.
      *
      * @event commentBegin
      */
     commentBegin?: EmitType<Object>;
 
     /**
-     * Triggers after posting comment.
+     * Triggers after posting the comment.
      *
      * @event commentEnd
      */
@@ -559,7 +567,7 @@ export interface DocumentEditorModel extends ComponentModel{
     beforeFileOpen?: EmitType<BeforeFileOpenArgs>;
 
     /**
-     * Triggers after inserting comment.
+     * Triggers after deleting the comment.
      *
      * @event commentDelete
      */
@@ -573,14 +581,14 @@ export interface DocumentEditorModel extends ComponentModel{
     beforeCommentAction?: EmitType<CommentActionEventArgs>;
 
     /**
-     * Triggers when TrackChanges enabled / disabled.
+     * Triggers when the trackChanges enabled / disabled.
      *
      * @event trackChange
      */
     trackChange?: EmitType<TrackChangeEventArgs>;
 
     /**
-     * Triggers before form field fill.
+     * Triggers before the form field fill.
      *
      * @event beforeFormFieldFill
      */
@@ -594,7 +602,7 @@ export interface DocumentEditorModel extends ComponentModel{
     serviceFailure?: EmitType<ServiceFailureArgs>;
 
     /**
-     * Triggers after form field fill.
+     * Triggers after the form field fill.
      *
      * @event afterFormFieldFill
      */
@@ -615,7 +623,7 @@ export interface DocumentEditorModel extends ComponentModel{
     contentControl?: EmitType<Object>;
 
     /**
-     * This event is triggered before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
+     * Triggers before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
      */
     beforeXmlHttpRequestSend?: EmitType<XmlHttpRequestEventArgs>;
 
@@ -669,7 +677,7 @@ export interface ServerActionSettingsModel {
 export interface FormFieldSettingsModel {
 
     /**
-     * Get or Set form fields shading color.
+     * Gets or sets the form fields shading color.
      * You can customize shading color in application level, but cannot be exported in file level
      *
      * @default '#cfcfcf'
@@ -677,28 +685,28 @@ export interface FormFieldSettingsModel {
     shadingColor?: string;
 
     /**
-     * Get or Set whether apply shadings for field or not.
+     * Gets or sets the whether apply shadings for field or not.
      *
      * @default true
      */
     applyShading?: boolean;
 
     /**
-     * Get or Set field selection color.
+     * Gets or sets the field selection color.
      *
      * @default '#cccccc'
      */
     selectionColor?: string;
 
     /**
-     * Get or Set form filling mode type.
+     * Gets or sets the form filling mode type.
      *
      * @default 'Popup'
      */
     formFillingMode?: FormFillingMode;
 
     /**
-     * Get or Set formatting exception.
+     * Gets or sets the formatting exception.
      *
      * @default []
      */
@@ -712,24 +720,24 @@ export interface FormFieldSettingsModel {
 export interface CollaborativeEditingSettingsModel {
 
     /**
-     * Get or set collaborative editing room name.
+     * Gets or sets the collaborative editing room name.
      *
      * @default ''
      */
     roomName?: string;
 
     /**
-     * Get or set editable region color.
+     * Gets or sets the editable region color.
      */
     editableRegionColor?: string;
 
     /**
-     * Get or set locked region color.
+     * Gets or sets the locked region color.
      */
     lockedRegionColor?: string;
 
     /**
-     * Get or set timeout for syncing content in milliseconds.
+     * Gets or sets the timeout for syncing content in milliseconds.
      */
     saveTimeout?: number;
 

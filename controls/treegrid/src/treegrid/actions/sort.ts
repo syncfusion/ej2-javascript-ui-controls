@@ -67,17 +67,18 @@ export class Sort {
     private iterateSort(data: ITreeData[], srtQry: Query): void {
         for (let d: number = 0; d < data.length; d++) {
             if (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key !== '') {
-                if (!isNullOrUndefined(getParentData(this.parent, data[d].uniqueID, true))) {
+                if (!isNullOrUndefined(getParentData(this.parent, data[parseInt(d.toString(), 10)].uniqueID, true))) {
                     this.storedIndex++;
-                    this.flatSortedData[this.storedIndex] = data[d];
+                    this.flatSortedData[this.storedIndex] = data[parseInt(d.toString(), 10)];
                 }
             } else {
                 this.storedIndex++;
-                this.flatSortedData[this.storedIndex] = data[d];
+                this.flatSortedData[this.storedIndex] = data[parseInt(d.toString(), 10)];
             }
-            if (data[d].hasChildRecords) {
-                const childSort: ITreeData[] = <ITreeData[]>(new DataManager(data[d].childRecords).executeLocal(srtQry));
-                if (this.parent.allowRowDragAndDrop && data[d].childRecords.indexOf(this.parent.rowDragAndDropModule['draggedRecord']) !== -1 && this.parent.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
+            if (data[parseInt(d.toString(), 10)].hasChildRecords) {
+                const childSort: ITreeData[] = <ITreeData[]>(new DataManager(data[parseInt(d.toString(), 10)].childRecords)
+                    .executeLocal(srtQry));
+                if (this.parent.allowRowDragAndDrop && data[parseInt(d.toString(), 10)].childRecords.indexOf(this.parent.rowDragAndDropModule['draggedRecord']) !== -1 && this.parent.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
                     const dragdIndex: number = childSort.indexOf(this.parent.rowDragAndDropModule['draggedRecord']);
                     childSort.splice(dragdIndex, 1);
                     const dropdIndex: number = childSort.indexOf(this.parent.rowDragAndDropModule['droppedRecord']);

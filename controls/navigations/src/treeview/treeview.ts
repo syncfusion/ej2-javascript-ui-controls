@@ -63,6 +63,7 @@ const SMALL: string = 'e-small';
 const CHILD: string = 'e-has-child';
 const ITEM_ANIMATION_ACTIVE: string = 'e-animation-active';
 const DISABLED: string = 'e-disabled';
+const PREVENTSELECT: string = 'e-prevent';
 
 const treeAriaAttr: TreeAriaAttr = {
     treeRole: 'group',
@@ -492,6 +493,13 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
     public query: Query;
 
     /**
+     * Specifies whether the node can be selected by users or not 
+     * When set to false, the user interaction is prevented for the corresponding node. 
+     */
+    @Property('selectable')
+    public selectable: string;
+
+    /**
      * Specifies the mapping field for selected state of the TreeView node.
      */
     @Property('selected')
@@ -584,11 +592,11 @@ export class NodeAnimationSettings extends ChildProperty<NodeAnimationSettings> 
  * The TreeView component is used to represent hierarchical data in a tree like structure with advanced
  * functions to perform edit, drag and drop, selection with check-box, and more.
  * ```html
- *  <div id="tree"></div>
+ * <div id="tree"></div>
  * ```
  * ```typescript
- *  let treeObj: TreeView = new TreeView();
- *  treeObj.appendTo('#tree');
+ * let treeObj: TreeView = new TreeView();
+ * treeObj.appendTo('#tree');
  * ```
  */
 
@@ -672,7 +680,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private firstTap : Element;
     private hasTemplate: boolean = false;
     private isFirstRender: boolean = false;
-    // Specifies whether the node is dropped or not 
+    // Specifies whether the node is dropped or not
     private isNodeDropped: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
@@ -712,10 +720,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public allowMultiSelection: boolean;
 
     /**
-     * Enables or disables text wrapping when text exceeds the bounds in the TreeView node.  
-     * When the allowTextWrap property is set to true, the TreeView node text content will wrap to the next line 
+     * Enables or disables text wrapping when text exceeds the bounds in the TreeView node.
+     * When the allowTextWrap property is set to true, the TreeView node text content will wrap to the next line
      * when it exceeds the width of the TreeView node.
-     * The TreeView node height will be adjusted automatically based on the TreeView node content.  
+     * The TreeView node height will be adjusted automatically based on the TreeView node content.
      *
      * @default false
      */
@@ -732,20 +740,47 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public animation: NodeAnimationSettingsModel;
 
     /**
-     * The `checkedNodes` property is used to set the nodes that need to be checked or
-     * get the ID of nodes that are currently checked in the TreeView component.
+     * The `checkedNodes` property is used to set the nodes that need to be checked.
+     * This property returns the checked nodes ID in the TreeView component.
      * The `checkedNodes` property depends upon the value of `showCheckBox` property.
      * For more information on checkedNodes, refer to
      * [checkedNodes](../../treeview/check-box#checked-nodes).
-     *
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * showCheckBox: true,
+     * checkedNodes: ['01-01','02']
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default []
      */
     @Property()
     public checkedNodes: string[];
 
     /**
-     * Specifies the CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
-     *
+     * Specifies one or more than one CSS classes to be added with root element of the TreeView to help customize the appearance of the component.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * cssClass: 'e-custom e-tree'
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
+     * ```css
+     * .e-custom .e-tree {
+     * max-width: 600px;
+     * }
+     * .e-custom .e-list-item {
+     * padding: 10px 0;
+     * }
+     * ```
      * @default ''
      */
     @Property('')
@@ -761,17 +796,42 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public disabled: boolean;
 
     /**
-     * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
-     * for the draggable element movement. By default, the draggable element movement occurs in the entire page.
-     *
+     * Specifies the target in which the draggable element can be moved and dropped.
+     * By default, the draggable element movement occurs in the page.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * dragArea: '.control_wrapper'
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
+     * ```css
+     * .control_wrapper {
+     * width: 500px;
+     * margin-left: 100px;
+     * }
+     * ```
      * @default null
      */
     @Property(null)
     public dragArea: HTMLElement | string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
-     *
+     * Specifies whether to allow rendering of untrusted HTML values in the TreeView component.
+     * While enable this property, it sanitize suspected untrusted strings and script, and update in the TreeView component.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * enableHtmlSanitizer: true
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default false
      */
     @Property(false)
@@ -791,21 +851,41 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
-     *
+     * ```html
+     * <div id='tree'></div>
+     * ```
+     * ```typescript
+     * <script>
+     * var treeObj =  new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * expandedNodes: ['01','01-01','02']
+     * });
+     * treeObj.appendTo('#tree');
+     * </script>
+     * ```
      * @default []
      */
     @Property()
     public expandedNodes: string[];
 
     /**
-     * Specifies the action on which the node expands or collapses. The available actions are,
-     * * `Auto` - In desktop, the expand/collapse operation happens when you double-click the node, and in mobile devices it
-     * happens on single-click.
-     * * `Click` - The expand/collapse operation happens when you single-click the node in both desktop and mobile devices.
-     * * `DblClick` - The expand/collapse operation happens when you double-click the node in both desktop and mobile devices.
-     * * `None` - The expand/collapse operation will not happen when you single-click or double-click the node in both desktop
-     *  and mobile devices.
-     *
+     * Specifies the action on which the node expands or collapses.
+     * The available actions :
+     * `Click` - The expand/collapse operation happens when you single-click on the node in desktop.
+     * `DblClick` - The expand/collapse operation happens when you double-click on the node in desktop.
+     * `None` - The expand/collapse operation will not happen.
+     * In mobile devices, the node expand/collapse action happens on single tap.
+     * Here ExpandOn attribute is set to single click property also can use double click and none property.
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * expandOn: 'Click'
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default 'Auto'
      */
     @Property('Auto')
@@ -868,7 +948,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * it we can select only a single node.
      * For more information on selectedNodes, refer to
      * [selectedNodes](../../treeview/multiple-selection#selected-nodes).
-     *
+     * ```html
+     * <div id="tree"></div>
+     * ```
+     * ```typescript
+     * let treeObj: TreeView = new TreeView({
+     * fields: { dataSource: hierarchicalData, id: 'id', text: 'name', child: 'subChild' },
+     * allowMultiSelection: true,
+     * selectedNodes: ['01','02']
+     * });
+     * treeObj.appendTo('#tree');
+     * ```
      * @default []
      */
     @Property()
@@ -912,7 +1002,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     @Property(false)
     public fullRowNavigable: boolean;
     /**
-     * Triggers when any TreeView action failed to fetch the desired results.
+     * Event callback that is raised while any TreeView action failed to fetch the desired results.
      *
      * @event
      */
@@ -920,7 +1010,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public actionFailure: EmitType<FailureEventArgs>;
 
     /**
-     * Triggers when the TreeView control is created successfully.
+     * Event callback that is raised when the TreeView component is created successfully.
      *
      * @event
      */
@@ -930,7 +1020,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /* eslint-enable */
 
     /**
-     * Triggers when data source is populated in the TreeView.
+     * Event callback that is raised when data source is populated in the TreeView.
      *
      * @event
      */
@@ -938,7 +1028,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public dataBound: EmitType<DataBoundEventArgs>;
 
     /**
-     * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
+     * Event callback that is raised when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
      *
      * @event
@@ -947,7 +1037,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
 
     /**
-     * Triggers before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
+     * Event callback that is raised before the TreeView node is appended to the TreeView element. It helps to customize specific nodes.
      *
      * @event
      */
@@ -955,7 +1045,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public drawNode: EmitType<DrawNodeEventArgs>;
 
     /**
-     * Triggers when the TreeView control is destroyed successfully.
+     * Event callback that is raised when the TreeView control is destroyed successfully.
      *
      * @event
      */
@@ -964,7 +1054,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public destroyed: EmitType<Object>;
     /* eslint-enable */
     /**
-     * Triggers when key press is successful. It helps to customize the operations at key press.
+     * Event callback that is raised when key press is successful. It helps to customize the operations at key press.
      *
      * @event
      */
@@ -972,7 +1062,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public keyPress: EmitType<NodeKeyPressEventArgs>;
 
     /**
-     * Triggers when the TreeView node is checked/unchecked successfully.
+     * Event callback that is raised when the TreeView node is checked/unchecked successfully.
      *
      * @event
      */
@@ -980,7 +1070,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeChecked: EmitType<NodeCheckEventArgs>;
 
     /**
-     * Triggers before the TreeView node is to be checked/unchecked.
+     * Event callback that is raised before the TreeView node is to be checked/unchecked.
      *
      * @event
      */
@@ -988,7 +1078,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeChecking: EmitType<NodeCheckEventArgs>;
 
     /**
-     * Triggers when the TreeView node is clicked successfully.
+     * Event callback that is raised when the TreeView node is clicked successfully.
      *
      * @event
      */
@@ -996,7 +1086,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeClicked: EmitType<NodeClickEventArgs>;
 
     /**
-     * Triggers when the TreeView node collapses successfully.
+     * Event callback that is raised when the TreeView node collapses successfully.
      *
      * @event
      */
@@ -1004,7 +1094,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeCollapsed: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers before the TreeView node collapses.
+     * Event callback that is raised before the TreeView node collapses.
      *
      * @event
      */
@@ -1012,7 +1102,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeCollapsing: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers when the TreeView node is dragged (moved) continuously.
+     * Event callback that is raised when the TreeView node is dragged (moved) continuously.
      *
      * @deprecated
      * @event
@@ -1020,21 +1110,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public nodeDragging: EmitType<DragAndDropEventArgs>;
     /**
-     * Triggers when the TreeView node drag (move) starts.
+     * Event callback that is raised when the TreeView node drag (move) starts.
      *
      * @event
      */
     @Event()
     public nodeDragStart: EmitType<DragAndDropEventArgs>;
     /**
-     * Triggers when the TreeView node drag (move) is stopped.
+     * Event callback that is raised when the TreeView node drag (move) is stopped.
      *
      * @event
      */
     @Event()
     public nodeDragStop: EmitType<DragAndDropEventArgs>;
     /**
-     * Triggers when the TreeView node is dropped on target element successfully.
+     * Event callback that is raised when the TreeView node is dropped on target element successfully.
      *
      * @event
      */
@@ -1042,7 +1132,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeDropped: EmitType<DragAndDropEventArgs>;
 
     /**
-     * Triggers when the TreeView node is renamed successfully.
+     * Event callback that is raised when the TreeView node is renamed successfully.
      *
      * @event
      */
@@ -1050,7 +1140,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeEdited: EmitType<NodeEditEventArgs>;
 
     /**
-     * Triggers before the TreeView node is renamed.
+     * Event callback that is raised before the TreeView node is renamed.
      *
      * @event
      */
@@ -1058,7 +1148,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeEditing: EmitType<NodeEditEventArgs>;
 
     /**
-     * Triggers when the TreeView node expands successfully.
+     * Event callback that is raised when the TreeView node expands successfully.
      *
      * @event
      */
@@ -1066,7 +1156,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeExpanded: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers before the TreeView node is to be expanded.
+     * Event callback that is raised before the TreeView node is to be expanded.
      *
      * @event
      */
@@ -1074,7 +1164,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeExpanding: EmitType<NodeExpandEventArgs>;
 
     /**
-     * Triggers when the TreeView node is selected/unselected successfully.
+     * Event callback that is raised when the TreeView node is selected/unselected successfully.
      *
      * @event
      */
@@ -1082,7 +1172,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeSelected: EmitType<NodeSelectEventArgs>;
 
     /**
-     * Triggers before the TreeView node is selected/unselected.
+     * Event callback that is raised before the TreeView node is selected/unselected.
      *
      * @event
      */
@@ -1139,7 +1229,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             csEnter: 'ctrl+shift+enter',
             csHome: 'ctrl+shift+home',
             csEnd: 'ctrl+shift+end',
-            space: 'space'
+            space: 'space',
+            shiftSpace: 'shift+space',
+            ctrlSpace: 'ctrl+space'
         };
         this.listBaseOption = {
             expandCollapse: true,
@@ -1656,6 +1748,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         };
         if (!this.isRefreshed) {
             this.trigger('drawNode', eventArgs);
+            if (e.curData[this.fields.selectable] === false && !this.showCheckBox) {
+                e.item.classList.add(PREVENTSELECT);
+                e.item.firstElementChild.setAttribute('style', 'cursor: not-allowed');
+            }
         }
     }
 
@@ -2327,7 +2423,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             let classList: DOMTokenList = target.classList;
             let li: Element = closest(target, '.' + LISTITEM);
-            if (!li) {
+            if (!li || (li.classList.contains(PREVENTSELECT) && !(classList.contains(EXPANDABLE) || classList.contains(COLLAPSIBLE)))) {
                 return;
             } else if (event.originalEvent.which !== 3) {
                 let rippleElement: Element =  select('.' + RIPPLEELMENT, li);
@@ -2720,7 +2816,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if(index === -1){
                 for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
                     let tempArray: { [key: string]: Object }[] = getValue(this.fields.child, obj[i]);
-                    let childIndex: number = !isNOU(tempArray) ? tempArray.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === parentId) : -1;
+                    let childIndex: number= !isNOU(tempArray)?tempArray.findIndex((data) => data[this.fields.id] && data[this.fields.id].toString() === parentId) : -1;
                     if(childIndex!==-1){
                         return <{ [key: string]: Object }[]>getValue(this.fields.child, tempArray[childIndex]);
                     }
@@ -2796,7 +2892,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'select', e);
             this.trigger('nodeSelecting', eventArgs, (observedArgs: NodeSelectEventArgs) => {
-                if (!observedArgs.cancel) {
+                if (!observedArgs.cancel  && !observedArgs.node.classList.contains(PREVENTSELECT)) {
                     this.nodeSelectAction(li, e, observedArgs, multiSelect);
                 }
             });
@@ -3013,6 +3109,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         if (this.showCheckBox) {
                             this.checkNode(e);
                         }
+                        else {
+                            this.toggleSelect(focusedNode, e);
+                        }
                         break;
                     case 'moveRight':
                         this.openNode(this.enableRtl ? false : true, e);
@@ -3052,6 +3151,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     case 'ctrlEnter':
                     case 'shiftEnter':
                     case 'csEnter':
+                    case 'shiftSpace':
+                    case 'ctrlSpace':
                         this.toggleSelect(focusedNode, e);
                         break;
                     case 'f2':
@@ -3451,7 +3552,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private setFocus(preNode: Element, nextNode: Element): void {
         removeClass([preNode], [HOVER, FOCUS]);
-        if (!nextNode.classList.contains('e-disable')) {
+        if (!nextNode.classList.contains('e-disable') && !nextNode.classList.contains(PREVENTSELECT)) {
             addClass([nextNode], [HOVER, FOCUS]);
             this.updateIdAttr(preNode, nextNode);
         }
@@ -3492,7 +3593,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setHover(li: Element): void {
-        if (!li.classList.contains(HOVER)) {
+        if (!li.classList.contains(HOVER) && !li.classList.contains(PREVENTSELECT)) {
             this.removeHover();
             addClass([li], HOVER);
         }
@@ -3517,6 +3618,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let pNode: Element = closest(currLi.parentNode, '.' + LISTITEM);
             let pid: string = pNode ? pNode.getAttribute('data-uid') : null;
             let selected: boolean = currLi.classList.contains(ACTIVE);
+            let selectable: boolean = currLi.classList.contains(PREVENTSELECT) ? false : true;
             let expanded: boolean = (currLi.getAttribute('aria-expanded') === 'true') ? true : false;
             let hasChildren: boolean = currLi.getAttribute('aria-expanded') !== null ? true : (select('.'+ EXPANDABLE, currLi) || select('.'+ COLLAPSIBLE, currLi)) != null ? true : false;
             let checked: string = null;
@@ -3525,7 +3627,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 checked = checkboxElement.getAttribute('aria-checked');
             }
             return {
-                id: id, text: text, parentID: pid, selected: selected, expanded: expanded,
+                id: id, text: text, parentID: pid, selected: selected, selectable: selectable, expanded: expanded,
                 isChecked: checked, hasChildren: hasChildren
             };
         }
@@ -4547,7 +4649,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             dropUl = dropEle;
         }
         refNode = dropUl.childNodes[index];
-        if(!this.isFirstRender || (this.dataType === 1)){
+        if(!this.isFirstRender || this.dataType === 1){
             if(refNode || this.sortOrder === 'None'){
                 for (let i: number = 0; i < li.length; i++) {
                     dropUl.insertBefore(li[i], refNode);
@@ -5503,8 +5605,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Instead of clicking on the TreeView node for editing, we can enable it by using
-     * `beginEdit` property. On passing the node ID or element through this property, the edit textBox
+     * Editing can also be enabled by using the `beginEdit` property, instead of clicking on the
+     * TreeView node. On passing the node ID or element through this property, the edit textBox
      * will be created for the particular node thus allowing us to edit it.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
      */
@@ -5619,7 +5721,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
+     * Gets the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
      */
     public getNode(node: string | Element): { [key: string]: Object } {

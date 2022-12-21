@@ -1870,6 +1870,29 @@ describe( 'EJ2-62200 Cursor position is wrong when pressing enter in the empty l
     } );
 } );
 
+describe('EJ2-63855 Table Enter Key Testing when frist element as inline element ', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize e-img-focus" alt="icons8-delete-file-100.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"></td><td style="width: 33.3333%;" class=""><strong class="e-rte-strong-element">strong</strong></td><td style="width: 33.3333%;" class=""><span class="e-rte-span-element" style="font-size: 14pt;">span</span></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+        });
+        done();
+    });
+    it('Enter Key testing in table when strong element in frist node of TD is configured', function (): void {
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.querySelector('.e-rte-image');
+        const sel: void = new NodeSelection().setCursorPoint(document, startNode, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize e-img-focus" alt="icons8-delete-file-100.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"></td><td style="width: 33.3333%;" class=""><strong class="e-rte-strong-element">strong</strong></td><td style="width: 33.3333%;" class=""><span class="e-rte-span-element" style="font-size: 14pt;">span</span></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>').toBe(true);
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
+
 describe( 'EJ2-64636 Duplicate text is created when deleting different nodes and pressing enter', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;
@@ -1911,5 +1934,124 @@ describe('EJ2-65987 - Image duplicated when pressing enter',() => {
         editObj.nodeSelection.setSelectionText(document,(rteObj as any).inputElement.childNodes[0].firstChild,(rteObj as any).inputElement.childNodes[0].firstChild, 0, 0);
         (rteObj as any).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.innerHTML==`<p><br></p><p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`).toBe(true);
+    });
+});
+
+describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>
+    <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3">
+    </audio></span></span><br>
+</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local 
+    computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,
+    align, display, dimension, and delete the selected a video.</p><p>
+    <span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">
+        <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">
+    </video></span><br>
+</p>`;
+    let editObj: EditorManager = new EditorManager( { document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: innerHTML
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('audio focus and enter key press',() => {
+        (rteObj as any).inputElement.focus();
+        let startNode = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
+        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p><br></p><p><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline">\n        <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3">\n    </audio></span></span><br>\n</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n    computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n    align, display, dimension, and delete the selected a video.</p><p>\n    <span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">\n        <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">\n    </video></span><br>\n</p>`).toBe(true);
+    });
+
+    it('video focus and enter key press',() => {
+        rteObj.value = `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>
+        <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3">
+        </audio></span></span><br>
+    </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local 
+        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,
+        align, display, dimension, and delete the selected a video.</p><p>
+        <span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">
+            <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">
+        </video></span><br></p>`;
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
+        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>\n        <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline">\n            <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3">\n        </audio></span></span><br>\n    </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n        align, display, dimension, and delete the selected a video.</p><p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">\n            <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">\n        </video></span><br></p>`).toBe(true);
+    });
+
+    it('audio dynamically inserted and focus and enter key press',() => {
+        rteObj.value = `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, dis<span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="blob:null/72bb961a-c785-4d4a-b94d-9b5701292c3b" type="audio/mp3"></audio></span></span><br>play, and delete the selected an audio</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local 
+        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,
+        align, display, dimension, and delete the selected a video.</p>`;
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        let startNode = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
+        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, dis</p><p><span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="blob:null/72bb961a-c785-4d4a-b94d-9b5701292c3b" type="audio/mp3"></audio></span></span><br>play, and delete the selected an audio</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n        align, display, dimension, and delete the selected a video.</p>`).toBe(true);
+    });
+
+    it('video dynamically inserted and focus and enter key press',() => {
+        rteObj.value = `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local 
+        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,
+        al<span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="blob:null/0f59173c-61bf-42d9-84e9-bb9560da2714" type="video/mp4"></video></span><br>ign, display, dimension, and delete the selected a video.</p>`;
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
+        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n        al</p><p><span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="blob:null/0f59173c-61bf-42d9-84e9-bb9560da2714" type="video/mp4"></video></span><br>ign, display, dimension, and delete the selected a video.</p>`).toBe(true);
+    });
+});
+
+describe("EJ2-64561- When press the enter key while the cursor focused before video, the video gets duplicated", () => {
+    let rteObj : RichTextEditor;
+    beforeAll( () =>{
+        rteObj = renderRTE({
+            value : `<p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`
+        });
+    });
+    afterAll( () => {
+        destroy(rteObj);
+    });
+    it( 'Test for Enter key press before video' , () =>{
+        rteObj.focusIn();
+        let range: Range = new Range();
+        const contentElem : HTMLElement = document.body.querySelector('.e-content');
+        range.setStart( contentElem.firstElementChild,0 );
+        range.setEnd( contentElem.firstElementChild,0 );
+        rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        const corrrectElemString : string = `<p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`;
+        expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
+    });
+});
+describe("EJ2-64561- When press the enter key while the cursor focused before video, the video gets duplicated", () => {
+    let rteObj : RichTextEditor;
+    beforeAll( () =>{
+        rteObj = renderRTE({
+            value : `<p><span class="e-audio-wrap" style="width:300px; margin:0 auto;" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"></audio></span></span><br></p>`
+        });
+    });
+    afterAll( () => {
+        destroy(rteObj);
+    });
+    it(' Test for Enter key press before audio', () => {
+        rteObj.focusIn();
+        let range: Range = new Range();
+        const contentElem : HTMLElement = document.body.querySelector('.e-content');
+        range.setStart( contentElem.firstElementChild,0 );
+        range.setEnd( contentElem.firstElementChild,0 );
+        rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        const corrrectElemString : string = `<p><br></p><p><span class="e-audio-wrap" style="width:300px; margin:0 auto;" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"></audio></span></span><br></p>`;
+        expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
     });
 });

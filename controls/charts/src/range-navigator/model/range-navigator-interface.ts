@@ -34,10 +34,10 @@ export interface IRangeLoadedEventArgs {
  * Range Navigator Before Resize event arguments.
  */
 export interface IRangeBeforeResizeEventArgs {
-   /** Defines the name of the Event */
-   name: string;
-   /** It is  used to cancel the resized event */
-   cancelResizedEvent: boolean;
+    /** Defines the name of the Event */
+    name: string;
+    /** It is  used to cancel the resized event */
+    cancelResizedEvent: boolean;
 }
 
 export interface IRangeTooltipRenderEventArgs extends IRangeEventArgs {

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-image-editor",
-	"version": "20.3.56",
+	"version": "20.5.2",
 	"description": "Essential JS 2 ImageEditor",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -44,19 +44,17 @@
 	"keywords": [
 		"ej2",
 		"syncfusion",
-		"web-components",
-		"javascript",
-		"typescript",
-		"image-editor",
-		"ej2-image-editor",
-		"ej2-imageeditor",
-		"js image-editor",
-		"js image-editor",
-		"image editor js",
 		"image editor",
-		"javascript imageeditor",
-		"typescript imageeditor",
-		"imageeditor"
+		"photo editor",
+		"photo viewer",
+		"javascript image editor",
+		"typescript image editor",
+		"syncfusion image editor",
+		"imageeditor",
+		"image manipulation tool",
+		"canvas image editor",
+		"web image editor",
+		"image editing software"
 	],
 	"repository": {
 		"type": "git",

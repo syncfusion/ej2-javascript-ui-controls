@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { L10n, isNullOrUndefined, createElement, remove, closest, addClass, removeClass, extend } from '@syncfusion/ej2-base';
+import { L10n, isNullOrUndefined, createElement, remove, closest, addClass, removeClass, extend, append } from '@syncfusion/ej2-base';
 import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Calendar, CalendarView, ChangedEventArgs, NavigatedEventArgs } from '@syncfusion/ej2-calendars';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
-import { EJ2Instance, ActionEventArgs, CellClickEventArgs } from '../base/interface';
+import { EJ2Instance, ActionEventArgs, CellClickEventArgs, DateRangeTemplateArgs } from '../base/interface';
 import { View } from '../base/type';
 import { ViewsModel } from '../models/models';
 import * as events from '../base/constant';
@@ -170,13 +170,29 @@ export class HeaderRenderer {
         }
     }
 
-    public updateDateRange(text: string): void {
+    public updateDateRange(date?: Date): void {
         const selEle: Element = this.toolbarObj.element.querySelector('.e-date-range');
-        if (selEle) {
-            selEle.setAttribute('aria-label', text);
-            selEle.querySelector('.e-tbar-btn-text').innerHTML = text;
-            this.refresh();
+        if (!selEle) {
+            return;
         }
+        const textEle: Element = selEle.querySelector('.e-tbar-btn-text');
+        if (this.parent.activeViewOptions.dateRangeTemplate) {
+            textEle.textContent = '';
+            const args: DateRangeTemplateArgs = {
+                startDate: this.parent.activeView.getStartDate(),
+                endDate: this.parent.activeView.getEndDate(), currentView: this.parent.currentView
+            };
+            const viewName: string = this.parent.activeViewOptions.dateRangeTemplateName;
+            const templateId: string = this.parent.element.id + '_' + viewName + 'dateRangeTemplate';
+            const dateTemplate: Element[] = [].slice.call(this.parent.getDateRangeTemplate()(args, this.parent, 'dateRangeTemplate', templateId, false));
+            append(dateTemplate, textEle);
+        }
+        else {
+            const text: string = this.parent.activeView.getDateRangeText(date);
+            selEle.setAttribute('aria-label', text);
+            textEle.textContent = text;
+        }
+        this.refresh();
     }
 
     public refresh(): void {

@@ -113,7 +113,7 @@ export class PrintAndExport {
             //     return content;
             // } else {
             for (let b: number = 0; b < buffers.length; b++) {
-                const blob: Blob = new Blob([buffers[b]], { type: 'application/octet-stream' });
+                const blob: Blob = new Blob([buffers[parseInt(b.toString(), 10)]], { type: 'application/octet-stream' });
                 if (Browser.info.name === 'msie') {
                     window.navigator.msSaveOrOpenBlob(blob, fileName + '.' + fileType);
                 } else {
@@ -141,8 +141,8 @@ export class PrintAndExport {
         this.setScaleValueforCanvas(options, bounds);
         const canvas: HTMLCanvasElement = this.diagramAsCanvas(
             {
-                bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
-                scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
+                bounds: bounds, margin: margin, region: region, scaleX: options[`${scaleX}`],
+                scaleY: options[`${scaleY}`], scaleOffsetX: options[`${scaleOffsetX}`], scaleOffsetY: options[`${scaleOffsetY}`]
             } as IExportOptions,
             customBounds);
         let image: string;
@@ -213,14 +213,14 @@ export class PrintAndExport {
         const buffers: ArrayBuffer[] = [];
         const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {
-            image = images[g];
+            image = images[parseInt(g.toString(), 10)];
             image = image.replace(/^data:[a-z]*;,/, '');
             const image1: string[] = image.split(',');
             const byteString: string = atob(image1[1]);
             const buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
             const intArray: Uint8Array = new Uint8Array(buffer);
             for (let i: number = 0; i < byteString.length; i++) {
-                intArray[i] = byteString.charCodeAt(i);
+                intArray[parseInt(i.toString(), 10)] = byteString.charCodeAt(i);
             }
             buffers.push(buffer);
         }
@@ -231,7 +231,7 @@ export class PrintAndExport {
         //     return content;
         // } else {
         for (let j: number = 0; j < buffers.length; j++) {
-            const b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            const b: Blob = new Blob([buffers[parseInt(j.toString(), 10)]], { type: 'application/octet-stream' });
             if (Browser.info.name === 'msie') {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType);
             } else {
@@ -329,10 +329,10 @@ export class PrintAndExport {
         const scaleY: string = 'scaleY';
         const scaleOffsetX: string = 'scaleOffsetX';
         const scaleOffsetY: string = 'scaleOffsetY';
-        options[scaleX] = 1;
-        options[scaleY] = 1;
-        options[scaleOffsetX] = 0;
-        options[scaleOffsetY] = 0;
+        options[`${scaleX}`] = 1;
+        options[`${scaleY}`] = 1;
+        options[`${scaleOffsetX}`] = 0;
+        options[`${scaleOffsetY}`] = 0;
         options.pageHeight = options.pageHeight || this.diagram.pageSettings.height;
         options.pageWidth = options.pageWidth || this.diagram.pageSettings.width;
         let pageOrientation: PageOrientation = options.pageOrientation || this.diagram.pageSettings.orientation;
@@ -358,20 +358,20 @@ export class PrintAndExport {
         const height: number = options.pageHeight || bounds.height;
         const width: number = options.pageWidth || bounds.width;
         if (options.stretch === 'Stretch' || options.stretch === 'Meet' || options.stretch === 'Slice') {
-            options[scaleX] = width / bounds.width;
-            options[scaleY] = height / bounds.height;
+            options[`${scaleX}`] = width / bounds.width;
+            options[`${scaleY}`] = height / bounds.height;
             if (options.stretch === 'Meet') {
-                options[scaleX] = options[scaleY] = Math.min(options[scaleX], options[scaleY]);
-                options[scaleOffsetY] = (options.pageHeight - bounds.height * options[scaleX]) / 2;
-                options[scaleOffsetX] = (options.pageWidth - bounds.width * options[scaleX]) / 2;
+                options[`${scaleX}`] = options[`${scaleY}`] = Math.min(options[`${scaleX}`], options[`${scaleY}`]);
+                options[`${scaleOffsetY}`] = (options.pageHeight - bounds.height * options[`${scaleX}`]) / 2;
+                options[`${scaleOffsetX}`] = (options.pageWidth - bounds.width * options[`${scaleX}`]) / 2;
             } else if (options.stretch === 'Slice') {
-                options[scaleX] = options[scaleY] = Math.max(options[scaleX], options[scaleY]);
+                options[`${scaleX}`] = options[`${scaleY}`] = Math.max(options[`${scaleX}`], options[`${scaleY}`]);
             }
             bounds.width = width;
             bounds.height = height;
         }
-        bounds.x *= options[scaleX];
-        bounds.y *= options[scaleY];
+        bounds.x *= options[`${scaleX}`];
+        bounds.y *= options[`${scaleY}`];
     }
 
     private diagramAsSvg(options: IExportOptions, margin: MarginModel): SVGElement {
@@ -415,7 +415,7 @@ export class PrintAndExport {
             const diagramLayerSVG: SVGSVGElement = getDiagramLayerSvg(this.diagram.element.id);
             svg.appendChild(diagramLayerSVG.getElementById(this.diagram.diagramLayer.id).cloneNode(true));
             for (i = 0; i < svg.childNodes.length; i++) {
-                element = svg.childNodes[i] as HTMLElement;
+                element = svg.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
                 if (element.id === this.diagram.element.id + '_diagramLayer') {
                     this.setTransform(element, bounds, margin);
                 }
@@ -487,8 +487,8 @@ export class PrintAndExport {
                 if (this.diagram.pageSettings.background.color === 'none' || this.diagram.pageSettings.background.color === 'transparent') {
                     context.fillStyle = 'white';
                     context.fillRect(
-                        pageBounds.x * options[scaleX], pageBounds.y * options[scaleY], pageBounds.width * options[scaleX],
-                        pageBounds.height * options[scaleY]);
+                        pageBounds.x * options[`${scaleX}`], pageBounds.y * options[`${scaleY}`], pageBounds.width * options[`${scaleX}`],
+                        pageBounds.height * options[`${scaleY}`]);
                 }
                 if (exportable) {
                     context.drawImage(image, x, y, proportion * image.width, proportion * image.height);
@@ -499,9 +499,9 @@ export class PrintAndExport {
         } else {
             context.fillStyle = bgColor === 'transparent' ? 'white' : bgColor;
             context.fillRect(
-                (pageBounds.x * options[scaleX]) - margin.left, (pageBounds.y * options[scaleY]) - margin.top,
-                (pageBounds.width * options[scaleX]) + margin.left + margin.right,
-                (options[scaleY] * pageBounds.height) + margin.top + margin.bottom);
+                (pageBounds.x * options[`${scaleX}`]) - margin.left, (pageBounds.y * options[`${scaleY}`]) - margin.top,
+                (pageBounds.width * options[`${scaleX}`]) + margin.left + margin.right,
+                (options[`${scaleY}`] * pageBounds.height) + margin.top + margin.bottom);
         }
         const brColor: string = this.diagram.pageSettings.background.color;
         const brWidth: number = this.diagram.pageSettings.width;
@@ -509,15 +509,15 @@ export class PrintAndExport {
             context.strokeStyle = brColor === 'none' ? 'transparent' : brColor;
             context.lineWidth = brWidth;
             context.strokeRect(
-                pageBounds.x * options[scaleX], pageBounds.y * options[scaleY], pageBounds.width * options[scaleX],
-                pageBounds.height * options[scaleY]);
+                pageBounds.x * options[`${scaleX}`], pageBounds.y * options[`${scaleY}`], pageBounds.width * options[`${scaleX}`],
+                pageBounds.height * options[`${scaleY}`]);
         }
         context.restore();
         const htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
         const renderer: DiagramRenderer = new DiagramRenderer('', null, false);
-        this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], true);
+        this.updateObjectValue(options[`${scaleX}`], options[`${scaleOffsetX}`], options[`${scaleOffsetY}`], true);
         this.diagram.renderDiagramElements(canvas, renderer, htmlLayer, false, true);
-        this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], false);
+        this.updateObjectValue(options[`${scaleX}`], options[`${scaleOffsetX}`], options[`${scaleOffsetY}`], false);
         return canvas;
     }
 
@@ -526,14 +526,14 @@ export class PrintAndExport {
         scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
         if (canvas && (canvas as DiagramElement[]).length > 0) {
             for (let j: number = 0; j < (canvas as DiagramElement[]).length; j++) {
-                if (canvas[j].children) {
-                    this.updateWrapper(canvas[j].children, value, scaleOffsetX, scaleOffsetY, isExport);
+                if (canvas[parseInt(j.toString(), 10)].children) {
+                    this.updateWrapper(canvas[parseInt(j.toString(), 10)].children, value, scaleOffsetX, scaleOffsetY, isExport);
                 }
-                canvas[j].exportScaleValue.x = value;
-                canvas[j].exportScaleValue.y = value;
-                canvas[j].exportScaleOffset.x = scaleOffsetX;
-                canvas[j].exportScaleOffset.y = scaleOffsetY;
-                canvas[j].isExport = isExport;
+                canvas[parseInt(j.toString(), 10)].exportScaleValue.x = value;
+                canvas[parseInt(j.toString(), 10)].exportScaleValue.y = value;
+                canvas[parseInt(j.toString(), 10)].exportScaleOffset.x = scaleOffsetX;
+                canvas[parseInt(j.toString(), 10)].exportScaleOffset.y = scaleOffsetY;
+                canvas[parseInt(j.toString(), 10)].isExport = isExport;
             }
         }
     }
@@ -559,8 +559,8 @@ export class PrintAndExport {
     private updateObjectValue(value: number, scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
         let wrapper: Container;
         for (let i: number = 0; i < this.diagram.nodes.length; i++) {
-            wrapper = this.diagram.nodes[i].wrapper;
-            this.scaleGradientValue(this.diagram.nodes[i], value, isExport);
+            wrapper = this.diagram.nodes[parseInt(i.toString(), 10)].wrapper;
+            this.scaleGradientValue(this.diagram.nodes[parseInt(i.toString(), 10)], value, isExport);
             this.updateWrapper(wrapper.children, value, scaleOffsetX, scaleOffsetY, isExport);
             wrapper.exportScaleValue.x = value;
             wrapper.exportScaleValue.y = value;
@@ -569,14 +569,14 @@ export class PrintAndExport {
             wrapper.isExport = isExport;
         }
         for (let j: number = 0; j < this.diagram.connectors.length; j++) {
-            wrapper = this.diagram.connectors[j].wrapper;
+            wrapper = this.diagram.connectors[parseInt(j.toString(), 10)].wrapper;
             for (let k: number = 0; k < wrapper.children.length; k++) {
-                wrapper.children[k].isExport = isExport;
+                wrapper.children[parseInt(k.toString(), 10)].isExport = isExport;
                 if (isExport) {
-                    wrapper.children[k].exportScaleValue.x = value;
-                    wrapper.children[k].exportScaleValue.y = value;
-                    wrapper.children[k].exportScaleOffset.x = scaleOffsetX;
-                    wrapper.children[k].exportScaleOffset.y = scaleOffsetY;
+                    wrapper.children[parseInt(k.toString(), 10)].exportScaleValue.x = value;
+                    wrapper.children[parseInt(k.toString(), 10)].exportScaleValue.y = value;
+                    wrapper.children[parseInt(k.toString(), 10)].exportScaleOffset.x = scaleOffsetX;
+                    wrapper.children[parseInt(k.toString(), 10)].exportScaleOffset.y = scaleOffsetY;
                 }
             }
         }
@@ -779,8 +779,8 @@ export class PrintAndExport {
         styleSheets = styleSheets || document.styleSheets;
         let styleSheetRef: string = '';
         for (let i: number = 0; i < styleSheets.length; i++) {
-            if (styleSheets[i].href || typeof styleSheets[i] === 'string') {
-                styleSheetRef += '<link href=\'' + (styleSheets[i].href || styleSheets[i]) + '\' rel=\'stylesheet\' />';
+            if (styleSheets[parseInt(i.toString(), 10)].href || typeof styleSheets[parseInt(i.toString(), 10)] === 'string') {
+                styleSheetRef += '<link href=\'' + (styleSheets[parseInt(i.toString(), 10)].href || styleSheets[parseInt(i.toString(), 10)]) + '\' rel=\'stylesheet\' />';
             }
         }
         let htmlData: string = document.getElementById(this.diagram.element.id + 'content').innerHTML;

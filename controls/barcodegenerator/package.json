@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-barcode-generator",
-	"version": "20.2.45",
+	"version": "19.3.0",
 	"description": "Barcode generator component is a pure JavaScript library which will convert a string to Barcode and show it to the user. This supports major 1D and 2D barcodes including coda bar, code 128, QR Code.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -42,7 +42,10 @@
 		"ej2-barcode",
 		"web-components",
 		"TypeScript",
-		"barcode"
+		"barcode",
+		"QRCode",
+		"QR-barcode",
+		"Datamatrix"
 	],
 	"repository": {
 		"type": "git",

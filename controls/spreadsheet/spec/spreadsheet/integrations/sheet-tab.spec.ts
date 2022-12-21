@@ -43,12 +43,17 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
         // });
 
         it('Sheet rename testing', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '10' }, 'Sheet2!B1']);
+            helper.invoke('updateCell', [{ formula: '=Sheet2!B1' }, 'Sheet2!B2']);
+            const sheet: SheetModel = helper.getInstance().sheets[1];
+            expect(sheet.rows[1].cells[1].formula).toBe('=Sheet2!B1');
             helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
             let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
             editorElem.click();
             editorElem.value = 'TestSheet';
             helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
-            expect(helper.getInstance().sheets[1].name).toBe('TestSheet');
+            expect(sheet.name).toBe('TestSheet');
+            expect(sheet.rows[1].cells[1].formula).toBe('=TestSheet!B1');
             done();
         });
 
@@ -72,14 +77,24 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                 done();
             }, 10);
         });
-        it('Delete sheet formula reference update checking', (done: Function) => {
+        it('Copy/paste formula cell reference update checking', (done: Function) => {
             helper.invoke('updateCell', [{ formula: '=SUM(TestSheet!D2:D4)' }, 'Sheet1!A1']);
             helper.invoke('updateCell', [{ formula: "=SUM('TestSheet'!D2:D4)" }, 'Sheet1!A2']);
-            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
-            helper.openAndClickCMenuItem(null, null, [2], false, false, null, true, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-item.e-active'));
+            helper.invoke('copy', ['Sheet1!A1:A2']).then((): void => {
+                helper.invoke('paste', ['B1']);
+                setTimeout((): void => {
+                    const sheet: SheetModel = helper.getInstance().sheets[1];
+                    expect(sheet.rows[0].cells[1].formula).toBe('=SUM(TestSheet!E2:E4)');
+                    expect(sheet.rows[1].cells[1].formula).toBe("=SUM('TestSheet'!E2:E4)");
+                    done();
+                });
+            });
+        });
+        it('Delete sheet formula reference update checking', (done: Function) => {
+            helper.invoke('delete', [1]);
             const sheet: SheetModel = helper.getInstance().sheets[0];
             expect(sheet.rows[0].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
-            expect(sheet.rows[0].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
+            expect(sheet.rows[1].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
             done();
         });
     });

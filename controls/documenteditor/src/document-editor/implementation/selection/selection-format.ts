@@ -6,9 +6,9 @@ import {
     FontScriptType
 } from '../../base/types';
 import {
-    WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading
+    WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading, WColumnFormat
 } from '../format/index';
-import { DocumentHelper } from '../index';
+import { DocumentHelper, HelperMethods } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TableWidget, ImageElementBox, ListTextElementBox } from '../viewer/page';
 import { Editor } from '../index';
@@ -1705,7 +1705,9 @@ export class SelectionSectionFormat {
     private restartIndexForEndnotesIn: FootnoteRestartIndex;
     private initialFootNoteNumberIn: number;
     private initialEndNoteNumberIn: number;
-
+    private equalWidthIn: boolean;
+    private lineBetweenColumnsIn: boolean;
+    private columnsIn: SelectionColumnFormat[];
 
     /**
      * private
@@ -1995,6 +1997,60 @@ export class SelectionSectionFormat {
         this.notifyPropertyChanged('restartIndexForEndnotes');
     }
     /**
+     * Gets the number of columns on a page.
+     */
+    public get numberOfColumns(): number {
+        return this.columns.length == 0 ? 1 : this.columns.length;
+    }
+    /**
+     * Gets or sets a value indicating whether all the columns on a page has even width and space.
+     */
+    public get equalWidth(): boolean {
+        return this.equalWidthIn;
+    }
+    /**
+     * Gets or sets a value indicating whether all the columns on a page has even width and space.
+     */
+    public set equalWidth(value: boolean) {
+        this.equalWidthIn = value;
+        this.notifyPropertyChanged('equalWidth');
+    }
+    /**
+     * Gets or sets a value indicating whether the vertical lines appear between all the columns.
+     */
+    public get lineBetweenColumns(): boolean {
+        return this.lineBetweenColumnsIn;
+    }
+    /**
+     * Gets or sets a value indicating whether the vertical lines appear between all the columns.
+     */
+    public set lineBetweenColumns(value: boolean) {
+        this.lineBetweenColumnsIn = value;
+        this.notifyPropertyChanged('lineBetweenColumns');
+    }
+    /**
+     * Gets or sets the columns.
+     */
+    public set columns(value: SelectionColumnFormat[]) {
+        this.columnsIn = value;
+        const selection: Selection = this.selection;
+        if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isPastingContent
+            || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)
+            && !selection.isRetrieveFormatting) {
+            return;
+        }
+        if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {                           
+            this.selection.owner.editorModule.onApplyColumnFormat('columns', value);
+        }        
+    }
+    /**
+     * Gets or sets the columns.
+     */
+     public get columns(): SelectionColumnFormat[] {
+        return this.columnsIn;
+    }
+
+    /**
      * @param selection
      * @private
      */
@@ -2028,6 +2084,18 @@ export class SelectionSectionFormat {
         this.restartIndexForFootnotes = format.restartIndexForFootnotes;
         this.initialEndNoteNumber = format.initialEndNoteNumber;
         this.initialFootNoteNumber = format.initialFootNoteNumber;
+        this.equalWidth = format.equalWidth;
+        this.lineBetweenColumns = format.lineBetweenColumns;
+        this.columns = [];
+        for (let col of format.columns) {
+            let selectCol: SelectionColumnFormat = new SelectionColumnFormat(this.selection);
+            selectCol.width = HelperMethods.convertPixelToPoint((col as WColumnFormat).width);
+            selectCol.space = HelperMethods.convertPixelToPoint((col as WColumnFormat).space);
+            this.columns.push(selectCol);
+        }
+    }
+    private applyColumnFormat(): void {
+
     }
     private notifyPropertyChanged(propertyName: string): void {
         const selection: Selection = this.selection;
@@ -2111,6 +2179,12 @@ export class SelectionSectionFormat {
                 return this.initialFootNoteNumber;
             case 'initialEndNoteNumber':
                 return this.initialEndNoteNumber;
+            case 'equalWidth':
+                return this.equalWidthIn;
+            case 'lineBetweenColumns':
+                return this.lineBetweenColumnsIn;
+            case 'columns':
+                return this.columnsIn;
             default:
                 return undefined;
         }
@@ -3215,6 +3289,100 @@ export class SelectionImageFormat {
      */
     public clearImageFormat(): void {
         this.image = undefined;
+    }
+}
+/**
+ * Selection column format
+ */
+export class SelectionColumnFormat {
+    private selection: Selection;
+    private widthIn: number = 0;
+    private spaceIn: number = 0;
+    /**
+     * @param selection
+     * @private
+     */
+    constructor(selection: Selection) {
+        this.selection = selection;
+    }
+    /**
+     * Copies the format.
+     *
+     * @private
+     * @param {WColumnFormat} format - Source Format to copy.
+     * @returns {void}
+     */
+     public copyFormat(format: WColumnFormat): void {
+        this.width = format.width
+        this.space = format.space;
+    }
+    /**
+     * Gets or sets the width of the column.
+     */
+    public get width(): number {
+        return this.widthIn;
+    }
+    /**
+     * Gets or sets the width of the column.
+     */
+    public set width(value: number) {
+        if (value === this.widthIn) {
+            return;
+        }
+        this.widthIn = value;
+        //this.notifyPropertyChanged('width');
+    }
+    /**
+     * Gets or sets the space in between this column and next column.
+     */
+    public get space(): number {
+        return this.spaceIn;
+    }
+    /**
+     * Gets or sets the space in between this column and next column.
+     */
+    public set space(value: number) {
+        if (value === this.spaceIn) {
+            return;
+        }
+        this.spaceIn = value;
+        //this.notifyPropertyChanged('space');
+    }
+    private getPropertyValue(property: string): Object {
+        switch (property) {
+            case 'space':
+                return this.space;
+            case 'width':
+                return this.width;
+            default:
+                return undefined;
+        }
+    }
+    private notifyPropertyChanged(propertyName: string): void {
+        const selection: Selection = this.selection;
+        if (!isNullOrUndefined(selection)) {
+            this.selection.owner.editorModule.onApplyColumnFormat('columns', this.selection.sectionFormat.columns);
+        }
+    }
+    /**
+     * Clears the format.
+     *
+     * @private
+     * @returns {void}
+     */
+     public clearFormat(): void {
+        this.widthIn = 0;
+        this.spaceIn = 0;
+    }
+    /**
+     * Destroys the manages resources.
+     * 
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.widthIn = undefined;
+        this.spaceIn = undefined;
     }
 }
 /* eslint-enable */

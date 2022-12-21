@@ -3,7 +3,7 @@ import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { PivotEngine, OlapEngine, IDataOptions } from '../../base';
-import { EnginePopulatedEventArgs, EnginePopulatingEventArgs, PivotActionBeginEventArgs } from '../../common/base/interface';
+import { EnginePopulatedEventArgs, EnginePopulatingEventArgs } from '../../common/base/interface';
 import { PivotUtil } from '../../base/util';
 import * as events from '../../common/base/constant';
 
@@ -24,17 +24,18 @@ export class VirtualScroll {
 
     /**
      * Constructor for PivotView scrolling.
+     *
      * @param {PivotView} parent - Instance of pivot table.
      * @hidden
      */
-    constructor(parent?: PivotView) {   /* eslint-disable-line */
+    constructor(parent?: PivotView) {
         this.parent = parent;
-        this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         this.addInternalEvents();
     }
 
     /**
      * It returns the Module name.
+     *
      * @returns {string} - string.
      * @hidden
      */
@@ -47,18 +48,19 @@ export class VirtualScroll {
     }
 
     private wireEvents(): void {
+        this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         if (this.parent.displayOption.view !== 'Chart') {
-            let mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
-            let fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
-            let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-            let mScrollBar: HTMLElement = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
+            const fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
+            const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
+            const mScrollBar: HTMLElement = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
             EventHandler.clearEvents(mCont);
             EventHandler.clearEvents(fCont);
             if (this.isFireFox) {
                 EventHandler.clearEvents(mHdr);
             }
             if (this.engineModule) {
-                let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+                const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
                 EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
                 EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
                 if (this.isFireFox) {
@@ -77,7 +79,8 @@ export class VirtualScroll {
                 EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
             }
-            this.parent.grid.on('check-scroll-reset', (args: any) => {  /* eslint-disable-line */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.parent.grid.on('check-scroll-reset', (args: any) => {
                 args.cancel = true;
             });
             this.parent.grid.on('prevent-frozen-scroll-refresh', function (args: any) { /* eslint-disable-line */
@@ -86,10 +89,11 @@ export class VirtualScroll {
             this.parent.grid.isPreventScrollEvent = true;
         }
     }
-    private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
-        let element: HTMLElement = mCont;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
+        const element: HTMLElement = mCont;
         return (e: WheelEvent) => {
-            let top: number = element.parentElement.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
+            const top: number = element.parentElement.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
             if (this.frozenPreviousValues.top === top) {
                 return;
             }
@@ -100,7 +104,7 @@ export class VirtualScroll {
     }
 
     private getPointXY(e: PointerEvent | TouchEvent): { x: number; y: number } {
-        let pageXY: { x: number; y: number } = { x: 0, y: 0 };
+        const pageXY: { x: number; y: number } = { x: 0, y: 0 };
         if (!((e as TouchEvent).touches && (e as TouchEvent).touches.length)) {
             pageXY.x = (e as PointerEvent).pageX;
             pageXY.y = (e as PointerEvent).pageY;
@@ -112,15 +116,15 @@ export class VirtualScroll {
     }
 
     private onCustomScrollbarScroll(mCont: HTMLElement, mHdr: HTMLElement): Function {
-        let content: HTMLElement = mCont;
-        let header: HTMLElement = mHdr;
+        const content: HTMLElement = mCont;
+        const header: HTMLElement = mHdr;
         return (e: Event) => {
-            let eContent: HTMLElement = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).parentElement;
+            const eContent: HTMLElement = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).parentElement;
             if (eContent.querySelector('tbody') === null) {
                 return;
             }
-            let target: HTMLElement = <HTMLElement>e.target;
-            let left: number = target.scrollLeft;
+            const target: HTMLElement = <HTMLElement>e.target;
+            const left: number = target.scrollLeft;
             if (this.previousValues.left === left || (this.isFireFox && target.classList.contains(cls.MOVABLEHEADER_DIV))) {
                 return;
             }
@@ -131,17 +135,17 @@ export class VirtualScroll {
         };
     }
 
-
-    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {    /* eslint-disable-line */
-        let element: HTMLElement = mCont;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+        const element: HTMLElement = mCont;
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {
                 return;
             }
-            let pageXY: { x: number; y: number } = this.getPointXY(e);
-            let top: number = element.parentElement.scrollTop + (this.pageXY.y - pageXY.y);
-            let ele: HTMLElement = this.parent.isAdaptive ? mCont : element.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
-            let left: number = ele.scrollLeft + (this.pageXY.x - pageXY.x);
+            const pageXY: { x: number; y: number } = this.getPointXY(e);
+            const top: number = element.parentElement.scrollTop + (this.pageXY.y - pageXY.y);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont : element.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const left: number = ele.scrollLeft + (this.pageXY.x - pageXY.x);
             if (this.frozenPreviousValues.left === left || left < 0) {
                 return;
             }
@@ -158,29 +162,31 @@ export class VirtualScroll {
         };
     }
 
-    private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {  /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         this.parent.isScrolling = true;
-        let engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
-        let args: EnginePopulatingEventArgs = {
+        const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        const args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
         };
         if (this.parent.pageSettings && engine.pageSettings) {
             if (this.direction === 'vertical') {
-                let rowValues: number = this.parent.dataType === 'pivot' ?
+                const rowValues: number = this.parent.dataType === 'pivot' ?
                     (this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1) : 1;
-                let exactSize: number = (this.parent.pageSettings.rowPageSize * rowValues * this.parent.gridSettings.rowHeight);
-                let section: number = Math.ceil(top / exactSize);
+                const exactSize: number = (this.parent.pageSettings.rowPageSize * rowValues * this.parent.gridSettings.rowHeight);
+                const section: number = Math.ceil(top / exactSize);
                 if ((this.parent.scrollPosObject.vertical === section ||
                     engine.pageSettings.rowPageSize >= engine.rowCount)) {
                     // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.actionObj.actionName = events.verticalScroll;
-                this.parent.actionBeginMethod();                
+                this.parent.actionBeginMethod();
                 this.parent.showWaitingPopup();
                 this.parent.scrollPosObject.vertical = section;
                 this.parent.pageSettings.currentRowPage = engine.pageSettings.currentRowPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
                     if (this.parent.dataType === 'pivot') {
                         if (this.parent.dataSourceSettings.mode === 'Server') {
@@ -191,33 +197,34 @@ export class VirtualScroll {
                             rowStartPos = this.parent.engineModule.rowStartPos;
                         }
                     } else {
-                        this.parent.olapEngineModule.scrollPage('scroll');
+                        this.parent.olapEngineModule.scrollPage();
                         rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
                     }
                     this.enginePopulatedEventMethod(engine);
-                });  
-                let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowPageSize * rowValues));
-                let pos: number = exactSize * exactPage -
+                });
+                const exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowPageSize * rowValues));
+                const pos: number = exactSize * exactPage -
                     (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
                 this.parent.scrollPosObject.verticalSection = pos;
             } else {
-                let colValues: number =
+                const colValues: number =
                     this.parent.dataType === 'pivot' ?
                         (this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1) : 1;
-                let exactSize: number = (this.parent.pageSettings.columnPageSize *
+                const exactSize: number = (this.parent.pageSettings.columnPageSize *
                     colValues * this.parent.gridSettings.columnWidth);
-                let section: number = Math.ceil(left / exactSize);
+                const section: number = Math.ceil(left / exactSize);
                 if (this.parent.scrollPosObject.horizontal === section) {
                     // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.actionObj.actionName = events.horizontalScroll;
-                this.parent.actionBeginMethod();                
+                this.parent.actionBeginMethod();
                 this.parent.showWaitingPopup();
-                let pivot: PivotView = this.parent;
+                const pivot: PivotView = this.parent;
                 pivot.scrollPosObject.horizontal = section;
                 this.parent.pageSettings.currentColumnPage = engine.pageSettings.currentColumnPage = section > 1 ? section : 1;
                 let colStartPos: number = 0;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 this.parent.trigger(events.enginePopulating, args, (observedArgs: EnginePopulatingEventArgs) => {
                     if (pivot.dataType === 'pivot') {
                         if (this.parent.dataSourceSettings.mode === 'Server') {
@@ -227,13 +234,13 @@ export class VirtualScroll {
                             colStartPos = pivot.engineModule.colStartPos;
                         }
                     } else {
-                        pivot.olapEngineModule.scrollPage('scroll');
+                        pivot.olapEngineModule.scrollPage();
                         colStartPos = pivot.olapEngineModule.pageColStartPos;
                     }
                     this.enginePopulatedEventMethod(engine);
-                });  
-                let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnPageSize * colValues));
-                let pos: number = exactSize * exactPage - (engine.colFirstLvl *
+                });
+                const exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnPageSize * colValues));
+                const pos: number = exactSize * exactPage - (engine.colFirstLvl *
                     colValues * pivot.gridSettings.columnWidth);
                 pivot.scrollPosObject.horizontalSection = pos;
             }
@@ -243,19 +250,19 @@ export class VirtualScroll {
             }
         }
     }
-     
     private enginePopulatedEventMethod(engine: PivotEngine | OlapEngine, control?: PivotView): void {
-        let pivot: PivotView = control ? control : this.parent;
-        let eventArgs: EnginePopulatedEventArgs = {
+        const pivot: PivotView = control ? control : this.parent;
+        const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
             pivotValues: pivot.pivotValues
         };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
             this.parent.pivotValues = engine.pivotValues;
         });
     }
 
-    private setPageXY(): Function { /* eslint-disable-line */
+    private setPageXY(): Function {
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {
                 return;
@@ -264,24 +271,25 @@ export class VirtualScroll {
         };
     }
 
-    private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
         return (e: Event) => {
-            let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
             this.update(
                 mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
                 ele.scrollLeft * this.parent.horizontalScrollScale, e);
         };
     }
 
-    private onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
-        /* eslint-disable-next-line */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let timeOutObj: any;
         return (e: Event) => {
-            let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
             let left: number = ele.scrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
-                /* eslint-disable */
                 timeOutObj = setTimeout(() => {
                     left = e.type === 'touchmove' ? ele.scrollLeft : left;
                     this.update(mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e);
@@ -292,8 +300,8 @@ export class VirtualScroll {
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
             let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - ele.scrollLeft));
-            let vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',').length > 1 ?
-                (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() : "0px)";
+            const vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',').length > 1 ?
+                (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() : '0px)';
             if (ele.scrollLeft < this.parent.scrollerBrowserLimit) {
                 setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
@@ -305,7 +313,7 @@ export class VirtualScroll {
             let excessMove: number = this.parent.scrollPosObject.horizontalSection > left ?
                 -(this.parent.scrollPosObject.horizontalSection - left) : ((left + mHdr.offsetWidth) -
                     (this.parent.scrollPosObject.horizontalSection + (mCont.querySelector('.e-table') as HTMLElement).offsetWidth));
-            let notLastPage: boolean = Math.ceil(this.parent.scrollPosObject.horizontalSection / this.parent.horizontalScrollScale) <
+            const notLastPage: boolean = Math.ceil(this.parent.scrollPosObject.horizontalSection / this.parent.horizontalScrollScale) <
                 this.parent.scrollerBrowserLimit;
             if (this.parent.scrollPosObject.horizontalSection > left ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
@@ -337,13 +345,13 @@ export class VirtualScroll {
                 });
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
             }
-            let hScrollPos: number = (ele.scrollWidth - (ele.scrollLeft + ele.offsetWidth));
+            const hScrollPos: number = (ele.scrollWidth - (ele.scrollLeft + ele.offsetWidth));
             if (hScrollPos <= 0) {
-                let virtualDiv: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV);
+                const virtualDiv: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV);
                 virtualDiv.style.display = 'none';
-                let mCntScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
+                const mCntScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
                 virtualDiv.style.display = '';
-                let mCntVScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
+                const mCntVScrollPos: number = (mCont.scrollWidth - (mCont.scrollLeft + mCont.offsetWidth));
                 this.parent.scrollPosObject.horizontalSection -= mCntScrollPos > hScrollPos ? mCntScrollPos : -mCntVScrollPos;
                 horiOffset = (ele.scrollLeft > this.parent.scrollerBrowserLimit) ?
                     Number((mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].split('px')[0].trim()) :
@@ -360,28 +368,28 @@ export class VirtualScroll {
             this.frozenPreviousValues.left = left;
             this.eventType = '';
             mHdr.scrollLeft = ele.scrollLeft;
-        }
+        };
     }
 
     private onVerticalScroll(fCont: HTMLElement, mCont: HTMLElement): Function {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let timeOutObj: any;
         return (e: Event | KeyboardEventArgs) => {
-            let top: number = mCont.parentElement.scrollTop * this.parent.verticalScrollScale;
+            const top: number = mCont.parentElement.scrollTop * this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
-                let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+                const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
                     this.update(null, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
-                        ele.scrollLeft * this.parent.horizontalScrollScale, e);
+                                ele.scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
-            /* eslint-enable */
             if (this.previousValues.top === top) {
                 return;
             }
             this.parent.scrollDirection = this.direction = 'vertical';
             let vertiOffset: number = -((top - this.parent.scrollPosObject.verticalSection - mCont.parentElement.scrollTop));
-            let horiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim();
+            const horiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim();
             if (vertiOffset > this.parent.virtualDiv.clientHeight) {
                 vertiOffset = this.parent.virtualDiv.clientHeight;
             }
@@ -396,7 +404,7 @@ export class VirtualScroll {
             let excessMove: number = this.parent.scrollPosObject.verticalSection > top ?
                 -(this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.parentElement.clientHeight) -
                     (this.parent.scrollPosObject.verticalSection + (fCont.querySelector('.e-table') as HTMLElement).offsetHeight));
-            let notLastPage: boolean = Math.ceil(this.parent.scrollPosObject.verticalSection / this.parent.verticalScrollScale) <
+            const notLastPage: boolean = Math.ceil(this.parent.scrollPosObject.verticalSection / this.parent.verticalScrollScale) <
                 this.parent.scrollerBrowserLimit;
             if (this.parent.scrollPosObject.verticalSection > top ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
@@ -410,7 +418,7 @@ export class VirtualScroll {
                 } else {
                     excessMove = -this.parent.scrollPosObject.verticalSection;
                 }
-                let movableTable: HTMLElement =
+                const movableTable: HTMLElement =
                     this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV).querySelector('.e-table') as HTMLElement;
                 vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.parentElement.scrollTop));
                 let vHeight: number = (this.parent.gridSettings.rowHeight * this.engineModule.rowCount + 0.1
@@ -440,10 +448,10 @@ export class VirtualScroll {
         };
     }
 
-    /* eslint-disable-next-line */
     /**
      * @hidden
      */
+
     public removeInternalEvents(): void {
         if (this.parent.isDestroyed) {
             return;
@@ -453,6 +461,7 @@ export class VirtualScroll {
 
     /**
      * To destroy the virtualscrolling event listener
+     *
      * @returns {void}
      * @hidden
      */

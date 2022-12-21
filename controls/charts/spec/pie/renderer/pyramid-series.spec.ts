@@ -356,7 +356,7 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-                expect(group.getAttribute('x')).toBe('535');
+                expect(group.getAttribute('x')).toBe('545');
                 expect(group.getAttribute('y') == '221.44647735442126' ||
                     group.getAttribute('y') == '220.198490294752').toBe(true);
                 done();
@@ -387,7 +387,8 @@ describe('Accumulation Chart Control', () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_connector_2');
                 expect(group.getAttribute('d') == 'M 361.2523364485981 151.68037383177568 L 402.7523364485981 151.68037383177568 L 412.7523364485981 151.68037383177568' ||
-                    group.getAttribute('d') == 'M 361.2523364485981 150.99158878504673 L 402.7523364485981 150.99158878504673 L 412.7523364485981 150.99158878504673').toBe(true);
+                    group.getAttribute('d') == 'M 361.2523364485981 150.99158878504673 L 402.7523364485981 150.99158878504673 L 412.7523364485981 150.99158878504673' ||
+                    group.getAttribute('d') == 'M 361.2523364485981 150.99158878504673 L 403.7523364485981 150.99158878504673 L 413.7523364485981 150.99158878504673').toBe(true);
                 done();
 
 
@@ -417,7 +418,7 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-                expect(group.getAttribute('x')).toBe('499.78682170542635');
+                expect(group.getAttribute('x')).toBe('509.78682170542635');
                 expect(group.getAttribute('y') == '221.6887596899225' ||
                     group.getAttribute('y') == '220.44147286821703').toBe(true);
                 done();
@@ -433,7 +434,7 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-                expect(group.getAttribute('x')).toBe('535');
+                expect(group.getAttribute('x')).toBe('545');
                 expect(group.getAttribute('y') == '186.79308681672023' ||
                     group.getAttribute('y') == '182.39003215434082').toBe(true);
                 done();
@@ -467,7 +468,7 @@ describe('Accumulation Chart Control', () => {
             chart.loaded = () => {
                 //debugger
                 let group: Element = getElement('ej2container_datalabel_Series_0_text_3');
-                expect(group.getAttribute('x')).toBe('535');
+                expect(group.getAttribute('x')).toBe('545');
                 expect(group.getAttribute('y') == '176.69340836012861' ||
                     group.getAttribute('y') == '175.316077170418').toBe(true);
                 done();
@@ -566,7 +567,7 @@ describe('Accumulation Chart Control', () => {
                 // debugger
                 let group: Element = getElement(sliceid + '3');
 
-                expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0');
+                expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0_point_3');
                 expect(group.getAttribute('transform')).toBe(null);
                 done();
             };
@@ -590,7 +591,7 @@ describe('Accumulation Chart Control', () => {
                 let pointElement: Element = getElement(sliceid + '3');
                 trigger.clickEvent(pointElement);
                 let group: Element = getElement(sliceid + '3');
-                expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0');
+                expect(group.getAttribute('class')).toBe('ej2container_ej2_chart_selection_series_0_point_3');
                 expect(group.getAttribute('transform')).toBe('translate(30, 0)');
                 done();
                 trigger.clickEvent(pointElement);

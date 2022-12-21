@@ -40,15 +40,18 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         const value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
         for (let j: number = 0; j < gObj.aggregates.length; j++){
-            for (let i: number = 0; i < gObj.aggregates[j].columns.length; i++){
-                if (gObj.getVisibleColumns()[0].field === gObj.aggregates[j].columns[i].field &&
-                    gObj.aggregates[j].columns[i].groupCaptionTemplate) {
-                    if (gObj.aggregates[j].columns[i].groupCaptionTemplate.includes('$')) {
-                        gTemplateValue = gObj.aggregates[j].columns[i].groupCaptionTemplate.split('$')[0] + data[gObj.getVisibleColumns()[0].field][gObj.aggregates[j].columns[i].type] +
-                        gObj.aggregates[j].columns[i].groupCaptionTemplate.split('}')[1];
+            for (let i: number = 0; i < gObj.aggregates[parseInt(j.toString(), 10)].columns.length; i++){
+                if (gObj.getVisibleColumns()[0].field === gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
+                    .field && gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate) {
+                    if (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate.includes('$')) {
+                        gTemplateValue = gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
+                            .groupCaptionTemplate.split('$')[0] + data[gObj.getVisibleColumns()[0].field][gObj
+                            .aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].type] +
+                            gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate.split('}')[1];
                     }
                     else {
-                        gTemplateValue = gObj.aggregates[j].columns[i].groupCaptionTemplate;
+                        gTemplateValue = gObj.aggregates[parseInt(j.toString(), 10)]
+                            .columns[parseInt(i.toString(), 10)].groupCaptionTemplate;
                     }
                     break;
                 }

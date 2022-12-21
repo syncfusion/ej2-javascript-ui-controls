@@ -89,9 +89,9 @@ export class RangeSelector {
     private findSeriesCollection(series : StockSeriesModel[]) : RangeNavigatorSeriesModel[] {
         const chartSeries : RangeNavigatorSeriesModel[] = [];
         for (let i: number = 0, len: number = series.length; i < len; i++) {
-            chartSeries.push(<RangeNavigatorSeriesModel>series[i]);
-            chartSeries[i].xName = series[i].xName;
-            chartSeries[i].yName = series[i].yName === '' ? series[i].close :  series[i].yName;
+            chartSeries.push(<RangeNavigatorSeriesModel>series[i as number]);
+            chartSeries[i as number].xName = series[i as number].xName;
+            chartSeries[i as number].yName = series[i as number].yName === '' ? series[i as number].close :  series[i as number].yName;
         }
         return chartSeries;
     }

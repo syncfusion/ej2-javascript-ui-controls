@@ -110,10 +110,10 @@ export class WorkbookSort {
                     if (!sortDescriptors[length - 1].field) {
                         sortDescriptors[length - 1].field = header;
                     }
-                    if (!sortDescriptors[i].field) { continue; }
-                    const comparerFn: Function = sortDescriptors[i].sortComparer
-                        || this.sortComparer.bind(this, sortDescriptors[i], sortOptions.caseSensitive);
-                    query.sortBy(sortDescriptors[i].field, comparerFn);
+                    if (!sortDescriptors[i as number].field) { continue; }
+                    const comparerFn: Function = sortDescriptors[i as number].sortComparer
+                        || this.sortComparer.bind(this, sortDescriptors[i as number], sortOptions.caseSensitive);
+                    query.sortBy(sortDescriptors[i as number].field, comparerFn);
                 }
             } else { //single column sorting.
                 if (!sortDescriptors) {
@@ -135,15 +135,17 @@ export class WorkbookSort {
         });
     }
 
-    private updateSortedDataOnCell(args: { result: ReturnOption, range: number[], sheet: SheetModel, jsonData: { [key: string]: CellModel }[], isUndo?: boolean }): void {
-        let fields: string[] = []; let cell: CellModel;
+    private updateSortedDataOnCell(
+        args: { result: ReturnOption, range: number[], sheet: SheetModel, jsonData: { [key: string]: CellModel }[],
+            isUndo?: boolean }): void {
+        const fields: string[] = []; let cell: CellModel;
         const updateCell: Function = (rowIdx: number, data: { [key: string]: CellModel }): void => {
             for (let j: number = args.range[1], k: number = 0; j <= args.range[3]; j++, k++) {
-                if (!fields[k]) {
-                    fields[k] = getColumnHeaderText(j + 1);
+                if (!fields[k as number]) {
+                    fields[k as number] = getColumnHeaderText(j + 1);
                 }
-                if (data[fields[k]]) {
-                    cell = extend({}, data[fields[k]], null, true)
+                if (data[fields[k as number]]) {
+                    cell = extend({}, data[fields[k as number]], null, true);
                 } else {
                     if (!getCell(rowIdx, j, args.sheet)) {
                         continue;
@@ -158,26 +160,28 @@ export class WorkbookSort {
                 setCell(rowIdx, j, args.sheet, cell);
             }
         };
-        let updatedCellDetails: { [key: string]: boolean } = args.isUndo && {}; let rIdx: number;
+        const updatedCellDetails: { [key: string]: boolean } = args.isUndo && {}; let rIdx: number;
+        let result: { [key: string]: CellModel };
         for (let i: number = args.range[0], idx: number = 0; i <= args.range[2]; i++, idx++) {
             if (isHiddenRow(args.sheet, i)) {
                 idx--;
                 continue;
             }
+            result = args.result[idx as number];
             if (args.isUndo) {
-                if (args.result[idx]) {
-                    rIdx = parseInt(args.result[idx]['__rowIndex'] as string, 10) - 1;
-                    updatedCellDetails[rIdx] = true;
-                    updateCell(rIdx, args.result[idx]);
+                if (result) {
+                    rIdx = parseInt(result['__rowIndex'] as string, 10) - 1;
+                    updatedCellDetails[rIdx as number] = true;
+                    updateCell(rIdx, result);
                     if (i === rIdx) {
                         continue;
                     }
                 }
-                if (!updatedCellDetails[i] && args.sheet.rows[i]) {
+                if (!updatedCellDetails[i as number] && args.sheet.rows[i as number]) {
                     updateCell(i, {});
                 }
             } else {
-                updateCell(i, args.result[idx] || {});
+                updateCell(i, result || {});
             }
         }
     }
@@ -187,19 +191,19 @@ export class WorkbookSort {
         const borders: string[] = ['borderBottom', 'borderTop', 'borderRight', 'borderLeft', 'border'];
         if (cell && cell.style) {
             for (const border of borders) {
-                delete cell.style[border];
+                delete cell.style[`${border}`];
             }
         }
         if (prevCell && prevCell.style) {
             for (const border of borders) {
-                if (prevCell.style[border]) {
+                if (prevCell.style[`${border}`]) {
                     if (!cell) {
                         cell = {};
                     }
                     if (!cell.style) {
                         cell.style = {};
                     }
-                    cell.style[border] = prevCell.style[border];
+                    cell.style[`${border}`] = prevCell.style[`${border}`];
                 }
             }
         }
@@ -212,7 +216,8 @@ export class WorkbookSort {
         let sameStyle: boolean = true;
         const keys: string[] = Object.keys(firstCellStyle);
         for (let i: number = 0; i < keys.length; i++) {
-            if (firstCellStyle[keys[i]] === secondCellStyle[keys[i]] || this.parent.cellStyle[keys[i]] === firstCellStyle[keys[i]]) {
+            if (firstCellStyle[keys[i as number]] === secondCellStyle[keys[i as number]] || this.parent.cellStyle[keys[i as number]] ===
+                firstCellStyle[keys[i as number]]) {
                 sameStyle = true;
             } else {
                 sameStyle = false;

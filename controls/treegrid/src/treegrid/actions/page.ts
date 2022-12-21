@@ -100,7 +100,7 @@ export class Page {
         if (this.parent.enableImmutableMode) {
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
             const record: ITreeData[] = this.parent.flatData.filter((e: ITreeData) => {
-                return e[primaryKeyField] === rowDetails.record[primaryKeyField];
+                return e[`${primaryKeyField}`] === rowDetails.record[`${primaryKeyField}`];
             });
             if (record.length) {
                 record[0].expanded = rowDetails.record.expanded;
@@ -116,14 +116,14 @@ export class Page {
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
         if (this.parent.enableImmutableMode) {
             const row: string = 'row'; const action: string = 'action'; let targetEle: Element;
-            if (ret[action] === 'collapse') {
-                targetEle = ret[row].getElementsByClassName('e-treegridexpand')[0];
+            if (ret[`${action}`] === 'collapse') {
+                targetEle = ret[`${row}`].getElementsByClassName('e-treegridexpand')[0];
                 if (!isNullOrUndefined(targetEle)) {
                     removeClass([targetEle], 'e-treegridexpand');
                     addClass([targetEle], 'e-treegridcollapse');
                 }
-            } else if (ret[action] === 'expand') {
-                targetEle = ret[row].getElementsByClassName('e-treegridcollapse')[0];
+            } else if (ret[`${action}`] === 'expand') {
+                targetEle = ret[`${row}`].getElementsByClassName('e-treegridcollapse')[0];
                 if (!isNullOrUndefined(targetEle)) {
                     removeClass([targetEle], 'e-treegridcollapse');
                     addClass([targetEle], 'e-treegridexpand');
@@ -134,11 +134,11 @@ export class Page {
     private pageRoot(pagedResults: ITreeData[], temp: ITreeData[], result?: ITreeData[]) : ITreeData[] {
         let newResults: ITreeData[] = isNullOrUndefined(result) ? [] : result;
         for (let t: number = 0; t < temp.length; t++) {
-            newResults.push(temp[t]);
+            newResults.push(temp[parseInt(t.toString(), 10)]);
             let res: ITreeData[] = [];
-            if (temp[t].hasChildRecords) {
+            if (temp[parseInt(t.toString(), 10)].hasChildRecords) {
                 res = pagedResults.filter((e: ITreeData) => {
-                    return temp[t].uniqueID === e.parentUniqueID;
+                    return temp[parseInt(t.toString(), 10)].uniqueID === e.parentUniqueID;
                 });
                 newResults = this.pageRoot(pagedResults, res, newResults);
             }

@@ -161,7 +161,7 @@ export class DiagramRenderer {
             if (!gElement) {
                 gElement = this.svgRenderer.createGElement('g', { id: element.id + '_groupElement' });
                 if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
-                    canvas.insertBefore(gElement, canvas.childNodes[indexValue]);
+                    canvas.insertBefore(gElement, canvas.childNodes[parseInt(indexValue.toString(), 10)]);
 
                 } else {
                     canvas.appendChild(gElement);
@@ -569,7 +569,7 @@ export class DiagramRenderer {
         if (isSegmentEditing) {
             if ((selector.type === 'Straight' || selector.type === 'Bezier') && selector.segments.length > 0) {
                 for (i = 0; i < selector.segments.length - 1; i++) {
-                    segment = selector.segments[i] as StraightSegment | BezierSegment;
+                    segment = selector.segments[parseInt(i.toString(), 10)] as StraightSegment | BezierSegment;
                     this.renderCircularHandle(
                         ('segementThumb_' + (i + 1)), wrapper, segment.point.x, segment.point.y, canvas, true,
                         constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, handleSize);
@@ -578,7 +578,7 @@ export class DiagramRenderer {
                 // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
                 if (!selector.maxSegmentThumb) {
                     for (i = 0; i < selector.segments.length; i++) {
-                        const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
+                        const seg: OrthogonalSegment = (selector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment);
                         this.renderOrthogonalThumbs(
                             'orthoThumb_' + (i + 1), wrapper, seg, canvas,
                             canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
@@ -602,7 +602,7 @@ export class DiagramRenderer {
                         end = selector.segments.length;
                     }
                     for (i = start; i < end; i++) {
-                        const seg: OrthogonalSegment = (selector.segments[i] as OrthogonalSegment);
+                        const seg: OrthogonalSegment = (selector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment);
                         this.renderOrthogonalThumbs(
                             'orthoThumb_' + (i + 1), wrapper, seg, canvas,
                             canShowCorner(selectorConstraints, 'ConnectorSourceThumb'), transform, selector);
@@ -615,7 +615,7 @@ export class DiagramRenderer {
             const segmentCount: number = selector.segments.length - 1;
             const controlPointsVisibility: ControlPointsVisibility = selector.bezierSettings != null ? selector.bezierSettings.controlPointsVisibility : null;
             for (i = 0; i <= segmentCount; i++) {
-                const segment: BezierSegment = (selector.segments[i] as BezierSegment);
+                const segment: BezierSegment = (selector.segments[parseInt(i.toString(), 10)] as BezierSegment);
 
                 let bezierPoint: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1
                     : segment.bezierPoint1;
@@ -675,12 +675,12 @@ export class DiagramRenderer {
         // (EJ2-57115) - Added below code to check if maxSegmentThumb is zero or not
         if (!connector.maxSegmentThumb) {
             for (j = 0; j < segment.points.length - 1; j++) {
-                length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
-                orientation = (segment.points[j].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
+                length = Point.distancePoints(segment.points[parseInt(j.toString(), 10)], segment.points[j + 1]);
+                orientation = (segment.points[parseInt(j.toString(), 10)].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
                 visible = (length >= 50 && segment.allowDrag) ? true : false;
                 this.renderOrthogonalThumb(
-                    (id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)),
-                    (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+                    (id + '_' + (j + 1)), selector, (((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2)),
+                    (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
             }
         } else {
             // (EJ2-57115) - Added below code to check if maxSegmentThumb greater then 3 means then we have ignore the rendering of
@@ -692,12 +692,12 @@ export class DiagramRenderer {
             start = connector.segments.length === 1 ? start: 0;
             end = connector.segments.length === 1 ? end: segment.points.length-1;
             for (j = start; j < end; j++) {
-                length = Point.distancePoints(segment.points[j], segment.points[j + 1]);
-                orientation = (segment.points[j].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
+                length = Point.distancePoints(segment.points[parseInt(j.toString(), 10)], segment.points[j + 1]);
+                orientation = (segment.points[parseInt(j.toString(), 10)].y.toFixed(2) === segment.points[j + 1].y.toFixed(2)) ? 'horizontal' : 'vertical';
                 visible = (length >= 50 && segment.allowDrag) ? true : false;
                 this.renderOrthogonalThumb(
-                    (id + '_' + (j + 1)), selector, (((segment.points[j].x + segment.points[j + 1].x) / 2)),
-                    (((segment.points[j].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
+                    (id + '_' + (j + 1)), selector, (((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2)),
+                    (((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2)), canvas, visible, orientation, t);
             }
         }
     }
@@ -725,7 +725,7 @@ export class DiagramRenderer {
         let instance = 'ej2_instances';
         let diagram;
         if (diagramElement) {
-            diagram = diagramElement[instance][0];
+            diagram = diagramElement[`${instance}`][0];
         }
         if (orientation === 'horizontal') {
             path = getSegmentThumbShapeHorizontal(diagram.segmentThumbShape);
@@ -1253,10 +1253,10 @@ export class DiagramRenderer {
             isRulerGrid = true;
         } else {
             for (let i: number = 0; i < verticalLineIntervals.length; i = i + 1) {
-                hWidth += verticalLineIntervals[i];
+                hWidth += verticalLineIntervals[parseInt(i.toString(), 10)];
             }
             for (let i: number = 0; i < horizontalLineIntervals.length; i = i + 1) {
-                hHeight += horizontalLineIntervals[i];
+                hHeight += horizontalLineIntervals[parseInt(i.toString(), 10)];
             }
             scale = this.scaleSnapInterval(snapSettings, t.scale);
         }
@@ -1295,30 +1295,30 @@ export class DiagramRenderer {
                 const spaceY: number = 0;
                 hLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
                 let attr: Object;
-                let d: number = isLine ? space + intervals[i] / 2 : space;
+                let d: number = isLine ? space + intervals[parseInt(i.toString(), 10)] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
                 if (isLine) {
                     if(dashArray.toString() === '') {
                     attr = {
-                        'stroke-width': intervals[i], 
+                        'stroke-width': intervals[parseInt(i.toString(), 10)], 
                         'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                        'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
                         'stroke': snapSettings.horizontalGridlines.lineColor
                     };
                 } else {
                     attr = {
-                        'stroke-width': intervals[i], 'stroke': snapSettings.horizontalGridlines.lineColor,
+                        'stroke-width': intervals[parseInt(i.toString(), 10)], 'stroke': snapSettings.horizontalGridlines.lineColor,
                         'd': 'M0,' + (d) + ' L' + hWidth + ',' + (d) + ' Z',
-                        'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                        'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
                         'dashArray': dashArray.toString()
                     };
                 }
                     setAttributeSvg(hLine, attr);
                     pattern.appendChild(hLine);
-                    space += intervals[i + 1] + intervals[i];
+                    space += intervals[i + 1] + intervals[parseInt(i.toString(), 10)];
                 } else {
                     this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, true);
-                    space += intervals[i];
+                    space += intervals[parseInt(i.toString(), 10)];
                 }
 
             }
@@ -1346,7 +1346,7 @@ export class DiagramRenderer {
             };
             setAttributeSvg(hLine, attr);
             pattern.appendChild(hLine);
-            spacey += intervals[j] + intervals[j - 1];
+            spacey += intervals[parseInt(j.toString(), 10)] + intervals[j - 1];
         }
     }
 
@@ -1368,22 +1368,22 @@ export class DiagramRenderer {
             intervals = getInterval(intervals, isLine);
             for (let i: number = 0; i < intervals.length; i = i + 2) {
                 space = getSpaceValue(intervals, isLine, i, space);
-                let d: number = isLine ? space + intervals[i] / 2 : space;
+                let d: number = isLine ? space + intervals[parseInt(i.toString(), 10)] / 2 : space;
                 d = isRulerGrid ? d : d * scale;
                 vLine = document.createElementNS('http://www.w3.org/2000/svg', isLine ? 'path' : 'circle');
                 let attr: Object;
                 if (isLine) {
                     if (dashArray.toString() === '') {
                         attr = {
-                            'stroke-width': intervals[i],
+                            'stroke-width': intervals[parseInt(i.toString(), 10)],
                             'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
-                            'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                            'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
                             'stroke': snapSettings.verticalGridlines.lineColor,
                         };
                     } else {
                         attr = {
-                            'stroke-width': intervals[i],
-                            'class': intervals[i] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
+                            'stroke-width': intervals[parseInt(i.toString(), 10)],
+                            'class': intervals[parseInt(i.toString(), 10)] === 1.25 ? 'e-diagram-thick-grid' : 'e-diagram-thin-grid',
                             'stroke': snapSettings.verticalGridlines.lineColor,
                             'd': 'M' + (d) + ',0 L' + (d) + ',' + hHeight + ' Z',
                             'dashArray': dashArray.toString(),
@@ -1392,10 +1392,10 @@ export class DiagramRenderer {
                     }
                     setAttributeSvg(vLine, attr);
                     pattern.appendChild(vLine);
-                    space += intervals[i + 1] + intervals[i];
+                    space += intervals[i + 1] + intervals[parseInt(i.toString(), 10)];
                 } else {
                     this.renderDotGrid(i, pattern, snapSettings, spaceY, d, scale, false);
-                    space += intervals[i];
+                    space += intervals[parseInt(i.toString(), 10)];
                 }
             }
         }
@@ -1445,12 +1445,12 @@ export class DiagramRenderer {
             }
             let height: number = 0;
             for (let j: number = 0; j < horizontalLineIntervals.length; j = j + 1) {
-                height += horizontalLineIntervals[j];
+                height += horizontalLineIntervals[parseInt(j.toString(), 10)];
             }
 
             let width: number = 0;
             for (let j: number = 0; j < verticalLineIntervals.length; j = j + 1) {
-                width += verticalLineIntervals[j];
+                width += verticalLineIntervals[parseInt(j.toString(), 10)];
             }
 
             let attr: Object = {
@@ -1486,9 +1486,9 @@ export class DiagramRenderer {
         const interval: number = isLine ? ruler.interval : ruler.interval + 1;
         for (let i: number = 0; i < interval * 2; i++) {
             if (i % 2 === 0) {
-                newInterval[i] = isLine ? ((i === 0) ? 1.25 : 0.25) : 0;
+                newInterval[parseInt(i.toString(), 10)] = isLine ? ((i === 0) ? 1.25 : 0.25) : 0;
             } else {
-                newInterval[i] = isLine ? (tickInterval - newInterval[i - 1]) : tickInterval;
+                newInterval[parseInt(i.toString(), 10)] = isLine ? (tickInterval - newInterval[i - 1]) : tickInterval;
             }
         }
         return newInterval;
@@ -1511,12 +1511,12 @@ export class DiagramRenderer {
             let gridlines: Gridlines = snapSettings.horizontalGridlines as Gridlines;
             gridlines.scaledIntervals = [];
             for (i = 0; i < gridlines.snapIntervals.length; i++) {
-                gridlines.scaledIntervals[i] = gridlines.snapIntervals[i] * scale;
+                gridlines.scaledIntervals[parseInt(i.toString(), 10)] = gridlines.snapIntervals[parseInt(i.toString(), 10)] * scale;
             }
             gridlines = snapSettings.verticalGridlines as Gridlines;
             gridlines.scaledIntervals = [];
             for (i = 0; i < gridlines.snapIntervals.length; i++) {
-                gridlines.scaledIntervals[i] = gridlines.snapIntervals[i] * scale;
+                gridlines.scaledIntervals[parseInt(i.toString(), 10)] = gridlines.snapIntervals[parseInt(i.toString(), 10)] * scale;
             }
         }
         return scale;
@@ -1746,7 +1746,7 @@ export class DiagramRenderer {
         const diagramElement: Object = document.getElementById(this.diagramId);
         const instance: string = 'ej2_instances'; let diagram: any;
         if (diagramElement) {
-            diagram = diagramElement[instance][0];
+            diagram = diagramElement[`${instance}`][0];
         }
         if (this.diagramId) {
             parentSvg = this.getParentSvg(group) || parentSvg;
@@ -1818,7 +1818,7 @@ export class DiagramRenderer {
             if (group.flip !== 'None' && selectedNode && selectedNode.flipMode !== 'Label' && selectedNode.flipMode !== 'All' && selectedNode.flipMode !== 'None') {
                 group.flip = 'None';
                 for (let k = 0; k < group.children.length; k++) {
-                    group.children[k].flip = 'None';
+                    group.children[parseInt(k.toString(), 10)].flip = 'None';
                 }
             }
             if (!(group.elementActions & ElementAction.ElementIsGroup) && diagram instanceof Diagram && (diagram as Diagram).nameTable[group.id] && (diagram as Diagram).nameTable[group.id].propName !== 'connectors') {
@@ -1843,8 +1843,8 @@ export class DiagramRenderer {
                     //Below code to check and flip the text element in the node.
                     else if (group.flip !== 'None' && selectedNode.flipMode === 'Label' || (group.children[0] instanceof DiagramNativeElement && selectedNode && (selectedNode.flipMode === 'None' || selectedNode.flipMode === 'All'))) {
                         for (let i = 0; i < selectedNode.wrapper.children.length; i++) {
-                            if (selectedNode.wrapper.children[i] instanceof TextElement) {
-                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[i].id + '_groupElement');
+                            if (selectedNode.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                                innerLabelContent = document.getElementById(selectedNode.wrapper.children[parseInt(i.toString(), 10)].id + '_groupElement');
                                 this.renderFlipElement(group, innerLabelContent, group.flip);
                                 return;
                             }
@@ -2064,11 +2064,11 @@ export class DiagramRenderer {
         if (tx !== this.transform.x || ty !== this.transform.y || (tx === 0 || ty === 0)) {
             //diagram layer
             if (svgMode) {
-                if (!window[domTable][this.diagramId + '_diagramLayer']) {
-                    window[domTable][this.diagramId + '_diagramLayer'] =
+                if (!window[`${domTable}`][this.diagramId + '_diagramLayer']) {
+                    window[`${domTable}`][this.diagramId + '_diagramLayer'] =
                         this.diagramSvgLayer.getElementById(this.diagramId + '_diagramLayer');
                 }
-                const diagramLayer: SVGElement = window[domTable][this.diagramId + '_diagramLayer'] as SVGElement;
+                const diagramLayer: SVGElement = window[`${domTable}`][this.diagramId + '_diagramLayer'] as SVGElement;
                 diagramLayer.setAttribute('transform', 'translate('
                     + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                     + transform.scale + ')');
@@ -2080,27 +2080,27 @@ export class DiagramRenderer {
                 + (transform.ty * transform.scale) + ')');
 
             //portslayer
-            if (!window[domTable][this.diagramId + '_diagramPorts']) {
-                window[domTable][this.diagramId + '_diagramPorts'] = this.iconSvgLayer.getElementById(this.diagramId + '_diagramPorts');
+            if (!window[`${domTable}`][this.diagramId + '_diagramPorts']) {
+                window[`${domTable}`][this.diagramId + '_diagramPorts'] = this.iconSvgLayer.getElementById(this.diagramId + '_diagramPorts');
             }
-            const portsLayer: SVGElement = window[domTable][this.diagramId + '_diagramPorts'] as SVGElement;
+            const portsLayer: SVGElement = window[`${domTable}`][this.diagramId + '_diagramPorts'] as SVGElement;
             portsLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
             //expandlayer
-            if (!window[domTable][this.diagramId + '_diagramExpander']) {
-                window[domTable][this.diagramId + '_diagramExpander'] =
+            if (!window[`${domTable}`][this.diagramId + '_diagramExpander']) {
+                window[`${domTable}`][this.diagramId + '_diagramExpander'] =
                     this.iconSvgLayer.getElementById(this.diagramId + '_diagramExpander');
             }
-            const expandLayer: SVGElement = window[domTable][this.diagramId + '_diagramExpander'] as SVGElement;
+            const expandLayer: SVGElement = window[`${domTable}`][this.diagramId + '_diagramExpander'] as SVGElement;
             expandLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
             //nativelayer
-            if (!window[domTable][this.diagramId + '_nativeLayer']) {
-                window[domTable][this.diagramId + '_nativeLayer'] = this.nativeSvgLayer.getElementById(this.diagramId + '_nativeLayer');
+            if (!window[`${domTable}`][this.diagramId + '_nativeLayer']) {
+                window[`${domTable}`][this.diagramId + '_nativeLayer'] = this.nativeSvgLayer.getElementById(this.diagramId + '_nativeLayer');
             }
-            const nativeLayer: SVGElement = window[domTable][this.diagramId + '_nativeLayer'] as SVGElement;
+            const nativeLayer: SVGElement = window[`${domTable}`][this.diagramId + '_nativeLayer'] as SVGElement;
             nativeLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');

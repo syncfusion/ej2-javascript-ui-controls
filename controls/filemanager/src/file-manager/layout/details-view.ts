@@ -136,6 +136,10 @@ export class DetailsView {
                 },
                 enableRtl: this.parent.enableRtl,
                 pageSettings: { pageSize: 20 },
+             // enableVirtualization: this.parent.virtualizationSettings.enable,
+                enablePersistence:  this.parent.enablePersistence,
+             // enableVirtualMaskRow: true,
+             // pageSettings: { pageSize: this.parent.virtualizationSettings.detailsViewItemsCount },
                 sortSettings: { allowUnsort: false, columns: sortSettings },
                 columns: columns,
                 recordDoubleClick: this.DblClickEvents.bind(this),
@@ -164,8 +168,8 @@ export class DetailsView {
         const initialColumn: ColumnModel[] = this.parent.detailsViewSettings.columns;
         this.isNameWidth = false;
         for (let i: number = 0; i < initialColumn.length; i++) {
-            if (initialColumn[i].field === 'name') {
-                this.isNameWidth = !isNOU(initialColumn[i].width);
+            if (initialColumn[i as number].field === 'name') {
+                this.isNameWidth = !isNOU(initialColumn[i as number].width);
                 return;
             }
         }
@@ -174,14 +178,14 @@ export class DetailsView {
     private adjustWidth(columns: ColumnModel[], fieldName: string): void {
         if (this.isNameWidth && (fieldName === 'name')) { return; }
         for (let i: number = 0; i < columns.length; i++) {
-            if (columns[i].field === fieldName) {
+            if (columns[i as number].field === fieldName) {
                 let nameWidth: string;
                 if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                     nameWidth = (this.element.clientWidth <= 500) ? '120px' : 'auto';
                 } else {
                     nameWidth = (this.element.clientWidth <= 680) ? ((fieldName === 'name') ? '120px' : '180px') : 'auto';
                 }
-                columns[i].width = nameWidth;
+                columns[i as number].width = nameWidth;
             }
         }
     }
@@ -200,7 +204,7 @@ export class DetailsView {
             columns = JSON.parse(JSON.stringify(this.parent.detailsViewSettings.columns));
             this.adjustWidth(columns, 'name');
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
-                columns[i].headerText = getLocaleText(this.parent, columns[i].headerText);
+                columns[i as number].headerText = getLocaleText(this.parent, columns[i as number].headerText);
             }
         }
         const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
@@ -223,7 +227,7 @@ export class DetailsView {
             }
         }
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
-            columns[i].disableHtmlEncode = !this.parent.enableHtmlSanitizer;
+            columns[i as number].disableHtmlEncode = !this.parent.enableHtmlSanitizer;
         }
         return columns;
     }
@@ -249,7 +253,7 @@ export class DetailsView {
         if (!td) {
             const columns: ColumnModel[] = this.parent.detailsViewSettings.columns;
             for (let i: number = 0; i < columns.length; i++) {
-                if (columns[i].field === 'name') {
+                if (columns[i as number].field === 'name') {
                     td = args.row.children[this.parent.allowMultiSelection ? (i + 2) : (i + 1)];
                     break;
                 }
@@ -293,8 +297,8 @@ export class DetailsView {
                 // eslint-disable-next-line
                 let format: Object;
                 for (let i: number = 0; i < columns.length; i++) {
-                    if (columns[i].field === 'dateModified') {
-                        format = columns[i].format;
+                    if (columns[i as number].field === 'dateModified') {
+                        format = columns[i as number].format;
                         break;
                     }
                 }
@@ -345,14 +349,19 @@ export class DetailsView {
     }
 
     private onBeforeDataBound(args: BeforeDataBoundArgs): void {
+       // if (!this.parent.virtualizationSettings.enable) {
         showSpinner(this.parent.element);
         // eslint-disable-next-line
         const items: Object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         args.result = items;
+       // }
     }
     /* istanbul ignore next */
     private onDataBound(): void {
         this.createDragObj();
+        // if ((this.parent.selectedItems.length !== 0 && !this.parent.virtualizationSettings.enable) || 
+        //         ((this.parent.selectedItems.length !== 0 && this.parent.virtualizationSettings.enable && 
+        //         this.element.querySelector('.e-content').scrollTop == 0))) {
         if (this.parent.selectedItems.length !== 0) {
             this.selectRecords(this.parent.selectedItems);
         }
@@ -427,7 +436,7 @@ export class DetailsView {
         const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
         const sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-            const node: string = this.parent.hasId ? getValue('id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
+            const node: string = this.parent.hasId ? getValue('id', gridRecords[i as number]) : getName(this.parent, gridRecords[i as number]);
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
@@ -947,27 +956,27 @@ export class DetailsView {
                 <HTMLElement>this.gridObj.getContent().querySelector('.e-content .e-table').children[0];
             const gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();
             for (let i: number = 0; i < gridHeaderColNames.length; i++) {
-                if ((!this.isNameWidth && gridHeaderColNames[i].field === 'name') || gridHeaderColNames[i].field === 'filterPath') {
+                if ((!this.isNameWidth && gridHeaderColNames[i as number].field === 'name') || gridHeaderColNames[i as number].field === 'filterPath') {
                     if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                         if (this.element.clientWidth <= 500) {
-                            gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
-                            gridContentColGroup.children[i].setAttribute('style', 'width: 120px');
+                            gridHeaderColGroup.children[i as number].setAttribute('style', 'width: 120px');
+                            gridContentColGroup.children[i as number].setAttribute('style', 'width: 120px');
                         } else if (this.element.clientWidth > 500) {
-                            gridHeaderColGroup.children[i].setAttribute('style', 'width: auto');
-                            gridContentColGroup.children[i].setAttribute('style', 'width: auto');
+                            gridHeaderColGroup.children[i as number].setAttribute('style', 'width: auto');
+                            gridContentColGroup.children[i as number].setAttribute('style', 'width: auto');
                         }
                     } else {
                         if (this.element.clientWidth <= 680) {
-                            if (gridHeaderColNames[i].field === 'name') {
-                                gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
-                                gridContentColGroup.children[i].setAttribute('style', 'width: 120px');
+                            if (gridHeaderColNames[i as number].field === 'name') {
+                                gridHeaderColGroup.children[i as number].setAttribute('style', 'width: 120px');
+                                gridContentColGroup.children[i as number].setAttribute('style', 'width: 120px');
                             } else {
-                                gridHeaderColGroup.children[i].setAttribute('style', 'width: 180px');
-                                gridContentColGroup.children[i].setAttribute('style', 'width: 180px');
+                                gridHeaderColGroup.children[i as number].setAttribute('style', 'width: 180px');
+                                gridContentColGroup.children[i as number].setAttribute('style', 'width: 180px');
                             }
                         } else if (this.element.clientWidth > 680) {
-                            gridHeaderColGroup.children[i].setAttribute('style', 'width: auto');
-                            gridContentColGroup.children[i].setAttribute('style', 'width: auto');
+                            gridHeaderColGroup.children[i as number].setAttribute('style', 'width: auto');
+                            gridContentColGroup.children[i as number].setAttribute('style', 'width: auto');
                         }
                     }
                 }
@@ -1107,15 +1116,19 @@ export class DetailsView {
         const rows: number[] = this.gridObj.getSelectedRowIndexes();
         if (!this.parent.allowMultiSelection) {
             for (let i: number = 0; i < rows.length; i++) {
-                if (rows[i] === this.gridObj.selectedRowIndex) {
-                    this.gridObj.getRowByIndex(rows[i]).setAttribute('tabindex', '0');
+                if (rows[i as number] === this.gridObj.selectedRowIndex) {
+                    this.gridObj.getRowByIndex(rows[i as number]).setAttribute('tabindex', '0');
                 } else {
-                    this.gridObj.getRowByIndex(rows[i]).removeAttribute('tabindex');
+                    this.gridObj.getRowByIndex(rows[i as number]).removeAttribute('tabindex');
                 }
             }
         }
         const len: number = rows.length;
         if (len > 0) {
+        // if (this.parent.virtualizationSettings.enable) {
+        //     this.parent.currentItemText = getValue('name', args.data);
+        // }
+        // else if (len > 0) {
             // eslint-disable-next-line
             const data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
             this.parent.currentItemText = getValue('name', data);
@@ -1153,7 +1166,7 @@ export class DetailsView {
         const selectedRecords: Object[] = this.gridSelectNodes();
         let selectSize: number = 0;
         while (selectSize < selectedRecords.length) {
-            const record: FileDetails = <FileDetails>selectedRecords[selectSize];
+            const record: FileDetails = <FileDetails>selectedRecords[selectSize as number];
             const name: string = getItemName(this.parent, record);
             this.parent.selectedItems.push(name);
             selectSize++;
@@ -1395,7 +1408,7 @@ export class DetailsView {
                     this.addHeaderFocus();
                     this.actionDivert = true;
                 }
-                else {
+                 else {
                     this.addFocus(0);
                     this.actionDivert = false;
                 }
@@ -1479,8 +1492,8 @@ export class DetailsView {
             // eslint-disable-next-line
             const items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
-                if (!hasDownloadAccess(items[i])) {
-                    createDeniedDialog(this.parent, items[i], events.permissionDownload);
+                if (!hasDownloadAccess(items[i as number])) {
+                    createDeniedDialog(this.parent, items[i as number], events.permissionDownload);
                     return;
                 }
             }
@@ -1494,8 +1507,8 @@ export class DetailsView {
             // eslint-disable-next-line
             const items: Object[] = this.parent.itemData;
             for (let i: number = 0; i < items.length; i++) {
-                if (!hasEditAccess(items[i])) {
-                    createDeniedDialog(this.parent, items[i], events.permissionEdit);
+                if (!hasEditAccess(items[i as number])) {
+                    createDeniedDialog(this.parent, items[i as number], events.permissionEdit);
                     return;
                 }
             }
@@ -1691,7 +1704,7 @@ export class DetailsView {
     private isSelected(selRowIndexes: number[], focIndex: number): boolean {
         let check: boolean = false;
         for (let i: number = 0; i <= selRowIndexes.length - 1; i++) {
-            if (selRowIndexes[i] === focIndex) {
+            if (selRowIndexes[i as number] === focIndex) {
                 check = true;
                 break;
             }
@@ -1779,15 +1792,15 @@ export class DetailsView {
         const filter: string = this.parent.hasId ? 'id' : 'name';
         if (this.parent.hasId || !hasFilter) {
             for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-                if (nodes.indexOf(getValue(filter, gridRecords[i])) !== -1) {
-                    records.push(gridRecords[i]);
+                if (nodes.indexOf(getValue(filter, gridRecords[i as number])) !== -1) {
+                    records.push(gridRecords[i as number]);
                 }
             }
         } else {
             for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-                const name: string = getValue('filterPath', gridRecords[i]) + getValue('name', gridRecords[i]);
+                const name: string = getValue('filterPath', gridRecords[i as number]) + getValue('name', gridRecords[i as number]);
                 if (nodes.indexOf(name) !== -1) {
-                    records.push(gridRecords[i]);
+                    records.push(gridRecords[i as number]);
                 }
             }
         }
@@ -1807,8 +1820,8 @@ export class DetailsView {
         const data: Object[] = [];
         const newIds: string[] = [];
         for (let i: number = 0; i < records.length; i++) {
-            data[i] = records[i];
-            newIds[i] = getItemName(this.parent, data[i]);
+            data[i as number] = records[i as number];
+            newIds[i as number] = getItemName(this.parent, data[i as number]);
         }
         doDeleteFiles(this.parent, data, newIds);
     }
@@ -1825,8 +1838,8 @@ export class DetailsView {
         const data: Object[] = [];
         const newIds: string[] = [];
         for (let i: number = 0; i < dRecords.length; i++) {
-            data[i] = dRecords[i];
-            newIds[i] = getItemName(this.parent, data[i]);
+            data[i as number] = dRecords[i as number];
+            newIds[i as number] = getItemName(this.parent, data[i as number]);
         }
         doDownloadFiles(this.parent, data, newIds);
     }

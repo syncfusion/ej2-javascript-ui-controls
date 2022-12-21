@@ -566,6 +566,10 @@ export interface IGrid extends Component<HTMLElement> {
 
     partialSelectedRecords?: Object[];
 
+    lazyLoadRender?: IRenderer;
+
+    islazyloadRequest?: boolean;
+
     prevPageMoving?: boolean;
 
     renderModule?: Render;
@@ -600,6 +604,7 @@ export interface IGrid extends Component<HTMLElement> {
     enableHeaderFocus?: boolean;
     renderTemplates?: Function;
     isReact?: boolean;
+    requireTemplateRef?: boolean;
     tableIndex?: number;
     isVue?: boolean;
     isAngular?: boolean;
@@ -728,6 +733,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenRightContentTbody?(): Element;
     refreshReactColumnTemplateByUid?(columnUid: string): void;
     refreshReactHeaderTemplateByUid?(columnUid: string): void;
+    refreshGroupCaptionFooterTemplate?(): void;
     getAllDataRows?(includeBatch: boolean): Element[];
     getAllMovableDataRows?(includeBatch: boolean): Element[];
     getAllFrozenDataRows?(includeBatch: boolean): Element[];
@@ -999,6 +1005,17 @@ export interface NotifyArgs {
     renderFrozenRightContent?: boolean;
     promise?: Promise<Object>;
     isFrozenRowsRender?: boolean;
+}
+
+export interface LoadEventArgs {
+    /**
+     * * If `requireTemplateRef` is set to false in the load event, then the template element can't be accessed in grid queryCellInfo, and rowDataBound events.
+     * * By default, React's grid queryCellInfo and rowDataBound events allow access to the template element.
+     * * Avoid accessing the template elements in the grid queryCellInfo and rowDataBound events to improve rendering performance by setting this value as false.
+     *
+     * @default true
+     */
+    requireTemplateRef?: boolean;
 }
 
 export interface LazyLoadArgs {
@@ -2133,7 +2150,8 @@ export interface IEdit {
     addCancelWhilePaging?(): void;
     args?: { requestType?: string };
     isAdded?: boolean;
-    previousData?: object
+    previousData?: object;
+    addBatchRow?: boolean;
 }
 
 export interface CheckBoxChangeEventArgs extends ICancel {

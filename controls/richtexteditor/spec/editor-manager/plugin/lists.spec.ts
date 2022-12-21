@@ -2253,4 +2253,132 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
+    
+    describe(' BLAZ-26675 - Audio getting deleted after Inserting into a list and Pressing enter', () => {
+        let elem: HTMLElement;
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"></audio></span></span> </li> </ol> <div>`;
+        beforeEach( () => {
+            elem = createElement( 'div', {
+                id: 'dom-node', innerHTML: innerValue
+            } );
+            document.body.appendChild( elem );
+            editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
+            editNode = editorObj.editableElement as HTMLElement;
+        } );
+        afterEach( () => {
+            detach( elem );
+        } );
+
+        it( 'Checking Enter action for the Audio Element inside the list when cursor next to Audio Element', () => {
+            startNode = editNode.querySelector( 'li' );
+            editorObj.nodeSelection.setCursorPoint( document, startNode, 0 );
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            ( editorObj as any ).editorKeyDown( keyBoardEvent );
+            let audioElem: Element = editNode.querySelectorAll( 'AUDIO' )[0];
+            expect( audioElem != null ).toBe( true );
+        } );
+    });
+
+    describe( 'Pressing enter with Web Video inside List Element', () => {
+        let elem: HTMLElement;
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span></li> </ol> <div>`;
+        beforeEach( () => {
+            elem = createElement( 'div', {
+                id: 'dom-node', innerHTML: innerValue
+            } );
+            document.body.appendChild( elem );
+            editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
+            editNode = editorObj.editableElement as HTMLElement;
+        } );
+        afterEach( () => {
+            detach( elem );
+        } );
+
+        it( 'Checking Enter action for the Web Video Element inside the list when cursor next to Video Element', () => {
+            startNode = editNode.querySelector( 'li' );
+            editorObj.nodeSelection.setCursorPoint( document, startNode, 0 );
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            ( editorObj as any ).editorKeyDown( keyBoardEvent );
+            let videoElem: Element = editNode.querySelectorAll( 'VIDEO' )[0];
+            expect( videoElem != null ).toBe( true );
+        } );
+    });
+
+    describe( 'Pressing enter with Embed Video inside List Element', () => {
+        let elem: HTMLElement;
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/jrV-fJXAXwY?controls=0" title="YouTube video player" style="min-width: 0px; max-width: 1472px; min-height: 0px; outline: rgb(74, 144, 226) solid 2px;" class="e-resize e-video-focus"></iframe></span></span></li> </ol> <div>`;
+        beforeEach( () => {
+            elem = createElement( 'div', {
+                id: 'dom-node', innerHTML: innerValue
+            } );
+            document.body.appendChild( elem );
+            editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
+            editNode = editorObj.editableElement as HTMLElement;
+        } );
+        afterEach( () => {
+            detach( elem );
+        } );
+
+        it( 'Checking Enter action for the Embed Video Element inside the list when cursor next to Video Element', () => {
+            startNode = editNode.querySelector( 'li' );
+            editorObj.nodeSelection.setCursorPoint( document, startNode, 0 );
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            ( editorObj as any ).editorKeyDown( keyBoardEvent );
+            let iFrameElem: Element = editNode.querySelectorAll( 'IFRAME' )[0];
+            expect( iFrameElem != null ).toBe( true );
+        } );
+    });
+
+    describe( 'Pressing enter with Image inside List Element', () => {
+        let elem: HTMLElement;
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let innerValue: string = `<div id="content-edit" contenteditable="true"><ol> <li><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="test.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"></li> </ol> <div>`;
+        beforeEach( () => {
+            elem = createElement( 'div', {
+                id: 'dom-node', innerHTML: innerValue
+            } );
+            document.body.appendChild( elem );
+            editorObj = new EditorManager( { document: document, editableElement: document.getElementById( "content-edit" ) } );
+            editNode = editorObj.editableElement as HTMLElement;
+        } );
+        afterEach( () => {
+            detach( elem );
+        } );
+
+        it( 'Checking Enter action for the Image Element inside the list when cursor next to Image Element', () => {
+            startNode = editNode.querySelector( 'li' );
+            editorObj.nodeSelection.setCursorPoint( document, startNode, 0 );
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            ( editorObj as any ).editorKeyDown( keyBoardEvent );
+            let imgElem: Element = editNode.querySelectorAll( 'IMG' )[0];
+            expect( imgElem != null ).toBe( true );
+        } );
+    });
 });

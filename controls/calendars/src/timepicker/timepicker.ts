@@ -690,12 +690,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         target.removeAttribute('name');
         const attributes: string[] = ['required', 'aria-required', 'form'];
         for (let i: number = 0; i < attributes.length; i++) {
-            if (isNullOrUndefined(target.getAttribute(attributes[i]))) {
+            if (isNullOrUndefined(target.getAttribute(attributes[i as number]))) {
                 continue;
             }
-            const attr: string = target.getAttribute(attributes[i]);
-            input.setAttribute(attributes[i], attr);
-            target.removeAttribute(attributes[i]);
+            const attr: string = target.getAttribute(attributes[i as number]);
+            input.setAttribute(attributes[i as number], attr);
+            target.removeAttribute(attributes[i as number]);
         }
     }
 
@@ -918,21 +918,26 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
+        this.rippleFn = null;
+        this.openPopupEventArgs = null;
+        this.selectedElement = null;
+        this.listTag = null;
+        this.liCollections = null;
     }
     protected ensureInputAttribute(): void {
         const propertyList: string[] = [];
         for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
-            propertyList[i] = this.inputElement.attributes[i].name;
+            propertyList[i as number] = this.inputElement.attributes[i as number].name;
         }
         for (let i: number = 0; i < propertyList.length; i++) {
-            if (!isNullOrUndefined(this.cloneElement.getAttribute(propertyList[i]))) {
-                this.inputElement.setAttribute(propertyList[i], this.cloneElement.getAttribute(propertyList[i]));
-                if (propertyList[i].toLowerCase() === 'value') {
-                    this.inputElement.value = this.cloneElement.getAttribute(propertyList[i]);
+            if (!isNullOrUndefined(this.cloneElement.getAttribute(propertyList[i as number]))) {
+                this.inputElement.setAttribute(propertyList[i as number], this.cloneElement.getAttribute(propertyList[i as number]));
+                if (propertyList[i as number].toLowerCase() === 'value') {
+                    this.inputElement.value = this.cloneElement.getAttribute(propertyList[i as number]);
                 }
             } else {
-                this.inputElement.removeAttribute(propertyList[i]);
-                if (propertyList[i].toLowerCase() === 'value') {
+                this.inputElement.removeAttribute(propertyList[i as number]);
+                if (propertyList[i as number].toLowerCase() === 'value') {
                     this.inputElement.value = '';
                 }
             }
@@ -1029,17 +1034,17 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        const updatedClassesValue: string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        const updatedClassesValue: string = (this.htmlAttributes[`${key}`].replace(/\s+/g, ' ')).trim();
                         if (updatedClassesValue !== '') {
                             addClass([this.inputWrapper.container], updatedClassesValue.split(' '));
                         }
                     } else if (key === 'style') {
                         let timeStyle: string = this.inputWrapper.container.getAttribute(key);
-                        timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
+                        timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[`${key}`]) :
+                            this.htmlAttributes[`${key}`];
                         this.inputWrapper.container.setAttribute(key, timeStyle);
                     } else {
-                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }
             }
@@ -1050,7 +1055,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(key) < 0 ) {
-                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                    this.inputElement.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }
@@ -1336,7 +1341,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         let isSeparator: boolean = false;
         if (!this.isTextSelected) {
             for (let i: number = 0; i < split.length; i++) {
-                if (!regex.test(split[i])) {
+                if (!regex.test(split[i as number])) {
                     end = i;
                     isSeparator = true;
                 }
@@ -1595,7 +1600,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
             const time: string = value instanceof Date ? this.objToString(value) : value;
             for (let index: number = 0; index < this.disableItemCollection.length; index++) {
-                if (time === this.disableItemCollection[index]) {
+                if (time === this.disableItemCollection[index as number]) {
                     return false;
                 }
             }
@@ -1754,7 +1759,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.inputEvent.destroy();
         }
         EventHandler.remove(this.inputElement, 'mousedown touchstart', this.mouseDownHandler);
-        if (this.showClearButton && !isNullOrUndefined(this.inputWrapper.clearButton)) {
+        if (this.showClearButton && !isNullOrUndefined(this.inputWrapper) && !isNullOrUndefined(this.inputWrapper.clearButton)) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.clearHandler);
         }
         if (this.formElement) {
@@ -1892,7 +1897,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         } else if (this.cldrTimeFormat().indexOf('a') < 0) {
             const strArray: string[] = this.cldrTimeFormat().split(' ');
             for (let i: number = 0; i < strArray.length; i++) {
-                if (strArray[i].toLowerCase().indexOf('h') >= 0) {
+                if (strArray[i as number].toLowerCase().indexOf('h') >= 0) {
                     time = i;
                     break;
                 }
@@ -1931,10 +1936,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected previousState(date: Date): string {
         const value: Date = this.getDateObject(date);
         for (let i: number = 0; i < this.timeCollections.length; i++) {
-            if (+value === this.timeCollections[i]) {
+            if (+value === this.timeCollections[i as number]) {
                 this.activeIndex = i;
-                this.selectedElement = this.liCollections[i];
-                this.valueWithMinutes = new Date(this.timeCollections[i]);
+                this.selectedElement = this.liCollections[i as number];
+                this.valueWithMinutes = new Date(this.timeCollections[i as number]);
                 break;
             }
         }
@@ -2022,37 +2027,37 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (!isNullOrUndefined(this.checkDateValue(value)) || !isNullOrUndefined(this.activeIndex)) {
             if (event.action === 'home') {
                 const index: number = this.validLiElement(0);
-                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                timeVal = +(this.createDateObj(new Date(this.timeCollections[index as number])));
                 this.activeIndex = index;
             } else if (event.action === 'end') {
                 const index: number = this.validLiElement(collections.length - 1, true);
-                timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                timeVal = +(this.createDateObj(new Date(this.timeCollections[index as number])));
                 this.activeIndex = index;
             } else {
                 if (event.action === 'down') {
                     for (let i: number = 0; i < count; i++) {
-                        if (+value < this.timeCollections[i]) {
+                        if (+value < this.timeCollections[i as number]) {
                             const index: number = this.validLiElement(i);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index as number])));
                             this.activeIndex = index;
                             break;
                         } else if (i === count - 1) {
                             const index: number = this.validLiElement(0);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index as number])));
                             this.activeIndex = index;
                             break;
                         }
                     }
                 } else {
                     for (let i: number = count - 1; i >= 0; i--) {
-                        if (+value > this.timeCollections[i]) {
+                        if (+value > this.timeCollections[i as number]) {
                             const index: number = this.validLiElement(i, true);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index as number])));
                             this.activeIndex = index;
                             break;
                         } else if (i === 0) {
                             const index: number = this.validLiElement(count - 1);
-                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index])));
+                            timeVal = +(this.createDateObj(new Date(this.timeCollections[index as number])));
                             this.activeIndex = index;
                             break;
                         }
@@ -2068,8 +2073,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected selectNextItem(event: KeyboardEventArgs): void {
         const index: number = this.validLiElement(0, event.action === 'down' ? false : true);
         this.activeIndex = index;
-        this.selectedElement = this.liCollections[index];
-        this.elementValue(new Date(this.timeCollections[index]));
+        this.selectedElement = this.liCollections[index as number];
+        this.elementValue(new Date(this.timeCollections[index as number]));
     }
     protected elementValue(value: Date): void {
         if (!isNullOrUndefined(this.checkDateValue(value))) {
@@ -2084,7 +2089,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (items.length) {
             if (backward) {
                 for (let i: number = index; i >= 0; i--) {
-                    if (!items[i].classList.contains(DISABLED)) {
+                    if (!items[i as number].classList.contains(DISABLED)) {
                         elementIndex = i;
                         break;
                     } else if (i === 0) {
@@ -2096,7 +2101,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 }
             } else {
                 for (let i: number = index; i <= items.length - 1; i++) {
-                    if (!items[i].classList.contains(DISABLED)) {
+                    if (!items[i as number].classList.contains(DISABLED)) {
                         elementIndex = i;
                         break;
                     } else if (i === items.length - 1) {
@@ -2111,15 +2116,15 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return elementIndex;
     }
     protected keyHandler(event: KeyboardEventArgs): void {
-        if (isNullOrUndefined(this.step) || this.step <= 0 || this.inputWrapper.buttons[0].classList.contains(DISABLED)) { return; }
+        if (isNullOrUndefined(this.step) || this.step <= 0 || !isNullOrUndefined(this.inputWrapper) && this.inputWrapper.buttons[0].classList.contains(DISABLED)) { return; }
         const count: number = this.timeCollections.length;
         if (isNullOrUndefined(this.getActiveElement()) || this.getActiveElement().length === 0) {
             if (this.liCollections.length > 0) {
                 if (isNullOrUndefined(this.value) && isNullOrUndefined(this.activeIndex)) {
                     const index: number = this.validLiElement(0, event.action === 'down' ? false : true);
                     this.activeIndex = index;
-                    this.selectedElement = this.liCollections[index];
-                    this.elementValue(new Date(this.timeCollections[index]));
+                    this.selectedElement = this.liCollections[index as number];
+                    this.elementValue(new Date(this.timeCollections[index as number]));
                 } else { this.findNextElement(event); }
             } else { this.findNextElement(event); }
         } else {
@@ -2130,15 +2135,15 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.activeIndex = index = this.activeIndex < 0 ? (count - 1) : this.activeIndex;
                 this.activeIndex = index = this.validLiElement(this.activeIndex, (event.keyCode === 40 || event.keyCode === 39) ?
                     false : true);
-                nextItem = isNullOrUndefined(this.timeCollections[index]) ? this.timeCollections[0] : this.timeCollections[index];
+                nextItem = isNullOrUndefined(this.timeCollections[index as number]) ? this.timeCollections[0] : this.timeCollections[index as number];
             } else if (event.action === 'home') {
                 const index: number = this.validLiElement(0);
                 this.activeIndex = index;
-                nextItem = this.timeCollections[index];
+                nextItem = this.timeCollections[index as number];
             } else if (event.action === 'end') {
                 const index: number = this.validLiElement(count - 1, true);
                 this.activeIndex = index;
-                nextItem = this.timeCollections[index];
+                nextItem = this.timeCollections[index as number];
             }
             this.selectedElement = this.liCollections[this.activeIndex];
             this.elementValue(new Date(nextItem));
@@ -2256,9 +2261,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             const items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.popupWrapper.querySelectorAll('.' + LISTCLASS);
             if (items.length) {
                 for (let i: number = 0; i < items.length; i++) {
-                    if ((this.timeCollections[i] === +this.getDateObject(this.valueWithMinutes))) {
-                        items[i].setAttribute('aria-selected', 'true');
-                        this.selectedElement = items[i];
+                    if ((this.timeCollections[i as number] === +this.getDateObject(this.valueWithMinutes))) {
+                        items[i as number].setAttribute('aria-selected', 'true');
+                        this.selectedElement = items[i as number];
                         this.activeIndex = i;
                         break;
                     }
@@ -2344,7 +2349,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private documentClickHandler(event: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>event.target;
-        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(target) && event.type !== 'mousedown' ||
+        if ((!isNullOrUndefined(this.popupObj) && !isNullOrUndefined(this.inputWrapper) && (this.inputWrapper.container.contains(target) && event.type !== 'mousedown' ||
             (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }

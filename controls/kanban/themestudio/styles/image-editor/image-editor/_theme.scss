@@ -2,6 +2,17 @@
   .e-image-editor {
     background: $image-editor-background;
 
+    & .e-contextual-toolbar-wrapper {
+      background: $image-editor-contextual-toolbar;
+      border-top: $image-editor-border;
+      border-bottom: $image-editor-border;
+
+      & .e-toolbar-item:hover .filterwrapper,
+      & .e-toolbar-item.e-selected .filterwrapper{
+        border-color: $btn-active-bgcolor;
+      }
+    }
+
     & .e-toolbar {
       & .e-toolbar-items {
         & .e-tbar-btn.e-btn {

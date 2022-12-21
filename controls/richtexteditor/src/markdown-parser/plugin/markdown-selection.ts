@@ -70,7 +70,7 @@ export class MarkdownSelection {
      */
     public getLine(textarea: HTMLTextAreaElement, index: number): string {
         const lines: string[] = this.getAllParents(textarea.value);
-        return lines[index];
+        return lines[index as number];
     }
 
     /**
@@ -100,9 +100,9 @@ export class MarkdownSelection {
             for (let i: number = 1; i < parents.length - 1; i++) {
                 const points: { [key: string]: string | number } = {};
                 points.line = (selectedPoints[i - 1].line as number) + 1;
-                points.start = parents[i] !== '' ? selectedPoints[i - 1].end : selectedPoints[i - 1].end;
-                points.end = (points.start as number) + parents[i].length + 1;
-                points.text = parents[i];
+                points.start = parents[i as number] !== '' ? selectedPoints[i - 1].end : selectedPoints[i - 1].end;
+                points.end = (points.start as number) + parents[i as number].length + 1;
+                points.text = parents[i as number];
                 selectedPoints.push(points);
             }
             const lastPoint: { [key: string]: string | number } = {};
@@ -169,7 +169,9 @@ export class MarkdownSelection {
         let isStart: boolean = false;
         if (line) {
             const reg: RegExp = line.trim() === command.trim() ?
+                // eslint-disable-next-line
                 new RegExp('^(' + this.replaceSpecialChar(command.trim()) + ')', 'gim') :
+                // eslint-disable-next-line
                 new RegExp('^(' + this.replaceSpecialChar(command) + ')', 'gim');
             isStart = reg.test(line.trim());
         }
@@ -199,7 +201,8 @@ export class MarkdownSelection {
     public isClear(parents: { [key: string]: string | number }[], regex: string): boolean {
         const isClear: boolean = false;
         for (let i: number = 0; i < parents.length; i++) {
-            if (new RegExp(regex, 'gim').test((parents[i].text as string))) {
+            // eslint-disable-next-line
+            if (new RegExp(regex, 'gim').test((parents[i as number].text as string))) {
                 return true;
             }
         }

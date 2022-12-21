@@ -10,7 +10,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { RemovingEventArgs, UploadingEventArgs, ProgressEventArgs } from '@syncfusion/ej2-inputs';
-import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -123,12 +123,13 @@ export class Audio {
         if (args.subCommand.toLowerCase() === 'undo' || args.subCommand.toLowerCase() === 'redo') {
             for (let i: number = 0; i < this.parent.formatter.getUndoRedoStack().length; i++) {
                 const temp: Element = this.parent.createElement('div');
-                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i].text);
+                const contentElem: DocumentFragment = parseHtml(this.parent.formatter.getUndoRedoStack()[i as number].text);
                 temp.appendChild(contentElem);
             }
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private touchStart(e: PointerEvent | TouchEvent, ele?: Element): void {
         if (this.parent.readonly) {
             return;
@@ -156,8 +157,8 @@ export class Audio {
         if (!isNOU(this.deletedAudio) && this.deletedAudio.length > 0) {
             for (let i: number = 0; i < this.deletedAudio.length - 1; i++) {
                 const args: AfterMediaDeleteEventArgs = {
-                    element: (this.deletedAudio[i] as HTMLElement).querySelector('audio'),
-                    src: (this.deletedAudio[i] as HTMLElement).querySelector('source').getAttribute('src')
+                    element: (this.deletedAudio[i as number] as HTMLElement).querySelector('audio'),
+                    src: (this.deletedAudio[i as number] as HTMLElement).querySelector('source').getAttribute('src')
                 };
                 this.parent.trigger(events.afterMediaDelete, args);
             }
@@ -181,8 +182,8 @@ export class Audio {
         if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
             const nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             for (let i: number = 0; i < nodes.length; i++) {
-                if (this.isAudioElem(nodes[i] as HTMLElement)) {
-                    this.deletedAudio.push(nodes[i]);
+                if (this.isAudioElem(nodes[i as number] as HTMLElement)) {
+                    this.deletedAudio.push(nodes[i as number]);
                 }
             }
         }
@@ -235,7 +236,7 @@ export class Audio {
         case 'backspace':
         case 'delete':
             for (let i: number = 0; i < this.deletedAudio.length; i++) {
-                const src: string = (this.deletedAudio[i] as HTMLAudioElement).src;
+                const src: string = (this.deletedAudio[i as number] as HTMLAudioElement).src;
                 this.audioRemovePost(src as string);
             }
             if (this.parent.editorMode !== 'Markdown') {
@@ -338,6 +339,7 @@ export class Audio {
     }
 
     private audioRemovePost(src: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: Audio = this;
         let absoluteUrl: string = '';
         if (isNOU(this.parent.insertAudioSettings.removeUrl) || this.parent.insertAudioSettings.removeUrl === '') { return; }
@@ -346,8 +348,9 @@ export class Audio {
         } else {
             absoluteUrl = new URL(src, document.baseURI).href;
         }
-        this.removingAudioName = absoluteUrl.replace(/^.*[\\\/]/, '');
+        this.removingAudioName = absoluteUrl.replace(/^.*[\\/]/, '');
         const xhr: XMLHttpRequest = new XMLHttpRequest();
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         xhr.addEventListener('readystatechange', function() {
             if (this.readyState === 4 && this.status === 200) {
                 proxy.triggerPost(this.response);
@@ -380,6 +383,7 @@ export class Audio {
             }
         }
         if (this.isAudioElem(e.target as HTMLElement)) {
+            this.audEle = (e.target as HTMLElement).querySelector('audio') as HTMLAudioElement;
             e.preventDefault();
         }
     }
@@ -522,8 +526,6 @@ export class Audio {
             addClass([target.querySelector('audio')], [classes.CLS_AUD_FOCUS]);
             target.querySelector('audio').style.outline = '2px solid #4a90e2';
         }
-        const pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
-                this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
         if (this.parent.quickToolbarModule.audioQTBar) {
             if (e.isNotify) {
                 setTimeout(() => {
@@ -537,7 +539,7 @@ export class Audio {
         }
     }
 
-    private hideAudioQuickToolbar(): void {
+    public hideAudioQuickToolbar(): void {
         if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.' + classes.CLS_AUD_FOCUS))) {
             removeClass([this.contentModule.getEditPanel().querySelector('.' + classes.CLS_AUD_FOCUS)], classes.CLS_AUD_FOCUS);
             if (!isNOU(this.audEle)) {
@@ -579,7 +581,7 @@ export class Audio {
             cssClass: classes.CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'inherit',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
@@ -650,7 +652,7 @@ export class Audio {
         const placeUrl: string = this.i10n.getConstant('audioUrl');
         this.inputUrl = this.parent.createElement('input', {
             className: 'e-input e-audio-url',
-            attrs: { placeholder: placeUrl, spellcheck: 'false' }
+            attrs: { placeholder: placeUrl, spellcheck: 'false', 'aria-label': this.i10n.getConstant('audioLinkHeader')}
         });
         this.inputUrl.addEventListener('input', () => {
             if (!isNOU(this.inputUrl)) {

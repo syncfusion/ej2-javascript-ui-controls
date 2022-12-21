@@ -141,7 +141,6 @@ export interface PopupModel extends ComponentModel{
      *
      * @event 'object'
      */
-    /* eslint-disable */
     open?: EmitType<Object>;
 
     /**
@@ -149,7 +148,6 @@ export interface PopupModel extends ComponentModel{
      *
      * @event 'object'
      */
-    /* eslint-disable */
     close?: EmitType<Object>;
 
     /**
@@ -157,7 +155,6 @@ export interface PopupModel extends ComponentModel{
      *
      * @event 'object'
      */
-    /* eslint-disable */
     targetExitViewport?: EmitType<Object>;
 
 }

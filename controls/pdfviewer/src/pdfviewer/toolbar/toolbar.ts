@@ -6,7 +6,7 @@ import { ComboBox, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { PdfViewer, PdfViewerBase, AnnotationToolbar } from '../index';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownButton, ItemModel, OpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { ToolbarItem } from '../base/types';
+import { ToolbarItem, FormFieldDataFormat } from '../base/types';
 import { FormDesignerToolbar } from './formdesigner-toolbar';
 
 /**
@@ -1520,7 +1520,8 @@ export class Toolbar {
             break;
         case this.pdfViewer.element.id + '_submitForm':
         case this.pdfViewer.element.id + '_submitFormSpan':
-            this.pdfViewerBase.exportFormFields();
+            let data: string;
+            this.pdfViewerBase.exportFormFields(data, FormFieldDataFormat.Json);
             break;
         }
     }

@@ -46,7 +46,8 @@ export class MonthEvent extends EventBase {
 
     private removeEventWrapper(appElement: Element[]): void {
         if (appElement.length > 0) {
-            appElement = (this.parent.currentView === 'Month') ? appElement : [appElement[0]];
+            appElement = (this.parent.currentView === 'Month' || (!this.parent.activeView.isTimelineView() &&
+                !this.parent.activeViewOptions.timeScale.enable)) ? appElement : [appElement[0]];
             for (const wrap of appElement) {
                 if (wrap.parentElement && wrap.parentElement.parentNode) {
                     remove(wrap.parentElement);
@@ -69,12 +70,13 @@ export class MonthEvent extends EventBase {
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
                 const appElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
-                    this.parent.crudModule.crudObj.sourceEvent[i].groupIndex + '"]'));
+                    this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex + '"]'));
                 this.removeEventWrapper(appElement);
-                if (this.parent.crudModule.crudObj.targetEvent[i] && this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
-                    this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
+                if (this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)] &&
+                    this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex !==
+                    this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex) {
                     const ele: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
-                        this.parent.crudModule.crudObj.targetEvent[i].groupIndex + '"]'));
+                        this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex + '"]'));
                     this.removeEventWrapper(ele);
                 }
             }
@@ -133,7 +135,7 @@ export class MonthEvent extends EventBase {
                     [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
                 const weekNumberCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WEEK_NUMBER_CLASS));
                 weekNumberCells.forEach((cell: HTMLElement, i: number) => {
-                    const height: number = totalCells[i].offsetHeight;
+                    const height: number = totalCells[parseInt(i.toString(), 10)].offsetHeight;
                     setStyleAttribute(cell, { 'height': height + 'px' });
                 });
                 this.parent.element.querySelector('.' + cls.WEEK_NUMBER_WRAPPER_CLASS).scrollTop =
@@ -186,7 +188,7 @@ export class MonthEvent extends EventBase {
         }
         for (let level: number = 0; level < this.slots.length; level++) {
             this.renderedEvents = [];
-            const slot: number[] = this.slots[level] as any;
+            const slot: number[] = this.slots[parseInt(level.toString(), 10)] as any;
             const endDate: Date = util.addDays(new Date(slot[slot.length - 1]), 1);
             const spannedEvents: Record<string, any>[] = this.filterEvents(new Date(slot[0]), endDate, events);
             for (const event of spannedEvents) {
@@ -295,7 +297,7 @@ export class MonthEvent extends EventBase {
     }
 
     public getCellTd(day: number): HTMLElement {
-        return this.workCells[day];
+        return this.workCells[parseInt(day.toString(), 10)];
     }
 
     public getEventWidth(startDate: Date, endDate: Date, isAllDay: boolean, count: number): number {
@@ -347,11 +349,11 @@ export class MonthEvent extends EventBase {
             this.parent.resourceBase.renderedResources;
         if (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
-                const sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[i];
+                const sourceRes: TdData = this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)];
                 this.renderEventsHandler(sourceRes.renderDates, sourceRes.workDays, sourceRes);
-                if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
-                    this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
-                    const target: TdData = this.parent.crudModule.crudObj.targetEvent[i];
+                if (this.parent.crudModule.crudObj.sourceEvent[parseInt(i.toString(), 10)].groupIndex !==
+                    this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)].groupIndex) {
+                    const target: TdData = this.parent.crudModule.crudObj.targetEvent[parseInt(i.toString(), 10)];
                     this.renderEventsHandler(target.renderDates, target.workDays, target);
                 }
             }
@@ -366,7 +368,8 @@ export class MonthEvent extends EventBase {
     public getSlotDates(workDays?: number[]): void {
         this.slots = [];
         const dates: number[] = this.dateRender.map((date: Date) => { return +date; });
-        const noOfDays: number = this.parent.activeViewOptions.showWeekend ? util.WEEK_LENGTH : workDays.length;
+        const noOfDays: number = !this.parent.activeViewOptions.showWeekend || (this.parent.activeViewOptions.group.byDate &&
+            this.parent.activeViewOptions.group.hideNonWorkingDays) ? workDays.length : util.WEEK_LENGTH;
         while (dates.length > 0) {
             this.slots.push(dates.splice(0, noOfDays) as any);
         }
@@ -388,7 +391,7 @@ export class MonthEvent extends EventBase {
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             attrs['data-group-index'] = resIndex.toString();
         }
-        const appointmentWrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_CLASS, attrs: attrs});
+        const appointmentWrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_CLASS, attrs: attrs });
 
         if (!isNullOrUndefined(this.cssClass)) {
             addClass([appointmentWrapper], this.cssClass);
@@ -501,7 +504,7 @@ export class MonthEvent extends EventBase {
         const diffInDays: number = (event.data as Record<string, any>).count as number;
         if (startTime.getTime() <= endTime.getTime()) {
             const appWidth: number = (diffInDays * this.cellWidth) - 5;
-            const cellTd: Element = this.workCells[day];
+            const cellTd: Element = this.workCells[parseInt(day.toString(), 10)];
             const appTop: number = (overlapCount * (this.eventHeight + EVENT_GAP));
             const height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (this.eventHeight + EVENT_GAP)) + this.moreIndicatorHeight;

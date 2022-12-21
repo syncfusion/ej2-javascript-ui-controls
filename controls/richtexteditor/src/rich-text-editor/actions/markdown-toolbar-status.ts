@@ -57,7 +57,7 @@ export class MarkdownToolbarStatus {
         let isApply: boolean = true;
         if (type === 'OL') {
             for (let i: number = 0; i < lines.length; i++) {
-                const lineSplit: string = (lines[i].text as string).trim().split(' ', 2)[0] + ' ';
+                const lineSplit: string = (lines[i as number].text as string).trim().split(' ', 2)[0] + ' ';
                 if (!/^[\d.]+[ ]+$/.test(lineSplit)) {
                     isApply = false;
                     break;
@@ -65,7 +65,7 @@ export class MarkdownToolbarStatus {
             }
         } else {
             for (let i: number = 0; i < lines.length; i++) {
-                if (!this.selection.isStartWith(lines[i].text as string, this.parent.formatter.listTags[type])) {
+                if (!this.selection.isStartWith(lines[i as number].text as string, this.parent.formatter.listTags[`${type}`])) {
                     isApply = false;
                     break;
                 }
@@ -79,12 +79,12 @@ export class MarkdownToolbarStatus {
         const direction: string = (this.element as HTMLTextAreaElement).selectionDirection;
         const checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
-            if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.parent.formatter.formatTags[keys[i]])) {
-                format = keys[i];
+            if (keys[i as number] !== 'pre' && this.selection.isStartWith(checkLine, this.parent.formatter.formatTags[keys[i as number]])) {
+                format = keys[i as number];
                 break;
-            } else if (keys[i] === 'pre') {
+            } else if (keys[i as number] === 'pre') {
                 if (this.codeFormat()) {
-                    format = keys[i];
+                    format = keys[i as number];
                     break;
                 }
             }
@@ -123,6 +123,7 @@ export class MarkdownToolbarStatus {
         return text.search('\\' + cmd + '') !== -1;
     }
     private multiCharRegx(cmd: string): RegExp {
+        // eslint-disable-next-line
         return new RegExp('(\\' + cmd + ')', 'g');
     }
 }

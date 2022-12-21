@@ -76,7 +76,8 @@ export class ICalendarExport {
                 const exDate: string[] = (eventObj[fields.recurrenceException] as string).split(',');
                 for (let i: number = 0; i < exDate.length - 1; i++) {
                     calendarEvent.splice(5, 0, 'EXDATE:' +
-                        this.convertDateToString(getDateFromRecurrenceDateString(exDate[i]), eventObj[fields.isAllDay] as boolean));
+                        this.convertDateToString(
+                            getDateFromRecurrenceDateString(exDate[parseInt(i.toString(), 10)]), eventObj[fields.isAllDay] as boolean));
                 }
             }
             if (eventObj[fields.recurrenceID]) {
@@ -86,7 +87,7 @@ export class ICalendarExport {
             const customFields: string[] = this.customFieldFilter(eventObj, fields);
             if (customFields.length > 0) {
                 customFields.forEach((customField: string) =>
-                    calendarEvent.splice(4, 0, customField + ':' + (eventObj[customField] || ''))
+                    calendarEvent.splice(4, 0, customField + ':' + (eventObj[`${customField}`] || ''))
                 );
             }
             const app: Record<string, any> = <Record<string, any>>extend({}, eventObj);
@@ -108,7 +109,7 @@ export class ICalendarExport {
         return icsString;
     }
     private customFieldFilter(eventObj: Record<string, any>, fields: EventFieldsMapping): string[] {
-        const defaultFields: string[] = Object.keys(fields).map((key: string) => (fields as Record<string, any>)[key]) as string[];
+        const defaultFields: string[] = Object.keys(fields).map((key: string) => (fields as Record<string, any>)[`${key}`]) as string[];
         const eventFields: string[] = Object.keys(eventObj);
         return eventFields.filter((value: string) => (defaultFields.indexOf(value) === -1) && (value !== 'Guid'));
     }
@@ -144,7 +145,7 @@ export class ICalendarExport {
     }
 
     private filterEvents(data: Record<string, any>[], field: string, value: number): Record<string, any>[] {
-        return data.filter((e: Record<string, any>) => e[field] === value);
+        return data.filter((e: Record<string, any>) => e[`${field}`] === value);
     }
 
     protected getModuleName(): string {

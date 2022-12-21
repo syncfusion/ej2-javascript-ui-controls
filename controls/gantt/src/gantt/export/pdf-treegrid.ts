@@ -158,7 +158,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
             const widths: number[] = this.columns.getDefaultWidths(bounds.width - bounds.x);
             for (let i: number = 0; i < this.columns.count; i++) {
                 if (this.columns.getColumn(i).width < 0) {
-                    this.columns.getColumn(i).width = widths[i];
+                    this.columns.getColumn(i).width = widths[i as number];
                 }
             }
         } else {
@@ -202,7 +202,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
             }
             for (let i: number = 0; i < this.columns.count; i++) {
                 if (this.columns.getColumn(i).width < 0) {
-                    this.columns.getColumn(i).width = widths[i];
+                    this.columns.getColumn(i).width = widths[i as number];
                 }
             }
         }

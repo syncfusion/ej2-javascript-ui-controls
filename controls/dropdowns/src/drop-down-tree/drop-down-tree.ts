@@ -125,6 +125,13 @@ export class Fields extends ChildProperty<Fields> {
     public query: Query;
 
     /**
+     * Specifies whether the node can be selected by users or not 
+     * When set to false, the user interaction is prevented for the corresponding node. 
+     */
+    @Property('selectable')
+    public selectable: string;
+
+    /**
      * Specifies the mapping field for the selected state of the Dropdown Tree item.
      */
     @Property('selected')
@@ -467,7 +474,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      *
      * @default {value: 'value', text: 'text', dataSource: [], child: 'child', parentValue: 'parentValue', hasChildren: 'hasChildren',
      *  expanded: 'expanded', htmlAttributes: 'htmlAttributes', iconCss: 'iconCss', imageUrl: 'imageUrl',
-     *  query: null, selected: 'selected', tableName: null, tooltip: 'tooltip'}
+     *  query: null, selected: 'selected', selectable: 'selectable', tableName: null, tooltip: 'tooltip' }
      */
     @Complex<FieldsModel>({}, Fields)
     public fields: FieldsModel;
@@ -655,6 +662,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(false)
     public showCheckBox: boolean;
+
+    /**
+     * Specifies whether to allow rendering of untrusted HTML values in the Dropdown Tree component.
+     * While enable this property, it sanitize suspected untrusted strings and script, and update in the Dropdown Tree component.
+     * 
+     * @default false
+     */
+     @Property(false)
+     public enableHtmlSanitizer: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.
@@ -1620,7 +1636,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                         temp = this.getOverflowVal(index);
                         data += temp;
                         temp = this.overFlowWrapper.innerHTML;
-                        this.overFlowWrapper.innerHTML = data;
+                        if (this.enableHtmlSanitizer) {
+                            this.overFlowWrapper.innerText = data;
+                        }
+                        else { this.overFlowWrapper.innerHTML = data; }
                         wrapperleng = this.overFlowWrapper.offsetWidth;
                         overAllContainer = this.inputWrapper.offsetWidth;
                         if ((wrapperleng + downIconWidth + this.clearIconWidth) > overAllContainer) {
@@ -2137,6 +2156,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             nodeClicked: this.onNodeClicked.bind(this),
             dataBound: this.OnDataBound.bind(this),
             allowMultiSelection: this.allowMultiSelection,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             showCheckBox: this.showCheckBox,
             autoCheck: this.treeSettings.autoCheck,
             sortOrder: this.sortOrder,
@@ -2418,7 +2438,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             dataSource: fields.dataSource, value: fields.value, text: fields.text, parentValue: fields.parentValue,
             child: this.cloneChildField(fields.child), hasChildren: fields.hasChildren, expanded: fields.expanded,
             iconCss: fields.iconCss, imageUrl: fields.imageUrl, htmlAttributes: fields.htmlAttributes, query: fields.query,
-            selected: fields.selected, tableName: fields.tableName, tooltip: fields.tooltip
+            selected: fields.selected, selectable: fields.selectable, tableName: fields.tableName, tooltip: fields.tooltip
         };
         return clonedField;
     }
@@ -2430,7 +2450,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 dataSource: fields.dataSource, value: fields.value, text: fields.text, parentValue: fields.parentValue,
                 child: (fields.child ? this.cloneChildField(fields.child) : null), hasChildren: fields.hasChildren,
                 expanded: fields.expanded, iconCss: fields.iconCss, imageUrl: fields.imageUrl, htmlAttributes: fields.htmlAttributes,
-                query: fields.query, selected: fields.selected, tableName: fields.tableName, tooltip: fields.tooltip
+                query: fields.query, selected: fields.selected, selectable: fields.selectable, tableName: fields.tableName, tooltip: fields.tooltip
             };
             return clonedField;
         }
@@ -2441,7 +2461,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             dataSource: fields.dataSource, id: fields.value, text: fields.text, parentID: fields.parentValue,
             child: this.getTreeChildren(fields.child), hasChildren: fields.hasChildren, expanded: fields.expanded,
             iconCss: fields.iconCss, imageUrl: fields.imageUrl, isChecked: fields.selected,
-            htmlAttributes: fields.htmlAttributes, query: fields.query, selected: fields.selected,
+            htmlAttributes: fields.htmlAttributes, query: fields.query, selectable: fields.selectable, selected: fields.selected,
             tableName: fields.tableName, tooltip: fields.tooltip
         };
         return treeFields;
@@ -2926,7 +2946,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         });
         const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
         const chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE + ' ' + ICONS });
-        chipContent.innerHTML = text;
+        if (this.enableHtmlSanitizer){
+            chipContent.innerText = text;
+        }
+        else { chipContent.innerHTML = text; }
         chip.appendChild(chipContent);
         this.chipCollection.appendChild(chip);
         if (this.showClearButton) {

@@ -5,7 +5,6 @@ import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../bas
 import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
 import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ColumnModel } from '@syncfusion/ej2-grids';
 
 /**
  * `DrillThrough` module.
@@ -19,10 +18,11 @@ export class DrillThrough {
 
     /**
      * Constructor.
+     *
      * @param {PivotView} parent - Instance of pivot table.
      * @hidden
      */
-    constructor(parent?: PivotView) {   /* eslint-disable-line */
+    constructor(parent?: PivotView) {
         this.parent = parent;
         this.drillThroughDialog = new DrillThroughDialog(this.parent);
         this.addInternalEvents();
@@ -30,6 +30,7 @@ export class DrillThrough {
 
     /**
      * It returns the Module name.
+     *
      * @returns {string} - string.
      * @hidden
      */
@@ -52,7 +53,7 @@ export class DrillThrough {
     }
 
     private mouseClickHandler(e: MouseEvent): void {
-        let target: Element = (e.target as Element);
+        const target: Element = (e.target as Element);
         let ele: Element = null;
         if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
             target.classList.contains('e-headercelldiv')) {
@@ -64,19 +65,20 @@ export class DrillThrough {
         }
         if (ele) {
             if (this.parent.allowDrillThrough && ele.classList.contains('e-valuescontent') || this.parent.editSettings.allowEditing) {
-                let colIndex: number = Number(ele.getAttribute('data-colindex'));
-                let rowIndex: number = Number(ele.getAttribute('index'));
-                this.executeDrillThrough(this.parent.pivotValues[rowIndex][colIndex] as IAxisSet, rowIndex, colIndex, ele);
+                const colIndex: number = Number(ele.getAttribute('data-colindex'));
+                const rowIndex: number = Number(ele.getAttribute('index'));
+                this.executeDrillThrough(this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet, rowIndex,
+                                         colIndex, ele);
             }
         }
     }
 
-    /* eslint-disable-next-line */
     /** @hidden */
+
     public executeDrillThrough(pivotValue: IAxisSet, rowIndex: number, colIndex: number, element?: Element): void {
         this.parent.drillThroughElement = element;
         this.parent.drillThroughValue = pivotValue;
-        let engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        const engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let valueCaption: string = '';
         let aggType: string = '';
         let rawData: IDataSet[] = [];
@@ -88,9 +90,9 @@ export class DrillThrough {
                 } else {
                     tupleInfo = (engine as OlapEngine).tupColumnInfo[pivotValue.colOrdinal];
                 }
-                let measureName: string = tupleInfo ?
+                const measureName: string = tupleInfo ?
                     (engine as OlapEngine).getUniqueName(tupleInfo.measureName) : pivotValue.actualText as string;
-                if (engine.fieldList[measureName] && (engine as OlapEngine).fieldList[measureName].isCalculatedField) {
+                if (engine.fieldList[measureName as string] && (engine as OlapEngine).fieldList[measureName as string].isCalculatedField) {
                     this.parent.pivotCommon.errorDialog.createErrorDialog(
                         this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('drillError'));
                     return;
@@ -109,22 +111,21 @@ export class DrillThrough {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                let currModule: DrillThrough = this;    /* eslint-disable-line */
                 if (this.parent.dataSourceSettings.mode === 'Server') {
                     this.parent.getEngine('fetchRawData', null, null, null, null, null, null, { rowIndex: rowIndex, columnIndex: colIndex });
                 } else {
                     if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
-                        let indexArray: string[] = Object.keys(pivotValue.indexObject);
+                        const indexArray: string[] = Object.keys(pivotValue.indexObject);
                         this.drillThroughDialog.indexString = [];
-                        for (let cIndex of indexArray) {
-                            for (let aIndex of this.parent.engineModule.groupRawIndex[Number(cIndex)]) {
-                                rawData.push((this.parent.engineModule.actualData as IDataSet[])[aIndex]);
+                        for (const cIndex of indexArray) {
+                            for (const aIndex of this.parent.engineModule.groupRawIndex[Number(cIndex)]) {
+                                rawData.push((this.parent.engineModule.actualData as IDataSet[])[aIndex as number]);
                                 this.drillThroughDialog.indexString.push(aIndex.toString());
                             }
                         }
                     } else {
-                        let indexArray: string[] = Object.keys(pivotValue.indexObject);
-                        for (let index of indexArray) {
+                        const indexArray: string[] = Object.keys(pivotValue.indexObject);
+                        for (const index of indexArray) {
                             rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
                         }
                     }
@@ -138,19 +139,21 @@ export class DrillThrough {
 
     private getCalcualtedFieldValue(indexArray: string[], rawData: IDataSet[]): IDataSet[] {
         for (let k: number = 0; k < indexArray.length; k++) {
-            let colIndex: { [key: string]: string } = {};
-            colIndex[indexArray[k]] = indexArray[k];
+            const colIndex: { [key: string]: string } = {};
+            colIndex[indexArray[k as number]] = indexArray[k as number];
             for (let i: number = 0; i < this.parent.dataSourceSettings.calculatedFieldSettings.length; i++) {
                 let indexValue: number;
                 for (let j: number = this.parent.engineModule.fields.length - 1; j >= 0; j--) {
-                    if (this.parent.engineModule.fields[j] === this.parent.dataSourceSettings.calculatedFieldSettings[i].name) {
+                    if (this.parent.engineModule.fields[j as number] ===
+                            this.parent.dataSourceSettings.calculatedFieldSettings[i as number].name) {
                         indexValue = j;
                         break;
                     }
                 }
-                if (!isNullOrUndefined(rawData[k])) {
-                    let calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k])], colIndex as any, indexValue, 'calculatedfield', false);
-                    rawData[k][this.parent.dataSourceSettings.calculatedFieldSettings[i].name] = (isNaN(calculatedFeildValue) && isNullOrUndefined(calculatedFeildValue)) ? '#DIV/0!' : calculatedFeildValue;
+                if (!isNullOrUndefined(rawData[k as number])) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k as number])], colIndex as any, indexValue, 'calculatedfield', false);
+                    rawData[k as number][this.parent.dataSourceSettings.calculatedFieldSettings[i as number].name] = (isNaN(calculatedFeildValue) && isNullOrUndefined(calculatedFeildValue)) ? '#DIV/0!' : calculatedFeildValue;
                 }
             }
         }
@@ -161,13 +164,15 @@ export class DrillThrough {
     private frameData(eventArgs: DrillThroughEventArgs): DrillThroughEventArgs {
         let keyPos: number = 0;
         let dataPos: number = 0;
-        let data: any = [];
+        const data: any = [];
         while (dataPos < eventArgs.rawData.length) {
-            let framedHeader: any = {};
+            const framedHeader: any = {};
             while (keyPos < eventArgs.gridColumns.length) {
-                framedHeader[eventArgs.gridColumns[keyPos].field] = this.parent.dataSourceSettings.mode === 'Server' ?
-                    eventArgs.rawData[dataPos][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) : 0] :    /* eslint-disable-line */
-                    eventArgs.rawData[dataPos][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos].field] as any];
+                framedHeader[eventArgs.gridColumns[keyPos as number].field] = this.parent.dataSourceSettings.mode === 'Server' ?
+                    eventArgs.rawData[dataPos as number][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos as number]
+                        .field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos as number].field) : 0] :
+                    eventArgs.rawData[dataPos as number][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos as number]
+                        .field] as any];
                 keyPos++;
             }
             data.push(framedHeader);
@@ -178,13 +183,13 @@ export class DrillThrough {
         return eventArgs;
     }
 
-    /* eslint-disable-next-line */
     /** @hidden */
+
     public triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
-        let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
+        const valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
             valueCaption;
-        let rowHeaders: string = this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.getRowText(Number(element.getAttribute('index')), 0) :
+        const rowHeaders: string = this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.getRowText(Number(element.getAttribute('index')), 0) :
             pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ');
         let eventArgs: DrillThroughEventArgs = {
             currentTarget: element,
@@ -199,8 +204,8 @@ export class DrillThrough {
         if (this.parent.dataSourceSettings.type === 'CSV') {
             eventArgs = this.frameData(eventArgs);
         }
-        let drillThrough: DrillThrough = this;  /* eslint-disable-line */
-        let gridColumns: ColumnModel[] = eventArgs.gridColumns;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const drillThrough: DrillThrough = this;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
             if (!eventArgs.cancel) {
                 drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
@@ -210,6 +215,7 @@ export class DrillThrough {
 
     /**
      * To destroy the drillthrough module.
+     *
      * @returns  {void}
      * @hidden
      */

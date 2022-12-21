@@ -586,10 +586,10 @@ $de-icon-table-column-right-top: 127px !default;
 $de-icon-table-delete-top: 10px !default;
 $de-icon-table-row-delete-top: 49px !default;
 $de-icon-table-column-delete-top: 89px !default;
-$de-bullet-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-number-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-multilevel-list-hover-color: rgba(0 , 0 , 0 , .12) !default;
-$de-list-dialog-hover-color: rgba(0 , 0 , 0 , .12) !default;
+$de-bullet-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-number-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-multilevel-list-hover-color: rgba(0, 0, 0, .12) !default;
+$de-list-dialog-hover-color: rgba(0, 0, 0, .12) !default;
 $de-cell-options-left: 313px !default;
 $de-cell-options-top: 229px !default;
 $de-font-color-margin-bottom: 1px !default;
@@ -894,6 +894,9 @@ $de-para-dlg-spacing-div-mrgn-left: 40px !default;
 // Table properties
 $de-row-height-bottom-margin: 8px;
 
+//Columns Dialog
+$de-column-presets-font-size: 60px !default;
+
 @include export-module('documenteditor-icons') {
   .e-documenteditor {
     .e-close::before {
@@ -956,7 +959,7 @@ $de-row-height-bottom-margin: 8px;
     font-size: $de-table-alignment-font-size;
     position: absolute;
     top: $de-table-alignment-top;
-    }
+  }
 
   .e-de-table-center-alignment::before {
     content: '\e518';
@@ -1225,63 +1228,63 @@ $de-row-height-bottom-margin: 8px;
     content: '\e339';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-italic::before {
     content: '\e35a';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-underline::before {
     content: '\e343';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-indent::before {
     content: '\e35d';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-outdent::before {
     content: '\e33f';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-align-left::before {
     content: '\e33a';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-align-center::before {
     content: '\e35e';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-align-right::before {
     content: '\e34d';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-justify::before {
     content: '\e334';
     font-family: 'e-icons';
     font-size: 16px;
-    font-weight: 400;
+    font-weight: normal;
   }
 
   .e-de-single-spacing::before {
@@ -1355,8 +1358,8 @@ $de-row-height-bottom-margin: 8px;
     font-family: 'e-icons';
     font-size: 42px;
   }
-
 }
+
 @include export-module('documenteditor-layout') {
   .e-de-blink-cursor {
     border-left: 1px solid;
@@ -1411,6 +1414,7 @@ $de-row-height-bottom-margin: 8px;
     }
   }
 }
+
 @include export-module('documenteditor-theme') {
   .e-de-background {
     background-color: $de-background;
@@ -1443,7 +1447,6 @@ $de-row-height-bottom-margin: 8px;
     padding: $search-result-item-padding-top 1px $search-result-item-padding-bottom 5px;
   }
 
-
   .e-de-search-tab-content .e-input-group .e-de-op-search-icon:focus {
     border: 1px solid $search-icon-bdr-clr;
   }
@@ -1451,7 +1454,6 @@ $de-row-height-bottom-margin: 8px;
   .e-de-op-search-icon:hover {
     background: $search-icon-hvr;
   }
-
 
   .e-de-search-tab-content .e-input-group .e-de-op-search-close-icon:focus {
     border: 1px solid $search-icon-bdr-clr;
@@ -1668,7 +1670,7 @@ $de-row-height-bottom-margin: 8px;
 
   .e-de-hyperlink-dlg-title {
     font-size: 12px;
-    font-weight: 400;
+    font-weight: normal;
     margin-bottom: $de-hyperlink-dlg-margin-bottom;
     margin-top: $de-hyperlink-dlg-margin-top;
   }
@@ -1770,14 +1772,14 @@ $de-row-height-bottom-margin: 8px;
     margin-top: 15px;
   }
 
-  label[for='container_wholeWord'] {
+  label[for = 'container_wholeWord'] {
     left: 35px;
   }
 
   .e-de-cell-dia-label-common {
     display: inline-block;
     font-size: $de-cell-margin-dia-common-font;
-    font-weight: 400;
+    font-weight: normal;
     margin-bottom: $de-cell-margin-dia-common-margin-bottom;
     margin-top: $de-cell-margin-dia-common-margin-top;
     width: $de-cell-margin-dia-common-width;
@@ -1893,7 +1895,7 @@ $de-row-height-bottom-margin: 8px;
   .e-de-tbl-dlg-op-btn {
     left: $de-tbl-opt-btn-left;
     position: absolute;
-    top:  $de-tbl-opt-btn-top;
+    top: $de-tbl-opt-btn-top;
   }
 
   .e-de-insert-table-dlg-sub-header {
@@ -2046,7 +2048,7 @@ $de-row-height-bottom-margin: 8px;
     .e-dlg-clr-pkr-top {
       top: $de-dlg-clr-pkr-top;
     }
-}
+  }
 
   .e-de-op-result-container {
     margin-top: $de-op-result-container-margin-top;
@@ -2061,7 +2063,7 @@ $de-row-height-bottom-margin: 8px;
       margin-bottom: $de-op-tab-header-margin-bottom;
       margin-top: $de-op-tab-header-margin-top;
     }
-}
+  }
 
   .e-de-font-dlg-color {
     border: $de-font-color-border;
@@ -2281,7 +2283,6 @@ $de-row-height-bottom-margin: 8px;
   .e-de-tbl-btn-separator {
     width: $de-tbl-btn-separator;
   }
-
 
   .e-de-op-msg {
     color: $de-op-container-messagediv-color;
@@ -2511,7 +2512,6 @@ $de-row-height-bottom-margin: 8px;
     line-height: 27px;
   }
 
-
   .e-bookmark-common {
     display: flex;
   }
@@ -2581,7 +2581,7 @@ $de-row-height-bottom-margin: 8px;
   .e-de-style-style-based-on,
   .e-de-style-style-paragraph  {
     font-size: 13px;
-    font-weight: 400;
+    font-weight: normal;
     margin-bottom: $de-style-dialog-label-bottom-margin;
     width: 180px;
   }
@@ -2668,13 +2668,13 @@ $de-row-height-bottom-margin: 8px;
 
   .e-de-font-content-label .e-label,
   .e-de-font-dlg-cb-right .e-label,
-  .e-de-font-checkbox  .e-label {
+  .e-de-font-checkbox .e-label {
     font-size: $de-font-checkbox-label-font-size;
   }
 
   .e-de-font-content-label .e-frame,
   .e-de-font-dlg-cb-right .e-frame,
-  .e-de-font-checkbox  .e-frame {
+  .e-de-font-checkbox .e-frame {
     height: $de-checkbox-height;
     line-height: $de-checkbox-line-height;
     width: $de-checkbox-width;
@@ -2705,7 +2705,7 @@ $de-row-height-bottom-margin: 8px;
   .e-de-table-container-div .e-checkbox-wrapper .e-label,
   .e-de-table-header-div .e-checkbox-wrapper .e-label,
   .e-de-table-ppty-options-break .e-checkbox-wrapper .e-label,
-  .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label ,
+  .e-de-table-ppty-options-header-row .e-checkbox-wrapper .e-label,
   .e-de-table-cell-header-div .e-checkbox-wrapper .e-label,
   .e-de-tbl-btn-separator .e-checkbox-wrapper .e-label,
   .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-label,
@@ -2850,7 +2850,7 @@ $de-row-height-bottom-margin: 8px;
   }
 
   .e-styles-dlgfields {
-    font-weight: 400;
+    font-weight: normal;
     margin-bottom: 6px;
   }
 
@@ -2869,7 +2869,7 @@ $de-row-height-bottom-margin: 8px;
   }
 
   .e-bookmark-dlgfields {
-    font-weight: 400;
+    font-weight: normal;
     margin-bottom: $de-bookmark-dlgfields-margin-bottom;
   }
 
@@ -2925,7 +2925,7 @@ $de-row-height-bottom-margin: 8px;
     margin: 0 5px 5px 0;
     padding: 0;
     width: 70px;
-}
+  }
 
   .e-de-ui-wfloating-menu {
     padding: 10px 4px 5px 10px;

@@ -72,7 +72,7 @@ export class InterSectionObserver {
     }
 
     public check(direction: ScrollDirection): boolean {
-        const info: SentinelType = this.sentinelInfo[direction];
+        const info: SentinelType = this.sentinelInfo[`${direction}`];
         if (this.movableContainerRect && (direction === 'left' || direction === 'right')) {
             return info.check(this.movableEle.getBoundingClientRect(), info);
         }
@@ -91,7 +91,7 @@ export class InterSectionObserver {
             direction = this.options.prevLeft === left ? direction : this.options.prevLeft < left ? 'right' : 'left';
             this.options.prevTop = top; this.options.prevLeft = left;
 
-            const current: SentinelType = this.sentinelInfo[direction];
+            const current: SentinelType = this.sentinelInfo[`${direction}`];
 
             if (this.options.axes.indexOf(current.axis) === -1) {
                 return;

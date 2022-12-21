@@ -77,39 +77,41 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         const width: number[] = [];
         const rightHeight: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue
-            if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
+            if (!isNullOrUndefined(fRows[parseInt(i.toString(), 10)]) && !isNullOrUndefined(mRows[parseInt(i.toString(), 10)])) {
                 if (frRows) {
-                    rightHeight[i] = frRows[i].getBoundingClientRect().height;
+                    rightHeight[parseInt(i.toString(), 10)] = frRows[parseInt(i.toString(), 10)].getBoundingClientRect().height;
                 }
-                width[i] = mRows[i].getBoundingClientRect().height;
-                height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
+                width[parseInt(i.toString(), 10)] = mRows[parseInt(i.toString(), 10)].getBoundingClientRect().height;
+                height[parseInt(i.toString(), 10)] = fRows[parseInt(i.toString(), 10)].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
             }
         }
         for (let i: number = 0, len: number = fRows.length; i < len; i++) {
-            if (isModeChg && (((wrapMode === 'Content' && tHead.contains(fRows[i]))
-                || (wrapMode === 'Header' && tBody.contains(fRows[i]))) || (wrapMode === 'Header' && isContReset)) || isStackedHdr) {
-                if (!isNullOrUndefined(frRows) && frRows[i]) { frRows[i].style.height = null; }
-                fRows[i].style.height = null;
-                mRows[i].style.height = null;
+            if (isModeChg && (((wrapMode === 'Content' && tHead.contains(fRows[parseInt(i.toString(), 10)]))
+                || (wrapMode === 'Header' && tBody.contains(fRows[parseInt(i.toString(), 10)]))) || (wrapMode === 'Header' && isContReset)) || isStackedHdr) {
+                if (!isNullOrUndefined(frRows) && frRows[parseInt(i.toString(), 10)]) {
+                    frRows[parseInt(i.toString(), 10)].style.height = null;
+                }
+                fRows[parseInt(i.toString(), 10)].style.height = null;
+                mRows[parseInt(i.toString(), 10)].style.height = null;
             }
-            fRowHgt = height[i];
-            mRowHgt = width[i];
-            frRowHgt = rightHeight[i] ? rightHeight[i] : 0;
+            fRowHgt = height[parseInt(i.toString(), 10)];
+            mRowHgt = width[parseInt(i.toString(), 10)];
+            frRowHgt = rightHeight[parseInt(i.toString(), 10)] ? rightHeight[parseInt(i.toString(), 10)] : 0;
             const maxHeight: number = Math.max(fRowHgt, mRowHgt, frRowHgt);
-            if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < maxHeight) ||
-                (!isWrap && fRowHgt < maxHeight) || (this.parent.allowResizing && this.parent.resizeModule &&
-                    this.parent.resizeModule.isFrozenColResized === false))) {
-                fRows[i].style.height = maxHeight + 'px';
+            if (!isNullOrUndefined(fRows[parseInt(i.toString(), 10)]) && fRows[parseInt(i.toString(), 10)].childElementCount
+                && ((isWrap && fRowHgt < maxHeight) || (!isWrap && fRowHgt < maxHeight) || (this.parent.allowResizing
+                && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized === false))) {
+                fRows[parseInt(i.toString(), 10)].style.height = maxHeight + 'px';
             }
-            if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && maxHeight > mRowHgt) ||
-                (!isWrap && maxHeight > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                    this.parent.resizeModule.isFrozenColResized === true))) {
-                mRows[i].style.height = maxHeight + 'px';
+            if (mRows && !isNullOrUndefined(mRows[parseInt(i.toString(), 10)]) && mRows[parseInt(i.toString(), 10)].childElementCount
+                && ((isWrap && maxHeight > mRowHgt) || (!isWrap && maxHeight > mRowHgt) || (this.parent.allowResizing
+                && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized === true))) {
+                mRows[parseInt(i.toString(), 10)].style.height = maxHeight + 'px';
             }
-            if (frRows && !isNullOrUndefined(frRows[i]) && frRows[i].childElementCount && ((isWrap && maxHeight > frRowHgt) ||
-                (!isWrap && maxHeight > frRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                    this.parent.resizeModule.isFrozenColResized === true))) {
-                frRows[i].style.height = maxHeight + 'px';
+            if (frRows && !isNullOrUndefined(frRows[parseInt(i.toString(), 10)]) && frRows[parseInt(i.toString(), 10)].childElementCount
+                && ((isWrap && maxHeight > frRowHgt) || (!isWrap && maxHeight > frRowHgt) || (this.parent.allowResizing
+                && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized === true))) {
+                frRows[parseInt(i.toString(), 10)].style.height = maxHeight + 'px';
             }
         }
         if (isWrap) {
@@ -194,13 +196,13 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         const right: number = this.parent.getFrozenRightColumnsCount();
         const movable: number = this.parent.getMovableColumnsCount();
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            const column: Column = columns[c];
+            const column: Column = columns[parseInt(c.toString(), 10)];
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
             if (column.freeze === 'Left' || column.freeze === 'Right') {
                 if (left && !right) {
                     const leftColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-left-header').querySelector(literals.colGroup);
-                    setStyleAttribute(<HTMLElement>leftColGrp.children[idx], { 'display': displayVal });
+                    setStyleAttribute(<HTMLElement>leftColGrp.children[parseInt(idx.toString(), 10)], { 'display': displayVal });
                 } else if (!left && right) {
                     const rightColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-right-header').querySelector(literals.colGroup);
                     setStyleAttribute(<HTMLElement>rightColGrp.children[idx - movable], { 'display': displayVal });
@@ -354,9 +356,9 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         const frTr: NodeListOf<Element> = [].slice.call(this.getFrozenRightHeader().getElementsByClassName('e-columnheader'));
         const mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
         for (let i: number = 0, len: number = frTr.length; i < len; i++) {
-            fRowSpan = this.getRowSpan(frTr[i]);
+            fRowSpan = this.getRowSpan(frTr[parseInt(i.toString(), 10)]);
             if (fRowSpan.min > 1) {
-                this.updateStackedHdrRowHgt(i, fRowSpan.max, frTr[i], mTr);
+                this.updateStackedHdrRowHgt(i, fRowSpan.max, frTr[parseInt(i.toString(), 10)], mTr);
             }
         }
     }
@@ -415,7 +417,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             : this.parent.getFrozenLeftColumnsCount();
         for (let i: number = start; i < leftColGroup.length; i++) {
             if (i >= count) {
-                remove(leftColGroup[i]);
+                remove(leftColGroup[parseInt(i.toString(), 10)]);
                 i--;
             }
         }
@@ -432,7 +434,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         let k: number = 0;
         for (let i: number = 0; i < length; i++, k++) {
             if (i < left || i >= left + movable) {
-                remove(movableColGroup[k]);
+                remove(movableColGroup[parseInt(k.toString(), 10)]);
                 k--;
             }
         }
@@ -453,7 +455,8 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             if (i < left + movable) {
                 remove(rightColGroup[0]);
             } else {
-                this.updateFrozenColGroup(rightColumns[k], rightColGroup[k] as HTMLElement);
+                this.updateFrozenColGroup(
+                    rightColumns[parseInt(k.toString(), 10)], rightColGroup[parseInt(k.toString(), 10)] as HTMLElement);
                 k++;
             }
         }
@@ -880,7 +883,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @hidden
      */
     public getFrozenRightRowByIndex(index: number): Element {
-        return this.parent.getFrozenRightDataRows()[index];
+        return !isNullOrUndefined(index) ? this.parent.getFrozenRightDataRows()[parseInt(index.toString(), 10)] : undefined;
     }
 
     /**

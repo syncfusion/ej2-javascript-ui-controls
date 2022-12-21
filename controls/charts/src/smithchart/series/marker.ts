@@ -8,9 +8,9 @@ export class Marker {
 
     public drawMarker(smithchart: Smithchart, seriesindex: number, groupElement: Element, pointsRegion: PointRegion[]): void {
 
-        if (smithchart.series[seriesindex].marker.visible) {
-            const marker: SeriesMarkerModel = smithchart.series[seriesindex].marker;
-            const count: number = smithchart.series[seriesindex].points.length - 1;
+        if (smithchart.series[seriesindex as number].marker.visible) {
+            const marker: SeriesMarkerModel = smithchart.series[seriesindex as number].marker;
+            const count: number = smithchart.series[seriesindex as number].points.length - 1;
             const width: number = marker.width;
             const height: number = marker.height;
             const symbolName: string =  marker.shape;
@@ -20,10 +20,10 @@ export class Marker {
             const borderWidth: number =  marker.border.width;
             const borderColor: string = marker.border.color;
             const opacity: number = marker.opacity;
-            const fill: string = marker.fill ? marker.fill : (smithchart.series[seriesindex].fill ||
+            const fill: string = marker.fill ? marker.fill : (smithchart.series[seriesindex as number].fill ||
                                                                     smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]);
             for (let i: number = 0; i < count + 1; i++) {
-                const location: Point = pointsRegion[i]['point'];
+                const location: Point = pointsRegion[i as number]['point'];
                 const pointIndex: number = i;
                 const options: MarkerOptions = new MarkerOptions(
                     smithchart.element.id + '_Series' + seriesindex + '_Points' + pointIndex + '_Marker' + pointIndex,

@@ -131,14 +131,17 @@ describe('Dialog actions module', () => {
             }
             util.triggerMouseEvent(element1, 'dblclick');
         });
-        it('Update card testing - after editing', () => {
+        it('Update card testing - after editing', (done: Function) => {
             const dropDownEle: HTMLElement = document.querySelector('.Status_wrapper .e-dropdownlist') as HTMLElement;
             const dropDownObj: any = (dropDownEle as EJ2Instance).ej2_instances[0];
             dropDownObj.showPopup();
-            expect(dropDownObj.inputWrapper.container.getAttribute('aria-activedescendant')).not.toBeNull();
-            const items: Element[] = dropDownObj.popupObj.element.querySelectorAll('li');
-            dropDownObj.setSelection(items[0], e);
-            dropDownObj.hidePopup();
+            setTimeout(() => {
+                expect(dropDownObj.inputWrapper.container.getAttribute('aria-activedescendant')).not.toBeNull();
+                const items: Element[] = dropDownObj.popupObj.element.querySelectorAll('li');
+                dropDownObj.setSelection(items[0], e);
+                dropDownObj.hidePopup();
+                done();
+            }, 1000);
         });
         it('Update card testing - after editing', (done: DoneFn) => {
             kanbanObj.dataBound = () => {

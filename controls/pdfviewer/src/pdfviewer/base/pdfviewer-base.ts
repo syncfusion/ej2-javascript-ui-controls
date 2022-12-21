@@ -5,14 +5,14 @@ import { NavigationPane } from './navigation-pane';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { TextMarkupAnnotation, StampAnnotation, IPageAnnotations, Annotation, IPoint } from '../annotation';
 import { AjaxHandler } from '../index';
-import { IElement, Point, DrawingElement, PointModel, Rect, Matrix, identityMatrix, transformPointByMatrix, contains, Info, rotateMatrix } from '@syncfusion/ej2-drawings';
+import { IElement, Point, DrawingElement, PointModel, Rect, Matrix, identityMatrix, transformPointByMatrix, contains, Info, rotateMatrix, PathElement } from '@syncfusion/ej2-drawings';
 import { ToolBase, Actions, MouseEventArgs, SelectTool, MoveTool, ResizeTool, ConnectTool, NodeDrawingTool, PolygonDrawingTool, LineTool, RotateTool, StampTool, InkDrawingTool } from '../drawing/tools';
 import { Selector } from '../drawing/selector';
 import { ActiveElements, findActiveElement } from '../drawing/action';
 import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from '../drawing/pdf-annotation-model';
 import { renderAdornerLayer } from '../drawing/dom-util';
 import { FreeTextAnnotation } from '../annotation/free-text-annotation';
-import { AnnotationDataFormat, AnnotationResizerLocation } from './types';
+import { AnnotationDataFormat, AnnotationResizerLocation, FormFieldDataFormat } from './types';
 import { cloneObject } from '../drawing/drawing-util';
 import { IContextMenu, MouseDownEventArgs } from './interfaces';
 import { BlazorContextMenu } from './blazor-context-menu';
@@ -1136,8 +1136,8 @@ export class PdfViewerBase {
     private updateFormFieldName(data: any) {
         if (data && data.PdfRenderedFormFields && data.PdfRenderedFormFields.length > 0) {
             let field;
-            for (var i = 0; i < data.PdfRenderedFormFields.length; i++) {
-                field = data.PdfRenderedFormFields[i];
+            for (let i: number = 0; i < data.PdfRenderedFormFields.length; i++) {
+                field = data.PdfRenderedFormFields[parseInt(i.toString(), 10)];
                 if (field) {
                     if (field.ActualFieldName) {
                         field.FieldName = field.ActualFieldName;
@@ -1258,10 +1258,10 @@ export class PdfViewerBase {
     private RestrictionEnabled(restrictionSummary: any, isEnable: boolean): void {
         if (restrictionSummary) {
             for (let i: number = 0; i < restrictionSummary.length; i++) {
-                this.EnableRestriction(restrictionSummary[i], isEnable);
+                this.EnableRestriction(restrictionSummary[parseInt(i.toString(), 10)], isEnable);
                 if (!isBlazor()) {
                     if (this.pdfViewer.toolbarModule) {
-                        this.pdfViewer.toolbarModule.DisableToolbarItems(restrictionSummary[i], isEnable);
+                        this.pdfViewer.toolbarModule.DisableToolbarItems(restrictionSummary[parseInt(i.toString(), 10)], isEnable);
                     }
                 } else {
                     if (this.pdfViewer.toolbarModule) {
@@ -1329,7 +1329,7 @@ export class PdfViewerBase {
         let viewPortWidth: any = 816;
         // eslint-disable-next-line radix
         viewPortWidth = parseInt(viewPortWidth);
-        const pageWidth: number = this.pageSize[pageIndex].width;
+        const pageWidth: number = this.pageSize[parseInt(pageIndex.toString(), 10)].width;
         if (this.renderedPagesList.indexOf(pageIndex) === -1 && !isZoomMode) {
             this.createRequestForRender(pageIndex);
             let pageNumber: number = pageIndex + 1;
@@ -1337,11 +1337,11 @@ export class PdfViewerBase {
                 this.createRequestForRender(pageNumber);
                 pageNumber = pageNumber + 1;
             }
-            if (this.pageSize[pageNumber]) {
+            if (this.pageSize[parseInt(pageNumber.toString(), 10)]) {
                 let pageTop: number = this.getPageTop(pageNumber);
                 const viewerHeight: number = this.viewerContainer.clientHeight;
                 while (viewerHeight > pageTop) {
-                    if (this.pageSize[pageNumber]) {
+                    if (this.pageSize[parseInt(pageNumber.toString(), 10)]) {
                         this.renderPageElement(pageNumber);
                         this.createRequestForRender(pageNumber);
                         pageTop = this.getPageTop(pageNumber);
@@ -1527,7 +1527,7 @@ export class PdfViewerBase {
                 this.formfieldvalue = null;
             } else if (this.pdfViewer.formFieldsModule) {
                 for (let i: number = 0; i < data.PdfRenderedFormFields.length; i++) {
-                    if (data.PdfRenderedFormFields[i].FieldName == '') {
+                    if (data.PdfRenderedFormFields[parseInt(i.toString(), 10)].FieldName == '') {
                         data.PdfRenderedFormFields.splice(i, 1);
                     }
                 }
@@ -1556,7 +1556,7 @@ export class PdfViewerBase {
         }
     }
     private updateWaitingPopup(pageNumber: number): void {
-        if (this.pageSize[pageNumber].top != null) {
+        if (this.pageSize[parseInt(pageNumber.toString(), 10)].top != null) {
             // eslint-disable-next-line max-len
             const pageCurrentRect: ClientRect = this.getElement('_pageDiv_' + pageNumber).getBoundingClientRect();
             const waitingPopup: HTMLElement = this.getElement('_pageDiv_' + pageNumber).firstChild.firstChild as HTMLElement;
@@ -1929,6 +1929,7 @@ export class PdfViewerBase {
         if (signatureModule) {
             signatureModule.signaturecollection = [];
             signatureModule.outputcollection = [];
+            signatureModule.signAnnotationIndex = [];
         }
         if (proxy.pageSize) {
             proxy.pageSize = [];
@@ -2053,8 +2054,8 @@ export class PdfViewerBase {
             window.sessionStorage.removeItem(this.documentId + '_annotations_sign');
             window.sessionStorage.removeItem(this.documentId + '_annotations_ink');
             window.sessionStorage.removeItem(this.documentId + '_pagedata');
-            for (var i = 0; i < this.sessionStorage.length; i++) {
-                window.sessionStorage.removeItem(this.sessionStorage[i]);
+            for (let i: number = 0; i < this.sessionStorage.length; i++) {
+                window.sessionStorage.removeItem(this.sessionStorage[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -2098,7 +2099,7 @@ export class PdfViewerBase {
         myHeaders.append('Content-Type', 'application/json;charset=UTF-8');
         for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
             // eslint-disable-next-line max-len
-            myHeaders.append(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerValue);
+            myHeaders.append(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
         }
         return myHeaders;
     }
@@ -2108,7 +2109,7 @@ export class PdfViewerBase {
         window.sessionStorage.removeItem('serviceURL');
         window.sessionStorage.removeItem('unload');
         for (let i: number = 0; i < this.sessionStorage.length; i++) {
-            window.sessionStorage.removeItem(this.sessionStorage[i]);
+            window.sessionStorage.removeItem(this.sessionStorage[parseInt(i.toString(), 10)]);
         }
     }
 
@@ -2116,32 +2117,32 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let moreOptionsButton: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_more-options');
         for (let i: number = 0; i < moreOptionsButton.length; i++) {
-            moreOptionsButton[i].style.visibility = 'hidden';
+            moreOptionsButton[parseInt(i.toString(), 10)].style.visibility = 'hidden';
         }
         // eslint-disable-next-line
         let commentTextBox: any = document.querySelectorAll('.e-pv-new-comments-div');
         for (let j: number = 0; j < commentTextBox.length; j++) {
-            commentTextBox[j].style.display = 'none';
+            commentTextBox[parseInt(j.toString(), 10)].style.display = 'none';
         }
         // eslint-disable-next-line
         let commentContainer: any = document.querySelectorAll('.e-pv-comments-border');
         for (let j: number = 0; j < commentContainer.length; j++) {
-            commentContainer[j].classList.remove('e-pv-comments-border');
+            commentContainer[parseInt(j.toString(), 10)].classList.remove('e-pv-comments-border');
         }
         // eslint-disable-next-line
         let editableElement: any = document.querySelectorAll('.e-editable-inline');
         for (let j: number = 0; j < editableElement.length; j++) {
-            editableElement[j].style.display = 'none';
+            editableElement[parseInt(j.toString(), 10)].style.display = 'none';
         }
         // eslint-disable-next-line
         let commentSelect: any = document.querySelectorAll('.e-pv-comments-select');
         for (let z: number = 0; z < commentSelect.length; z++) {
-            commentSelect[z].classList.remove('e-pv-comments-select');
+            commentSelect[parseInt(z.toString(), 10)].classList.remove('e-pv-comments-select');
         }
         // eslint-disable-next-line
         let commentsDiv: any = document.querySelectorAll('.e-pv-comments-div');
         for (let j: number = 0; j < commentsDiv.length; j++) {
-            commentsDiv[j].style.minHeight = 60 + 'px';
+            commentsDiv[parseInt(j.toString(), 10)].style.minHeight = 60 + 'px';
         }
     }
     /**
@@ -2443,7 +2444,7 @@ export class PdfViewerBase {
     public applyPassword(): void {
         if (!isBlazor()) {
             const password: string = (this.passwordInput as HTMLInputElement).value;
-            if (password !== '') {
+            if (!isNullOrUndefined(password) && password.length > 0) {
                 this.pdfViewer.load(this.document, password);
             }
         }
@@ -3448,7 +3449,7 @@ export class PdfViewerBase {
                 case 9:
                     if (event.target && (event.target as any).id && this.pdfViewer.formFields) {
                         for (var i = 0; i < this.pdfViewer.formFields.length; i++) {
-                            let formField = this.pdfViewer.formFields[i];
+                            let formField = this.pdfViewer.formFields[parseInt(i.toString(), 10)];
                             if ((event.target as any).id === formField.id) {
                                 // eslint-disable-next-line
                                 let field = {
@@ -4125,6 +4126,7 @@ export class PdfViewerBase {
                         () => {
                             if (!this.isMoving) {
                                 this.isTouchDesignerMode = true;
+                                /* eslint-disable-next-line security/detect-non-literal-fs-filename */
                                 this.contextMenuModule.open(this.touchClientY, this.touchClientX, this.viewerContainer);
                             }
                         }, 1000);
@@ -4476,8 +4478,8 @@ export class PdfViewerBase {
             event.preventDefault();
             if (this.pointersForTouch.length === 2) {
                 for (let i: number = 0; i < this.pointersForTouch.length; i++) {
-                    if (event.pointerId === this.pointersForTouch[i].pointerId) {
-                        this.pointersForTouch[i] = event;
+                    if (event.pointerId === this.pointersForTouch[parseInt(i.toString(), 10)].pointerId) {
+                        this.pointersForTouch[parseInt(i.toString(), 10)] = event;
                         break;
                     }
                 }
@@ -4607,8 +4609,8 @@ export class PdfViewerBase {
             let isLandscape: boolean = false;
             let differentPageSize: boolean = false;
             for (let i: number = 0; i < pageLimit; i++) {
-                if (typeof pageValues.pageSizes[i] !== 'object') {
-                    const pageSize: string[] = pageValues.pageSizes[i].split(',');
+                if (typeof pageValues.pageSizes[parseInt(i.toString(), 10)] !== 'object') {
+                    const pageSize: string[] = pageValues.pageSizes[parseInt(i.toString(), 10)].split(',');
                     if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
                         const previousPageHeight: string = pageValues.pageSizes[i - 1].split(',');
                         topValue = this.pageGap + parseFloat(previousPageHeight[1]) + topValue;
@@ -4625,23 +4627,23 @@ export class PdfViewerBase {
                     } else {
                         topValue = this.pageGap;
                     }
-                    const size: ISize = { width: pageValues.pageSizes[i].Width, height: pageValues.pageSizes[i].Height, top: topValue };
+                    const size: ISize = { width: pageValues.pageSizes[parseInt(i.toString(), 10)].Width, height: pageValues.pageSizes[parseInt(i.toString(), 10)].Height, top: topValue };
                     this.pageSize.push(size);
                 }
-                if (this.pageSize[i].height > this.pageSize[i].width) {
+                if (this.pageSize[parseInt(i.toString(), 10)].height > this.pageSize[parseInt(i.toString(), 10)].width) {
                     isPortrait = true;
                 }
-                if (this.pageSize[i].width > this.pageSize[i].height) {
+                if (this.pageSize[parseInt(i.toString(), 10)].width > this.pageSize[parseInt(i.toString(), 10)].height) {
                     isLandscape = true;
                 }
-                if (i > 0 && this.pageSize[i].width !== this.pageSize[i - 1].width) {
+                if (i > 0 && this.pageSize[parseInt(i.toString(), 10)].width !== this.pageSize[i - 1].width) {
                     differentPageSize = true;
                 }
-                const pageWidth: number = this.pageSize[i].width;
+                const pageWidth: number = this.pageSize[parseInt(i.toString(), 10)].width;
                 if (pageWidth > this.highestWidth) {
                     this.highestWidth = pageWidth;
                 }
-                const pageHeight: number = this.pageSize[i].height;
+                const pageHeight: number = this.pageSize[parseInt(i.toString(), 10)].height;
                 if (pageHeight > this.highestHeight) {
                     this.highestHeight = pageHeight;
                 }
@@ -4778,8 +4780,8 @@ export class PdfViewerBase {
                     if (proxy.pageSize[proxy.pageLimit - 1]) {
                         let topValue: number = proxy.pageSize[proxy.pageLimit - 1].top;
                         for (let i: number = proxy.pageLimit; i < proxy.pageCount; i++) {
-                            if (typeof (pageValues.pageSizes[i]) !== 'object') {
-                                const pageSize: string[] = pageValues.pageSizes[i].split(',');
+                            if (typeof (pageValues.pageSizes[parseInt(i.toString(), 10)]) !== 'object') {
+                                const pageSize: string[] = pageValues.pageSizes[parseInt(i.toString(), 10)].split(',');
                                 if (proxy.pageSize[i - 1] !== null && i !== 0) {
                                     const previousPageHeight: string = proxy.pageSize[i - 1].height;
                                     topValue = proxy.pageGap + parseFloat(previousPageHeight) + topValue;
@@ -4791,7 +4793,7 @@ export class PdfViewerBase {
                                     const previousPageHeight: string = proxy.pageSize[i - 1].height;
                                     topValue = proxy.pageGap + parseFloat(previousPageHeight) + topValue;
                                 }
-                                const size: ISize = { width: parseFloat(pageValues.pageSizes[i].Width), height: parseFloat(pageValues.pageSizes[i].Height), top: topValue };
+                                const size: ISize = { width: parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Width), height: parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Height), top: topValue };
                                 proxy.pageSize.push(size);
                             }
                         }
@@ -4825,7 +4827,7 @@ export class PdfViewerBase {
     private tileRenderPage(data: any, pageIndex: number): void {
         let proxy: PdfViewerBase = null;
         proxy = this;
-        if (data && this.pageSize[pageIndex]) {
+        if (data && this.pageSize[parseInt(pageIndex.toString(), 10)]) {
             const pageWidth: number = this.getPageWidth(pageIndex);
             const pageHeight: number = this.getPageHeight(pageIndex);
             // eslint-disable-next-line max-len
@@ -4903,7 +4905,7 @@ export class PdfViewerBase {
                             }
                             const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                             for (let i: number = 0; i < oldPageDiv.length; i++) {
-                                pageDiv.removeChild(oldPageDiv[i]);
+                                pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
                             }
                             proxy.isTileImageRendered = false;
                             proxy.tileRenderCount = 0;
@@ -4929,7 +4931,7 @@ export class PdfViewerBase {
             } else {
                 const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_tileimg_' + pageIndex + '_"]');
                 for (let l: number = 0; l < oldCanvases.length; l++) {
-                    let tileImgId: string[] = oldCanvases[l].id.split('_');
+                    let tileImgId: string[] = oldCanvases[parseInt(l.toString(), 10)].id.split('_');
                     let zoomFactor = proxy.retrieveCurrentZoomFactor();
                     // eslint-disable-next-line
                     let tileData: any = JSON.parse(proxy.getWindowSessionStorageTile(pageIndex, parseFloat(tileImgId[tileImgId.length - 2]), parseFloat(tileImgId[tileImgId.length - 1]), zoomFactor));
@@ -4937,7 +4939,7 @@ export class PdfViewerBase {
                         zoomFactor = tileData.zoomFactor;
                     }
                     if (parseFloat(tileImgId[tileImgId.length - 4]) === pageIndex) {
-                        let node: Node = oldCanvases[l];
+                        let node: Node = oldCanvases[parseInt(l.toString(), 10)];
                         // Make sure it's really an Element
                         if (node.nodeType == Node.ELEMENT_NODE) {
                             (node as HTMLImageElement).onload = (): void => {
@@ -4966,7 +4968,7 @@ export class PdfViewerBase {
                                     }
                                     const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                                     for (let i: number = 0; i < oldPageDiv.length; i++) {
-                                        pageDiv.removeChild(oldPageDiv[i]);
+                                        pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
                                     }
                                     proxy.isTileImageRendered = false;
                                     proxy.tileRenderCount = 0;
@@ -5019,7 +5021,7 @@ export class PdfViewerBase {
     // eslint-disable-next-line
     private renderPage(data: any, pageIndex: number): void {
         let proxy: PdfViewerBase = this;
-        if (data && this.pageSize[pageIndex]) {
+        if (data && this.pageSize[parseInt(pageIndex.toString(), 10)]) {
             const pageWidth: number = this.getPageWidth(pageIndex);
             const pageHeight: number = this.getPageHeight(pageIndex);
             // eslint-disable-next-line max-len
@@ -5050,13 +5052,13 @@ export class PdfViewerBase {
                         const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_tileimg_' + pageIndex + '_"]');
                         const pageCanvas: HTMLElement = proxy.getElement('_pageDiv_' + pageIndex);
                         for (let i: number = 0; i < oldCanvases.length; i++) {
-                            let tileImgId: string[] = oldCanvases[i].id.split('_');
+                            let tileImgId: string[] = oldCanvases[parseInt(i.toString(), 10)].id.split('_');
                             if (parseFloat(tileImgId[tileImgId.length - 3]) != proxy.getZoomFactor())
-                                pageCanvas.removeChild(oldCanvases[i]);
+                                pageCanvas.removeChild(oldCanvases[parseInt(i.toString(), 10)]);
                         }
                         const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                         for (let i: number = 0; i < oldPageDiv.length; i++) {
-                            pageDiv.removeChild(oldPageDiv[i]);
+                            pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
                         }
                         if (this.pdfViewer.magnificationModule) {
                             this.pdfViewer.magnificationModule.rerenderCountIncrement();
@@ -5093,7 +5095,7 @@ export class PdfViewerBase {
         let isAnnotationRendered: boolean = false;
         if (aElement && aElement.length !== 0) {
             for (let index: number = aElement.length - 1; index >= 0; index--) {
-                aElement[index].parentNode.removeChild(aElement[index]);
+                aElement[parseInt(index.toString(), 10)].parentNode.removeChild(aElement[parseInt(index.toString(), 10)]);
             }
         }
         if (this.pdfViewer.textSearchModule || this.pdfViewer.textSelectionModule || this.pdfViewer.annotationModule) {
@@ -5121,7 +5123,7 @@ export class PdfViewerBase {
         if (this.documentAnnotationCollections) {
             let isAnnotationAdded: boolean = false;
             for (let i: number = 0; i < this.annotationRenderredList.length; i++) {
-                if (this.annotationRenderredList[i] === pageIndex) {
+                if (this.annotationRenderredList[parseInt(i.toString(), 10)] === pageIndex) {
                     isAnnotationAdded = true;
                 }
             }
@@ -5223,7 +5225,7 @@ export class PdfViewerBase {
         if (this.documentAnnotationCollections) {
             let isAnnotationAdded: boolean = false;
             for (let i: number = 0; i < this.annotationRenderredList.length; i++) {
-                if (this.annotationRenderredList[i] === pageIndex) {
+                if (this.annotationRenderredList[parseInt(i.toString(), 10)] === pageIndex) {
                     isAnnotationAdded = true;
                 }
             }
@@ -5269,7 +5271,7 @@ export class PdfViewerBase {
         if (this.isImportAction) {
             let isAnnotationAdded: boolean = false;
             for (let i: number = 0; i < this.annotationPageList.length; i++) {
-                if (this.annotationPageList[i] === pageIndex) {
+                if (this.annotationPageList[parseInt(i.toString(), 10)] === pageIndex) {
                     isAnnotationAdded = true;
                 }
             }
@@ -5488,7 +5490,7 @@ export class PdfViewerBase {
             }
         }
         let isLandscape: boolean = false;
-        if (this.pageSize[pageIndex].width > this.pageSize[pageIndex].height) {
+        if (this.pageSize[parseInt(pageIndex.toString(), 10)].width > this.pageSize[parseInt(pageIndex.toString(), 10)].height) {
             isLandscape = true;
         }
         // eslint-disable-next-line max-len
@@ -5515,7 +5517,7 @@ export class PdfViewerBase {
      */
     public applyLeftPosition(pageIndex: number): void {
         let leftPosition: number;
-        if (this.pageSize[pageIndex]) {
+        if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
             if (this.isMixedSizeDocument && this.highestWidth > 0) {
                 if (this.viewerContainer.clientWidth > 0) {
                     // eslint-disable-next-line max-len
@@ -5533,14 +5535,14 @@ export class PdfViewerBase {
             } else {
                 if (this.viewerContainer.clientWidth > 0) {
                     // eslint-disable-next-line max-len
-                    leftPosition = (this.viewerContainer.clientWidth - this.pageSize[pageIndex].width * this.getZoomFactor()) / 2;
+                    leftPosition = (this.viewerContainer.clientWidth - this.pageSize[parseInt(pageIndex.toString(), 10)].width * this.getZoomFactor()) / 2;
                 } else {
                     // eslint-disable-next-line max-len
-                    leftPosition = (this.viewerContainer.getBoundingClientRect().width - this.pageSize[pageIndex].width * this.getZoomFactor()) / 2;
+                    leftPosition = (this.viewerContainer.getBoundingClientRect().width - this.pageSize[parseInt(pageIndex.toString(), 10)].width * this.getZoomFactor()) / 2;
                 }
             }
             let isLandscape: boolean = false;
-            if (this.pageSize[pageIndex].width > this.pageSize[pageIndex].height) {
+            if (this.pageSize[parseInt(pageIndex.toString(), 10)].width > this.pageSize[parseInt(pageIndex.toString(), 10)].height) {
                 isLandscape = true;
             }
             // eslint-disable-next-line max-len
@@ -5615,7 +5617,7 @@ export class PdfViewerBase {
         const verticalScrollValue: number = this.viewerContainer.scrollTop;
         // eslint-disable-next-line max-len
         for (let i: number = 0; i < this.pageCount; i++) {
-            if (this.pageSize[i] != null) {
+            if (this.pageSize[parseInt(i.toString(), 10)] != null) {
                 const pageHeight: number = this.getPageHeight(i);
                 if (pageHeight < 150) {
                     this.pageStopValue = 75;
@@ -5722,21 +5724,21 @@ export class PdfViewerBase {
         let pointX: number = clientPoint.x + this.viewerContainer.scrollLeft;
         let pointY: number = clientPoint.y + this.viewerContainer.scrollTop;
         for (let i: number = 0; i < this.pageCount; i++) {
-            let pageTop: number = this.pageSize[i].height + this.viewerContainer.scrollTop;
-            if (pointY < (this.pageSize[i].top + pageTop)) {
+            let pageTop: number = this.pageSize[parseInt(i.toString(), 10)].height + this.viewerContainer.scrollTop;
+            if (pointY < (this.pageSize[parseInt(i.toString(), 10)].top + pageTop)) {
                 let viewerContainerBounds: DOMRect | ClientRect = this.getElement('_pageViewContainer').getBoundingClientRect();
-                let pageLeft: number = ((viewerContainerBounds.width - this.pageSize[i].width) / 2) + (viewerContainerBounds as DOMRect).x;
+                let pageLeft: number = ((viewerContainerBounds.width - this.pageSize[parseInt(i.toString(), 10)].width) / 2) + (viewerContainerBounds as DOMRect).x;
                 let verticalScrollPosition: number = 0;
-                if (pointY > this.pageSize[i].top) {
-                    verticalScrollPosition = (pointY - this.pageSize[i].top);
+                if (pointY > this.pageSize[parseInt(i.toString(), 10)].top) {
+                    verticalScrollPosition = (pointY - this.pageSize[parseInt(i.toString(), 10)].top);
                 } else {
-                    verticalScrollPosition = (this.pageSize[i].top - pointY);
+                    verticalScrollPosition = (this.pageSize[parseInt(i.toString(), 10)].top - pointY);
                 }
                 if (verticalScrollPosition > 0) {
-                    if (this.pageSize[i] != null) {
+                    if (this.pageSize[parseInt(i.toString(), 10)] != null) {
                         const pageHeight: number = this.getPageHeight(i);
                         if(pageLeft >= 0){
-                        if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[i].width)))) {
+                        if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[parseInt(i.toString(), 10)].width)))) {
                             return -1;
                         }
                         }
@@ -5913,108 +5915,101 @@ export class PdfViewerBase {
                 const padCharacter: string = blobUrl.indexOf('?') === -1 ? '?' : '&';
                 blobUrl = blobUrl.replace(/#|$/, padCharacter + '$&');
             }
+            /* eslint-disable-next-line security/detect-non-literal-fs-filename */
             window.open(blobUrl, '_parent');
         }
     }
 
-    private downloadExportAnnotationJson(blobUrl: string, isForm?: boolean): void {
-        // eslint-disable-next-line
-        let Url: any = URL || webkitURL;
-        blobUrl = Url.createObjectURL(blobUrl);
-        const anchorElement: HTMLElement = createElement('a');
-        if (anchorElement.click) {
-            (anchorElement as HTMLAnchorElement).href = blobUrl;
-            (anchorElement as HTMLAnchorElement).target = '_parent';
-            if ('download' in anchorElement) {
-                if (this.pdfViewer.exportAnnotationFileName !== null) {
-                    (anchorElement as HTMLAnchorElement).download = this.pdfViewer.exportAnnotationFileName.split('.')[0] + '.json';
-                } else {
-                    (anchorElement as HTMLAnchorElement).download = this.pdfViewer.fileName.split('.')[0] + '.json';
+    private downloadExportFormat (blobUrl: string, annotationDataFormat?: AnnotationDataFormat, formFieldDataFormat?: FormFieldDataFormat, isForm?: boolean): void {
+        let isJson = annotationDataFormat === 'Json'|| formFieldDataFormat === 'Json';
+        // eslint-disable-next-line max-len
+        let extension = isJson ? '.json' : formFieldDataFormat === 'Fdf' ? '.fdf' : (annotationDataFormat === 'Xfdf' || formFieldDataFormat === 'Xfdf') ? '.xfdf' : null; 
+        if(!isNullOrUndefined(extension)){
+            // eslint-disable-next-line
+            let Url: any = URL || webkitURL;
+            blobUrl = Url.createObjectURL(blobUrl);
+            const anchorElement: HTMLElement = createElement('a');
+            if (anchorElement.click) {
+                (anchorElement as HTMLAnchorElement).href = blobUrl;
+                (anchorElement as HTMLAnchorElement).target = '_parent';
+                if ('download' in anchorElement) {
+                    if (this.pdfViewer.exportAnnotationFileName !== null) {
+                        (anchorElement as HTMLAnchorElement).download = this.pdfViewer.exportAnnotationFileName.split('.')[0] + extension;
+                    } else {
+                        (anchorElement as HTMLAnchorElement).download = this.pdfViewer.fileName.split('.')[0] + extension;
+                    }
                 }
-            }
-            (document.body || document.documentElement).appendChild(anchorElement);
-            anchorElement.click();
-            anchorElement.parentNode.removeChild(anchorElement);
-            if (isForm) {
-                this.pdfViewer.fireFormExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
-            } else {
-                this.pdfViewer.fireExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
-            }
-        } else {
-            if (window.top === window &&
-                blobUrl.split('#')[0] === window.location.href.split('#')[0]) {
-                const padCharacter: string = blobUrl.indexOf('?') === -1 ? '?' : '&';
-                blobUrl = blobUrl.replace(/#|$/, padCharacter + '$&');
-            }
-            window.open(blobUrl, '_parent');
-            if (isForm) {
-                this.pdfViewer.fireFormExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
-            } else {
-                this.pdfViewer.fireExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + '.json');
+                (document.body || document.documentElement).appendChild(anchorElement);
+                anchorElement.click();
+                anchorElement.parentNode.removeChild(anchorElement);
+                if (isForm) {
+                    this.pdfViewer.fireFormExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
+                } else {
+                    this.pdfViewer.fireExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
+                }
+            } else if (isJson) {
+                if (window.top === window &&
+                    blobUrl.split('#')[0] === window.location.href.split('#')[0]) {
+                    const padCharacter: string = blobUrl.indexOf('?') === -1 ? '?' : '&';
+                    blobUrl = blobUrl.replace(/#|$/, padCharacter + '$&');
+                }
+                /* eslint-disable-next-line security/detect-non-literal-fs-filename */
+                window.open(blobUrl, '_parent');
+                if (isForm) {
+                    this.pdfViewer.fireFormExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + extension);
+                } else {
+                    this.pdfViewer.fireExportSuccess(blobUrl, this.pdfViewer.fileName.split('.')[0] + extension);
+                }
             }
         }
     }
 
-    private downloadExportedXFdfAnnotation(blobUrl: string): void {
-        // eslint-disable-next-line
-        let Url: any = URL || webkitURL;
-        blobUrl = Url.createObjectURL(blobUrl);
-        const anchorElement: HTMLElement = createElement('a');
-        if (anchorElement.click) {
-            (anchorElement as HTMLAnchorElement).href = blobUrl;
-            (anchorElement as HTMLAnchorElement).target = '_parent';
-            if ('download' in anchorElement) {
-                if (this.pdfViewer.exportAnnotationFileName !== null) {
-                    (anchorElement as HTMLAnchorElement).download = this.pdfViewer.exportAnnotationFileName.split('.')[0] + '.xfdf';
-                } else {
-                    (anchorElement as HTMLAnchorElement).download = this.pdfViewer.fileName.split('.')[0] + '.xfdf';
-                }
-            }
-            (document.body || document.documentElement).appendChild(anchorElement);
-            anchorElement.click();
-            anchorElement.parentNode.removeChild(anchorElement);
-            this.pdfViewer.fireExportSuccess(blobUrl, (anchorElement as HTMLAnchorElement).download);
-        }
-    }
     /**
      * @private
-     * @param {string} path - The path for exporting the fields.
+     * @param {string} data - The data for exporting the fields.
      * @returns {void}
      */
-    public exportFormFields(path?: string): void {
-        this.createRequestForExportFormfields(false, path);
+    public exportFormFields(data?: string, formFieldDataFormat?: FormFieldDataFormat): void {
+        this.createRequestForExportFormfields(false, formFieldDataFormat, data);
     }
 
     /**
-     * @param source
+     * @param data
+     * @param formFieldDataFormat
      * @private
      */
     // eslint-disable-next-line
-    public importFormFields(source: any): void {
-        this.createRequestForImportingFormfields(source);
+    public importFormFields(data: string, formFieldDataFormat?: FormFieldDataFormat): void {               
+        this.createRequestForImportingFormfields(data, formFieldDataFormat);
     }
 
     /**
-     * @param isObject
-     * @param path
+     * @param {boolean} isObject
+     * @param {FormFieldDataFormat} formFieldDataFormat
+     * @param {string} data - The data for exporting the fields.
      * @private
      */
     // eslint-disable-next-line
-    public createRequestForExportFormfields(isObject?: boolean, path?: string): any {
+    public createRequestForExportFormfields(isObject?: boolean, formFieldDataFormat?: FormFieldDataFormat, data?: string): any {
         let proxy: PdfViewerBase = null;
         proxy = this;
         const promise: Promise<Blob> = new Promise((resolve: Function, reject: Function) => {
             // eslint-disable-next-line
             let jsonObject: any = proxy.createFormfieldsJsonData();
-            proxy.pdfViewer.fireFormExportStarted(jsonObject.pdfAnnotation);
+
+            if(formFieldDataFormat === 'Json' || formFieldDataFormat === 'Fdf' || formFieldDataFormat === 'Xfdf'){
+                jsonObject.formFieldDataFormat = formFieldDataFormat;
+                proxy.pdfViewer.fireFormExportStarted(jsonObject);
+            }
+
             jsonObject.action = 'ExportFormFields';
             // eslint-disable-next-line
             jsonObject['hashId'] = proxy.hashId;
             // eslint-disable-next-line
             jsonObject['fileName'] = proxy.pdfViewer.fileName;
-            if (path && path !== '' && !isObject) {
+            if (data && data !== '' && !isObject) {
                 // eslint-disable-next-line
-                jsonObject['filePath'] = path;
+                jsonObject['filePath'] = data;
             }
             // eslint-disable-next-line
             jsonObject['elementId'] = this.pdfViewer.element.id;
@@ -6049,8 +6044,8 @@ export class PdfViewerBase {
                             const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
                             if (Browser.isIE || Browser.info.name === 'edge') {
                                 window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
-                            } else {
-                                proxy.downloadExportAnnotationJson(blobUrl, true);
+                            } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf') {
+                                proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
                             }
                         }
                     }
@@ -6078,18 +6073,23 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-    public createRequestForImportingFormfields(source: any): void {
+    public createRequestForImportingFormfields(source: any, formFieldDataFormat: FormFieldDataFormat): void {
         let proxy: PdfViewerBase = null;
         proxy = this;
         // eslint-disable-next-line
         let jsonObject: any = {};
-        if (typeof source === 'object') {
-            jsonObject.data = JSON.stringify(source);
-        } else {
+        if (typeof source !== 'object' && (source.split('.')[1] === 'json' || source.split('.')[1] === 'fdf' || source.split('.')[1] === 'xfdf')) {
             jsonObject.data = source;
-            if (source.split('.')[1] === 'json') {
-                // eslint-disable-next-line
-                jsonObject['fileName'] = proxy.pdfViewer.fileName;
+            jsonObject['fileName'] = proxy.pdfViewer.fileName;
+            jsonObject.formFieldDataFormat = formFieldDataFormat;
+        }
+        else{
+            jsonObject.formFieldDataFormat = formFieldDataFormat;
+            if(formFieldDataFormat === 'Json'){
+                jsonObject.data = JSON.stringify(source);
+            }
+            else{
+                jsonObject.data = source;
             }
         }
         proxy.pdfViewer.fireFormImportStarted(source);
@@ -6145,7 +6145,7 @@ export class PdfViewerBase {
                 window.sessionStorage.removeItem(this.documentId + '_formDesigner');
                 proxy.saveFormfieldsData(data);
                 for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
-                    this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[i], true);
+                    this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[parseInt(i.toString(), 10)], true);
                 }
             } else {
                 proxy.pdfViewer.fireFormImportFailed(source, result.statusText);
@@ -6350,14 +6350,14 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             const formFieldsData: any = JSON.parse(formDesignerData);
             for (let i: number = 0; i < formFieldsData.length; i++) {
-                if (formFieldsData[i].FormField.formFieldAnnotationType === 'RadioButton') {
-                    for (let j: number = 0; j < formFieldsData[i].FormField.radiobuttonItem.length; j++) {
-                        if (annotationID === formFieldsData[i].FormField.radiobuttonItem[j].id.split('_')[0]) {
+                if (formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'RadioButton') {
+                    for (let j: number = 0; j < formFieldsData[parseInt(i.toString(), 10)].FormField.radiobuttonItem.length; j++) {
+                        if (annotationID === formFieldsData[parseInt(i.toString(), 10)].FormField.radiobuttonItem[parseInt(j.toString(), 10)].id.split('_')[0]) {
                             isFormFieldAnnotation = true;
                             break;
                         }
                     }
-                } else if (formFieldsData[i].Key.split('_')[0] === annotationID) {
+                } else if (formFieldsData[parseInt(i.toString(), 10)].Key.split('_')[0] === annotationID) {
                     isFormFieldAnnotation = true;
                     break;
                 }
@@ -6472,9 +6472,9 @@ export class PdfViewerBase {
         proxy = this;
         const canvas: HTMLElement = proxy.getElement('_pageCanvas_' + pageIndex);
         const oldCanvas: HTMLElement = proxy.getElement('_oldCanvas_' + pageIndex);
-        if (this.pageSize && this.pageSize[pageIndex]) {
-            const pageWidth: number = this.pageSize[pageIndex].width;
-            const pageHeight: number = this.pageSize[pageIndex].height;
+        if (this.pageSize && this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+            const pageWidth: number = this.pageSize[parseInt(pageIndex.toString(), 10)].width;
+            const pageHeight: number = this.pageSize[parseInt(pageIndex.toString(), 10)].height;
             const tilecanvas: HTMLCanvasElement = this.getElement('_pageCanvas_' + pageIndex) as HTMLCanvasElement;
             // eslint-disable-next-line
             let viewPortWidth: any = 1200; // On diving the value greater than 1200 we will get the tile count as 2.
@@ -6519,7 +6519,7 @@ export class PdfViewerBase {
                 }
                 if (data && data.uniqueId === proxy.documentId) {
                     canvas.style.backgroundColor = '#fff';
-                    if ((proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) || !this.pageSize[pageIndex]) {
+                    if ((proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) || !this.pageSize[parseInt(pageIndex.toString(), 10)]) {
                         return;
                     }
                     const zoomFactor: number = this.retrieveCurrentZoomFactor();
@@ -6602,7 +6602,7 @@ export class PdfViewerBase {
                             // eslint-disable-next-line
                             proxy.pageRequestHandler.onSuccess = function (result: any) {
                                 // eslint-disable-next-line max-len
-                                if ((proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) || !proxy.pageSize[pageIndex]) {
+                                if ((proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) || !proxy.pageSize[parseInt(pageIndex.toString(), 10)]) {
                                     return;
                                 }
                                 // eslint-disable-next-line
@@ -6745,7 +6745,7 @@ export class PdfViewerBase {
                 // eslint-disable-next-line
                 textContent: data['textContent'], width: data['width'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor'], uniqueId: data['uniqueId'], zoomFactor: data['zoomFactor'], tileX: tileX, tileY: tileY
             };
-            if (this.pageSize[pageIndex]) {
+            if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
                 // eslint-disable-next-line
                 this.pageSize[pageIndex].rotation = parseFloat(data['rotation']);
             }
@@ -6760,8 +6760,8 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let viewPortWidth: any = 816;
         let pageWidth: number = 0;
-        if (this.pageSize[pageIndex]) {
-            pageWidth = this.pageSize[pageIndex].width;
+        if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+            pageWidth = this.pageSize[parseInt(pageIndex.toString(), 10)].width;
         }
         this.manageSessionStorage(pageIndex, storeObject, tileX, tileY);
     }
@@ -6774,7 +6774,7 @@ export class PdfViewerBase {
     public setCustomAjaxHeaders(request: XMLHttpRequest): void {
         for (let i: number = 0; i < this.pdfViewer.ajaxRequestSettings.ajaxHeaders.length; i++) {
             // eslint-disable-next-line max-len
-            request.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[i].headerValue);
+            request.setRequestHeader(this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerName, this.pdfViewer.ajaxRequestSettings.ajaxHeaders[parseInt(i.toString(), 10)].headerValue);
         }
     }
 
@@ -6788,8 +6788,10 @@ export class PdfViewerBase {
         for (let key in this.pinchZoomStorage) {
             // eslint-disable-next-line
             if (this.pinchZoomStorage.hasOwnProperty(key)) {
+                /* eslint-disable-next-line security/detect-object-injection */
                 if (this.pinchZoomStorage[key].index === pageIndex) {
                     this.isPinchZoomStorage = true;
+                    /* eslint-disable-next-line security/detect-object-injection */
                     return this.pinchZoomStorage[key].pinchZoomStorage;
                 }
             }
@@ -6861,7 +6863,7 @@ export class PdfViewerBase {
                 }
                 if (annotationList) {
                     for (let i: number = 0; i < annotationList.length; i++) {
-                        window.sessionStorage.removeItem(annotationList[i]);
+                        window.sessionStorage.removeItem(annotationList[parseInt(i.toString(), 10)]);
                     }
                 }
             }
@@ -6903,6 +6905,7 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             let byteNumbers: any = new Array(slice.length);
             for (let i: number = 0; i < slice.length; i++) {
+                /* eslint-disable-next-line security/detect-object-injection */
                 byteNumbers[i] = slice.charCodeAt(i);
             }
             // eslint-disable-next-line
@@ -6992,8 +6995,8 @@ export class PdfViewerBase {
      * @returns {number} - Returns number
      */
     public getPageWidth(pageIndex: number): number {
-        if (this.pageSize[pageIndex]) {
-            return this.pageSize[pageIndex].width * this.getZoomFactor();
+        if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+            return this.pageSize[parseInt(pageIndex.toString(), 10)].width * this.getZoomFactor();
         } else {
             return 0;
         }
@@ -7004,8 +7007,8 @@ export class PdfViewerBase {
      * @returns {number} - Returns number
      */
     public getPageHeight(pageIndex: number): number {
-        if (this.pageSize[pageIndex]) {
-            return this.pageSize[pageIndex].height * this.getZoomFactor();
+        if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+            return this.pageSize[parseInt(pageIndex.toString(), 10)].height * this.getZoomFactor();
         } else {
             return 0;
         }
@@ -7016,8 +7019,8 @@ export class PdfViewerBase {
      * @returns {number} - Returns number
      */
     public getPageTop(pageIndex: number): number {
-        if (this.pageSize[pageIndex]) {
-            return this.pageSize[pageIndex].top * this.getZoomFactor();
+        if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+            return this.pageSize[parseInt(pageIndex.toString(), 10)].top * this.getZoomFactor();
         } else {
             return 0;
         }
@@ -7266,9 +7269,9 @@ export class PdfViewerBase {
                     targetParentRect = (e as any).path[4].getBoundingClientRect();
                 }
                 else {
-                    for (let i = 0; i < (e as any).path.length; i++) {
-                        if ((e as any).path[i].className === 'e-pv-page-div') {
-                            targetParentRect = (e as any).path[i].getBoundingClientRect();
+                    for (let i:number = 0; i < (e as any).path.length; i++) {
+                        if ((e as any).path[parseInt(i.toString(), 10)].className === 'e-pv-page-div') {
+                            targetParentRect = (e as any).path[parseInt(i.toString(), 10)].getBoundingClientRect();
                             break;
                         }
                     }
@@ -7345,7 +7348,7 @@ export class PdfViewerBase {
                 const conn: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
                 if (conn) {
                     for (let i: number = 0; i < conn.vertexPoints.length; i++) {
-                        if (contains(position, conn.vertexPoints[i], 10) && conn.leaderHeight !== 0) {
+                        if (contains(position, conn.vertexPoints[parseInt(i.toString(), 10)], 10) && conn.leaderHeight !== 0) {
                             return 'ConnectorSegmentPoint_' + i;
                         }
                     }
@@ -7956,11 +7959,11 @@ export class PdfViewerBase {
                     let mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
                     var dataJson = this.getItemFromSessionStorage('_formfields');
                     var data = JSON.parse(dataJson);
-                        for(let i= 0; i<data.length;i++ ){
-                            if(data[i].FieldName === event.target.name){
-                                var field: any = {name:data[i].FieldName};
-                            }
+                    for (let i: number = 0; i < data.length; i++) {
+                        if (data[parseInt(i.toString(), 10)].FieldName === event.target.name) {
+                            var field: any = { name: data[parseInt(i.toString(), 10)].FieldName };
                         }
+                    }
                     this.isMousedOver = true;
                     this.isFormFieldMousedOver = true;
                     this.pdfViewer.fireFormFieldMouseoverEvent('formFieldMouseover', field, pageIndex, relativePosition.x, relativePosition.y, currentPosition.x, currentPosition.y);
@@ -8266,7 +8269,7 @@ export class PdfViewerBase {
                         }
                         let isSkip: boolean = false;
                         for (let i: number = 0; i < this.customStampCollection.length; i++) {
-                            if (this.customStampCollection[i].customStampName === stampName) {
+                            if (this.customStampCollection[parseInt(i.toString(), 10)].customStampName === stampName) {
                                 isSkip = true;
                                 break;
                             }
@@ -8568,10 +8571,10 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-    public exportFormFieldsAsObject(): any {
+    public exportFormFieldsAsObject(formFieldDataFormat?: FormFieldDataFormat): any {
         if (this.pdfViewer.formFieldsModule) {
             return new Promise((resolve: Function, reject: Function) => {
-                this.createRequestForExportFormfields(true).then((value: object) => {
+                this.createRequestForExportFormfields(true, formFieldDataFormat).then((value: object) => {
                     resolve(value);
                 });
             });
@@ -8695,7 +8698,7 @@ export class PdfViewerBase {
                                                 window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
                                             }
                                         } else {
-                                            proxy.downloadExportAnnotationJson(blobUrl);
+                                            proxy.downloadExportFormat(blobUrl, annotationDataFormat);
                                         }
                                         proxy.updateDocumentAnnotationCollections();
                                     } else {
@@ -8720,7 +8723,7 @@ export class PdfViewerBase {
                                         if (Browser.isIE || Browser.info.name === 'edge') {
                                             window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.xfdf');
                                         } else {
-                                            proxy.downloadExportedXFdfAnnotation(blobUrl);
+                                            proxy.downloadExportFormat(blobUrl, annotationDataFormat);
                                         }
                                         proxy.updateDocumentAnnotationCollections();
                                     } else {
@@ -8888,7 +8891,7 @@ export class PdfViewerBase {
     private reRenderAnnotations(annotation: any): any {
         if (annotation) {
             this.isImportAction = true;
-            let count: number;
+            let count: number = 0;
             if (this.isImportedAnnotation) {
                 this.importedAnnotation = this.combineImportedData(this.importedAnnotation, annotation);
             } else {
@@ -8900,7 +8903,7 @@ export class PdfViewerBase {
                 count = 0;
             }
             for (let i: number = 0; i < this.pageCount; i++) {
-                if (annotation[i]) {
+                if (annotation[parseInt(i.toString(), 10)]) {
                     // eslint-disable-next-line
                     let importPageCollections: any = [];
                     // eslint-disable-next-line
@@ -8930,155 +8933,155 @@ export class PdfViewerBase {
                     }
                     const annotationCanvas: HTMLElement = this.getElement('_annotationCanvas_' + i);
                     if (annotationCanvas) {
-                        this.drawPageAnnotations(annotation[i], i);
+                        this.drawPageAnnotations(annotation[parseInt(i.toString(), 10)], i);
                         if (this.isImportedAnnotation) {
                             let isAdded: boolean = false;
                             for (let j: number = 0; j < this.annotationPageList.length; j++) {
-                                if (this.annotationPageList[j] === i) {
+                                if (this.annotationPageList[parseInt(j.toString(), 10)] === i) {
                                     isAdded = true;
                                 }
                             }
                             if (isAdded) {
-                                this.annotationPageList[count] = i;
+                                this.annotationPageList[parseInt(count.toString(), 10)] = i;
                                 count = count + 1;
                             }
                         } else {
-                            this.annotationPageList[count] = i;
+                            this.annotationPageList[parseInt(count.toString(), 10)] = i;
                             count = count + 1;
                         }
                     }
-                    if (annotation[i].textMarkupAnnotation && annotation[i].textMarkupAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].textMarkupAnnotation && annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0) {
                         if (textMarkupObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(textMarkupObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].textMarkupAnnotation = this.checkAnnotationCollections(annotObject, annotation[i].textMarkupAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].textMarkupAnnotation = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].textMarkupAnnotation, i);
                         }
-                        annotation[i].textMarkupAnnotation = this.checkAnnotationCommentsCollections(annotation[i].textMarkupAnnotation, i);
-                        importPageCollections.textMarkupAnnotation = annotation[i].textMarkupAnnotation;
-                        if (annotation[i].textMarkupAnnotation.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].textMarkupAnnotation = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].textMarkupAnnotation, i);
+                        importPageCollections.textMarkupAnnotation = annotation[parseInt(i.toString(), 10)].textMarkupAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].textMarkupAnnotation, i);
-                            for (let j: number = 0; j < annotation[i].textMarkupAnnotation.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].textMarkupAnnotation, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotation[i].textMarkupAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotation[parseInt(i.toString(), 10)].textMarkupAnnotation[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
-                    if (annotation[i].shapeAnnotation && annotation[i].shapeAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].shapeAnnotation && annotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0) {
                         if (shapeObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(shapeObject);
-                            annotation[i].shapeAnnotation = this.checkAnnotationCollections(annotObject, annotation[i].shapeAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].shapeAnnotation = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].shapeAnnotation, i);
                         }
-                        annotation[i].shapeAnnotation = this.checkAnnotationCommentsCollections(annotation[i].shapeAnnotation, i);
-                        importPageCollections.shapeAnnotation = annotation[i].shapeAnnotation;
-                        if (annotation[i].shapeAnnotation.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].shapeAnnotation = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].shapeAnnotation, i);
+                        importPageCollections.shapeAnnotation = annotation[parseInt(i.toString(), 10)].shapeAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].shapeAnnotation, i);
-                            for (let j: number = 0; j < annotation[i].shapeAnnotation.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].shapeAnnotation, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].shapeAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(annotation[i].shapeAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(annotation[parseInt(i.toString(), 10)].shapeAnnotation[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
-                    if (annotation[i].measureShapeAnnotation && annotation[i].measureShapeAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].measureShapeAnnotation && annotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length !== 0) {
                         if (measureShapeObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(measureShapeObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].measureShapeAnnotation = this.checkAnnotationCollections(annotObject, annotation[i].measureShapeAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].measureShapeAnnotation = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].measureShapeAnnotation, i);
                         }
                         // eslint-disable-next-line max-len
-                        annotation[i].measureShapeAnnotation = this.checkAnnotationCommentsCollections(annotation[i].measureShapeAnnotation, i);
-                        importPageCollections.measureShapeAnnotation = annotation[i].measureShapeAnnotation;
-                        if (annotation[i].measureShapeAnnotation.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].measureShapeAnnotation = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].measureShapeAnnotation, i);
+                        importPageCollections.measureShapeAnnotation = annotation[parseInt(i.toString(), 10)].measureShapeAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].measureShapeAnnotation, i);
-                            for (let j: number = 0; j < annotation[i].measureShapeAnnotation.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].measureShapeAnnotation, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(annotation[i].measureShapeAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(annotation[parseInt(i.toString(), 10)].measureShapeAnnotation[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
-                    if (annotation[i].stampAnnotations && annotation[i].stampAnnotations.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].stampAnnotations && annotation[parseInt(i.toString(), 10)].stampAnnotations.length !== 0) {
                         if (stampObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(stampObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].stampAnnotations = this.checkAnnotationCollections(annotObject, annotation[i].stampAnnotations, i);
+                            annotation[parseInt(i.toString(), 10)].stampAnnotations = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].stampAnnotations, i);
                         }
-                        annotation[i].stampAnnotations = this.checkAnnotationCommentsCollections(annotation[i].stampAnnotations, i);
-                        importPageCollections.stampAnnotations = annotation[i].stampAnnotations;
-                        if (annotation[i].stampAnnotations.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].stampAnnotations = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].stampAnnotations, i);
+                        importPageCollections.stampAnnotations = annotation[parseInt(i.toString(), 10)].stampAnnotations;
+                        if (annotation[parseInt(i.toString(), 10)].stampAnnotations.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].stampAnnotations, i);
-                            for (let j: number = 0; j < annotation[i].stampAnnotations.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].stampAnnotations, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].stampAnnotations.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(annotation[i].stampAnnotations[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(annotation[parseInt(i.toString(), 10)].stampAnnotations[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
-                    if (annotation[i].stickyNotesAnnotation && annotation[i].stickyNotesAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation && annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length !== 0) {
                         if (stickyObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(stickyObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].stickyNotesAnnotation = this.checkAnnotationCollections(annotObject, annotation[i].stickyNotesAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation, i);
                         }
                         // eslint-disable-next-line max-len
-                        annotation[i].stickyNotesAnnotation = this.checkAnnotationCommentsCollections(annotation[i].stickyNotesAnnotation, i);
-                        importPageCollections.stickyNotesAnnotation = annotation[i].stickyNotesAnnotation;
-                        if (annotation[i].stickyNotesAnnotation.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation, i);
+                        importPageCollections.stickyNotesAnnotation = annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].stickyNotesAnnotation, i);
-                            for (let j: number = 0; j < annotation[i].stickyNotesAnnotation.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateStickyNotesAnnotationCollections(annotation[i].stickyNotesAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateStickyNotesAnnotationCollections(annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
-                    if (annotation[i].freeTextAnnotation && annotation[i].freeTextAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].freeTextAnnotation && annotation[parseInt(i.toString(), 10)].freeTextAnnotation.length !== 0) {
                         if (freeTextObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(freeTextObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].freeTextAnnotation = this.checkAnnotationCollections(annotObject, annotation[i].freeTextAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].freeTextAnnotation = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].freeTextAnnotation, i);
                         }
-                        annotation[i].freeTextAnnotation = this.checkAnnotationCommentsCollections(annotation[i].freeTextAnnotation, i);
-                        importPageCollections.freeTextAnnotation = annotation[i].freeTextAnnotation;
-                        if (annotation[i].freeTextAnnotation.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].freeTextAnnotation = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].freeTextAnnotation, i);
+                        importPageCollections.freeTextAnnotation = annotation[parseInt(i.toString(), 10)].freeTextAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].freeTextAnnotation.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].freeTextAnnotation, i);
-                            for (let j: number = 0; j < annotation[i].freeTextAnnotation.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].freeTextAnnotation, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].freeTextAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotation[i].freeTextAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotation[parseInt(i.toString(), 10)].freeTextAnnotation[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
-                    if (annotation[i].signatureAnnotation && annotation[i].signatureAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].signatureAnnotation && annotation[parseInt(i.toString(), 10)].signatureAnnotation.length !== 0) {
                         if (signatureObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(signatureObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].signatureAnnotation = this.checkSignatureCollections(annotObject, annotation[i].signatureAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].signatureAnnotation = this.checkSignatureCollections(annotObject, annotation[parseInt(i.toString(), 10)].signatureAnnotation, i);
                         }
-                        importPageCollections.signatureAnnotation = annotation[i].signatureAnnotation;
-                        if (annotation[i].signatureAnnotation.length !== 0) {
-                            for (let j: number = 0; j < annotation[i].signatureAnnotation.length; j++) {
+                        importPageCollections.signatureAnnotation = annotation[parseInt(i.toString(), 10)].signatureAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].signatureAnnotation.length !== 0) {
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].signatureAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.signatureModule.updateSignatureCollections(annotation[i].signatureAnnotation[j], i), true);
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.signatureModule.updateSignatureCollections(annotation[parseInt(i.toString(), 10)].signatureAnnotation[parseInt(j.toString(), 10)], i), true);
                             }
                         }
                     }
-                    if (annotation[i].signatureInkAnnotation && annotation[i].signatureInkAnnotation.length !== 0) {
+                    if (annotation[parseInt(i.toString(), 10)].signatureInkAnnotation && annotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length !== 0) {
                         if (inkObject) {
                             const annotObject: IPageAnnotations[] = JSON.parse(inkObject);
                             // eslint-disable-next-line max-len
-                            annotation[i].signatureInkAnnotation = this.checkAnnotationCollections(annotObject, annotation[i].signatureInkAnnotation, i);
+                            annotation[parseInt(i.toString(), 10)].signatureInkAnnotation = this.checkAnnotationCollections(annotObject, annotation[parseInt(i.toString(), 10)].signatureInkAnnotation, i);
                         }
                         // eslint-disable-next-line max-len
-                        annotation[i].signatureInkAnnotation = this.checkAnnotationCommentsCollections(annotation[i].signatureInkAnnotation, i);
-                        importPageCollections.signatureInkAnnotation = annotation[i].signatureInkAnnotation;
-                        if (annotation[i].signatureInkAnnotation.length !== 0) {
+                        annotation[parseInt(i.toString(), 10)].signatureInkAnnotation = this.checkAnnotationCommentsCollections(annotation[parseInt(i.toString(), 10)].signatureInkAnnotation, i);
+                        importPageCollections.signatureInkAnnotation = annotation[parseInt(i.toString(), 10)].signatureInkAnnotation;
+                        if (annotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length !== 0) {
                             // eslint-disable-next-line max-len
-                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[i].signatureInkAnnotation, i);
-                            for (let j: number = 0; j < annotation[i].signatureInkAnnotation.length; j++) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotation[parseInt(i.toString(), 10)].signatureInkAnnotation, i);
+                            for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length; j++) {
                                 // eslint-disable-next-line max-len
-                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotation[i].signatureInkAnnotation[j], i));
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotation[parseInt(i.toString(), 10)].signatureInkAnnotation[parseInt(j.toString(), 10)], i));
                             }
                         }
                     }
@@ -9114,45 +9117,45 @@ export class PdfViewerBase {
             if (pageCollections) {
                 if (importedAnnotations.textMarkupAnnotation && importedAnnotations.textMarkupAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.textMarkupAnnotation.length; i++) {
-                        pageCollections.textMarkupAnnotation.push(importedAnnotations.textMarkupAnnotation[i]);
+                        pageCollections.textMarkupAnnotation.push(importedAnnotations.textMarkupAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.shapeAnnotation && importedAnnotations.shapeAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.shapeAnnotation.length; i++) {
-                        pageCollections.shapeAnnotation.push(importedAnnotations.shapeAnnotation[i]);
+                        pageCollections.shapeAnnotation.push(importedAnnotations.shapeAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.measureShapeAnnotation && importedAnnotations.measureShapeAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.measureShapeAnnotation.length; i++) {
-                        pageCollections.measureShapeAnnotation.push(importedAnnotations.measureShapeAnnotation[i]);
+                        pageCollections.measureShapeAnnotation.push(importedAnnotations.measureShapeAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.stampAnnotations && importedAnnotations.stampAnnotations.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.stampAnnotations.length; i++) {
-                        pageCollections.stampAnnotations.push(importedAnnotations.stampAnnotations[i]);
+                        pageCollections.stampAnnotations.push(importedAnnotations.stampAnnotations[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.stickyNotesAnnotation && importedAnnotations.stickyNotesAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.stickyNotesAnnotation.length; i++) {
-                        pageCollections.stickyNotesAnnotation.push(importedAnnotations.stickyNotesAnnotation[i]);
+                        pageCollections.stickyNotesAnnotation.push(importedAnnotations.stickyNotesAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.freeTextAnnotation && importedAnnotations.freeTextAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.freeTextAnnotation.length; i++) {
-                        pageCollections.freeTextAnnotation.push(importedAnnotations.freeTextAnnotation[i]);
+                        pageCollections.freeTextAnnotation.push(importedAnnotations.freeTextAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.signatureAnnotation && importedAnnotations.signatureAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.signatureAnnotation.length; i++) {
-                        pageCollections.signatureAnnotation.push(importedAnnotations.signatureAnnotation[i]);
+                        pageCollections.signatureAnnotation.push(importedAnnotations.signatureAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
                 if (importedAnnotations.signatureInkAnnotation && importedAnnotations.signatureInkAnnotation.length !== 0) {
                     for (let i: number = 0; i < importedAnnotations.signatureInkAnnotation.length; i++) {
-                        pageCollections.signatureInkAnnotation.push(importedAnnotations.signatureInkAnnotation[i]);
+                        pageCollections.signatureInkAnnotation.push(importedAnnotations.signatureInkAnnotation[parseInt(i.toString(), 10)]);
                     }
                 }
-                this.documentAnnotationCollections[pageNumber] = pageCollections;
+                this.documentAnnotationCollections[parseInt(pageNumber.toString(), 10)] = pageCollections;
             }
         }
     }
@@ -9284,14 +9287,14 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let pageCollections: any = null;
         for (let a: number = 0; a < annotationCollection.length; a++) {
-            if (annotationCollection[a].pageIndex === pageNumber) {
-                pageCollections = annotationCollection[a].annotations;
+            if (annotationCollection[parseInt(a.toString(), 10)].pageIndex === pageNumber) {
+                pageCollections = annotationCollection[parseInt(a.toString(), 10)].annotations;
             }
         }
         if (pageCollections) {
             for (let i: number = 0; i < pageCollections.length; i++) {
                 for (let j: number = 0; j < importAnnotations.length; j++) {
-                    if (pageCollections[i].annotName === importAnnotations[j].AnnotName) {
+                    if (pageCollections[parseInt(i.toString(), 10)].annotName === importAnnotations[parseInt(j.toString(), 10)].AnnotName) {
                         importAnnotations.splice(j, 1);
                         j = j - 1;
                     }
@@ -9305,7 +9308,7 @@ export class PdfViewerBase {
     // eslint-disable-next-line
     private drawPageAnnotations(annotation: any, pageIndex: number, isNewlyAdded?: boolean): void {
         if (isNewlyAdded) {
-            annotation = annotation[pageIndex];
+            annotation = annotation[parseInt(pageIndex.toString(), 10)];
         }
         if (annotation) {
             if (annotation.textMarkupAnnotation && annotation.textMarkupAnnotation.length !== 0) {
@@ -9442,14 +9445,14 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let pageCollections: any = null;
         for (let a: number = 0; a < annotationCollection.length; a++) {
-            if (annotationCollection[a].pageIndex === pageNumber) {
-                pageCollections = annotationCollection[a].annotations;
+            if (annotationCollection[parseInt(a.toString(), 10)].pageIndex === pageNumber) {
+                pageCollections = annotationCollection[parseInt(a.toString(), 10)].annotations;
             }
         }
         if (pageCollections) {
             for (let i: number = 0; i < pageCollections.length; i++) {
                 for (let j: number = 0; j < annotation.length; j++) {
-                    if (pageCollections[i].signatureName === annotation[j].SignatureName) {
+                    if (pageCollections[parseInt(i.toString(), 10)].signatureName === annotation[parseInt(j.toString(), 10)].SignatureName) {
                         annotation.splice(j, 1);
                         j = j - 1;
                     }
@@ -9464,14 +9467,14 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let pageCollections: any = null;
         for (let a: number = 0; a < annotationCollection.length; a++) {
-            if (annotationCollection[a].pageIndex === pageNumber) {
-                pageCollections = annotationCollection[a].annotations;
+            if (annotationCollection[parseInt(a.toString(), 10)].pageIndex === pageNumber) {
+                pageCollections = annotationCollection[parseInt(a.toString(), 10)].annotations;
             }
         }
         if (pageCollections) {
             for (let i: number = 0; i < pageCollections.length; i++) {
                 for (let j: number = 0; j < annotation.length; j++) {
-                    if (pageCollections[i].annotName === annotation[j].AnnotName) {
+                    if (pageCollections[parseInt(i.toString(), 10)].annotName === annotation[parseInt(j.toString(), 10)].AnnotName) {
                         annotation.splice(j, 1);
                         j = j - 1;
                     }
@@ -9491,7 +9494,7 @@ export class PdfViewerBase {
             if (annotationCollections) {
                 for (let i: number = 0; i < annotationCollections.length; i++) {
                     for (let j: number = 0; j < annotation.length; j++) {
-                        if (annotationCollections[i].AnnotName === annotation[j].AnnotName) {
+                        if (annotationCollections[parseInt(i.toString(), 10)].AnnotName === annotation[parseInt(j.toString(), 10)].AnnotName) {
                             annotation.splice(j, 1);
                             j = j - 1;
                         }
@@ -9510,37 +9513,37 @@ export class PdfViewerBase {
         if (pageAnnotations) {
             if (pageAnnotations.textMarkupAnnotation && pageAnnotations.textMarkupAnnotation.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.textMarkupAnnotation.length; i++) {
-                    pageCollections.push(pageAnnotations.textMarkupAnnotation[i]);
+                    pageCollections.push(pageAnnotations.textMarkupAnnotation[parseInt(i.toString(), 10)]);
                 }
             }
             if (pageAnnotations.shapeAnnotation && pageAnnotations.shapeAnnotation.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.shapeAnnotation.length; i++) {
-                    pageCollections.push(pageAnnotations.shapeAnnotation[i]);
+                    pageCollections.push(pageAnnotations.shapeAnnotation[parseInt(i.toString(), 10)]);
                 }
             }
             if (pageAnnotations.measureShapeAnnotation && pageAnnotations.measureShapeAnnotation.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.measureShapeAnnotation.length; i++) {
-                    pageCollections.push(pageAnnotations.measureShapeAnnotation[i]);
+                    pageCollections.push(pageAnnotations.measureShapeAnnotation[parseInt(i.toString(), 10)]);
                 }
             }
             if (pageAnnotations.stampAnnotations && pageAnnotations.stampAnnotations.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.stampAnnotations.length; i++) {
-                    pageCollections.push(pageAnnotations.stampAnnotations[i]);
+                    pageCollections.push(pageAnnotations.stampAnnotations[parseInt(i.toString(), 10)]);
                 }
             }
             if (pageAnnotations.stickyNotesAnnotation && pageAnnotations.stickyNotesAnnotation.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.stickyNotesAnnotation.length; i++) {
-                    pageCollections.push(pageAnnotations.stickyNotesAnnotation[i]);
+                    pageCollections.push(pageAnnotations.stickyNotesAnnotation[parseInt(i.toString(), 10)]);
                 }
             }
             if (pageAnnotations.freeTextAnnotation && pageAnnotations.freeTextAnnotation.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.freeTextAnnotation.length; i++) {
-                    pageCollections.push(pageAnnotations.freeTextAnnotation[i]);
+                    pageCollections.push(pageAnnotations.freeTextAnnotation[parseInt(i.toString(), 10)]);
                 }
             }
             if (pageAnnotations.signatureInkAnnotation && pageAnnotations.signatureInkAnnotation.length !== 0) {
                 for (let i: number = 0; i < pageAnnotations.signatureInkAnnotation.length; i++) {
-                    pageCollections.push(pageAnnotations.signatureInkAnnotation[i]);
+                    pageCollections.push(pageAnnotations.signatureInkAnnotation[parseInt(i.toString(), 10)]);
                 }
             }
         }
@@ -9578,7 +9581,7 @@ export class PdfViewerBase {
         this.downloadCollections = { textMarkupObject: textMarkupObject, shapeObject: shapeObject, measureShapeObject: measureShapeObject, stampObject: stampObject, stickyObject: stickyObject, freeTextObject: freeTextObject, inkObject: inkObject, signatureObject: signatureObject };
         if (this.documentAnnotationCollections) {
             for (let i: number = 0; i < this.pageCount; i++) {
-                if (this.documentAnnotationCollections[i]) {
+                if (this.documentAnnotationCollections[parseInt(i.toString(), 10)]) {
                     // eslint-disable-next-line
                     let pageCollections: any = cloneObject(this.documentAnnotationCollections[i]);
                     pageCollections = this.checkDocumentCollectionData(i, pageCollections);
@@ -9593,42 +9596,42 @@ export class PdfViewerBase {
         if (annotation.textMarkupAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.textMarkupAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.textMarkupAnnotationModule.saveImportedTextMarkupAnnotations(annotation.textMarkupAnnotation[s], pageIndex);
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.saveImportedTextMarkupAnnotations(annotation.textMarkupAnnotation[parseInt(s.toString(), 10)], pageIndex);
             }
         }
         if (annotation.shapeAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.shapeAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.shapeAnnotationModule.saveImportedShapeAnnotations(annotation.shapeAnnotation[s], pageIndex);
+                this.pdfViewer.annotationModule.shapeAnnotationModule.saveImportedShapeAnnotations(annotation.shapeAnnotation[parseInt(s.toString(), 10)], pageIndex);
             }
         }
         if (annotation.measureShapeAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.measureShapeAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.measureAnnotationModule.saveImportedMeasureAnnotations(annotation.measureShapeAnnotation[s], pageIndex);
+                this.pdfViewer.annotationModule.measureAnnotationModule.saveImportedMeasureAnnotations(annotation.measureShapeAnnotation[parseInt(s.toString(), 10)], pageIndex);
             }
         }
         if (annotation.stampAnnotations.length !== 0) {
             for (let s: number = 0; s < annotation.stampAnnotations.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.stampAnnotationModule.saveImportedStampAnnotations(annotation.stampAnnotations[s], pageIndex);
+                this.pdfViewer.annotationModule.stampAnnotationModule.saveImportedStampAnnotations(annotation.stampAnnotations[parseInt(s.toString(), 10)], pageIndex);
             }
         }
         if (annotation.stickyNotesAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.stickyNotesAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.saveImportedStickyNotesAnnotations(annotation.stickyNotesAnnotation[s], pageIndex);
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.saveImportedStickyNotesAnnotations(annotation.stickyNotesAnnotation[parseInt(s.toString(), 10)], pageIndex);
             }
         }
         if (annotation.freeTextAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.freeTextAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.freeTextAnnotationModule.saveImportedFreeTextAnnotations(annotation.freeTextAnnotation[s], pageIndex);
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.saveImportedFreeTextAnnotations(annotation.freeTextAnnotation[parseInt(s.toString(), 10)], pageIndex);
             }
         }
         if (annotation.signatureInkAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.signatureInkAnnotation.length; s++) {
-                this.pdfViewer.annotationModule.inkAnnotationModule.saveImportedInkAnnotation(annotation.signatureInkAnnotation[s], pageIndex);
+                this.pdfViewer.annotationModule.inkAnnotationModule.saveImportedInkAnnotation(annotation.signatureInkAnnotation[parseInt(s.toString(), 10)], pageIndex);
             }
         }
     }
@@ -9730,19 +9733,19 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             let annotations: Array<any> = new Array();
             for (let j: number = 0; j < this.pageCount; j++) {
-                annotations[j] = [];
+                annotations[parseInt(j.toString(), 10)] = [];
             }
             signaturCollection = JSON.stringify(annotations);
         }
         for (let s: number = 0; s < this.pageCount; s++) {
             // eslint-disable-next-line max-len
             const annotation: IAnnotationCollection = {
-                textMarkupAnnotation: JSON.parse(textMarkupAnnotationCollection)[s], shapeAnnotation: JSON.parse(shapeAnnotations)[s],
-                measureShapeAnnotation: JSON.parse(calibrateAnnotations)[s], stampAnnotations: JSON.parse(stampAnnotationCollection)[s],
+                textMarkupAnnotation: JSON.parse(textMarkupAnnotationCollection)[parseInt(s.toString(), 10)], shapeAnnotation: JSON.parse(shapeAnnotations)[parseInt(s.toString(), 10)],
+                measureShapeAnnotation: JSON.parse(calibrateAnnotations)[parseInt(s.toString(), 10)], stampAnnotations: JSON.parse(stampAnnotationCollection)[parseInt(s.toString(), 10)],
                 // eslint-disable-next-line max-len
-                stickyNotesAnnotation: JSON.parse(stickyAnnotationCollection)[s], freeTextAnnotation: JSON.parse(freeTextAnnotationCollection)[s], signatureAnnotation: JSON.parse(signaturCollection)[s], signatureInkAnnotation: JSON.parse(signaturInkCollection)[s]
+                stickyNotesAnnotation: JSON.parse(stickyAnnotationCollection)[parseInt(s.toString(), 10)], freeTextAnnotation: JSON.parse(freeTextAnnotationCollection)[parseInt(s.toString(), 10)], signatureAnnotation: JSON.parse(signaturCollection)[parseInt(s.toString(), 10)], signatureInkAnnotation: JSON.parse(signaturInkCollection)[parseInt(s.toString(), 10)]
             };
-            annotationCollection[s] = annotation;
+            annotationCollection[parseInt(s.toString(), 10)] = annotation;
         }
         return JSON.stringify(annotationCollection);
     }
@@ -9750,104 +9753,104 @@ export class PdfViewerBase {
     // eslint-disable-next-line
     private combineImportedData(excistingImportAnnotation: any, newlyImportAnnotation: any): any {
         for (let i: number = 0; i < this.pageCount; i++) {
-            if (newlyImportAnnotation[i]) {
-                if (excistingImportAnnotation[i]) {
-                    if (newlyImportAnnotation[i].textMarkupAnnotation && newlyImportAnnotation[i].textMarkupAnnotation.length !== 0) {
-                        if (excistingImportAnnotation[i].textMarkupAnnotation) {
+            if (newlyImportAnnotation[parseInt(i.toString(), 10)]) {
+                if (excistingImportAnnotation[parseInt(i.toString(), 10)]) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation && newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].textMarkupAnnotation = this.checkImportedData(excistingImportAnnotation[i].textMarkupAnnotation, newlyImportAnnotation[i].textMarkupAnnotation, i);
-                            if (newlyImportAnnotation[i].textMarkupAnnotation.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation, newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].textMarkupAnnotation = excistingImportAnnotation[i].textMarkupAnnotation.concat(newlyImportAnnotation[i].textMarkupAnnotation);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation = excistingImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation);
                             }
                         } else {
-                            excistingImportAnnotation[i].textMarkupAnnotation = newlyImportAnnotation[i].textMarkupAnnotation;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation = newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].shapeAnnotation && newlyImportAnnotation[i].shapeAnnotation.length !== 0) {
-                        if (excistingImportAnnotation[i].shapeAnnotation) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation && newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].shapeAnnotation = this.checkImportedData(excistingImportAnnotation[i].shapeAnnotation, newlyImportAnnotation[i].shapeAnnotation, i);
-                            if (newlyImportAnnotation[i].shapeAnnotation.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation, newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].shapeAnnotation = excistingImportAnnotation[i].shapeAnnotation.concat(newlyImportAnnotation[i].shapeAnnotation);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation = excistingImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation);
                             }
                         } else {
-                            excistingImportAnnotation[i].shapeAnnotation = newlyImportAnnotation[i].shapeAnnotation;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation = newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].measureShapeAnnotation && newlyImportAnnotation[i].measureShapeAnnotation.length !== 0) {
-                        if (excistingImportAnnotation[i].measureShapeAnnotation) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation && newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].measureShapeAnnotation = this.checkImportedData(excistingImportAnnotation[i].measureShapeAnnotation, newlyImportAnnotation[i].measureShapeAnnotation, i);
-                            if (newlyImportAnnotation[i].measureShapeAnnotation.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation, newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].measureShapeAnnotation = excistingImportAnnotation[i].measureShapeAnnotation.concat(newlyImportAnnotation[i].measureShapeAnnotation);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation = excistingImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation);
                             }
                         } else {
-                            excistingImportAnnotation[i].measureShapeAnnotation = newlyImportAnnotation[i].measureShapeAnnotation;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation = newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].stampAnnotations && newlyImportAnnotation[i].stampAnnotations.length !== 0) {
-                        if (excistingImportAnnotation[i].stampAnnotations) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations && newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].stampAnnotations = this.checkImportedData(excistingImportAnnotation[i].stampAnnotations, newlyImportAnnotation[i].stampAnnotations, i);
-                            if (newlyImportAnnotation[i].stampAnnotations.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations, newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].stampAnnotations = excistingImportAnnotation[i].stampAnnotations.concat(newlyImportAnnotation[i].stampAnnotations);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations = excistingImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations);
                             }
                         } else {
-                            excistingImportAnnotation[i].stampAnnotations = newlyImportAnnotation[i].stampAnnotations;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations = newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations;
                         }
                     }
-                    if (newlyImportAnnotation[i].stickyNotesAnnotation && newlyImportAnnotation[i].stickyNotesAnnotation.length !== 0) {
-                        if (excistingImportAnnotation[i].stickyNotesAnnotation) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation && newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].stickyNotesAnnotation = this.checkImportedData(excistingImportAnnotation[i].stickyNotesAnnotation, newlyImportAnnotation[i].stickyNotesAnnotation, i);
-                            if (newlyImportAnnotation[i].stickyNotesAnnotation.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation, newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].stickyNotesAnnotation = excistingImportAnnotation[i].stickyNotesAnnotation.concat(newlyImportAnnotation[i].stickyNotesAnnotation);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation = excistingImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation);
                             }
                         } else {
-                            excistingImportAnnotation[i].stickyNotesAnnotation = newlyImportAnnotation[i].stickyNotesAnnotation;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation = newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].freeTextAnnotation && newlyImportAnnotation[i].freeTextAnnotation.length !== 0) {
-                        if (excistingImportAnnotation[i].freeTextAnnotation) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation && newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].freeTextAnnotation = this.checkImportedData(excistingImportAnnotation[i].freeTextAnnotation, newlyImportAnnotation[i].freeTextAnnotation, i);
-                            if (newlyImportAnnotation[i].freeTextAnnotation.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation, newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].freeTextAnnotation = excistingImportAnnotation[i].freeTextAnnotation.concat(newlyImportAnnotation[i].freeTextAnnotation);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation = excistingImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation);
                             }
                         } else {
-                            excistingImportAnnotation[i].freeTextAnnotation = newlyImportAnnotation[i].freeTextAnnotation;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation = newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation;
                         }
                     }
-                    if (newlyImportAnnotation[i].signatureInkAnnotation && newlyImportAnnotation[i].signatureInkAnnotation.length !== 0) {
-                        if (excistingImportAnnotation[i].signatureInkAnnotation) {
+                    if (newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation && newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length !== 0) {
+                        if (excistingImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation) {
                             // eslint-disable-next-line max-len
-                            newlyImportAnnotation[i].signatureInkAnnotation = this.checkImportedData(excistingImportAnnotation[i].signatureInkAnnotation, newlyImportAnnotation[i].signatureInkAnnotation, i);
-                            if (newlyImportAnnotation[i].signatureInkAnnotation.length !== 0) {
+                            newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation = this.checkImportedData(excistingImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation, newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation, i);
+                            if (newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length !== 0) {
                                 // eslint-disable-next-line max-len
-                                excistingImportAnnotation[i].signatureInkAnnotation = excistingImportAnnotation[i].signatureInkAnnotation.concat(newlyImportAnnotation[i].signatureInkAnnotation);
+                                excistingImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation = excistingImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation.concat(newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation);
                             }
                         } else {
-                            excistingImportAnnotation[i].signatureInkAnnotation = newlyImportAnnotation[i].signatureInkAnnotation;
+                            excistingImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation = newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation;
                         }
                     }
                 } else {
                     // eslint-disable-next-line max-len
                     const annotation: IAnnotationCollection = {
                         // eslint-disable-next-line max-len
-                        textMarkupAnnotation: newlyImportAnnotation[i].textMarkupAnnotation, shapeAnnotation: newlyImportAnnotation[i].shapeAnnotation,
+                        textMarkupAnnotation: newlyImportAnnotation[parseInt(i.toString(), 10)].textMarkupAnnotation, shapeAnnotation: newlyImportAnnotation[parseInt(i.toString(), 10)].shapeAnnotation,
                         // eslint-disable-next-line max-len
-                        measureShapeAnnotation: newlyImportAnnotation[i].measureShapeAnnotation, stampAnnotations: newlyImportAnnotation[i].stampAnnotations,
+                        measureShapeAnnotation: newlyImportAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation, stampAnnotations: newlyImportAnnotation[parseInt(i.toString(), 10)].stampAnnotations,
                         // eslint-disable-next-line max-len
-                        stickyNotesAnnotation: newlyImportAnnotation[i].stickyNotesAnnotation, freeTextAnnotation: newlyImportAnnotation[i].freeTextAnnotation,
-                        signatureInkAnnotation: newlyImportAnnotation[i].signatureInkAnnotation
+                        stickyNotesAnnotation: newlyImportAnnotation[parseInt(i.toString(), 10)].stickyNotesAnnotation, freeTextAnnotation: newlyImportAnnotation[parseInt(i.toString(), 10)].freeTextAnnotation,
+                        signatureInkAnnotation: newlyImportAnnotation[parseInt(i.toString(), 10)].signatureInkAnnotation
                     };
-                    excistingImportAnnotation[i] = annotation;
+                    excistingImportAnnotation[parseInt(i.toString(), 10)] = annotation;
                 }
             }
         }
@@ -9900,48 +9903,48 @@ export class PdfViewerBase {
     private checkImportedData(existingCollection: any, newCollection: any, pageIndex?: number): any {
         for (let i: number = 0; i < existingCollection.length; i++) {
             for (let j: number = 0; j < newCollection.length; j++) {
-                if (existingCollection[i].AnnotName === newCollection[j].AnnotName) {
+                if (existingCollection[parseInt(i.toString(), 10)].AnnotName === newCollection[parseInt(j.toString(), 10)].AnnotName) {
                     let len: number = this.pdfViewer.annotationCollection.length;
                     for(let x: number = 0; x < len; x++){
-                        if(this.pdfViewer.annotationCollection[x].annotationId===newCollection[j].AnnotName){
+                        if(this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].annotationId===newCollection[parseInt(j.toString(), 10)].AnnotName){
                             // To update the comment panel values in a collections while importing the annotation with the same name. (EJ2-62092)
-                            this.pdfViewer.annotationCollection[x].comments = this.pdfViewer.annotationModule.getAnnotationComments(newCollection[j].Comments, newCollection[j], newCollection[j].Author);
-                            this.pdfViewer.annotationCollection[x].review = { state: newCollection[j].State, stateModel: newCollection[j].StateModel, modifiedDate: newCollection[j].ModifiedDate, author: newCollection[j].Author }
-                            this.pdfViewer.annotationCollection[x].note = newCollection[j].Note;
-                            let annot: any = this.pdfViewer.annotationCollection[x];
-                            if(existingCollection[i].AnnotType==="shape" && this.pdfViewer.annotationModule.shapeAnnotationModule){
-                                this.documentAnnotationCollections[pageIndex].shapeAnnotation[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_shape")
+                            this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].comments = this.pdfViewer.annotationModule.getAnnotationComments(newCollection[parseInt(j.toString(), 10)].Comments, newCollection[parseInt(j.toString(), 10)], newCollection[parseInt(j.toString(), 10)].Author);
+                            this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].review = { state: newCollection[parseInt(j.toString(), 10)].State, stateModel: newCollection[parseInt(j.toString(), 10)].StateModel, modifiedDate: newCollection[parseInt(j.toString(), 10)].ModifiedDate, author: newCollection[parseInt(j.toString(), 10)].Author }
+                            this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].note = newCollection[parseInt(j.toString(), 10)].Note;
+                            let annot: any = this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)];
+                            if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="shape" && this.pdfViewer.annotationModule.shapeAnnotationModule){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].shapeAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_shape")
                             }                            
-                            else if(existingCollection[i].AnnotType==="textMarkup" && this.pdfViewer.annotationModule.textMarkupAnnotationModule){
-                                this.documentAnnotationCollections[pageIndex].textMarkupAnnotation[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_textMarkup")
+                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="textMarkup" && this.pdfViewer.annotationModule.textMarkupAnnotationModule){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].textMarkupAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_textMarkup")
                             }                            
-                            else if(existingCollection[i].AnnotType==="shape_measure" && this.pdfViewer.annotationModule.measureAnnotationModule){
-                                this.documentAnnotationCollections[pageIndex].measureShapeAnnotation[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_shape_measure")
+                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="shape_measure" && this.pdfViewer.annotationModule.measureAnnotationModule){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].measureShapeAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_shape_measure")
                             }                            
-                            else if(existingCollection[i].AnnotType==="stamp" &&  this.pdfViewer.annotationModule.stampAnnotationModule){
-                                this.documentAnnotationCollections[pageIndex].stampAnnotations[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_stamp")
+                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="stamp" &&  this.pdfViewer.annotationModule.stampAnnotationModule){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].stampAnnotations[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_stamp")
                             }                            
-                            else if(existingCollection[i].AnnotType==="freeText" && this.pdfViewer.annotationModule.freeTextAnnotationModule ){
-                                this.documentAnnotationCollections[pageIndex].freeTextAnnotation[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_freetext")
+                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="freeText" && this.pdfViewer.annotationModule.freeTextAnnotationModule ){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].freeTextAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_freetext")
                             }                            
-                            else if(existingCollection[i].AnnotType==="ink" && this.pdfViewer.annotationModule.inkAnnotationModule ){
-                                this.documentAnnotationCollections[pageIndex].signatureInkAnnotation[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_ink")
+                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="ink" && this.pdfViewer.annotationModule.inkAnnotationModule ){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].signatureInkAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_ink")
                             }
                         
-                            else if(existingCollection[i].AnnotType==="sticky"){
-                                this.documentAnnotationCollections[pageIndex].stickyNotesAnnotation[i] = newCollection[j];
-                                this.updateAnnotationsInSessionStorage(newCollection[j],annot,"_annotations_sticky")
+                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="sticky"){
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].stickyNotesAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_sticky")
                             }
                             break;
                         }
                     }
-                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createCommentControlPanel(newCollection[j], (pageIndex+1),null,null, true);                     
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createCommentControlPanel(newCollection[parseInt(j.toString(), 10)], (pageIndex+1),null,null, true);                     
                     newCollection.splice(j, 1);
                     j = j - 1;
                 }
@@ -9954,7 +9957,7 @@ export class PdfViewerBase {
             if (annotationCollections) {
                 for (let i: number = 0; i < annotationCollections.length; i++) {
                     for (let j: number = 0; j < newCollection.length; j++) {
-                        if (annotationCollections[i].AnnotName === newCollection[j].AnnotName) {
+                        if (annotationCollections[parseInt(i.toString(), 10)].AnnotName === newCollection[parseInt(j.toString(), 10)].AnnotName) {
                             newCollection.splice(j, 1);
                             j = j - 1;
                         }
@@ -9971,12 +9974,12 @@ export class PdfViewerBase {
         let annotObject: any = JSON.parse(annotation);
         if(annotObject){
             for(let b: number = 0 ;b < annotObject.length; b++){
-                if(annotObject[b].annotations){
-                    for ( let z: number = 0; z < annotObject[b].annotations.length; z++){
-                        if(annotObject[b].annotations[z].annotName === newCollection.AnnotName){
-                            annotObject[b].annotations[z].comments = annot.comments;
-                            annotObject[b].annotations[z].review = annot.review;
-                            annotObject[b].annotations[z].note = annot.note;
+                if(annotObject[parseInt(b.toString(), 10)].annotations){
+                    for ( let z: number = 0; z < annotObject[parseInt(b.toString(), 10)].annotations.length; z++){
+                        if(annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].annotName === newCollection.AnnotName){
+                            annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].comments = annot.comments;
+                            annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].review = annot.review;
+                            annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].note = annot.note;
                             break;
                         }
                     }
@@ -10000,20 +10003,20 @@ export class PdfViewerBase {
         let maxHeight: number;
         for (let i: number = 0; i < points.length; i++) {
             if (!minWidth) {
-                minWidth = points[i].x;
-                maxWidth = points[i].x;
-                minHeight = points[i].y;
-                maxHeight = points[i].y;
+                minWidth = points[parseInt(i.toString(), 10)].x;
+                maxWidth = points[parseInt(i.toString(), 10)].x;
+                minHeight = points[parseInt(i.toString(), 10)].y;
+                maxHeight = points[parseInt(i.toString(), 10)].y;
             } else {
-                if (minWidth > points[i].x) {
-                    minWidth = points[i].x;
-                } else if (maxWidth < points[i].x) {
-                    maxWidth = points[i].x;
+                if (minWidth > points[parseInt(i.toString(), 10)].x) {
+                    minWidth = points[parseInt(i.toString(), 10)].x;
+                } else if (maxWidth < points[parseInt(i.toString(), 10)].x) {
+                    maxWidth = points[parseInt(i.toString(), 10)].x;
                 }
-                if (minHeight > points[i].y) {
-                    minHeight = points[i].y;
-                } else if (maxHeight < points[i].y) {
-                    maxHeight = points[i].y;
+                if (minHeight > points[parseInt(i.toString(), 10)].y) {
+                    minHeight = points[parseInt(i.toString(), 10)].y;
+                } else if (maxHeight < points[parseInt(i.toString(), 10)].y) {
+                    maxHeight = points[parseInt(i.toString(), 10)].y;
                 }
             }
         }
@@ -10099,7 +10102,7 @@ export class PdfViewerBase {
                 // eslint-disable-next-line max-len
                 textMarkupAnnotation: [], shapeAnnotation: [], measureShapeAnnotation: [], stampAnnotations: [], stickyNotesAnnotation: [], freeTextAnnotation: [], signatureAnnotation: [], signatureInkAnnotation: []
             };
-            annotationCollectionList[pageNumber] = annotation;
+            annotationCollectionList[parseInt(pageNumber.toString(), 10)] = annotation;
         }
         return annotationCollectionList;
     }
@@ -10135,7 +10138,7 @@ export class PdfViewerBase {
                 if (isAnnotationObject) {
                     annotation = importAnnotation;
                 } else {
-                    annotation = importAnnotation[a];
+                    annotation = importAnnotation[parseInt(a.toString(), 10)];
                 }
                 // eslint-disable-next-line
                 let newAnnotation: any = {};
@@ -10155,7 +10158,7 @@ export class PdfViewerBase {
                     // eslint-disable-next-line
                     let comments: any = [];
                     for (let i: number = 0; i < annotation.comments.length; i++) {
-                        comments.push(this.updateComments(annotation, annotation.comments[i]));
+                        comments.push(this.updateComments(annotation, annotation.comments[parseInt(i.toString(), 10)]));
                     }
                     newAnnotation.Comments = comments;
                 }
@@ -10180,7 +10183,7 @@ export class PdfViewerBase {
                         // eslint-disable-next-line
                         let bounds: Array<any> = new Array();
                         for (let i: number = 0; i < annotation.bounds.length; i++) {
-                            bounds.push(this.convertBounds(annotation.bounds[i]));
+                            bounds.push(this.convertBounds(annotation.bounds[parseInt(i.toString(), 10)]));
                         }
                         newAnnotation.Bounds = bounds;
                     }
@@ -10288,7 +10291,7 @@ export class PdfViewerBase {
                             // eslint-disable-next-line
                             let points: Array<any> = new Array();
                             for (let i: number = 0; i < annotation.vertexPoints.length; i++) {
-                                points.push(this.convertVertexPoints(annotation.vertexPoints[i]));
+                                points.push(this.convertVertexPoints(annotation.vertexPoints[parseInt(i.toString(), 10)]));
                             }
                             newAnnotation.VertexPoints = points;
                         }
@@ -10451,7 +10454,7 @@ export class PdfViewerBase {
     public importJsonForRotatedDocuments(Rotate: number, pageNumber: number, bounds: any, originalRotation?: number): any {
         // eslint-disable-next-line
         let rotateAngle: any = Math.abs(Rotate);
-        var pageDetails = this.pageSize[pageNumber];
+        var pageDetails = this.pageSize[parseInt(pageNumber.toString(), 10)];
         //originalRotation = !isNullOrUndefined(originalRotation) ? originalRotation : pageDetails.rotation;
         if (originalRotation !== pageDetails.rotation) {
             rotateAngle = this.getRotationAngle(originalRotation, pageNumber);
@@ -10472,7 +10475,7 @@ export class PdfViewerBase {
     }
 
     public getRotationAngle(originalRotation: number, pageNumber: number): any {
-        let pageDetails = this.pageSize[pageNumber];
+        let pageDetails = this.pageSize[parseInt(pageNumber.toString(), 10)];
         originalRotation = Math.abs(originalRotation);
         let rotateAngle: number;
         if (originalRotation === 0) {
@@ -10510,7 +10513,7 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let rotateAngle: any = Math.abs(Rotate);
         let vPoints: IPoint[] = [];
-        var pageDetails = this.pageSize[pageNumber];
+        var pageDetails = this.pageSize[parseInt(pageNumber.toString(), 10)];
         let x: number;
         let y: number;
         let point: IPoint;
@@ -10522,23 +10525,23 @@ export class PdfViewerBase {
         }
         for (let j: number = 0; j < vertexPoints.length; j++) {
             if (rotateAngle === 1) {
-                x = vertexPoints[j].Y ? pageDetails.width - vertexPoints[j].Y : pageDetails.width - vertexPoints[j].y;
-                y = vertexPoints[j].X ? vertexPoints[j].X : vertexPoints[j].x;
+                x = vertexPoints[parseInt(j.toString(), 10)].Y ? pageDetails.width - vertexPoints[parseInt(j.toString(), 10)].Y : pageDetails.width - vertexPoints[parseInt(j.toString(), 10)].y;
+                y = vertexPoints[parseInt(j.toString(), 10)].X ? vertexPoints[parseInt(j.toString(), 10)].X : vertexPoints[parseInt(j.toString(), 10)].x;
                 point = { x: x, y: y };
                 vPoints.push(point);
             } else if (rotateAngle === 2) {
-                x = vertexPoints[j].X ? pageDetails.width - vertexPoints[j].X : pageDetails.width - vertexPoints[j].x;
-                y = vertexPoints[j].Y ? pageDetails.height - vertexPoints[j].Y : pageDetails.height - vertexPoints[j].y;
+                x = vertexPoints[parseInt(j.toString(), 10)].X ? pageDetails.width - vertexPoints[parseInt(j.toString(), 10)].X : pageDetails.width - vertexPoints[parseInt(j.toString(), 10)].x;
+                y = vertexPoints[parseInt(j.toString(), 10)].Y ? pageDetails.height - vertexPoints[parseInt(j.toString(), 10)].Y : pageDetails.height - vertexPoints[parseInt(j.toString(), 10)].y;
                 const point: IPoint = { x: x, y: y };
                 vPoints.push(point);
             } else if (rotateAngle == 3) {
-                x = vertexPoints[j].Y ? vertexPoints[j].Y : vertexPoints[j].y;
-                y = vertexPoints[j].X ? pageDetails.height - vertexPoints[j].X : pageDetails.height - vertexPoints[j].x;
+                x = vertexPoints[parseInt(j.toString(), 10)].Y ? vertexPoints[parseInt(j.toString(), 10)].Y : vertexPoints[parseInt(j.toString(), 10)].y;
+                y = vertexPoints[parseInt(j.toString(), 10)].X ? pageDetails.height - vertexPoints[parseInt(j.toString(), 10)].X : pageDetails.height - vertexPoints[parseInt(j.toString(), 10)].x;
                 point = { x: x, y: y };
                 vPoints.push(point);
             } else {
-                x = vertexPoints[j].X ? vertexPoints[j].X : vertexPoints[j].x;
-                y = vertexPoints[j].Y ? vertexPoints[j].Y : vertexPoints[j].y;
+                x = vertexPoints[parseInt(j.toString(), 10)].X ? vertexPoints[parseInt(j.toString(), 10)].X : vertexPoints[parseInt(j.toString(), 10)].x;
+                y = vertexPoints[parseInt(j.toString(), 10)].Y ? vertexPoints[parseInt(j.toString(), 10)].Y : vertexPoints[parseInt(j.toString(), 10)].y;
                 const point: IPoint = { x: x, y: y };
                 vPoints.push(point);
             }

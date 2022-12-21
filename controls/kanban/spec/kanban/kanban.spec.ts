@@ -1475,7 +1475,7 @@ describe('Kanban base module', () => {
                 dataSourceChanged: dataSourceChangedEvent
             };
             kanbanObj = util.createKanban(model, kanbanData.slice(0, 20), done);
-
+            
             function dataSourceChangedEvent (args: any) {
                 dataSourceEventCalled = true;
             }

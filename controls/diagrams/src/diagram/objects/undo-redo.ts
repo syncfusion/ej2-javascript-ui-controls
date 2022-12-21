@@ -180,7 +180,7 @@ export class UndoRedo {
     private removeFromStack(entyList: HistoryEntry[], list: HistoryEntry): void {
         if (entyList.length) {
             for (let i: number = 0; i <= entyList.length; i++) {
-                if (entyList[i].undoObject === list.undoObject && entyList[i].redoObject === list.redoObject) {
+                if (entyList[parseInt(i.toString(), 10)].undoObject === list.undoObject && entyList[parseInt(i.toString(), 10)].redoObject === list.redoObject) {
                     entyList.splice(i, 1); break;
                 }
             }
@@ -429,7 +429,7 @@ export class UndoRedo {
                 if (knownNode) {
                     for (const key of Object.keys(knownNode)) {
                         const index: number = Number(key);
-                        object = (value as SelectorModel).nodes ? diagram.nodes[index] as Node : diagram.connectors[index];
+                        object = (value as SelectorModel).nodes ? diagram.nodes[parseInt(index.toString(), 10)] as Node : diagram.connectors[parseInt(index.toString(), 10)];
                     }
                 }
             }
@@ -461,10 +461,10 @@ export class UndoRedo {
         for (const key of Object.keys(property)) {
             if (collection) {
                 if (!this.ignoreProperty(key)) {
-                    if (property[key] instanceof Object) {
-                        this.getProperty(collection[key] as Object, property[key] as Object);
+                    if (property[`${key}`] instanceof Object) {
+                        this.getProperty(collection[`${key}`] as Object, property[`${key}`] as Object);
                     } else {
-                        collection[key] = property[key];
+                        collection[`${key}`] = property[`${key}`];
                     }
                 }
             }
@@ -692,7 +692,7 @@ export class UndoRedo {
 
         if (obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
-                connector = obj.connectors[i];
+                connector = obj.connectors[parseInt(i.toString(), 10)];
                 this.segmentChanged(connector, diagram);
             }
         }
@@ -709,13 +709,13 @@ export class UndoRedo {
         let connector: ConnectorModel;
         if (obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
-                node = obj.nodes[i];
+                node = obj.nodes[parseInt(i.toString(), 10)];
                 this.positionChanged(node, diagram);
             }
         }
         if (obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
-                connector = obj.connectors[i];
+                connector = obj.connectors[parseInt(i.toString(), 10)];
                 this.connectionChanged(connector, diagram);
             }
         }
@@ -756,12 +756,12 @@ export class UndoRedo {
         let node: NodeModel;
         if (obj && obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
-                node = obj.nodes[i];
+                node = obj.nodes[parseInt(i.toString(), 10)];
                 if (node.children && !node.container) {
                     const elements: (NodeModel | ConnectorModel)[] = [];
                     const nodes: (NodeModel | ConnectorModel)[] = diagram.commandHandler.getAllDescendants(node, elements);
                     for (let i: number = 0; i < nodes.length; i++) {
-                        const tempNode: NodeModel | ConnectorModel = entry.childTable[nodes[i].id];
+                        const tempNode: NodeModel | ConnectorModel = entry.childTable[nodes[parseInt(i.toString(), 10)].id];
                         if ((getObjectType(tempNode) === Node)) {
                             this.sizeChanged(tempNode, diagram, entry);
                             this.positionChanged(tempNode as NodeModel, diagram);
@@ -778,7 +778,7 @@ export class UndoRedo {
         if (obj && obj.connectors && obj.connectors.length > 0) {
             const connectors: ConnectorModel[] = obj.connectors;
             for (i = 0; i < connectors.length; i++) {
-                connector = connectors[i];
+                connector = connectors[parseInt(i.toString(), 10)];
                 this.connectionChanged(connector, diagram);
             }
         }
@@ -809,14 +809,14 @@ export class UndoRedo {
         }
         if (obj && obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
-                node = obj.nodes[i];
+                node = obj.nodes[parseInt(i.toString(), 10)];
                 this.rotationChanged(node, diagram);
                 this.positionChanged(node, diagram);
             }
         }
         if (obj && obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
-                connector = obj.connectors[i];
+                connector = obj.connectors[parseInt(i.toString(), 10)];
                 this.connectionChanged(connector, diagram);
             }
         }

@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable brace-style */
-/* eslint-disable max-len */
 /**
  * Tree Map Components
  */
@@ -19,7 +15,7 @@ import { SelectionSettings, TooltipSettings, LevelSettings, LeafItemSettings, Hi
 import { TreeMapModel } from './treemap-model';
 import { LayoutMode, TreeMapTheme, RenderingMode } from './utils/enum';
 import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs } from '../treemap/model/interface';
-import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs, IItemDataEventArgs } from '../treemap/model/interface';
+import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs } from '../treemap/model/interface';
 import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRightClickEventArgs } from '../treemap/model/interface';
 import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';
 import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';
@@ -27,7 +23,7 @@ import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../tre
 import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeElement, setItemTemplateContent } from '../treemap/utils/helper';
 import { removeClassNames, removeShape, textFormatter } from '../treemap/utils/helper';
 import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';
-import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';
+import { load, loaded, drillStart, drillEnd } from '../treemap/model/constants';
 import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';
 import { LayoutPanel } from './layout/render-panel';
 import { TreeMapTooltip } from './user-interaction/tooltip';
@@ -289,126 +285,126 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Triggers when the treemap is on load.
      *
-     * @event
+     * @event load
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
     /**
      * Triggers before the prints gets started.
      *
-     * @event
+     * @event beforePrint
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
      * Triggers after treemap is rendered.
      *
-     * @event
+     * @event loaded
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
      * Triggers before item rendering in the treemap component.
      *
-     * @event
+     * @event itemRendering
      */
     @Event()
     public itemRendering: EmitType<IItemRenderingEventArgs>;
     /**
      * Triggers on performing drill down functionality in the treemap.
      *
-     * @event
+     * @event drillStart
      */
     @Event()
     public drillStart: EmitType<IDrillStartEventArgs>;
     /**
      * Triggers after drill down functionality gets completed in the treemap.
      *
-     * @event
+     * @event drillEnd
      */
     @Event()
     public drillEnd: EmitType<IDrillEndEventArgs>;
     /**
      * Triggers after selecting a treemap item.
      *
-     * @event
+     * @event itemSelected
      */
     @Event()
     public itemSelected: EmitType<IItemSelectedEventArgs>;
     /**
      * Triggers after highlighting on the treemap item.
      *
-     * @event
+     * @event itemHighlight
      */
     @Event()
     public itemHighlight: EmitType<IItemHighlightEventArgs>;
     /**
      * Triggers on rendering of the tooltip in the treemap component.
      *
-     * @event
+     * @event tooltipRendering
      */
     @Event()
     public tooltipRendering: EmitType<ITreeMapTooltipRenderEventArgs>;
     /**
      * Triggers after clicking an item in the treemap.
      *
-     * @event
+     * @event itemClick
      */
     @Event()
     public itemClick: EmitType<IItemClickEventArgs>;
     /**
      * Triggers after mouse hover on the treemap item.
      *
-     * @event
+     * @event itemMove
      */
     @Event()
     public itemMove: EmitType<IItemMoveEventArgs>;
     /**
      * Triggers after clicking on the treemap.
      *
-     * @event
+     * @event click
      */
     @Event()
     public click: EmitType<IItemClickEventArgs>;
     /**
      * Triggers after double clicking on the treemap.
      *
-     * @event
+     * @event doubleClick
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
     /**
      * Triggers after right clicking on the treemap.
      *
-     * @event
+     * @event rightClick
      */
     @Event()
     public rightClick: EmitType<IMouseMoveEventArgs>;
     /**
      * Triggers after mouse hover on the treemap.
      *
-     * @event
+     * @event mouseMove
      */
     @Event()
     public mouseMove: EmitType<IMouseMoveEventArgs>;
     /**
      * Triggers after resizing the treemap component.
      *
-     * @event
+     * @event resize
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
     /**
      * Triggers before rendering each legend item in the treemap.
      *
-     * @event
+     * @event legendItemRendering
      */
     @Event()
     public legendItemRendering: EmitType<ILegendItemRenderingEventArgs>;
     /**
      * Triggers before rendering the legend items in the treemap.
      *
-     * @event
+     * @event legendRendering
      * @deprecated
      */
     @Event()
@@ -443,8 +439,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public intl: Internationalization;
     /**
-     * @private
      * Stores the area bounds.
+     *
+     * @private
      */
     public areaRect: Rect;
     /**
@@ -454,8 +451,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public themeStyle: IThemeStyle;
     /**
-     * @private
      * Stores the legend bounds.
+     *
+     * @private
      */
     public totalRect: Rect;
     /** @private */
@@ -488,10 +486,12 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public selectionId: string;
 
-    /**s
+    /**
      * Constructor for TreeMap component.
+     *
+     * @param {TreeMapModel} options - Specifies the treemap instance.
+     * @param {string | HTMLElement} element - Specifies the treemap element.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(options?: TreeMapModel, element?: string | HTMLElement) {
         super(options, element);
     }
@@ -510,8 +510,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     protected render(): void {
         this.renderElements();
     }
-	
-	private renderElements(): void {
+
+    private renderElements(): void {
         LevelsData.levelsData = null;
         LevelsData.defaultLevelsData = null;
         LevelsData.hierarchyData = null;
@@ -627,9 +627,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             const secondaryElement: Element = createElement('div', {
-                id: this.element.id + '_Secondary_Element',
-                styles: 'position: absolute;z-index:1;'
+                id: this.element.id + '_Secondary_Element'
             });
+            (secondaryElement as HTMLElement).style.cssText = 'position: absolute;z-index:1;';
             this.element.appendChild(secondaryElement);
         }
     }
@@ -643,9 +643,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * @private
      * Render the treemap border
      *
+     * @private
      * @returns {void}
      */
     private renderBorder(): void {
@@ -688,7 +688,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 groupEle
             );
             element.setAttribute('aria-label', title.description || title.text);
-            element.setAttribute('role','');
+            element.setAttribute('role', '');
             element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = (this.availableSize.height - titleBounds.y - titlePadding - this.margin.bottom);
@@ -704,8 +704,6 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.areaRect = new Rect(this.margin.left, this.margin.top, width, height);
         }
     }
-
-
 
     protected processingData(): void {
         let path: string;
@@ -725,28 +723,29 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 const data: any = {};
                 data['level'] = 0;
                 path = this.leafItemSettings.labelPath;
-                data[path] = [];
+                data[path as string] = [];
                 for (let i: number = 0; i < this.dataSource.length; i++) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const child: any[] = findChildren(this.dataSource[i])['values'];
+                    const child: any[] = findChildren(this.dataSource[i as number] as any)['values'];
                     if (this.isHierarchicalData && child && child.length > 0) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        child.forEach((currentData: any, dataIndex: number) => {
-                            if (currentData[path]) {
+                        child.forEach((currentData: any) => {
+                            if (currentData[path as string]) {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                (<any[]>data[path]).push({
-                                    groupIndex: 0, name: currentData[path], levelOrderName: (currentData[path] as string).toString(),
+                                (<any[]>data[path as string]).push({
+                                    groupIndex: 0, name: currentData[path as string],
+                                    levelOrderName: (currentData[path as string] as string).toString(),
                                     data: currentData, weight: currentData[this.weightValuePath]
                                 });
                             }
                         });
                     } else {
-                        if (this.dataSource[i][path]) {
+                        if (this.dataSource[i as number][path as string]) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (<any[]>data[path]).push({
-                                groupIndex: 0, name: this.dataSource[i][path], levelOrderName: (
-                                    this.dataSource[i][path] as string).toString(), data: this.dataSource[i],
-                                weight: this.dataSource[i][this.weightValuePath]
+                            (<any[]>data[path as string]).push({
+                                groupIndex: 0, name: this.dataSource[i as number][path as string], levelOrderName: (
+                                    this.dataSource[i as number][path as string] as string).toString(), data: this.dataSource[i as number],
+                                weight: this.dataSource[i as number][this.weightValuePath]
                             });
                         }
                     }
@@ -758,7 +757,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     LevelsData.hierarchyData = extend([], this.dataSource, LevelsData.hierarchyData, true) as any[];
                     for (let i: number = 0; i < LevelsData.hierarchyData.length; i++) {
-                        this.processHierarchicalData(LevelsData.hierarchyData[i], i);
+                        this.processHierarchicalData(LevelsData.hierarchyData[i as number], i);
                     }
                     LevelsData.levelsData = LevelsData.hierarchyData;
                 } else {
@@ -770,7 +769,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 path = this.levels[0].groupPath;
             }
             if (!this.isHierarchicalData) {
-                this.findTotalWeight(LevelsData.levelsData[0][path], 'Parent');
+                this.findTotalWeight(LevelsData.levelsData[0][path as string], 'Parent');
             }
         }
     }
@@ -779,7 +778,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let child: any[]; this.dataSource = this.dataSource as any[];
         for (let i: number = 0; i < this.dataSource.length; i++) {
-            child = findChildren(this.dataSource[i])['values'];
+            child = findChildren(this.dataSource[i as number])['values'];
             if (child && child.length) {
                 this.isHierarchicalData = true;
                 break;
@@ -792,41 +791,38 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processHierarchicalData(data: any, dataCount: number): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let childData: any[]; const levelData: any[] = [];
+        let childData: any[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let newData: any = {};
         let levelIndex: number;
         const path: string = this.leafItemSettings.labelPath ? this.leafItemSettings.labelPath : this.weightValuePath;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const currentData: any = {};
-        let level: LevelSettingsModel; let key: string;
+        let key: string;
         newData = findChildren(data);
         childData = newData ? newData['values'] : null;
         if (childData && childData.length > 0) {
             key = newData['key'];
             for (let i: number = 0; i < this.levels.length; i++) {
-                if (key === this.levels[i].groupPath) {
-                    level = this.levels[i];
+                if (key === this.levels[i as number].groupPath) {
                     levelIndex = i;
                 }
             }
             for (let j: number = 0; j < childData.length; j++) {
-                childData[j]['name'] = childData[j][path];
-                childData[j]['levelOrderName'] = (levelIndex === 0 ? childData[j]['name'] :
-                    data['levelOrderName'] + '#' + childData[j]['name']) + '';
-                const childItemLevel: string = childData[j]['levelOrderName']; let childLevel: number;
+                childData[j as number]['name'] = childData[j as number][path as string];
+                childData[j as number]['levelOrderName'] = (levelIndex === 0 ? childData[j as number]['name'] :
+                    data['levelOrderName'] + '#' + childData[j as number]['name']) + '';
+                const childItemLevel: string = childData[j as number]['levelOrderName']; let childLevel: number;
                 if (childItemLevel.search('#') > 0) {
                     childLevel = childItemLevel.split('#').length - 1;
                 }
-                childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? childLevel === this.levels.length
+                childData[j as number]['groupIndex'] = isNullOrUndefined(levelIndex) ? childLevel === this.levels.length
                     ? this.levels.length : childLevel : levelIndex;
                 if (levelIndex !== 0) {
-                    childData[j]['parent'] = data;
+                    childData[j as number]['parent'] = data;
                 }
-                childData[j]['groupName'] = key;
-                childData[j]['data'] = childData[j];
-                childData[j]['isDrilled'] = false;
-                childData[j]['weight'] = childData[j][this.weightValuePath];
+                childData[j as number]['groupName'] = key;
+                childData[j as number]['data'] = childData[j as number];
+                childData[j as number]['isDrilled'] = false;
+                childData[j as number]['weight'] = childData[j as number][this.weightValuePath];
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             childData.forEach((currentData: any) => {
@@ -837,7 +833,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let mainData: any[] = LevelsData.hierarchyData[0][this.levels[0].groupPath];
             for (let k: number = 0; k < LevelsData.hierarchyData.length; k++) {
-                childData = findChildren(LevelsData.hierarchyData[k])['values'];
+                childData = findChildren(LevelsData.hierarchyData[k as number])['values'];
                 if (k !== 0 && childData) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     childData.forEach((currentData: any) => { mainData.push(currentData); });
@@ -848,7 +844,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             mainData = LevelsData.hierarchyData[0][this.levels[0].groupPath];
             for (let l: number = 0; l < mainData.length; l++) {
                 newData[this.levels[0].groupPath] = mainData;
-                mainData[l]['parent'] = newData;
+                mainData[l as number]['parent'] = newData;
             }
         }
     }
@@ -856,7 +852,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method is used to perform the print functionality in treemap.
      *
-     * @param id - Specifies the element to print the treemap.
+     * @param {string[] | string | Element} id - Specifies the element to print the treemap.
+     * @returns {void}
      */
     public print(id?: string[] | string | Element): void {
         if (this.allowPrint && this.printModule) {
@@ -866,22 +863,24 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method is used to perform the export functionality for the rendered treemap.
      *
-     * @param type - Specifies the index of the axis.
-     * @param fileName - Specifies file name for exporting the rendered treemap.
-     * @param orientation - Specifies the orientation of the pdf document.
+     * @param {ExportType} type - Specifies the extension type of the exported document.
+     * @param {string} fileName - Specifies file name for exporting the rendered TreeMap.
+     * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document.
+     * @param {boolean} allowDownload - Specifies whether the exported file should be downloaded or not.
+     * @returns {string} - Specifies the base64 string of the exported image which is returned when the allowDownload is set to false.
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
         if (isNullOrUndefined(allowDownload)) {
             allowDownload = true;
         }
         if (type === 'PDF' && this.allowPdfExport && this.pdfExportModule) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
             return new Promise((resolve: any, reject: any) => {
                 resolve(this.pdfExportModule.export(this, type, fileName, orientation, allowDownload));
             });
 
         } else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
             return new Promise((resolve: any, reject: any) => {
                 resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
             });
@@ -891,24 +890,24 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     private processFlatJsonData(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.dataSource = this.dataSource as any[];
-        let groupPath: string; let childGroupPath: string;
-        const orderNames: string[] = []; const process: boolean = false;
+        let groupPath: string;
+        const orderNames: string[] = [];
         for (let i: number = 0; i < this.levels.length + 1; i++) {
-            groupPath = this.levels[i] ? this.levels[i].groupPath : this.leafItemSettings.labelPath;
+            groupPath = this.levels[i as number] ? this.levels[i as number].groupPath : this.leafItemSettings.labelPath;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const level: any = {};
             level['level'] = i;
-            level[groupPath] = [];
+            level[groupPath as string] = [];
             LevelsData.levelsData.push(level);
             for (let j: number = 0; j < this.dataSource.length; j++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const currentData: any = {}; let childName: string = '';
                 if (!isNullOrUndefined(groupPath)) {
-                    const name: string = this.dataSource[j][groupPath];
+                    const name: string = this.dataSource[j as number][groupPath as string];
                     if (i !== 0) {
                         for (let k: number = 0; k <= i; k++) {
-                            const childGroupPath: string = this.levels[k] ? this.levels[k].groupPath : groupPath;
-                            childName += (this.dataSource[j][childGroupPath]) + ((k === i) ? '' : '#');
+                            const childGroupPath: string = this.levels[k as number] ? this.levels[k as number].groupPath : groupPath;
+                            childName += (this.dataSource[j as number][childGroupPath as string]) + ((k === i) ? '' : '#');
                         }
                     }
                     if (!(orderNames.length > 0 ? orderNames.indexOf(childName ?
@@ -918,9 +917,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         currentData['groupIndex'] = i;
                         currentData['isDrilled'] = false;
                         currentData['groupName'] = groupPath;
-                        currentData['data'] = this.dataSource[j];
+                        currentData['data'] = this.dataSource[j as number];
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (<any[]>LevelsData.levelsData[LevelsData.levelsData.length - 1][groupPath]).push(currentData);
+                        (<any[]>LevelsData.levelsData[(LevelsData.levelsData.length - 1) as number][groupPath as string]).push(currentData);
                         orderNames.push((childName) ? childName : name);
                     }
                 }
@@ -931,31 +930,33 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method orders the treemap level data.
      *
-     * @param start - Specifies the start value of the treemap level.
+     * @param {number} start - Specifies the start value of the treemap level.
+     * @returns {void}
      */
     public reOrderLevelData(start: number): void {
         let currentName: string;
-        const currentPath: string = this.levels[start] ? this.levels[start].groupPath : this.leafItemSettings.labelPath;
+        const currentPath: string = this.levels[start as number] ? this.levels[start as number].groupPath : this.leafItemSettings.labelPath;
         const prevPath: string = this.levels[start - 1].groupPath;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const currentData: any[] = LevelsData.levelsData[start][currentPath] as any[];
+        const currentData: any[] = LevelsData.levelsData[start as number][currentPath as string] as any[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const previousData: any[] = LevelsData.levelsData[start - 1][prevPath] as any[];
+        const previousData: any[] = LevelsData.levelsData[start - 1][prevPath as string] as any[];
         for (let i: number = 0; i < currentData.length; i++) {
-            currentName = currentData[i]['levelOrderName'] as string;
+            currentName = currentData[i as number]['levelOrderName'] as string;
             for (let j: number = 0; j < previousData.length; j++) {
-                previousData[j][currentPath] = isNullOrUndefined(previousData[j][currentPath]) ? [] : previousData[j][currentPath];
-                if (this.IsChildHierarchy(currentName.split('#'), (previousData[j]['levelOrderName'] as string).split('#'))) {
-                    if (isNullOrUndefined(currentData[i]['parent'])) {
-                        currentData[i]['parent'] = previousData[j];
+                previousData[j as number][currentPath as string] = isNullOrUndefined(previousData[j as number][currentPath as string]) ?
+                    [] : previousData[j as number][currentPath as string];
+                if (this.IsChildHierarchy(currentName.split('#'), (previousData[j as number]['levelOrderName'] as string).split('#'))) {
+                    if (isNullOrUndefined(currentData[i as number]['parent'])) {
+                        currentData[i as number]['parent'] = previousData[j as number];
                     }
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (<any[]>previousData[j][currentPath]).push(currentData[i]);
+                    (<any[]>previousData[j as number][currentPath as string]).push(currentData[i as number]);
                     break;
                 }
             }
         }
-        this.findTotalWeight(LevelsData.levelsData[LevelsData.levelsData.length - 1][currentPath], 'Child');
+        this.findTotalWeight(LevelsData.levelsData[LevelsData.levelsData.length - 1][currentPath as string], 'Child');
         LevelsData.levelsData.splice(start, 1);
         if ((start - 1) > 0) {
             this.reOrderLevelData(start - 1);
@@ -966,7 +967,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let isChild: boolean = false;
         for (let i: number = 0; i < previous.length; i++)
         {
-            if (current.length < i || previous[i] !== current[i])
+            if (current.length < i || previous[i as number] !== current[i as number])
             {
                 return false;
             }
@@ -981,31 +982,31 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method finds the weight value of the treemap level.
      *
-     * @param processData - Specifies the treemap data.
-     * @param type - Specifies the type of the data.
+     * @param {any[]} processData - Specifies the treemap data.
+     * @param {string} type - Specifies the type of the data.
+     * @returns {void}
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public findTotalWeight(processData: any[], type: string): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let totalWeight: number; const childData: any[] = [];
-        let levelName: string; const start: number = 0; let split: string[];
+        let totalWeight: number;
+        let split: string[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let groupName: string; const groupObj: any = {};
         for (let i: number = 0; i < processData.length; i++) {
             totalWeight = 0;
-            groupName = processData[i]['groupName'];
-            split = (processData[i]['levelOrderName'] as string).split('#');
+            groupName = processData[i as number]['groupName'];
+            split = (processData[i as number]['levelOrderName'] as string).split('#');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (<any[]>this.dataSource).forEach((data: any) => {
-                if (isContainsData(split, processData[i]['levelOrderName'], data, this)) {
+                if (isContainsData(split, processData[i as number]['levelOrderName'], data, this)) {
                     totalWeight += parseFloat(data[this.weightValuePath]);
                 }
             });
             if (type === 'Parent') {
-                groupObj[groupName] = processData;
-                processData[i]['parent'] = groupObj;
+                groupObj[groupName as string] = processData;
+                processData[i as number]['parent'] = groupObj;
             }
-            processData[i]['weight'] = totalWeight;
+            processData[i as number]['weight'] = totalWeight;
         }
     }
 
@@ -1064,12 +1065,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles the window resize event on treemap.
      *
-     * @param e - Specifies the pointer event.
+     * @param {Event} e - Specifies the pointer event.
+     * @returns {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public resizeOnTreeMap(e: Event): void {
         if (!this.isDestroyed) {
             this.isResize = true;
-            let args: IResizeEventArgs = {
+            const args: IResizeEventArgs = {
                 name: resize,
                 cancel: false,
                 previousSize: this.availableSize,
@@ -1087,6 +1090,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.refreshing = true;
                         this.wireEVents();
                         args.currentSize = this.availableSize;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         this.trigger(resize, args, (observedArgs: IResizeEventArgs) => {
                             this.render();
                         });
@@ -1099,7 +1103,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles the click event on the treemap.
      *
-     * @param e - Specifies the mouse click event in the treemap.
+     * @param {PointerEvent} e - Specifies the mouse click event in the treemap.
+     * @returns {void}
      */
     public clickOnTreeMap(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -1113,8 +1118,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             e.preventDefault();
             itemIndex = parseFloat(targetId.split('_Item_Index_')[1]);
             eventArgs = {
-                cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
-                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name'],
+                cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex as number], mouseEvent: e,
+                groupIndex: this.layout.renderItems[itemIndex as number]['groupIndex'], groupName: this.layout.renderItems[itemIndex as number]['name'],
                 text: labelText, contentItemTemplate : labelText
             };
             this.trigger(itemClick, eventArgs, (observedArgs: IItemClickEventArgs) => {
@@ -1142,7 +1147,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles the double click event in the treemap.
      *
-     * @param e - Specifies the pointer event of mouse click.
+     * @param {PointerEvent} e - Specifies the pointer event of mouse click.
+     * @returns {void}
      */
     public doubleClickOnTreeMap(e: PointerEvent): void {
         const doubleClickArgs: IDoubleClickEventArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
@@ -1153,7 +1159,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles the right click event in the treemap.
      *
-     * @param e - Specifies the pointer event of mouse click.
+     * @param {PointerEvent} e - Specifies the pointer event of mouse click.
+     * @returns {void}
      */
     public rightClickOnTreeMap(e: PointerEvent): void {
         const rightClickArgs: IRightClickEventArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
@@ -1164,7 +1171,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles the mouse down event in the treemap.
      *
-     * @param e - Specifies the pointer event of mouse click.
+     * @param {PointerEvent} e - Specifies the pointer event of mouse click.
+     * @returns {void}
      */
     public mouseDownOnTreeMap(e: PointerEvent): void {
         if ((<Element>e.target).id.indexOf('_Item_Index') > -1) {
@@ -1176,7 +1184,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles the mouse move event in the treemap.
      *
-     * @param e - Specifies the pointer event of mouse click.
+     * @param {PointerEvent} e - Specifies the pointer event of mouse click.
+     * @returns {void}
      */
     public mouseMoveOnTreeMap(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
@@ -1203,17 +1212,18 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method calculates the selected treemap levels.
      *
-     * @param labelText - Specifies the label text.
-     * @param item - Specifies the treemap item.
+     * @param {string} labelText - Specifies the label text.
+     * @param {any} item - Specifies the treemap item.
+     * @returns {any} - Returns label of the drilled level.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     public calculateSelectedTextLevels(labelText: string, item: any): any {
         //to find the levels by clicking the particular text both for drillDownView as true / false.
-        let drillLevel: number; let k: string; let text: String;
+        let drillLevel: number; let k: string; let text: string;
         const levelLabels: string = item['levelOrderName'];
         const levelText: string[] = levelLabels.split('#');
         for (k of Object.keys(levelText)) {
-            if (levelText[k] === labelText) {
+            if (levelText[k as string] === labelText) {
                 drillLevel = parseInt(k, 10);
                 text = labelText;
             }
@@ -1224,33 +1234,34 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method calculates the previous level of child items in treemap.
      *
-     * @param labelText - Specifies the label text in treemap
-     * @param drillLevelValues - Specifies the values of drill level.
-     * @param item - Specifies the treemap item.
-     * @param directLevel - Specifies the current level.
+     * @param {any} drillLevelValues - Specifies the values of drill level.
+     * @param {any} item - Specifies the treemap item.
+     * @param {boolean} directLevel - Specifies the current level.
+     * @returns {boolean} - check whether it is previous level or not.
+     * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public calculatePreviousLevelChildItems(labelText: string, drillLevelValues: any, item: any, directLevel: boolean): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+    public calculatePreviousLevelChildItems(drillLevelValues: any, item: any, directLevel: boolean): boolean {
         //By clicking any child items drilldown to the particular level.
         //At the time store all the previous drilled level items in drilledItems
         // This condition satisfies while drilldown View is set as false and the text contains '[+]'
         let text: string; let p: number = 0; let levelItems: string; let text1: string;
         const drillTextLevel: number = this.layout.renderItems[0]['levelOrderName'].split('#').length;
         for (let h: number = 0; h < drillTextLevel; h++) {
-            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '#' + drillLevelValues['levelText'][h];
+            text1 = h === 0 ? drillLevelValues['levelText'][h as number] : text1 + '#' + drillLevelValues['levelText'][h as number];
         }
         p = drillTextLevel > 1 ? drillTextLevel : p;
         for (levelItems of Object['values'](this.layout.renderItems)) {
             const drillLevelText: string = levelItems['levelOrderName'].split('#');
             if (drillLevelText[0] === drillLevelValues['levelText'][0]) {
-                text = p === 0 ? isNullOrUndefined(text1) ? text1 : drillLevelValues['levelText'][p] :
-                    directLevel ? text1 : text1 + '#' + drillLevelValues['levelText'][p];
+                text = p === 0 ? isNullOrUndefined(text1 as string) ? text1 : drillLevelValues['levelText'][p as number] :
+                    directLevel ? text1 : text1 + '#' + drillLevelValues['levelText'][p as number];
                 if (text === levelItems['levelOrderName']) {
                     this.drilledItems.push({ name: levelItems['levelOrderName'], data: levelItems });
                     p++;
                     directLevel = true;
                     if (p <= item['groupIndex']) {
-                        text = text + '#' + drillLevelValues['levelText'][p];
+                        text = text + '#' + drillLevelValues['levelText'][p as number];
                         text1 = text;
                     }
                 }
@@ -1262,19 +1273,20 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method compares the selected labels with the drill down items.
      *
-     * @param drillLevelValues - Specifies the values of drill level.
-     * @param item - Specifies the treemap item.
-     * @param i - Specifies the treemap item.
+     * @param {any} drillLevelValues - Specifies the values of drill level.
+     * @param {any} item - Specifies the treemap item.
+     * @param {number} i - Specifies the treemap item.
+     * @returns {any} - return the new drill down object.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     public compareSelectedLabelWithDrillDownItems(drillLevelValues: any, item: any, i: number): any {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let drillLevelChild: any; const newDrillItem: any = {};
         const b: number = drillLevelValues['drillLevel'] + 1;
-        if (b === this.drilledItems[i]['data']['groupIndex']) {
-            drillLevelChild = this.drilledItems[i]['data']['parent'];
+        if (b === this.drilledItems[i as number]['data']['groupIndex']) {
+            drillLevelChild = this.drilledItems[i as number]['data']['parent'];
             drillLevelChild['isDrilled'] = true;
-            newDrillItem[drillLevelChild[this.drilledItems[i]['data']['groupName']]]
+            newDrillItem[drillLevelChild[this.drilledItems[i as number]['data']['groupName']]]
                 = [drillLevelChild];
             // to remove all the items after matched drilled items
             this.drilledItems.splice(i, this.drilledItems.length);
@@ -1288,7 +1300,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles mouse end event in treemap.
      *
-     * @param e - Specifies the pointer event of mouse.
+     * @param {PointerEvent} e - Specifies the pointer event of mouse.
+     * @returns {void}
      */
     public mouseEndOnTreeMap(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target; const targetId: string = targetEle.id; let totalRect: Rect;
@@ -1303,13 +1316,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 e.preventDefault();
             }
             index = parseFloat(targetId.split('_Item_Index_')[1]);
-            item = this.layout.renderItems[index];
+            item = this.layout.renderItems[index as number];
             const labelText: string = targetEle.innerHTML;
             if (this.enableBreadcrumb) {
                 drillLevelValues = this.calculateSelectedTextLevels(labelText, item);
                 drillLevel = drillLevelValues['drillLevel'];
                 if (!this.drillDownView && labelText.search('[+]') !== -1) {
-                    directLevel = this.calculatePreviousLevelChildItems(labelText, drillLevelValues, item, directLevel);
+                    directLevel = this.calculatePreviousLevelChildItems(drillLevelValues, item, directLevel);
                 }
             }
             if (this.levels.length !== 0 && !item['isLeafItem'] && findChildren(item)['values'] &&
@@ -1324,7 +1337,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                                 i -= 1; break;
                             }
                         } //when clicking the levels drill back to the previous level process takes place
-                        if (item['levelOrderName'] === this.drilledItems[i]['name'] && !directLevel && isNullOrUndefined(drillLevel)) {
+                        if (item['levelOrderName'] === this.drilledItems[i as number]['name'] && !directLevel && isNullOrUndefined(drillLevel)) {
                             if (item['groupIndex'] === 0 && item['parent'][item['groupName']] instanceof Array) {
                                 item['isDrilled'] = !(item['isDrilled']);
                                 if (!item['isDrilled']) {
@@ -1389,7 +1402,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                             this.layout.onDemandProcess(observedArgs.childItems);
                         } else {
                             this.layout.calculateLayoutItems(newDrillItem, totalRect);
-                            this.layout.renderLayoutItems(newDrillItem);
+                            this.layout.renderLayoutItems();
                         }
                     }
                 });
@@ -1409,8 +1422,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * This method handles mouse leave event in treemap.
      *
-     * @param e - Specifies the pointer event of mouse.
+     * @param {PointerEvent} e - Specifies the pointer event of mouse.
+     * @return {void}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public mouseLeaveOnTreeMap(e: PointerEvent): void {
         if (this.treeMapTooltipModule) {
             this.treeMapTooltipModule.removeTooltip();
@@ -1420,13 +1435,17 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         removeClassNames(document.getElementsByClassName('treeMapHighLight'), 'treeMapHighLight', this);
         if (this.treeMapHighlightModule) {
-            removeShape(this.treeMapHighlightModule.shapeHighlightCollection, 'highlight');
+            removeShape(this.treeMapHighlightModule.shapeHighlightCollection);
             this.treeMapHighlightModule.highLightId = '';
         }
     }
 
     /**
      * This method is used to select or remove the selection of treemap item based on the provided selection settings.
+     *
+     * @param {string[]} levelOrder - Specifies the order of the level.
+     * @param {boolean} isSelected - check whether it is selected or not.
+     * @return {void}
      */
     public selectItem(levelOrder: string[], isSelected ?: boolean): void {
         if (isNullOrUndefined(isSelected)) {
@@ -1435,9 +1454,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let levelOrderName: string = '';
         for (let i: number = 0; i < levelOrder.length; i++) {
             if (i !== levelOrder.length - 1) {
-                levelOrderName += levelOrder[i] + '#';
+                levelOrderName += levelOrder[i as number] + '#';
             } else {
-                levelOrderName += levelOrder[i];
+                levelOrderName += levelOrder[i as number];
             }
         }
         if (this.treeMapSelectionModule && this.selectionSettings.enable) {
@@ -1507,25 +1526,26 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: TreeMapModel, oldProp: TreeMapModel): void {
         if (!this.isDestroyed) {
             let render: boolean = false;
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
-                    case 'background':
-                        this.renderBorder();
-                        break;
-                    case 'height':
-                    case 'width':
-                    case 'layoutType':
-                    case 'levels':
-                    case 'drillDownView':
-                    case 'renderDirection':
-                    case 'leafItemSettings':
-                    case 'legendSettings':
-                    case 'dataSource':
-                        render = true;
-                        break;
+                case 'background':
+                    this.renderBorder();
+                    break;
+                case 'height':
+                case 'width':
+                case 'layoutType':
+                case 'levels':
+                case 'drillDownView':
+                case 'renderDirection':
+                case 'leafItemSettings':
+                case 'legendSettings':
+                case 'dataSource':
+                    render = true;
+                    break;
                 }
             }
             if (render) {
@@ -1537,6 +1557,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Gets component name.
+     *
+     * @returns {string} - return the treemap instance.
      */
     public getModuleName(): string {
         return 'treemap';

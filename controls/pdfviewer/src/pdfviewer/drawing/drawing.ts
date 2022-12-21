@@ -46,7 +46,7 @@ export class Drawing {
         const annotations: PdfAnnotationBaseModel[] = viewer.annotations;
         if (annotations) {
             for (let i: number = 0; i < annotations.length; i++) {
-                const annotation: PdfAnnotationBaseModel = annotations[i];
+                const annotation: PdfAnnotationBaseModel = annotations[parseInt(i.toString(), 10)];
                 this.initObject(annotation);
             }
         }
@@ -69,9 +69,9 @@ export class Drawing {
         if (this.pdfViewer.zIndexTable.length !== undefined) {
             let notFound: boolean = true;
             for (let i: number = 0; i < this.pdfViewer.zIndexTable.length; i++) {
-                if (this.pdfViewer.zIndexTable[i].pageId === pageId) {
+                if (this.pdfViewer.zIndexTable[parseInt(i.toString(), 10)].pageId === pageId) {
                     notFound = false;
-                    zIndexTable = this.pdfViewer.zIndexTable[i];
+                    zIndexTable = this.pdfViewer.zIndexTable[parseInt(i.toString(), 10)];
                     break;
                 }
             }
@@ -661,7 +661,7 @@ export class Drawing {
             obj.targetPoint = obj.vertexPoints[obj.vertexPoints.length - 1];
             for (let i: number = 0; i < obj.vertexPoints.length; i++) {
                 if (i !== 0 && i !== obj.vertexPoints.length - 1) {
-                    obj.segments.push(obj.vertexPoints[i]);
+                    obj.segments.push(obj.vertexPoints[parseInt(i.toString(), 10)]);
                 }
             }
         }
@@ -721,12 +721,12 @@ export class Drawing {
         container.children.push(segment);
         if (leaders.length > 0) {
             for (let i: number = 0; i < leaders.length; i++) {
-                container.children.push(leaders[i]);
+                container.children.push(leaders[parseInt(i.toString(), 10)]);
             }
         }
         if (labels.length > 0) {
             for (let i: number = 0; i < labels.length; i++) {
-                container.children.push(labels[i]);
+                container.children.push(labels[parseInt(i.toString(), 10)]);
             }
         }
         container.children.push(srcDecorator);
@@ -777,12 +777,12 @@ export class Drawing {
         this.pdfViewer.enableServerDataBinding(false);
         const index: number = obj.pageIndex;
         for (let i: number = 0; i < this.pdfViewer.annotations.length; i++) {
-            const annotation: PdfAnnotationBaseModel = this.pdfViewer.annotations[i];
+            const annotation: PdfAnnotationBaseModel = this.pdfViewer.annotations[parseInt(i.toString(), 10)];
             if ((annotation.id && (annotation.id === obj.id || annotation.id.split('_')[0] === obj.id)) || (annotation.wrapper && annotation.wrapper.id === obj.id)) {
                 this.pdfViewer.annotations.splice(i, 1);
                 const objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(obj.pageIndex);
                 for (let j: number = 0; j < objects.length; j++) {
-                    if (objects[j].id === obj.id) {
+                    if (objects[parseInt(j.toString(), 10)].id === obj.id) {
                         objects.splice(j, 1);
                         if (obj.shapeAnnotationType === 'Path' || obj.shapeAnnotationType === 'SignatureImage' || obj.shapeAnnotationType === 'SignatureText')       
                         {
@@ -798,7 +798,7 @@ export class Drawing {
         }
 
         for (let i: number = 0; i < this.pdfViewer.formFields.length; i++) {
-            const element: PdfAnnotationBaseModel = this.pdfViewer.formFields[i];
+            const element: PdfAnnotationBaseModel = this.pdfViewer.formFields[parseInt(i.toString(), 10)];
             if (element.id === obj.id || element.wrapper.id === obj.id) {
                 this.pdfViewer.formFields.splice(i, 1);
                 if (this.pdfViewer.formDesignerModule && obj.formFieldAnnotationType) {
@@ -806,11 +806,11 @@ export class Drawing {
                 }
                 const objects: (PdfFormFieldBaseModel)[] = this.getPageObjects(obj.pageIndex);
                 for (let j: number = 0; j < objects.length; j++) {
-                    if (objects[j].id === obj.id) {
+                    if (objects[parseInt(j.toString(), 10)].id === obj.id) {
                         objects.splice(j, 1);
                         break;
                     }
-                    if (objects[j] && objects[j].id && objects[j].id.indexOf(obj.id) !== -1) {
+                    if (objects[parseInt(j.toString(), 10)] && objects[parseInt(j.toString(), 10)].id && objects[parseInt(j.toString(), 10)].id.indexOf(obj.id) !== -1) {
                         objects.splice(j, 1);
                     }
                 }
@@ -893,9 +893,9 @@ export class Drawing {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let renderElement: DrawingElement;
                 if (diagramLayer.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
-                    if (objects[i].isPrint) {
+                    if (objects[parseInt(i.toString(), 10)].isPrint) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        renderElement = (this.pdfViewer.nameTable as any)[objects[i].id].wrapper;
+                        renderElement = (this.pdfViewer.nameTable as any)[objects[parseInt(i.toString(), 10)].id].wrapper;
                         if (!isNullOrUndefined(renderElement)) {
                             refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
                         }
@@ -1011,7 +1011,7 @@ export class Drawing {
                 let selectorElement: (any);
                 if (selectorModel.formFields.length) {
                     for (let i: number = 0; i < selectorModel.formFields.length; i++) {
-                        const node: PdfAnnotationBaseModel = selectorModel.formFields[i];
+                        const node: PdfAnnotationBaseModel = selectorModel.formFields[parseInt(i.toString(), 10)];
                         selectorElement = this.getSelectorElement(this.pdfViewer.element.id, select);
                         if (selectorElement && node.pageIndex === select && this.pdfViewer.designerMode) {
                             this.renderResizeHandle(
@@ -1037,7 +1037,7 @@ export class Drawing {
                 }
                 if (selectorModel.annotations.length) {
                     for (let j: number = 0; j < selectorModel.annotations.length; j++) {
-                        const node: PdfAnnotationBaseModel = selectorModel.annotations[j];
+                        const node: PdfAnnotationBaseModel = selectorModel.annotations[parseInt(j.toString(), 10)];
                         selectorElement = this.getSelectorElement(this.pdfViewer.element.id, select);
                         const constraints: boolean = true;
                         if (selectorElement && node.pageIndex === select) {
@@ -1925,7 +1925,7 @@ export class Drawing {
     private getAllowedInteractions(allowedInteraction: any): boolean {
         if (allowedInteraction && allowedInteraction.length > 0) {
             for (let i: number = 0; i < allowedInteraction.length; i++) {
-                if (allowedInteraction[0] !== 'None' && allowedInteraction[i] === 'Resize') {
+                if (allowedInteraction[0] !== 'None' && allowedInteraction[parseInt(i.toString(), 10)] === 'Resize') {
                     return false;
                 }
             }
@@ -2049,7 +2049,7 @@ export class Drawing {
         const targetPoint: PointModel = selector.targetPoint;
         const wrapper: DrawingElement = selector.wrapper; let i: number;
         for (i = 0; i < selector.vertexPoints.length; i++) {
-            const segment: PointModel = selector.vertexPoints[i];
+            const segment: PointModel = selector.vertexPoints[parseInt(i.toString(), 10)];
             this.renderCircularHandle(
                 ('segementThumb_' + (i + 1)), wrapper, segment.x, segment.y, canvas, true,
                 constraints & ThumbsConstraints.ConnectorSource, transform, connectedSource, null, null, i, null, currentSelector);
@@ -2057,7 +2057,7 @@ export class Drawing {
         let leaderCount: number = 0;
         if (selector.shapeAnnotationType === 'Distance') {
             for (i = 0; i < selector.wrapper.children.length; i++) {
-                const segment: DrawingElement = selector.wrapper.children[i];
+                const segment: DrawingElement = selector.wrapper.children[parseInt(i.toString(), 10)];
                 let newPoint1: PointModel;
                 const angle: number = Point.findAngle(selector.sourcePoint, selector.targetPoint);
                 if (segment.id.indexOf('leader') > -1) {
@@ -2198,8 +2198,8 @@ export class Drawing {
             if (obj.wrapper.children.length) {
                 const nodes: DrawingElement[] = obj.wrapper.children;
                 for (let i: number = 0; i < nodes.length; i++) {
-                    nodes[i].offsetX += tx;
-                    nodes[i].offsetY += ty;
+                    nodes[parseInt(i.toString(), 10)].offsetX += tx;
+                    nodes[parseInt(i.toString(), 10)].offsetY += ty;
                 }
             }
             this.dragControlPoint(obj, tx, ty, true);
@@ -2224,8 +2224,8 @@ export class Drawing {
         // eslint-disable-next-line
         let connector: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[obj.id];
         for (let i: number = 0; i < connector.vertexPoints.length; i++) {
-            (connector.vertexPoints[i]).x += tx;
-            (connector.vertexPoints[i]).y += ty;
+            (connector.vertexPoints[parseInt(i.toString(), 10)]).x += tx;
+            (connector.vertexPoints[parseInt(i.toString(), 10)]).y += ty;
         }
         if (!preventUpdate) {
             this.updateEndPoint(connector);
@@ -2281,16 +2281,16 @@ export class Drawing {
             if (actualObject.wrapper.children.length) {
                 const children: DrawingElement[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].id) {
-                        const names: string[] = children[i].id.split('_');
+                    if (children[parseInt(i.toString(), 10)].id) {
+                        const names: string[] = children[parseInt(i.toString(), 10)].id.split('_');
                         if (names.length && (names.indexOf('perimeter') > -1 || names.indexOf('radius') > -1)) {
-                            this.setNodePosition(children[i], actualObject);
+                            this.setNodePosition(children[parseInt(i.toString(), 10)], actualObject);
                         } else if (names.length && (names.indexOf('srcDec') > -1)) {
-                            children[i].offsetX = actualObject.vertexPoints[0].x;
-                            children[i].offsetY = actualObject.vertexPoints[0].y;
+                            children[parseInt(i.toString(), 10)].offsetX = actualObject.vertexPoints[0].x;
+                            children[parseInt(i.toString(), 10)].offsetY = actualObject.vertexPoints[0].y;
                         } else if (names.length && names.indexOf('tarDec') > -1) {
-                            children[i].offsetX = actualObject.vertexPoints[actualObject.vertexPoints.length - 1].x;
-                            children[i].offsetY = actualObject.vertexPoints[actualObject.vertexPoints.length - 1].y;
+                            children[parseInt(i.toString(), 10)].offsetX = actualObject.vertexPoints[actualObject.vertexPoints.length - 1].x;
+                            children[parseInt(i.toString(), 10)].offsetY = actualObject.vertexPoints[actualObject.vertexPoints.length - 1].y;
                         } else if (names.length && (names.indexOf('stamp') > -1)) {
                             // eslint-disable-next-line
                             let ratio: any = 0;
@@ -2300,8 +2300,8 @@ export class Drawing {
                                 heightRatio = 2.9;
                             }
                             if (actualObject.isDynamicStamp) {
-                                children[i].width = actualObject.bounds.width - ratio;
-                                children[i].height = (actualObject.bounds.height / 2) - ratio;
+                                children[parseInt(i.toString(), 10)].width = actualObject.bounds.width - ratio;
+                                children[parseInt(i.toString(), 10)].height = (actualObject.bounds.height / 2) - ratio;
                                 // eslint-disable-next-line
                                 let element: any = children[1] as TextElement;
                                 // eslint-disable-next-line
@@ -2321,15 +2321,15 @@ export class Drawing {
                                     }
                                 }
                                 if (ratio !== 0) {
-                                    element.margin.bottom = -(children[i].height / 2);
+                                    element.margin.bottom = -(children[parseInt(i.toString(), 10)].height / 2);
                                 }
                             } else {
-                                children[i].width = actualObject.bounds.width - ratio;
-                                children[i].height = actualObject.bounds.height - ratio;
+                                children[parseInt(i.toString(), 10)].width = actualObject.bounds.width - ratio;
+                                children[parseInt(i.toString(), 10)].height = actualObject.bounds.height - ratio;
                             }
-                            children[i].offsetX = actualObject.wrapper.offsetX;
-                            children[i].offsetY = actualObject.wrapper.offsetX;
-                            children[i].isDirt = true;
+                            children[parseInt(i.toString(), 10)].offsetX = actualObject.wrapper.offsetX;
+                            children[parseInt(i.toString(), 10)].offsetY = actualObject.wrapper.offsetX;
+                            children[parseInt(i.toString(), 10)].isDirt = true;
                         }
                     }
                 }
@@ -2354,13 +2354,13 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
                         if (actualObject.enableShapeLabel) {
                             actualObject.labelFillColor = node.fillColor;
-                            children[i].style.fill = node.fillColor;
+                            children[parseInt(i.toString(), 10)].style.fill = node.fillColor;
                         }
                         if (actualObject.measureType) {
-                            children[i].style.fill = node.fillColor;
+                            children[parseInt(i.toString(), 10)].style.fill = node.fillColor;
                         }
                     }
                 }
@@ -2372,9 +2372,9 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
                         actualObject.labelFillColor = node.labelFillColor;
-                        children[i].style.fill = node.labelFillColor;
+                        children[parseInt(i.toString(), 10)].style.fill = node.labelFillColor;
                     }
                 }
             }
@@ -2397,8 +2397,8 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
-                        children[i].style.opacity = node.labelOpacity;
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
+                        children[parseInt(i.toString(), 10)].style.opacity = node.labelOpacity;
                     }
                 }
             }
@@ -2410,8 +2410,8 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
-                        children[i].style.opacity = node.labelOpacity;
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
+                        children[parseInt(i.toString(), 10)].style.opacity = node.labelOpacity;
                     }
                 }
             }
@@ -2442,8 +2442,8 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
-                        children[i].style.color = node.fontColor;
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
+                        children[parseInt(i.toString(), 10)].style.color = node.fontColor;
                     }
                 }
             }
@@ -2461,8 +2461,8 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
-                        children[i].style.fontFamily = node.fontFamily;
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
+                        children[parseInt(i.toString(), 10)].style.fontFamily = node.fontFamily;
                     }
                 }
             }
@@ -2488,8 +2488,8 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
-                        children[i].style.fontSize = node.fontSize;
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
+                        children[parseInt(i.toString(), 10)].style.fontSize = node.fontSize;
                     }
                 }
             }
@@ -2641,18 +2641,18 @@ export class Drawing {
                 // eslint-disable-next-line
                 let childElement: any = actualObject.wrapper.children[i];
                 if (!childElement.textNodes) {
-                    setElementStype(actualObject, actualObject.wrapper.children[i]);
+                    setElementStype(actualObject, actualObject.wrapper.children[parseInt(i.toString(), 10)]);
                 }
                 if (actualObject.enableShapeLabel === true) {
-                    if (actualObject.wrapper.children[i] instanceof TextElement) {
-                        actualObject.wrapper.children[i].style.fill = actualObject.labelFillColor;
+                    if (actualObject.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                        actualObject.wrapper.children[parseInt(i.toString(), 10)].style.fill = actualObject.labelFillColor;
                     }
-                    if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter')) {
-                        actualObject.wrapper.children[i].style.fill = 'transparent';
+                    if ((actualObject.wrapper.children[parseInt(i.toString(), 10)] instanceof PathElement && actualObject.measureType === 'Perimeter')) {
+                        actualObject.wrapper.children[parseInt(i.toString(), 10)].style.fill = 'transparent';
                     }
                 } else {
-                    if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter') || actualObject.wrapper.children[i] instanceof TextElement) {
-                        actualObject.wrapper.children[i].style.fill = 'transparent';
+                    if ((actualObject.wrapper.children[parseInt(i.toString(), 10)] instanceof PathElement && actualObject.measureType === 'Perimeter') || actualObject.wrapper.children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                        actualObject.wrapper.children[parseInt(i.toString(), 10)].style.fill = 'transparent';
                     }
                 }
             }
@@ -2662,33 +2662,33 @@ export class Drawing {
                 // eslint-disable-next-line
                 let children: any[] = actualObject.wrapper.children;
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes) {
+                    if (children[parseInt(i.toString(), 10)].textNodes) {
                         if (actualObject.shapeAnnotationType === 'FreeText') {
                             if (node.dynamicText) {
-                                children[i].content = node.dynamicText;
+                                children[parseInt(i.toString(), 10)].content = node.dynamicText;
                                 actualObject.dynamicText = node.dynamicText;
                             } else {
-                                children[i].content = actualObject.dynamicText;
+                                children[parseInt(i.toString(), 10)].content = actualObject.dynamicText;
                             }
-                            children[i].width = actualObject.bounds.width;
+                            children[parseInt(i.toString(), 10)].width = actualObject.bounds.width;
                         } else if (actualObject.enableShapeLabel === true && actualObject.measureType) {
                             if (node.labelContent) {
-                                children[i].content = node.labelContent;
+                                children[parseInt(i.toString(), 10)].content = node.labelContent;
                                 actualObject.labelContent = node.labelContent;
                             } else {
-                                children[i].content = actualObject.labelContent;
+                                children[parseInt(i.toString(), 10)].content = actualObject.labelContent;
                             }
-                            actualObject.notes = children[i].content;
+                            actualObject.notes = children[parseInt(i.toString(), 10)].content;
                         } else if (actualObject.enableShapeLabel === true) {
                             if (node.labelContent) {
-                                children[i].content = node.labelContent;
+                                children[parseInt(i.toString(), 10)].content = node.labelContent;
                                 actualObject.labelContent = node.labelContent;
                             } else {
-                                children[i].content = actualObject.labelContent;
+                                children[parseInt(i.toString(), 10)].content = actualObject.labelContent;
                             }
-                            actualObject.notes = children[i].content;
+                            actualObject.notes = children[parseInt(i.toString(), 10)].content;
                         }
-                        children[i].isDirt = true;
+                        children[parseInt(i.toString(), 10)].isDirt = true;
                     }
                     /** set text node width less than the parent */
                 }
@@ -2731,27 +2731,27 @@ export class Drawing {
                     }
                 }
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[i].textNodes && children[i].textNodes.length > 0) {
-                        children[i].isDirt = true;
-                        let childNodeHeight: number = children[i].textNodes.length * children[i].textNodes[0].dy;
+                    if (children[parseInt(i.toString(), 10)].textNodes && children[parseInt(i.toString(), 10)].textNodes.length > 0) {
+                        children[parseInt(i.toString(), 10)].isDirt = true;
+                        let childNodeHeight: number = children[parseInt(i.toString(), 10)].textNodes.length * children[parseInt(i.toString(), 10)].textNodes[0].dy;
                         const heightDiff: number = actualObject.bounds.height - childNodeHeight;
-                        if (heightDiff > 0 && heightDiff < children[i].textNodes[0].dy) {
-                            childNodeHeight = childNodeHeight + children[i].textNodes[0].dy;
+                        if (heightDiff > 0 && heightDiff < children[parseInt(i.toString(), 10)].textNodes[0].dy) {
+                            childNodeHeight = childNodeHeight + children[parseInt(i.toString(), 10)].textNodes[0].dy;
                         }
                         if (childNodeHeight > actualObject.bounds.height) {
                             let contString: string = '';
-                            for (let index: number = 0; index < children[i].textNodes.length; index++) {
+                            for (let index: number = 0; index < children[parseInt(i.toString(), 10)].textNodes.length; index++) {
                                 // eslint-disable-next-line
                                 var childHeight: any = children[i].textNodes[0].dy * (index + 1);
                                 // eslint-disable-next-line
                                 childHeight = childHeight;
-                                contString = contString + children[i].textNodes[index].text;
+                                contString = contString + children[parseInt(i.toString(), 10)].textNodes[parseInt(index.toString(), 10)].text;
                             }
-                            children[i].content = contString;
+                            children[parseInt(i.toString(), 10)].content = contString;
                         }
                     }
                     /** set text node width less than the parent */
-                    children[i].width = actualObject.bounds.width;
+                    children[parseInt(i.toString(), 10)].width = actualObject.bounds.width;
                 }
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
@@ -3176,13 +3176,13 @@ export class Drawing {
                 } else if (endPoint === 'Leader1') {
                     const length: number = connector.vertexPoints.length - 1;
                     if (this.pdfViewer.viewerBase.tool instanceof LineTool) {
-                        connector.vertexPoints[length].x = point.x;
-                        connector.vertexPoints[length].y = point.y;
+                        connector.vertexPoints[parseInt(length.toString(), 10)].x = point.x;
+                        connector.vertexPoints[parseInt(length.toString(), 10)].y = point.y;
                     } else {
                         tx = point.x - leader.point.x;
                         ty = point.y - leader.point.y;
-                        connector.vertexPoints[length].x += tx;
-                        connector.vertexPoints[length].y += ty;
+                        connector.vertexPoints[parseInt(length.toString(), 10)].x += tx;
+                        connector.vertexPoints[parseInt(length.toString(), 10)].y += ty;
                     }
                 } else {
                     // eslint-disable-next-line
@@ -3220,10 +3220,10 @@ export class Drawing {
 
             } else if (endPoint.split('_')[0] === 'ConnectorSegmentPoint') {
                 const i: number = Number(endPoint.split('_')[1]);
-                tx = point.x - connector.vertexPoints[i].x;
-                ty = point.y - connector.vertexPoints[i].y;
-                connector.vertexPoints[i].x += tx;
-                connector.vertexPoints[i].y += ty;
+                tx = point.x - connector.vertexPoints[parseInt(i.toString(), 10)].x;
+                ty = point.y - connector.vertexPoints[parseInt(i.toString(), 10)].y;
+                connector.vertexPoints[parseInt(i.toString(), 10)].x += tx;
+                connector.vertexPoints[parseInt(i.toString(), 10)].y += ty;
                 if (connector.vertexPoints.length > 2 && (obj as PdfAnnotationBaseModel).measureType !== 'Perimeter') {
                     if (parseFloat(endPoint.split('_')[1]) === 0) {
                         connector.vertexPoints[connector.vertexPoints.length - 1].x += tx;
@@ -3251,8 +3251,8 @@ export class Drawing {
     public dragSourceEnd(obj: PdfAnnotationBaseModel, tx: number, ty: number, i: number): boolean {
         // eslint-disable-next-line
         let connector: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[obj.id];
-        connector.vertexPoints[i].x += tx;
-        connector.vertexPoints[i].y += ty;
+        connector.vertexPoints[parseInt(i.toString(), 10)].x += tx;
+        connector.vertexPoints[parseInt(i.toString(), 10)].y += ty;
         this.pdfViewer.renderDrawing();
         return true;
     }
@@ -3275,7 +3275,7 @@ export class Drawing {
         let element: DrawingElement = connector.wrapper.children[0];
         (element as PathElement).canMeasurePath = true;
         for (let i: number = 0; i < connector.wrapper.children.length; i++) {
-            element = connector.wrapper.children[i];
+            element = connector.wrapper.children[parseInt(i.toString(), 10)];
             if (connector.shapeAnnotationType !== 'Polygon') {
                 if (element.id.indexOf('srcDec') > -1) {
                     updateDecoratorElement(connector, element, points[0], anglePoint[1], true);
@@ -3318,14 +3318,14 @@ export class Drawing {
         if (this.pdfViewer.selectedItems.annotations.length > 0) {
             selectedItems = this.pdfViewer.selectedItems.annotations;
             for (let j: number = 0; j < selectedItems.length; j++) {
-                const element: Object = cloneObject((selectedItems[j]));
+                const element: Object = cloneObject((selectedItems[parseInt(j.toString(), 10)]));
                 obj.push(element);
             }
         }
         if (this.pdfViewer.selectedItems.formFields.length > 0) {
             selectedItems = this.pdfViewer.selectedItems.formFields;
             for (let j: number = 0; j < selectedItems.length; j++) {
-                const element: Object = cloneObject((selectedItems[j]));
+                const element: Object = cloneObject((selectedItems[parseInt(j.toString(), 10)]));
                 obj.push(element);
             }
         }
@@ -3354,7 +3354,7 @@ export class Drawing {
         const newobjs: PdfAnnotationBaseModel[] = [];
         this.pdfViewer.clipboardData.pasteIndex = 1;
         for (let i: number = 0; i < obj.length; i++) {
-            newObj = cloneObject(obj[i]) as PdfAnnotationBaseModel;
+            newObj = cloneObject(obj[parseInt(i.toString(), 10)]) as PdfAnnotationBaseModel;
             newobjs.push(newObj);
         }
         return newobjs as PdfAnnotationBaseModel[];
@@ -3393,7 +3393,7 @@ export class Drawing {
                     (objectTable as any)[copy.id] = copy;
                 }
                 for (let j: number = 0; j < copiedItems.length; j++) {
-                    const copy: PdfAnnotationBaseModel = copiedItems[j];
+                    const copy: PdfAnnotationBaseModel = copiedItems[parseInt(j.toString(), 10)];
                     const pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + copy.pageIndex);
                     // eslint-disable-next-line
                     let events: any = event as MouseEvent;
@@ -3517,15 +3517,15 @@ export class Drawing {
             if (pageDiv) {
                 if (i === 0) {
                     const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
-                    x1 = copy.vertexPoints[i].x;
-                    y1 = copy.vertexPoints[i].y;
-                    copy.vertexPoints[i].x = (events.clientX - pageCurrentRect.left) / zoomfactor;
-                    copy.vertexPoints[i].y = (events.clientY - pageCurrentRect.top) / zoomfactor;
-                    x2 = copy.vertexPoints[i].x;
-                    y2 = copy.vertexPoints[i].y;
+                    x1 = copy.vertexPoints[parseInt(i.toString(), 10)].x;
+                    y1 = copy.vertexPoints[parseInt(i.toString(), 10)].y;
+                    copy.vertexPoints[parseInt(i.toString(), 10)].x = (events.clientX - pageCurrentRect.left) / zoomfactor;
+                    copy.vertexPoints[parseInt(i.toString(), 10)].y = (events.clientY - pageCurrentRect.top) / zoomfactor;
+                    x2 = copy.vertexPoints[parseInt(i.toString(), 10)].x;
+                    y2 = copy.vertexPoints[parseInt(i.toString(), 10)].y;
                 } else {
-                    copy.vertexPoints[i].x += x2 - x1;
-                    copy.vertexPoints[i].y += y2 - y1;
+                    copy.vertexPoints[parseInt(i.toString(), 10)].x += x2 - x1;
+                    copy.vertexPoints[parseInt(i.toString(), 10)].y += y2 - y1;
                 }
             }
         }

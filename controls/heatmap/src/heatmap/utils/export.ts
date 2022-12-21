@@ -151,9 +151,8 @@ export class ExportUtils {
         });
         const svg: Node = this.control.svgObject.cloneNode(true);
         const groupEle: Element = this.control.renderer.createGroup(
-            {
-                style: 'transform: translateY(' + height + 'px)'
-            });
+            { });
+        (groupEle as HTMLElement).style.cssText = 'transform: translateY(' + height + 'px)';
         if (!isCanvas) {
             groupEle.appendChild(svg);
         }
@@ -215,19 +214,19 @@ export class ExportUtils {
         const buffers: ArrayBuffer[] = [];
         const length: number = (!(images instanceof HTMLElement)) ? images.length : 0;
         for (let g: number = 0; g < length; g++) {
-            image = images[g];
+            image = images[g as number];
             image = image.replace(/^data:[a-z]*;,/, '');
             const image1: string[] = image.split(',');
             const byteString: string = atob(image1[1]);
             const buffer: ArrayBuffer = new ArrayBuffer(byteString.length);
             const intArray: Uint8Array = new Uint8Array(buffer);
             for (let i: number = 0; i < byteString.length; i++) {
-                intArray[i] = byteString.charCodeAt(i);
+                intArray[i as number] = byteString.charCodeAt(i as number);
             }
             buffers.push(buffer);
         }
         for (let j: number = 0; j < buffers.length; j++) {
-            const b: Blob = new Blob([buffers[j]], { type: 'application/octet-stream' });
+            const b: Blob = new Blob([buffers[j as number]], { type: 'application/octet-stream' });
             if (Browser.info.name === 'msie') {
                 window.navigator.msSaveOrOpenBlob(b, fileName + '.' + fileType.toLocaleLowerCase());
             }

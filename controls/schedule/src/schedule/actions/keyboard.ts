@@ -514,7 +514,7 @@ export class KeyboardInteraction {
         const appointmentElements: HTMLElement[] = [];
         appointments.map((value: HTMLElement) => value.getAttribute('data-guid')).filter((value: string, index: number, self: string[]) => {
             if (self.indexOf(value) === index) {
-                appointmentElements.push(appointments[index]);
+                appointmentElements.push(appointments[parseInt(index.toString(), 10)]);
             }
         });
         return appointmentElements;
@@ -527,7 +527,7 @@ export class KeyboardInteraction {
     private processViewNavigation(e: KeyboardEventArgs): void {
         const index: number = parseInt(e.key, 10) - 1;
         if (index < this.parent.views.length) {
-            const view: View = this.parent.viewCollections[index].option;
+            const view: View = this.parent.viewCollections[parseInt(index.toString(), 10)].option;
             this.parent.changeView(view, e, undefined, index);
             if (this.parent.headerModule) {
                 (this.parent.headerModule.element.querySelector('.e-active-view button') as HTMLElement).focus();
@@ -632,10 +632,11 @@ export class KeyboardInteraction {
         }
     }
     private getYearUpDownCell(tableRows: HTMLTableRowElement[], rowIndex: number, cellIndex: number, isUp: boolean): HTMLTableCellElement {
-        while (tableRows[rowIndex] && tableRows[rowIndex].cells[cellIndex].classList.contains(cls.OTHERMONTH_CLASS)) {
+        while (tableRows[parseInt(rowIndex.toString(), 10)] &&
+        tableRows[parseInt(rowIndex.toString(), 10)].cells[parseInt(cellIndex.toString(), 10)].classList.contains(cls.OTHERMONTH_CLASS)) {
             rowIndex = rowIndex + (isUp ? -1 : 1);
         }
-        return tableRows[rowIndex].cells[cellIndex];
+        return tableRows[parseInt(rowIndex.toString(), 10)].cells[parseInt(cellIndex.toString(), 10)];
     }
     // eslint-disable-next-line max-len
     private getHorizontalUpDownCell(tableRows: HTMLTableRowElement[], target: HTMLTableCellElement, curRowIndex: number, isUp: boolean): HTMLTableCellElement {
@@ -654,7 +655,7 @@ export class KeyboardInteraction {
         const hasRow: boolean = isUp && curRowIndex > 0 || !isUp && curRowIndex < tableRows.length - 1;
         let targetCell: HTMLTableCellElement = hasRow ? tableRows[curRowIndex + (isUp ? -1 : 1)].cells[target.cellIndex] : undefined;
         if (!targetCell || targetCell.classList.contains(cls.OTHERMONTH_CLASS)) {
-            const column: HTMLTableCellElement = tableRows[curRowIndex].cells[target.cellIndex - (isUp ? 1 : -1)];
+            const column: HTMLTableCellElement = tableRows[parseInt(curRowIndex.toString(), 10)].cells[target.cellIndex - (isUp ? 1 : -1)];
             if (column) {
                 const dateAttr: number = +target.getAttribute('data-date') - (isUp ? util.MS_PER_DAY : -util.MS_PER_DAY);
                 return this.parent.getContentTable().querySelector('.' + cls.WORK_CELLS_CLASS + '[data-date="' + dateAttr + '"]');
@@ -670,7 +671,7 @@ export class KeyboardInteraction {
             element: tableEle,
             rowIndex: curRowIndex,
             columnIndex: target.cellIndex,
-            maxIndex: tableEle.rows[curRowIndex].cells.length
+            maxIndex: tableEle.rows[parseInt(curRowIndex.toString(), 10)].cells.length
         };
         return key;
     }
@@ -740,7 +741,8 @@ export class KeyboardInteraction {
                     const rowIndex: number = this.isInverseTableSelect() ? key.rowIndex : 0;
                     this.parent.changeDate(this.parent.activeView.getNextPreviousDate('next'), e);
                     const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
-                    const cell: HTMLTableCellElement = isMonthEnd ? tableEle.rows[rowIndex].querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')') : tableEle.rows[rowIndex].cells[0];
+                    const cell: HTMLTableCellElement = isMonthEnd ? tableEle.rows[parseInt(rowIndex.toString(), 10)].querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')')
+                        : tableEle.rows[parseInt(rowIndex.toString(), 10)].cells[0];
                     this.selectCells(false, cell);
                 }
             }
@@ -805,7 +807,7 @@ export class KeyboardInteraction {
                     this.parent.changeDate(this.parent.activeView.getNextPreviousDate('previous'), e);
                     const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
                     const rowIndex: number = this.isInverseTableSelect() ? key.rowIndex : tableEle.rows.length - 1;
-                    let cell: HTMLTableCellElement = tableEle.rows[rowIndex].cells[key.maxIndex - 1];
+                    let cell: HTMLTableCellElement = tableEle.rows[parseInt(rowIndex.toString(), 10)].cells[key.maxIndex - 1];
                     if (isMonthStart) {
                         const tbody: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
                         cell = tbody.item(tbody.length - 1).querySelector(':not(.' + cls.OTHERMONTH_CLASS + ')[data-date="' + this.parent.activeView.getEndDate().getTime() + '"]');

@@ -1,11 +1,9 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /**
  * Specifies Circular-Gauge Common Helper methods
  */
 
 import { measureText } from '../utils/helper-common';
-import { FontModel, BorderModel } from '../model/base-model';
+import { FontModel } from '../model/base-model';
 import { createElement } from '@syncfusion/ej2-base';
 
 /**
@@ -50,12 +48,12 @@ export function showTooltip(text: string, x: number, y: number, areaWidth: numbe
     if (!tooltip) {
         tooltip = createElement('div', {
             innerHTML: text,
-            id: id,
-            styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
-                'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
-                'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
-                'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
+            id: id
         });
+        tooltip.style.cssText = 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
+        'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
+        'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
+        'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"';
         element.appendChild(tooltip);
     } else {
         tooltip.innerHTML = text;

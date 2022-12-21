@@ -164,49 +164,49 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after the circular gauge gets loaded.
      *
-     * @event
+     * @event loaded
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before the circular gauge gets loaded.
      *
-     * @event
+     * @event load
      */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers after the animation gets completed for pointers.
      *
-     * @event
+     * @event animationComplete
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
      * Triggers before each axis label gets rendered.
      *
-     * @event
+     * @event axisLabelRender
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
      * Triggers before the radius for the circular gauge gets calculated.
      *
-     * @event
+     * @event radiusCalculate
      */
     radiusCalculate?: EmitType<IRadiusCalculateEventArgs>;
 
     /**
      * Triggers before each annotation for the circular gauge gets rendered.
      *
-     * @event
+     * @event annotationRender
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
     /**
      * Triggers before each legend for the circular gauge gets rendered.
      *
-     * @event
+     * @event legendRender
      * @deprecated
      */
     legendRender?: EmitType<ILegendRenderEventArgs>;
@@ -214,7 +214,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers before the tooltip for pointer of the circular gauge gets rendered.
      *
-     * @event
+     * @event tooltipRender
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -222,7 +222,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers before the pointer is dragged.
      *
-     * @event
+     * @event dragStart
      */
 
     dragStart?: EmitType<IPointerDragEventArgs>;
@@ -230,7 +230,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers while dragging the pointers.
      *
-     * @event
+     * @event dragMove
      */
 
     dragMove?: EmitType<IPointerDragEventArgs>;
@@ -238,14 +238,14 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after the pointer is dragged.
      *
-     * @event
+     * @event dragEnd
      */
     dragEnd?: EmitType<IPointerDragEventArgs>;
 
     /**
      * Triggers on hovering the circular gauge.
      *
-     * @event
+     * @event gaugeMouseMove
      */
 
     gaugeMouseMove?: EmitType<IMouseEventArgs>;
@@ -253,7 +253,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers while cursor leaves the circular gauge.
      *
-     * @event
+     * @event gaugeMouseLeave
      */
 
     gaugeMouseLeave?: EmitType<IMouseEventArgs>;
@@ -261,7 +261,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on mouse down.
      *
-     * @event
+     * @event gaugeMouseDown
      */
 
     gaugeMouseDown?: EmitType<IMouseEventArgs>;
@@ -269,7 +269,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers on mouse up.
      *
-     * @event
+     * @event gaugeMouseUp
      */
 
     gaugeMouseUp?: EmitType<IMouseEventArgs>;
@@ -277,7 +277,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers after window resize.
      *
-     * @event
+     * @event resized
      */
 
     resized?: EmitType<IResizeEventArgs>;
@@ -285,7 +285,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers before the prints gets started.
      *
-     * @event
+     * @event beforePrint
      */
 
     beforePrint?: EmitType<IPrintEventArgs>;

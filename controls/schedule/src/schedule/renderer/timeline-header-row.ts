@@ -20,8 +20,8 @@ export class TimelineHeaderRow {
         const result: { [key: number]: Date[] } = {};
         for (const d of dates) {
             const key: number = d.getFullYear();
-            result[key] = result[key] || [];
-            result[key].push(d);
+            result[parseInt(key.toString(), 10)] = result[parseInt(key.toString(), 10)] || [];
+            result[parseInt(key.toString(), 10)].push(d);
         }
         return result;
     }
@@ -30,8 +30,8 @@ export class TimelineHeaderRow {
         const result: { [key: number]: Date[] } = {};
         for (const d of dates) {
             const key: number = (d.getFullYear() - 1970) * 12 + d.getMonth();
-            result[key] = result[key] || [];
-            result[key].push(d);
+            result[parseInt(key.toString(), 10)] = result[parseInt(key.toString(), 10)] || [];
+            result[parseInt(key.toString(), 10)].push(d);
         }
         return result;
     }
@@ -45,8 +45,8 @@ export class TimelineHeaderRow {
             if (this.parent.firstDayOfWeek && this.parent.firstDayOfWeek > new Date(+d).getDay()) {
                 key = key - 1;
             }
-            result[key] = result[key] || [];
-            result[key].push(d);
+            result[parseInt(key.toString(), 10)] = result[parseInt(key.toString(), 10)] || [];
+            result[parseInt(key.toString(), 10)].push(d);
         }
         return result;
     }
@@ -57,7 +57,7 @@ export class TimelineHeaderRow {
         const tdDatas: TdData[] = [];
         const keys: string[] = Object.keys(data);
         for (let i: number = 0; i < keys.length; i++) {
-            const dates: Date[] = data[keys[i]];
+            const dates: Date[] = data[keys[parseInt(i.toString(), 10)]];
             let htmlCol: HTMLElement[];
             if (row.template) {
                 const args: CellTemplateArgs = { date: dates[0], type: type };

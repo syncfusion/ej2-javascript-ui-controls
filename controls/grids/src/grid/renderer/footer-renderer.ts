@@ -124,7 +124,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         rowrenderer.element = this.parent.createElement('TR', { className: 'e-summaryrow', attrs: { role: 'row' } });
 
         for (let srow: number = 0, len: number = summaries.length; srow < len; srow ++) {
-            const row: Row<AggregateColumnModel> = rows[srow];
+            const row: Row<AggregateColumnModel> = rows[parseInt(srow.toString(), 10)];
             if (!row) { continue; }
             const tr: Element = rowrenderer.render(row, dummies);
             fragment.appendChild(tr);
@@ -155,7 +155,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             const movableLastCell: Element[] = [].slice.call(this.getTable().getElementsByClassName('e-lastsummarycell'));
             if (movableLastCell.length) {
                 for (let i: number = 0; i < movableLastCell.length; i++) {
-                    (movableLastCell[i] as HTMLElement).style.borderRight = '0px';
+                    (movableLastCell[parseInt(i.toString(), 10)] as HTMLElement).style.borderRight = '0px';
                 }
             }
         }
@@ -195,14 +195,14 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     private refreshHeight(frozenCnt: HTMLElement[], movableCnt: HTMLElement[]): void {
         for (let i: number = 0; i < frozenCnt.length; i++) {
-            const frozenHeight: number = frozenCnt[i].getBoundingClientRect().height;
-            const movableHeight: number = movableCnt[i].getBoundingClientRect().height;
+            const frozenHeight: number = frozenCnt[parseInt(i.toString(), 10)].getBoundingClientRect().height;
+            const movableHeight: number = movableCnt[parseInt(i.toString(), 10)].getBoundingClientRect().height;
             if (frozenHeight < movableHeight) {
-                frozenCnt[i].classList.remove('e-hide');
-                frozenCnt[i].style.height = movableHeight + 'px';
+                frozenCnt[parseInt(i.toString(), 10)].classList.remove('e-hide');
+                frozenCnt[parseInt(i.toString(), 10)].style.height = movableHeight + 'px';
             } else if (frozenHeight > movableHeight) {
-                movableCnt[i].classList.remove('e-hide');
-                movableCnt[i].style.height = frozenHeight + 'px';
+                movableCnt[parseInt(i.toString(), 10)].classList.remove('e-hide');
+                movableCnt[parseInt(i.toString(), 10)].style.height = frozenHeight + 'px';
             }
         }
     }
@@ -244,7 +244,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         const right: number = this.parent.getFrozenRightColumnsCount();
         const isDrag: number = this.parent.isRowDragable() && !(this.parent.getFrozenMode() === 'Right') ? 1 : 0;
         if (left && index < (left + isDrag)) {
-            return this.freezeTable.querySelector(literals.colGroup).children[index] as HTMLElement;
+            return this.freezeTable.querySelector(literals.colGroup).children[parseInt(index.toString(), 10)] as HTMLElement;
         } else if (right && (index >= (left + movable + isDrag))) {
             return this.frTable.querySelector(literals.colGroup).children[index - (left ? (left + movable + isDrag) :
                 (left + movable))] as HTMLElement;
@@ -281,7 +281,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     public getIndexByKey(data: object, ds: object[]): number {
         const key: string = this.parent.getPrimaryKeyFieldNames()[0];
         for (let i: number = 0; i < ds.length; i++) {
-            if (ds[i][key] === data[key]) {
+            if (ds[parseInt(i.toString(), 10)][`${key}`] === data[`${key}`]) {
                 return i;
             }
         }
@@ -304,8 +304,8 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             isFiltered = true;
         }
         let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
-            (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[gridData].json.length ?
-                this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords());
+            (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[`${gridData}`].json.length ?
+                this.parent.dataSource[`${gridData}`].json : this.parent.getCurrentViewRecords());
         if (this.parent.parentDetails && !this.parent.getDataModule().isRemote()) {
             currentViewData = this.getData();
         }
@@ -316,21 +316,21 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             for (let i: number = 0; i < currentViewData.length; i++) {
                 isModified = false;
                 // eslint-disable-next-line max-len
-                if (batchChanges[literals.changedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[literals.changedRecords]) > -1) {
+                if (batchChanges[literals.changedRecords].length && this.getIndexByKey(currentViewData[parseInt(i.toString(), 10)], batchChanges[literals.changedRecords]) > -1) {
                     isModified = true;
                     // eslint-disable-next-line max-len
-                    dataSource.push(batchChanges[literals.changedRecords][this.getIndexByKey(currentViewData[i], batchChanges[literals.changedRecords])]);
+                    dataSource.push(batchChanges[literals.changedRecords][this.getIndexByKey(currentViewData[parseInt(i.toString(), 10)], batchChanges[literals.changedRecords])]);
                 }
                 // eslint-disable-next-line max-len
-                if (batchChanges[literals.deletedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[literals.deletedRecords]) > -1) {
+                if (batchChanges[literals.deletedRecords].length && this.getIndexByKey(currentViewData[parseInt(i.toString(), 10)], batchChanges[literals.deletedRecords]) > -1) {
                     isModified = true;
                 } else if (!isModified) {
-                    dataSource.push(currentViewData[i]);
+                    dataSource.push(currentViewData[parseInt(i.toString(), 10)]);
                 }
             }
             if (batchChanges[literals.addedRecords].length) {
                 for (let i: number = 0; i < batchChanges[literals.addedRecords].length; i++) {
-                    dataSource.push(batchChanges[literals.addedRecords][i]);
+                    dataSource.push(batchChanges[literals.addedRecords][parseInt(i.toString(), 10)]);
                 }
             }
         } else {
@@ -357,12 +357,14 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let agrVal: Object;
         const aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
         for (let i: number = 0; i < aggregateRows.length; i++) {
-            for (let j: number = 0; j < (aggregateRows[i] as AggregateRow).columns.length; j++) {
+            for (let j: number = 0; j < (aggregateRows[parseInt(i.toString(), 10)] as AggregateRow).columns.length; j++) {
                 let data: Object[] = [];
-                const type: string = (aggregateRows[i] as AggregateRow).columns[j].type.toString();
+                const type: string = (aggregateRows[parseInt(i.toString(), 10)] as AggregateRow)
+                    .columns[parseInt(j.toString(), 10)].type.toString();
                 data = dataSource;
-                agrVal = calculateAggregate(type, data, (aggregateRows[i] as AggregateRow).columns[j], this.parent);
-                aggregate[(aggregateRows[i] as AggregateRow).columns[j].field + ' - ' + type.toLowerCase()] = agrVal;
+                agrVal = calculateAggregate(type, data, (aggregateRows[parseInt(i.toString(), 10)] as AggregateRow)
+                    .columns[parseInt(j.toString(), 10)], this.parent);
+                aggregate[(aggregateRows[parseInt(i.toString(), 10)] as AggregateRow).columns[parseInt(j.toString(), 10)].field + ' - ' + type.toLowerCase()] = agrVal;
             }
         }
         const result: Object = {

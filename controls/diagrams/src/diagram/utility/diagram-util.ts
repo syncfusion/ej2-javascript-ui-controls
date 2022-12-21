@@ -81,7 +81,7 @@ import { LayerModel } from '../diagram/layer-model';
 export function completeRegion(region: Rect, selectedObjects: (NodeModel | ConnectorModel)[]): (NodeModel | ConnectorModel)[] {
     const collection: (NodeModel | ConnectorModel)[] = [];
     for (let i: number = 0; i < selectedObjects.length; i++) {
-        const obj: (NodeModel | ConnectorModel) = selectedObjects[i];
+        const obj: (NodeModel | ConnectorModel) = selectedObjects[parseInt(i.toString(), 10)];
         if (region.containsRect(obj.wrapper.bounds)) {
             collection.push(obj);
         }
@@ -99,7 +99,7 @@ export function completeRegion(region: Rect, selectedObjects: (NodeModel | Conne
  */
 export function findNodeByName(nodes: (NodeModel | ConnectorModel)[], name: string): boolean {
     for (let i: number = 0; i < nodes.length; i++) {
-        if (nodes[i].id === name) {
+        if (nodes[parseInt(i.toString(), 10)].id === name) {
             return true;
         }
     }
@@ -168,7 +168,7 @@ export function getInterval(intervals: number[], isLine: boolean): number[] {
     let newInterval: number[] = [];
     if (!isLine) {
         for (let k: number = 0; k < intervals.length; k++) {
-            newInterval.push(intervals[k]);
+            newInterval.push(intervals[parseInt(k.toString(), 10)]);
         }
         newInterval.push(intervals[newInterval.length - 2]);
         newInterval.push(intervals[newInterval.length - 2]);
@@ -187,8 +187,8 @@ export function getInterval(intervals: number[], isLine: boolean): number[] {
  */
 export function setPortsEdges(node: Node): Node {
     for (let k: number = 0; k < node.ports.length; k++) {
-        node.ports[k].inEdges = [];
-        node.ports[k].outEdges = [];
+        node.ports[parseInt(k.toString(), 10)].inEdges = [];
+        node.ports[parseInt(k.toString(), 10)].outEdges = [];
     }
     return node;
 }
@@ -420,7 +420,7 @@ function pointsForBezier(connector: ConnectorModel): PointModel[] {
     if (connector.type === 'Bezier') {
         let k: number = 0;
         for (let i: number = 0; i < connector.segments.length; i++) {
-            const tolerance: number = 1.5; const segment: BezierSegment = (connector.segments[i] as BezierSegment);
+            const tolerance: number = 1.5; const segment: BezierSegment = (connector.segments[parseInt(i.toString(), 10)] as BezierSegment);
             //const pt: PointModel = { x: 0, y: 0 };
             const point1: PointModel = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
             const point2: PointModel = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
@@ -428,7 +428,7 @@ function pointsForBezier(connector: ConnectorModel): PointModel[] {
                 (connector as Connector).distance(point2, point1) +
                 (connector as Connector).distance(segment.points[1], point2)) / tolerance);
             for (let j: number = 0; j < max - 1; j = j + 10) {
-                points[k] =
+                points[parseInt(k.toString(), 10)] =
                     bezierPoints(
                         connector, segment.points[0], !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
                         !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2, segment.points[1], j, max);
@@ -474,7 +474,7 @@ export function groupHasType(node: NodeModel, type: Shapes, nameTable: {}): bool
         let child: Node;
         let i: number = 0;
         for (; i < node.children.length; i++) {
-            child = nameTable[node.children[i]];
+            child = nameTable[node.children[parseInt(i.toString(), 10)]];
             if (child.shape.type === type) {
                 return true;
             }
@@ -506,50 +506,50 @@ export function updateDefaultValues(
         // eslint-disable-next-line @typescript-eslint/ban-types
         let keyObj: object;
         for (const key of Object.keys(defaultValue)) {
-            keyObj = defaultValue[key];
+            keyObj = defaultValue[`${key}`];
             if (key === 'shape' && (keyObj as ShapeModel).type) {
                 actualNode.shape = { type: (keyObj as ShapeModel).type };
             }
             if (keyObj) {
                 if (Array.isArray(keyObj) && keyObj.length && keyObj.length > 0 && (oldKey !== 'annotations' && oldKey !== 'ports')) {
-                    if (actualNode[key].length > 0) {
-                        for (let i: number = 0; i <= actualNode[key].length; i++) {
+                    if (actualNode[`${key}`].length > 0) {
+                        for (let i: number = 0; i <= actualNode[`${key}`].length; i++) {
                             updateDefaultValues(
-                                actualNode[key], plainValue ? plainValue[key] : undefined,
-                                defaultValue[key], (key === 'annotations' || key === 'ports') ? actualNode : undefined, key);
+                                actualNode[`${key}`], plainValue ? plainValue[`${key}`] : undefined,
+                                defaultValue[`${key}`], (key === 'annotations' || key === 'ports') ? actualNode : undefined, key);
                         }
                     } else {
                         updateDefaultValues(
-                            actualNode[key], plainValue ? plainValue[key] : undefined,
-                            defaultValue[key], (key === 'annotations' || key === 'ports') ? actualNode : undefined, key);
+                            actualNode[`${key}`], plainValue ? plainValue[`${key}`] : undefined,
+                            defaultValue[`${key}`], (key === 'annotations' || key === 'ports') ? actualNode : undefined, key);
                     }
                 } else if (keyObj instanceof Object && plainValue && (oldKey !== 'annotations' && oldKey !== 'ports')) {
-                    updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
+                    updateDefaultValues(actualNode[`${key}`], plainValue[`${key}`], defaultValue[`${key}`]);
                 } else if ((oldKey !== 'annotations' && oldKey !== 'ports')
-                    && (plainValue && !plainValue[key]) || (!plainValue && actualNode
-                        && (actualNode[key] || actualNode[key] !== undefined))) {
-                    actualNode[key] = defaultValue[key];
+                    && (plainValue && !plainValue[`${key}`]) || (!plainValue && actualNode
+                        && (actualNode[`${key}`] || actualNode[`${key}`] !== undefined))) {
+                    actualNode[`${key}`] = defaultValue[`${key}`];
                 } else {
                     let createObject: ShapeAnnotation | PathAnnotation | PointPort;
                     if (oldKey === 'annotations' || oldKey === 'ports') {
                         if (oldKey === 'annotations') {
-                            if (actualNode[key]) {
-                                updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
+                            if (actualNode[`${key}`]) {
+                                updateDefaultValues(actualNode[`${key}`], plainValue[`${key}`], defaultValue[`${key}`]);
                             }
-                            if (!actualNode[key]) {
+                            if (!actualNode[`${key}`]) {
                                 if (getObjectType(property) === Connector) {
-                                    createObject = new PathAnnotation(property, 'annotations', defaultValue[key]);
+                                    createObject = new PathAnnotation(property, 'annotations', defaultValue[`${key}`]);
                                     (property as Connector).annotations.push(createObject);
                                 } else {
-                                    createObject = new ShapeAnnotation(property, 'annotations', defaultValue[key]);
+                                    createObject = new ShapeAnnotation(property, 'annotations', defaultValue[`${key}`]);
                                     (property as Node).annotations.push(createObject);
                                 }
                             }
                         } else {
-                            if (actualNode[key]) {
-                                updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
+                            if (actualNode[`${key}`]) {
+                                updateDefaultValues(actualNode[`${key}`], plainValue[`${key}`], defaultValue[`${key}`]);
                             } else {
-                                createObject = new PointPort(property, 'ports', defaultValue[key]);
+                                createObject = new PointPort(property, 'ports', defaultValue[`${key}`]);
                                 (property as NodeModel).ports.push(createObject);
                             }
                         }
@@ -578,30 +578,30 @@ export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, no
     let assistantKey: string = "Role";
     if (defaultValue) {
         for (const key of Object.keys(defaultValue)) {
-            keyObj = defaultValue[key];
+            keyObj = defaultValue[`${key}`];
             if (key === 'getAssistantDetails') {
                 if (isBlazor()) {
                     // Iterate the node data and get the assistant.
                     for (const dataValue of Object.keys(node.data)) {
                         assistantKey = dataValue;
-                        if(node.data[assistantKey] === defaultValue[key]['root']) {
+                        if(node.data[`${assistantKey}`] === defaultValue[`${key}`]['root']) {
                             break;
                         }
                     }
                 }
-                if (node.data[assistantKey] === defaultValue[key]['root']) {
-                    const assitants: string[] = defaultValue[key]['assistants'];
+                if (node.data[`${assistantKey}`] === defaultValue[`${key}`]['root']) {
+                    const assitants: string[] = defaultValue[`${key}`]['assistants'];
                     for (let i: number = 0; i < assitants.length; i++) {
                         for (let j: number = 0; j < nodes.length; j++) {
-                            if (nodes[j].data[assistantKey] === assitants[i]) {
-                                actualNode.assistants.push(nodes[j].id);
+                            if (nodes[parseInt(j.toString(), 10)].data[`${assistantKey}`] === assitants[parseInt(i.toString(), 10)]) {
+                                actualNode.assistants.push(nodes[parseInt(j.toString(), 10)].id);
                                 actualNode.children.splice(0, 1);
                             }
                         }
                     }
                 }
             } else if (keyObj) {
-                actualNode[key] = defaultValue[key];
+                actualNode[`${key}`] = defaultValue[`${key}`];
             }
         }
     }
@@ -630,7 +630,7 @@ export function isPointOverConnector(connector: ConnectorModel, reference: Point
     const intermediatePoints: PointModel[] = connector.type === 'Bezier' ? pointsForBezier(connector) :
         (connector as Connector).intermediatePoints;
     for (let i: number = 0; i < intermediatePoints.length - 1; i++) {
-        const start: PointModel = intermediatePoints[i];
+        const start: PointModel = intermediatePoints[parseInt(i.toString(), 10)];
         const end: PointModel = intermediatePoints[i + 1];
         const rect: Rect = Rect.toBounds([start, end]);
         rect.Inflate(connector.hitPadding);
@@ -660,7 +660,7 @@ export function isPointOverConnector(connector: ConnectorModel, reference: Point
     if (connector.annotations.length > 0) {
         const container: DiagramElement[] = connector.wrapper.children;
         for (let i: number = 3; i < container.length; i++) {
-            const textElement: DiagramElement = container[i];
+            const textElement: DiagramElement = container[parseInt(i.toString(), 10)];
             if (textElement.bounds.containsPoint(reference)) {
                 return true;
             }
@@ -910,20 +910,20 @@ export function sort(objects: (NodeModel | ConnectorModel)[], option: Distribute
     let j: number = 0;
     let temp: NodeModel | ConnectorModel;
     for (i = 0; i < objects.length; i++) {
-        const b: Rect = getBounds(objects[i].wrapper);
+        const b: Rect = getBounds(objects[parseInt(i.toString(), 10)].wrapper);
         for (j = i + 1; j < objects.length; j++) {
-            const bounds: Rect = getBounds(objects[j].wrapper);
+            const bounds: Rect = getBounds(objects[parseInt(j.toString(), 10)].wrapper);
             if (option === 'Top' || option === 'Bottom' || option === 'BottomToTop' || option === 'Middle') {
                 if (b.center.y > bounds.center.y) {
-                    temp = objects[i];
-                    objects[i] = objects[j];
-                    objects[j] = temp;
+                    temp = objects[parseInt(i.toString(), 10)];
+                    objects[parseInt(i.toString(), 10)] = objects[parseInt(j.toString(), 10)];
+                    objects[parseInt(j.toString(), 10)] = temp;
                 }
             } else {
                 if (b.center.x > bounds.center.x) {
-                    temp = objects[i];
-                    objects[i] = objects[j];
-                    objects[j] = temp;
+                    temp = objects[parseInt(i.toString(), 10)];
+                    objects[parseInt(i.toString(), 10)] = objects[parseInt(j.toString(), 10)];
+                    objects[parseInt(j.toString(), 10)] = temp;
                 }
             }
         }
@@ -965,18 +965,18 @@ export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnot
     let length: number = 0; let offset: number = annotation.offset; let point: PointModel; let angle: number;
     const lengths: number[] = []; let prevLength: number; let kCount: number;
     for (let j: number = 0; j < points.length - 1; j++) {
-        length += Point.distancePoints(points[j], points[j + 1]);
+        length += Point.distancePoints(points[parseInt(j.toString(), 10)], points[j + 1]);
         lengths.push(length);
     }
     const offsetLength: number = offset * length;
     for (let k: number = 0; k < lengths.length; k++) {
-        if (lengths[k] >= offsetLength) {
-            angle = Point.findAngle(points[k], points[k + 1]);
-            point = Point.transform(points[k], angle, offsetLength - (prevLength || 0));
+        if (lengths[parseInt(k.toString(), 10)] >= offsetLength) {
+            angle = Point.findAngle(points[parseInt(k.toString(), 10)], points[k + 1]);
+            point = Point.transform(points[parseInt(k.toString(), 10)], angle, offsetLength - (prevLength || 0));
             kCount = k;
             return { point: point, index: kCount };
         }
-        prevLength = lengths[k];
+        prevLength = lengths[parseInt(k.toString(), 10)];
     }
     return { point: point, index: kCount };
 }
@@ -1094,12 +1094,12 @@ export function getBezierDirection(src: PointModel, tar: PointModel): string {
 export function removeChildNodes(node: NodeModel, diagram: Diagram): void {
     if (node instanceof Node && node.children) {
         for (let i: number = 0; i < node.children.length; i++) {
-            if (diagram.nameTable[node.children[i]].children) {
+            if (diagram.nameTable[node.children[parseInt(i.toString(), 10)]].children) {
                 removeChildNodes(node, diagram);
             }
-            diagram.removeFromAQuad(diagram.nameTable[node.children[i]]);
-            diagram.removeObjectsFromLayer(diagram.nameTable[node.children[i]]);
-            delete diagram.nameTable[node.children[i]];
+            diagram.removeFromAQuad(diagram.nameTable[node.children[parseInt(i.toString(), 10)]]);
+            diagram.removeObjectsFromLayer(diagram.nameTable[node.children[parseInt(i.toString(), 10)]]);
+            delete diagram.nameTable[node.children[parseInt(i.toString(), 10)]];
         }
     }
 }
@@ -1114,7 +1114,7 @@ export function removeChildNodes(node: NodeModel, diagram: Diagram): void {
 export function getChild(child: Canvas, children: string[]): string[] {
     if (child && child.children && child.children.length > 0) {
         for (let j: number = 0; j < child.children.length; j++) {
-            const subChild: DiagramElement = child.children[j];
+            const subChild: DiagramElement = child.children[parseInt(j.toString(), 10)];
             if (subChild instanceof Canvas) {
                 getChild(subChild, children);
             }
@@ -1137,12 +1137,12 @@ function getSwimLaneChildren(nodes: NodeModel[]): string[] {
     let children: string[] = []; let node: Node; let grid: GridPanel; let childTable: DiagramElement[];
     let child: Canvas; const gridChild: string = 'childTable';
     for (let i: number = 0; i < nodes.length; i++) {
-        node = nodes[i] as Node;
+        node = nodes[parseInt(i.toString(), 10)] as Node;
         if (node.shape.type === 'SwimLane') {
             grid = node.wrapper.children[0] as GridPanel;
-            childTable = grid[gridChild];
+            childTable = grid[`${gridChild}`];
             for (const key of Object.keys(childTable)) {
-                child = childTable[key];
+                child = childTable[`${key}`];
                 children = getChild(child as Canvas, children);
             }
         }
@@ -1162,7 +1162,7 @@ function removeUnnecessaryNodes(children: string[], diagram: Diagram): void {
     const nodes: NodeModel[] = diagram.nodes;
     if (nodes) {
         for (let i: number = 0; i < nodes.length; i++) {
-            if (children.indexOf(nodes[i].id) !== -1) {
+            if (children.indexOf(nodes[parseInt(i.toString(), 10)].id) !== -1) {
                 nodes.splice(i, 1);
                 i--;
             }
@@ -1209,23 +1209,23 @@ function preventDefaults(clonedObject: Object, model: object, defaultObject?: ob
         if (model instanceof Node) {
             isNodeShape = (property === 'shape') ? true : false;
         }
-        if (clonedObject[property] instanceof Array) {
+        if (clonedObject[`${property}`] instanceof Array) {
             preventArrayDefaults(clonedObject, defaultObject, model, property);
-        } else if ((clonedObject[property] instanceof Object) && defaultObject && defaultObject[property]) {
+        } else if ((clonedObject[`${property}`] instanceof Object) && defaultObject && defaultObject[`${property}`]) {
             if (property !== 'wrapper') {
-                clonedObject[property] = preventDefaults(clonedObject[property], model[property], defaultObject[property], isNodeShape);
+                clonedObject[`${property}`] = preventDefaults(clonedObject[`${property}`], model[`${property}`], defaultObject[`${property}`], isNodeShape);
             }
-        } else if ((defaultObject && clonedObject[property] === defaultObject[property]) || clonedObject[property] === undefined) {
+        } else if ((defaultObject && clonedObject[`${property}`] === defaultObject[`${property}`]) || clonedObject[`${property}`] === undefined) {
             if (!(isNodeShape && property === 'type') && !(model instanceof SwimLane && property === 'orientation')) {
-                delete clonedObject[property];
+                delete clonedObject[`${property}`];
             }
         }
         if (
-            JSON.stringify(clonedObject[property]) === '[]' ||
-            JSON.stringify(clonedObject[property]) === '{}' ||
-            clonedObject[property] === undefined
+            JSON.stringify(clonedObject[`${property}`]) === '[]' ||
+            JSON.stringify(clonedObject[`${property}`]) === '{}' ||
+            clonedObject[`${property}`] === undefined
         ) {
-            delete clonedObject[property];
+            delete clonedObject[`${property}`];
         }
     }
     defaultObject = undefined;
@@ -1245,44 +1245,44 @@ function preventDefaults(clonedObject: Object, model: object, defaultObject?: ob
  */
 // eslint-disable-next-line
 function preventArrayDefaults(clonedObject: object, defaultObject: object, model: object, property: string): void {
-    if (clonedObject[property].length === 0) {
-        delete clonedObject[property];
+    if (clonedObject[`${property}`].length === 0) {
+        delete clonedObject[`${property}`];
         // eslint-disable-next-line
     } else if (clonedObject[property].every((element: any): boolean => { return typeof element === 'number'; })) {
         let i: number; let isSameArray: boolean = true;
-        for (i = 0; i < clonedObject[property].length; i++) {
-            if (isSameArray && clonedObject[property][i] === defaultObject[property][i]) {
+        for (i = 0; i < clonedObject[`${property}`].length; i++) {
+            if (isSameArray && clonedObject[`${property}`][parseInt(i.toString(), 10)] === defaultObject[`${property}`][parseInt(i.toString(), 10)]) {
                 isSameArray = true;
             } else {
                 isSameArray = false;
             }
         }
         if (isSameArray) {
-            delete clonedObject[property];
+            delete clonedObject[`${property}`];
         }
     } else {
         let i: number;
         if (property === 'layers') {
-            clonedObject[property].splice(0, 1);
-            if (clonedObject[property].length === 0) {
-                delete clonedObject[property];
+            clonedObject[`${property}`].splice(0, 1);
+            if (clonedObject[`${property}`].length === 0) {
+                delete clonedObject[`${property}`];
             }
         }
-        if (clonedObject[property]) {
-            for (i = clonedObject[property].length - 1; i >= 0; i--) {
+        if (clonedObject[`${property}`]) {
+            for (i = clonedObject[`${property}`].length - 1; i >= 0; i--) {
                 if (property === 'nodes' || property === 'connectors') {
-                    clonedObject[property][i].wrapper = null;
+                    clonedObject[`${property}`][parseInt(i.toString(), 10)].wrapper = null;
                 }
                 if (property !== 'dataManager') {
-                    clonedObject[property][i] = preventDefaults(
-                        clonedObject[property][i], model[property][i],
-                        (defaultObject[property] !== undefined ? defaultObject[property][i] : [])
+                    clonedObject[`${property}`][parseInt(i.toString(), 10)] = preventDefaults(
+                        clonedObject[`${property}`][parseInt(i.toString(), 10)], model[`${property}`][parseInt(i.toString(), 10)],
+                        (defaultObject[`${property}`] !== undefined ? defaultObject[`${property}`][parseInt(i.toString(), 10)] : [])
                     );
-                    if (JSON.stringify(clonedObject[property][i]) === '[]' ||
-                        JSON.stringify(clonedObject[property][i]) === '{}' ||
-                        clonedObject[property][i] === undefined
+                    if (JSON.stringify(clonedObject[`${property}`][parseInt(i.toString(), 10)]) === '[]' ||
+                        JSON.stringify(clonedObject[`${property}`][parseInt(i.toString(), 10)]) === '{}' ||
+                        clonedObject[`${property}`][parseInt(i.toString(), 10)] === undefined
                     ) {
-                        clonedObject[property].splice(i, 1);
+                        clonedObject[`${property}`].splice(i, 1);
                     }
                 }
             }
@@ -1902,7 +1902,7 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
         } else if (actualObject.shape.type === 'Native') {
             let nativeElement: HTMLElement;
             for (let i: number = 0; i < diagram.views.length; i++) {
-                nativeElement = getDiagramElement(actualObject.wrapper.children[0].id + '_native_element', diagram.views[i]);
+                nativeElement = getDiagramElement(actualObject.wrapper.children[0].id + '_native_element', diagram.views[parseInt(i.toString(), 10)]);
                 if ((newValues.shape as NativeModel).content !== undefined && nativeElement) {
                     nativeElement.removeChild(nativeElement.children[0]);
                     (actualObject.wrapper.children[0] as DiagramNativeElement).content = (newValues.shape as NativeModel).content;
@@ -1914,7 +1914,7 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
         } else if (actualObject.shape.type === 'HTML') {
             let htmlElement: HTMLElement;
             for (let i: number = 0; i < diagram.views.length; i++) {
-                htmlElement = getDiagramElement(actualObject.wrapper.children[0].id + '_html_element', diagram.views[i]);
+                htmlElement = getDiagramElement(actualObject.wrapper.children[0].id + '_html_element', diagram.views[parseInt(i.toString(), 10)]);
                 if (htmlElement) {
                     htmlElement.removeChild(htmlElement.children[0]);
                     (actualObject.wrapper.children[0] as DiagramHtmlElement).content = (newValues.shape as HtmlModel).content;
@@ -2048,7 +2048,7 @@ export function getUMLActivityShapes(umlActivityShape: PathElement, content: Dia
         case 'StructuredNode':
             if (node.annotations) {
                 for (let i: number = 0; i < node.annotations.length; i++) {
-                    node.annotations[i].content = '<<' + node.annotations[i].content + '>>';
+                    node.annotations[parseInt(i.toString(), 10)].content = '<<' + node.annotations[parseInt(i.toString(), 10)].content + '>>';
                 }
             }
             content = umlActivityShape;
@@ -2177,14 +2177,14 @@ export function getUserHandlePosition(selectorItem: SelectorModel, handle: UserH
         //const offsetLength: number;
         const angle: number = getPointloop.angle;
         let matrix: Matrix = identityMatrix();
-        rotateMatrix(matrix, -angle, connector.intermediatePoints[index].x, connector.intermediatePoints[index].y);
+        rotateMatrix(matrix, -angle, connector.intermediatePoints[parseInt(index.toString(), 10)].x, connector.intermediatePoints[parseInt(index.toString(), 10)].y);
         point = transformPointByMatrix(matrix, point);
         point.x += (margin.left - margin.right) +
             (size / 2) * (handle.horizontalAlignment === 'Center' ? 0 : (handle.horizontalAlignment === 'Right' ? -1 : 1));
         point.y += (margin.top - margin.bottom) +
             (size / 2) * (handle.verticalAlignment === 'Center' ? 0 : (handle.verticalAlignment === 'Top' ? -1 : 1));
         matrix = identityMatrix();
-        rotateMatrix(matrix, angle, connector.intermediatePoints[index].x, connector.intermediatePoints[index].y);
+        rotateMatrix(matrix, angle, connector.intermediatePoints[parseInt(index.toString(), 10)].x, connector.intermediatePoints[parseInt(index.toString(), 10)].y);
         point = transformPointByMatrix(matrix, point);
     }
     if (wrapper.rotateAngle !== 0 || wrapper.parentTransform !== 0) {
@@ -2209,7 +2209,7 @@ export function canResizeCorner(
     selectorConstraints: SelectorConstraints, action: string, thumbsConstraints: ThumbsConstraints, selectedItems: Selector): boolean {
     if (selectedItems.annotation) {
         if (canResize(selectedItems.annotation)) { return true; }
-    } else if ((SelectorConstraints[action] & selectorConstraints) && (ThumbsConstraints[action] & thumbsConstraints)) {
+    } else if ((SelectorConstraints[`${action}`] & selectorConstraints) && (ThumbsConstraints[`${action}`] & thumbsConstraints)) {
         return true;
     }
     return false;
@@ -2224,7 +2224,7 @@ export function canResizeCorner(
  * @private
  */
 export function canShowCorner(selectorConstraints: SelectorConstraints, action: string): boolean {
-    if (SelectorConstraints[action] & selectorConstraints) {
+    if (SelectorConstraints[`${action}`] & selectorConstraints) {
         return true;
     }
     return false;
@@ -2239,7 +2239,7 @@ export function canShowCorner(selectorConstraints: SelectorConstraints, action: 
  * @private
  */
 export function canShowControlPoints(bezierControlPoints: ControlPointsVisibility, action: string): boolean {
-    if (ControlPointsVisibility[action] & bezierControlPoints) {
+    if (ControlPointsVisibility[`${action}`] & bezierControlPoints) {
         return true;
     }
     return false;
@@ -2273,8 +2273,8 @@ export function findAnnotation(node: NodeModel | ConnectorModel, id: string): Sh
         const annotationId: string[] = id.split('_');
         id = annotationId[annotationId.length - 1];
         for (let i: number = 0; i < node.annotations.length; i++) {
-            if (id === node.annotations[i].id) {
-                annotation = node.annotations[i];
+            if (id === node.annotations[parseInt(i.toString(), 10)].id) {
+                annotation = node.annotations[parseInt(i.toString(), 10)];
             }
         }
     }
@@ -2296,8 +2296,8 @@ export function findPort(node: NodeModel | ConnectorModel, id: string): PointPor
     if (node as NodeModel) {
         node = node as NodeModel;
         for (let i: number = 0; i < node.ports.length; i++) {
-            if (id === node.ports[i].id) {
-                return node.ports[i];
+            if (id === node.ports[parseInt(i.toString(), 10)].id) {
+                return node.ports[parseInt(i.toString(), 10)];
             }
         }
     }
@@ -2319,12 +2319,12 @@ export function getInOutConnectPorts(node: NodeModel, isInConnect: boolean): Poi
         const ports: PointPortModel[] = node.ports;
         for (i = 0; i < ports.length; i++) {
             if (isInConnect) {
-                if ((ports[i].constraints & PortConstraints.InConnect)) {
-                    port = ports[i];
+                if ((ports[parseInt(i.toString(), 10)].constraints & PortConstraints.InConnect)) {
+                    port = ports[parseInt(i.toString(), 10)];
                 }
             } else {
-                if ((ports[i].constraints & PortConstraints.OutConnect)) {
-                    port = ports[i];
+                if ((ports[parseInt(i.toString(), 10)].constraints & PortConstraints.OutConnect)) {
+                    port = ports[parseInt(i.toString(), 10)];
                 }
             }
         }
@@ -2347,7 +2347,7 @@ export function findObjectIndex(node: NodeModel | ConnectorModel, id: string, an
     const collection: (PointPortModel | ShapeAnnotationModel | PathAnnotationModel)[]
         = (annotation) ? node.annotations : (node as NodeModel).ports;
     for (let i: number = 0; i < collection.length; i++) {
-        if (collection[i].id === id) {
+        if (collection[parseInt(i.toString(), 10)].id === id) {
             return (i).toString();
         }
     }
@@ -2365,7 +2365,7 @@ export function findObjectIndex(node: NodeModel | ConnectorModel, id: string, an
 export function getObjectFromCollection(obj: (NodeModel | ConnectorModel)[], id: string): boolean {
     let i: number;
     for (i = 0; i < obj.length; i++) {
-        if (id === obj[i].id) {
+        if (id === obj[parseInt(i.toString(), 10)].id) {
             return true;
         }
     }
@@ -2431,7 +2431,7 @@ export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, dro
     const child: string[] = obj.children;
     let node: Node;
     for (let i: number = 0; i < child.length; i++) {
-        node = nameTable[child[i]];
+        node = nameTable[child[parseInt(i.toString(), 10)]];
         if (node) {
             if (node.children) {
                 arrangeChild(node, x, y, nameTable, drop, diagram);
@@ -2469,7 +2469,7 @@ export function insertObject(obj: NodeModel | ConnectorModel, key: string, colle
     if (collection.length === 0) {
         collection.push(obj);
     } else if (collection.length === 1) {
-        if (collection[0][key] > obj[key]) {
+        if (collection[0][`${key}`] > obj[`${key}`]) {
             collection.splice(0, 0, obj);
         } else {
             collection.push(obj);
@@ -2479,21 +2479,21 @@ export function insertObject(obj: NodeModel | ConnectorModel, key: string, colle
         let high: number = collection.length - 1;
         let mid: number = Math.floor((low + high) / 2);
         while (mid !== low) {
-            if (collection[mid][key] < obj[key]) {
+            if (collection[parseInt(mid.toString(), 10)][`${key}`] < obj[`${key}`]) {
                 low = mid;
                 mid = Math.floor((low + high) / 2);
-            } else if (collection[mid][key] > obj[key]) {
+            } else if (collection[parseInt(mid.toString(), 10)][`${key}`] > obj[`${key}`]) {
                 high = mid;
                 mid = Math.floor((low + high) / 2);
             } else {
                 break;
             }
         }
-        if (collection[high][key] < obj[key]) {
+        if (collection[parseInt(high.toString(), 10)][`${key}`] < obj[`${key}`]) {
             collection.push(obj);
-        } else if (collection[low][key] > obj[key]) {
+        } else if (collection[parseInt(low.toString(), 10)][`${key}`] > obj[`${key}`]) {
             collection.splice(low, 0, obj);
-        } else if ((collection[low][key] < obj[key]) && collection[high][key] > obj[key]) {
+        } else if ((collection[parseInt(low.toString(), 10)][`${key}`] < obj[`${key}`]) && collection[parseInt(high.toString(), 10)][`${key}`] > obj[`${key}`]) {
             collection.splice(high, 0, obj);
         }
     }
@@ -2511,27 +2511,27 @@ export function getElement(element: DiagramHtmlElement | DiagramNativeElement): 
     const instance: string = 'ej2_instances';
     // eslint-disable-next-line
     let node: {} = {};
-    let nodes: Object = diagramElement[instance][0].nodes;
+    let nodes: Object = diagramElement[`${instance}`][0].nodes;
     if (nodes === undefined) {
-        nodes = getPaletteSymbols(diagramElement[instance][0]);
+        nodes = getPaletteSymbols(diagramElement[`${instance}`][0]);
     }
     const length: string = 'length';
-    for (let i: number = 0; nodes && i < nodes[length]; i++) {
-        if (nodes[i].id === element.nodeId) {
-            return getAnnotation(nodes[i], element);
+    for (let i: number = 0; nodes && i < nodes[`${length}`]; i++) {
+        if (nodes[parseInt(i.toString(), 10)].id === element.nodeId) {
+            return getAnnotation(nodes[parseInt(i.toString(), 10)], element);
         }
     }
-    const connectors: Object = diagramElement[instance][0].connectors;
-    for (let i: number = 0; connectors && i < connectors[length]; i++) {
-        if (connectors[i].id === element.nodeId) {
-            return getAnnotation(connectors[i], element);
+    const connectors: Object = diagramElement[`${instance}`][0].connectors;
+    for (let i: number = 0; connectors && i < connectors[`${length}`]; i++) {
+        if (connectors[parseInt(i.toString(), 10)].id === element.nodeId) {
+            return getAnnotation(connectors[parseInt(i.toString(), 10)], element);
         }
     }
     // eslint-disable-next-line
     const enterObject: {} = diagramElement[instance][0].enterObject;
     if (enterObject && (enterObject['id'] === element.nodeId || enterObject['children'])) {
-        if (enterObject['children'] && groupHasType(enterObject as Node, 'HTML', diagramElement[instance][0].enterTable)) {
-            return diagramElement[instance][0].enterTable[element.nodeId];
+        if (enterObject['children'] && groupHasType(enterObject as Node, 'HTML', diagramElement[`${instance}`][0].enterTable)) {
+            return diagramElement[`${instance}`][0].enterTable[element.nodeId];
         } else {
             return enterObject;
         }
@@ -2550,9 +2550,9 @@ function getAnnotation(obj: Object, element: DiagramHtmlElement | DiagramNativeE
     const annotations: Object = (obj as NodeModel | ConnectorModel).annotations;
     const length: string = 'length';
     let j: number;
-    for (j = 0; annotations && j < annotations[length]; j++) {
-        if ((element as DiagramHtmlElement).annotationId && annotations[j].id === (element as DiagramHtmlElement).annotationId) {
-            return annotations[j];
+    for (j = 0; annotations && j < annotations[`${length}`]; j++) {
+        if ((element as DiagramHtmlElement).annotationId && annotations[parseInt(j.toString(), 10)].id === (element as DiagramHtmlElement).annotationId) {
+            return annotations[parseInt(j.toString(), 10)];
         }
     }
     return obj;
@@ -2568,10 +2568,10 @@ function getAnnotation(obj: Object, element: DiagramHtmlElement | DiagramNativeE
 function getPaletteSymbols(symbolPalette: SymbolPalette): NodeModel[] {
     const nodes: NodeModel[] = [];
     for (let i: number = 0; i < symbolPalette.palettes.length; i++) {
-        const symbols: (NodeModel | ConnectorModel)[] = symbolPalette.palettes[i].symbols;
+        const symbols: (NodeModel | ConnectorModel)[] = symbolPalette.palettes[parseInt(i.toString(), 10)].symbols;
         for (let j: number = 0; j < symbols.length; j++) {
-            if (symbols[j] instanceof Node) {
-                nodes.push(symbols[j] as NodeModel);
+            if (symbols[parseInt(j.toString(), 10)] instanceof Node) {
+                nodes.push(symbols[parseInt(j.toString(), 10)] as NodeModel);
             }
         }
     }
@@ -2943,12 +2943,12 @@ export function getPreviewSize(sourceElement: SymbolPaletteModel, clonedObject: 
  */
 export function getSymbolSize(sourceElement: SymbolPaletteModel, clonedObject: Node, wrapper: DiagramElement, size: string): number {
     let previewSize: number = 0;
-    if ((clonedObject as Node).previewSize[size] !== undefined) {
-        previewSize = (clonedObject as Node).previewSize[size];
-    } else if ((sourceElement as SymbolPaletteModel).symbolPreview[size] !== undefined) {
-        previewSize = (sourceElement as SymbolPaletteModel).symbolPreview[size];
+    if ((clonedObject as Node).previewSize[`${size}`] !== undefined) {
+        previewSize = (clonedObject as Node).previewSize[`${size}`];
+    } else if ((sourceElement as SymbolPaletteModel).symbolPreview[`${size}`] !== undefined) {
+        previewSize = (sourceElement as SymbolPaletteModel).symbolPreview[`${size}`];
     } else {
-        previewSize = (clonedObject as Node)[size] || wrapper.actualSize[size];
+        previewSize = (clonedObject as Node)[`${size}`] || wrapper.actualSize[`${size}`];
     }
     return previewSize;
 }

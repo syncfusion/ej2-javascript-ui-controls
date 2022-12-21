@@ -362,6 +362,7 @@ export class NavigationPane {
 
     // eslint-disable-next-line
     private openAnnotationContextMenu(event: any): void {
+        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
         this.annotationMenuObj.open(event.clientY, event.clientX, event.currentTarget);
     }
 
@@ -638,7 +639,7 @@ export class NavigationPane {
             // eslint-disable-next-line
             const mobileTool: any = document.querySelectorAll('.e-pv-mobile-annotation-toolbar');
             for (let i: number = 0; i < mobileTool.length; i++) {
-                mobileTool[i].style.display = 'none';
+                mobileTool[parseInt(i.toString(), 10)].style.display = 'none';
             }
         }
         // eslint-disable-next-line max-len

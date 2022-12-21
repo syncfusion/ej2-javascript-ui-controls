@@ -1,5 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /**
  * Specifies Circular-Gauge pointer-render Helper methods
  */

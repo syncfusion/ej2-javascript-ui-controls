@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { BorderModel, FontModel, PeriodsModel } from './base-model';
 import { EmptyPointMode, FadeOutMode } from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
@@ -128,10 +128,10 @@ export class Font extends ChildProperty<Font> {
     /**
      * Specifies the chart title text overflow
      *
-     * @default 'Trim'
+     * @default 'Wrap'
      */
 
-    @Property('Trim')
+    @Property('Wrap')
     public textOverflow: TextOverflow;
 
 }
@@ -191,6 +191,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
     /**
      * Options to customize the border of the chart area.
      */
+
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
@@ -242,7 +243,7 @@ export class Margin extends ChildProperty<Margin> {
      * @default 10
      */
 
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public left: number;
 
     /**
@@ -251,7 +252,7 @@ export class Margin extends ChildProperty<Margin> {
      * @default 10
      */
 
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public right: number;
 
     /**
@@ -260,7 +261,7 @@ export class Margin extends ChildProperty<Margin> {
      * @default 10
      */
 
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public top: number;
 
     /**
@@ -269,7 +270,7 @@ export class Margin extends ChildProperty<Margin> {
      * @default 10
      */
 
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public bottom: number;
 }
 /**
@@ -279,6 +280,7 @@ export class ContainerPadding extends ChildProperty<ContainerPadding> {
 
     /**
      * Left padding in pixels.
+     *
      * @default 0
      */
     @Property(0)
@@ -286,6 +288,7 @@ export class ContainerPadding extends ChildProperty<ContainerPadding> {
 
     /**
      * Right padding in pixels.
+     *
      * @default 0
      */
     @Property(0)
@@ -293,6 +296,7 @@ export class ContainerPadding extends ChildProperty<ContainerPadding> {
 
     /**
      * Top padding in pixels.
+     *
      * @default 0
      */
     @Property(0)
@@ -300,6 +304,7 @@ export class ContainerPadding extends ChildProperty<ContainerPadding> {
 
     /**
      * Bottom padding in pixels.
+     *
      * @default 0
      */
     @Property(0)
@@ -627,6 +632,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Options to customize tooltip borders.
      */
+
     @Complex<BorderModel>({ color: '#cccccc', width: 0.5 }, Border)
     public border: BorderModel;
 
@@ -699,6 +705,7 @@ export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings
     /**
      * Buttons
      */
+    
     @Collection<PeriodsModel>([], Periods)
     public periods: PeriodsModel[];
 }

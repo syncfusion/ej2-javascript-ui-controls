@@ -159,7 +159,8 @@ export class Toolbar {
         this.isTransformChild = false;
         const transformElements: HTMLElement[] = <HTMLElement[]>selectAll('[style*="transform"]', document);
         for (let i: number = 0; i < transformElements.length; i++) {
-            if (!isNullOrUndefined(transformElements[i].contains) && transformElements[i].contains(this.parent.element)) {
+            // eslint-disable-next-line max-len
+            if (!isNullOrUndefined(transformElements[i as number].contains) && transformElements[i as number].contains(this.parent.element)) {
                 this.isTransformChild = true;
                 break;
             }
@@ -333,10 +334,10 @@ export class Toolbar {
         const index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {
             const prefixId: string = this.parent.inlineMode.enable ? '_quick_' : '_toolbar_';
-            args.baseToolbar.toolbarObj.items[index].id = this.parent.getID() + prefixId + item.id;
-            args.baseToolbar.toolbarObj.items[index].prefixIcon = item.icon;
-            args.baseToolbar.toolbarObj.items[index].tooltipText = item.tooltip;
-            (args.baseToolbar.toolbarObj.items as IToolbarItemModel[])[index].subCommand = item.subCommand;
+            args.baseToolbar.toolbarObj.items[index as number].id = this.parent.getID() + prefixId + item.id;
+            args.baseToolbar.toolbarObj.items[index as number].prefixIcon = item.icon;
+            args.baseToolbar.toolbarObj.items[index as number].tooltipText = item.tooltip;
+            (args.baseToolbar.toolbarObj.items as IToolbarItemModel[])[index as number].subCommand = item.subCommand;
             args.baseToolbar.toolbarObj.dataBind();
         } else {
             this.addTBarItem(args, 0);
@@ -404,7 +405,7 @@ export class Toolbar {
         const trgItems: number[] = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
         this.tbItems = selectAll('.' + classes.CLS_TB_ITEM, baseToolbar.toolbarObj.element);
         for (let i: number = 0; i < trgItems.length; i++) {
-            const item: HTMLElement = this.tbItems[trgItems[i]];
+            const item: HTMLElement = this.tbItems[trgItems[i as number]];
             if (item) {
                 baseToolbar.toolbarObj.enableItems(item, isEnable);
             }
@@ -430,7 +431,7 @@ export class Toolbar {
         this.tbItems = (this.parent.inlineMode.enable) ? selectAll('.' + classes.CLS_TB_ITEM, this.baseToolbar.toolbarObj.element)
             : selectAll('.' + classes.CLS_TB_ITEM, this.parent.element);
         for (let i: number = 0; i < trgItems.length; i++) {
-            this.baseToolbar.toolbarObj.removeItems(this.tbItems[trgItems[i]]);
+            this.baseToolbar.toolbarObj.removeItems(this.tbItems[trgItems[i as number]]);
         }
     }
 
@@ -578,9 +579,9 @@ export class Toolbar {
             const toolbarItem: NodeList = this.parent.getToolbarElement().querySelectorAll('.e-expended-nav');
             for (let i: number = 0; i < toolbarItem.length; i++) {
                 if (isNOU(this.parent.getToolbarElement().querySelector('.e-insert-table-btn'))) {
-                    (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '0');
+                    (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '0');
                 } else {
-                    (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '1');
+                    (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '1');
                 }
             }
         }
@@ -678,6 +679,7 @@ export class Toolbar {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         if (this.toolbarObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {

@@ -2,7 +2,7 @@
  * Gantt base spec
  */
 import { Gantt, ColumnMenu } from '../../src/index';
-import { baselineData,filterdata } from './data-source.spec';
+import { baselineData, filterdata } from './data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt spec for  scroll', () => {
@@ -154,7 +154,7 @@ describe('Gantt spec for  scroll', () => {
                 },
                 projectStartDate: new Date('07/15/1969 01:00:00 AM'),
                 projectEndDate: new Date('07/25/1969'),
-               
+
                 }, done);
 
         });
@@ -163,7 +163,7 @@ describe('Gantt spec for  scroll', () => {
         });
         it('column type', () => {
             expect(ganttObj.treeGridModule.treeGridColumns[2].type).toBe('number')
-        
+
         });
     });
 });

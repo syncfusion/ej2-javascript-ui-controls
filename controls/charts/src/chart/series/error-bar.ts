@@ -348,12 +348,12 @@ export class ErrorBar {
         let j: number = 1;
         while (j < errorBarElements.length) {
             for (let i: number = 0; i < series.points.length; i++) {
-                if (!series.points[i].symbolLocations[0]) {
+                if (!series.points[i as number].symbolLocations[0]) {
                     continue;
                 }
-                (<HTMLElement>errorBarElements[j]).style.visibility = 'hidden';
+                (<HTMLElement>errorBarElements[j as number]).style.visibility = 'hidden';
                 templateAnimate(
-                    errorBarElements[j] as HTMLElement, delay, 350,
+                    errorBarElements[j as number] as HTMLElement, delay, 350,
                     series.chart.requireInvertedAxis ? 'SlideLeftIn' : 'SlideBottomIn',
                     false
                 );

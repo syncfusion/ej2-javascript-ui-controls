@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-case-declarations */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { isNullOrUndefined, extend, createElement, Ajax } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
@@ -220,9 +217,11 @@ export class LayerPanel {
             panel.mapObject.previousZoomFactor = panel.mapObject.zoomSettings.zoomFactor;
         }
         if (panel.mapObject.navigationLineModule) {
-            panel.layerObject.appendChild(
-                panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex)
-            );
+            const navigationLineElement: Element =
+                panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex);
+            if (!isNullOrUndefined(navigationLineElement)) {
+                panel.layerObject.appendChild(navigationLineElement);
+            }
         }
         if (panel.mapObject.markerModule) {
             panel.mapObject.markerModule.markerRender(this.mapObject, panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
@@ -288,7 +287,6 @@ export class LayerPanel {
                             const imageUrl: string = <string>resource['imageUrl'];
                             const subDomains: string[] = <string[]>resource['imageUrlSubdomains'];
                             const maxZoom: string = <string>resource['zoomMax'];
-                            const markerGroupElement : HTMLElement = document.getElementById(proxy.mapObject.element.id + '_Markers_Group');
                             if (imageUrl !== null && imageUrl !== undefined && imageUrl !== bing.imageUrl) {
                                 bing.imageUrl = imageUrl;
                             }
@@ -339,7 +337,7 @@ export class LayerPanel {
         }
     }
 
-    private bingMapCalculation(layer: LayerSettings, layerIndex: number, proxy: LayerPanel, bing: BingMap): void{        
+    private bingMapCalculation(layer: LayerSettings, layerIndex: number, proxy: LayerPanel, bing: BingMap): void {
         bing.imageUrl = layer.urlTemplate;
         bing.subDomains = ['t0', 't1', 't2', 't3'];
         bing.maxZoom = '21';
@@ -357,9 +355,9 @@ export class LayerPanel {
             const bubbleDataSource: any[] = bubbleSettings.dataSource as any[];
             for (let i: number = 0; i < bubbleDataSource.length; i++) {
                 const bubbledata: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
-                    Number(getValueFromObject(bubbleSettings.dataSource[i], bubbleSettings.valuePath)) :
-                    parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath])) :
-                    parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
+                    Number(getValueFromObject(bubbleSettings.dataSource[i as number], bubbleSettings.valuePath)) :
+                    parseFloat(bubbleSettings.dataSource[i as number][bubbleSettings.valuePath])) :
+                    parseFloat(bubbleSettings.dataSource[i as number][bubbleSettings.valuePath]);
                 if (i !== 0) {
                     if (bubbledata > range.max) {
                         range.max = bubbledata;
@@ -419,7 +417,7 @@ export class LayerPanel {
                     opacity: shapeSettings.border.opacity
                 };
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const currentShapeData: any[] = <any[]>this.currentLayer.layerData[i];
+                const currentShapeData: any[] = <any[]>this.currentLayer.layerData[i as number];
                 let pathOptions: PathOption; let polyLineOptions: PolylineOption;
                 let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
                 let path: string = ''; const points: string = '';
@@ -433,8 +431,8 @@ export class LayerPanel {
                     );
                     if (k !== null && shapeSettings.colorMapping.length === 0) {
                         fill = ((this.currentLayer.shapeSettings.colorValuePath.indexOf('.') > -1) ?
-                            (getValueFromObject(this.currentLayer.dataSource[k], shapeSettings.colorValuePath)) :
-                            this.currentLayer.dataSource[k][shapeSettings.colorValuePath]);
+                            (getValueFromObject(this.currentLayer.dataSource[k as number], shapeSettings.colorValuePath)) :
+                            this.currentLayer.dataSource[k as number][shapeSettings.colorValuePath]);
                     } else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (<any[]>this.currentLayer.dataSource).length === 0 && shapeSettings.colorMapping.length === 0) {
@@ -450,19 +448,17 @@ export class LayerPanel {
                 fill = Object.prototype.toString.call(getShapeColor) === '[object Object]' && !isNullOrUndefined(getShapeColor['fill'])
                     ? getShapeColor['fill'] : fill;
                 if (this.currentLayer.shapeSettings.borderColorValuePath || this.currentLayer.shapeSettings.borderWidthValuePath) {
-                    const borderColorValue: string = this.currentLayer.shapeSettings.borderColorValuePath;
-                    const borderWidthValue: string = this.currentLayer.shapeSettings.borderWidthValuePath;
                     k = checkShapeDataFields(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         <any[]>this.currentLayer.dataSource, currentShapeData['property'],
                         this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
                     );
                     if (k !== null) {
-                        if (this.currentLayer.dataSource[k][shapeSettings.borderColorValuePath]) {
-                            borderValue.color = this.currentLayer.dataSource[k][shapeSettings.borderColorValuePath];
+                        if (this.currentLayer.dataSource[k as number][shapeSettings.borderColorValuePath]) {
+                            borderValue.color = this.currentLayer.dataSource[k as number][shapeSettings.borderColorValuePath];
                         }
-                        if (this.currentLayer.dataSource[k][shapeSettings.borderWidthValuePath]) {
-                            borderValue.width = this.currentLayer.dataSource[k][shapeSettings.borderWidthValuePath];
+                        if (this.currentLayer.dataSource[k as number][shapeSettings.borderWidthValuePath]) {
+                            borderValue.width = this.currentLayer.dataSource[k as number][shapeSettings.borderWidthValuePath];
                         }
                     }
                 }
@@ -470,7 +466,7 @@ export class LayerPanel {
                     && !isNullOrUndefined(getShapeColor['opacity'])) ? getShapeColor['opacity'] : shapeSettings.opacity;
                 const eventArgs: IShapeRenderingEventArgs = {
                     cancel: false, name: shapeRendering, index: i,
-                    data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
+                    data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k as number] : null,
                     maps: this.mapObject,
                     shape: shapeSettings, fill: fill,
                     border: { width: borderValue.width, color: borderValue.color, opacity: borderValue.opacity}
@@ -487,16 +483,16 @@ export class LayerPanel {
                             eventArgs.shape.border.color : eventArgs.border.color;
                         eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
                         if (isNullOrUndefined(shapeSettings.borderColorValuePath)) {
-                            this.mapObject.layers[layerIndex].shapeSettings.border.color = eventArgs.border.color;
+                            this.mapObject.layers[layerIndex as number].shapeSettings.border.color = eventArgs.border.color;
                         }
                         if (isNullOrUndefined(shapeSettings.borderWidthValuePath)) {
-                            this.mapObject.layers[layerIndex].shapeSettings.border.width = eventArgs.border.width;
+                            this.mapObject.layers[layerIndex as number].shapeSettings.border.width = eventArgs.border.width;
                         }
                     } else {
                         eventArgs.fill = fill;
                         eventArgs.border.color = shapeSettings.border.color;
                         eventArgs.border.width = shapeSettings.border.width;
-                        this.mapObject.layers[layerIndex].shapeSettings.border = shapeSettings.border;
+                        this.mapObject.layers[layerIndex as number].shapeSettings.border = shapeSettings.border;
                     }
                     eventArgs.border.opacity = isNullOrUndefined(eventArgs.border.opacity) ? opacity : eventArgs.border.opacity;
                     if (this.groupElements.length < 1) {
@@ -506,7 +502,7 @@ export class LayerPanel {
                         this.groupElements.push(groupElement);
                     } else {
                         for (let i: number = 0; i < this.groupElements.length; i++) {
-                            const ele: Element = this.groupElements[i];
+                            const ele: Element = this.groupElements[i as number];
                             if (ele.id.indexOf(drawingType) > -1) {
                                 groupElement = ele;
                                 break;
@@ -552,7 +548,7 @@ export class LayerPanel {
                         if (path.length > 3) {
                             pathOptions = new PathOption(
                                 shapeID, 'transparent', !isNullOrUndefined(eventArgs.border.width) ? eventArgs.border.width : 1, !isNullOrUndefined(eventArgs.fill) ? eventArgs.fill :
-                                eventArgs.border.color,
+                                    eventArgs.border.color,
                                 opacity, eventArgs.border.opacity, shapeSettings.dashArray, path);
                             pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                         }
@@ -572,7 +568,7 @@ export class LayerPanel {
                         if (path.length > 3) {
                             pathOptions = new PathOption(
                                 shapeID, 'transparent', !isNullOrUndefined(eventArgs.border.width) ? eventArgs.border.width : 1, !isNullOrUndefined(eventArgs.fill) ? eventArgs.fill :
-                                eventArgs.border.color,
+                                    eventArgs.border.color,
                                 opacity, eventArgs.border.opacity, shapeSettings.dashArray, path);
                             pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                         }
@@ -580,7 +576,9 @@ export class LayerPanel {
                     case 'Point':
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const pointData: any = <any>currentShapeData['point'];
-                        const circleRadius: number = (this.mapObject.layers[layerIndex].type !== 'SubLayer') ? shapeSettings.circleRadius : shapeSettings.circleRadius / (this.mapObject.isTileMap ? this.mapObject.scale : this.currentFactor);
+                        const circleRadius: number = (this.mapObject.layers[layerIndex as number].type !== 'SubLayer') ?
+                            shapeSettings.circleRadius : shapeSettings.circleRadius / (this.mapObject.isTileMap ?
+                                this.mapObject.scale : this.currentFactor);
                         circleOptions = new CircleOption(
                             shapeID, eventArgs.fill, eventArgs.border, opacity,
                             pointData['x'], pointData['y'], circleRadius, shapeSettings.dashArray);
@@ -591,9 +589,9 @@ export class LayerPanel {
                         currentShapeData.map((multiPointData: any, index: number) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const pointData: any = multiPointData['point'];
-                            const circleRadius: number = (this.mapObject.layers[layerIndex].type !== 'SubLayer') ? shapeSettings.circleRadius : shapeSettings.circleRadius / (this.mapObject.isTileMap ? this.mapObject.scale : this.currentFactor);
+                            const circleRadius: number = (this.mapObject.layers[layerIndex as number].type !== 'SubLayer') ? shapeSettings.circleRadius : shapeSettings.circleRadius / (this.mapObject.isTileMap ? this.mapObject.scale : this.currentFactor);
                             circleOptions = new CircleOption(
-                                (shapeID + "_multiLine_" + index), eventArgs.fill, eventArgs.border, opacity,
+                                (shapeID + '_multiLine_' + index), eventArgs.fill, eventArgs.border, opacity,
                                 pointData['x'], pointData['y'], circleRadius, shapeSettings.dashArray);
                             pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
                             this.pathAttributeCalculate(groupElement, pathEle, drawingType, currentShapeData, i);
@@ -624,45 +622,45 @@ export class LayerPanel {
     /**
      * layer features as bubble, marker, datalabel, navigation line.
      *
-     * @param {groupElement} Element - Specifies the element to append the group
-     * @param {pathEle} Element - Specifies the svg element
-     * @param {drawingType} string - Specifies the data type
-     * @param {currentShapeData} any - Specifies the layer of shapedata.
-     * @param {index} number - Specifies the tab index.
+     * @param {Element} groupElement - Specifies the element to append the group.
+     * @param {Element} pathEle - Specifies the svg element.
+     * @param {string} drawingType - Specifies the data type.
+     * @param {any} currentShapeData - Specifies the layer of shapedata.
+     * @param {number} index - Specifies the tab index.
      * @returns {void}
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private pathAttributeCalculate(groupElement: Element, pathEle: Element, drawingType: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                    currentShapeData: any, index: number): void {
         const property: string[] = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
             this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]) as string[];
         let properties: string;
         for (let j: number = 0; j < property.length; j++) {
             if (!isNullOrUndefined(currentShapeData['property'])) {
-                properties = property[j];
+                properties = property[j as number];
                 break;
             }
         }
         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
-            (currentShapeData['property'][properties]) : ''));
+            (currentShapeData['property'][properties as string]) : ''));
         (pathEle as HTMLElement).tabIndex = this.mapObject.tabIndex + index + 3;
         pathEle.setAttribute('role', '');
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
             (pathEle as HTMLElement).style.cssText = 'outline:none';
         }
         maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle,
-                            'ShapeselectionMapStyle');
+                          'ShapeselectionMapStyle');
         if (this.mapObject.toggledShapeElementId) {
             for (let j: number = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
                 const styleProperty: ShapeSettingsModel | ToggleLegendSettingsModel =
                     this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
                         this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
-                if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
+                if (this.mapObject.toggledShapeElementId[j as number] === pathEle.id) {
                     pathEle.setAttribute('fill', styleProperty.fill);
                     pathEle.setAttribute('stroke', styleProperty.border.color);
                     pathEle.setAttribute('fill-opacity', (styleProperty.opacity).toString());
                     pathEle.setAttribute('stroke-opacity', (isNullOrUndefined(styleProperty.border.opacity) ? styleProperty.opacity : styleProperty.border.opacity).toString());
-                    pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                    pathEle.setAttribute('stroke-width', (isNullOrUndefined(styleProperty.border.width) ? 0 : styleProperty.border.width).toString());
                 }
             }
         }
@@ -687,7 +685,7 @@ export class LayerPanel {
             const length: number = this.currentLayer.bubbleSettings.length;
             let bubble: BubbleSettingsModel;
             for (let j: number = 0; j < length; j++) {
-                bubble = this.currentLayer.bubbleSettings[j];
+                bubble = this.currentLayer.bubbleSettings[j as number];
                 bubbleG = this.mapObject.renderer.createGroup({
                     id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
                 });
@@ -731,11 +729,9 @@ export class LayerPanel {
             this.layerObject.appendChild(element);
         });
         if (this.mapObject.markerModule) {
-            this.mapObject.markerModule.markerRender(this.mapObject,
-                this.layerObject, layerIndex, (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
-                    : this.currentFactor),
-                null
-            );
+            this.mapObject.markerModule.markerRender(this.mapObject, this.layerObject, layerIndex,
+                                                     (this.mapObject.isTileMap ? Math.floor(this.currentFactor) :
+                                                         this.currentFactor), null);
         }
         this.translateLayerElements(this.layerObject, layerIndex);
         this.layerGroup.appendChild(this.layerObject);
@@ -746,11 +742,11 @@ export class LayerPanel {
      *
      * @param {LayerSettings} layer - Specifies the layer
      * @param {number} layerIndex - Specifies the layer index
-     * @param {object[]} shape - Specifies the shape
+     * @param {any[]} shape - Specifies the shape
      * @param {Element} group - Specifies the group
      * @param {number} shapeIndex - Specifies the shape index
      * @param {HTMLElement} labelTemplateEle - Specifies the label template element
-     * @param {object[]} intersect - Specifies the intersect
+     * @param {any[]} intersect - Specifies the intersect
      * @returns {void}
      */
     private renderLabel(
@@ -774,9 +770,9 @@ export class LayerPanel {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let shape: any[];
         for (let j: number = 0; j < currentShapeData.length; j++) {
-            path += 'M' + (currentShapeData[j][0]['point']['x']) + ' ' + (currentShapeData[j][0]['point']['y']);
+            path += 'M' + (currentShapeData[j as number][0]['point']['x']) + ' ' + (currentShapeData[j as number][0]['point']['y']);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            shape = <any[]>currentShapeData[j];
+            shape = <any[]>currentShapeData[j as number];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             shape.map((shapeData: any) => {
                 path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
@@ -829,10 +825,10 @@ export class LayerPanel {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const index: number = checkShapeDataFields(<any[]>layer.dataSource, shape, layer.shapeDataPath, layer.shapePropertyPath, layer);
         const colorMapping: ColorMapping = new ColorMapping(this.mapObject);
-        if (isNullOrUndefined(layer.dataSource[index])) {
+        if (isNullOrUndefined(layer.dataSource[index as number])) {
             return color;
         }
-        return colorMapping.getShapeColorMapping(layer.shapeSettings, layer.dataSource[index], color);
+        return colorMapping.getShapeColorMapping(layer.shapeSettings, layer.dataSource[index as number], color);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public generatePoints(type: string, coordinates: any[], data: any, properties: any): void {
@@ -854,10 +850,12 @@ export class LayerPanel {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const multiPolygonDatas: any[] = [];
             for (let i: number = 0; i < coordinates.length; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[i][0], data, properties);
-                if (newData.length > 0) {
-                    multiPolygonDatas.push(newData);
+                for (let j: number = 0; j < coordinates[i as number].length; j++) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[i as number][j as number], data, properties);
+                    if (newData.length > 0) {
+                        multiPolygonDatas.push(newData);
+                    }
                 }
             }
             multiPolygonDatas['property'] = properties;
@@ -866,16 +864,16 @@ export class LayerPanel {
             this.currentLayer.layerData.push(multiPolygonDatas);
             break;
         case 'linestring':
-            const extraSpace: number = !isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
+            const lineExtraSpace: number = !isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
                 (typeof(this.currentLayer.shapeSettings.border.width) === 'string' ?
                     parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            coordinates.map((points: any, index: number) => {
+            coordinates.map((points: any) => {
                 latitude = <number>points[1];
                 longitude = <number>points[0];
                 const point: Point = convertGeoToPoint(
                     latitude, longitude, this.currentFactor, this.currentLayer, this.mapObject);
-                this.calculateBox(point, extraSpace);
+                this.calculateBox(point, lineExtraSpace);
                 newData.push({
                     point: point, lat: latitude, lng: longitude
                 });
@@ -887,11 +885,13 @@ export class LayerPanel {
         case 'multilinestring':
             const extraSpaces: number = !isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
                 (typeof(this.currentLayer.shapeSettings.border.width) === 'string' ?
-                parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1;
+                    parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const multiLineData: any[] = [];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             coordinates.map((multiPoints: any) => {
                 newData = [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 multiPoints.map((points: any) => {
                     latitude = <number>points[1];
                     longitude = <number>points[0];
@@ -911,7 +911,7 @@ export class LayerPanel {
         case 'point':
             const pointExtraSpace: number = (!isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
                 (typeof(this.currentLayer.shapeSettings.border.width) === 'string' ?
-                parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1) +
+                    parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1) +
                 (this.currentLayer.shapeSettings.circleRadius * 2);
             latitude = <number>coordinates[1];
             longitude = <number>coordinates[0];
@@ -921,10 +921,10 @@ export class LayerPanel {
                 point: point, type: type, lat: latitude, lng: longitude, property: properties
             });
             break;
-        case 'multipoint': {
+        case 'multipoint':
             const extraSpace: number = (!isNullOrUndefined(this.currentLayer.shapeSettings.border.width) ?
                 (typeof(this.currentLayer.shapeSettings.border.width) === 'string' ?
-                parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1) +
+                    parseInt(this.currentLayer.shapeSettings.border.width, 10) : this.currentLayer.shapeSettings.border.width) : 1) +
                 (this.currentLayer.shapeSettings.circleRadius * 2);
             newData = [];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -941,7 +941,6 @@ export class LayerPanel {
             newData['type'] = type;
             this.currentLayer.layerData.push(newData);
             break;
-        }
         case 'path':
             this.currentLayer.layerData.push({
                 point: data['d'], type: type, property: properties
@@ -952,7 +951,8 @@ export class LayerPanel {
 
     public calculateBox(point: Point, extraSpace: number): void {
         if (isNullOrUndefined(this.rectBounds)) {
-            this.rectBounds = { min: { x: point.x - extraSpace, y: point.y - extraSpace }, max: { x: point.x + extraSpace, y: point.y + extraSpace } };
+            this.rectBounds = { min: { x: point.x - extraSpace, y: point.y - extraSpace }, max: { x: point.x + extraSpace,
+                y: point.y + extraSpace } };
         } else {
             this.rectBounds['min']['x'] = Math.min(this.rectBounds['min']['x'], point.x - extraSpace);
             this.rectBounds['min']['y'] = Math.min(this.rectBounds['min']['y'], point.y - extraSpace);
@@ -1016,7 +1016,7 @@ export class LayerPanel {
             this.mapObject.baseTranslatePoint = this.mapObject.translatePoint = location;
             this.mapObject.baseScale = this.mapObject.scale = scale;
             for (let i: number = 0; i < layerElement.childElementCount; i++) {
-                childNode = layerElement.childNodes[i] as HTMLElement;
+                childNode = layerElement.childNodes[i as number] as HTMLElement;
                 if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
                     (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                     (!(childNode.id.indexOf('_dataLableIndex_Group') > -1))
@@ -1037,7 +1037,7 @@ export class LayerPanel {
             }
         } else if (this.mapObject.isTileMap && !isNullOrUndefined(this.mapObject.scale)) {
             for (let j: number = 0; j < layerElement.childElementCount; j++) {
-                childNode = layerElement.childNodes[j] as HTMLElement;
+                childNode = layerElement.childNodes[j as number] as HTMLElement;
                 if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
                     (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                     (!(childNode.id.indexOf('_dataLableIndex_Group') > -1)) &&
@@ -1072,6 +1072,7 @@ export class LayerPanel {
                 case 'multilinestring':
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     coordinates.map((multiPoint: any, index: number) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         multiPoint.map((point: any, index: number) => {
                             this.calculateRectBox(point, 'multilinestring', index === 0 ? true : false);
                         });
@@ -1087,6 +1088,7 @@ export class LayerPanel {
                     this.calculateRectBox(coordinates, 'point');
                     break;
                 case 'multipoint':
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     coordinates.map((point: any, index: number) => {
                         this.calculateRectBox(point, 'multipoint', index === 0 ? true : false);
                     });
@@ -1102,7 +1104,7 @@ export class LayerPanel {
         const newData: any[] = [];
         const bounds: GeoLocation = this.mapObject.baseMapBounds;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        coordinates.map((currentPoint: any, index: number) => {
+        coordinates.map((currentPoint: any) => {
             const latitude: number = currentPoint[1];
             const longitude: number = currentPoint[0];
             if ((longitude >= bounds.longitude.min && longitude <= bounds.longitude.max)
@@ -1196,8 +1198,8 @@ export class LayerPanel {
                             tileI = (tileI % ycount) + ycount;
                         }
                         const tile: Tile = new Tile(tileI % ycount, j);
-                        tile.left = x;
-                        tile.top = y;
+                        tile.left = Math.round(x);
+                        tile.top = Math.round(y);
                         if (baseLayer.layerType === 'Bing' || (bing && !isNullOrUndefined(baseLayer.urlTemplate) && baseLayer.urlTemplate !== '')) {
                             const key: string = baseLayer.key;
                             tile.src = bing.getBingMap(tile, key, baseLayer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
@@ -1282,18 +1284,43 @@ export class LayerPanel {
                         animateElement = element ? element.children[0] as HTMLElement : null;
                     }
                 }
-                let id: number = 0;
-                for (const tile of this.tiles) {
-                    const imgElement: HTMLElement = createElement('img');
-                    imgElement.setAttribute('height', '256px');
-                    imgElement.setAttribute('width', '256px');
-                    imgElement.setAttribute('src', tile.src);
-                    imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                for (let id: number = 0; id < this.tiles.length; id++) {
+                    const tile: Tile = this.tiles[id as number];
+                    let imgElement: HTMLImageElement = null;
                     const mapId: string = this.mapObject.element.id;
-                    imgElement.onload = () => {
-                        if (document.getElementById(mapId + '_tile_' + id) && type === 'Pan') {
-                            removeElement(mapId + '_tile_' + id);
+                    if (type === 'Pan') {
+                        let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
+                        let isNewTile: boolean = false;
+                        if (isNullOrUndefined(child)) {
+                            isNewTile = true;
+                            child = createElement('div', { id: mapId + '_tile_' + id });
+                            imgElement = createElement('img') as HTMLImageElement;
+                        } else {
+                            child.style.removeProperty('display');
+                            imgElement = <HTMLImageElement>child.children[0];
                         }
+                        if (!isNewTile && imgElement && imgElement.src !== tile.src) {
+                            imgElement.src = tile.src;
+                        }
+                        child.style.position = 'absolute';
+                        child.style.left = tile.left + 'px';
+                        child.style.top = tile.top + 'px';
+                        child.style.height = tile.height + 'px';
+                        child.style.width = tile.width + 'px';
+                        if (isNewTile) {
+                            imgElement.setAttribute('height', '256px');
+                            imgElement.setAttribute('width', '256px');
+                            imgElement.setAttribute('src', tile.src);
+                            imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                            child.appendChild(imgElement);
+                            animateElement.appendChild(child);
+                        }
+                    } else {
+                        imgElement = createElement('img') as HTMLImageElement;
+                        imgElement.setAttribute('height', '256px');
+                        imgElement.setAttribute('width', '256px');
+                        imgElement.setAttribute('src', tile.src);
+                        imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
                         const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
                         child.style.position = 'absolute';
                         child.style.left = tile.left + 'px';
@@ -1304,11 +1331,26 @@ export class LayerPanel {
                         if (animateElement) {
                             animateElement.appendChild(child);
                         }
-                        id++;
-                        if (id === this.tiles.length && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
-                            removeElement(this.mapObject.element.id + '_animated_tiles_old');
+                    }
+                    if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
+                        removeElement(this.mapObject.element.id + '_animated_tiles_old');
+                    }
+                }
+                if (!isNullOrUndefined(this.mapObject.currentTiles)) {
+                    for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
+                        let isExistingElement: boolean = false;
+                        for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
+                            if (!isExistingElement &&
+                                this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
+                                isExistingElement = true;
+                            }
                         }
-                    };
+                        if (isExistingElement) {
+                            (animateElement.children[l as number] as HTMLElement).style.display = 'none';
+                        } else {
+                            animateElement.removeChild(animateElement.children[l as number]);
+                        }
+                    }
                 }
             }, timeOut);
         }

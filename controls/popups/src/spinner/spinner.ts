@@ -5,7 +5,6 @@ const globalTimeOut: { [key: string]: GlobalTimeOut } = {};
 const DEFT_MAT_WIDTH: number = 30;
 const DEFT_FAB_WIDTH: number = 30;
 const DEFT_FLUENT_WIDTH: number = 30;
-const DEFT_TAIL_WIDTH: number = 24;
 const DEFT_BOOT_WIDTH: number = 30;
 const DEFT_BOOT4_WIDTH: number = 36;
 const DEFT_BOOT5_WIDTH: number = 36;
@@ -140,7 +139,7 @@ function createLabel(container: HTMLElement, label: string, makeElement: createE
  */
 function createMaterialSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Material', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Material', radius: radius };
     create_material_element (container, uniqueID, makeElement, CLS_MATERIALSPIN);
     mat_calculate_attributes(radius, container, 'Material', CLS_MATERIALSPIN);
 }
@@ -154,7 +153,7 @@ function createMaterialSpinner(container: HTMLElement, radius: number, makeEleme
  */
 function createBootstrap4Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap4', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Bootstrap4', radius: radius };
     create_material_element (container, uniqueID, makeElement, CLS_BOOT4SPIN);
     mat_calculate_attributes(radius, container, 'Bootstrap4', CLS_BOOT4SPIN);
 }
@@ -167,7 +166,7 @@ function createBootstrap4Spinner(container: HTMLElement, radius: number, makeEle
  */
 function createBootstrap5Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap5', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Bootstrap5', radius: radius };
     create_material_element (container, uniqueID, makeElement, CLS_BOOT5SPIN);
     mat_calculate_attributes(radius, container, 'Bootstrap5', CLS_BOOT5SPIN);
 }
@@ -180,8 +179,8 @@ function createBootstrap5Spinner(container: HTMLElement, radius: number, makeEle
  */
 function startMatAnimate(container: HTMLElement, uniqueID: string, radius: number): void {
     const globalObject: {[key: string]: GlobalVariables } = {};
-    const timeOutVar: number = 0; globalTimeOut[uniqueID].timeOut = 0;
-    globalObject[uniqueID] = globalVariables(uniqueID, radius, 0, 0);
+    const timeOutVar: number = 0; globalTimeOut[`${uniqueID}`].timeOut = 0;
+    globalObject[`${uniqueID}`] = globalVariables(uniqueID, radius, 0, 0);
     // eslint-disable-next-line
     let spinnerInfo: SpinnerInfo  = { uniqueID: uniqueID, container: container, globalInfo: globalObject, timeOutVar: timeOutVar };
     animateMaterial(spinnerInfo);
@@ -196,7 +195,7 @@ function startMatAnimate(container: HTMLElement, uniqueID: string, radius: numbe
  */
 function createFabricSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Fabric', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Fabric', radius: radius };
     create_fabric_element(container, uniqueID, CLS_FABRICSPIN, makeElement);
     fb_calculate_attributes(radius, container, CLS_FABRICSPIN);
 }
@@ -210,15 +209,21 @@ function createFabricSpinner(container: HTMLElement, radius: number, makeElement
  */
 function createFluentSinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Fluent', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Fluent', radius: radius };
     create_fabric_element(container, uniqueID, CLS_FLUENTSPIN, makeElement);
     fb_calculate_attributes(radius, container, CLS_FLUENTSPIN);
 }
 
-
+/**
+ *
+ * @param {HTMLElement} container - specifies the element
+ * @param {number} radius - specifies the radius
+ * @param {createElementParams} makeElement - specifies the element
+ * @returns {void}
+ */
 function createTailwindSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Tailwind', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Tailwind', radius: radius };
     create_fabric_element(container, uniqueID, CLS_TAILWINDSPIN, makeElement);
     fb_calculate_attributes(radius, container, CLS_TAILWINDSPIN);
 }
@@ -232,7 +237,7 @@ function createTailwindSpinner(container: HTMLElement, radius: number, makeEleme
  */
 function createHighContrastSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'HighContrast', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'HighContrast', radius: radius };
     create_fabric_element(container, uniqueID, CLS_HIGHCONTRASTSPIN, makeElement);
     fb_calculate_attributes(radius, container, CLS_HIGHCONTRASTSPIN);
 }
@@ -299,7 +304,7 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
  */
 function createBootstrapSpinner(innerContainer: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = random_generator();
-    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Bootstrap', radius: radius };
     create_bootstrap_element(innerContainer, uniqueID, makeElement);
     boot_calculate_attributes(innerContainer, radius);
 }
@@ -421,7 +426,7 @@ function animateBootstrap(innerContainer: HTMLElement): void {
         boot_animate(start);
         // eslint-disable-next-line
         function boot_animate(radius: number): void {
-            if (globalTimeOut[id].isAnimate) {
+            if (globalTimeOut[`${id}`].isAnimate) {
                 ++count;
                 circle.setAttribute('r', radius + '');
                 if (count >= series.length) {
@@ -594,7 +599,6 @@ function animateMaterial(spinnerInfo: SpinnerInfo): void {
  * @param {SpinnerInfo} spinnerInfo - specifies the spinner info
  * @returns {void}
  */
-// eslint-disable-next-line
 function createCircle(start: number, end: number, easing: Function, duration: number,
                       count: number, max: number, spinnerInfo: SpinnerInfo): void {
     const id: number = ++spinnerInfo.globalInfo[spinnerInfo.uniqueID].previousId;
@@ -783,7 +787,6 @@ function defineCircle(x: number, y: number, radius: number ): string {
     ].join(' ');
     return d;
 }
-// eslint-disable-next-line
 /**
  * Function to show the Spinner.
  *
@@ -819,8 +822,8 @@ function showHideSpinner(container: HTMLElement, isHide: boolean): void {
                 return;
             }
             const id: string  = svgEle.getAttribute('id');
-            globalTimeOut[id].isAnimate = !isHide;
-            switch (globalTimeOut[id].type) {
+            globalTimeOut[`${id}`].isAnimate = !isHide;
+            switch (globalTimeOut[`${id}`].type) {
             case 'Material':
                 // eslint-disable-next-line
                 isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
@@ -870,7 +873,7 @@ export function setSpinner(args: SetSpinnerArgs, internalCreateElement?: createE
     }
     const container: Element[] = <NodeListOf<Element> & Element[]>  document.querySelectorAll('.' + CLS_SPINWRAP);
     for (let index: number = 0; index < container.length; index++) {
-        ensureTemplate(args.template, (<HTMLElement>container[index]), args.type, args.cssClass, makeElement);
+        ensureTemplate(args.template, (<HTMLElement>container[index as number]), args.type, args.cssClass, makeElement);
     }
 }
 /**
@@ -915,7 +918,7 @@ function replaceTheme( container: HTMLElement, theme: string, cssClass: string, 
     const svgClassList: string[] = classNames.split(/\s/);
     if (svgClassList.indexOf('e-spin-material') >= 0) {
         const id: string =  svgElement.getAttribute('id');
-        clearTimeout(globalTimeOut[id].timeOut);
+        clearTimeout(globalTimeOut[`${id}`].timeOut);
     }
     setTheme(theme, container, radius, makeEle);
 }

@@ -244,6 +244,7 @@ export class WTableFormat {
             WTableFormat.uniqueTableFormats.remove(this.uniqueTableFormat);
         }
         this.uniqueTableFormat = undefined;
+        this.ownerBase = undefined;
         this.borders = undefined;
         this.shading = undefined;
     }

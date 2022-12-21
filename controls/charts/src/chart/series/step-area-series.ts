@@ -40,7 +40,7 @@ export class StepAreaSeries extends LineBase {
             lineLength = 0;
         }
         for (let i: number = 0; i < pointsLength; i++) {
-            point = visiblePoints[i];
+            point = visiblePoints[i as number];
             xValue = point.xValue;
             point.symbolLocations = []; point.regions = [];
             if (point.visible && withInRange(visiblePoints[i - 1], point, visiblePoints[i + 1], series)) {
@@ -90,11 +90,11 @@ export class StepAreaSeries extends LineBase {
             0, 'transparent', series.opacity, series.dashArray, direction
         );
         this.appendLinePath(options, series, '');
-        
+
         /**
-          * To draw border for the path directions of area
-          */
-        if (series.border.width != 0) {
+         * To draw border for the path directions of area
+         */
+        if (series.border.width !== 0) {
             emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
             const options: PathOption = new PathOption(
                 series.chart.element.id + '_Series_border_' + series.index, 'transparent',
@@ -103,7 +103,7 @@ export class StepAreaSeries extends LineBase {
             this.appendLinePath(options, series, '');
         }
         this.renderMarker(series);
-    }   
+    }
     /**
      * Animates the series.
      *

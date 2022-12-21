@@ -8,13 +8,6 @@ export type ValueType = number | string | Date | boolean;
 
 export type ValueAccessor = (field: string, data: Object, column: ColumnModel) => Object;
 
-/**
- * This method is used to apply the custom header cell values from an external function and display them on each rendered header cell.
- * 
- * {% codeBlock src='grid/headerValueAccessor/index.md' %}{% endcodeBlock %}
- * 
- */
-
 export type HeaderValueAccessor = (field: string, column: ColumnModel) => Object;
 
 export type SortComparer = (x: ValueType, y: ValueType) => number;

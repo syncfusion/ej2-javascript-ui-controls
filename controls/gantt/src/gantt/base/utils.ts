@@ -61,7 +61,7 @@ export function isCountRequired(parent: Gantt): boolean {
 export function getSwapKey(obj: Object): object {
     const temp: Object = {};
     for (const key of Object.keys(obj)) {
-        temp[obj[key]] = key;
+        temp[obj[key as string]] = key;
     }
     return temp;
 }
@@ -108,7 +108,7 @@ export function getTaskData(
         for (let i: number = 0; i < records.length; i++) {
             let data: object;
             if (!isNullOrUndefined(parent) && parent.timezone) {
-                updateDates(records[i], parent);
+                updateDates(records[i as number], parent);
             }
             // eslint-disable-next-line
             data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
@@ -151,8 +151,9 @@ export function updateDates(record: IGanttData, parent: Gantt): void {
 export function formatString(str: string, args: string[]): string {
     let regx: RegExp;
     for (let i: number = 0; i < args.length; i++) {
+        // eslint-disable-next-line detect-non-literal-regexp
         regx = new RegExp('\\{' + (i) + '\\}', 'gm');
-        str = str.replace(regx, args[i].toString());
+        str = str.replace(regx, args[i as number].toString());
     }
     return str;
 }
@@ -169,9 +170,9 @@ export function formatString(str: string, args: string[]): string {
 export function getIndex(value: any, key1: string, collection: any, key2?: string ): number {
     let index: number = - 1;
     for (let i: number = 0; i < collection.length; i++) {
-        if (getValue(key1, collection[i]) === getValue(key1, value) && isNullOrUndefined(key2)
-            || (!isNullOrUndefined(key2) && getValue(key1, collection[i]) === getValue(key1, value)
-                && getValue(key2, collection[i]) === getValue(key2, value))) {
+        if (getValue(key1, collection[i as number]) === getValue(key1, value) && isNullOrUndefined(key2)
+            || (!isNullOrUndefined(key2) && getValue(key1, collection[i as number]) === getValue(key1, value)
+                && getValue(key2, collection[i as number]) === getValue(key2, value))) {
             index = i;
             break;
         }

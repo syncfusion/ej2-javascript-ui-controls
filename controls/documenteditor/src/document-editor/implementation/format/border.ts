@@ -223,10 +223,10 @@ export class WBorder {
         }
 
         for (let i: number = 0; i < borderLineArray.length; i++) {
-            if (borderLineArray[i] >= 0) {
-                borderLineArray[i] = borderLineArray[i] * lineWidth;
+            if (borderLineArray[parseInt(i.toString(), 10)] >= 0) {
+                borderLineArray[parseInt(i.toString(), 10)] = borderLineArray[parseInt(i.toString(), 10)] * lineWidth;
             } else {
-                borderLineArray[i] = Math.abs(borderLineArray[i]);
+                borderLineArray[parseInt(i.toString(), 10)] = Math.abs(borderLineArray[parseInt(i.toString(), 10)]);
             }
         }
         return borderLineArray;
@@ -517,11 +517,22 @@ export class WBorder {
         border.space = this.space;
         return border;
     }
-    public destroy(): void {
+    /**
+     * @private
+     */
+    public clearFormat(): void {
         if (!isNullOrUndefined(this.uniqueBorderFormat)) {
             WBorder.uniqueBorderFormats.remove(this.uniqueBorderFormat);
         }
         this.uniqueBorderFormat = undefined;
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public destroy(): void {
+        this.clearFormat();
+        this.ownerBase = undefined;
     }
     /**
      * @private

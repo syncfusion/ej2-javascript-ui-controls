@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
+import { ChildProperty, Property, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { DataManager, Query} from '@syncfusion/ej2-data';
 import { MarkerSettings, Series, Trendline } from '../../chart/series/chart-series';
 import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';
@@ -147,7 +147,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
      *
      * @default 10
      */
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public left: number;
 
     /**
@@ -155,7 +155,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
      *
      * @default 10
      */
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public right: number;
 
     /**
@@ -163,7 +163,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
      *
      * @default 10
      */
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public top: number;
 
     /**
@@ -171,7 +171,7 @@ export class StockMargin extends ChildProperty<StockMargin> {
      *
      * @default 10
      */
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public bottom: number;
 }
 
@@ -583,18 +583,16 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
-     * * Image -Render a image.     * 
+     * * Image -Render a image.     *
      * @default 'SeriesType'
      */
 
     @Property('SeriesType')
     public legendShape: LegendShape;
- 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
      * @default ''
      */
- 
     @Property('')
     public legendImageUrl: string;
 

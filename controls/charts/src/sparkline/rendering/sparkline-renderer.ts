@@ -6,7 +6,6 @@
 import { Sparkline, IAxisRenderingEventArgs, ISeriesRenderingEventArgs, SparklineValueType } from '../index';
 import { ISparklinePointEventArgs, IMarkerRenderingEventArgs, IDataLabelRenderingEventArgs } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { logBase } from '../../common/utils/helper';
 import { PathOption, SparkValues, drawPath, drawRectangle, RectOption, Rect, CircleOption, drawCircle } from '../utils/helper';
 import { measureText, renderTextElement, TextOption, Size } from '../utils/helper';
 import { PaddingModel, AxisSettingsModel, SparklineMarkerSettingsModel, SparklineFontModel } from '../model/base-model';
@@ -114,12 +113,12 @@ export class SparklineRenderer {
         const temp: Object[] = [];
         const xValues: string[] = [];
         data.forEach((value: object) => {
-            if (xValues.indexOf(value[x]) === -1) {
-                xValues.push(value[x]);
+            if (xValues.indexOf(value[x as string]) === -1) {
+                xValues.push(value[x as string]);
             }
             const currentData: object = {};
-            currentData[this.sparkline.xName] = xValues.indexOf(value[x]);
-            currentData[this.sparkline.yName] = value[y];
+            currentData[this.sparkline.xName] = xValues.indexOf(value[x as string]);
+            currentData[this.sparkline.yName] = value[y as string];
             temp.push(currentData);
         });
         this.sparkline.sparklineData = temp;
@@ -132,8 +131,8 @@ export class SparklineRenderer {
         const temp: Object[] = [];
         data.forEach((value: object) => {
             const currentData: object = {};
-            currentData[x] = value[x].getTime();
-            currentData[y] = value[y];
+            currentData[x as string] = value[x as string].getTime();
+            currentData[y as string] = value[y as string];
             temp.push(currentData);
         });
         this.sparkline.sparklineData = temp;
@@ -162,9 +161,9 @@ export class SparklineRenderer {
             if (spark.type !== 'Pie' && spark.type !== 'WinLoss' && spark.rangeBandSettings.length) {
                 const group: Element = this.sparkline.renderer.createGroup({ id: this.sparkline.element.id + '_sparkline_rangeband_g' });
                 for (let i: number = 0; i < spark.rangeBandSettings.length; i++) {
-                    if ((spark.axisSettings.minY <= spark.rangeBandSettings[i].startRange) ||
-                    (spark.axisSettings.maxY >= spark.rangeBandSettings[i].endRange)) {
-                        this.rangeBand(spark.rangeBandSettings[i], group, i);
+                    if ((spark.axisSettings.minY <= spark.rangeBandSettings[i as number].startRange) ||
+                    (spark.axisSettings.maxY >= spark.rangeBandSettings[i as number].endRange)) {
+                        this.rangeBand(spark.rangeBandSettings[i as number], group, i);
                     }
                 }
                 this.sparkline.svgObject.appendChild(group);
@@ -228,9 +227,9 @@ export class SparklineRenderer {
         let d: string = '';
         for (let i: number = 0, len: number = points.length; i < len; i++) {
             if (i === 0) {
-                d = 'M ' + points[0].x + ' ' + points[i].y + ' ';
+                d = 'M ' + points[0].x + ' ' + points[i as number].y + ' ';
             }
-            d += 'L ' + points[i].x + ' ' + points[i].y + ' ';
+            d += 'L ' + points[i as number].x + ' ' + points[i as number].y + ' ';
         }
         pathOption.d = d;
         drawPath(this.sparkline, pathOption, g);
@@ -266,14 +265,14 @@ export class SparklineRenderer {
         this.negativePointIndexes = [];
         for (let i: number = 0, stDeg: number = 90, edDeg: number, flag: string; i < points.length; i++) {
             stDeg += deg;
-            deg = points[i]['degree'];
+            deg = points[i as number]['degree'];
             edDeg = stDeg + deg;
             stRad = (stDeg - 90) * Math.PI / 180.0;
             edRad = (edDeg - 90) * Math.PI / 180.0;
-            points[i]['stAng'] = stRad;
-            points[i]['endAng'] = edRad;
+            points[i as number]['stAng'] = stRad;
+            points[i as number]['endAng'] = edRad;
             flag = (deg < 180) ? '0' : '1';
-            const temp: Object = points[i]['coordinates'] = {
+            const temp: Object = points[i as number]['coordinates'] = {
                 sX: X + (area * Math.cos(stRad)), sY: Y +
                     (area * Math.sin(stRad)), eX: X + (area * Math.cos(edRad)), eY: Y + (area * Math.sin(edRad))
             };
@@ -288,21 +287,21 @@ export class SparklineRenderer {
                 'd': pathArc,
                 'stroke-dasharray': ''
             };
-            this.getPieSpecialPoint(points[i], spark, pathOption, i, high, low, points.length);
+            this.getPieSpecialPoint(points[i as number], spark, pathOption, i, high, low, points.length);
             const pointArgs: ISparklinePointEventArgs = this.triggerPointRender(
                 'pointRendering', i, pathOption.fill, { color: stroke, width: strokeWidth });
             pathOption.fill = pointArgs.fill; pathOption.stroke = pointArgs.border.color;
             pathOption['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
                 const element: Element = drawPath(this.sparkline, pathOption, group);
-                element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
             }
             const diffRadian: number = edRad - stRad;
             const mid: { x: number, y: number } = {
                 x: X + ((area / 2) * Math.cos(stRad + (diffRadian / 2))),
                 y: Y + ((area / 2) * Math.sin(stRad + (diffRadian / 2)))
             };
-            points[i].location.x = mid.x; points[i].location.y = mid.y;
+            points[i as number].location.x = mid.x; points[i as number].location.y = mid.y;
         }
         this.sparkline.svgObject.appendChild(group);
     }
@@ -346,14 +345,14 @@ export class SparklineRenderer {
         let str: string = '';
         for (let i: number = 0, len: number = points.length; i < len; i++) {
             if (i !== 0) {
-                str += 'L ' + points[i].x + ' ' + points[i].y + ' ';
+                str += 'L ' + points[i as number].x + ' ' + points[i as number].y + ' ';
             } else {
-                d = 'M ' + points[i].x + ' ' + this.axisHeight + ' ';
-                str = 'M ' + points[i].x + ' ' + points[i].y + ' ';
+                d = 'M ' + points[i as number].x + ' ' + this.axisHeight + ' ';
+                str = 'M ' + points[i as number].x + ' ' + points[i as number].y + ' ';
             }
-            d += 'L ' + points[i].x + ' ' + points[i].y + ' ';
+            d += 'L ' + points[i as number].x + ' ' + points[i as number].y + ' ';
             if (i === (len - 1)) {
-                d += 'L ' + points[i].x + ' ' + this.axisHeight + ' Z';
+                d += 'L ' + points[i as number].x + ' ' + this.axisHeight + ' Z';
             }
         }
         pathOption.d = d;
@@ -387,7 +386,7 @@ export class SparklineRenderer {
         const len: number = points.length;
         this.negativePointIndexes = [];
         for (let i: number = 0; i < len; i++) {
-            temp = points[i];
+            temp = points[i as number];
             rectOptions.id = id + i;
             rectOptions.fill = (paletteLength) ? spark.palette[i % paletteLength] : args.fill;
             rectOptions.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
@@ -395,12 +394,12 @@ export class SparklineRenderer {
             temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);
             temp.location.x = temp.x + (temp.width / 2);
             rectOptions.stroke = args.border.color ? (args.border.color) : rectOptions.fill;
-            let pointArgs: ISparklinePointEventArgs = {
+            const pointArgs: ISparklinePointEventArgs = {
                 name: 'pointRendering', cancel: false, pointIndex: i, fill: rectOptions.fill,
                 border: { color: rectOptions.stroke, width: args.border.width }
             };
             this.sparkline.trigger('pointRendering', pointArgs, () => {
-                temp = points[i];
+                temp = points[i as number];
                 rectOptions.id = id + i;
                 rectOptions.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
                 this.getSpecialPoint(true, temp, spark, rectOptions, i, highPos, lowPos, len);
@@ -411,7 +410,7 @@ export class SparklineRenderer {
                 temp.location.x = temp.x + (temp.width / 2);
                 if (!pointArgs.cancel) {
                     const element: Element = drawRectangle(spark, rectOptions, group);
-                    element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                    element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                     group.appendChild(element);
                 }
             });
@@ -433,7 +432,7 @@ export class SparklineRenderer {
         const len: number = points.length;
         const paletteLength: number = spark.palette.length;
         for (let i: number = 0; i < len; i++) {
-            temp = points[i];
+            temp = points[i as number];
             options.id = id + i;
             options.fill = (paletteLength) ? spark.palette[i % paletteLength] : ((temp.yVal === this.axisValue) ?
                 (this.sparkline.tiePointColor || '#a216f3') : ((temp.yVal > this.axisValue) ? args.fill :
@@ -448,7 +447,7 @@ export class SparklineRenderer {
             options['stroke-width'] = pointArgs.border.width;
             if (!pointArgs.cancel) {
                 const element: Element = drawRectangle(spark, options, group);
-                element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
             }
         }
         this.sparkline.svgObject.appendChild(group);
@@ -478,7 +477,7 @@ export class SparklineRenderer {
         }
         this.negativePointIndexes = [];
         for (let i: number = 0, length: number = points.length; i < length; i++) {
-            temp = points[i];
+            temp = points[i as number];
             option.id = id + i;
             option.cx = temp.location.x;
             option.cy = temp.location.y;
@@ -486,7 +485,7 @@ export class SparklineRenderer {
             let render: boolean = (visible.toLowerCase().indexOf('all') > -1);
             render = this.getSpecialPoint(render, temp, spark, option, i, highPos, lowPos, length, visible.toLowerCase());
             option.stroke = marker.border.color || option.fill;
-            let markerArgs: IMarkerRenderingEventArgs = {
+            const markerArgs: IMarkerRenderingEventArgs = {
                 name: 'markerRendering', cancel: false,
                 border: { color: option.stroke, width: marker.border.width },
                 fill: option.fill, pointIndex: i,
@@ -502,7 +501,7 @@ export class SparklineRenderer {
                     option['stroke-width'] = markerArgs.border.width;
                     option.r = markerArgs.size / 2;
                     const element: Element = drawCircle(spark, option, group);
-                    element.setAttribute('aria-label', spark.dataSource[i][spark.xName] + ' : ' + points[i].yVal);
+                    element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                     group.appendChild(element);
                 }
             });
@@ -577,14 +576,14 @@ export class SparklineRenderer {
         let edgeLabelOption: { x: number, render: boolean };
         labelStyle.fontFamily = spark.sparkTheme.labelFontFamily || labelStyle.fontFamily;
         for (let i: number = 0, length: number = points.length; i < length; i++) {
-            temp = points[i];
+            temp = points[i as number];
             option.id = textId + i;
             option.x = temp.location.x + dataLabel.offset.x;
             option.y = ((spark.type === 'Pie') ? temp.location.y : ((temp.markerPosition > this.axisHeight) ? (temp.location.y +
                 (size.height / 2) + space + 2 + padding) : (temp.location.y - (size.height / 2) - space - padding))) + dataLabel.offset.y;
-            option.text = (dataLabel.format !== '') ? this.formatter(dataLabel.format, this.sparkline.dataSource[i]) :
+            option.text = (dataLabel.format !== '') ? this.formatter(dataLabel.format, this.sparkline.dataSource[i as number]) :
                 temp.yVal.toString();
-            let labelArgs: IDataLabelRenderingEventArgs = {
+            const labelArgs: IDataLabelRenderingEventArgs = {
                 name: 'dataLabelRendering', cancel: false,
                 border: dataLabel.border, fill: dataLabel.fill, pointIndex: i,
                 sparkline: this.sparkline,
@@ -671,7 +670,7 @@ export class SparklineRenderer {
         }
         const keys: string[] = Object.keys(data);
         for (const key of keys) {
-            format = format.split('${' + key + '}').join(data[key]);
+            format = format.split('${' + key + '}').join(data[key as string]);
         }
         return format;
     }
@@ -686,24 +685,24 @@ export class SparklineRenderer {
      */
     private getInterval(data: Object[], x: string): number {
         let interval: number = 1;
-        const x1: number = data[0][x];
-        const x2: number = isNullOrUndefined(data[1]) ? undefined : data[1][x];
+        const x1: number = data[0][x as string];
+        const x2: number = isNullOrUndefined(data[1]) ? undefined : data[1][x as string];
         if (!isNullOrUndefined(x1) && !isNullOrUndefined(x2)) {
             const temp: object[] = extend([], data) as Object[];
             let validData: object[] = [];
             temp.forEach((value: object) => {
-                if (!isNullOrUndefined(value[x])) {
+                if (!isNullOrUndefined(value[x as string])) {
                     validData.push(value);
                 }
             });
             validData.sort((a: object, b: object) => {
-                if (isNullOrUndefined(a[x]) || isNullOrUndefined(b[x])) {
+                if (isNullOrUndefined(a[x as string]) || isNullOrUndefined(b[x as string])) {
                     return 0;
                 }
-                return a[x] - b[x];
+                return a[x as string] - b[x as string];
             });
             validData = (this.sparkline.enableRtl) ? validData.reverse() : validData;
-            interval = validData[1][x] - validData[0][x];
+            interval = validData[1][x as string] - validData[0][x as string];
         }
         return interval;
     }
@@ -738,7 +737,7 @@ export class SparklineRenderer {
         if (isNumericArray) {
             if (model.type === 'Pie') {
                 for (let i: number = 0; i < maxPointsLength; i++) {
-                    sumofValues += Math.abs(data[i] as number);
+                    sumofValues += Math.abs(data[i as number] as number);
                 }
             } else {
                 max = Math.max.apply(null, data);
@@ -749,7 +748,7 @@ export class SparklineRenderer {
         } else {
             if (model.type === 'Pie') {
                 for (let i: number = 0; i < maxPointsLength; i++) {
-                    sumofValues += Math.abs(data[i][model.yName]);
+                    sumofValues += Math.abs(data[i as number][model.yName]);
                 }
             } else {
                 if (isNullOrUndefined(data[0][model.xName])) {
@@ -815,13 +814,13 @@ export class SparklineRenderer {
         const interval: number = this.getInterval(data, model.xName);
         const interVal: number = this.getPaddingInterval(data, model.xName, model.valueType, delta);
         for (let i: number = 0; i < maxPointsLength; i++) {
-            if (isNullOrUndefined(data[i][model.xName]) && isNullOrUndefined(data[i][model.yName]) && ((data[i][model.yName]) !== 0)
-                && isNumericArray) {
-                x = i; y = data[i] as number;
-            } else if (isNullOrUndefined(data[i][model.xName])) {
-                x = i; y = data[i][model.yName];
+            if (isNullOrUndefined(data[i as number][model.xName]) && isNullOrUndefined(data[i as number][model.yName]) &&
+                ((data[i as number][model.yName]) !== 0) && isNumericArray) {
+                x = i; y = data[i as number] as number;
+            } else if (isNullOrUndefined(data[i as number][model.xName])) {
+                x = i; y = data[i as number][model.yName];
             } else {
-                x = data[i][model.xName]; y = data[i][model.yName];
+                x = data[i as number] [model.xName]; y = data[i as number][model.yName];
             }
             if (isNullOrUndefined(x) || isNullOrUndefined(y)) {
                 continue;

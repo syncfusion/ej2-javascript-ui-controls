@@ -34,9 +34,9 @@ export class SeriesRender {
         series.points = [];
         for (let i: number = 0; i < dataArray.length; i++) {
             series.points.push({
-                resistance: dataArray[i][resistance],
-                reactance: dataArray[i][reactance],
-                tooltip: dataArray[i][tooltip]
+                resistance: dataArray[i as number][resistance as string],
+                reactance: dataArray[i as number][reactance as string],
+                tooltip: dataArray[i as number][tooltip as string]
             });
         }
     }

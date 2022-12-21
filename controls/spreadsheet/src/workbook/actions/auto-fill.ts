@@ -50,7 +50,7 @@ export class WorkbookAutoFill {
         const len: number = data.join().replace(/,/g, '').length;
         let i: number = this.isRange(options.dataRange) && len ? data.length : 1;
         while (i--) {
-            val = data[i] && !isNullOrUndefined(data[i].value) ? data[i].value : '';
+            val = data[i as number] && !isNullOrUndefined(data[i as number].value) ? data[i as number].value : '';
             if (isNumber(val) || checkIsFormula(val) || isNumber(val[val.length - 1])) {
                 isStringType = false;
                 fillType = this.parent.autoFillSettings.fillType;
@@ -123,8 +123,9 @@ export class WorkbookAutoFill {
         const isRFill: boolean = ['Up', 'Left'].indexOf(options.direction) > -1;
         const len: number = isVFill ? dmaxc - dminc : dmaxr - dminr; const withFrmt: boolean = options.fillType === 'FillSeries';
         let prop: CellUpdateArgs; let cfRefreshAll: boolean;
-        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-        let cfRule: ConditionalFormatModel[] = [];
+        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length &&
+            [].slice.call(sheet.conditionalFormats);
+        const cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dminr, dminc, dmaxr, dmaxc, fminr, fminc, fmaxr, fmaxc, i);
             patrnRange = pRanges.patternRange;
@@ -147,7 +148,7 @@ export class WorkbookAutoFill {
             }
             j = 0;
             while (j < clen) {
-                cellIdx = cells[j];
+                cellIdx = cells[j as number];
                 patrn = patterns[j % plen] as PatternInfo | number;
                 if (isNumber(patrn as number)) {
                     patrn = patterns[patrn as number];
@@ -162,12 +163,13 @@ export class WorkbookAutoFill {
                             patrn.copy = (patrn.val as number[]).length > 2;
                             if (patrn.copy) {
                                 for (let m: number = 2; m < (patrn.val as number[]).length; m++) {
-                                    patrn.copy = Math.abs(this.round(patrn['regVal'].a + (patrn['regVal'].b * m), 5)) !== patrn.val[m];
+                                    patrn.copy = Math.abs(this.round(patrn['regVal'].a + (patrn['regVal'].b * m), 5)) !==
+                                        patrn.val[m as number];
                                     if (patrn.copy) { break; }
                                 }
                             }
                         }
-                        val = patrn.copy ? (data[l] && !isNullOrUndefined(data[l].value) ? data[l].value : '') :
+                        val = patrn.copy ? (data[l as number] && !isNullOrUndefined(data[l as number].value) ? data[l as number].value : '') :
                             (patrn.start ? Math.abs(Number(val)) + patrn.dataVal : patrn.dataVal + Math.abs(Number(val)));
                     }
                     if (isRFill) {
@@ -180,7 +182,7 @@ export class WorkbookAutoFill {
                 case 'string':
                     // eslint-disable-next-line no-case-declarations
                     const newVal: number = patrn['i'] % patrn['val'].length;
-                    val = patrn['val'][newVal];
+                    val = patrn['val'][newVal as number];
                     patrn['i']++;
                     break;
                 case 'formula':
@@ -189,7 +191,7 @@ export class WorkbookAutoFill {
                     k = 0;
                     tlen = patrn['val'].length;
                     while (k < tlen) {
-                        temp = patrn['val'][k];
+                        temp = patrn['val'][k as number];
                         if (typeof temp === 'object') {
                             hasRef = true;
                             tot = this.round(temp['a'] + (temp['b'] * patrn['i']), 5);
@@ -225,7 +227,7 @@ export class WorkbookAutoFill {
                 }
                 prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet, false, true);
                 if (withFrmt) {
-                    Object.assign(cellProps, data[l], null, true);
+                    Object.assign(cellProps, data[l as number], null, true);
                 } else {
                     cellProps.style = prevCellData.style;
                     cellProps.format = prevCellData.format;
@@ -238,7 +240,7 @@ export class WorkbookAutoFill {
                     cellProps.formula = val;
                 }
                 prop = { cell: cellProps, rowIdx: cellIdx.rowIndex, colIdx: cellIdx.colIndex, valChange: true,
-                    uiRefresh: true, pvtExtend: true };
+                    uiRefresh: true, pvtExtend: true, skipFormatCheck: true };
                 updateCell(this.parent, sheet, prop);
                 if (cf && !cfRefreshAll) {
                     cfRefreshAll = prop.isFormulaDependent;
@@ -256,7 +258,9 @@ export class WorkbookAutoFill {
         }
     }
 
-    private copyCells(options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number }): void {
+    private copyCells(
+        options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
+            sheetIndex: number }): void {
         let i: number = 0; let j: number;
         let k: number; let patrnRange: number[];
         let fillRange: number[];
@@ -283,8 +287,9 @@ export class WorkbookAutoFill {
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const formatOnly: boolean = options.fillType === 'FillFormattingOnly';
         let prevCellData: CellModel; let cfRefreshAll: boolean; let prop: CellUpdateArgs;
-        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-        let cfRule: ConditionalFormatModel[] = [];
+        const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length &&
+            [].slice.call(sheet.conditionalFormats);
+        const cfRule: ConditionalFormatModel[] = [];
         while (i <= len) {
             pRanges = this.updateFillValues(isVFill, dMinR, dMinC, dMaxR, dMaxC, fMinR, fMinC, fMaxR, fMaxC, i);
             patrnRange = pRanges.patternRange;
@@ -300,11 +305,11 @@ export class WorkbookAutoFill {
             }
             while (j < clen) {
                 k = j % dlen;
-                cellIdx = cells[j];
+                cellIdx = cells[j as number];
                 if (formatOnly) {
                     prevCellData = getCell(cellIdx.rowIndex, cellIdx.colIndex, sheet);
                 }
-                Object.assign(cellProperty, data[k], null, true);
+                Object.assign(cellProperty, data[k as number], null, true);
                 if (formatOnly) {
                     cellProperty.value = prevCellData.value;
                     cellProperty.formula = prevCellData.formula;
@@ -374,10 +379,11 @@ export class WorkbookAutoFill {
             let count: number; let dataVal: string;
             const minusOperator: Function = (data: string): string => {
                 return !isStartNum && data && data[data.length - 1] === '-' ? data.slice(0, data.length - 1) : data;
-            }
+            };
             while (i < dlen) {
-                val = data[i] ? (data[i].formula ? data[i].formula : (isNullOrUndefined(data[i].value) ? '' : data[i].value)) : '';
-                type = this.getType(val, data[i] && data[i].format === 'h:mm:ss AM/PM');
+                val = data[i as number] ? (data[i as number].formula ? data[i as number].formula :
+                    (isNullOrUndefined(data[i as number].value) ? '' : data[i as number].value)) : '';
+                type = this.getType(val as string, data[i as number] && data[i as number].format === 'h:mm:ss AM/PM');
                 dataVal = '';
                 if (type === 'string') {
                     isStartNum = false;
@@ -385,10 +391,10 @@ export class WorkbookAutoFill {
                         count = 0;
                         do {
                             count++;
-                        } while (isNumber(val[count]));
-                        if (val[count] === ' ') {
+                        } while (isNumber(val[count as number]));
+                        if (val[count as number] === ' ') {
                             isStartNum = true; type = 'number';
-                            dataVal = val.slice(count, val.length); val = Number(val.slice(0, count));
+                            dataVal = (val as string).slice(count, (val as string).length); val = Number((val as string).slice(0, count));
                         }
                     }
                     val = val as string;
@@ -432,8 +438,8 @@ export class WorkbookAutoFill {
         const n: number = args.length;
         while (i < n) {
             sumx = sumx + i;
-            sumy = sumy + Number(args[i]);
-            sumxy = sumxy + (i * Number(args[i]));
+            sumy = sumy + Number(args[i as number]);
+            sumxy = sumxy + (i * Number(args[i as number]));
             sumxx = sumxx + (i * i);
             i++;
         }
@@ -460,7 +466,7 @@ export class WorkbookAutoFill {
         let patrn: { val?: number[] | string[] | string | number, type?: string, isInPattern?: boolean, dataVal?: string, start?: boolean };
         if (patrns) {
             while (i < plen) {
-                patrn = patrns[i];
+                patrn = patrns[i as number];
                 switch (patrn.type) {
                 case 'number':
                     idx = pattern.length;
@@ -511,7 +517,7 @@ export class WorkbookAutoFill {
                         j = 0;
                         diff = options.isRFill ? -1 : 1;
                         while (j < len) {
-                            (pattern as PatternInfo[]).push({ val: patrn.val[j], type: 'formula', i: diff });
+                            (pattern as PatternInfo[]).push({ val: patrn.val[j as number], type: 'formula', i: diff });
                             j++;
                         }
                     }
@@ -581,7 +587,7 @@ export class WorkbookAutoFill {
         let patrn: any; const patrns: any = [];
         let i: number = 0; const len: number = data.length; let cRfrType: string;
         while (i < len) {
-            patrns.push(this.parseFormula(data[i]));
+            patrns.push(this.parseFormula(data[i as number]));
             i++;
         }
         const isInPatrn: boolean = this.isInPattern(patrns, options.isVFill);
@@ -589,23 +595,24 @@ export class WorkbookAutoFill {
             patrn = patrns[0];
             i = patrn.length;
             while (i--) {
-                temp = patrn[i];
+                temp = patrn[i as number];
                 cRfrType = this.isCellReference(temp) as string;
                 if (cRfrType && (cRfrType !== 'absolute'))
-                {patrn[i] = this.getCellRefPrediction(temp, options, null, cRfrType); }
+                {patrn[i as number] = this.getCellRefPrediction(temp, options, null, cRfrType); }
             }
             return { isInPattern: isInPatrn, val: patrn };
         }
         else {
             i = 0;
             while (i < len) {
-                patrn = patrns[i];
+                patrn = patrns[i as number];
                 j = patrn.length;
                 while (j--) {
-                    temp = patrn[j];
+                    temp = patrn[j as number];
                     cRfrType = this.isCellReference(temp.trim()) as string;
-                    if (cRfrType && (cRfrType !== 'absolute'))
-                    {patrns[i][j] = this.getCellRefPrediction(temp, options, len, cRfrType); }
+                    if (cRfrType && (cRfrType !== 'absolute')) {
+                        patrns[i as number][j as number] = this.getCellRefPrediction(temp, options, len, cRfrType);
+                    }
                 }
                 i++;
             }
@@ -617,7 +624,7 @@ export class WorkbookAutoFill {
         let colCount: number = 0;
         const newText: string[] | string = text.split('').reverse().join('');
         for (let i: number = newText.length - 1; i >= 0; i--) {
-            colCount += (text[i].charCodeAt(parseInt(newText[i], 10)) - 64) * (Math.pow(26, i));
+            colCount += (text[i as number].charCodeAt(parseInt(newText[i as number], 10)) - 64) * (Math.pow(26, i));
         }
         return colCount;
     }
@@ -633,9 +640,9 @@ export class WorkbookAutoFill {
         let dollarPosition: number = null;
         const arr: number[] = [temp];
         let isColAbslt: boolean = text[0] === '$';
-        if(!isColAbslt && text.includes('$') && text.trim()[0] === '$') {  
+        if(!isColAbslt && text.includes('$') && text.trim()[0] === '$') {
             for (let idx: number = 1; idx < text.length; idx++) {
-                if (text[idx] === '$') {
+                if (text[idx as number] === '$') {
                     dollarPosition = idx;
                     isColAbslt = true;
                     break;
@@ -651,13 +658,14 @@ export class WorkbookAutoFill {
             if (isColAbslt === options.isVFill)
             {
                 if (dollarPosition) {
-                 str = str.substring(0, dollarPosition) + '$' + str.substring(dollarPosition);
+                    str = str.substring(0, dollarPosition) + '$' + str.substring(dollarPosition);
                 } else {
-                str = '$' + str;
+                    str = '$' + str;
                 }
             }
-            else
-            {temp['b'] = 0; }
+            else {
+                temp['b'] = 0;
+            }
         }
         temp['c'] = str;
         return temp;
@@ -673,16 +681,16 @@ export class WorkbookAutoFill {
         if (plen === 1)
         {return false; }
         while (j < plen) {
-            oldPatrn = patrn[i];
-            newPatrn = patrn[j];
+            oldPatrn = patrn[i as number];
+            newPatrn = patrn[j as number];
             olen = oldPatrn.length;
             nlen = newPatrn.length;
             if (olen !== nlen)
             {return false; }
             else {
                 while (olen--) {
-                    oldStr = oldPatrn[olen];
-                    newStr = newPatrn[olen];
+                    oldStr = oldPatrn[olen as number];
+                    newStr = newPatrn[olen as number];
                     if (this.isCellReference(oldStr) === this.isCellReference(newStr)) {
                         if (isVFill) {
                             oldInt = Number(oldStr.replace(aregx, eStr));
@@ -711,7 +719,7 @@ export class WorkbookAutoFill {
         formula = formula.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
         const len: number = formula.length;
         while (i < len) {
-            temp = formula[i];
+            temp = formula[i as number];
             if (!temp) {
                 i++;
                 continue;
@@ -797,14 +805,14 @@ export class WorkbookAutoFill {
         let idx: number = -1;
         let i: number = patterns.length;
         while (i--) {
-            patrn = patterns[i];
+            patrn = patterns[i as number];
             if (typeof (patrn) === 'object') {
                 idx = i;
                 if (patrn.type === 'string')
                 {patrn.val = (patrn.val as string[]).reverse(); }
             }
             else {
-                patterns[i] = idx;
+                patterns[i as number] = idx;
             }
         }
         return patterns;

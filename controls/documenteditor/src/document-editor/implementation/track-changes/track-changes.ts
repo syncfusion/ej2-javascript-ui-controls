@@ -527,7 +527,22 @@ export class RevisionCollection {
         this.skipGroupAcceptReject = false;
     }
 
-    public destroy(): void {
+    public clear(): void {
         this.changes = [];
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public destroy(): void {
+        if (this.changes) {
+            for (let i: number = 0; i < this.changes.length; i++) {
+                let revision: Revision = this.changes[i] as Revision;
+                revision.destroy();
+            }
+            this.changes = [];
+        }
+        this.changes = undefined;
+        this.owner = undefined;
     }
 }

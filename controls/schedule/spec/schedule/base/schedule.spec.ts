@@ -2,7 +2,7 @@
 /**
  * Schedule base spec
  */
-import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
+import { createElement, remove, L10n, EmitType, Browser, isVisible } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
 import {
@@ -11,7 +11,7 @@ import {
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-import { readonlyEventsData, defaultData } from './datasource.spec';
+import { readonlyEventsData, defaultData, tooltipData } from './datasource.spec';
 import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -1799,12 +1799,14 @@ describe('Schedule base module', () => {
         const dateHeaderTemplate: string = '<div class="e-custom-date-header">${date.toLocaleString()}</div>';
         const cellHeaderTemplate: string = '<div class="e-custom-cell-header">${date.toLocaleString()}</div>';
         const cellTemplate: string = '<div class="e-custom-cell">${date.toLocaleString()}</div>';
+        const dateRangeTemplate: string = '<div class="date-text">${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>';
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 selectedDate: new Date(2019, 11, 5),
                 views: [
                     { option: 'Week', dateHeaderTemplate: dateHeaderTemplate },
-                    { option: 'Month', cellHeaderTemplate: cellHeaderTemplate, cellTemplate: cellTemplate }
+                    { option: 'Month', cellHeaderTemplate: cellHeaderTemplate, cellTemplate: cellTemplate },
+                    { option: 'Year', dateRangeTemplate: dateRangeTemplate },              
                 ]
             };
             schObj = util.createSchedule(model, eventData, done);
@@ -1827,6 +1829,15 @@ describe('Schedule base module', () => {
                 done();
             };
             schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+        it('templates testing in year view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-tbar-btn-text').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0].innerHTML).toEqual('<div class="date-text">1-31</div>');
+                done();
+            };
+            schObj.currentView = 'Year';
             schObj.dataBind();
         });
     });
@@ -1857,6 +1868,7 @@ describe('Schedule base module', () => {
         const cellHeaderTemplate: string = '<div class="e-custom-cell">~${getDateHeaderText(data.date)}</div>';
         const resourceHeaderTemp: string = '<div class="resource-template">' +
             '<div class="resource-details"><div class="resource-name">~${resourceData.Text}~</div></div></div>';
+        const dateRangeTemplate: string = '<div class="date-text">${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>';    
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
                 selectedDate: new Date(2020, 0, 4),
@@ -1881,6 +1893,7 @@ describe('Schedule base module', () => {
                 resourceHeaderTemplate: resourceHeaderTemp,
                 dateHeaderTemplate: dateHeaderTemplate,
                 cellTemplate: cellTemplate,
+                dateRangeTemplate: dateRangeTemplate,
                 views: [
                     { option: 'Day' },
                     { option: 'Week' },
@@ -1918,6 +1931,10 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
                 schObj.refreshTemplates('dateHeaderTemplate');
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                // dateRangeTemplate checking
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">4-4</div>');
+                schObj.refreshTemplates('dateRangeTemplate');
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">4-4</div>');
                 done();
             };
             schObj.currentView = 'Day';
@@ -1941,6 +1958,10 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
                 schObj.refreshTemplates('dateHeaderTemplate');
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
+                // dateRangeTemplate checking
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>');
+                schObj.refreshTemplates('dateRangeTemplate');
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>');
                 done();
             };
             schObj.currentView = 'Week';
@@ -1983,6 +2004,10 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelector('.e-agenda-cells .e-day-date-header').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
                 schObj.refreshTemplates('dateHeaderTemplate');
                 expect(schObj.element.querySelector('.e-agenda-cells .e-day-date-header').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                // dateRangeTemplate checking
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">4-10</div>');
+                schObj.refreshTemplates('dateRangeTemplate');
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">4-10</div>');
                 done();
             };
             schObj.currentView = 'Agenda';
@@ -2027,6 +2052,10 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
                 schObj.refreshTemplates('dateHeaderTemplate');
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sat, 1/4~</span>');
+                // dateRangeTemplate checking
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">4-4</div>');
+                schObj.refreshTemplates('dateRangeTemplate');
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">4-4</div>');
                 done();
             };
             schObj.currentView = 'TimelineDay';
@@ -2050,6 +2079,10 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
                 schObj.refreshTemplates('dateHeaderTemplate');
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Sun, 12/29~</span>');
+                // dateRangeTemplate checking
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>');
+                schObj.refreshTemplates('dateRangeTemplate');
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">29-4</div>'); 
                 done();
             };
             schObj.currentView = 'TimelineWeek';
@@ -2073,6 +2106,10 @@ describe('Schedule base module', () => {
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Mon, 12/30~</span>');
                 schObj.refreshTemplates('dateHeaderTemplate');
                 expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>~Mon, 12/30~</span>');
+                // dateRangeTemplate checking
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">30-3</div>');
+                schObj.refreshTemplates('dateRangeTemplate');
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">30-3</div>'); 
                 done();
             };
             schObj.currentView = 'TimelineWorkWeek';
@@ -2391,6 +2428,41 @@ describe('Schedule base module', () => {
         expect(average).toBeLessThan(10);
         const memory: number = inMB(getMemoryProfile());
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+
+    describe('Hide Tooltip when context menu is triggered', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2018, 0, 1),
+                currentView: 'Month',
+                eventSettings: {
+                    enableTooltip: true,
+                    fields: { subject: { name: 'Subject', default: 'No Title' } }
+                }
+            };
+            schObj = util.createSchedule(model, tooltipData, done);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Hiding tooltip with closeTooltip api', () => {
+            const target: HTMLElement = [].slice.call(schObj.element.querySelectorAll('.e-appointment'))[1];
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            expect(tooltipEle.querySelector('.e-subject').innerHTML).toBe('Normal Event');
+            expect(tooltipEle.querySelector('.e-location').innerHTML).toBe('');
+            expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('January 3, 2018');
+            expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('10:00 AM - 11:00 AM');
+            schObj.closeTooltip();
+            schObj.dataBind();
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
     });
 });
 

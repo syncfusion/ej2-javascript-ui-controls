@@ -117,7 +117,7 @@ export class SymmetricLayout {
         const dRotateAngle: number = 2 * Math.PI / lstNodes.length;
         let dAngle: number = dRotateAngle;
         for (let i: number = 0; i < lstNodes.length; i++) {
-            const gnNode: IGraphObject = lstNodes[i];
+            const gnNode: IGraphObject = lstNodes[parseInt(i.toString(), 10)];
             const forceNode: GraphForceNode = this.getForceNode(gnNode);
             forceNode.location = {
                 x: ptCenter.x + fMaxSize * Number((Math.cos(dAngle)).toFixed(2)),
@@ -143,11 +143,11 @@ export class SymmetricLayout {
         let forceNode: GraphForceNode;
         let force: GraphForceNode;
         for (let k: number = 0; k < lstNodes.length; k++) {
-            const gnNode: IGraphObject = lstNodes[k];
+            const gnNode: IGraphObject = lstNodes[parseInt(k.toString(), 10)];
             forceNode = this.getForceNode(gnNode);
             const nodes: IGraphObject[] = forceNode.nodes;
             for (let l: number = 0; l < nodes.length; l++) {
-                const gnChild: IGraphObject = nodes[l];
+                const gnChild: IGraphObject = nodes[parseInt(l.toString(), 10)];
                 if (collectionContains(gnChild.id, lstNodes)) {
                     this.calcNodesForce(forceNode, this.getForceNode(gnChild));
                 }
@@ -156,14 +156,14 @@ export class SymmetricLayout {
                 if (length < 2) {
                     break;
                 }
-                const vtx1: GraphForceNode = this.getForceNode(nodes[i]);
+                const vtx1: GraphForceNode = this.getForceNode(nodes[parseInt(i.toString(), 10)]);
                 const vtx2: GraphForceNode = (i + 1 >= length) ? this.getForceNode(nodes[0]) : this.getForceNode((nodes[i + 1]));
                 const angle: number = (360 / nodes.length / 2) * Math.PI / 180;
                 const normalDistance: number = 2 * this.springLength * Math.sin(angle);
                 this.calcRelatesForce(vtx1, vtx2, normalDistance);
             }
             for (let s: number = 0; s < lstNodes.length; s++) {
-                const gnChild: IGraphObject = lstNodes[s];
+                const gnChild: IGraphObject = lstNodes[parseInt(s.toString(), 10)];
                 if (!collectionContains(gnChild.id, nodes) && gnChild.id !== gnNode.id) {
                     force = this.getForceNode(gnChild);
                     this.updateNeigbour(forceNode, force);
@@ -174,7 +174,7 @@ export class SymmetricLayout {
     private appendForces(lstNodes: IGraphObject[]): void {
         let gfnNode: GraphForceNode = null;
         for (let k: number = 0; k < lstNodes.length; k++) {
-            const gnNode: IGraphObject = lstNodes[k];
+            const gnNode: IGraphObject = lstNodes[parseInt(k.toString(), 10)];
             gfnNode = this.getForceNode(gnNode);
             const ptPoint: PointModel = gfnNode.location;
             ptPoint.x += Math.min(gfnNode.velocityX, this.mszMaxForceVelocity.width);
@@ -189,7 +189,7 @@ export class SymmetricLayout {
         let gfnNode: GraphForceNode = null;
         let gnNode: IGraphObject;
         for (let k: number = 0; k < lstNodes.length; k++) {
-            gnNode = lstNodes[k];
+            gnNode = lstNodes[parseInt(k.toString(), 10)];
             gfnNode = this.getForceNode(gnNode);
             const ptLocation: PointModel = {
                 x: gfnNode.location.x - gnNode.actualSize.width / 2,
@@ -199,7 +199,7 @@ export class SymmetricLayout {
             szMin.height = Math.min(szMin.height, ptLocation.y);
         }
         for (let k: number = 0; k < lstNodes.length; k++) {
-            gnNode = lstNodes[k];
+            gnNode = lstNodes[parseInt(k.toString(), 10)];
             gfnNode = this.getForceNode(gnNode);
             const ptLocation: PointModel = gfnNode.location;
             ptLocation.x -= szMin.width - (graph.treeInfo.location ? graph.treeInfo.location.x : 0);
@@ -212,8 +212,8 @@ export class SymmetricLayout {
         const lstToReturn: IGraphObject[] = [];
         const keys: string[] = Object.keys(lstNodes);
         for (const k of keys) {
-            if (lstNodes[k]) {
-                const gnNode: IGraphObject = lstNodes[k];
+            if (lstNodes[`${k}`]) {
+                const gnNode: IGraphObject = lstNodes[`${k}`];
                 const forceNode: GraphForceNode = new GraphForceNode(gnNode);
                 gnNode.treeInfo.tag = forceNode;
                 lstToReturn.push(gnNode);
@@ -400,7 +400,7 @@ export class GraphLayoutManager {
         this.updateLayout1(this.graphObjects, symmetricLayout);
         const modelBounds: Rect = this.getModelBounds(selectionList);
         for (let i: number = 0; i < selectionList.length; i++) {
-            const node: IGraphObject = selectionList[i];
+            const node: IGraphObject = selectionList[parseInt(i.toString(), 10)];
             const trnsX: number = (viewPort.x - modelBounds.width) / 2;
             const margin: MarginModel = layout.margin || {};
             //let marginX: number; let marginY: number;
@@ -438,7 +438,7 @@ export class GraphLayoutManager {
         let rect1: Rect = null;
         let node: IGraphObject;
         for (let i: number = 0; i < lNodes.length; i++) {
-            node = lNodes[i];
+            node = lNodes[parseInt(i.toString(), 10)];
             const bounds: Rect = getGraphBounds(node);
             rect = new Rect(
                 node.treeInfo.tag ? node.treeInfo.tag.location.x : bounds.x,
@@ -460,7 +460,7 @@ export class GraphLayoutManager {
             let nodes: IGraphObject[] = [];
             const nodeSymbols: IGraphObject[] = [];
             for (let s: number = 0; s < nodesToLayout.length; s++) {
-                const nd: IGraphObject = nodesToLayout[s];
+                const nd: IGraphObject = nodesToLayout[parseInt(s.toString(), 10)];
 
                 if (nd.treeInfo.isCycleEdge === undefined) {
                     nd.treeInfo.isCycleEdge = false;
@@ -494,7 +494,7 @@ export class GraphLayoutManager {
     }
     private getNodesToPosition(nodes: IGraphObject[]): void {
         for (let i: number = 0; i < nodes.length; i++) {
-            const node: IGraphObject = nodes[i];
+            const node: IGraphObject = nodes[parseInt(i.toString(), 10)];
             if (!collectionContains(node.id, this.passedNodes)) {
                 if (node) {
                     this.selectNodes(node);
@@ -534,7 +534,7 @@ export class GraphLayoutManager {
                 this.getConnectedRelatives(gnNode);
                 this.exploreRelatives(nodeGraph);
             } else {
-                const graphNode: IGraphObject = graph.treeInfo.GraphNodes[nodeName];
+                const graphNode: IGraphObject = graph.treeInfo.GraphNodes[`${nodeName}`];
                 if (graphNode.treeInfo.Added) {
                     graphNode.treeInfo.Added = false;
                     this.getConnectedRelatives(graphNode);
@@ -555,7 +555,7 @@ export class GraphLayoutManager {
             edges = nodeGraph.outEdges;
         }
         for (let i: number = 0; i < edges.length; i++) {
-            const edge: IGraphObject = this.nameTable[edges[i]];
+            const edge: IGraphObject = this.nameTable[edges[parseInt(i.toString(), 10)]];
             if (this.addNode(edge, 'passed')) {
                 const fromNode: IGraphObject = this.nameTable[edge.sourceID];
                 const toNode: IGraphObject = this.nameTable[edge.targetID];
@@ -577,7 +577,7 @@ export class GraphLayoutManager {
     private dictionaryContains(obj: {}, keyObj: IGraphObject): boolean {
         const keys: string[] = Object.keys(obj);
         for (let i: number = 0; i < keys.length; i++) {
-            if (keys[i] === keyObj.id) {
+            if (keys[parseInt(i.toString(), 10)] === keyObj.id) {
                 return true;
             }
         }
@@ -592,7 +592,7 @@ export class GraphLayoutManager {
         const graph: IGraphObject = this.selectedNode;
         const nodeGraph: IGraphObject = graphNode;
         for (let s: number = 0; s < nodeGraph.outEdges.length; s++) {
-            const edge: IGraphObject = this.nameTable[nodeGraph.outEdges[s]];
+            const edge: IGraphObject = this.nameTable[nodeGraph.outEdges[parseInt(s.toString(), 10)]];
             if (!edge.treeInfo.isCycleEdge) {
                 const node: IGraphObject = this.nameTable[edge.targetID];
                 if (collectionContains(node.id, this.nodes) && node != null && node.visible) {
@@ -621,7 +621,7 @@ export class GraphLayoutManager {
         const graph: IGraphObject = this.selectedNode;
         const nodeGraph: IGraphObject = graphNode;
         for (let s: number = 0; s < nodeGraph.inEdges.length; s++) {
-            const edge: IGraphObject = this.nameTable[nodeGraph.inEdges[s]];
+            const edge: IGraphObject = this.nameTable[nodeGraph.inEdges[parseInt(s.toString(), 10)]];
             if (!edge.treeInfo.isCycleEdge) {
                 const node: IGraphObject = this.nameTable[edge.sourceID];
                 if (collectionContains(node.id, this.nodes) && node != null && node.visible) {
@@ -649,7 +649,7 @@ export class GraphLayoutManager {
     private setNode(list: IGraphObject[], node: IGraphObject): void {
         const nIndex: number = this.findNode(list, node.id);
         if (nIndex >= 0 && nIndex < list.length) {
-            list[nIndex] = node;
+            list[parseInt(nIndex.toString(), 10)] = node;
         } else {
             list.push(node);
         }
@@ -658,7 +658,7 @@ export class GraphLayoutManager {
         let nIndex: number = -1;
         if (list != null && fullName !== '') {
             for (let i: number = 0, nLength: number = list.length; i < nLength; i++) {
-                const gnNode: IGraphObject = list[i];
+                const gnNode: IGraphObject = list[parseInt(i.toString(), 10)];
                 if (typeof (gnNode) === 'string' && gnNode === fullName) {
                     nIndex = i;
                     break;
@@ -701,7 +701,7 @@ export class GraphLayoutManager {
     private searchEdgeCollection(edgesToSearchThrough: string[], connectionDirection: string): boolean {
         let bFoundConnectedNode: boolean = false;
         for (let i: number = 0; i < edgesToSearchThrough.length - 1; i++) {
-            const edge: IGraphObject = this.nameTable[edgesToSearchThrough[i]];
+            const edge: IGraphObject = this.nameTable[edgesToSearchThrough[parseInt(i.toString(), 10)]];
             if (!this.addNode(edge, 'passed')) {
                 continue;
             }
@@ -743,8 +743,8 @@ export class GraphLayoutManager {
         const vertex: IGraphObject[] = [];
         const currentStack: IGraphObject[] = [];
         for (let k: number = 0; k < nodes.length; k++) {
-            if (!(nodes[k].treeInfo.graphType === 'Connector')) {
-                vertex.push(nodes[k]);
+            if (!(nodes[parseInt(k.toString(), 10)].treeInfo.graphType === 'Connector')) {
+                vertex.push(nodes[parseInt(k.toString(), 10)]);
             }
         }
         if (vertex.length > 0) {
@@ -771,7 +771,7 @@ export class GraphLayoutManager {
         const childNodes: IGraphObject[] = [];
         if (top.outEdges.length > 0) {
             for (let i: number = 0; i < top.outEdges.length; i++) {
-                const con: IGraphObject = this.nameTable[top.outEdges[i]];
+                const con: IGraphObject = this.nameTable[top.outEdges[parseInt(i.toString(), 10)]];
                 if (!collectionContains(con.id, this.visitedStack)) {
                     const toNode: IGraphObject = this.nameTable[con.targetID];
                     if (toNode != null) {
@@ -848,7 +848,7 @@ function getGraphBounds(node: IGraphObject): Rect {
  */
 function collectionContains(id: string, coll: IGraphObject[]): boolean {
     for (let i: number = 0; i < coll.length; i++) {
-        if (coll[i].id === id) {
+        if (coll[parseInt(i.toString(), 10)].id === id) {
             return true;
         }
     }

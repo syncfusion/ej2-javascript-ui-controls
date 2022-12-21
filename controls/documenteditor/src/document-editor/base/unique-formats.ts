@@ -56,7 +56,6 @@ export class WUniqueFormats {
             matchedFormat.referenceCount++;
         }
         this.remove(uniqueFormat);
-        uniqueFormat = undefined;
         return matchedFormat;
     }
     /**

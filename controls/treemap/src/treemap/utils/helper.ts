@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BorderModel, FontModel, ColorMappingModel, LeafItemSettingsModel } from '../model/base-model';
 import { createElement, compile, merge, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -25,7 +24,12 @@ export class Size {
         this.height = height;
     }
 }
-
+/**
+ *
+ * @param {string} value - specifies the text.
+ * @param {number} containerSize - specifies the container size value.
+ * @returns {number} - Returns the number value which is converted from string.
+ */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
@@ -110,7 +114,6 @@ export class PathOption {
  *
  * @param  {string} text - Specifies the text.
  * @param  {FontModel} font - Specifies the font.
- * @param  {string} id - Specifies the id.
  * @returns {Size} - Returns the size.
  * @private
  */
@@ -214,29 +217,40 @@ export class Location {
 
 /**
  * Method to calculate x position of title
+ *
+ * @param {Rect} location - Specifies the location of text.
+ * @param {Alignment} alignment - Specifies the alignment of the text.
+ * @param {Size} textSize - Specifies the size of the text.
+ * @param {type} type - Specifies whether the provided text is title or subtitle.
+ * @returns {Location} - Returns the location of text.
  */
-
 export function findPosition(location: Rect, alignment: Alignment, textSize: Size, type: string): Location {
     let x: number;
     switch (alignment) {
-        case 'Near':
-            x = location.x;
-            break;
-        case 'Center':
-            x = (type === 'title') ? (location.width / 2 - textSize.width / 2) :
-                ((location.x + (location.width / 2)) - textSize.width / 2);
-            break;
-        case 'Far':
-            x = (type === 'title') ? (location.width - location.y - textSize.width) :
-                ((location.x + location.width) - textSize.width);
-            break;
+    case 'Near':
+        x = location.x;
+        break;
+    case 'Center':
+        x = (type === 'title') ? (location.width / 2 - textSize.width / 2) :
+            ((location.x + (location.width / 2)) - textSize.width / 2);
+        break;
+    case 'Far':
+        x = (type === 'title') ? (location.width - location.y - textSize.width) :
+            ((location.x + location.width) - textSize.width);
+        break;
     }
     const y: number = (type === 'title') ? location.y + (textSize.height / 2) : ((location.y + location.height / 2) + textSize.height / 2);
     return new Location(x, y);
 }
 
+/**
+ *
+ * @param {SvgRenderer} renderer - Specifies the rendering element of the SVG.
+ * @param {any} renderOptions - Specifies the settings of the text.
+ * @param {string} text - Specifies the text.
+ * @returns {HTMLElement} - Returns the HTML element for the text.
+ */
 export function createTextStyle(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderer: SvgRenderer, renderOptions: any, text: string
 ): HTMLElement {
     const htmlObject: HTMLElement = <HTMLElement>renderer.createText(renderOptions, text);
@@ -257,7 +271,7 @@ export function createTextStyle(
  * @param {TextOption} options - Specifies the text option
  * @param {FontModel} font - Specifies the font model
  * @param {string} color - Specifies the color
- * @param {HTMLElement | Element} parent - Specifes the html element
+ * @param {HTMLElement | Element} parent - Specifies the parent element of the text
  * @param {boolean} isMinus - Specifies the boolean value
  * @returns {Element} - Returns the element
  * @private
@@ -265,7 +279,6 @@ export function createTextStyle(
 export function renderTextElement(
     options: TextOption, font: FontModel, color: string, parent: HTMLElement | Element, isMinus: boolean = false
 ): Element {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const renderOptions: any = {
         'font-size': font.size,
         'font-style': font.fontStyle,
@@ -291,8 +304,9 @@ export function renderTextElement(
         const spacing: number = 5;
         const drillLevelText: string[] = drilledLabel.split('#');
         for (let z: number = 0; z < drillLevelText.length; z++) {
-            let drillText: string = (drillLevelText[z].search(options.connectorText) !== -1 && !isNullOrUndefined(options.connectorText)) ?
-                options.connectorText : drillLevelText[z];
+            let drillText: string = (drillLevelText[z as number].search(options.connectorText) !== -1 &&
+                                     !isNullOrUndefined(options.connectorText)) ?
+                options.connectorText : drillLevelText[z as number];
             renderOptions['id'] = options.id + '_' + z;
             htmlObject = createTextStyle(renderer, renderOptions, drillText);
             if (z % 2 === 0 && z !== 0) {
@@ -309,13 +323,13 @@ export function renderTextElement(
     }
     if (typeof options.text !== 'string' && options.text.length > 1) {
         for (let i: number = 1, len: number = options.text.length; i < len; i++) {
-            height = (measureText(options.text[i], font).height);
+            height = (measureText(options.text[i as number], font).height);
             tspanElement = renderer.createTSpan(
                 {
                     'x': options.x, 'id': options.id,
                     'y': (options.y) + (i * height)
                 },
-                options.text[i]);
+                options.text[i as number]);
             htmlObject.appendChild(tspanElement);
         }
         parent.appendChild(htmlObject);
@@ -323,6 +337,13 @@ export function renderTextElement(
     return htmlObject;
 }
 
+/**
+ *
+ * @param {string} targetId - Specifies the id of the element to which template is to be appended.
+ * @param {Element} targetElement - Specifies the element to which template is to be appended.
+ * @param {string} contentItemTemplate - Specifies the content to be appended as template.
+ * @returns {void}
+ */
 export function setItemTemplateContent(targetId: string, targetElement: Element, contentItemTemplate: string): void {
     const itemSelect: string = targetId.split('_RectPath')[0];
     let itemTemplate: Element;
@@ -336,22 +357,39 @@ export function setItemTemplateContent(targetId: string, targetElement: Element,
     }
 }
 
+/**
+ *
+ * @param {string} id - Specifies the id of the element.
+ * @returns {Element} - Returns the element.
+ */
 export function getElement(id: string): Element {
     return document.getElementById(id);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {any} a - Specifies the first order of TreeMap leaf elements.
+ * @param {any} b - Specifies the second order of TreeMap leaf elements.
+ * @returns {number} - Returns the order of the TreeMap leaf element.
+ */
 export function itemsToOrder(a: any, b: any): number {
     return a['weight'] === b['weight'] ? 0 : a['weight'] < b['weight'] ? 1 : -1;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {string[]} source - Specifies the data from the data source.
+ * @param {string} pathName - Specifies the path name in the data source.
+ * @param {any} processData - Specifies the data source object.
+ * @param {TreeMap} treemap - Specifies the treemap instance.
+ * @returns {boolean} - Specifies whether data is available in the data source or not.
+ */
 export function isContainsData(source: string[], pathName: string, processData: any, treemap: TreeMap): boolean {
     let isExist: boolean = false; let name: string = ''; let path: string;
     const leaf: LeafItemSettingsModel = treemap.leafItemSettings; for (let i: number = 0; i < source.length; i++) {
-        path = treemap.levels[i] ? treemap.levels[i].groupPath : leaf.labelPath ? leaf.labelPath : treemap.weightValuePath;
-        const data: string = processData[path] || 'undefined';
-        if (source[i] === data) {
+        path = treemap.levels[i as number] ? treemap.levels[i as number].groupPath : leaf.labelPath ? leaf.labelPath :
+            treemap.weightValuePath;
+        const data: string = processData[path as string] || 'undefined';
+        if (source[i as number] === data) {
             name += data + (i === source.length - 1 ? '' : '#');
             if (name === pathName) {
                 isExist = true;
@@ -362,17 +400,20 @@ export function isContainsData(source: string[], pathName: string, processData: 
     return isExist;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {any} data - Specifies the data to which the children elements to be found.
+ * @returns {any} - Returns the children elements of the TreeMap leaf element.
+ */
 export function findChildren(data: any): any {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let children: any;
     if (data) {
         const keys: string[] = Object.keys(data);
         children = {};
         for (let i: number = 0; i < keys.length; i++) {
-            if (data[keys[i]] instanceof Array) {
-                children['values'] = data[keys[i]];
-                children['key'] = keys[i];
+            if (data[keys[i as number]] instanceof Array) {
+                children['values'] = data[keys[i as number]];
+                children['key'] = keys[i as number];
                 break;
             }
         }
@@ -380,20 +421,26 @@ export function findChildren(data: any): any {
     return children;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {any} data - Specifies the data to which highlight must be done.
+ * @param {items} items - Specifies the data source items.
+ * @param {string} mode - Specifies the mode of highlight.
+ * @param {TreeMap} treeMap - Specifies the treemap instance.
+ * @returns {string[]} - Returns the highlighted items.
+ */
 export function findHightLightItems(data: any, items: string[], mode: string, treeMap: TreeMap): string[] {
     if (mode === 'Child') {
         items.push(data['levelOrderName']);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const children: any[] = findChildren(data)['values'];
         if (children && children.length > 0) {
             for (let i: number = 0; i < children.length; i++) {
-                if (items.indexOf(children[i]['levelOrderName']) === -1) {
-                    items.push(children[i]['levelOrderName']);
+                if (items.indexOf(children[i as number]['levelOrderName']) === -1) {
+                    items.push(children[i as number]['levelOrderName']);
                 }
             }
             for (let j: number = 0; j < children.length; j++) {
-                findHightLightItems(children[j], items, mode, treeMap);
+                findHightLightItems(children[j as number], items, mode, treeMap);
             }
         }
     } else if (mode === 'Parent') {
@@ -403,10 +450,9 @@ export function findHightLightItems(data: any, items: string[], mode: string, tr
         }
     } else if (mode === 'All') {
         const parentName: string = (data['levelOrderName'] as string).split('#')[0];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let currentItem: any;
         for (let i: number = 0; i < treeMap.layout.renderItems.length; i++) {
-            currentItem = treeMap.layout.renderItems[i];
+            currentItem = treeMap.layout.renderItems[i as number];
             if ((currentItem['levelOrderName']).indexOf(parentName) > -1 && items.indexOf(currentItem['levelOrderName']) === -1) {
                 items.push(currentItem['levelOrderName']);
             }
@@ -424,12 +470,8 @@ export function findHightLightItems(data: any, items: string[], mode: string, tr
  * @returns {Function} - Returns the template function
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getTemplateFunction(template: string): any {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let e: any;
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = compile(document.querySelector(template).innerHTML.trim());
@@ -447,32 +489,39 @@ export function getTemplateFunction(template: string): any {
  * @param {Object} data - Specifies the data
  * @returns {HTMLElement} - Returns the element
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function convertElement(element: HTMLCollection, labelId: string, data: any): HTMLElement {
     const childElement: HTMLElement = createElement('div', {
-        id: labelId,
-        styles: 'position: absolute;pointer-events: auto;'
+        id: labelId
     });
+    childElement.style.cssText = 'position: absolute;pointer-events: auto;';
     let elementLength: number = element.length;
     while (elementLength > 0) {
         childElement.appendChild(element[0]);
         elementLength--;
     }
     let templateHtml: string = childElement.innerHTML;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const keys: any[] = Object.keys(data);
     for (let i: number = 0; i < keys.length; i++) {
-        templateHtml = templateHtml.replace(new RegExp('{{:' + <string>keys[i] + '}}', 'g'), data[keys[i].toString()]);
+        const regExp: RegExpConstructor = RegExp;
+        templateHtml = templateHtml.replace(new regExp('{{:' + <string>keys[i as number] + '}}', 'g'), data[keys[i as number].toString()]);
     }
     childElement.innerHTML = templateHtml;
     return childElement;
 }
 
+/**
+ *
+ * @param {Rect} rect - Specifies the area.
+ * @param {LabelPosition} position - Specifies the position
+ * @param {Size} labelSize - Specifies the label size.
+ * @param {string} type - Specifies the type.
+ * @param {TreeMap} treemap - Specifies the treemap instance.
+ * @returns {Location} - Returns the text location.
+ */
 export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize: Size, type: string, treemap: TreeMap): Location {
     const location: Location = new Location(0, 0);
     const padding: number = 5;
     const paddings: number = 2;
-    const elementRect: ClientRect = treemap.element.getBoundingClientRect();
     const x: number = (type === 'Template') ? treemap.areaRect.x : 0;
     const y: number = (type === 'Template') ? treemap.areaRect.y : 0;
     location.x = (Math.abs(x - ((position.indexOf('Left') > -1) ? rect.x + padding : !(position.indexOf('Right') > -1) ?
@@ -489,6 +538,12 @@ export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize
     return location;
 }
 
+/**
+ *
+ * @param {HTMLElement} element - Specifies the element to be measured.
+ * @param {HTMLElement} parentElement - Specifies the parent element of the element to be measured.
+ * @returns {Size} - Returns the element size.
+ */
 export function measureElement(element: HTMLElement, parentElement: HTMLElement): Size {
     const size: Size = new Size(0, 0);
     parentElement.appendChild(element);
@@ -499,10 +554,19 @@ export function measureElement(element: HTMLElement, parentElement: HTMLElement)
     return size;
 }
 
+/**
+ *
+ * @param {Rect} rect - Specifies the area.
+ * @returns {number} - Returns the area width.
+ */
 export function getArea(rect: Rect): number {
     return (rect.width - rect.x) * (rect.height - rect.y);
 }
-
+/**
+ *
+ * @param {Rect} input - Specifies input for the calculation.
+ * @returns {number} - Returns the shortest edge.
+ */
 export function getShortestEdge(input: Rect): number {
     const container: Rect = convertToContainer(input);
     const width: number = container.width;
@@ -510,7 +574,11 @@ export function getShortestEdge(input: Rect): number {
     const result: number = Math.min(width, height);
     return result;
 }
-
+/**
+ *
+ * @param {Rect} rect - Specifies the rectangle bounds of the container.
+ * @returns {Rect} - Returns the rectangle bounds.
+ */
 export function convertToContainer(rect: Rect): Rect {
     const x: number = rect.x;
     const y: number = rect.y;
@@ -523,7 +591,11 @@ export function convertToContainer(rect: Rect): Rect {
         height: height - y
     };
 }
-
+/**
+ *
+ * @param {Rect} container - Specifies the rectangle bounds of the container.
+ * @returns {Rect} - Returns the rectangle bounds.
+ */
 export function convertToRect(container: Rect): Rect {
     const xOffset: number = container.x;
     const yOffset: number = container.y;
@@ -536,7 +608,13 @@ export function convertToRect(container: Rect): Rect {
         height: yOffset + height
     };
 }
-
+/**
+ *
+ * @param {number} pageX - Specifies the horizontal position of the mouse location.
+ * @param {number} pageY - Specifies the vertical position of the mouse location.
+ * @param {Element} element - Specifies the element to which the click is done.
+ * @returns {Location} - Returns the clicked location.
+ */
 export function getMousePosition(pageX: number, pageY: number, element: Element): Location {
     const elementRect: ClientRect = element.getBoundingClientRect();
     const pageXOffset: number = element.ownerDocument.defaultView.pageXOffset;
@@ -547,63 +625,79 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
     const positionY: number = elementRect.top + pageYOffset - clientTop;
     return new Location((pageX - positionX), (pageY - positionY));
 }
+/**
+ *
+ * @param {ColorMappingModel[]} colorMapping - Specifies the color mapping instance.
+ * @param {string} equalValue - Specifies the equal value.
+ * @param {number | string} value - Specifies the range value.
+ * @returns {any} - Returns the color mapping object.
+ * @private
+ */
 export function colorMap(
     colorMapping: ColorMappingModel[], equalValue: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: number | string, weightValuePath: number): any {
+    value: number | string): any {
     let fill: string; const paths: string[] = []; let opacity: string;
     if (isNullOrUndefined(equalValue) && (isNullOrUndefined(value) && isNaN(<number>value))) {
         return null;
     }
     for (let i: number = 0; i < colorMapping.length; i++) {
         let isEqualColor: boolean = false; const dataValue: number = <number>value;
-        if (!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to)
-            && !isNullOrUndefined(colorMapping[i].value)) {
-            if ((value >= colorMapping[i].from && colorMapping[i].to >= value) && (colorMapping[i].value === equalValue)) {
+        if (!isNullOrUndefined(colorMapping[i as number].from) && !isNullOrUndefined(colorMapping[i as number].to)
+            && !isNullOrUndefined(colorMapping[i as number].value)) {
+            if ((value >= colorMapping[i as number].from && colorMapping[i as number].to >= value) &&
+                (colorMapping[i as number].value === equalValue)) {
                 isEqualColor = true;
-                if (Object.prototype.toString.call(colorMapping[i].color) === '[object Array]') {
-                    fill = !isEqualColor ? colorCollections(colorMapping[i], dataValue) : colorMapping[i].color[0];
+                if (Object.prototype.toString.call(colorMapping[i as number].color) === '[object Array]') {
+                    fill = !isEqualColor ? colorCollections(colorMapping[i as number], dataValue) : colorMapping[i as number].color[0];
                 } else {
-                    fill = <string>colorMapping[i].color;
+                    fill = <string>colorMapping[i as number].color;
                 }
             }
-        } else if ((!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to))
-            || !isNullOrUndefined((colorMapping[i].value))) {
-            if ((value >= colorMapping[i].from && colorMapping[i].to >= value) || (colorMapping[i].value === equalValue)) {
-                if (colorMapping[i].value === equalValue) {
+        } else if ((!isNullOrUndefined(colorMapping[i as number].from) && !isNullOrUndefined(colorMapping[i as number].to))
+            || !isNullOrUndefined((colorMapping[i as number].value))) {
+            if ((value >= colorMapping[i as number].from && colorMapping[i as number].to >= value)
+                || (colorMapping[i as number].value === equalValue)) {
+                if (colorMapping[i as number].value === equalValue) {
                     isEqualColor = true;
                 }
-                if (Object.prototype.toString.call(colorMapping[i].color) === '[object Array]') {
-                    fill = !isEqualColor ? colorCollections(colorMapping[i], dataValue) : colorMapping[i].color[0];
+                if (Object.prototype.toString.call(colorMapping[i as number].color) === '[object Array]') {
+                    fill = !isEqualColor ? colorCollections(colorMapping[i as number], dataValue) : colorMapping[i as number].color[0];
                 } else {
-                    fill = <string>colorMapping[i].color;
+                    fill = <string>colorMapping[i as number].color;
                 }
             }
         }
-        if (((value >= colorMapping[i].from && value <= colorMapping[i].to) || (colorMapping[i].value === equalValue))
-            && !isNullOrUndefined(colorMapping[i].minOpacity) && !isNullOrUndefined(colorMapping[i].maxOpacity) && fill) {
-            opacity = deSaturationColor(weightValuePath, colorMapping[i], fill, value as number);
+        if (((value >= colorMapping[i as number].from && value <= colorMapping[i as number].to)
+            || (colorMapping[i as number].value === equalValue))
+            && !isNullOrUndefined(colorMapping[i as number].minOpacity) && !isNullOrUndefined(colorMapping[i as number].maxOpacity)
+            && fill) {
+            opacity = deSaturationColor(colorMapping[i as number], value as number);
         }
         if ((fill === '' || isNullOrUndefined(fill))
-            && isNullOrUndefined(colorMapping[i].from) && isNullOrUndefined(colorMapping[i].to)
-            && isNullOrUndefined(colorMapping[i].minOpacity) && isNullOrUndefined(colorMapping[i].maxOpacity)
-            && isNullOrUndefined(colorMapping[i].value)) {
-            fill = (Object.prototype.toString.call(colorMapping[i].color) === '[object Array]') ?
-                <string>colorMapping[i].color[0] : <string>colorMapping[i].color;
+            && isNullOrUndefined(colorMapping[i as number].from) && isNullOrUndefined(colorMapping[i as number].to)
+            && isNullOrUndefined(colorMapping[i as number].minOpacity) && isNullOrUndefined(colorMapping[i as number].maxOpacity)
+            && isNullOrUndefined(colorMapping[i as number].value)) {
+            fill = (Object.prototype.toString.call(colorMapping[i as number].color) === '[object Array]') ?
+                <string>colorMapping[i as number].color[0] : <string>colorMapping[i as number].color;
         }
         opacity = !isNullOrUndefined(opacity) ? opacity : '1';
         paths.push(fill);
     }
     for (let j: number = paths.length - 1; j >= 0; j--) {
-        fill = paths[j];
+        fill = paths[j as number];
         j = (fill) ? -1 : j;
     }
     return { fill: fill, opacity: opacity };
 }
 
-
-export function deSaturationColor(
-    weightValuePath: number, colorMapping: ColorMappingModel, color: string, rangeValue: number): string {
+/**
+ *
+ * @param {ColorMappingModel} colorMapping - Specifies the color mapping object.
+ * @param {number} rangeValue - Specifies the range value.
+ * @returns {string} - Returns the opacity for the color mapping.
+ * @private
+ */
+export function deSaturationColor(colorMapping: ColorMappingModel, rangeValue: number): string {
     let opacity: number = 1;
     if ((rangeValue >= colorMapping.from && rangeValue <= colorMapping.to)) {
         const ratio: number = (rangeValue - colorMapping.from) / (colorMapping.to - colorMapping.from);
@@ -611,16 +705,32 @@ export function deSaturationColor(
     }
     return opacity.toString();
 }
-
+/**
+ *
+ * @param {ColorMappingModel} colorMap - Specifies the color mapping object.
+ * @param {number} value - Specifies the range value.
+ * @returns {string} - Returns the fill color.
+ */
 export function colorCollections(colorMap: ColorMappingModel, value: number): string {
     const gradientFill: string = getColorByValue(colorMap, value);
     return gradientFill;
 }
-
+/**
+ *
+ * @param {number} r - Specifies the red color value.
+ * @param {number} g - Specifies the green color value.
+ * @param {number} b - Specifies the blue color value.
+ * @returns {string} - Returns the fill color.
+ */
 export function rgbToHex(r: number, g: number, b: number): string {
     return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
-
+/**
+ *
+ * @param {ColorMappingModel} colorMap - Specifies the color mapping.
+ * @param {number} value - Specifies the range value.
+ * @returns {string} - Returns the fill color.
+ */
 export function getColorByValue(colorMap: ColorMappingModel, value: number): string {
     let color: string = '';
     let rbg: ColorValue;
@@ -634,12 +744,17 @@ export function getColorByValue(colorMap: ColorMappingModel, value: number): str
     }
     return color;
 }
-
+/**
+ *
+ * @param {number} value - Specifies the range value.
+ * @param {ColorMappingModel} colorMap - Specifies the color mapping.
+ * @returns {ColorValue} - Returns the color value object.
+ */
 export function getGradientColor(value: number, colorMap: ColorMappingModel): ColorValue {
     const previousOffset: number = colorMap.from;
     const nextOffset: number = colorMap.to;
-    let percent: number = 0; let prev1: string;
-    const full: number = nextOffset - previousOffset; let midColor: string; let midreturn: ColorValue;
+    let percent: number = 0;
+    const full: number = nextOffset - previousOffset; let midColor: string;
     percent = (value - previousOffset) / full; let previousColor: string; let nextColor: string;
     if (colorMap.color.length <= 2) {
         previousColor = colorMap.color[0].charAt(0) === '#' ? colorMap.color[0] : colorNameToHex(colorMap.color[0]);
@@ -652,32 +767,31 @@ export function getGradientColor(value: number, colorMap: ColorMappingModel): Co
         const a: number = full / (colorMap.color.length - 1); let b: number; let c: number;
 
         const length: number = colorMap.color.length - 1;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const splitColorValueOffset: any[] = []; let splitColor: any = {};
         for (let j: number = 1; j < length; j++) {
             c = j * a;
             b = previousOffset + c;
-            splitColor = { b: b, color: colorMap.color[j] };
+            splitColor = { b: b, color: colorMap.color[j as number] };
             splitColorValueOffset.push(splitColor);
         }
         for (let i: number = 0; i < splitColorValueOffset.length; i++) {
-            if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
-                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+            if (previousOffset <= value && value <= splitColorValueOffset[i as number]['b'] && i === 0) {
+                midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i as number]['color'] : colorNameToHex(splitColorValueOffset[i as number]['color']);
                 nextColor = midColor;
-                percent = value < splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
-                    : (value - splitColorValueOffset[i]['b']) / a;
-            } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
-                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                percent = value < splitColorValueOffset[i as number]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i as number]['b']) / a)
+                    : (value - splitColorValueOffset[i as number]['b']) / a;
+            } else if (splitColorValueOffset[i as number]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
+                midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i as number]['color'] : colorNameToHex(splitColorValueOffset[i as number]['color']);
                 previousColor = midColor;
-                percent = value < splitColorValueOffset[i]['b'] ?
-                    1 - Math.abs((value - splitColorValueOffset[i]['b']) / a) : (value - splitColorValueOffset[i]['b']) / a;
+                percent = value < splitColorValueOffset[i as number]['b'] ?
+                    1 - Math.abs((value - splitColorValueOffset[i as number]['b']) / a) : (value - splitColorValueOffset[i as number]['b']) / a;
             }
             if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
-                if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
-                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                        splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                if (splitColorValueOffset[i as number]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
+                    midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i as number]['color'] : colorNameToHex(splitColorValueOffset[i as number]['color']);
                     previousColor = midColor;
                     nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
                         splitColorValueOffset[i + 1]['color'] : colorNameToHex(splitColorValueOffset[i + 1]['color']);
@@ -688,7 +802,13 @@ export function getGradientColor(value: number, colorMap: ColorMappingModel): Co
     }
     return getPercentageColor(percent, previousColor, nextColor);
 }
-
+/**
+ *
+ * @param {number} percent - Specifies the percentage of the color.
+ * @param {number} previous - Specifies the previous color.
+ * @param {number} next - Specifies the next color.
+ * @returns {ColorValue} - Returns the color value object.
+ */
 export function getPercentageColor(percent: number, previous: string, next: string): ColorValue {
     const nextColor: string = next.split('#')[1];
     const prevColor: string = previous.split('#')[1];
@@ -697,19 +817,31 @@ export function getPercentageColor(percent: number, previous: string, next: stri
     const b: number = getPercentage(percent, parseInt(prevColor.substr(4, 2), 16), parseInt(nextColor.substr(4, 2), 16));
     return new ColorValue(r, g, b);
 }
-
+/**
+ *
+ * @param {number} percent - Specifies the percentage of the color.
+ * @param {number} previous - Specifies the previous color.
+ * @param {number} next - Specifies the next color.
+ * @returns {number} - Returns the color value.
+ */
 export function getPercentage(percent: number, previous: number, next: number): number {
     const full: number = next - previous;
     return Math.round((previous + (full * percent)));
 }
-
+/**
+ *
+ * @param {number} maximumWidth - Specifies the length of the text.
+ * @param {string} dataLabel - Specifies the label.
+ * @param {FontModel} font - Specifies the font of the label.
+ * @returns {string[]} - Returns the labels.
+ */
 export function wordWrap(maximumWidth: number, dataLabel: string, font: FontModel): string[] {
     const textCollection: string[] = dataLabel.split(' ');
     let label: string = '';
     const labelCollection: string[] = [];
     let text: string;
     for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
-        text = textCollection[i];
+        text = textCollection[i as number];
         if (measureText(label.concat(text), font).width < maximumWidth) {
             label = label.concat((label === '' ? '' : ' ') + text);
         } else {
@@ -727,8 +859,14 @@ export function wordWrap(maximumWidth: number, dataLabel: string, font: FontMode
     }
     return labelCollection;
 }
+/**
+ *
+ * @param {number} maxWidth - Specifies the length of the text.
+ * @param {string} label - Specifies the label.
+ * @param {FontModel} font - Specifies the font of the label.
+ * @returns {string[]} - Returns the labels.
+ */
 export function textWrap(maxWidth: number, label: string, font: FontModel): string[] {
-    const text: string = label;
     const resultText: string[] = [];
     let currentLength: number = 0;
     let totalWidth: number = measureText(label, font).width;
@@ -755,11 +893,11 @@ export function textWrap(maxWidth: number, label: string, font: FontModel): stri
 /**
  * hide function
  *
- * @param {number} maxWidth - Specifies the maximum width
- * @param {number} maxHeight - Specifies the maximum height
- * @param {string} text - Specifies the text
- * @param {FontModel} font - Specifies the font
- * @returns {string} - Returns the hideText
+ * @param {number} maxWidth - Specifies the maximum width.
+ * @param {number} maxHeight - Specifies the maximum height.
+ * @param {string} text - Specifies the text.
+ * @param {FontModel} font - Specifies the font.
+ * @returns {string} - Returns the hidden text.
  */
 export function hide(maxWidth: number, maxHeight: number, text: string, font: FontModel): string {
     let hideText: string = text;
@@ -767,7 +905,12 @@ export function hide(maxWidth: number, maxHeight: number, text: string, font: Fo
     hideText = (textSize.width > maxWidth || textSize.height > maxHeight) ? ' ' : text;
     return hideText;
 }
-
+/**
+ *
+ * @param {number} a - Specifies the first value of the leaf.
+ * @param {number} b - Specifies the second value of the leaf.
+ * @returns {number} - Returns whether values are equal or not.
+ */
 export function orderByArea(a: number, b: number): number {
     if (a['itemArea'] === b['itemArea']) {
         return 0;
@@ -776,12 +919,18 @@ export function orderByArea(a: number, b: number): number {
     }
     return -1;
 }
-
+/**
+ *
+ * @param {TreeMap} treemap - Specifies the treemap instance.
+ * @param {Element} element - Specifies the selected TreeMap leaf item.
+ * @param {string} className -Specifies the selected class name.
+ * @returns {void}
+ */
 export function maintainSelection(treemap: TreeMap, element: Element, className: string): void {
     const elementId: string[] = treemap.levelSelection;
     if (elementId) {
         for (let index: number = 0; index < elementId.length; index++) {
-            if (element.getAttribute('id') === elementId[index]) {
+            if (element.getAttribute('id') === elementId[index as number]) {
                 if (element.childElementCount > 0) {
                     element.children[0].setAttribute('class', className);
                     applyOptions(
@@ -798,40 +947,53 @@ export function maintainSelection(treemap: TreeMap, element: Element, className:
         }
     }
 }
-
+/**
+ *
+ * @param {TreeMap} treemap - Specifies the treemap instance.
+ * @param {Element} legendGroup - Specifies the selected element.
+ * @returns {void}
+ */
 export function legendMaintain(treemap: TreeMap, legendGroup: Element): void {
     const elementId: string[] = treemap.legendId;
     if (elementId) {
         for (let i: number = 0; i < elementId.length; i++) {
             for (let j: number = 0; j < legendGroup.childElementCount; j++) {
-                if (legendGroup.childNodes[j]['id'] === elementId[i]) {
-                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('fill', treemap.selectionSettings.fill);
-                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('stroke', treemap.selectionSettings.border.color);
-                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('stroke-width',
-                        (treemap.selectionSettings.border.width).toString());
-                    (legendGroup.childNodes[j] as SVGRectElement).setAttribute('opacity', treemap.selectionSettings.opacity);
+                if (legendGroup.childNodes[j as number]['id'] === elementId[i as number]) {
+                    const treemapSVGRectElement: SVGRectElement = <SVGRectElement>legendGroup.childNodes[j as number];
+                    treemapSVGRectElement.setAttribute('fill', treemap.selectionSettings.fill);
+                    treemapSVGRectElement.setAttribute('stroke', treemap.selectionSettings.border.color);
+                    treemapSVGRectElement.setAttribute('stroke-width', (treemap.selectionSettings.border.width).toString());
+                    treemapSVGRectElement.setAttribute('opacity', treemap.selectionSettings.opacity);
                 }
             }
         }
     }
 }
-
+/**
+ *
+ * @param {HTMLCollection} elements - Specifies the selected TreeMap element.
+ * @param {string} type - Specifies the selection type.
+ * @param {TreeMap} treemap - Specifies the TreeMap instance.
+ * @returns {void}
+ */
 export function removeClassNames(elements: HTMLCollection, type: string, treemap: TreeMap): void {
-    let opacity: string; const process: boolean = true; let element: SVGPathElement;
-    let stroke: string; let strokeWidth: string; let fill: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let element: SVGPathElement;
     let options: any = {};
     for (let j: number = 0; j < elements.length; j++) {
-        element = isNullOrUndefined(elements[j].childNodes[0] as SVGPathElement) ? elements[j] as SVGPathElement :
-            elements[j].childNodes[0] as SVGPathElement;
+        element = isNullOrUndefined(elements[j as number].childNodes[0] as SVGPathElement) ? elements[j as number] as SVGPathElement :
+            elements[j as number].childNodes[0] as SVGPathElement;
         options = treemap.layout.renderItems[parseFloat(element.id.split('_Item_Index_')[1])]['options'];
         applyOptions(element, options);
-        elements[j].classList.remove(type);
+        elements[j as number].classList.remove(type);
         j -= 1;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {SVGPathElement} element - Specifies the SVG path element.
+ * @param {any} options - Specifies the settings for the SVG path element.
+ * @returns {void}
+ */
 export function applyOptions(element: SVGPathElement, options: any): void {
     element.setAttribute('opacity', options['opacity']);
     if (!isNullOrUndefined(options['fill'])) {
@@ -840,21 +1002,30 @@ export function applyOptions(element: SVGPathElement, options: any): void {
     element.setAttribute('stroke', options['border']['color']);
     element.setAttribute('stroke-width', options['border']['width']);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {string} format - Specifies the format value.
+ * @param {any} data - Specifies the data source object.
+ * @param {TreeMap} treemap - Specifies the TreeMap instance.
+ * @returns {string} - Returns the formatted text.
+ */
 export function textFormatter(format: string, data: any, treemap: TreeMap): string {
     if (isNullOrUndefined(format)) {
         return null;
     }
     const keys: string[] = Object.keys(data);
     for (const key of keys) {
-        format = format.split('${' + key + '}').join(formatValue(data[key], treemap).toString());
+        format = format.split('${' + key + '}').join(formatValue(data[key as string], treemap).toString());
     }
     return format;
 }
-
+/**
+ *
+ * @param {number} value - Specifies the text to be formatted.
+ * @param {TreeMap} treemap - Specifies the TreeMap instance.
+ * @returns {string | number} - Returns the formatted text.
+ */
 export function formatValue(value: number, treemap: TreeMap): string | number {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let formatValue: string | number; let formatFunction: any;
     if (treemap.format && !isNaN(Number(value))) {
         formatFunction = treemap.intl.getNumberFormat(
@@ -890,7 +1061,7 @@ export function convertToHexCode(value: ColorValue): string {
 }
 
 /**
- * @param {number} value - Specifes the value
+ * @param {number} value - Specifies the value
  * @returns {string} - Returns the string
  * @private */
 export function componentToHex(value: number): string {
@@ -919,10 +1090,9 @@ export function colorNameToHex(color: string): string {
     const element: HTMLElement = document.getElementById('treeMapMeasureText');
     element.style.color = color;
     color = window.getComputedStyle(element).color;
-    const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
-    const isRGBValue: RegExpExecArray = exp.exec(color);
+    const isRGBValue: string[] = color.replace(/[()RGBrgba ]/g, '').split(',');
     return convertToHexCode(
-        new ColorValue(parseInt(isRGBValue[3], 10), parseInt(isRGBValue[4], 10), parseInt(isRGBValue[5], 10))
+        new ColorValue(parseInt(isRGBValue[0], 10), parseInt(isRGBValue[1], 10), parseInt(isRGBValue[2], 10))
     );
 }
 
@@ -937,7 +1107,6 @@ export function colorNameToHex(color: string): string {
  * @private
  */
 export function drawSymbol(location: Location, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
-    const functionName: string = 'Path';
     const svgRenderer: SvgRenderer = new SvgRenderer('');
     const temp: IShapes = renderLegendShape(location, size, shape, options, url);
     const htmlElement: Element = svgRenderer['draw' + temp.functionName](temp.renderOption);
@@ -963,91 +1132,96 @@ export function renderLegendShape(location: Location, size: Size, shape: string,
     const x: number = location.x + (-shapeWidth / 2);
     const y: number = location.y + (-shapeHeight / 2);
     switch (shape) {
-        case 'Circle':
-        case 'Bubble':
-            functionName = 'Ellipse';
-            merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
-            break;
-        case 'VerticalLine':
-            renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
-                + (shapeY + (-shapeHeight / 2));
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Diamond':
-            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + shapeY + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Rectangle':
-            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Triangle':
-            renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'InvertedTriangle':
-            renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
-                'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Pentagon':
-            // eslint-disable-next-line no-case-declarations
-            const eq: number = 72;
-            // eslint-disable-next-line no-case-declarations
-            let xValue: number;
-            // eslint-disable-next-line no-case-declarations
-            let yValue: number;
-            for (let i: number = 0; i <= 5; i++) {
-                xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
-                if (i === 0) {
-                    renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
-                } else {
-                    renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
-                }
+    case 'Circle':
+    case 'Bubble':
+        functionName = 'Ellipse';
+        merge(options, { 'rx': shapeWidth / 2, 'ry': shapeHeight / 2, 'cx': shapeX, 'cy': shapeY });
+        break;
+    case 'VerticalLine':
+        renderPath = 'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' '
+            + (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Diamond':
+        renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + shapeY + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Rectangle':
+        renderPath = 'M' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (-shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Triangle':
+        renderPath = 'M' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (-shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + x + ' ' + (shapeY + (shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'InvertedTriangle':
+        renderPath = 'M' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX - (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' ' +
+            'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + (shapeY - (shapeHeight / 2)) + ' z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Pentagon':
+        // eslint-disable-next-line no-case-declarations
+        const eq: number = 72;
+        // eslint-disable-next-line no-case-declarations
+        let xValue: number;
+        // eslint-disable-next-line no-case-declarations
+        let yValue: number;
+        for (let i: number = 0; i <= 5; i++) {
+            xValue = (shapeWidth / 2) * Math.cos((Math.PI / 180) * (i * eq));
+            yValue = (shapeWidth / 2) * Math.sin((Math.PI / 180) * (i * eq));
+            if (i === 0) {
+                renderPath = 'M' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ';
+            } else {
+                renderPath = renderPath.concat('L' + ' ' + (shapeX + xValue) + ' ' + (shapeY + yValue) + ' ');
             }
-            renderPath = renderPath.concat('Z');
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Star':
-            renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
-                + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
-                + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
-                (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Cross':
-            renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
-                'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
-                (shapeY + (-shapeHeight / 2));
-            merge(options, { 'd': renderPath });
-            break;
-        case 'Image':
-            functionName = 'Image';
-            merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
-            break;
+        }
+        renderPath = renderPath.concat('Z');
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Star':
+        renderPath = 'M ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x - size.width / 2)
+            + ' ' + (location.y + size.height / 6) + ' L ' + (location.x + size.width / 2) + ' ' + (location.y + size.height / 6)
+            + ' L ' + (location.x - size.width / 3) + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
+            (location.y + size.height / 2) + ' L ' + (location.x + size.width / 3) + ' ' + (location.y - size.height / 2) + ' Z';
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Cross':
+        renderPath = 'M' + ' ' + x + ' ' + shapeY + ' ' + 'L' + ' ' + (shapeX + (shapeWidth / 2)) + ' ' + shapeY + ' ' +
+            'M' + ' ' + shapeX + ' ' + (shapeY + (shapeHeight / 2)) + ' ' + 'L' + ' ' + shapeX + ' ' +
+            (shapeY + (-shapeHeight / 2));
+        merge(options, { 'd': renderPath });
+        break;
+    case 'Image':
+        functionName = 'Image';
+        merge(options, { 'href': url, 'height': shapeHeight, 'width': shapeWidth, x: x, y: y });
+        break;
     }
     return { renderOption: options, functionName: functionName };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {any} data - Specifies the data source object.
+ * @param {any} item - Specifies the leaf item.
+ * @returns {boolean} - Returns whether the TreeMap item is level item or leaf item.
+ */
 export function isParentItem(data: any[], item: any): boolean {
     let isParentItem: boolean = false;
     for (let j: number = 0; j < data.length; j++) {
-        if (item['levelOrderName'] === data[j]['levelOrderName']) {
+        if (item['levelOrderName'] === data[j as number]['levelOrderName']) {
             isParentItem = true;
             break;
         }
@@ -1059,7 +1233,6 @@ export function isParentItem(data: any[], item: any): boolean {
  */
 export class TreeMapAjax {
     /** options for data */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public dataOptions: string | any;
     /** type of data */
     public type: string;
@@ -1068,9 +1241,7 @@ export class TreeMapAjax {
     /** type of the content */
     public contentType: string;
     /** sending data */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public sendData: string | any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(options: string | any, type?: string, async?: boolean, contentType?: string, sendData?: string | any) {
         this.dataOptions = options;
         this.type = type || 'GET';
@@ -1079,56 +1250,80 @@ export class TreeMapAjax {
         this.sendData = sendData;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function removeShape(collection: any[], value: string): void {
+/**
+ *
+ * @param {any[]} collection - Specifies the legend collection.
+ * @returns {void}
+ * @private
+ */
+export function removeShape(collection: any[]): void {
     if (collection.length > 0) {
         for (let i: number = 0; i < collection.length; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const item: any = collection[i];
+            const item: any = collection[i as number];
             setColor(item['legendEle'], item['oldFill'], item['oldOpacity'], item['oldBorderColor'], item['oldBorderWidth']);
         }
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function removeLegend(collection: any[], value: string): void {
+/**
+ *
+ * @param {any[]} collection - Specifies the legend collection.
+ * @returns {void}
+ * @private
+ */
+export function removeLegend(collection: any[]): void {
     if (collection.length > 0) {
         for (let j: number = 0; j < collection.length; j++) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const item: any = collection[j];
+            const item: any = collection[j as number];
             setColor(item['legendEle'], item['oldFill'], item['oldOpacity'], item['oldBorderColor'], item['oldBorderWidth']);
             const dataCount: number = item['ShapeCollection']['Elements'].length;
             for (let k: number = 0; k < dataCount; k++) {
                 setColor(
-                    item['ShapeCollection']['Elements'][k], item['shapeOldFill'], item['shapeOldOpacity'],
+                    item['ShapeCollection']['Elements'][k as number], item['shapeOldFill'], item['shapeOldOpacity'],
                     item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
             }
         }
     }
 }
-
+/**
+ *
+ * @param {Element} element - Specifies the selected element.
+ * @param {string} fill - Specifies the fill color.
+ * @param {string} opacity - Specifies the opacity.
+ * @param {string} borderColor - Specifies the border color.
+ * @param {string} borderWidth - Specifies the border width.
+ * @returns {void}
+ */
 export function setColor(element: Element, fill: string, opacity: string, borderColor: string, borderWidth: string): void {
     element.setAttribute('fill', fill);
     element.setAttribute('opacity', opacity);
     element.setAttribute('stroke', borderColor);
     element.setAttribute('stroke-width', borderWidth);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {any[]} collection - Specifies the selected item collection.
+ * @param {any[]} element - Specifies the selected element collection.
+ * @param {TreeMap} treemap - Specifies the TreeMap instance.
+ * @returns {void}
+ */
 export function removeSelectionWithHighlight(collection: any[], element: any[], treemap: TreeMap): void {
-    removeShape(collection, 'highlight');
+    removeShape(collection);
     element = [];
     removeClassNames(document.getElementsByClassName('treeMapHighLight'), 'treeMapHighLight', treemap);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ *
+ * @param {number} length - Specifies the length of the legend group.
+ * @param {any} item - Specifies the legend item.
+ * @param {TreeMap} treemap - Specifies the TreeMap instance.
+ * @returns {number} - Returns the legend index.
+ */
 export function getLegendIndex(length: number, item: any, treemap: TreeMap): number {
     let index: number;
     for (let i: number = 0; i < length; i++) {
-        const dataLength: number = treemap.treeMapLegendModule.legendCollections[i]['legendData'].length;
+        const dataLength: number = treemap.treeMapLegendModule.legendCollections[i as number]['legendData'].length;
         for (let j: number = 0; j < dataLength; j++) {
-            if (treemap.treeMapLegendModule.legendCollections[i]['legendData'][j]['levelOrderName'] === item['levelOrderName']) {
+            if (treemap.treeMapLegendModule.legendCollections[i as number]['legendData'][j as number]['levelOrderName'] === item['levelOrderName']) {
                 index = i;
                 break;
             }
@@ -1136,20 +1331,28 @@ export function getLegendIndex(length: number, item: any, treemap: TreeMap): num
     }
     return index;
 }
-
+/**
+ *
+ * @param {any[]} collection - Specifies the legend collection.
+ * @param {number} index - Specifies the index of legend.
+ * @param {number} number - Specifies the leaf item index.
+ * @param {Element} legendElement - Specifies the legend element.
+ * @param {Element} shapeElement - Specifies the shape element.
+ * @param {any[]} renderItems - Specifies the item index.
+ * @param {any[]} legendCollection - Specifies the legend collection.
+ * @returns {void}
+ */
 export function pushCollection(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collection: any[], index: number, number: number, legendElement: Element, shapeElement: Element,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderItems: any[], legendCollection: any[]): void {
     collection.push({
-        legendEle: legendElement, oldFill: legendCollection[index]['legendFill'],
-        oldOpacity: legendCollection[index]['opacity'], oldBorderColor: legendCollection[index]['borderColor'],
-        oldBorderWidth: legendCollection[index]['borderWidth'],
-        shapeElement: shapeElement, shapeOldFill: renderItems[number]['options']['fill'],
-        shapeOldOpacity: renderItems[number]['options']['opacity'],
-        shapeOldBorderColor: renderItems[number]['options']['border']['color'],
-        shapeOldBorderWidth: renderItems[number]['options']['border']['width']
+        legendEle: legendElement, oldFill: legendCollection[index as number]['legendFill'],
+        oldOpacity: legendCollection[index as number]['opacity'], oldBorderColor: legendCollection[index as number]['borderColor'],
+        oldBorderWidth: legendCollection[index as number]['borderWidth'],
+        shapeElement: shapeElement, shapeOldFill: renderItems[number as number]['options']['fill'],
+        shapeOldOpacity: renderItems[number as number]['options']['opacity'],
+        shapeOldBorderColor: renderItems[number as number]['options']['border']['color'],
+        shapeOldBorderWidth: renderItems[number as number]['options']['border']['width']
     });
 }
 
@@ -1174,7 +1377,11 @@ export function triggerDownload(fileName: string, type: ExportType, url: string,
         cancelable: true
     }));
 }
-
+/**
+ *
+ * @param {string} id - Specifies the id of the element to be removed.
+ * @returns {void}
+ */
 export function removeElement(id: string): void {
     const element: Element = document.getElementById(id);
     return element ? remove(element) : null;

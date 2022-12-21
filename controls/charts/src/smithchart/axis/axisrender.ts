@@ -134,7 +134,7 @@ export class AxisRender {
         let textSize: SmithchartSize;
 
         for (let i: number = 0; i < this.radialLabels.length; i++) {
-            label = this.radialLabels[i].toString();
+            label = this.radialLabels[i as number].toString();
             textSize = measureText(label, font);
             if (maximumLabelLength < textSize.width) {
                 maximumLabelLength = textSize.width;
@@ -157,7 +157,7 @@ export class AxisRender {
             const radius: number = ((diameter * coeff) / 2) * 2;
             if (previousR === 0.0 || i === 1) {
                 previousR = radius;
-                labels[j] = i;
+                labels[j as number] = i;
                 j++;
                 continue;
             }
@@ -171,14 +171,14 @@ export class AxisRender {
                 continue;
             }
             if (previousR - radius >= spacingBetweenGridLines) {
-                labels[j] = i;
+                labels[j as number] = i;
                 j++;
                 previousR = radius;
             }
         }
         const staticlabels: number[] = [2, 3, 4, 5, 10, 20, 50];
         for (let k: number = 0; k < staticlabels.length; k++) {
-            labels[j] = staticlabels[k];
+            labels[j as number] = staticlabels[k as number];
             j++;
         }
         return labels;
@@ -201,7 +201,7 @@ export class AxisRender {
         const circleStartX: number = this.circleLeftX;
         let leftX: number = this.circleLeftX;
         for (let i: number = 0; i < horizontalAxisLabels.length; i++) {
-            x = horizontalAxisLabels[i];
+            x = horizontalAxisLabels[i as number];
             coeff = 1 / (x + 1);
             radius = (diameter * coeff) / 2;
             if (smithchart.renderType === 'Impedance') {
@@ -228,7 +228,7 @@ export class AxisRender {
             point.y = this.circleTopY + this.areaRadius;
         }
         for (let i: number = 0; i < this.radialLabels.length; i++) {
-            y = this.radialLabels[i];
+            y = this.radialLabels[i as number];
             arcRadius = Math.abs(((1 / y) * diameter) / 2);
             if (smithchart.renderType === 'Impedance') {
                 arcCy = y > 0 ? point.y - arcRadius : point.y + arcRadius;
@@ -251,7 +251,7 @@ export class AxisRender {
         this.majorHGridArcPoints = [];
         for (let i: number = 0; i < this.horizontalLabelCollections.length; i++) {
             let circlePoint: HorizontalLabelCollection = new HorizontalLabelCollection();
-            circlePoint = this.horizontalLabelCollections[i];
+            circlePoint = this.horizontalLabelCollections[i as number];
             arcPoints = this.calculateHMajorArcStartEndPoints(circlePoint.value);
             if (smithchart.renderType === 'Impedance') {
                 radialPoint1 = arcPoints[0];
@@ -309,7 +309,7 @@ export class AxisRender {
         this.labelCollections = [];
         const epsilon: number = _getEpsilonValue();
         for (let i: number = 0; i < this.radialLabelCollections.length; i++) {
-            radialPoint = this.radialLabelCollections[i];
+            radialPoint = this.radialLabelCollections[i as number];
 
             if (radialPoint.radius <= epsilon) {
                 continue;
@@ -613,8 +613,8 @@ export class AxisRender {
         const groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_HAxisLabels' });
         groupEle.setAttribute('aria-hidden', 'true');
         for (let i: number = 0; i < this.horizontalLabelCollections.length; i++) {
-            circleAxis = this.horizontalLabelCollections[i];
-            label = this.horizontalLabelCollections[i].value.toString();
+            circleAxis = this.horizontalLabelCollections[i as number];
+            label = this.horizontalLabelCollections[i as number].value.toString();
             if (circleAxis.value !== 0.0) {
                 x = (smithchart.renderType === 'Impedance') ?
                     circleAxis.centerX - circleAxis.radius : circleAxis.centerX + circleAxis.radius;
@@ -626,14 +626,14 @@ export class AxisRender {
                 } else {
                     y += textSize.height;
                 }
-                this.horizontalLabelCollections[i].region = this.calculateRegion(label, textSize, x, y);
+                this.horizontalLabelCollections[i as number].region = this.calculateRegion(label, textSize, x, y);
                 if (hAxis.labelIntersectAction === 'Hide') {
-                    curLabel = this.horizontalLabelCollections[i];
+                    curLabel = this.horizontalLabelCollections[i as number];
                     curLabelBounds = curLabel.region.bounds;
                     curWidth = curLabelBounds.width;
                     curX = curLabelBounds.x;
                     for (let j: number = 1; j < i; j++) {
-                        preLabel = this.horizontalLabelCollections[j];
+                        preLabel = this.horizontalLabelCollections[j as number];
                         preLabelBounds = preLabel.region.bounds;
                         preWidth = preLabelBounds.width;
                         preX = preLabelBounds.x;
@@ -699,7 +699,7 @@ export class AxisRender {
         const groupEle: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_RAxisLabels' });
         groupEle.setAttribute('aria-hidden', 'true');
         for (let i: number = 0; i < this.labelCollections.length; i++) {
-            interSectPoint = this.labelCollections[i];
+            interSectPoint = this.labelCollections[i as number];
             label = interSectPoint.value.toString();
             textSize = measureText(label, font);
             angle = Math.round(interSectPoint.angle * 100) / 100;
@@ -714,16 +714,16 @@ export class AxisRender {
                     this.areaRadius - paddingRadius);
                 textPosition = this.setLabelsInsidePosition(angle, position.x, position.y, textSize);
             }
-            this.labelCollections[i]['region'] = this.calculateRegion(label, textSize, textPosition.x, textPosition.y);
+            this.labelCollections[i as number]['region'] = this.calculateRegion(label, textSize, textPosition.x, textPosition.y);
             if (rAxis.labelIntersectAction === 'Hide') {
-                curLabel = this.labelCollections[i];
+                curLabel = this.labelCollections[i as number];
                 curLabelBounds = curLabel['region']['bounds'];
                 curWidth = curLabelBounds['width'];
                 curHeight = curLabelBounds['height'];
                 curX = curLabelBounds['x'];
                 curY = curLabelBounds['y'];
                 for (let j: number = 0; j < i; j++) {
-                    preLabel = this.labelCollections[j];
+                    preLabel = this.labelCollections[j as number];
                     preLabelBounds = preLabel['region']['bounds'];
                     preWidth = preLabelBounds['width'];
                     preHeight = preLabelBounds['height'];
@@ -817,7 +817,7 @@ export class AxisRender {
         let sweep: number;
         let sb: string = '';
         for (let i: number = 0; i < points.length; i++) {
-            pathSegment = points[i];
+            pathSegment = points[i as number];
             x1 = pathSegment.startPoint.x;
             y1 = pathSegment.startPoint.y;
             x2 = pathSegment.endPoint.x;
@@ -854,7 +854,7 @@ export class AxisRender {
         this.minorHGridArcPoints = [];
         const diameter: number = this.areaRadius * 2;
         for (let i: number = 0; i < this.horizontalLabelCollections.length - 3; i++) {
-            previous = this.horizontalLabelCollections[i];
+            previous = this.horizontalLabelCollections[i as number];
             next = this.horizontalLabelCollections[i + 1];
             space = (previous['radius'] - next['radius']) * 2;
             count = Math.floor((maxCount / 100) * space);
@@ -914,7 +914,7 @@ export class AxisRender {
         this.minorGridArcPoints = [];
         const arcStartPoint: Point = { x: arcStartX, y: arcStartY };
         for (let i: number = 2; i < this.labelCollections.length - 3; i++) {
-            previous = this.labelCollections[i];
+            previous = this.labelCollections[i as number];
             next = this.labelCollections[i + 1];
             if (smithchart.renderType === 'Impedance') {
                 nextAngle = next['angle'] === 360 ? 0 : next['angle'];

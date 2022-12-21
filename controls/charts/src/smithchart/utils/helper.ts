@@ -94,7 +94,8 @@ export function convertElementFromLabel(
     let templateHtml: string = labelEle.outerHTML;
     const properties: Object[] = Object.keys(data);
     for (let i: number = 0; i < properties.length; i++) {
-        templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i] + '}}', 'g'), data[properties[i].toString()]);
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        templateHtml = templateHtml.replace(new RegExp('{{:' + <String>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
     }
     return createElement('div', {
         id: labelId,

@@ -1,13 +1,83 @@
 import { NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';
-import { SignatureBase, Dimension, ActivePoint } from '@syncfusion/ej2-inputs';
+import { SignatureBase, Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { ColorPicker, ColorPickerEventArgs, Uploader } from '@syncfusion/ej2-inputs';
+import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner, OpenEventArgs } from '@syncfusion/ej2-popups';
-import { compile, compile as templateCompiler, Browser, detach, select } from '@syncfusion/ej2-base';
-import { ImageEditorModel } from './image-editor-model';
+import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
+import { ImageEditorModel, FinetuneSettingsModel } from './image-editor-model';
+
+/**
+ * Interface for image finetune values.
+ */
+export interface ImageFinetuneValue {
+    /**
+    * Specifies the minimum value of finetune option.
+    * @default null
+    */
+    min: number;
+    /**
+     * Specifies the maximum value of finetune option.
+     * @default null
+     */
+    max: number;
+    /**
+     * Specifies the default value of finetune option.
+     * @default null
+     */
+    defaultValue: number;
+}
+
+/**
+ * Interface for image finetune values.
+ */
+export class FinetuneSettings extends ChildProperty<FinetuneSettings> {
+    /**
+     * Specifies the brightness level of image.
+     * @default null
+     */
+    @Property(null)
+    public brightness: ImageFinetuneValue;
+    /**
+     * Specifies the contrast level image.
+     * @default null
+     */
+    @Property(null)
+    public contrast: ImageFinetuneValue;
+    /**
+     * Specifies the hue level image.
+     * @default null
+     */
+    @Property(null)
+    public hue: ImageFinetuneValue;
+    /**
+     * Specifies the saturation level image.
+     * @default null
+     */
+    @Property(null)
+    public saturation: ImageFinetuneValue;
+   /**
+     * Specifies the exposure level image.
+     * @default null
+     */
+    @Property(null)
+    public exposure: ImageFinetuneValue;
+    /**
+     * Specifies the opacity level image.
+     * @default null
+     */
+    @Property(null)
+    public opacity: ImageFinetuneValue;
+    /**
+     * Specifies the blur level image.
+     * @default null
+     */
+    @Property(null)
+    public blur: ImageFinetuneValue;
+}
+
 /**
  * Image Editor is a graphical user interface that helps to edit an image by performing actions like selection,
  * cropping, rotating, inserting text and shapes (rectangles, ellipses, lines), and drawing free hand on top of an image.
@@ -38,7 +108,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private baseImg: HTMLImageElement;
     private textBox: HTMLInputElement;
     private degree : number = 0;  // current rotated state
-    private isUndoRedo: boolean = false;
     private dragCanvas: boolean = false;
     private dragElement: string = '';
     private keyHistory: string = '';  // text history
@@ -63,24 +132,18 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private pannStart: ActivePoint = {} as ActivePoint;
     private pannEnd: ActivePoint = {} as ActivePoint;
     private togglePan: boolean = false;
+    private disablePan: boolean = false;
     private lastX: number = 0;
     private lastY: number = 0;
     private dragStart: Point = {x: 0, y: 0};
-    private dragged: boolean = false;
     private factor: number = 1; // current zoomed state
     private currFlipState: string = '';
     private touchEndPoint: Point = {} as Point;
-    private flipMethod: boolean = false;
-    private flipDirection: string = '';
     private prevX: number = 0;
     private currX: number = 0;
     private prevY: number = 0;
     private currY: number = 0;
     private togglePen: boolean = false;
-    private rotateMethod: boolean = false;
-    private isBoldbtn: boolean = false;
-    private isItalicbtn: boolean = false;
-    private lastAction: string = '';
     private currentToolbar: string = 'main';
     private textStartPoints: Point = {x: 0, y: 0};
     private fontSizeColl: DropDownButtonItemModel[] = [];
@@ -91,21 +154,41 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private activeObj: SelectionPoint = {activePoint: {startX: 0, startY: 0, endX: 0, endY: 0, width: 0, height: 0},
         flipObjColl: []} as SelectionPoint;
     private currObjType: Interaction = {shape: '', isDragging: false, isActiveObj: false, isText : false, isInitialText: false, isLine: false,
-        isInitialLine: false, isCustomCrop: false, isZoomed: false};
+        isInitialLine: false, isCustomCrop: false, isZoomed: false, isFiltered: false, isSave: false};
     private defToolbarItems: ItemModel[] = [];
     private defaultLocale: Object;
     private l10n: L10n;
     private themeColl: Object;
     private toolbarFn: Function;
-    private baseImgSrc: string = '';
+    private baseImgSrc: ShapeSettings = {} as ShapeSettings;
     private isTimer: boolean = false;
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timer: any;
     private isScreenOriented: boolean = false;
+    private tempObjColl: SelectionPoint[];
+    private isFirstMove: boolean = false;
+    private startTouches: Point[] = [];
+    private tempTouches: Point[] = [];
+    private adjustmentLevel: Adjustment = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0,
+        exposure: 0, sharpen: false, bw: false};
+    private tempAdjustmentLevel: Adjustment = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0,
+        exposure: 0, sharpen: false, bw: false};
+    private adjustmentValue: string = '';
+    private initialAdjustmentValue: string = '';
+    private tempAdjustmentValue: string = '';
+    private currentFilter: string = '';
+    private tempFilter: string = '';
+    private canvasFilter: string = '';
+    private tempImageData: ImageData;
+    private sharpenedImgData: boolean = false;
+    private tempSharpenFilter: boolean = false;
+    private tempBWFilter: boolean = false;
+    private isBrightnessAdjusted: boolean = false;
+    private isInitialLoading: boolean = false;
 
     /**
      * Defines class/multiple classes separated by a space for customizing Image Editor UI.
-     * default ''
+     * @default ''
      ```html
      * <div id='imageeditor'></div>
      * ```
@@ -121,14 +204,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     /**
      * Specifies whether the Image Editor is disabled.
-     * default false
+     * @default false
      */
     @Property(false)
     public disabled: boolean;
 
     /**
      * Specifies the height of the Image Editor.
-     * default '100%'
+     * @default '100%'
      */
     @Property('100%')
     public height: string;
@@ -136,12 +219,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     /**
      * Specifies the theme of the Image Editor. The shape selection appearance will be decided based on this property.
      * The property supports all the built-in themes of Syncfusion.
-     * default 'Bootstrap5'
+     *
      * @isenumeration true
      * @default Theme.Bootstrap5
      * @asptype Theme
-     * 
+     *
      */
+
     @Property('Bootstrap5')
     public theme: string | Theme;
 
@@ -150,17 +234,16 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * If the property is defined as empty collection, the toolbar will not be rendered.
      * Suppose the property is not defined in control, an image editor’s toolbar will be rendered with preconfigured toolbar commands.
      * The preconfigured toolbar commands are
-     *  Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
-     *  Annotate: help to insert a shape on image that supports rectangle, ellipse, line, text and freehand drawing with resize, drag and drop, and customize its appearance.
-     *  Transform: helps to rotate and flip an image.
-     *  ZoomIn: performs zoom-in an image.
-     *  ZoomOut: performs zoom-out an image.
-     *  Pan: performs panning once zoomed an image.
-     *  Move: disable the pan action and move to perform other actions such as insert a shape, transform, and more.
-     *  Save: save the modified image.
-     *  Open: open an image to perform editing.
-     *  Reset: reset the modification and restore the original image.
-     * default null
+     * Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
+     * Annotate: help to insert a shape on image that supports rectangle, ellipse, line, text and freehand drawing with resize, drag and drop, and customize its appearance.
+     * Transform: helps to rotate and flip an image.
+     * ZoomIn: performs zoom-in an image.
+     * ZoomOut: performs zoom-out an image.
+     * Pan: performs panning once zoomed an image.
+     * Move: disable the pan action and move to perform other actions such as insert a shape, transform, and more.
+     * Save: save the modified image.
+     * Open: open an image to perform editing.
+     * Reset: reset the modification and restore the original image.
      ```html
      * <div id='imageeditor'></div>
      * ```
@@ -204,7 +287,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     /**
      * Specifies the width of the Image Editor.
-     * default 100%
+     * @default '100%'
      */
     @Property('100%')
     public width: string;
@@ -248,7 +331,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     @Property(true)
     public saveWithBackground: boolean;
- 
+
     /**
      * Gets or sets the stroke color of the signature.
      * The color of the signature stroke that accepts hex value, rgb and text (like 'red'). The default value is "#000000".
@@ -258,7 +341,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     @Property('#000000')
     public strokeColor: string;
- 
+
     /**
      * Gets or sets the minimum stroke width for signature.
      * The signature component calculates stroke width based on Velocity, MinStrokeWidth and MaxStrokeWidth.
@@ -269,7 +352,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     @Property(0.5)
     public minStrokeWidth: number;
- 
+
     /**
      * Gets or sets the maximum stroke width for signature.
      * The signature component calculates stroke width based on Velocity, MinStrokeWidth and MaxStrokeWidth.
@@ -280,7 +363,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     @Property(2)
     public maxStrokeWidth: number;
- 
+
     /**
      * Gets or sets the velocity to calculate the stroke thickness based on the pressure of the contact on the digitizer surface.
      * The Signature component calculates stroke thickness based on Velocity, MinStrokeWidth and MaxStrokeWidth.
@@ -291,7 +374,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     @Property(0.7)
     public velocity: number;
- 
+
     /**
      * Specifies the Signature in RTL mode that displays the content in the right-to-left direction.
      *
@@ -300,7 +383,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     @Property(false)
     public enableRtl: boolean;
- 
+
     /**
      * Gets or sets whether to persist component's state between page reloads.
      * True, if the component's state persistence is enabled. The default value is false.
@@ -313,10 +396,25 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     public enablePersistence: boolean;
 
     /**
+     * It can be done using the filter property of the canvas.  The following fine tunes can be supported.
+     * Brightness: The intensity of the primary colors grows with increased brightness, but the color itself does not change. It can be done by changing brightness and opacity property.
+     * Contrast: The contrast of an image refers to the difference between the light pixels and dark pixels. Low contrast images contain either a narrow range of colors while high contrast images have bright highlights and dark shadows. It can be done by changing contrast property.
+     * Hue: Hue distinguishes one color from another and is described using common color names such as green, blue, red, yellow, etc. Value refers to the lightness or darkness of a color. It can be controlled by hue-rotate property.
+     * Saturation: If saturation increases, colors appear sharper or purer. As saturation decreases, colors appear more washed-out or faded. It can be controlled by saturation and brightness property.
+     * Exposure: If exposure increases, intensity of light appears brighter. As exposure decreases, intensity of light decreases. Exposure can be controlled by brightness property.
+     * Opacity: The state or quality of being opaque or transparent, not allowing light to pass through the image. Opacity can be controlled by opacity property.
+     * Blur : Adjusting the blur can make an image unfocused or unclear. Blur can be controlled by blur property.
+     *
+     */
+    @Complex<FinetuneSettingsModel>({}, FinetuneSettings)
+    public finetuneSettings: FinetuneSettingsModel;
+
+    /**
      * Gets or sets the last signature url to maintain the persist state.
      *
      * @private
      */
+    @Property('')
     public signatureValue: string;
 
     /**
@@ -432,6 +530,22 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     public toolbarItemClicked: EmitType<ClickEventArgs>
 
     /**
+     * Triggers when applying filter to an image.
+     *
+     * @event imageFiltering
+     */
+    @Event()
+    public imageFiltering : EmitType<ImageFilterEventArgs>;
+
+    /**
+     * Triggers when applying fine tune to an image.
+     *
+     * @event fineTuneValueChanging
+     */
+    @Event()
+    public fineTuneValueChanging: EmitType<FinetuneEventArgs>
+
+    /**
      *
      * Constructor for creating the widget
      *
@@ -469,8 +583,28 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             Crop: 'Crop',
             ZoomIn: 'Zoom In',
             ZoomOut: 'Zoom Out',
+            Undo: 'Undo',
+            Redo: 'Redo',
             Transform: 'Transform',
             Annotation: 'Annotation',
+            Finetune: 'Finetune',
+            Brightness: 'Brightness',
+            Contrast: 'Contrast',
+            Hue: 'Hue',
+            Saturation: 'Saturation',
+            Opacity: 'Opacity',
+            Blur: 'Blur',
+            Sharpen: 'Sharpen',
+            Exposure: 'Exposure',
+            Filter: 'Filter',
+            Default: 'Default',
+            Chrome: 'Chrome',
+            Cold: 'Cold',
+            Warm: 'Warm',
+            Grayscale: 'Grayscale',
+            BlackAndWhite: 'Black and White',
+            Sepia: 'Sepia',
+            Invert: 'Invert',
             Text: 'Add Text',
             Pen: 'Pen',
             Reset: 'Reset',
@@ -498,7 +632,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             Ellipse: 'Ellipse',
             Rectangle: 'Rectangle',
             Line: 'Line',
-            Default: 'Default',
             Bold: 'Bold',
             Italic: 'Italic',
             BoldItalic: 'Bold Italic',
@@ -507,7 +640,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             Medium: 'Medium',
             Large: 'Large',
             XLarge: 'X-Large',
-            ABC: 'ABC'
+            ABC: 'ABC',
+            Browse: 'Browse'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.locale);
     }
@@ -586,6 +720,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     this.upperContext.fillStyle = this.themeColl[this.theme]['secondaryColor'];
                 }
                 break;
+            case 'finetuneSettings':
+                if (newProperties.finetuneSettings) {
+                    this.finetuneSettings = newProperties.finetuneSettings;
+                    this.updateFinetunes();
+                }
+                break;
             }
         }
     }
@@ -604,14 +744,50 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     public initialize(): void {
-        this.createToolbar(); this.createCanvas(); this.wireEvent();
+        this.updateFinetunes(); this.createToolbar(); this.createContextualToolbar(); this.createCanvas(); this.wireEvent();
         this.updateContext(this.lowerContext); this.updateContext(this.upperContext);
         this.pannStart = {startX: 0, startY: 0, width: 0, height: 0}; this.pannEnd = {startX: 0, startY: 0, width: 0, height: 0};
+        this.lowerContext.filter = this.canvasFilter = this.initialAdjustmentValue = this.adjustmentValue = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
         if (this.cssClass) {addClass([this.element], this.cssClass.split(' ')); }
         if (this.element) {
             createSpinner({
                 target: this.element
             });
+        }
+    }
+
+    private updateFinetunes(): void {
+        if (this.finetuneSettings) {
+            if (this.finetuneSettings.brightness) {
+                this.adjustmentLevel.brightness = this.finetuneSettings.brightness.defaultValue;
+                this.tempAdjustmentLevel.brightness = this.finetuneSettings.brightness.defaultValue;
+            }
+            if (this.finetuneSettings.contrast) {
+                this.adjustmentLevel.contrast = this.finetuneSettings.contrast.defaultValue;
+                this.tempAdjustmentLevel.contrast = this.finetuneSettings.contrast.defaultValue;
+            }
+            if (this.finetuneSettings.hue) {
+                this.adjustmentLevel.hue = this.finetuneSettings.hue.defaultValue;
+                this.tempAdjustmentLevel.hue = this.finetuneSettings.hue.defaultValue;
+            }
+            if (this.finetuneSettings.saturation) {
+                this.adjustmentLevel.saturation = this.finetuneSettings.saturation.defaultValue;
+                this.tempAdjustmentLevel.saturation = this.finetuneSettings.saturation.defaultValue;
+            }
+            if (this.finetuneSettings.exposure) {
+                this.adjustmentLevel.exposure = this.finetuneSettings.exposure.defaultValue;
+                this.tempAdjustmentLevel.exposure = this.finetuneSettings.exposure.defaultValue;
+            }
+            if (this.finetuneSettings.opacity) {
+                this.adjustmentLevel.opacity = this.finetuneSettings.opacity.defaultValue;
+                this.tempAdjustmentLevel.opacity = this.finetuneSettings.opacity.defaultValue;
+            }
+            if (this.finetuneSettings.blur) {
+                this.adjustmentLevel.blur = this.finetuneSettings.blur.defaultValue;
+                this.tempAdjustmentLevel.blur = this.finetuneSettings.blur.defaultValue;
+            }
+            this.isInitialLoading = true;
         }
     }
 
@@ -637,7 +813,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         EventHandler.add(this.upperCanvas, 'dblclick', this.findTextPoint, this);
         EventHandler.add(this.textBox, 'mousedown', this.findTextPoint, this);
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
-        if ((!Browser.isIos && Browser.info.name !== 'safari')) {
+        if (!Browser.isIos && Browser.info.name !== 'safari' && screen && screen.orientation) {
             screen.orientation.addEventListener('change', this.screenOrientation.bind(this));
         }
     }
@@ -661,23 +837,32 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         EventHandler.remove(document, 'mouseup', this.canvasMouseUpHandler);
     }
 
+    private initializeFilter(): void {
+        this.setBrightness(this.adjustmentLevel.brightness);
+        this.setContrast(this.adjustmentLevel.contrast);
+        this.setHue(this.adjustmentLevel.hue);
+        this.setSaturation(this.adjustmentLevel.saturation);
+        this.setExposure(this.adjustmentLevel.exposure);
+        this.setOpacity(this.adjustmentLevel.opacity);
+        this.setBlur(this.adjustmentLevel.blur);
+    }
+
     private destroySubComponents(): void {
         const inputElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('input.e-control') as NodeListOf<HTMLElement>;
-        const divElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('div.e-control:not(.e-handle)');
         const btnElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('button.e-control');
         for (let i: number = 0, len: number = inputElement.length; i < len; i++) {
-            if (inputElement[i].classList.contains('e-color-picker')) {
-                (getComponent(inputElement[i], 'color-picker') as ColorPicker).destroy();
-                detach(select('input#' + inputElement[i].id, this.element));
+            if (inputElement[i as number].classList.contains('e-color-picker')) {
+                (getComponent(inputElement[i as number], 'color-picker') as ColorPicker).destroy();
+                detach(select('input#' + inputElement[i as number].id, this.element));
             }
         }
         for (let i: number = 0, len: number = btnElement.length; i < len; i++) {
-            if (btnElement[i].classList.contains('e-dropdown-btn')) {
-                (getComponent(btnElement[i], 'dropdown-btn') as DropDownButton).destroy();
-                detach(select('button#' + btnElement[i].id, this.element));
-            } else if (btnElement[i].classList.contains('e-btn')) {
-                (getComponent(btnElement[i], 'btn') as Button).destroy();
-                detach(select('button#' + btnElement[i].id, this.element));
+            if (btnElement[i as number].classList.contains('e-dropdown-btn')) {
+                (getComponent(btnElement[i as number], 'dropdown-btn') as DropDownButton).destroy();
+                detach(select('button#' + btnElement[i as number].id, this.element));
+            } else if (btnElement[i as number].classList.contains('e-btn')) {
+                (getComponent(btnElement[i as number], 'btn') as Button).destroy();
+                detach(select('button#' + btnElement[i as number].id, this.element));
             }
         }
     }
@@ -691,7 +876,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private toPascalCase(str: string): string {
         const strArr: string[] = str.toLowerCase().split('-');
         for (let i: number = 0; i < strArr.length; i++) {
-            strArr[i] = strArr[i].charAt(0).toUpperCase() + strArr[i].slice(1);
+            strArr[i as number] = strArr[i as number].charAt(0).toUpperCase() + strArr[i as number].slice(1);
         }
         return strArr.join('');
     }
@@ -792,6 +977,56 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
+    private createContextualToolbar(): void {
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.length > 0)) {
+            this.element.appendChild(this.createElement('div', { id: this.element.id + '_contextualToolbarArea',
+                className: 'e-contextual-toolbar-wrapper e-hide', attrs: { style: 'position: absolute;' }
+            }));
+            const toolbarArea: HTMLElement = document.getElementById(this.element.id + '_contextualToolbarArea');
+            const toolbar: HTMLElement = this.createElement('div', { id: this.element.id + '_contextualToolbar' });
+            toolbarArea.appendChild(toolbar);
+        }
+    }
+
+    private updateContextualToolbar(type: string, cType?: string): void {
+        if (this.toolbarTemplate ) {
+            this.toolbarTemplateFn();
+        } else {
+            const toolbarArea: Element = this.element.querySelector('#' + this.element.id + '_toolbarArea');
+            const contextualToolbarArea: Element = this.element.querySelector('#' + this.element.id + '_contextualToolbarArea');
+            if (!isNullOrUndefined(toolbarArea) && !isNullOrUndefined(contextualToolbarArea)) {
+                contextualToolbarArea.classList.remove('e-hide');
+                (contextualToolbarArea as HTMLElement).style.left = (toolbarArea as HTMLElement).offsetLeft + 'px';
+            }
+            if (type === 'filter') {
+                if (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')) && this.defToolbarItems.length > 0) {
+                    (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
+                }
+                if (Browser.isDevice) {
+                    this.initToolbarItem(false, true, true);
+                } else {
+                    this.initToolbarItem(true);
+                }
+                this.refreshSlider();
+                this.initFilterToolbarItem();
+            } else {
+                if (!isNullOrUndefined(document.querySelector('#' + this.element.id + '_contextualToolbar'))
+                    && document.querySelector('#' + this.element.id + '_contextualToolbar').classList.contains('e-control')) {
+                    (getComponent(document.getElementById(this.element.id + '_contextualToolbar'), 'toolbar') as Toolbar).destroy();
+                }
+                this.refreshSlider();
+                this.renderSlider(cType);
+            }
+            if (Browser.isDevice) {
+                const cHt: number = (contextualToolbarArea as HTMLElement).offsetHeight;
+                const ht: number = (this.element.querySelector('#' + this.element.id + '_canvasWrapper') as HTMLElement).offsetHeight;
+                (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + ht - cHt + 'px';
+            } else {
+                (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + 1 + 'px';
+            }
+        }
+    }
+
     private createBottomToolbar(): void {
         if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.length > 0)) {
             this.element.appendChild(this.createElement('div', {
@@ -885,7 +1120,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         const tempToolbarItems: ItemModel[] = this.processToolbar('left');
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
-            toolbarItems.push(tempToolbarItems[i]);
+            toolbarItems.push(tempToolbarItems[i as number]);
         }
         return toolbarItems;
     }
@@ -911,7 +1146,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         const tempToolbarItems: ItemModel[] = this.processToolbar('right');
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
-            toolbarItems.push(tempToolbarItems[i]);
+            toolbarItems.push(tempToolbarItems[i as number]);
         }
         return toolbarItems;
     }
@@ -932,9 +1167,17 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 template: '<button id="' + this.element.id + '_transformBtn"></button>'
             });
         }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Finetune') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_adjustment', prefixIcon: 'e-icons e-adjustment', cssClass: 'top-icon e-adjustment',
+                tooltipText: this.l10n.getConstant('Finetune'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Filter') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_filter', prefixIcon: 'e-icons e-filters', cssClass: 'top-icon e-filters',
+                tooltipText: this.l10n.getConstant('Filter'), align: 'Center' });
+        }
         const tempToolbarItems: ItemModel[] = this.processToolbar('center');
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
-            toolbarItems.push(tempToolbarItems[i]);
+            toolbarItems.push(tempToolbarItems[i as number]);
         }
         if (isApplyOption) {
             toolbarItems.push({ id: this.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
@@ -960,13 +1203,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const toolbarItems: ItemModel[] = [];
         if (this.toolbar) {
             for (let i: number = 0, len: number = this.toolbar.length; i < len; i++) {
-                if (typeof(this.toolbar[i]) === 'object') {
-                    if (isNullOrUndefined((this.toolbar[i] as ItemModel).align)) {
+                if (typeof(this.toolbar[i as number]) === 'object') {
+                    if (isNullOrUndefined((this.toolbar[i as number] as ItemModel).align)) {
                         if (position === 'left') {
-                            toolbarItems.push(this.toolbar[i] as ItemModel);
+                            toolbarItems.push(this.toolbar[i as number] as ItemModel);
                         }
-                    } else if ((this.toolbar[i] as ItemModel).align.toLowerCase() === position) {
-                        toolbarItems.push(this.toolbar[i] as ItemModel);
+                    } else if ((this.toolbar[i as number] as ItemModel).align.toLowerCase() === position) {
+                        toolbarItems.push(this.toolbar[i as number] as ItemModel);
                     }
                 }
             }
@@ -978,9 +1221,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const toolbarItems: ItemModel[] = [];
         if (items) {
             for (let i: number = 0, len: number = items.length; i < len; i++) {
-                if (typeof(items[i]) === 'object') {
-                    (items[i] as ItemModel).align = 'Center';
-                    toolbarItems.push(items[i] as ItemModel);
+                if (typeof(items[i as number]) === 'object') {
+                    (items[i as number] as ItemModel).align = 'Center';
+                    toolbarItems.push(items[i as number] as ItemModel);
                 }
             }
         }
@@ -1134,7 +1377,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             items.push({ text: this.l10n.getConstant('Custom'), id: 'custom', iconCss: 'e-icons e-custom' });
         }
         if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('CircleSelection') > -1)) {
-            items.push({ text: this.l10n.getConstant('Circle'), id: 'ellipse', iconCss: 'e-icons e-circle' });
+            items.push({ text: this.l10n.getConstant('Circle'), id: 'circle', iconCss: 'e-icons e-circle' });
         }
         if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('SquareSelection') > -1)) {
             items.push({ text: this.l10n.getConstant('Square'), id: 'square', iconCss: 'e-icons e-square' });
@@ -1218,7 +1461,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private cropSelect(args: MenuEventArgs): void {
-        const text: string = args.item.text;
+        const text: string = args.item.id;
         this.select(text);
         this.refreshToolbar('main', true, true);
     }
@@ -1259,7 +1502,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         const tempToolbarItems: ItemModel[] = this.processSubToolbar(items);
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
-            toolbarItems.push(tempToolbarItems[i]);
+            toolbarItems.push(tempToolbarItems[i as number]);
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: this.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
@@ -1323,9 +1566,16 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 modeSwitcher: false, noColor: true, value: '',
                 showButtons: false, mode: 'Palette', cssClass: 'e-shape-fill-color',
                 change: (args: ColorPickerEventArgs): void => {
+                    this.pushActItemIntoObj();
+                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    this.objColl.pop();
                     proxy.activeObj.strokeSettings.fillColor = args.currentValue.hex;
                     proxy.strokeSettings.fillColor = proxy.activeObj.strokeSettings.fillColor;
-                    proxy.redrawShape(this.activeObj);
+                    this.objColl.push(this.activeObj);
+                    proxy.undoRedoColl.push({operation: 'shapeTransform', value: null,
+                        currentObj: extend([], proxy.objColl, [], true) as SelectionPoint[], previousObj: objColl, factor: proxy.factor,
+                        sharpen: proxy.adjustmentLevel.sharpen, bw: proxy.adjustmentLevel.bw});
+                    proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                     if (args.currentValue.rgba === '') {
                         (fillDDB.element.children[0] as HTMLElement).classList.add('e-nocolor-item');
                     } else {
@@ -1357,10 +1607,17 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 modeSwitcher: false, noColor: false, value: '#fff',
                 showButtons: false, mode: 'Palette', cssClass: 'e-shape-stroke-color',
                 change: (args: ColorPickerEventArgs): void => {
+                    this.pushActItemIntoObj();
+                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    this.objColl.pop();
                     proxy.activeObj.strokeSettings.strokeColor = args.currentValue.hex;
                     proxy.strokeSettings.strokeColor = proxy.activeObj.strokeSettings.strokeColor;
                     if (!proxy.togglePen) {
-                        proxy.redrawShape(this.activeObj);
+                        this.objColl.push(this.activeObj);
+                        proxy.undoRedoColl.push({operation: 'shapeTransform', value: null,
+                            currentObj: extend([], proxy.objColl, [], true) as SelectionPoint[], previousObj: objColl, factor: proxy.factor,
+                            sharpen: proxy.adjustmentLevel.sharpen, bw: proxy.adjustmentLevel.bw});
+                        proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                     }
                     (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
                     strokeDDB.toggle();
@@ -1410,6 +1667,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     }
                 },
                 select: (args: MenuEventArgs) => {
+                    this.pushActItemIntoObj();
+                    const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
+                    this.objColl.pop();
                     spanElem.textContent = args.item.text;
                     this.activeObj.strokeSettings.strokeWidth = parseInt(args.item.id, 10);
                     if (this.lowerCanvas.width > this.lowerCanvas.height) {
@@ -1418,7 +1678,11 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         this.activeObj.strokeSettings.strokeWidth *= ((ratio.height + ratio.width) / this.factor);
                     }
                     this.strokeSettings.strokeWidth = this.activeObj.strokeSettings.strokeWidth;
-                    this.redrawShape(this.activeObj);
+                    this.objColl.push(this.activeObj);
+                    this.undoRedoColl.push({operation: 'shapeTransform', value: null,
+                        currentObj: extend([], this.objColl, [], true) as SelectionPoint[], previousObj: objColl, factor: this.factor,
+                        sharpen: this.adjustmentLevel.sharpen, bw: this.adjustmentLevel.bw});
+                    this.redrawShape(this.objColl[this.objColl.length - 1]);
                     if (Browser.isDevice) {
                         if (!isNullOrUndefined(document.getElementById(this.element.id + '_bottomToolbar'))) {
                             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -1463,7 +1727,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         const tempToolbarItems: ItemModel[] = this.processSubToolbar(items);
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
-            toolbarItems.push(tempToolbarItems[i]);
+            toolbarItems.push(tempToolbarItems[i as number]);
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: this.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
@@ -1545,16 +1809,25 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 modeSwitcher: false, value: '#fff',
                 showButtons: false, mode: 'Palette', cssClass: 'e-text-fontt-color',
                 change: (args: ColorPickerEventArgs): void => {
+                    this.pushActItemIntoObj();
+                    this.objColl.pop();
                     if (proxy.textBox.style.display === 'none') {
                         proxy.strokeSettings.strokeColor = proxy.activeObj.strokeSettings.strokeColor = args.currentValue.hex;
                         if (!proxy.togglePen) {
-                            proxy.redrawShape(this.activeObj);
+                            this.objColl.push(this.activeObj);
+                            proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                         }
                     }
                     else if (proxy.textBox.style.display === 'block') {
                         proxy.textBox.style.color = args.currentValue.hex;
+                        const temp: string = proxy.activeObj.strokeSettings.strokeColor;
+                        proxy.activeObj.strokeSettings.strokeColor = args.currentValue.hex;
+                        this.objColl.push(this.activeObj);
+                        this.objColl.pop();
+                        proxy.activeObj.strokeSettings.strokeColor = temp;
                     } else if (!proxy.togglePen) {
-                        proxy.redrawShape(this.activeObj);
+                        this.objColl.push(this.activeObj);
+                        proxy.redrawShape(proxy.objColl[proxy.objColl.length - 1]);
                     }
                     (strokeDDB.element.children[0] as HTMLElement).style.backgroundColor = args.currentValue.rgba;
                     strokeDDB.toggle();
@@ -1574,6 +1847,17 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             fontColor.inline = true;
             (this.element.querySelector('.e-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement).style.background
                 = '#fff';
+        }
+    }
+
+    private pushActItemIntoObj(): void {
+        if (this.textBox.style.display === 'none') {
+            this.objColl.push(this.activeObj);
+        } else {
+            const temp: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+            this.setTextBoxStylesToActObj();
+            this.objColl.push(this.activeObj);
+            this.activeObj = temp;
         }
     }
 
@@ -1611,6 +1895,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.pushActItemIntoObj();
+                    this.objColl.pop();
                     spanElem.textContent = args.item.text;
                     if (Browser.isDevice) {
                         spanElem.setAttribute('style', 'font-family:' + args.item.id);
@@ -1618,17 +1904,21 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     if (this.textBox.style.display === 'block') {
                         const temp: string = this.activeObj.textSettings.fontFamily;
                         this.activeObj.textSettings.fontFamily = this.toPascalCase(args.item.id);
-                        this.updateFontStyles();
-                        const width: number = this.upperContext.measureText(this.activeObj.keyHistory).width +
-                        this.activeObj.textSettings.fontSize * 0.5;
-                        this.textBox.style.width = Browser.isDevice ? width + 'px' : (width * ((ratio.width + ratio.height) / 2)) + 'px';
+                        this.redrawText(ratio);
+                        this.objColl.push(this.activeObj);
+                        this.objColl.pop();
+                        this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+                        const width: number = this.activeObj.activePoint.width +
+                        this.activeObj.textSettings.fontSize * 0.25;
+                        this.textBox.style.width = width / ratio.width + 'px';
                         this.textBox.style.fontFamily = this.toPascalCase(args.item.id);
                         this.activeObj.textSettings.fontFamily = temp;
                         this.updateFontStyles();
                     } else {
                         this.textSettings.fontFamily = this.activeObj.textSettings.fontFamily = this.toPascalCase(args.item.id);
                         this.redrawText(ratio);
-                        this.redrawShape(this.activeObj);
+                        this.objColl.push(this.activeObj);
+                        this.redrawShape(this.objColl[this.objColl.length - 1]);
                     }
                 }
             });
@@ -1720,10 +2010,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     args.element.querySelector('[aria-label *= ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.pushActItemIntoObj();
+                    this.objColl.pop();
                     fontSizeSpanElem.textContent =  args.item.text;
                     if (this.textBox.style.display === 'block') {
                         const temp: number = this.activeObj.textSettings.fontSize;
                         this.activeObj.textSettings.fontSize = parseInt(this.fontSizeColl[(parseInt(args.item.text, 10) - 1)].text, 10);
+                        this.objColl.push(this.activeObj);
+                        this.objColl.pop();
                         let textStyle: string = '';
                         if (this.textBox.style.fontWeight === 'bold') {textStyle = 'bold '; }
                         if (this.textBox.style.fontStyle === 'italic') {textStyle = 'italic '; }
@@ -1750,11 +2044,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         const text: string = this.getMaxText();
                         const width: number = this.upperContext.measureText(text).width +
                         this.activeObj.textSettings.fontSize * 0.5;
-                        const height: number = rows.length * (this.activeObj.textSettings.fontSize + this.activeObj.textSettings.fontSize * 0.25);
+                        const height: number = rows.length * (this.activeObj.textSettings.fontSize +
+                            this.activeObj.textSettings.fontSize * 0.25);
                         this.setTextSelection(width, height);
                         this.updateActiveObject(ratio, this.activeObj.activePoint, this.activeObj);
-                        this.redrawShape(this.activeObj);
                         this.redrawText(ratio);
+                        this.objColl.push(this.activeObj);
+                        this.redrawShape(this.objColl[this.objColl.length - 1]);
                     }
                 }
             });
@@ -1808,14 +2104,44 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         return width;
     }
 
+    private updateObjColl(item: string): void {
+        const tempBold: boolean = this.activeObj.textSettings.bold;
+        const tempItalic: boolean = this.activeObj.textSettings.italic;
+        switch (item) {
+        case 'default':
+            this.activeObj.textSettings.bold = false;
+            this.activeObj.textSettings.italic = false;
+            break;
+        case 'bold':
+            this.activeObj.textSettings.bold = true;
+            this.activeObj.textSettings.italic = false;
+            break;
+        case 'italic':
+            this.activeObj.textSettings.bold = false;
+            this.activeObj.textSettings.italic = true;
+            break;
+        case 'bolditalic':
+            this.activeObj.textSettings.bold = true;
+            this.activeObj.textSettings.italic = true;
+            break;
+        }
+        this.objColl.push(this.activeObj);
+        this.objColl.pop();
+        this.activeObj.textSettings.bold = tempBold;
+        this.activeObj.textSettings.italic = tempItalic;
+    }
+
     private applyFontStyle(item: string, ratio: Dimension): void {
+        this.pushActItemIntoObj();
+        this.objColl.pop();
         switch (item) {
         case 'default':
             if (this.textBox.style.display === 'block') {
-                const width: number = this.getTextAreaWidth(item);
-                this.textBox.style.width = Browser.isDevice ? width + 'px' : (width * ((ratio.width + ratio.height) / 2)) + 'px';
+                const width: number = this.getTextAreaWidth(item) / ratio.width;
+                this.textBox.style.width = width + 'px';
                 this.textBox.style.fontWeight = 'normal';
                 this.textBox.style.fontStyle = 'normal';
+                this.updateObjColl(item);
             } else {
                 this.textSettings.bold = this.activeObj.textSettings.bold = false;
                 this.textSettings.italic = this.activeObj.textSettings.italic = false;
@@ -1824,10 +2150,11 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             break;
         case 'bold':
             if (this.textBox.style.display === 'block') {
-                const width: number = this.getTextAreaWidth(item);
-                this.textBox.style.width = Browser.isDevice ? width + 'px' : (width * ((ratio.width + ratio.height) / 2)) + 'px';
+                const width: number = this.getTextAreaWidth(item) / ratio.width;
+                this.textBox.style.width = width + 'px';
                 this.textBox.style.fontWeight = 'bold';
                 this.textBox.style.fontStyle = 'normal';
+                this.updateObjColl(item);
             } else {
                 this.textSettings.bold = this.activeObj.textSettings.bold = true;
                 this.textSettings.italic = this.activeObj.textSettings.italic = false;
@@ -1836,10 +2163,11 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             break;
         case 'italic':
             if (this.textBox.style.display === 'block') {
-                const width: number = this.getTextAreaWidth(item);
-                this.textBox.style.width = Browser.isDevice ? width + 'px' : (width * ((ratio.width + ratio.height) / 2)) + 'px';
+                const width: number = this.getTextAreaWidth(item) / ratio.width;
+                this.textBox.style.width = width + 'px';
                 this.textBox.style.fontWeight = 'normal';
                 this.textBox.style.fontStyle = 'italic';
+                this.updateObjColl(item);
             } else {
                 this.textSettings.bold = this.activeObj.textSettings.bold = false;
                 this.textSettings.italic = this.activeObj.textSettings.italic = true;
@@ -1848,10 +2176,11 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             break;
         case 'bolditalic':
             if (this.textBox.style.display === 'block') {
-                const width: number = this.getTextAreaWidth(item);
-                this.textBox.style.width = (width / ratio.width) + 'px';
+                const width: number = this.getTextAreaWidth(item) / ratio.width;
+                this.textBox.style.width = width + 'px';
                 this.textBox.style.fontWeight = 'bold';
                 this.textBox.style.fontStyle = 'italic';
+                this.updateObjColl(item);
             } else {
                 this.textSettings.bold = this.activeObj.textSettings.bold = true;
                 this.textSettings.italic = this.activeObj.textSettings.italic = true;
@@ -1884,8 +2213,23 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
+    private contextualToolbarClicked(args: ClickEventArgs): void {
+        const selEle: HTMLElement = this.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
+        if (selEle) {
+            selEle.classList.remove('e-selected');
+        }
+        document.getElementById(args.item.id + 'Canvas').parentElement.parentElement.classList.add('e-selected');
+        this.currObjType.isFiltered = true;
+        const type: string = args.item.id.replace(this.element.id, '').split('_')[1];
+        const imageFiltering: ImageFilterEventArgs = { filter: this.toPascalCase(type) as ImageFilterOptions};
+        this.trigger('imageFiltering', imageFiltering);
+        this.setFilter(type.toLowerCase());
+        this.currentFilter = args.item.id;
+    }
+
     private defToolbarClicked(args: ClickEventArgs): void {
-        const ratio: Dimension = this.calcRatio(); let zoomIn: HTMLElement;
+        this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+        let zoomIn: HTMLElement;
         const type: string = args.item.id.replace(this.element.id + '_', '').toLowerCase();
         const imageEditorObj: ImageEditor = getInstance(document.getElementById(this.element.id), ImageEditor) as ImageEditor;
         let isCropSelection: boolean = false;  let panBtn: HTMLElement;
@@ -1899,57 +2243,23 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (!this.disabled) {
             switch (type) {
             case 'zoomin':
+                this.currObjType.isFiltered = false;
                 if (this.togglePen) {
                     this.currObjType.isZoomed = true;
                     this.freeHandDraw(false);
                 }
                 imageEditorObj.zoom(.1);
-                if (!this.togglePan) {
-                    this.callMainToolbar(false, true);
-                }
-                if (this.factor > 0.95 && this.factor < 1.05) {
-                    this.dragCanvas = this.togglePan = false;
-                    this.callMainToolbar(false, true);
-                }
-                if (isNullOrUndefined(this.activeObj.activePoint) || this.activeObj.activePoint.width === 0) {
-                    this.refreshToolbar('main');
-                } else {
-                    this.refreshToolbar('main', true, true);
-                } 
-                panBtn = this.element.querySelector('.e-img-pan .e-btn');
-                if (!isNullOrUndefined(panBtn) && this.togglePan) {
-                    panBtn.classList.add('e-selected-btn');
-                } else if (!isNullOrUndefined(panBtn)) {
-                    panBtn.classList.remove('e-selected-btn');
-                }
                 break;
             case 'zoomout':
+                this.currObjType.isFiltered = false;
                 if (this.togglePen) {
                     this.currObjType.isZoomed = true;
                     this.freeHandDraw(false);
                 }
                 imageEditorObj.zoom(-.1);
-                if (!this.togglePan) {
-                    this.callMainToolbar(false, true);
-                }
-                if (this.factor > 0.95 && this.factor < 1.05) {
-                    this.dragCanvas = this.togglePan = false;
-                    this.callMainToolbar(false, true);
-                }
-                if (isNullOrUndefined(this.activeObj.activePoint) || this.activeObj.activePoint.width === 0) {
-                    this.refreshToolbar('main');
-                } else {
-                    this.refreshToolbar('main', true, true);
-                } 
-                panBtn = this.element.querySelector('.e-img-pan .e-btn');
-                if (!isNullOrUndefined(panBtn) && this.togglePan) {
-                    panBtn.classList.add('e-selected-btn');
-                } else if (!isNullOrUndefined(panBtn)) {
-                    panBtn.classList.remove('e-selected-btn');
-                }
                 break;
             case 'pan':
-                this.currObjType.isCustomCrop = false;
+                this.currObjType.isCustomCrop = this.currObjType.isFiltered = false;
                 if (isCropSelection) {
                     this.currObjType.isCustomCrop = false;
                     this.refreshActiveObj(); this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
@@ -1957,10 +2267,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
                 if (this.togglePan) {
                     this.cancelPan();
+                    this.disablePan = true;
                 } else {
                     panBtn = this.element.querySelector('.e-img-pan .e-btn');
                     panBtn.classList.add('e-selected-btn');
                     imageEditorObj.pan(true);
+                    this.disablePan = false;
                 }
                 zoomIn = document.querySelector('#' + this.element.id + '_zoomIn');
                 if (!isNullOrUndefined(zoomIn) && this.factor >= 8) {
@@ -1976,27 +2288,722 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     this.textBox.style.transform = '';
                     this.activeObj.strokeSettings = this.tempStrokeSettings;
                     this.activeObj.textSettings = this.tempTextSettings;
+                } else if (!isNullOrUndefined(document.querySelector('#' + this.element.id + '_sliderWrapper')) ||
+                    this.currObjType.isFiltered) {
+                    this.lowerContext.filter = this.adjustmentValue = this.initialAdjustmentValue = this.tempAdjustmentValue;
+                    this.currentFilter = this.tempFilter;
+                    this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                    this.redrawImgWithObj();
+                    this.currObjType.isFiltered = false;
+                    if (this.adjustmentLevel.sharpen || this.adjustmentLevel.bw) {
+                        if (this.adjustmentLevel.sharpen) {this.setSharpness(false); }
+                        else if (this.adjustmentLevel.bw) {this.setBlackAndWhiteFilter(false); }
+                        const tempFilter: string = this.lowerContext.filter;
+                        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                        'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                        for (let j: number = 0; j < this.objColl.length; j++ ) {
+                            this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
+                            this.refreshActiveObj();
+                        }
+                        this.lowerContext.filter = tempFilter;
+                    }
+                    this.adjustmentLevel = extend({}, this.tempAdjustmentLevel, {}, true) as Adjustment;
+                    if (this.currentFilter === this.element.id + '_sharpen' || this.currentFilter === this.element.id + '_blackandwhite'
+                    || this.tempSharpenFilter || this.tempBWFilter) {
+                        if (this.currentFilter === this.element.id + '_sharpen' || this.tempSharpenFilter) {this.setSharpness(true); }
+                        else if (this.currentFilter === this.element.id + '_blackandwhite' || this.tempBWFilter) {this.setBlackAndWhiteFilter(true); }
+                        const tempFilter: string = this.lowerContext.filter;
+                        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                        'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                        for (let j: number = 0; j < this.objColl.length; j++ ) {
+                            this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
+                            this.refreshActiveObj();
+                        }
+                        this.lowerContext.filter = tempFilter;
+                        this.tempSharpenFilter = this.tempBWFilter = false;
+                    }
+                    this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
                 }
                 this.cancelItems();
                 break;
             case 'ok':
-                if (isCropSelection) {
-                    this.crop();
-                } else if (this.togglePen) {
-                    this.freeHandDraw(false);
-                } else if (this.textBox.style.display === 'block') {
-                    this.redrawActObj();
-                } else {
-                    this.applyActObj();
-                }
-                this.callMainToolbar(false);
+                this.okBtn();
                 break;
             case 'reset':
                 imageEditorObj.reset();
                 break;
+            case 'adjustment':
+                this.upperCanvas.style.display = 'block';
+                this.refreshToolbar('adjustment');
+                this.lowerContext.filter = this.initialAdjustmentValue;
+                this.tempAdjustmentValue = this.lowerContext.filter;
+                this.tempAdjustmentLevel = extend({}, this.adjustmentLevel, {}, true) as Adjustment;
+                this.tempFilter = this.currentFilter;
+                this.tempSharpenFilter = this.adjustmentLevel.sharpen;
+                this.tempBWFilter = this.adjustmentLevel.bw;
+                break;
+            case 'brightness':
+            case 'contrast':
+            case 'hue':
+            case 'saturation':
+            case 'opacity':
+            case 'blur':
+            case 'exposure':
+                this.unselectBtn();
+                this.currObjType.isFiltered = true;
+                this.refreshToolbar('color', null, null, null, type);
+                document.getElementById(this.element.id + '_' + type).classList.add('e-selected-btn');
+                break;
+            case 'filter':
+                this.upperCanvas.style.display = 'block';
+                this.refreshToolbar('filter');
+                this.lowerContext.filter = this.initialAdjustmentValue;
+                this.tempAdjustmentValue = this.lowerContext.filter;
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                for (let j: number = 0; j < this.objColl.length; j++) {
+                    this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
+                    this.refreshActiveObj();
+                }
+                this.tempAdjustmentLevel = extend({}, this.adjustmentLevel, {}, true) as Adjustment;
+                this.tempFilter = this.currentFilter;
+                this.tempSharpenFilter = this.adjustmentLevel.sharpen;
+                this.tempBWFilter = this.adjustmentLevel.bw;
+                break;
+            case 'default':
+            case 'chrome':
+            case 'cold':
+            case 'warm':
+            case 'grayscale':
+            case 'blackandwhite':
+            case 'sepia':
+            case 'invert':
+            case 'sharpen':
+                this.currObjType.isFiltered = true;
+                this.setFilter(type);
+                break;
             }
         }
         this.trigger('toolbarItemClicked', args);
+    }
+
+    private okBtn(): void {
+        let isCropSelection: boolean = false; let splitWords: string[];
+        if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
+        if (splitWords === undefined && this.currObjType.isCustomCrop) {
+            isCropSelection = true;
+        } else if (splitWords !== undefined && splitWords[0] === 'crop'){
+            isCropSelection = true;
+        }
+        const selElem: HTMLElement = this.element.querySelector('.e-contextual-toolbar-wrapper .e-toolbar-item.e-selected');
+        if (selElem) {
+            this.currentFilter = selElem.children[0].children[0].id.replace('Canvas', '');
+        }
+        if (isCropSelection) {
+            this.crop();
+        } else if (this.togglePen) {
+            this.freeHandDraw(false);
+        } else if (this.textBox.style.display === 'block') {
+            this.redrawActObj();
+        } else if (!isNullOrUndefined(document.querySelector('#' + this.element.id + '_sliderWrapper')) ||
+            this.currObjType.isFiltered) {
+            this.initialAdjustmentValue = this.canvasFilter = this.lowerContext.filter;
+            this.currObjType.isFiltered = false;
+        } else {
+            this.applyActObj();
+        }
+        this.callMainToolbar(false);
+    }
+
+    private unselectBtn(): void {
+        if (document.querySelector('#' + this.element.id + '_brightness').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_brightness').classList.remove('e-selected-btn');
+        } else if (document.querySelector('#' + this.element.id + '_contrast').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_contrast').classList.remove('e-selected-btn');
+        } else if (document.querySelector('#' + this.element.id + '_hue').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_hue').classList.remove('e-selected-btn');
+        } else if (document.querySelector('#' + this.element.id + '_saturation').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_saturation').classList.remove('e-selected-btn');
+        } else if (document.querySelector('#' + this.element.id + '_opacity').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_opacity').classList.remove('e-selected-btn');
+        } else if (document.querySelector('#' + this.element.id + '_blur').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_blur').classList.remove('e-selected-btn');
+        } else if (document.querySelector('#' + this.element.id + '_exposure').classList.contains('e-selected-btn')) {
+            document.querySelector('#' + this.element.id + '_exposure').classList.remove('e-selected-btn');
+        }
+    }
+
+    private refreshSlider():  void {
+        const sliderWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_sliderWrapper');
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const slider: any = document.querySelector('.e-slider');
+
+        const hdrWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_headWrapper');
+        if (hdrWrapper) {
+            hdrWrapper.style.display = 'none';
+        }
+        if (!isNullOrUndefined(sliderWrapper) && !isNullOrUndefined(slider)) {
+            slider.ej2_instances[0].destroy();
+            sliderWrapper.remove();
+        }
+    }
+
+    private updateAdjustment(type: string, value: number, isPreview?: boolean): string {
+        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        let splitWords: string[] = this.lowerContext.filter.split(' ');
+        let values: string[] = []; let opacityValue: number; let brightnessValue: number;
+        if (splitWords[4] !== undefined) {opacityValue = parseFloat(splitWords[4].split('(')[1]); }
+        if (splitWords[0] !== undefined) {brightnessValue = parseFloat(splitWords[0].split('(')[1]); }
+        const brightness: number = this.getFilterValue(this.adjustmentLevel.brightness);
+        const saturation: number = this.getFilterValue(this.adjustmentLevel.saturation);
+        if (type !== 'brightness' && type !== 'contrast' && type !== 'hue' && type !== 'saturation' && type !== 'exposure'
+            && type !== 'opacity' && type !== 'blur') {
+            if (isNullOrUndefined(isPreview) && (this.adjustmentLevel.sharpen || this.adjustmentLevel.bw)) {
+                if (this.adjustmentLevel.sharpen) {this.setSharpness(false); }
+                else if (this.adjustmentLevel.bw) {this.setBlackAndWhiteFilter(false); }
+                const temp: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                for (let i: number = 0; i < this.objColl.length; i++) {
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+                    this.refreshActiveObj();
+                }
+                this.lowerContext.filter = temp;
+            }
+        }
+        if (brightness !== 1) {splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')'; }
+        let saturate: number; let bright: number; let contrast: number;  let saturatePercentage: number;
+        let saturatePercent: number; let tempFilter: string; let temp: string;
+        switch (type) {
+        case 'brightness':
+            if (splitWords[3].split) {
+                if (parseFloat(splitWords[3].split('(')[1]) !== 100) {
+                    value += 0.1;
+                }
+            }
+            splitWords[0] = 'brightness(' + value + ')';
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'contrast':
+            splitWords[1] = 'contrast(' + value + '%)';
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'hue':
+            splitWords[2] = 'hue-rotate(' + value + 'deg)';
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'saturation':
+            splitWords[3] = 'saturate(' + value + '%)';
+            if (saturation !== 1) {
+                splitWords[0] = 'brightness(' + (brightnessValue + 0.1) + ')';
+            }
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'opacity':
+            if (parseFloat(splitWords[0].split('(')[1]) !== 1) {
+                value -= 0.2;
+            }
+            splitWords[4] = 'opacity(' + value + ')';
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'blur':
+            splitWords[5] = 'blur(' + value + 'px)';
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'exposure':
+            if (brightness !== 1) {splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')'; }
+            if (value > 1) {
+                value -= 1; value += brightness;
+            }
+            else if (value < 1) {
+                value = 1 - value; value = brightness - value;
+            }
+            splitWords[0] = 'brightness(' + value + ')';
+            this.adjustmentValue = splitWords.join(' ');
+            break;
+        case 'chrome':
+            saturate = this.getSaturationFilterValue(this.adjustmentLevel.saturation);
+            saturate *= 100;
+            value = saturate + (saturate * 0.4);
+            splitWords[3] = 'saturate(' + value + '%)';
+            values = this.adjustmentValue.split(' ');
+            splitWords[0] = values[0];
+            splitWords[1] = values[1];
+            splitWords[2] = values[2];
+            splitWords[4] = values[4];
+            splitWords[5] = values[5];
+            splitWords[6] = 'sepia(0%)';
+            splitWords[7] = 'grayscale(0%)';
+            splitWords[8] = 'invert(0%)';
+            break;
+        case 'cold':
+            // Adjusting Brightness
+            bright = this.getFilterValue(this.adjustmentLevel.brightness);
+            bright *= 100;
+            value = bright * 0.9;
+            splitWords[0] = 'brightness(' + value + '%)';
+            // Adjusting Contrast
+            contrast = this.getFilterValue(this.adjustmentLevel.contrast);
+            contrast *= 100;
+            value = contrast + (contrast * 0.5);
+            splitWords[1] = 'contrast(' + value + '%)';
+            // Adjusting Saturation
+            saturatePercentage = this.getSaturationFilterValue(this.adjustmentLevel.saturation);
+            saturatePercentage *= 100;
+            value = saturatePercentage;
+            splitWords[3] = 'saturate(' + value + '%)';
+            values = this.adjustmentValue.split(' ');
+            splitWords[2] = values[2];
+            splitWords[4] = values[4];
+            splitWords[5] = values[5];
+            splitWords[6] = 'sepia(0%)';
+            splitWords[7] = 'grayscale(0%)';
+            splitWords[8] = 'invert(0%)';
+            break;
+        case 'warm':
+            saturatePercent = this.getSaturationFilterValue(this.adjustmentLevel.saturation);
+            saturatePercent *= 100;
+            value = saturatePercent + (saturatePercent * 0.4);
+            splitWords[3] = 'saturate(' + value + '%)';
+            splitWords[6] = 'sepia(25%)';
+            values = this.adjustmentValue.split(' ');
+            splitWords[0] = values[0];
+            splitWords[1] = values[1];
+            splitWords[2] = values[2];
+            splitWords[4] = values[4];
+            splitWords[5] = values[5];
+            splitWords[7] = 'grayscale(0%)';
+            splitWords[8] = 'invert(0%)';
+            break;
+        case 'grayscale':
+            splitWords[7] = 'grayscale(100%)';
+            values = this.adjustmentValue.split(' ');
+            splitWords[0] = values[0];
+            splitWords[1] = values[1];
+            splitWords[2] = values[2];
+            splitWords[3] = values[3];
+            splitWords[4] = values[4];
+            splitWords[5] = values[5];
+            splitWords[6] = 'sepia(0%)';
+            splitWords[8] = 'invert(0%)';
+            break;
+        case 'blackandwhite':
+            values = this.adjustmentValue.split(' ');
+            if (isPreview) {
+                tempFilter = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                this.setBlackAndWhiteFilter(true);
+                for (let i: number = 0; i < this.objColl.length; i++) {
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+                    this.refreshActiveObj();
+                }
+                splitWords[0] = values[0];
+                splitWords[1] = values[1];
+                splitWords[2] = values[2];
+                splitWords[3] = values[3];
+                splitWords[4] = values[4];
+                splitWords[5] = values[5];
+                splitWords[6] = 'sepia(0%)';
+                splitWords[7] = 'grayscale(0%)';
+                splitWords[8] = 'invert(0%)';
+            } else {
+                tempFilter = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                this.setBlackAndWhiteFilter(true);
+                splitWords[0] = values[0];
+                splitWords[1] = values[1];
+                splitWords[2] = values[2];
+                splitWords[3] = values[3];
+                splitWords[4] = values[4];
+                splitWords[5] = values[5];
+                splitWords[6] = 'sepia(0%)';
+                splitWords[7] = 'grayscale(0%)';
+                splitWords[8] = 'invert(0%)';
+                this.lowerContext.filter = this.initialAdjustmentValue = splitWords.join(' ');
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                tempFilter = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                for (let i: number = 0; i < this.objColl.length; i++) {
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+                    this.refreshActiveObj();
+                }
+                this.lowerContext.filter = tempFilter;
+            }
+            break;
+        case 'sepia':
+            splitWords[6] = 'sepia(100%)';
+            values = this.adjustmentValue.split(' ');
+            splitWords[0] = values[0];
+            splitWords[1] = values[1];
+            splitWords[2] = values[2];
+            splitWords[3] = values[3];
+            splitWords[4] = values[4];
+            splitWords[5] = values[5];
+            splitWords[7] = 'grayscale(0%)';
+            splitWords[8] = 'invert(0%)';
+            break;
+        case 'invert':
+            splitWords[8] = 'invert(100%)';
+            values = this.adjustmentValue.split(' ');
+            splitWords[0] = values[0];
+            splitWords[1] = values[1];
+            splitWords[2] = values[2];
+            splitWords[3] = values[3];
+            splitWords[4] = values[4];
+            splitWords[5] = values[5];
+            splitWords[6] = 'sepia(0%)';
+            splitWords[7] = 'grayscale(0%)';
+            break;
+        case 'sharpen':
+            values = this.adjustmentValue.split(' ');
+            if (isPreview) {
+                temp = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                for (let i: number = 0; i < this.objColl.length; i++) {
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+                    this.refreshActiveObj();
+                }
+                splitWords[0] = values[0];
+                splitWords[1] = values[1];
+                splitWords[2] = values[2];
+                splitWords[3] = values[3];
+                splitWords[4] = values[4];
+                splitWords[5] = values[5];
+                splitWords[6] = 'sepia(0%)';
+                splitWords[7] = 'grayscale(0%)';
+                splitWords[8] = 'invert(0%)';
+            } else {
+                temp = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                this.setSharpness(true);
+                splitWords[0] = values[0];
+                splitWords[1] = values[1];
+                splitWords[2] = values[2];
+                splitWords[3] = values[3];
+                splitWords[4] = values[4];
+                splitWords[5] = values[5];
+                splitWords[6] = 'sepia(0%)';
+                splitWords[7] = 'grayscale(0%)';
+                splitWords[8] = 'invert(0%)';
+                this.lowerContext.filter = this.initialAdjustmentValue = splitWords.join(' ');
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                temp = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                for (let i: number = 0; i < this.objColl.length; i++) {
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+                    this.refreshActiveObj();
+                }
+                this.lowerContext.filter = temp;
+            }
+            break;
+        }
+        if (type !== 'sharpen' && type !== 'blackandwhite') {
+            if (isNullOrUndefined(isPreview)) {
+                if (type === 'default') {
+                    splitWords = this.getDefaultFilter(splitWords);
+                }
+                this.lowerContext.filter = splitWords.join(' ');
+            }
+            splitWords = this.setTempFilterValue(brightness, isPreview, splitWords, type);
+            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            if (brightness !== 1) {
+                splitWords[4] = 'opacity(' + opacityValue + ')';
+            } else if (saturation !== 1) {
+                splitWords[0] = 'brightness(' + brightnessValue + ')';
+            }
+            if (type === 'exposure' && brightness !== 1) {
+                splitWords[0] = 'brightness(' + brightnessValue + ')';
+            }
+            splitWords = this.setTempFilterValue(brightness, isPreview, splitWords, type);
+            if (isNullOrUndefined(isPreview)) {this.lowerContext.filter = this.initialAdjustmentValue = splitWords.join(' '); }
+            const tempFilter: string = this.lowerContext.filter;
+            this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                    'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+            for (let i: number = 0; i < this.objColl.length; i++) {
+                this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+                this.refreshActiveObj();
+            }
+            this.lowerContext.filter = tempFilter;
+            if (brightness === 1) {
+                this.isBrightnessAdjusted = false;
+            } else {
+                this.isBrightnessAdjusted = true;
+            }
+        }
+        const filter: string = splitWords.join(' ');
+        return filter;
+    }
+
+    private updateBrightnessFilter(): void {
+        const splitWords: string[] = this.lowerContext.filter.split(' ');
+        if (this.isBrightnessAdjusted && splitWords.length > 0 && !isNullOrUndefined(splitWords[4])) {
+            const opacityValue: number = parseFloat(splitWords[4].split('(')[1]);
+            splitWords[4] = 'opacity(' + (opacityValue - 0.3) + ')';
+            this.lowerContext.filter = splitWords.join(' ');
+        }
+    }
+
+    private autoEnablePan(): void {
+        if (this.factor > 0.95 && this.factor < 1.05) {
+            this.dragCanvas = this.togglePan = false;
+            this.callMainToolbar(false, true);
+            this.pan(false);
+            this.disablePan = false;
+        } else if (!this.disablePan) {
+            this.pan(true);
+        } else if (this.disablePan) {
+            this.pan(false);
+        }
+    }
+
+    private setTempFilterValue(brightness: number, isPreview: boolean, splitWords: string[], type: string): string[] {
+        if (isPreview && brightness !== 1) {
+            const tempSplitWords: string[] = this.lowerContext.filter.split(' ');
+            tempSplitWords[4] = splitWords[4];
+            this.lowerContext.filter = tempSplitWords.join(' ');
+        } else if (isPreview && type === 'default') {
+            splitWords = this.getDefaultFilter(splitWords);
+        }
+        return splitWords;
+    }
+
+    private getDefaultFilter(splitWords: string[]): string[] {
+        const values: string[] = this.adjustmentValue.split(' ');
+        splitWords[0] = values[0];
+        splitWords[1] = values[1];
+        splitWords[2] = values[2];
+        splitWords[3] = values[3];
+        splitWords[4] = values[4];
+        splitWords[5] = values[5];
+        splitWords[6] = 'sepia(0%)';
+        splitWords[7] = 'grayscale(0%)';
+        splitWords[8] = 'invert(0%)';
+        return splitWords;
+    }
+
+    private setAdjustment(type: string): void {
+        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        const splitWords: string[] = this.lowerContext.filter.split(' ');
+        let value: number; let valueArr: string[];
+        switch (type) {
+        case 'brightness':
+            valueArr = splitWords[0].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            this.adjustmentLevel.brightness = this.setFilterValue(value);
+            break;
+        case 'contrast':
+            valueArr = splitWords[1].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            value /= 100;
+            this.adjustmentLevel.contrast = this.setFilterValue(value);
+            break;
+        case 'hue':
+            valueArr = splitWords[2].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            value /= 3;
+            this.adjustmentLevel.hue = value;
+            break;
+        case 'saturation':
+            valueArr = splitWords[3].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            value /= 100;
+            this.adjustmentLevel.saturation = this.setSaturationFilterValue(value);
+            break;
+        case 'opacity':
+            valueArr = splitWords[4].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            if (value === 0.45) {
+                value = 40;
+            }
+            else if (value === 0.40) {
+                value = 30;
+            }
+            else if (value === 0.35) {
+                value = 20;
+            }
+            else if (value === 0.30) {
+                value = 10;
+            }
+            else if (value === 0.25) {
+                value = 0;
+            } else {
+                value *= 100;
+            }
+            this.adjustmentLevel.opacity = value;
+            break;
+        case 'blur':
+            valueArr = splitWords[5].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            value *= 20;
+            this.adjustmentLevel.blur = value;
+            break;
+        case 'exposure':
+            valueArr = splitWords[0].split('(');
+            value = parseFloat(valueArr[1].split(')')[0]);
+            this.adjustmentLevel.exposure = this.setFilterValue(value);
+            break;
+        }
+        const temp: string = this.lowerContext.filter;
+        this.updateBrightnessFilter();
+        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+        for (let j: number = 0; j < this.objColl.length; j++ ) {
+            this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
+            this.refreshActiveObj();
+        }
+        this.lowerContext.filter = temp;
+    }
+
+    private renderSlider(type: string): void {
+        const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_contextualToolbarArea');
+        let hdrWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_headWrapper');
+        let labelWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_labelWrapper');
+        if (!hdrWrapper && !isNullOrUndefined(canvasWrapper)) {
+            hdrWrapper = canvasWrapper.appendChild(this.createElement('div', {
+                id: this.element.id + '_headWrapper',
+                styles: 'position: relative'
+            }));
+            labelWrapper = hdrWrapper.appendChild(this.createElement('label', {
+                id: this.element.id + '_labelWrapper',
+                styles: Browser.isDevice ? 'position: absolute; top: 25%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                    : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+            }));
+        } else {
+            hdrWrapper.style.display = 'block';
+        }
+        labelWrapper.textContent = this.l10n.getConstant(this.toPascalCase(type));
+        const sliderWrapper: HTMLElement = hdrWrapper.appendChild(this.createElement('div', {
+            id: this.element.id + '_sliderWrapper',
+            styles: 'position: absolute'
+        }));
+        const value: number = this.getCurrAdjustmentValue(type);
+        let min: number; let max: number;
+        let slider: Slider;
+        if (type === 'brightness' || type === 'contrast' || type === 'saturation' || type === 'exposure') {
+            if (this.finetuneSettings) {
+                if (type === 'brightness' && this.finetuneSettings.brightness) {
+                    min = this.finetuneSettings.brightness.min; max = this.finetuneSettings.brightness.max;
+                } else if (type === 'contrast' && this.finetuneSettings.contrast) {
+                    min = this.finetuneSettings.contrast.min; max = this.finetuneSettings.contrast.max;
+                } else if (type === 'saturation' && this.finetuneSettings.saturation) {
+                    min = this.finetuneSettings.saturation.min; max = this.finetuneSettings.saturation.max;
+                } else if (type === 'exposure' && this.finetuneSettings.exposure) {
+                    min = this.finetuneSettings.exposure.min; max = this.finetuneSettings.exposure.max;
+                } else {
+                    min = -100; max = 100;
+                }
+            } else {
+                min = -100; max = 100;
+            }
+            slider = new Slider({
+                value: value,
+                tooltip: { isVisible: true, placement: 'Before', showOn: 'Always' },
+                type: 'MinRange',
+                min: min,
+                max: max,
+                step: 10,
+                width: Browser.isDevice ? '200px' : '300px',
+                cssClass: 'e-slider',
+                change: (args: SliderChangeEventArgs): void => {
+                    this.setCurrAdjustmentValue(type, args.value as number);
+                }
+            });
+        }
+        else if (type === 'hue' || type === 'blur' || type === 'opacity') {
+            if (this.finetuneSettings) {
+                if (type === 'hue' && this.finetuneSettings.hue) {
+                    min = this.finetuneSettings.hue.min; max = this.finetuneSettings.hue.max;
+                } else if (type === 'blur' && this.finetuneSettings.blur) {
+                    min = this.finetuneSettings.blur.min; max = this.finetuneSettings.blur.max;
+                } else if (type === 'opacity' && this.finetuneSettings.opacity) {
+                    min = this.finetuneSettings.opacity.min; max = this.finetuneSettings.opacity.max;
+                } else {
+                    min = 0; max = 100;
+                }
+            } else {
+                min = 0; max = 100;
+            }
+            slider = new Slider({
+                value: value,
+                tooltip: { isVisible: true, placement: 'Before', showOn: 'Always' },
+                type: 'MinRange',
+                min: min,
+                max: max,
+                step: 10,
+                width: Browser.isDevice ? '200px' : '300px',
+                cssClass: 'e-slider',
+                change: (args: SliderChangeEventArgs): void => {
+                    this.setCurrAdjustmentValue(type, args.value as number);
+                }
+            });
+        }
+        slider.appendTo('#' + this.element.id + '_sliderWrapper');
+        sliderWrapper.style.left = (parseFloat(canvasWrapper.style.width) - parseFloat(slider.width as string)) / 2 + 'px';
+    }
+
+    private getCurrAdjustmentValue(type: string): number {
+        let value: number;
+        switch (type) {
+        case 'brightness':
+            value = this.adjustmentLevel.brightness;
+            break;
+        case 'contrast':
+            value = this.adjustmentLevel.contrast;
+            break;
+        case 'hue':
+            value = this.adjustmentLevel.hue;
+            break;
+        case 'saturation':
+            value = this.adjustmentLevel.saturation;
+            break;
+        case 'opacity':
+            value = this.adjustmentLevel.opacity;
+            break;
+        case 'blur':
+            value = this.adjustmentLevel.blur;
+            break;
+        case 'exposure':
+            value = this.adjustmentLevel.exposure;
+            break;
+        }
+        return value;
+    }
+
+    private setCurrAdjustmentValue(type: string, value: number): void {
+        const fineTuneValueChanging: FinetuneEventArgs = { finetune: this.toPascalCase(type) as ImageFinetuneOptions, value: value };
+        this.trigger('fineTuneValueChanging', fineTuneValueChanging);
+        switch (type) {
+        case 'brightness':
+            this.setBrightness(value);
+            break;
+        case 'contrast':
+            this.setContrast(value);
+            break;
+        case 'hue':
+            this.setHue(value);
+            break;
+        case 'saturation':
+            this.setSaturation(value);
+            break;
+        case 'opacity':
+            this.setOpacity(value);
+            break;
+        case 'blur':
+            this.setBlur(value);
+            break;
+        case 'exposure':
+            this.setExposure(value);
+            break;
+        }
     }
 
     private cancelPan(): void {
@@ -2007,11 +3014,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private callMainToolbar(isApplyBtn?: boolean, isZooming?: boolean): void {
-        if (this.factor === 1) {
-            this.refreshToolbar('main', isApplyBtn, false, isZooming);
-        } else {
-            this.refreshToolbar('main', isApplyBtn, false, isZooming);
-        }
+        this.refreshToolbar('main', isApplyBtn, false, isZooming);
     }
 
     private cancelItems(): void {
@@ -2070,21 +3073,24 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }));
             const tempContext: CanvasRenderingContext2D = tempCanvas.getContext('2d');
             tempCanvas.width = this.lowerCanvas.width; tempCanvas.height = this.lowerCanvas.height;
+            const temp: string = this.lowerContext.filter;
+            this.updateBrightnessFilter();
             tempContext.drawImage(this.inMemoryCanvas, 0, 0);
+            this.lowerContext.filter = temp;
             this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
             for (let i: number = 0; i < this.penDrawColl.length; i++) {
-                tempContext.lineWidth = 2 * this.penDrawColl[i].strokeWidth;
-                tempContext.strokeStyle = this.penDrawColl[i].strokeColor;
+                tempContext.lineWidth = 2 * this.penDrawColl[i as number].strokeWidth;
+                tempContext.strokeStyle = this.penDrawColl[i as number].strokeColor;
                 let nexP: Point; let preP: Point; const f: number = 0.3; const t: number = 1;
                 tempContext.beginPath();
-                tempContext.moveTo(this.penDrawColl[i].points[0].x, this.penDrawColl[i].points[0].y);
+                tempContext.moveTo(this.penDrawColl[i as number].points[0].x, this.penDrawColl[i as number].points[0].y);
                 let m: number = 0;
                 let dx1: number = 0; let dx2: number = 0;
                 let dy1: number = 0; let dy2: number = 0;
-                preP = this.penDrawColl[i].points[0];
-                for (let j: number = 1; j < this.penDrawColl[i].points.length; j++) {
-                    const curP: Point = this.penDrawColl[i].points[j];
-                    nexP = this.penDrawColl[i].points[j + 1];
+                preP = this.penDrawColl[i as number].points[0];
+                for (let j: number = 1; j < this.penDrawColl[i as number].points.length; j++) {
+                    const curP: Point = this.penDrawColl[i as number].points[j as number];
+                    nexP = this.penDrawColl[i as number].points[j + 1];
                     if (nexP) {
                         m = this.gradient(preP, nexP);
                         dx2 = (nexP.x - curP.x) * -f;
@@ -2097,8 +3103,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     dx1 = dx2;
                     dy1 = dy2;
                     preP = curP;
-                    if (this.penDrawColl[i].points.length > 2) {
-                        this.penDrawColl[i].points.shift();
+                    if (this.penDrawColl[i as number].points.length > 2) {
+                        this.penDrawColl[i as number].points.shift();
                     }
                     tempContext.stroke();
                 }
@@ -2108,8 +3114,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             const imgData: ImageData = tempContext.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
             let tempObj: Transition;
             for (let index: number = 0; index < this.imgDataColl.length; index++ ) {
-                if (this.imgDataColl[index].operation !== 'freehanddraw') {
-                    tempObj = this.imgDataColl[index];
+                if (this.imgDataColl[index as number].operation !== 'freehanddraw') {
+                    tempObj = this.imgDataColl[index as number];
                     break;
                 }
             }
@@ -2120,25 +3126,39 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.inMemoryCanvas.width = imgData.width; this.inMemoryCanvas.height = imgData.height;
             this.inMemoryContext.putImageData(imgData, 0, 0);
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-            for (let j: number = 0; j < this.objColl.length; j++ ) {
-                this.apply(this.objColl[j].shape, this.objColl[j]);
-                this.refreshActiveObj();
-            }
+            this.redrawImgWithObj();
             this.currObjType.isZoomed = false;
         }
     }
 
-    private refreshToolbar(type: string, isApplyBtn?: boolean, isCropping?: boolean, isZooming?: boolean): void {
-        const args: ToolbarEventArgs = { toolbarType: type };
-        if (document.getElementById(this.element.id + '_toolbar') && this.defToolbarItems.length > 0) {
-            (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
+    private redrawImgWithObj(): void {
+        this.lowerContext.filter = this.canvasFilter;
+        const temp: string = this.lowerContext.filter;
+        this.updateBrightnessFilter();
+        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+        for (let j: number = 0; j < this.objColl.length; j++ ) {
+            this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
+            this.refreshActiveObj();
         }
-        if (document.getElementById(this.element.id + '_bottomToolbar') && this.defToolbarItems.length > 0) {
-            if (document.getElementById(this.element.id + '_bottomToolbar').className.indexOf('e-control') > -1) {
-                (getComponent(document.getElementById(this.element.id + '_bottomToolbar'), 'toolbar') as Toolbar).destroy();
+        this.lowerContext.filter = temp;
+    }
+
+    private refreshToolbar(type: string, isApplyBtn?: boolean, isCropping?: boolean, isZooming?: boolean, cType?: string): void {
+        const args: ToolbarEventArgs = { toolbarType: type };
+        if (type !== 'filter' && type !== 'color') {
+            if (document.getElementById(this.element.id + '_toolbar') && this.defToolbarItems.length > 0) {
+                (getComponent(document.getElementById(this.element.id + '_toolbar'), 'toolbar') as Toolbar).destroy();
+            }
+            if (document.getElementById(this.element.id + '_bottomToolbar') && this.defToolbarItems.length > 0) {
+                if (document.getElementById(this.element.id + '_bottomToolbar').className.indexOf('e-control') > -1) {
+                    (getComponent(document.getElementById(this.element.id + '_bottomToolbar'), 'toolbar') as Toolbar).destroy();
+                }
             }
         }
+        this.refreshSlider();
         switch (type) {
         case 'main':
             if (Browser.isDevice) {
@@ -2180,7 +3200,106 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         case 'pan':
             this.initZoomToolbarItem();
             break;
+        case 'adjustment':
+            if (Browser.isDevice) {
+                this.initToolbarItem(false, true, true);
+            }
+            this.initAdjustmentToolbarItem();
+            break;
+        case 'filter':
+            this.updateContextualToolbar(type);
+            break;
+        case 'color':
+            this.updateContextualToolbar(type, cType);
+            break;
         }
+    }
+
+    private getAdjustmentToolbarItem(): ItemModel[] {
+        const toolbarItems: ItemModel[] = [];
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Brightness') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_brightness', prefixIcon: 'e-icons e-brightness', cssClass: 'top-icon e-brightness',
+                tooltipText: this.l10n.getConstant('Brightness'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Contrast') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_contrast', prefixIcon: 'e-icons e-contrast', cssClass: 'top-icon e-contrast',
+                tooltipText: this.l10n.getConstant('Contrast'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Hue') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_hue', prefixIcon: 'e-icons e-fade', cssClass: 'top-icon e-fade',
+                tooltipText: this.l10n.getConstant('Hue'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Saturation') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_saturation', prefixIcon: 'e-icons e-saturation', cssClass: 'top-icon e-saturation',
+                tooltipText: this.l10n.getConstant('Saturation'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Exposure') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_exposure', prefixIcon: 'e-icons e-grain', cssClass: 'top-icon e-grain',
+                tooltipText: this.l10n.getConstant('Exposure'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Opacity') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_opacity', prefixIcon: 'e-icons e-opacity', cssClass: 'top-icon e-opacity',
+                tooltipText: this.l10n.getConstant('Opacity'), align: 'Center' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Blur') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_blur', prefixIcon: 'e-icons e-tint', cssClass: 'top-icon e-tint',
+                tooltipText: this.l10n.getConstant('Blur'), align: 'Center' });
+        }
+        const tempToolbarItems: ItemModel[] = this.processToolbar('center');
+        for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
+            toolbarItems.push(tempToolbarItems[i as number]);
+        }
+        if (!Browser.isDevice) {
+            toolbarItems.push({ id: this.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+            toolbarItems.push({ id: this.element.id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
+                tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
+        }
+        return toolbarItems;
+    }
+
+    private getFilterToolbarItem(): ItemModel[] {
+        const toolbarItems: ItemModel[] = [];
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Default') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_default', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Default'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_defaultCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Default') + '</span></div></div>' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Chrome') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_chrome', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Chrome'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_chromeCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Chrome') + '</span></div></div>' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Cold') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_cold', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Cold'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_coldCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Cold') + '</span></div></div>' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Warm') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_warm', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Warm'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_warmCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Warm') + '</span></div></div>' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Grayscale') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_grayscale', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Grayscale'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_grayscaleCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Grayscale') + '</span></div></div>' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Sepia') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_sepia', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Sepia'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_sepiaCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Sepia') + '</span></div></div>' });
+        }
+        if (isNullOrUndefined(this.toolbar) || (!isNullOrUndefined(this.toolbar) && this.toolbar.indexOf('Invert') > -1)) {
+            toolbarItems.push({ id: this.element.id + '_invert', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
+                tooltipText: this.l10n.getConstant('Invert'), align: 'Center',
+                template: '<div class="filterwrapper" style="box-sizing: content-box;"><canvas id=' + this.element.id + '_invertCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Invert') + '</span></div></div>' });
+        }
+        const tempToolbarItems: ItemModel[] = this.processToolbar('center');
+        for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
+            toolbarItems.push(tempToolbarItems[i as number]);
+        }
+        return toolbarItems;
     }
 
     private getPenToolbarItem(items: (string | ItemModel)[]): ItemModel[] {
@@ -2198,7 +3317,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         const tempToolbarItems: ItemModel[] = this.processSubToolbar(items);
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
-            toolbarItems.push(tempToolbarItems[i]);
+            toolbarItems.push(tempToolbarItems[i as number]);
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: this.element.id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
@@ -2299,7 +3418,11 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (items.indexOf('strokeWidth') > -1) {
             const strokeWidthBtn: HTMLElement = document.getElementById(this.element.id + '_penStrokeWidth');
             const spanElem: HTMLElement = document.createElement('span');
-            spanElem.innerHTML = this.l10n.getConstant('Small');
+            if (isNullOrUndefined(this.penStrokeWidth)) {
+                spanElem.innerHTML = this.l10n.getConstant('Small');
+            } else {
+                spanElem.innerHTML = this.getPenStroke(this.penStrokeWidth, this.calcRatio());
+            }
             spanElem.className = 'e-pen-stroke-width';
             strokeWidthBtn.appendChild(spanElem);
             const drpDownBtn: DropDownButton = new DropDownButton({ items: strokeWidthItems,
@@ -2354,6 +3477,146 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
+    private getPenStroke(value: number, ratio: Dimension): string {
+        let textContent: string = '';
+        if (Math.round(value / 0.4) === Math.round(ratio.width + ratio.height)) {
+            textContent = this.l10n.getConstant('XSmall');
+        } else if (Math.round(value / 0.8) === Math.round(ratio.width + ratio.height)) {
+            textContent = this.l10n.getConstant('Small');
+        } else if (Math.round(value / 1.2) === Math.round(ratio.width + ratio.height)) {
+            textContent = this.l10n.getConstant('Medium');
+        } else if (Math.round(value / 1.6) === Math.round(ratio.width + ratio.height)) {
+            textContent = this.l10n.getConstant('Large');
+        } else if (Math.round(value / 2) === Math.round(ratio.width + ratio.height)) {
+            textContent = this.l10n.getConstant('XLarge');
+        }
+        return textContent;
+    }
+
+    private initAdjustmentToolbarItem(): void {
+        const leftItem: ItemModel[] = this.getLeftToolbarItem();
+        const rightItem: ItemModel[] = this.getRightToolbarItem();
+        const mainItem: ItemModel[] = this.getAdjustmentToolbarItem();
+        const zoomItem: ItemModel[] = this.getZoomToolbarItem();
+        if (Browser.isDevice) {
+            this.defToolbarItems = mainItem;
+        } else {
+            this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
+        }
+        const toolbar: Toolbar = new Toolbar({
+            width: '100%',
+            items: this.defToolbarItems,
+            clicked: this.defToolbarClicked.bind(this),
+            created: () => {
+                if (!Browser.isDevice) {
+                    this.renderSaveBtn();
+                }
+                if (Browser.isDevice) {
+                    if (this.defToolbarItems.length > 0 && (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        (toolbar as any).refreshOverflow();
+                    }
+                } else {
+                    this.createLeftToolbarControls();
+                    if (this.defToolbarItems.length > 0 && (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        (toolbar as any).refreshOverflow();
+                    }
+                }
+            }
+        });
+        if (Browser.isDevice) {
+            toolbar.appendTo('#' + this.element.id + '_bottomToolbar');
+        } else {
+            toolbar.appendTo('#' + this.element.id + '_toolbar');
+        }
+    }
+
+    private initFilterToolbarItem(): void {
+        const mainItem: ItemModel[] = this.getFilterToolbarItem();
+        if (!isNullOrUndefined(document.querySelector('#' + this.element.id + '_contextualToolbar')) &&
+            document.querySelector('#' + this.element.id + '_contextualToolbar').classList.contains('e-control')) {
+            (getComponent(document.getElementById(this.element.id + '_contextualToolbar'), 'toolbar') as Toolbar).destroy();
+        }
+        const toolbar: Toolbar = new Toolbar({
+            width: '100%',
+            items: mainItem,
+            clicked: this.contextualToolbarClicked.bind(this),
+            created: () => {
+                this.createCanvasFilter();
+                if (this.currentFilter === '') {
+                    this.currentFilter = this.element.id + '_default';
+                }
+                const hdrWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_headWrapper');
+                if (hdrWrapper) {
+                    hdrWrapper.style.display = 'none';
+                }
+                document.getElementById(this.currentFilter + 'Canvas').parentElement.parentElement.classList.add('e-selected');
+                toolbar.refreshOverflow();
+            }
+        });
+        toolbar.appendTo('#' + this.element.id + '_contextualToolbar');
+    }
+
+    private createCanvasFilter(): void {
+        if (this.adjustmentLevel.sharpen || this.adjustmentLevel.bw) {
+            this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+            this.inMemoryCanvas.width = this.tempImageData.width; this.inMemoryCanvas.height = this.tempImageData.height;
+            this.inMemoryContext.putImageData(this.tempImageData, 0, 0);
+        }
+        const noFilter: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_defaultCanvas');
+        noFilter.style.width = '100px'; noFilter.style.height = '100px';
+        noFilter.style.filter = this.updateAdjustment('default', null, true);
+        let ctx: CanvasRenderingContext2D = noFilter.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        const chrome: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_chromeCanvas');
+        chrome.style.width = '100px'; chrome.style.height = '100px';
+        chrome.style.filter = this.updateAdjustment('chrome', null, true);
+        ctx = chrome.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        const cold: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_coldCanvas');
+        cold.style.width = '100px'; cold.style.height = '100px';
+        cold.style.filter = this.updateAdjustment('cold', null, true);
+        ctx = cold.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        const warm: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_warmCanvas');
+        warm.style.width = '100px'; warm.style.height = '100px';
+        warm.style.filter = this.updateAdjustment('warm', null, true);
+        ctx = warm.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        const temp: string = this.lowerContext.filter;
+        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+        for (let i: number = 0; i < this.objColl.length; i++) {
+            this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+            this.refreshActiveObj();
+        }
+        this.lowerContext.filter = temp;
+        const grayscale: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_grayscaleCanvas');
+        grayscale.style.width = '100px'; grayscale.style.height = '100px';
+        grayscale.style.filter = this.updateAdjustment('grayscale', null, true);
+        ctx = grayscale.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        const tempFilter: string = this.lowerContext.filter;
+        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+        for (let i: number = 0; i < this.objColl.length; i++) {
+            this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+            this.refreshActiveObj();
+        }
+        this.lowerContext.filter = tempFilter;
+        const sepia: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_sepiaCanvas');
+        sepia.style.width = '100px'; sepia.style.height = '100px';
+        sepia.style.filter = this.updateAdjustment('sepia', null, true);
+        ctx = sepia.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+        const invert: HTMLCanvasElement = document.querySelector('#' + this.element.id + '_invertCanvas');
+        invert.style.width = '100px'; invert.style.height = '100px';
+        invert.style.filter = this.updateAdjustment('invert', null, true);
+        ctx = invert.getContext('2d');
+        ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);
+    }
+
     private updateCanvas(): void {
         this.lastX = this.baseImg.width / 2; this.lastY = this.baseImg.height / 2;
         let wrapperWidth: number;
@@ -2369,9 +3632,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             toolbarHeight =  document.querySelector('.e-toolbar').clientHeight;
             maxDimension.width -= toolbarHeight; maxDimension.height -= toolbarHeight;
         }
+        const tempFilter: string = this.lowerContext.filter;
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.lowerCanvas.width = this.upperCanvas.width = this.inMemoryCanvas.width = this.baseImg.width;
-        this.lowerCanvas.height = this.upperCanvas.height = this.inMemoryCanvas.height = this.baseImg.height;
+        this.lowerCanvas.width = this.upperCanvas.width = this.baseImg.width;
+        this.lowerCanvas.height = this.upperCanvas.height = this.baseImg.height;
         this.lowerCanvas.style.maxWidth = this.upperCanvas.style.maxWidth = maxDimension.width + 'px';
         this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = maxDimension.height + 'px';
         this.lowerCanvas.style.left = this.upperCanvas.style.left = (wrapperWidth - maxDimension.width) / 2 + 1 + 'px';
@@ -2381,16 +3645,36 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (canvasWrapper) {
             this.lowerCanvas.style.top = this.upperCanvas.style.top = (parseFloat(canvasWrapper.style.height) - maxDimension.height - 1) / 2 + 'px';
         }
-        this.lowerContext.drawImage(this.baseImg, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.updateInMemoryCanvas('updateCanvas');
-        for (let i: number = 0, len: number = this.objColl.length; i < len; i++ ) {
-            this.apply(this.objColl[i].shape, this.objColl[i]);
-        }
-        if (this.isUndoRedo) {
-            if (this.flipState !== '') {
-                this.flip(this.flipState as Direction);
+        this.lowerContext.filter = tempFilter;
+        if (this.lowerContext.filter === 'none' || this.lowerContext.filter === 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+        'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)' ||
+        this.isInitialLoading) {
+            this.lowerContext.drawImage(this.baseImg, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.updateInMemoryCanvas('updateCanvas');
+            if (this.canvasFilter !== 'none') {
+                this.lowerContext.filter = this.canvasFilter;
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
             }
+            if (this.isInitialLoading) {
+                this.initializeFilter();
+                this.isInitialLoading  = false;
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.baseImg, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            }
+        } else {
+            const temp: string = this.lowerContext.filter;
+            this.updateBrightnessFilter();
+            this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+            this.lowerContext.filter = temp;
         }
+        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+        for (let i: number = 0, len: number = this.objColl.length; i < len; i++ ) {
+            this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+        }
+        this.lowerContext.filter = tempFilter;
         if (this.disabled) { this.element.setAttribute('class', 'e-disabled'); }
         this.trigger('fileOpened');
     }
@@ -2398,7 +3682,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private imageOnLoad(src: string): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: ImageEditor = this;
-        proxy.baseImg.src = proxy.baseImgSrc = src;
+        proxy.baseImg.src = proxy.baseImgSrc.id = src;
         this.baseImg.onload = () => {
             this.lowerContext.drawImage(this.baseImg, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             if (this.togglePen) {
@@ -2418,7 +3702,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 hideSpinner(this.element);
                 this.element.style.opacity = '1';
                 this.updateCanvas();
-                this.isUndoRedo = false;
             }
             if (Browser.isDevice) {
                 if (this.isToolbar() && (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar'))) &&
@@ -2480,12 +3763,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         for (let i: number = 0; i < this.activeObj.flipObjColl.length; i++) {
             if (degree === 0) {
-                if (this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal') {
+                if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal') {
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.endX - width,
                         startY: this.activeObj.activePoint.startY,
                         endX: (this.activeObj.activePoint.endX),
                         endY: this.activeObj.activePoint.startY + (height ? height : 0) };
-                } else if (this.activeObj.flipObjColl[i].toLowerCase() === 'vertical') {
+                } else if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'vertical') {
                     this.activeObj.activePoint.startY = this.activeObj.activePoint.endY - height;
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.startX, startY: this.activeObj.activePoint.startY,
                         endX: (this.activeObj.activePoint.startX + (width ? width : 0)),
@@ -2497,13 +3780,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
             }
             else if (degree === 90) {
-                if (this.activeObj.flipObjColl[i].toLowerCase() === 'vertical') {
+                if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'vertical') {
                     this.activeObj.activePoint.startX = this.activeObj.activePoint.endX - height;
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.startX,
                         startY: this.activeObj.activePoint.endY - width,
                         endX: (this.activeObj.activePoint.endX),
                         endY: this.activeObj.activePoint.endY};
-                } else if (this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal') {
+                } else if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal') {
                     this.activeObj.activePoint.endX = this.activeObj.activePoint.startX + height;
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.startX, startY: this.activeObj.activePoint.startY,
                         endX: (this.activeObj.activePoint.endX),
@@ -2515,13 +3798,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         endY: this.activeObj.activePoint.startY + (width ? width : 0) };
                 }
             } else if (degree === 180) {
-                if (this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal') {
+                if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal') {
                     this.activeObj.activePoint.startY = this.activeObj.activePoint.endY - height;
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.startX,
                         startY: this.activeObj.activePoint.startY,
                         endX: (this.activeObj.activePoint.startX + width),
                         endY: this.activeObj.activePoint.endY };
-                } else if (this.activeObj.flipObjColl[i].toLowerCase() === 'vertical') {
+                } else if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'vertical') {
                     this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + height;
                     this.activeObj.activePoint = { endX: this.activeObj.activePoint.endX, endY: this.activeObj.activePoint.endY,
                         startX: (this.activeObj.activePoint.endX - (width ? width : 0)),
@@ -2532,12 +3815,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         startY: this.activeObj.activePoint.endY - (height ? height : 0) };
                 }
             } else if (degree === 270) {
-                if (this.activeObj.flipObjColl[i].toLowerCase() === 'vertical') {
+                if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'vertical') {
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.startX,
                         startY: this.activeObj.activePoint.startY,
                         endX: (this.activeObj.activePoint.startX + height),
                         endY: this.activeObj.activePoint.startY + (width ? width : 0) };
-                } else if (this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal') {
+                } else if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal') {
                     this.activeObj.activePoint.startX = this.activeObj.activePoint.endX - height;
                     this.activeObj.activePoint = { startX: this.activeObj.activePoint.startX,
                         startY: this.activeObj.activePoint.endY - (width ? width : 0),
@@ -2574,17 +3857,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     endX: this.activeObj.activePoint.endX,
                     endY: this.activeObj.activePoint.endY};
             }
-        } 
+        }
         this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
         this.activeObj.activePoint.height = this.activeObj.activePoint.endY - this.activeObj.activePoint.startY;
         if (this.degree === 360 || this.degree === -360) {
             this.degree = 0;
         }
-    }
-
-    private updateUndoRedoColl(operation: string, value?: string | number | Dimension, previousObj?: SelectionPoint[],
-                               currentObj?: SelectionPoint[]): void {
-        this.undoRedoColl.push({operation: operation, value: value, previousObj: previousObj, currentObj: currentObj});
     }
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
@@ -2616,15 +3894,15 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 // need to add scale value according to length.
                 for (let i: number = 0; i < this.activeObj.flipObjColl.length; i++) {
                     if (degree !== 0 && degree % 90 === 0 && degree !== 180) {
-                        scale += this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal' ? 'scale(1, -1)' :
+                        scale += this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal' ? 'scale(1, -1)' :
                             'scale(-1, 1)';
                     } else {
-                        scale += this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal' ? 'scale(-1, 1)' :
+                        scale += this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal' ? 'scale(-1, 1)' :
                             'scale(1, -1)';
                     }
-                    if (this.activeObj.flipObjColl[i].toLowerCase() === 'horizontal') {
+                    if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'horizontal') {
                         this.textBox.style.transform = 'rotate(' + degree + 'deg)' + scale;
-                    } else if (this.activeObj.flipObjColl[i].toLowerCase() === 'vertical') {
+                    } else if (this.activeObj.flipObjColl[i as number].toLowerCase() === 'vertical') {
                         this.textBox.style.transform = 'rotate(' + degree + 'deg)' + scale;
                     }
                 }
@@ -2700,7 +3978,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         if (fontSizeElem) {
             for (let i: number = 0; i < this.fontSizeColl.length; i++) {
-                if (parseInt(this.fontSizeColl[i].text, 10) >= this.activeObj.textSettings.fontSize) {
+                if (parseInt(this.fontSizeColl[i as number].text, 10) >= this.activeObj.textSettings.fontSize) {
                     fontSizeElem.textContent = (i + 1).toString();
                     break;
                 }
@@ -2731,7 +4009,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         if (strokeWidthElem) {
             const strokeWidth: string = Math.round((this.activeObj.strokeSettings.strokeWidth /
-            (ratio.width + ratio.height))).toString();
+            (ratio.width + ratio.height)) * this.factor).toString();
             strokeWidthElem.textContent = this.getStrokeWidth(strokeWidth);
         }
     }
@@ -2745,10 +4023,34 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    private targetTouches(touches: any): Point[] {
+        const p1: Point = {x: touches[0].pageX, y: touches[0].pageY};
+        const p2: Point = {x: touches[1].pageX, y: touches[1].pageY};
+        const points: Point[] = [p1, p2];
+        return points;
+    }
+
+    private calculateScale(startTouches: Point[], endTouches: Point[]): number {
+        const startDistance: number = this.getDistance(startTouches[0], startTouches[1]);
+        const endDistance: number = this.getDistance(endTouches[0], endTouches[1]);
+        return endDistance / startDistance;
+    }
+
+    private getDistance(a: Point, b: Point): number {
+        const x: number = a.x - b.x;
+        const y: number = a.y - b.y;
+        return Math.sqrt(x * x + y * y);
+    }
+
     private touchStartHandler(e: MouseEvent & TouchEvent): void {
         e.preventDefault();
-        this.timer = setTimeout(this.setTimer.bind(this), 1000, e);
-        this.mouseDownEventHandler(e);
+        if (e.touches.length === 2) {
+            this.isFirstMove = true;
+        } else {
+            this.timer = setTimeout(this.setTimer.bind(this), 1000, e);
+            this.mouseDownEventHandler(e);
+        }
         EventHandler.add(this.lowerCanvas, 'touchend', this.mouseUpEventHandler, this);
         EventHandler.add(this.lowerCanvas, 'touchmove', this.mouseMoveEventHandler, this); // Unbind mousedown to prevent double triggers from touch devices
         EventHandler.add(this.upperCanvas, 'touchend', this.mouseUpEventHandler, this);
@@ -2773,6 +4075,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.touchEndPoint.y = y = e.touches[0].clientY;
             }
             this.redrawActObj(x, y);
+            if ((!isNullOrUndefined(this.element.querySelector('#' + this.element.id + '_contextualToolbar')) &&
+                    !this.element.querySelector('#' + this.element.id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
+                    (!isNullOrUndefined(this.element.querySelector('#' + this.element.id + '_headWrapper'))
+                    && !this.element.querySelector('#' + this.element.id + '_headWrapper').parentElement.classList.contains('e-hide'))) {
+                    this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+                    this.okBtn();
+                    this.refreshToolbar('main');
+                }
             if (this.upperCanvas.style.cursor === 'crosshair' || (Browser.isDevice && this.togglePen)) {
                 if (this.togglePen) {
                     this.canvasRatio = this.calcRatio();
@@ -2800,7 +4110,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.dragPoint.startX = this.dragPoint.startY = this.dragPoint.endX = this.dragPoint.endY = 0;
             }
             if ((this.upperCanvas.style.cursor !== 'crosshair' && e.type.toLowerCase() === 'touchstart') ||
-            (this.currObjType.isActiveObj && this.upperCanvas.style.cursor !== 'default' && !this.togglePen)) { this.findTarget(x, y, e.type); }
+            (this.currObjType.isActiveObj && this.upperCanvas.style.cursor !== 'default' && !this.togglePen)) {
+                this.findTarget(x, y, e.type);
+            }
             else if ((this.currObjType.shape === '' || this.currObjType.isCustomCrop) && !this.togglePen  && this.upperCanvas.style.cursor !== 'default') {
                 this.setActivePoint(x, y);
             }
@@ -2830,6 +4142,44 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     private mouseMoveEventHandler(e: MouseEvent & TouchEvent): void {
         e.preventDefault();
+        if (e.type === 'touchmove' && e.touches.length === 2) {
+            if (this.isFirstMove) {
+                this.startTouches = this.targetTouches(e.touches);
+                this.tempTouches = [];
+                this.tempTouches.push({x: e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft),
+                    y: e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop)});
+                this.tempTouches.push({x: e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft),
+                    y: e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop)});
+            } else {
+                const ratio: Dimension = this.calcRatio();
+                const firstFingerX: number = e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft);
+                const firstFingerY: number = e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop);
+                const secondFingerX: number = e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft);
+                const secondFingerY: number = e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop);
+                this.lastX = firstFingerX > secondFingerX ? secondFingerX + (firstFingerX - secondFingerX) : firstFingerX +
+                    (secondFingerX - firstFingerX);
+                this.lastY = firstFingerY > secondFingerY ? secondFingerY + (firstFingerY - secondFingerY) : firstFingerY +
+                    (secondFingerY - firstFingerY);
+                this.lastX *= ratio.width; this.lastY *= ratio.height;
+                const scale: number = this.calculateScale(this.startTouches, this.targetTouches(e.touches));
+                // Need to set lastX and lastY points
+                if (this.tempTouches[0].x !== firstFingerX && this.tempTouches[0].y !== firstFingerY &&
+                    this.tempTouches[1].x !== secondFingerX && this.tempTouches[1].y !== secondFingerY) {
+                    if (scale > 1) {
+                        this.zoom(1.1);
+                    } else {
+                        this.zoom(-1.1);
+                    }
+                    this.tempTouches = [];
+                    this.tempTouches.push({x: e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft),
+                        y: e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop)});
+                    this.tempTouches.push({x: e.touches[1].clientX || (e.touches[1].pageX - this.lowerCanvas.offsetLeft),
+                        y: e.touches[1].clientY || (e.touches[1].pageY - this.lowerCanvas.offsetTop)});
+                }
+            }
+            this.isFirstMove = false;
+            return;
+        }
         if (this.textBox.style.display === 'none') {
             this.isTimer = true;
         }
@@ -2844,7 +4194,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (this.currObjType.isActiveObj && (this.activeObj.activePoint !== undefined || this.objColl.length > 0) &&
         !this.dragCanvas || this.activeObj.activePoint !== undefined) {
             if (this.dragElement === '') {
-                this.setCursor(x, y); this.findTarget(x, y, e.type);
+                this.setCursor(x, y);
+                if (this.activeObj.activePoint.width === 0 && this.upperCanvas.style.cursor !== 'default' &&
+                this.upperCanvas.style.cursor !== 'move' && this.upperCanvas.style.cursor !== 'crosshair'
+                && this.upperCanvas.style.cursor !== 'grab') {
+                    this.upperCanvas.style.cursor = 'move';
+                }
+                this.findTarget(x, y, e.type);
             }
         }
         if (this.currObjType.isDragging) {
@@ -2863,6 +4219,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             x = this.touchEndPoint.x; y = this.touchEndPoint.y;
         }
         if (e.type === 'touchend') {
+            this.startTouches = this.tempTouches = [];
+            this.isFirstMove = false;
             if (this.textBox.style.display === 'none') {
                 this.isTimer = false; this.timer = 0;
             }
@@ -2879,7 +4237,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (e.currentTarget === this.upperCanvas) {
             this.currObjType.shape = this.currObjType.shape.toLowerCase();
             if (!this.togglePen && !this.dragCanvas) {
+                if (!isNullOrUndefined(this.tempObjColl) && this.activeObj.activePoint.width !== 0) {
+                    this.objColl.push(this.activeObj);
+                    this.redrawShape(this.objColl[this.objColl.length - 1]);
+                    this.tempObjColl = undefined;
+                }
                 this.applyCurrActObj(x, y);
+            } else if (this.dragCanvas) {
+                this.setPanPoints();
             }
         }
         if (this.togglePen && e.currentTarget === this.upperCanvas){
@@ -2906,11 +4271,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             e.stopImmediatePropagation();
             break;
         case 'Delete':
-            shapeChangingArgs = {action: 'delete', previousShapeSettings: this.activeObj, currentShapeSettings: null};
-            this.keyHistory = '';
-            this.clearSelection();
-            this.trigger('shapeChanging', shapeChangingArgs);
-            this.refreshToolbar('main');
+            if (this.textBox.style.display === 'none') {
+                shapeChangingArgs = {action: 'delete', previousShapeSettings: this.activeObj, currentShapeSettings: null};
+                this.keyHistory = '';
+                this.clearSelection();
+                this.trigger('shapeChanging', shapeChangingArgs);
+                this.refreshToolbar('main');
+            }
             break;
         case 'Escape':
             if (this.togglePan) {
@@ -2932,7 +4299,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private keyUpEventHandler(e: KeyboardEvent): void {
-        setTimeout(this.textKeyDown.bind(this), 1, e);
+        // eslint-disable-next-line
+        if (this.textBox.style.display === 'block' && (e.target as any).id === this.element.id + '_textBox') {
+            setTimeout(this.textKeyDown.bind(this), 1, e);
+        }
     }
 
     private canvasMouseDownHandler(e: MouseEvent & TouchEvent): void {
@@ -2949,7 +4319,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (this.dragCanvas || this.factor !== 1) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             this.dragStart = (this.lowerContext as any).transformedPoint(this.lastX, this.lastY);
-            this.dragged = false;
         }
     }
 
@@ -2966,50 +4335,38 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.lastY = e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop);
         }
         this.lastX *= ratio.width; this.lastY *= ratio.height;
-        this.dragged = true;
         if (this.dragStart && this.dragCanvas) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const pt: Point = (this.lowerContext as any).transformedPoint(this.lastX, this.lastY);
-            const transitionArgs: PanEventArgs = {startPoint: {x: this.dragStart.x, y: this.dragStart.y},
-                endPoint: {x: pt.x, y: pt.y}};
-            this.trigger('panning', transitionArgs);
-            let xDiff: number = pt.x - this.dragStart.x; let yDiff: number = pt.y - this.dragStart.y;
-            const xxDiff: number = xDiff; const yyDiff: number = yDiff;
-            this.lowerContext.translate(xDiff, yDiff); this.upperContext.translate(xDiff, yDiff);
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const pt1: Point = (this.lowerContext as any).transformedPoint(0, 0);
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const pt2: Point = (this.lowerContext as any).transformedPoint(this.lowerCanvas.width, this.lowerCanvas.height);
-            if (xDiff >= 0) {
-                if (pt1.x < 1) {
-                    xDiff = 0;
-                }
-            } else {
-                if (pt2.x > this.lowerCanvas.width) {
-                    xDiff = 0;
-                }
-            }
-            if (yDiff >= 0) {
-                if (pt1.y < 1) {
-                    yDiff = 0;
-                }
-            } else {
-                if (pt2.y > this.lowerCanvas.height) {
-                    yDiff = 0;
-                }
-            }
-            this.lowerContext.translate(-xxDiff, -yyDiff);
-            this.upperContext.translate(-xxDiff, -yyDiff);
-            this.lowerContext.translate(xDiff, yDiff);
-            this.upperContext.translate(xDiff, yDiff);
-            this.redraw();
+            this.drawPanImg();
         }
     }
 
     private canvasMouseUpHandler(e: MouseEvent & TouchEvent): void {
         e.preventDefault();
+        if (this.togglePan && e.currentTarget === this.lowerCanvas) {
+            const ratio: Dimension = this.calcRatio();
+            if (e.type === 'mouseup') {
+                this.lastX = e.offsetX || (e.pageX - this.lowerCanvas.offsetLeft);
+                this.lastY = e.offsetY || (e.pageY - this.lowerCanvas.offsetTop);
+            } else {
+                this.lastX = e.touches[0].clientX || (e.touches[0].pageX - this.lowerCanvas.offsetLeft);
+                this.lastY = e.touches[0].clientY || (e.touches[0].pageY - this.lowerCanvas.offsetTop);
+            }
+            this.lastX *= ratio.width; this.lastY *= ratio.height;
+            this.setPanPoints();
+        }
         this.dragStart = null;
+        // zooms on mouse click point
+        // if (e.currentTarget !== document) {
+        //     this.zoom(e.shiftKey ? -1 : 1 );
+        // }
         this.currObjType.isDragging = false;
+    }
+
+    private setPanPoints(): void {
+        if (this.dragCanvas || this.factor !== 1) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            this.dragStart = (this.lowerContext as any).transformedPoint(this.lastX, this.lastY);
+        }
     }
 
     private textKeyDown(e: KeyboardEvent): void {
@@ -3031,7 +4388,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private adjustToScreen(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: ImageEditor = this;
-        this.applyActObj(); this.refreshActiveObj();
+        const tempFilter: string = this.lowerContext.filter;
+        this.okBtn(); this.applyActObj(); this.refreshActiveObj();
         if (this.imgDataColl.length > 0) {
             showSpinner(this.element);
             this.element.style.opacity = '0.5';
@@ -3050,15 +4408,28 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 canvasWrapper.style.height = (parseFloat(canvasWrapper.style.height) - this.toolbarHeight) - 3 + 'px';
             }
         }
-        this.redrawImg();
-        // eslint-disable-next-line @typescript-eslint/tslint/config
-        this.lowerCanvas.toBlob(function (blob) {
-            proxy.baseImg.src = URL.createObjectURL(blob);
-        }, 'image/png');
+        this.redrawImg(tempFilter);
+        if (!this.currObjType.isSave) {
+            // eslint-disable-next-line @typescript-eslint/tslint/config
+            this.lowerCanvas.toBlob(function (blob) {
+                proxy.lowerContext.filter = proxy.initialAdjustmentValue = proxy.adjustmentValue = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                if (proxy.cssClass) {addClass([proxy.element], proxy.cssClass.split(' ')); }
+                        proxy.lowerContext.clearRect(0, 0, proxy.lowerCanvas.width, proxy.lowerCanvas.height);
+                        proxy.lowerContext.drawImage(proxy.inMemoryCanvas, 0, 0);
+                        proxy.baseImg.src = URL.createObjectURL(blob);
+                        proxy.lowerContext.filter = tempFilter;
+                    }, 'image/png');
+        } else {
+            hideSpinner(this.element); this.element.style.opacity = '1';
+        }
         if (this.defToolbarItems.length > 0 && (!isNullOrUndefined(document.getElementById(this.element.id + '_toolbar')))) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const toolbar: any = getComponent(proxy.element.id + '_toolbar', 'toolbar') as Toolbar;
             toolbar.refreshOverflow();
+            if (!isNullOrUndefined(this.element.querySelector('.e-contextual-toolbar-wrapper'))) {
+                this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+            }
         }
     }
 
@@ -3075,7 +4446,45 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
-    private redrawImg(): void {
+    private drawPanImg(): void {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const pt: Point = (this.lowerContext as any).transformedPoint(this.lastX, this.lastY);
+        const transitionArgs: PanEventArgs = {startPoint: {x: this.dragStart.x, y: this.dragStart.y},
+            endPoint: {x: pt.x, y: pt.y}};
+        this.trigger('panning', transitionArgs);
+        let xDiff: number = pt.x - this.dragStart.x; let yDiff: number = pt.y - this.dragStart.y;
+        const xxDiff: number = xDiff; const yyDiff: number = yDiff;
+        this.lowerContext.translate(xDiff, yDiff); this.upperContext.translate(xDiff, yDiff);
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const pt1: Point = (this.lowerContext as any).transformedPoint(0, 0);
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const pt2: Point = (this.lowerContext as any).transformedPoint(this.lowerCanvas.width, this.lowerCanvas.height);
+        if (xDiff >= 0) {
+            if (pt1.x < 1) {
+                xDiff = 0;
+            }
+        } else {
+            if (pt2.x > this.lowerCanvas.width) {
+                xDiff = 0;
+            }
+        }
+        if (yDiff >= 0) {
+            if (pt1.y < 1) {
+                yDiff = 0;
+            }
+        } else {
+            if (pt2.y > this.lowerCanvas.height) {
+                yDiff = 0;
+            }
+        }
+        this.lowerContext.translate(-xxDiff, -yyDiff);
+        this.upperContext.translate(-xxDiff, -yyDiff);
+        this.lowerContext.translate(xDiff, yDiff);
+        this.upperContext.translate(xDiff, yDiff);
+        this.redraw();
+    }
+
+    private redrawImg(tempFilter: string): void {
         let wrapperWidth: number;
         const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
         if (this.isScreenOriented) {
@@ -3090,7 +4499,17 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = maxDimension.height + 'px';
         this.lowerCanvas.style.left = this.upperCanvas.style.left = (wrapperWidth - maxDimension.width) / 2 + 1 + 'px';
         this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.offsetHeight - this.toolbarHeight - maxDimension.height) / 2 + 1 + 'px';
+        this.lowerContext.filter = tempFilter;
+        const temp: string = this.lowerContext.filter;
+        this.updateBrightnessFilter();
         this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+        for (let i: number = 0; i < this.objColl.length; i++) {
+            this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
+            this.refreshActiveObj();
+        }
+        this.lowerContext.filter = temp;
     }
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -3139,7 +4558,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const transform: any = ctx.transform;
         ctx.transform = (a: number, b: number, c: number, d: number, e: number, f: number) => {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const m2: any = new DOMMatrix([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+            const m2: any = new DOMMatrix();
             m2.a = a; m2.b = b; m2.c = c; m2.d = d; m2.e = e; m2.f = f;
             xform = xform.multiply(m2);
             return transform.call(ctx, a, b, c, d, e, f);
@@ -3162,6 +4581,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         };
     }
 
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private scaleNonUniform(xform: any, sx: number, sy: number): any {
         xform.m11 *= sx;
         xform.m12 *= sx;
@@ -3198,11 +4618,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.upperContext.setTransform(1, 0, 0, 1, 0, 0);
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-            for (let j: number = 0; j < this.objColl.length; j++ ) {
-                this.apply(this.objColl[j].shape, this.objColl[j]);
-                this.refreshActiveObj();
-            }
+            this.redrawImgWithObj();
         } else {
             if (this.factor > 1) {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -3259,11 +4675,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.lowerContext.restore(); this.upperContext.restore();
-        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-        for (let j: number = 0; j < this.objColl.length; j++ ) {
-            this.apply(this.objColl[j].shape, this.objColl[j]);
-            this.refreshActiveObj();
-        }
+        this.redrawImgWithObj();
     }
 
     private applyCurrActObj(x: number, y: number): void {
@@ -3287,9 +4699,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             if (this.activeObj.shape === 'text' || (this.currObjType.shape === 'ellipse' || this.currObjType.shape === 'rectangle' ||
                this.currObjType.shape === 'line')) {
+                const tempFilter: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 for (let j: number = 0; j < this.objColl.length; j++ ) {
-                    this.apply(this.objColl[j].shape, this.objColl[j]);
+                    this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
                 }
+                this.lowerContext.filter = tempFilter;
                 this.apply('shape');
             }
         }
@@ -3308,7 +4724,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             height *= rows.length;
             const widthColl: number[] = [];
             for (let i: number = 0; i < rows.length; i++) {
-                widthColl.push(this.upperContext.measureText(rows[i]).width +
+                widthColl.push(this.upperContext.measureText(rows[i as number]).width +
                 this.activeObj.textSettings.fontSize * 0.5);
             }
             width = Math.max(...widthColl);
@@ -3317,25 +4733,30 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.updateActiveObject(ratio, this.activeObj.activePoint, this.activeObj);
     }
 
+    private setTextBoxStylesToActObj(): void {
+        const ratio: Dimension = this.calcRatio();
+        this.activeObj.textSettings.fontFamily = this.textBox.style.fontFamily;
+        this.activeObj.strokeSettings.strokeColor = this.textBox.style.color;
+        if (this.textBox.style.fontWeight === 'bold') {
+            this.activeObj.textSettings.bold = true;
+        } else {
+            this.activeObj.textSettings.bold = false;
+        }
+        if (this.textBox.style.fontStyle === 'italic') {
+            this.activeObj.textSettings.italic = true;
+        } else {
+            this.activeObj.textSettings.italic = false;
+        }
+        this.activeObj.textSettings.fontSize = (parseFloat(this.textBox.style.fontSize) * ((ratio.width + ratio.height) / 2)) / this.factor;
+    }
+
     private redrawActObj(x?: number, y?: number): void {
         const ratio: Dimension = this.calcRatio();
         let splitWords: string[]; const bbox: DOMRect = this.upperCanvas.getBoundingClientRect() as DOMRect;
         if (this.activeObj.shape !== undefined) {splitWords = this.activeObj.shape.split('-'); }
         if (this.activeObj.horTopLine !== undefined && (this.activeObj.shape !== undefined && splitWords[0] !== 'crop')) {
             if (this.textBox.style.display === 'block') {
-                this.activeObj.textSettings.fontFamily = this.textBox.style.fontFamily;
-                this.activeObj.strokeSettings.strokeColor = this.textBox.style.color;
-                if (this.textBox.style.fontWeight === 'bold') {
-                    this.activeObj.textSettings.bold = true;
-                } else {
-                    this.activeObj.textSettings.bold = false;
-                }
-                if (this.textBox.style.fontStyle === 'italic') {
-                    this.activeObj.textSettings.italic = true;
-                } else {
-                    this.activeObj.textSettings.italic = false;
-                }
-                this.activeObj.textSettings.fontSize = (parseFloat(this.textBox.style.fontSize) * ((ratio.width + ratio.height) / 2)) / this.factor;
+                this.setTextBoxStylesToActObj();
                 if (x && y) {
                     x -= bbox.left; y -= bbox.top;
                     if ((x !== this.activeObj.activePoint.startX / ratio.width) && (y !== this.activeObj.activePoint.startY /
@@ -3366,7 +4787,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         actObj.activePoint.width / ratio.width;
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left) + actObj.activePoint.width;
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top);
@@ -3379,7 +4800,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                 } else {
-                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left) - actObj.activePoint.width;
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3390,7 +4811,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top);
@@ -3402,7 +4823,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top);
@@ -3414,7 +4835,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                 } else {
-                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3426,7 +4847,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         actObj.activePoint.width / ratio.width;
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left) + actObj.activePoint.width;
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top);
@@ -3439,7 +4860,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3450,7 +4871,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.x = (actObj.activePoint.endX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                 } else {
-                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top);
@@ -3463,7 +4884,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left) + actObj.activePoint.width;
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3477,7 +4898,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left) + actObj.activePoint.width;
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3489,7 +4910,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         actObj.activePoint.width / ratio.width;
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                 } else {
-                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left) - actObj.activePoint.width;
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top);
@@ -3501,7 +4922,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                 } else {
-                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                    point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                     + parseFloat(this.lowerCanvas.style.left);
                     point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                     + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3521,7 +4942,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3533,7 +4954,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                         actObj.activePoint.height / ratio.height;
                     } else {
-                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3547,7 +4968,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                             actObj.activePoint.height / ratio.height;
                     } else {
-                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left) + actObj.activePoint.width;
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3558,7 +4979,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.endX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3572,7 +4993,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.endX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3584,7 +5005,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top) +
                             actObj.activePoint.height / ratio.height;
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top) + actObj.activePoint.height;
@@ -3596,7 +5017,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3607,7 +5028,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3622,7 +5043,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                             + actObj.activePoint.width / ratio.width;
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3633,7 +5054,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3645,7 +5066,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3656,7 +5077,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3670,7 +5091,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.startX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3681,7 +5102,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.endX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3694,7 +5115,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                             actObj.activePoint.width / ratio.width;
                         point.y = (actObj.activePoint.startY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.startX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.startY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3705,7 +5126,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         point.x = (actObj.activePoint.endX / ratio.width) + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY / ratio.height) + parseFloat(this.lowerCanvas.style.top);
                     } else {
-                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor)) 
+                        point.x = (actObj.activePoint.endX - ((this.pannStart.startX) / ratio.width * this.factor))
                         + parseFloat(this.lowerCanvas.style.left);
                         point.y = (actObj.activePoint.endY - ((this.pannStart.startY) / ratio.height * this.factor))
                         + parseFloat(this.lowerCanvas.style.top);
@@ -3748,15 +5169,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         } else {
             temp = extend({}, this.activeObj, {}, true) as SelectionPoint;
             for (let i: number = 0; i < this.objColl.length; i++) {
-                if (JSON.stringify(this.activeObj) === JSON.stringify(this.objColl[i])) {
+                if (JSON.stringify(this.activeObj) === JSON.stringify(this.objColl[i as number])) {
                     this.objColl.splice(i, 1);
                 }
             }
             this.lowerContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-            for (let i: number = 0; i < this.objColl.length; i++) {
-                this.apply(this.objColl[i].shape, this.objColl[i]);
-            }
+            this.redrawImgWithObj();
             this.activeObj = temp; this.updateFontStyles();
             if (this.factor === 1) {
                 x = (x - bbox.left) * ratio.width;
@@ -3807,7 +5225,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     } else {
                         this.textBox.style.width = actObj.activePoint.height + 'px';
                         this.textBox.style.height = actObj.activePoint.width + 'px';
-                    } 
+                    }
                 } else {
                     if (this.factor === 1) {
                         this.textBox.style.width = (actObj.activePoint.width / ratio.width) + 'px';
@@ -3815,7 +5233,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     } else {
                         this.textBox.style.width = actObj.activePoint.width + 'px';
                         this.textBox.style.height = actObj.activePoint.height + 'px';
-                    }    
+                    }
                 }
                 this.setTextBoxWidth();
                 this.setTextBoxHeight();
@@ -3894,8 +5312,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (this.textBox.style.display === 'block') {
             this.updateFontStyles(true);
         } else {this.updateFontStyles(); }
-        let textBoxWidth: number = (this.upperContext.measureText(text).width + (parseFloat(this.textBox.style.fontSize) / 2));
-        let letterWidth: number = e ? this.upperContext.measureText(String.fromCharCode(e.which)).width : 0;
+        const textBoxWidth: number = (this.upperContext.measureText(text).width + (parseFloat(this.textBox.style.fontSize) / 2));
+        const letterWidth: number = e ? this.upperContext.measureText(String.fromCharCode(e.which)).width : 0;
         let actObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
         if (this.factor !== 1) {
             actObj = this.setCursorForZoomState(actObj, ratio, true);
@@ -4115,7 +5533,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.oldPoint.x = x; this.oldPoint.y = y;
             if (this.diffPoint.x <= prevDiffX && this.diffPoint.y >= prevDiffY) {diff = Math.min(this.diffPoint.x, this.diffPoint.y); }
             else {diff = Math.max(this.diffPoint.x, this.diffPoint.y); }
-            percentage = diff / 10;
+            percentage = (diff / 10) * this.factor;
             this.activeObj.activePoint.startX -= (maxDimension.width / 100) * percentage;
             this.activeObj.activePoint.startY -= (maxDimension.height / 100) * percentage;
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
@@ -4201,7 +5619,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     const newScale: Point = this.getScaleRatio(scale);
                     this.activeObj.activePoint.endX += newScale.x; this.activeObj.activePoint.startY -= newScale.y;
                     if (this.activeObj.activePoint.endX > this.lowerCanvas.width || this.activeObj.activePoint.startY < 0) {
-                        this.activeObj.activePoint.endX -= newScale.x; this.activeObj.activePoint.startY += newScale.y
+                        this.activeObj.activePoint.endX -= newScale.x; this.activeObj.activePoint.startY += newScale.y;
                     }
                 }
                 this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
@@ -4223,7 +5641,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 diff = Math.min(this.diffPoint.x, this.diffPoint.y);
             }
             else {diff = Math.max(this.diffPoint.x, this.diffPoint.y); }
-            percentage = diff / 10;
+            percentage = (diff / 10) * this.factor;
             this.activeObj.activePoint.endX += (maxDimension.width / 100) * percentage;
             this.activeObj.activePoint.startY -= (maxDimension.height / 100) * percentage;
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
@@ -4372,7 +5790,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 diff = Math.min(this.diffPoint.x, this.diffPoint.y);
             }
             else {diff = Math.max(this.diffPoint.x, this.diffPoint.y); }
-            percentage = diff / 10;
+            percentage = (diff / 10) * this.factor;
             this.activeObj.activePoint.startX -= (maxDimension.width / 100) * percentage;
             this.activeObj.activePoint.endY += (maxDimension.height / 100) * percentage;
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
@@ -4486,7 +5904,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 diff = Math.max(this.diffPoint.x, this.diffPoint.y);
             }
             else {diff = Math.min(this.diffPoint.x, this.diffPoint.y); }
-            percentage = diff / 10;
+            percentage = (diff / 10) * this.factor;
             this.activeObj.activePoint.endX += (maxDimension.width / 50) * percentage;
             this.activeObj.activePoint.endY += (maxDimension.height / 50) * percentage;
             this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
@@ -4522,8 +5940,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 if (this.activeObj.activePoint.endX > x && this.activeObj.activePoint.endY > y) {
                     width = this.activeObj.activePoint.endX - x; height = this.activeObj.activePoint.endY - y;
                     scale = Math.min(width, height);
-                    let ratio: string[] = this.activeObj.shape.split('-');
-                    ratio = ratio[1].split(':');
                     const newScale: Point = this.getScaleRatio(scale);
                     this.activeObj.activePoint.endX -= newScale.x; this.activeObj.activePoint.endY -= newScale.y;
                     if (this.activeObj.activePoint.endX > this.lowerCanvas.width || this.activeObj.activePoint.endY >
@@ -4564,9 +5980,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         let maxStr: number = rows[0].length;
         let maxText: string = rows[0];
         for (let i: number = 1; i < rows.length; i++) {
-            maxi = rows[i].length;
+            maxi = rows[i as number].length;
             if (maxi > maxStr) {
-                maxText = rows[i];
+                maxText = rows[i as number];
                 maxStr = maxi;
             }
         }
@@ -4910,7 +6326,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const height: number = this.activeObj.textSettings.fontSize + this.activeObj.textSettings.fontSize * 0.25;
         const lineHeight: number = ((height * rows.length) - (this.activeObj.textSettings.fontSize * rows.length)) / rows.length;
         for (let i: number = 0; i < rows.length; i++) {
-            const text: string = rows[i]; const yPoint: number = ((i + 1) * this.activeObj.textSettings.fontSize * 0.85) + (i * lineHeight);
+            const text: string = rows[i as number];
+            const yPoint: number = ((i + 1) * this.activeObj.textSettings.fontSize * 0.85) + (i * lineHeight);
             if (this.degree === -360) {this.degree = 0; }
             if (this.degree === 0 || this.degree === 180) {
                 if (this.activeObj.textSettings.fontSize > this.activeObj.activePoint.height) {
@@ -4935,13 +6352,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.activeObj.flipObjColl = [];
             }
             for (let j: number = 0; j < this.activeObj.flipObjColl.length; j++) {
-                if (this.activeObj.flipObjColl[j].toLowerCase() === 'horizontal') {
+                if (this.activeObj.flipObjColl[j as number].toLowerCase() === 'horizontal') {
                     this.lowerContext.translate(this.lowerContext.canvas.width, 0);
                     this.lowerContext.scale(-1, 1);
                     this.upperContext.translate(this.upperContext.canvas.width, 0);
                     this.upperContext.scale(-1, 1);
                     this.updateActPoint('horizontal');
-                } else if (this.activeObj.flipObjColl[j].toLowerCase() === 'vertical') {
+                } else if (this.activeObj.flipObjColl[j as number].toLowerCase() === 'vertical') {
                     this.lowerContext.translate(0, this.lowerContext.canvas.height);
                     this.lowerContext.scale(1, -1);
                     this.upperContext.translate(0, this.upperContext.canvas.height);
@@ -4956,13 +6373,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                                     this.activeObj.activePoint.startY + yPoint);
             }
             for (let k: number = 0; k < this.activeObj.flipObjColl.length; k++) {
-                if (this.activeObj.flipObjColl[k].toLowerCase() === 'horizontal') {
+                if (this.activeObj.flipObjColl[k as number].toLowerCase() === 'horizontal') {
                     this.lowerContext.translate(this.lowerContext.canvas.width, 0);
                     this.lowerContext.scale(-1, 1);
                     this.upperContext.translate(this.upperContext.canvas.width, 0);
                     this.upperContext.scale(-1, 1);
                     this.updateActPoint('horizontal');
-                } else if (this.activeObj.flipObjColl[k].toLowerCase() === 'vertical') {
+                } else if (this.activeObj.flipObjColl[k as number].toLowerCase() === 'vertical') {
                     this.lowerContext.translate(0, this.lowerContext.canvas.height);
                     this.lowerContext.scale(1, -1);
                     this.upperContext.translate(0, this.upperContext.canvas.height);
@@ -5128,7 +6545,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (this.objColl.length !== 0 && !this.currObjType.isCustomCrop && !isCrop) {
             let diffX: number = 0; let i: number;
             for (let index: number = 0; index < this.objColl.length; index++ ) {
-                let actObj: SelectionPoint = extend({}, this.objColl[index], {}, true) as SelectionPoint;
+                let actObj: SelectionPoint = extend({}, this.objColl[index as number], {}, true) as SelectionPoint;
                 if (this.factor !== 1) {
                     actObj = this.setCursorForZoomState(actObj, ratio);
                 }
@@ -5137,7 +6554,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     y >= (actObj.activePoint.startY - actObj.topLeftCircle.radius) &&
                     y <= (actObj.activePoint.endY + actObj.topLeftCircle.radius)) {
                     if (diffX === 0 || diffX > x - actObj.activePoint.startX) {
-                        diffX = x - this.objColl[index].activePoint.startX;
+                        diffX = x - this.objColl[index as number].activePoint.startX;
                         i = index;
                     }
                 }
@@ -5146,18 +6563,33 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.refreshActiveObj();
                 return;
             }
+            this.tempObjColl = extend([], this.objColl, [], true) as SelectionPoint[];
             this.currObjType.isCustomCrop = false;
-            const temp: SelectionPoint = this.activeObj = extend({}, this.objColl[i], {}, true) as SelectionPoint;
+            const temp: SelectionPoint = this.activeObj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
             this.objColl.splice(i, 1);
             this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
             this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.height, this.inMemoryCanvas.width);
             if (this.degree === 0) {
                 this.inMemoryContext.putImageData(this.imgDataColl[0].value as ImageData, 0, 0);
             } else {
+                if ((this.adjustmentLevel.sharpen || this.adjustmentLevel.bw) && !this.sharpenedImgData) {
+                    let data: ImageData; const tempImageData: ImageData = this.currImgData;
+                    if (this.adjustmentLevel.sharpen) {data = this.getSharpenData(this.currImgData); }
+                    else { data = this.getBlackAndWhiteData(tempImageData); }
+                    this.currImgData = data;
+                    this.sharpenedImgData = true;
+                }
                 this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
                 this.inMemoryContext.putImageData(this.currImgData, 0, 0);
             }
             if (this.flipState !== '') {
+                if ((this.adjustmentLevel.sharpen || this.adjustmentLevel.bw)  && !this.sharpenedImgData) {
+                    let data: ImageData; const tempImageData: ImageData = this.currImgData;
+                    if (this.adjustmentLevel.sharpen) {data = this.getSharpenData(this.currImgData); }
+                    else { data = this.getBlackAndWhiteData(tempImageData); }
+                    this.currImgData = data;
+                    this.sharpenedImgData = true;
+                }
                 this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
                 this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.height, this.inMemoryCanvas.width);
                 this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
@@ -5165,13 +6597,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             this.setActivePoint();
             this.upperContext.drawImage(this.inMemoryCanvas, 0, 0);
+            this.lowerContext.filter = this.canvasFilter;
             this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+            this.redrawImgWithObj();
             this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            for (let j: number = 0; j < this.objColl.length; j++ ) {
-                if (this.objColl[j].shape === 'text' && this.objColl[j].shapeFlip !== this.currFlipState) {this.objColl[j].flippedText = true; }
-                this.apply(this.objColl[j].shape, this.objColl[j]);
-            }
             this.activeObj = extend({}, temp, {}, true) as SelectionPoint;
             const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height - this.pannEnd.startY};
             if (this.factor !== 1 && (this.activeObj.activePoint.startX < this.pannStart.startX || this.activeObj.activePoint.startY <
@@ -5287,7 +6716,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
                 this.activeObj.activePoint.height = this.activeObj.activePoint.width;
                 this.activeObj.activePoint.endY = this.activeObj.activePoint.startY + this.activeObj.activePoint.height;
-            }  
+            }
             break;
         case 'crop-3:2':
             x = 3; y = 2;
@@ -5512,7 +6941,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
                 else {
                     if (this.currObjType.isCustomCrop) {
-                        this.upperCanvas.style.cursor = 'cross-hair';
+                        this.upperCanvas.style.cursor = 'crosshair';
                     }
                     this.upperCanvas.style.cursor = 'default';
                 }
@@ -5536,9 +6965,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.lowerCanvas.style.cursor = this.upperCanvas.style.cursor = 'grab';
         } else {
             for (let i: number = 0; i < obj.length; i++) {
-                let actObj: SelectionPoint = extend({}, obj[i], {}, true) as SelectionPoint;
+                let actObj: SelectionPoint = extend({}, obj[i as number], {}, true) as SelectionPoint;
                 if (this.factor !== 1) {
-                    actObj = this.setCursorForZoomState(obj[i], ratio, true);
+                    actObj = this.setCursorForZoomState(obj[i as number], ratio, true);
                 }
                 if (x >= (actObj.topLeftCircle.startX - (actObj.topLeftCircle.radius)) &&
                     x <= (actObj.topLeftCircle.startX + (actObj.topLeftCircle.radius)) &&
@@ -5604,7 +7033,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
                 else {
                     if (this.currObjType.isCustomCrop) {
-                        this.upperCanvas.style.cursor = 'cross-hair';
+                        this.upperCanvas.style.cursor = 'crosshair';
                     }
                     this.upperCanvas.style.cursor = 'default';
                 }
@@ -5661,7 +7090,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         // eslint-disable-next-line @typescript-eslint/tslint/config
         this.lowerCanvas.toBlob(function(blob){
             const blobUrl: string = URL.createObjectURL(blob);
-            proxy.baseImg.src = blobUrl;
+            //proxy.baseImg.src = blobUrl;
             proxy.downloadImg(blobUrl, fileName + '.' + type);
         }, 'image/png');
     }
@@ -5706,22 +7135,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
     }
 
-    private drawBaseImg(): void {
-        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.lowerContext.clearRect(0, 0, this.lowerCanvas.height, this.lowerCanvas.width);
-        this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.height, this.lowerCanvas.width);
-        this.inMemoryCanvas.width = this.lowerCanvas.width = (this.imgDataColl[0].value as ImageData).width;
-        this.inMemoryCanvas.height = this.lowerCanvas.height = (this.imgDataColl[0].value as ImageData).height;
-        this.inMemoryContext.putImageData(this.imgDataColl[0].value as ImageData, 0, 0);
-        const maxDimension: Dimension = this.calcMaxDimension(this.inMemoryCanvas.width, this.inMemoryCanvas.height);
-        this.lowerCanvas.style.maxWidth = this.upperCanvas.style.maxWidth = maxDimension.width + 'px';
-        this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = maxDimension.height + 'px';
-        this.lowerCanvas.style.left = this.upperCanvas.style.left = (this.element.clientWidth - maxDimension.width) / 2 + 1 + 'px';
-        this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.clientHeight - this.toolbarHeight - maxDimension.height) / 2 + 1 + 'px';
-        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-    }
-
     private calcPrevRatio(): Dimension {
         let oldWidthRatio: number; let oldHeightRatio: number; let maxDimension: Dimension;
         if (this.degree === 0 || this.degree % 180 === 0) {
@@ -5742,10 +7155,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const lineHeight: number = ((height * rows.length) - (this.activeObj.textSettings.fontSize * rows.length)) / rows.length;
         let yPoint: number = (this.activeObj.textSettings.fontSize * 0.85) + lineHeight;
         for (let i: number = 0; i < rows.length; i++) {
-            const text: string = rows[i];
+            const text: string = rows[i as number];
             if (i > 0) {
                 if (i === 1) {
-                    yPoint -= (this.activeObj.textSettings.fontSize * 0.85)
+                    yPoint -= (this.activeObj.textSettings.fontSize * 0.85);
                 }
                 yPoint += this.activeObj.textSettings.fontSize + this.activeObj.textSettings.fontSize * 0.15;
             }
@@ -5774,7 +7187,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             for (let i: number = 0; i < rows.length; i++) {
                 startY = this.activeObj.activePoint.startY + (i * this.activeObj.textSettings.fontSize +
                     this.activeObj.textSettings.fontSize * 0.25);
-                canvasDraw.fillText(rows[i], startX, startY);
+                canvasDraw.fillText(rows[i as number], startX, startY);
             }
         }
         else if (degree % 90 === 0 && degree % 180 !== 0) {
@@ -5826,14 +7239,22 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.updateCurrentActiveObjPoint(degree);
             } else if (degree === 90 || degree === -90) {
                 this.updateCurrentActiveObjPoint(degree);
+                const tempFilter: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 for (let i: number = 0; i < this.objColl.length; i++) {
-                    this.apply(this.objColl[i].shape, this.objColl[i]);
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                 }
+                this.lowerContext.filter = tempFilter;
             } else {
                 this.updateCurrentActiveObjPoint('zoom');
+                const tempFilter: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 for (let i: number = 0; i < this.objColl.length; i++) {
-                    this.apply(this.objColl[i].shape, this.objColl[i]);
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                 }
+                this.lowerContext.filter = tempFilter;
             }
         } else if (this.objColl.length === 0 && (degree === 'horizontal' || degree === 'vertical' || degree === 'Horizontal' || degree === 'Vertical')) {
             if (this.activeObj.horTopLine !== undefined && (this.activeObj.shape === undefined)) {
@@ -5862,12 +7283,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         const ratio: Dimension = this.calcRatio();
         let currActObjIndex: number;
         for (let index: number = 0; index < this.objColl.length; index++) {
-            if (this.activeObj.shape === this.objColl[index].shape &&
-                this.activeObj.activePoint.startX === this.objColl[index].activePoint.startX &&
-                this.activeObj.activePoint.startY === this.objColl[index].activePoint.startY &&
-                this.activeObj.activePoint.endX === this.objColl[index].activePoint.endX &&
-                this.activeObj.activePoint.endY === this.objColl[index].activePoint.endY &&
-                this.activeObj.currIndex === this.objColl[index].currIndex) {
+            if (this.activeObj.shape === this.objColl[index as number].shape &&
+                this.activeObj.activePoint.startX === this.objColl[index as number].activePoint.startX &&
+                this.activeObj.activePoint.startY === this.objColl[index as number].activePoint.startY &&
+                this.activeObj.activePoint.endX === this.objColl[index as number].activePoint.endX &&
+                this.activeObj.activePoint.endY === this.objColl[index as number].activePoint.endY &&
+                this.activeObj.currIndex === this.objColl[index as number].currIndex) {
                 currActObjIndex = index;
                 break;
             }
@@ -5875,58 +7296,73 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         if (degree === 'horizontal' || degree === 'vertical' || degree === 'Horizontal' || degree === 'Vertical') {
             if (degree === 'horizontal' || degree === 'Horizontal') {
                 for (let i: number = 0; i < this.objColl.length; i++) {
-                    if (this.objColl[i].activePoint.startX <= this.lowerCanvas.width / 2) {
-                        this.objColl[i].activePoint.startX = this.lowerCanvas.width / 2 + ((this.lowerCanvas.width / 2) -
-                        this.objColl[i].activePoint.endX);
-                        this.objColl[i].activePoint.endX = this.objColl[i].activePoint.startX + this.objColl[i].activePoint.width;
-                        this.updateActiveObject(ratio, this.objColl[i].activePoint, this.objColl[i]);
-                    } else if (this.objColl[i].activePoint.startX >= this.lowerCanvas.width / 2) {
-                        this.objColl[i].activePoint.startX = this.lowerCanvas.width - this.objColl[i].activePoint.endX;
-                        this.objColl[i].activePoint.endX = this.objColl[i].activePoint.startX + this.objColl[i].activePoint.width;
-                        this.updateActiveObject(ratio, this.objColl[i].activePoint, this.objColl[i]);
+                    if (this.objColl[i as number].activePoint.startX <= this.lowerCanvas.width / 2) {
+                        this.objColl[i as number].activePoint.startX = this.lowerCanvas.width / 2 + ((this.lowerCanvas.width / 2) -
+                        this.objColl[i as number].activePoint.endX);
+                        this.objColl[i as number].activePoint.endX = this.objColl[i as number].activePoint.startX +
+                        this.objColl[i as number].activePoint.width;
+                        this.updateActiveObject(ratio, this.objColl[i as number].activePoint, this.objColl[i as number]);
+                    } else if (this.objColl[i as number].activePoint.startX >= this.lowerCanvas.width / 2) {
+                        this.objColl[i as number].activePoint.startX = this.lowerCanvas.width - this.objColl[i as number].activePoint.endX;
+                        this.objColl[i as number].activePoint.endX = this.objColl[i as number].activePoint.startX +
+                        this.objColl[i as number].activePoint.width;
+                        this.updateActiveObject(ratio, this.objColl[i as number].activePoint, this.objColl[i as number]);
                     }
                 }
             }
             else if (degree === 'vertical' || degree === 'Vertical') {
                 for (let i: number = 0; i < this.objColl.length; i++) {
-                    if (this.objColl[i].activePoint.startY <= this.lowerCanvas.height / 2) {
-                        this.objColl[i].activePoint.startY = this.lowerCanvas.height / 2 + ((this.lowerCanvas.height / 2) -
-                        this.objColl[i].activePoint.endY);
-                        this.objColl[i].activePoint.endY = this.objColl[i].activePoint.startY + this.objColl[i].activePoint.height;
-                        this.updateActiveObject(ratio, this.objColl[i].activePoint, this.objColl[i]);
-                    } else if (this.objColl[i].activePoint.startY >= this.lowerCanvas.height / 2) {
-                        this.objColl[i].activePoint.startY = this.lowerCanvas.height - this.objColl[i].activePoint.endY;
-                        this.objColl[i].activePoint.endY = this.objColl[i].activePoint.startY + this.objColl[i].activePoint.height;
-                        this.updateActiveObject(ratio, this.objColl[i].activePoint, this.objColl[i]);
+                    if (this.objColl[i as number].activePoint.startY <= this.lowerCanvas.height / 2) {
+                        this.objColl[i as number].activePoint.startY = this.lowerCanvas.height / 2 + ((this.lowerCanvas.height / 2) -
+                        this.objColl[i as number].activePoint.endY);
+                        this.objColl[i as number].activePoint.endY = this.objColl[i as number].activePoint.startY +
+                        this.objColl[i as number].activePoint.height;
+                        this.updateActiveObject(ratio, this.objColl[i as number].activePoint, this.objColl[i as number]);
+                    } else if (this.objColl[i as number].activePoint.startY >= this.lowerCanvas.height / 2) {
+                        this.objColl[i as number].activePoint.startY = this.lowerCanvas.height - this.objColl[i as number].activePoint.endY;
+                        this.objColl[i as number].activePoint.endY = this.objColl[i as number].activePoint.startY +
+                        this.objColl[i as number].activePoint.height;
+                        this.updateActiveObject(ratio, this.objColl[i as number].activePoint, this.objColl[i as number]);
                     }
                 }
             }
             if (currActObjIndex !== undefined) {
-                this.activeObj = extend({}, this.objColl[currActObjIndex], {}, true) as SelectionPoint;
+                this.activeObj = extend({}, this.objColl[currActObjIndex as number], {}, true) as SelectionPoint;
             }
         }
         else if (degree === 90 || degree === -90) {
             for (let i: number = 0; i < this.objColl.length; i++) {
-                this.objColl[i].activePoint.startX /= oldRatio.width; this.objColl[i].activePoint.startY /= oldRatio.height;
-                this.objColl[i].activePoint.endX /= oldRatio.width; this.objColl[i].activePoint.endY /= oldRatio.height;
-                this.objColl[i].activePoint.height = this.objColl[i].activePoint.endX - this.objColl[i].activePoint.startX;
-                this.objColl[i].activePoint.width = this.objColl[i].activePoint.endY - this.objColl[i].activePoint.startY;
-                this.objColl[i].strokeSettings.strokeWidth /= (oldRatio.width / this.factor);
-                this.calcCurrPoints(degree as number, this.objColl[i]);
-                this.objColl[i].activePoint.endX = this.objColl[i].activePoint.startX + this.objColl[i].activePoint.width;
-                this.objColl[i].activePoint.endY = this.objColl[i].activePoint.startY + this.objColl[i].activePoint.height;
-                this.objColl[i].activePoint.width = this.objColl[i].activePoint.endX - this.objColl[i].activePoint.startX;
-                this.objColl[i].activePoint.height = this.objColl[i].activePoint.endY - this.objColl[i].activePoint.startY;
+                this.objColl[i as number].activePoint.startX /= oldRatio.width;
+                this.objColl[i as number].activePoint.startY /= oldRatio.height;
+                this.objColl[i as number].activePoint.endX /= oldRatio.width;
+                this.objColl[i as number].activePoint.endY /= oldRatio.height;
+                this.objColl[i as number].activePoint.height = this.objColl[i as number].activePoint.endX -
+                this.objColl[i as number].activePoint.startX;
+                this.objColl[i as number].activePoint.width = this.objColl[i as number].activePoint.endY -
+                this.objColl[i as number].activePoint.startY;
+                this.objColl[i as number].strokeSettings.strokeWidth /= (oldRatio.width / this.factor);
+                this.calcCurrPoints(degree as number, this.objColl[i as number]);
+                this.objColl[i as number].activePoint.endX = this.objColl[i as number].activePoint.startX +
+                this.objColl[i as number].activePoint.width;
+                this.objColl[i as number].activePoint.endY = this.objColl[i as number].activePoint.startY +
+                this.objColl[i as number].activePoint.height;
+                this.objColl[i as number].activePoint.width = this.objColl[i as number].activePoint.endX -
+                this.objColl[i as number].activePoint.startX;
+                this.objColl[i as number].activePoint.height = this.objColl[i as number].activePoint.endY -
+                this.objColl[i as number].activePoint.startY;
             }
             for (let i: number = 0; i < this.objColl.length; i++) {
-                this.objColl[i].activePoint.startX *= oldRatio.width; this.objColl[i].activePoint.startY *= oldRatio.height;
-                this.objColl[i].activePoint.endX *= oldRatio.width; this.objColl[i].activePoint.endY *= oldRatio.height;
-                this.objColl[i].activePoint.width = this.objColl[i].activePoint.endX - this.objColl[i].activePoint.startX;
-                this.objColl[i].activePoint.height = this.objColl[i].activePoint.endY - this.objColl[i].activePoint.startY;
-                this.objColl[i].strokeSettings.strokeWidth *= ratio.width;
+                this.objColl[i as number].activePoint.startX *= oldRatio.width;
+                this.objColl[i as number].activePoint.startY *= oldRatio.height;
+                this.objColl[i as number].activePoint.endX *= oldRatio.width; this.objColl[i as number].activePoint.endY *= oldRatio.height;
+                this.objColl[i as number].activePoint.width = this.objColl[i as number].activePoint.endX -
+                this.objColl[i as number].activePoint.startX;
+                this.objColl[i as number].activePoint.height = this.objColl[i as number].activePoint.endY -
+                this.objColl[i as number].activePoint.startY;
+                this.objColl[i as number].strokeSettings.strokeWidth *= ratio.width;
             }
             for (let i: number = 0; i < this.objColl.length; i++) {
-                this.updateActiveObject(ratio, this.objColl[i].activePoint, this.objColl[i]);
+                this.updateActiveObject(ratio, this.objColl[i as number].activePoint, this.objColl[i as number]);
             }
         }
     }
@@ -5946,7 +7382,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     private redrawShape(obj: SelectionPoint): void {
         for (let i: number = 0; i < this.objColl.length; i++) {
-            if (JSON.stringify(obj) === JSON.stringify(this.objColl[i])) {
+            if (JSON.stringify(obj) === JSON.stringify(this.objColl[i as number])) {
                 this.objColl.splice(i, 1);
                 break;
             }
@@ -5970,7 +7406,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             if (this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0 && !isCropSelection) {
                 for (let i: number = 0; i < this.objColl.length; i++) {
-                    if (JSON.stringify(this.activeObj) === JSON.stringify(this.objColl[i])) {
+                    if (JSON.stringify(this.activeObj) === JSON.stringify(this.objColl[i as number])) {
                         isActObj = true;
                         break;
                     }
@@ -5983,15 +7419,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     let tempObjColl: SelectionPoint[] = this.objColl.splice(0, parseInt(splitWords[1], 10) - 1);
                     tempObjColl.push(extend({}, this.activeObj, {}, true) as SelectionPoint);
                     for (let i: number = 0; i < this.objColl.length; i++) {
-                        tempObjColl.push(this.objColl[i]);
+                        tempObjColl.push(this.objColl[i as number]);
                     }
                     this.objColl = tempObjColl;
                     tempObjColl = []; this.refreshActiveObj();
                     this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-                    this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-                    for (let i: number = 0; i < this.objColl.length; i++) {
-                        this.apply(this.objColl[i].shape, this.objColl[i]);
-                    }
+                    this.redrawImgWithObj();
                     this.activeObj.flippedText = false;
                     this.currObjType.shape = '';
                     this.refreshActiveObj();
@@ -6010,17 +7443,26 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     showSpinner(proxy.element);
                     proxy.element.style.opacity = '0.5';
                     proxy.lowerContext.clearRect(0, 0, proxy.lowerCanvas.width, proxy.lowerCanvas.height);
+                    const temp: string = proxy.lowerContext.filter;
+                    proxy.lowerContext.filter = proxy.initialAdjustmentValue = proxy.adjustmentValue = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                            'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+                    if (proxy.cssClass) {addClass([proxy.element], proxy.cssClass.split(' ')); }
                     proxy.lowerContext.drawImage(proxy.inMemoryCanvas, 0, 0);
                     proxy.baseImg.src = URL.createObjectURL(blob);
                     proxy.upperContext.clearRect(0, 0, proxy.upperCanvas.width, proxy.upperCanvas.height);
                     proxy.togglePen = false;
                     proxy.upperCanvas.style.cursor = 'default';
+                    proxy.lowerContext.filter = temp;
+                    const tempFilter: string = proxy.lowerContext.filter;
+                    proxy.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                    'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                     for (let i: number = 0, len: number = proxy.objColl.length; i < len; i++ ) {
-                        proxy.apply(proxy.objColl[i].shape, proxy.objColl[i], 'duplicate');
+                        proxy.apply(proxy.objColl[i as number].shape, proxy.objColl[i as number], 'duplicate');
                     }
+                    proxy.lowerContext.filter = tempFilter;
                     proxy.togglePen = true;
                 }, 'image/png');
-                this.isUndoRedo = false; this.degree = 0;
+                this.degree = 0;
             }
             else {
                 canvas = canvas ? canvas : 'original';
@@ -6034,7 +7476,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     }
                     this.keyHistory = '';
                 }
-                this.isUndoRedo = false;
             }
         }
     }
@@ -6160,6 +7601,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 if (this.activeObj.textSettings.fontSize < 20 * (ratio.width + ratio.height)) {
                     this.activeObj.textSettings.fontSize = 20 * (ratio.width + ratio.height);
                 }
+                if (this.factor > 1) {
+                    this.activeObj.textSettings.fontSize /= this.factor;
+                }
             }
             this.activeObj.shapeDegree = this.degree; this.activeObj.shapeFlip = this.currFlipState;
             this.activeObj.flipObjColl = [];
@@ -6175,6 +7619,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.setCenterPoints(true, width, height);
             }
             this.addLetter(this.activeObj.textSettings.text);
+            this.objColl.push(this.activeObj);
+            this.redrawShape(this.objColl[this.objColl.length - 1]);
             this.refreshToolbar('text');
         }
     }
@@ -6250,11 +7696,34 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         return inRange;
     }
 
+    private updateInMemoryContext(imgData: ImageData, isUpdate?: boolean): void {
+        const temp: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+        this.redrawImgWithObj();
+        this.activeObj = temp;
+        if (isNullOrUndefined(isUpdate)) {
+            imgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        }
+        this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        this.inMemoryCanvas.width = imgData.width; this.inMemoryCanvas.height = imgData.height;
+        this.inMemoryContext.putImageData(imgData, 0, 0);
+    }
+
+    private clearActObj(): void {
+        if (this.textBox.style.display === 'none') {
+            this.refreshActiveObj();
+            this.applyActObj();
+            this.refreshActiveObj();
+            this.currObjType.isCustomCrop = false;
+        }
+    }
+
     private rotateMultiple(length: number, degree: number): void {
         for (let i: number = 0; i < length; i++) {
             if (degree > 0) {this.degree += 90; }
             else {this.degree -= 90; }
             if (this.degree === 360) {this.degree = 0; }
+            const temp: string = this.lowerContext.filter;
             this.lowerContext.save();
             this.setMaximumDimension(90 * (i + 1));
             this.lowerContext.translate(this.lowerCanvas.width / 2, this.lowerCanvas.height / 2);
@@ -6262,7 +7731,9 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             else {this.lowerContext.rotate(Math.PI / 180 * -90); }
             this.lowerCanvas.style.left = this.upperCanvas.style.left = (this.element.clientWidth - parseInt(this.lowerCanvas.style.maxWidth, 10) - 18) / 2 + 1 + 'px';
             this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.clientHeight - this.toolbarHeight - parseInt(this.lowerCanvas.style.maxHeight, 10)) / 2 + 1 + 'px';
+            this.updateBrightnessFilter();
             this.lowerContext.drawImage(this.inMemoryCanvas, -this.lowerCanvas.height / 2, -this.lowerCanvas.width / 2);
+            this.lowerContext.filter = temp;
             if (degree > 0) {this.lowerContext.rotate(Math.PI / 180 * -90); }
             else {this.lowerContext.rotate(Math.PI / 180 * 90); }
             this.lowerContext.translate(-this.lowerCanvas.width / 2, -this.lowerCanvas.height / 2);
@@ -6271,11 +7742,367 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
             this.inMemoryContext.putImageData(this.currImgData, 0, 0);
+            this.lowerContext.filter = this.canvasFilter;
+            this.updateBrightnessFilter();
+            this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-            if (degree > 0) {this.redrawObj(90) }
-            else {this.redrawObj(-90) }
-            
+            this.lowerContext.filter = temp;
+            if (degree > 0) {this.redrawObj(90); }
+            else {this.redrawObj(-90); }
         }
+    }
+
+    private setBrightness(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.brightness = value;
+            value = this.getFilterValue(value);
+            this.updateAdjustment('brightness', value);
+        }
+    }
+
+    private setContrast(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.contrast = value;
+            value = this.getFilterValue(value);
+            value *= 100;
+            this.updateAdjustment('contrast', value);
+        }
+    }
+
+    private setHue(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.hue = value;
+            value *= 3;
+            this.updateAdjustment('hue', value);
+        }
+    }
+
+    private setSaturation(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.saturation = value;
+            value = this.getSaturationFilterValue(value);
+            value *= 100;
+            this.updateAdjustment('saturation', value);
+        }
+    }
+
+    private setOpacity(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.opacity = value;
+            if (value >= 50) {value /= 100; }
+            else if (value === 40) {value = 0.45; }
+            else if (value === 30) {value = 0.40; }
+            else if (value === 20) {value = 0.35; }
+            else if (value === 10) {value = 0.30; }
+            else if (value === 0) {value = 0.25; }
+            this.updateAdjustment('opacity', value);
+        }
+    }
+
+    private setBlur(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.blur = value;
+            value /= 20;
+            this.updateAdjustment('blur', value);
+        }
+    }
+
+    private setExposure(value: number): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.exposure = value;
+            value = this.getFilterValue(value);
+            this.updateAdjustment('exposure', value);
+        }
+    }
+
+    private setFilter(type: string): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.updateAdjustment(type, null);
+        }
+    }
+
+    private setBlackAndWhiteFilter(boolean: boolean): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.bw = boolean;
+            if (boolean) {
+                if (this.degree === 0 && this.currFlipState === '') {
+                    this.replaceBWSharpenData('bw');
+                } else if (this.degree !== 0) {
+                    const tempDegree: number = this.degree;
+                    this.rotate(-tempDegree);
+                    this.replaceBWSharpenData('bw');
+                    this.rotate(tempDegree);
+                    this.refreshToolbar('filter');
+                }  else if (this.currFlipState !== '') {
+                    const tempFlipState: string = this.currFlipState;
+                    this.flip(tempFlipState as Direction);
+                    this.replaceBWSharpenData('bw');
+                    this.flip(tempFlipState as Direction);
+                    this.refreshToolbar('filter');
+                }
+                const data: ImageData = this.inMemoryContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                const imageData: ImageData = this.getBlackAndWhiteData(data);
+                this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+                this.inMemoryCanvas.width = imageData.width; this.inMemoryCanvas.height = imageData.height;
+                this.inMemoryContext.putImageData(imageData, 0, 0);
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.filter = this.canvasFilter;
+                const temp: string = this.lowerContext.filter;
+                this.updateBrightnessFilter();
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                this.lowerContext.filter = temp;
+            } else {
+                if (this.degree === 0 && this.currFlipState === '') {
+                    this.updateBWSharpness();
+                } else if (this.degree !== 0) {
+                    const tempDegree: number = this.degree;
+                    this.rotate(-tempDegree);
+                    this.updateBWSharpness();
+                    this.rotate(tempDegree);
+                    this.refreshToolbar('filter');
+                    if (this.sharpenedImgData) {this.sharpenedImgData = false; }
+                }  else if (this.currFlipState !== '') {
+                    const tempFlipState: string = this.currFlipState;
+                    this.flip(tempFlipState as Direction);
+                    this.updateBWSharpness();
+                    this.flip(tempFlipState as Direction);
+                    this.refreshToolbar('filter');
+                    if (this.sharpenedImgData) {this.sharpenedImgData = false; }
+                }
+            }
+        }
+    }
+
+    private setSharpness(boolean: boolean): void {
+        if (!this.disabled && this.imgDataColl.length > 0) {
+            if (this.currObjType.shape === 'freehanddraw') {
+                this.apply(); this.upperCanvas.style.cursor = 'default';
+                this.currObjType.shape = '';
+            }
+            this.clearActObj();
+            this.adjustmentLevel.sharpen = boolean;
+            if (boolean) {
+                if (this.degree === 0 && this.currFlipState === '') {
+                    this.replaceBWSharpenData('sharpen');
+                } else if (this.degree !== 0) {
+                    const tempDegree: number = this.degree;
+                    this.rotate(-tempDegree);
+                    this.replaceBWSharpenData('sharpen');
+                    this.rotate(tempDegree);
+                    this.refreshToolbar('filter');
+                }  else if (this.currFlipState !== '') {
+                    const tempFlipState: string = this.currFlipState;
+                    this.flip(tempFlipState as Direction);
+                    this.replaceBWSharpenData('sharpen');
+                    this.flip(tempFlipState as Direction);
+                    this.refreshToolbar('filter');
+                }
+                const data: ImageData = this.inMemoryContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                const imageData: ImageData = this.getSharpenData(data);
+                this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+                this.inMemoryCanvas.width = imageData.width; this.inMemoryCanvas.height = imageData.height;
+                this.inMemoryContext.putImageData(imageData, 0, 0);
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.filter = this.canvasFilter;
+                const temp: string = this.lowerContext.filter;
+                this.updateBrightnessFilter();
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                this.lowerContext.filter = temp;
+            } else {
+                if (this.degree === 0 && this.currFlipState === '') {
+                    this.updateBWSharpness();
+                } else if (this.degree !== 0) {
+                    const tempDegree: number = this.degree;
+                    this.rotate(-tempDegree);
+                    this.updateBWSharpness();
+                    this.rotate(tempDegree);
+                    this.refreshToolbar('filter');
+                    if (this.sharpenedImgData) {this.sharpenedImgData = false; }
+                }  else if (this.currFlipState !== '') {
+                    const tempFlipState: string = this.currFlipState;
+                    this.flip(tempFlipState as Direction);
+                    this.updateBWSharpness();
+                    this.flip(tempFlipState as Direction);
+                    this.refreshToolbar('filter');
+                    if (this.sharpenedImgData) {this.sharpenedImgData = false; }
+                }
+            }
+        }
+    }
+
+    private replaceBWSharpenData(type: string): void {
+        this.tempImageData = this.inMemoryContext.getImageData(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+        let imageData: ImageData = this.inMemoryContext.getImageData(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+        if (type === 'sharpen') {imageData = this.getSharpenData(this.tempImageData); }
+        else {imageData = this.getBlackAndWhiteData(imageData); }
+        this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+        this.inMemoryCanvas.width = imageData.width; this.inMemoryCanvas.height = imageData.height;
+        this.inMemoryContext.putImageData(imageData, 0, 0);
+        let tempObj: Transition;
+        for (let index: number = 0; index < this.imgDataColl.length; index++ ) {
+            if (this.imgDataColl[index as number].operation !== 'freehanddraw') {
+                tempObj = this.imgDataColl[index as number];
+                break;
+            }
+        }
+        this.imgDataColl.splice(0, 1, {operation: 'updateCanvas', value: imageData});
+        this.imgDataColl.splice(1, 1, tempObj);
+        this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+        this.inMemoryCanvas.width = this.tempImageData.width; this.inMemoryCanvas.height = this.tempImageData.height;
+        this.inMemoryContext.putImageData(this.tempImageData, 0, 0);
+    }
+
+    private updateBWSharpness(): void {
+        this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
+        this.inMemoryCanvas.width = this.tempImageData.width; this.inMemoryCanvas.height = this.tempImageData.height;
+        this.inMemoryContext.putImageData(this.tempImageData, 0, 0);
+        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+        this.lowerContext.filter = this.canvasFilter;
+        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+        this.imgDataColl.shift();
+    }
+
+    private getSharpenData(imageData: ImageData): ImageData {
+        const data: Uint8ClampedArray = imageData.data;
+        const weights: number[] = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+        const side: number = Math.round(Math.sqrt(weights.length));
+        const halfSide: number = Math.floor(side / 2);
+        const sw: number = imageData.width;
+        const sh: number = imageData.height;
+        const output: ImageData = this.inMemoryContext.createImageData(sw, sh);
+        const dst: Uint8ClampedArray = output.data;
+        // go through the destination image pixels
+        const alphaFac: number = 0;
+        let r: number; let g: number; let b: number; let a: number; let dstOff: number;
+        let scx: number; let scy: number; let srcOff: number; let wt: number;
+        let x: number; let y: number; let cx: number; let cy: number;
+        for (y = 0; y < sh; y++) {
+            for (x = 0; x < sw; x++) {
+                dstOff = (y * sw + x) * 4;
+                r = 0; g = 0; b = 0; a = 0;
+                for (cy = 0; cy < side; cy++) {
+                    for (cx = 0; cx < side; cx++) {
+                        scy = y + cy - halfSide;
+                        scx = x + cx - halfSide;
+                        if (scy < 0 || scy >= sh || scx < 0 || scx >= sw) {
+                            continue;
+                        }
+                        srcOff = (scy * sw + scx) * 4;
+                        wt = weights[cy * side + cx];
+                        r += data[srcOff as number] * wt;
+                        g += data[srcOff + 1] * wt;
+                        b += data[srcOff + 2] * wt;
+                        if (!alphaFac) {
+                            a += data[srcOff + 3] * wt;
+                        }
+                    }
+                }
+                dst[dstOff as number] = r;
+                dst[dstOff + 1] = g;
+                dst[dstOff + 2] = b;
+                if (!alphaFac) {
+                    dst[dstOff + 3] = a;
+                }
+                else {
+                    dst[dstOff + 3] = data[dstOff + 3];
+                }
+            }
+        }
+        return output;
+    }
+
+    private getFilterValue(value: number): number {
+        let filterValue: number;
+        if (value === 0) {filterValue = 1; }
+        else {filterValue = 1 + ((value * 0.5) / 100); }
+        return filterValue;
+    }
+
+    private setFilterValue(value: number): number {
+        let filterValue: number;
+        if (value === 1) {filterValue = 0; }
+        else {filterValue = ((value - 1) * 100) / 0.5; }
+        return Math.round(filterValue);
+    }
+
+    private getSaturationFilterValue(value: number): number {
+        let filterValue: number;
+        if (value === 0) {filterValue = 1; }
+        else {
+            filterValue = 1 + (value / 100);
+        }
+        return filterValue;
+    }
+
+    private setSaturationFilterValue(value: number): number {
+        let filterValue: number;
+        if (value === 1) {filterValue = 0; }
+        else {
+            filterValue = (value - 1) * 100;
+        }
+        return Math.round(filterValue);
+    }
+
+    private getBlackAndWhiteData(imageData: ImageData): ImageData {
+        for (let i: number = 0; i < imageData.data.length; i += 4) {
+            const count: number = imageData.data[i as number] + imageData.data[i + 1] + imageData.data[i + 2];
+            let colour: number = 0;
+            if (count > 383) {
+                colour = 255;
+            }
+            imageData.data[i as number] = colour;
+            imageData.data[i + 1] = colour;
+            imageData.data[i + 2] = colour;
+            imageData.data[i + 3] = 255;
+        }
+        return imageData;
     }
 
     /**
@@ -6313,9 +8140,20 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: ImageEditor = this;
             isCrop = true;
+            const canvasFilter: string = this.canvasFilter;
+            const tempActObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
+            this.lowerContext.filter = this.canvasFilter = 'none';
+            this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+            for (let j: number = 0; j < this.objColl.length; j++ ) {
+                this.apply(this.objColl[j as number].shape, this.objColl[j as number]);
+                this.refreshActiveObj();
+            }
+            this.activeObj = tempActObj;
             this.upperCanvas.style.display = 'none';
             let widthRatio: number; let heightRatio: number;
             let imgData: ImageData; let zoomedRotate: boolean = false;
+            const factor: number = this.factor;
             if (this.factor === 1) {
                 imgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                 widthRatio = this.lowerCanvas.width / parseInt(this.lowerCanvas.style.maxWidth, 10);
@@ -6349,6 +8187,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                         this.updateInMemoryContext(imgData);
                     }
                     this.degree = 0;
+                    this.updateBrightnessFilter();
                     this.lowerContext.drawImage(this.inMemoryCanvas, tempObj.activePoint.startX, tempObj.activePoint.startY,
                                                 tempObj.activePoint.width, tempObj.activePoint.height, 0, 0, this.lowerCanvas.width,
                                                 this.lowerCanvas.height);
@@ -6365,6 +8204,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     this.lowerCanvas.style.maxHeight = this.upperCanvas.style.maxHeight = maxDimension.height + 'px';
                     this.lowerCanvas.width = this.upperCanvas.width = maxDimension.width * widthRatio;
                     this.lowerCanvas.height = this.upperCanvas.height = maxDimension.height * heightRatio;
+                    this.updateBrightnessFilter();
                     this.lowerContext.drawImage(this.inMemoryCanvas, tempObj.activePoint.startX, tempObj.activePoint.startY,
                                                 tempObj.activePoint.width, tempObj.activePoint.height, 0, 0, this.lowerCanvas.width,
                                                 this.lowerCanvas.height);
@@ -6386,6 +8226,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 ((this.element.clientWidth - parseInt(cssObj.width, 10) - 18) / 2) + 1 + 'px';
                 this.lowerCanvas.style.top = this.upperCanvas.style.top = ((this.element.clientHeight - this.toolbarHeight
                 - parseInt(cssObj.height, 10)) / 2) + 1 + 'px';
+                this.updateBrightnessFilter();
                 this.lowerContext.drawImage(this.inMemoryCanvas, this.activeObj.activePoint.startX, this.activeObj.activePoint.startY,
                                             this.activeObj.activePoint.width, this.activeObj.activePoint.height, 0, 0,
                                             this.lowerCanvas.width, this.lowerCanvas.height);
@@ -6395,6 +8236,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.inMemoryCanvas.width = imgData.width; this.inMemoryCanvas.height = imgData.height;
                 this.inMemoryContext.putImageData(imgData, 0, 0);
                 this.lowerContext.save();
+                this.updateBrightnessFilter();
                 this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0, this.baseImg.width, this.baseImg.height);
                 this.lowerContext.globalCompositeOperation = 'destination-in';
                 this.lowerContext.beginPath();
@@ -6407,41 +8249,22 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             showSpinner(this.element);
             this.element.style.opacity = '0.5';
-            let blobUrl: string; let data: ImageData;
+            let blobUrl: string;
             // eslint-disable-next-line @typescript-eslint/tslint/config
             this.lowerCanvas.toBlob(function(blob){
                 blobUrl = URL.createObjectURL(blob);
-                proxy.isUndoRedo = false;
                 proxy.baseImg.src = blobUrl;
-                data = proxy.lowerContext.getImageData(0, 0, proxy.lowerCanvas.width, proxy.lowerCanvas.height);
                 proxy.imgDataColl = [];
-                if (!proxy.isUndoRedo) {proxy.updateUndoRedoColl('crop', data, proxy.objColl); }
-                proxy.isUndoRedo = false;
             }, 'image/png');
             this.objColl = [];
             this.refreshActiveObj();
             this.degree = 0; this.flipState = '';
             this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.lowerContext.globalAlpha = 0; this.lowerContext.fillRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-            this.lowerContext.setTransform(1, 0, 0, 1, 0, 0);
-            this.upperContext.setTransform(1, 0, 0, 1, 0, 0);
             this.factor = 1;
+            this.canvasFilter = canvasFilter;
         }
         return isCrop;
-    }
-
-    private updateInMemoryContext(imgData: ImageData): void {
-        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-        const temp: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
-        for (let i: number = 0; i < this.objColl.length; i++) {
-            this.apply(this.objColl[i].shape, this.objColl[i]);
-        }
-        this.activeObj = temp;
-        imgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.inMemoryContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
-        this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.inMemoryCanvas.width = imgData.width; this.inMemoryCanvas.height = imgData.height;
-        this.inMemoryContext.putImageData(imgData, 0, 0);
     }
 
     /**
@@ -6460,8 +8283,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             const transitionArgs: FlipEventArgs = {direction: direction};
             this.trigger('flipping', transitionArgs);
-            this.lastAction = 'flip';
-            this.flipMethod = true;
+            this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
             let splitWords: string[] = [];
             let activeObjShape: string;
             if (!isNullOrUndefined(this.activeObj.activePoint)) {
@@ -6480,7 +8303,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.lowerContext.scale(-1, 1);
                 this.upperContext.translate(this.upperContext.canvas.width, 0);
                 this.upperContext.scale(-1, 1);
-                this.flipDirection = 'horizontal';
                 if (this.flipState === '' || this.flipState.toLowerCase() === 'vertical') {
                     this.flipState = 'horizontal';
                 }
@@ -6495,7 +8317,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.lowerContext.scale(1, -1);
                 this.upperContext.translate(0, this.upperContext.canvas.height);
                 this.upperContext.scale(1, -1);
-                this.flipDirection = 'vertical';
                 if (this.flipState.toLowerCase() === '' || this.flipState.toLowerCase() === 'horizontal') {
                     this.flipState = 'vertical';
                 }
@@ -6505,69 +8326,87 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     this.currFlipState = 'vertical';
                 }
             }
+            const temp: string = this.lowerContext.filter;
+            this.updateBrightnessFilter();
+            this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+            this.lowerContext.filter = temp;
             this.currImgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.lowerContext.filter = this.canvasFilter;
+            this.updateBrightnessFilter();
+            this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+            this.lowerContext.filter = temp;
             this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
             this.inMemoryCanvas.width = this.currImgData.width;
             this.inMemoryCanvas.height = this.currImgData.height;
             this.inMemoryContext.putImageData(this.currImgData, 0, 0);
             if (this.flipState.toLowerCase() === 'horizontal') {
+                const tempFilter: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 for (let i: number = 0, len: number = this.objColl.length; i < len; i++) {
-                    this.objColl[i].flippedText = false;
-                    if (this.objColl[i].shapeFlip !== '' && this.objColl[i].shapeFlip === this.currFlipState) {
-                        this.apply(this.objColl[i].shape, this.objColl[i]);
+                    this.objColl[i as number].flippedText = false;
+                    if (this.objColl[i as number].shapeFlip !== '' && this.objColl[i as number].shapeFlip === this.currFlipState) {
+                        this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                     } else {
-                        this.apply(this.objColl[i].shape, this.objColl[i]);
+                        this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                     }
                 }
+                this.lowerContext.filter = tempFilter;
                 this.lowerContext.translate(this.lowerContext.canvas.width, 0);
                 this.lowerContext.scale(-1, 1);
                 this.upperContext.translate(this.upperContext.canvas.width, 0);
                 this.upperContext.scale(-1, 1);
-                this.flipDirection = '';
             } else if (this.flipState.toLowerCase() === 'vertical') {
+                const tempFilter: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 for (let i: number = 0, len: number = this.objColl.length; i < len; i++) {
-                    this.objColl[i].flippedText = false;
-                    if (this.objColl[i].shapeFlip !== '' && this.objColl[i].shapeFlip === this.currFlipState) {
-                        this.apply(this.objColl[i].shape, this.objColl[i]);
+                    this.objColl[i as number].flippedText = false;
+                    if (this.objColl[i as number].shapeFlip !== '' && this.objColl[i as number].shapeFlip === this.currFlipState) {
+                        this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                     } else {
-                        this.apply(this.objColl[i].shape, this.objColl[i]);
+                        this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                     }
                 }
+                this.lowerContext.filter = tempFilter;
                 this.lowerContext.translate(0, this.lowerContext.canvas.height);
                 this.lowerContext.scale(1, -1);
                 this.upperContext.translate(0, this.upperContext.canvas.height);
                 this.upperContext.scale(1, -1);
-                this.flipDirection = '';
             }
             for (let i: number = 0, len: number = this.objColl.length; i < len; i++) {
-                if (this.objColl[i].flipObjColl.length === 0) {
-                    this.objColl[i].flipObjColl.push(direction);
-                } else if (this.objColl[i].flipObjColl[this.objColl[i].flipObjColl.length - 1] === direction) {
-                    this.objColl[i].flipObjColl.pop();
+                if (this.objColl[i as number].flipObjColl.length === 0) {
+                    this.objColl[i as number].flipObjColl.push(direction);
+                } else if (this.objColl[i as number].flipObjColl[this.objColl[i as number].flipObjColl.length - 1] === direction) {
+                    this.objColl[i as number].flipObjColl.pop();
                 } else {
-                    this.objColl[i].flipObjColl.push(direction);
+                    this.objColl[i as number].flipObjColl.push(direction);
                 }
             }
             this.redrawObj(direction.toLowerCase());
             if (this.flipState === '') {
+                const tempFilter: string = this.lowerContext.filter;
+                this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 for (let i: number = 0, len: number = this.objColl.length; i < len; i++) {
-                    this.apply(this.objColl[i].shape, this.objColl[i]);
+                    this.apply(this.objColl[i as number].shape, this.objColl[i as number]);
                 }
+                this.lowerContext.filter = tempFilter;
             }
             this.refreshActiveObj();
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('flip', direction, this.objColl); }
-            this.isUndoRedo = this.flipMethod = false;
             if (!isNullOrUndefined(activeObjShape)) {
                 if (activeObjShape === 'custom') {
                     this.activeObj.activePoint = {startX: 0, startY: 0, endX: this.lowerCanvas.width,
-                    endY: this.lowerCanvas.height, width: this.lowerCanvas.width, height: this.lowerCanvas.height};
+                        endY: this.lowerCanvas.height, width: this.lowerCanvas.width, height: this.lowerCanvas.height};
                     this.updateActiveObject(this.calcRatio(), this.activeObj.activePoint, this.activeObj);
                     this.drawObject('duplicate', this.activeObj);
                 } else {
                     this.select(activeObjShape);
                 }
             }
+            this.refreshToolbar('main');
         }
     }
 
@@ -6590,6 +8429,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      */
     public open(data: string | ImageData): void {
         if (!this.disabled) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const proxy: ImageEditor = this;
             showSpinner(this.element);
             this.element.style.opacity = '0.5';
             const toolbar: HTMLInputElement = document.querySelector('#' + this.element.id + '_currPos');
@@ -6601,10 +8442,13 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.toolbarHeight = 0;
             }
             if (isNullOrUndefined(this.toolbarTemplate)) {this.update(); }
+            this.degree = 0; this.flipState = ''; this.factor = 1;
+            this.imgDataColl = [];
             const type: string = typeof(data);
             if (type === 'string') {
                 this.imageOnLoad(data as string);
             } else {
+                const tempFilter: string = this.lowerContext.filter;
                 this.lowerCanvas = document.querySelector('#' + this.element.id + '_lowerCanvas');
                 this.upperCanvas = document.querySelector('#' + this.element.id + '_upperCanvas');
                 this.lowerContext = this.lowerCanvas.getContext('2d'); this.upperContext = this.upperCanvas.getContext('2d');
@@ -6617,10 +8461,19 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.imgDataColl.push({operation: 'open', value: data});
                 this.lowerCanvas.width = this.upperCanvas.width = (data as ImageData).width;
                 this.lowerCanvas.height = this.upperCanvas.height = (data as ImageData).height;
+                this.lowerContext.filter = tempFilter;
+                const temp: string = this.lowerContext.filter;
+                this.updateBrightnessFilter();
                 this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0 , this.lowerCanvas.width, this.lowerCanvas.height);
-                this.updateCanvas();
+                this.lowerContext.filter = temp;
+                this.redrawImg(this.lowerContext.filter);
                 hideSpinner(this.element);
-                this.element.style.opacity = '1';  
+                this.element.style.opacity = '1';
+                // eslint-disable-next-line @typescript-eslint/tslint/config
+                this.lowerCanvas.toBlob(function(blob){
+                    showSpinner(proxy.element);
+                    proxy.baseImg.src = URL.createObjectURL(blob);
+                }, 'image/png');
             }
         }
     }
@@ -6638,6 +8491,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.lowerContext.clearRect(0, 0, this.inMemoryCanvas.height, this.inMemoryCanvas.width);
             this.upperContext.clearRect(0, 0, this.inMemoryCanvas.width, this.inMemoryCanvas.height);
             this.upperContext.clearRect(0, 0, this.inMemoryCanvas.height, this.inMemoryCanvas.width);
+            this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+                'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
             showSpinner(this.element);
             this.element.style.opacity = '0.5';
             if (this.imgDataColl.length > 0) {
@@ -6648,35 +8503,30 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.inMemoryCanvas.width = (this.imgDataColl[0].value as ImageData).width;
                 this.inMemoryCanvas.height = (this.imgDataColl[0].value as ImageData).height;
                 this.inMemoryContext.putImageData(this.imgDataColl[0].value as ImageData, 0, 0);
-                this.redrawImg();
+                this.redrawImg(this.lowerContext.filter);
+                this.lowerCanvas.width = this.baseImg.width; this.lowerCanvas.height = this.baseImg.height;
             }
             this.lowerContext.setTransform(1, 0, 0, 1, 0, 0);
             this.upperContext.setTransform(1, 0, 0, 1, 0, 0);
-            this.baseImg.src = this.baseImgSrc;
+            this.baseImg.src = this.baseImgSrc.id;
             this.factor = 1;
             this.refreshToolbar('main');
             if (Browser.isDevice && document.getElementById(this.element.id + '_bottomToolbar')) {
                 (getComponent(document.getElementById(this.element.id + '_bottomToolbar'), 'toolbar') as Toolbar).destroy();
             }
-            this.objColl = []; this.imgDataColl = [];
-            this.degree = 0;
-            this.flipState = this.keyHistory = this.currFlipState = this.flipDirection = '';
-            this.upperCanvas.style.display = 'none';
+            this.objColl = []; this.imgDataColl = []; this.degree = 0;
+            this.flipState = this.keyHistory = this.currFlipState = '';
+            this.upperCanvas.style.display = 'none'; this.togglePan = this.togglePen =  false;
             this.upperCanvas.style.cursor = this.lowerCanvas.style.cursor = 'default';
-            this.undoRedoColl = []; this.dragCanvas = this.dragged = this.isUndoRedo = this.activeObj.flippedText = this.flipMethod = false;
+            this.dragCanvas = this.activeObj.flippedText = false;
             this.currImgData = {} as ImageData;
             this.pannStart = {startX: 0, startY: 0, width: 0, height: 0};
             this.pannEnd = {startX: 0, startY: 0, width: 0, height: 0};
             this.lowerContext.lineWidth = this.upperContext.lineWidth = undefined;
-            this.togglePan = this.togglePen = this.rotateMethod =  false;
-            this.lastX = this.lastY =  0;
-            this.dragStart = { x: 0, y: 0 };
-            this.touchEndPoint = {} as Point;
-            this.prevX = this.currX = this.prevY = this.currY = 0;
-            this.lastAction = this.tempKeyHistory = '';
-            this.isBoldbtn = this.isItalicbtn = false;
-            this.currentToolbar = 'main';
-            this.textStartPoints = {x: 0, y: 0};
+            this.lastX = this.lastY =  0; this.dragStart = { x: 0, y: 0 };
+            this.touchEndPoint = {} as Point; this.prevX = this.currX = this.prevY = this.currY = 0;
+            this.tempKeyHistory = '';
+            this.currentToolbar = 'main'; this.textStartPoints = {x: 0, y: 0};
             this.fontSizeColl = this.penDrawColl = [];
             this.textBox.value = this.textBox.textContent = '';
             this.textBox.style.display = 'none';
@@ -6684,14 +8534,25 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.textSettings =
             {text: 'Enter Text', fontFamily: 'Arial', fontSize: null, bold: false, italic: false, underline: false};
             this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
-            this.penStrokeWidth = undefined;
             this.tempTextSettings =
             {text: 'Enter Text', fontFamily: 'Arial', fontSize: null, bold: false, italic: false, underline: false};
             this.refreshActiveObj();
-            this.timer = undefined;
+            this.timer = undefined; this.penStrokeWidth = undefined;
             this.isScreenOriented = false;
+            this.tempObjColl =  [];
+            this.tempObjColl = undefined;
+            this.adjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0, exposure: 0, sharpen:
+                false, bw: false};
+            this.tempAdjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0, exposure: 0, sharpen:
+                false, bw: false};
+            this.canvasFilter = this.currentFilter = this.tempAdjustmentValue = '';
+            this.lowerContext.filter = this.initialAdjustmentValue = this.adjustmentValue = 'brightness(' + 1 + ') ' + 'contrast(' + 100
+                + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
+            'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+            this.tempImageData = undefined;
+            this.sharpenedImgData = this.isBrightnessAdjusted = this.isInitialLoading = false;
             this.currObjType = { shape: '', isDragging: false, isActiveObj: false, isText: false, isInitialText: false, isLine: false,
-                isInitialLine: false, isCustomCrop: false, isZoomed: false };
+                isInitialLine: false, isCustomCrop: false, isZoomed: false, isFiltered: false, isSave: false };
         }
     }
 
@@ -6703,7 +8564,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      *
      * @returns {boolean}.
      */
-     public rotate(degree: number): boolean {
+    public rotate(degree: number): boolean {
         let isRotate: boolean = false;
         if (!this.disabled && this.imgDataColl.length > 0 && (degree % 90 === 0)) {
             isRotate = true;
@@ -6718,7 +8579,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
             }
             this.redrawActObj();
-            const factor: number = this.factor;
             if (this.factor !== 1) {
                 this.lowerContext.setTransform(1, 0, 0, 1, 0, 0);
                 this.upperContext.setTransform(1, 0, 0, 1, 0, 0);
@@ -6731,13 +8591,16 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             } else {
                 this.degree += degree;
                 if (this.degree === 360) {this.degree = 0; }
+                const temp: string = this.lowerContext.filter;
                 this.lowerContext.save();
                 this.setMaximumDimension(this.degree);
                 this.lowerContext.translate(this.lowerCanvas.width / 2, this.lowerCanvas.height / 2);
                 this.lowerContext.rotate(Math.PI / 180 * degree);
                 this.lowerCanvas.style.left = this.upperCanvas.style.left = (this.element.clientWidth - parseInt(this.lowerCanvas.style.maxWidth, 10) - 18) / 2 + 1 + 'px';
                 this.lowerCanvas.style.top = this.upperCanvas.style.top = (this.element.clientHeight - this.toolbarHeight - parseInt(this.lowerCanvas.style.maxHeight, 10)) / 2 + 1 + 'px';
+                this.updateBrightnessFilter();
                 this.lowerContext.drawImage(this.inMemoryCanvas, -this.lowerCanvas.height / 2, -this.lowerCanvas.width / 2);
+                this.lowerContext.filter = temp;
                 this.lowerContext.rotate(Math.PI / 180 * -degree);
                 this.lowerContext.translate(-this.lowerCanvas.width / 2, -this.lowerCanvas.height / 2);
                 this.lowerContext.restore();
@@ -6745,14 +8608,19 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                 this.inMemoryCanvas.width = this.currImgData.width; this.inMemoryCanvas.height = this.currImgData.height;
                 this.inMemoryContext.putImageData(this.currImgData, 0, 0);
+                this.lowerContext.filter = this.canvasFilter;
+                this.updateBrightnessFilter();
+                this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                 this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
+                this.lowerContext.filter = temp;
                 this.redrawObj(degree);
             }
             if (!isNullOrUndefined(activeObjShape)) {
                 if (activeObjShape === 'custom') {
-                    const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height - this.pannEnd.startY};
+                    const endPoint: Point = { x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height -
+                        this.pannEnd.startY };
                     this.activeObj.activePoint = {startX: this.pannStart.startX, startY: this.pannStart.startY, endX: endPoint.x,
-                    endY: endPoint.y, width: endPoint.x - this.pannStart.startX, height: endPoint.y - this.pannStart.startY};
+                        endY: endPoint.y, width: endPoint.x - this.pannStart.startX, height: endPoint.y - this.pannStart.startY};
                     this.updateActiveObject(this.calcRatio(), this.activeObj.activePoint, this.activeObj);
                     this.drawObject('duplicate', this.activeObj);
                 } else {
@@ -6761,8 +8629,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.refreshToolbar('main', true, true);
             }
             this.factor = 1;
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('rotate', degree, this.objColl, null); }
-            this.isUndoRedo = false;
             this.refreshToolbar('main');
         }
         return isRotate;
@@ -6783,17 +8649,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.applyPenDraw();
             }
             this.applyActObj();
+            this.lowerContext.filter = this.canvasFilter;
             if (this.factor !== 1) {
                 this.lowerContext.setTransform(1, 0, 0, 1, 0, 0);
                 this.upperContext.setTransform(1, 0, 0, 1, 0, 0);
                 this.factor = 1;
                 this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                 this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
-                this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-                for (let i: number = 0; i < this.objColl.length; i++ ) {
-                    this.apply(this.objColl[i].shape, this.objColl[i]);
-                    this.refreshActiveObj();
-                }
+                this.redrawImgWithObj();
             }
             type = type ? type : 'Png';
             this.redrawActObj();
@@ -6801,6 +8664,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             const saved: SaveEventArgs = { fileName: fileName ? fileName : 'ImageEditor', fileType: type as FileType};
             this.trigger('beforeSave', beforeSave, (observableSaveArgs: BeforeSaveEventArgs) => {
                 if (!observableSaveArgs.cancel) {
+                    this.currObjType.isSave = true;
                     fileName = observableSaveArgs.fileName ? observableSaveArgs.fileName : fileName;
                     if (type.toLowerCase() === 'svg') {
                         fileName = fileName || 'ImageEditor';
@@ -6860,7 +8724,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     this.upperCanvas.style.cursor = 'crosshair';
                     if (Browser.isDevice) {
                         const arcRadius: number = (7.5 * (ratio.width > ratio.height ? ratio.width : ratio.height)) / this.factor;
-                        const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height - this.pannEnd.startY};
+                        const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height -
+                            this.pannEnd.startY };
                         this.activeObj.activePoint = {startX: this.pannStart.startX + arcRadius, startY: this.pannStart.startY + arcRadius,
                             endX: endPoint.x - arcRadius, endY: endPoint.y - arcRadius};
                         this.activeObj.activePoint.width = this.activeObj.activePoint.endX - this.activeObj.activePoint.startX;
@@ -6910,7 +8775,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     public freeHandDraw(value: boolean): void {
         if (value) {
             this.togglePen = true;
-            this.upperCanvas.style.cursor = 'cross-hair';
+            this.upperCanvas.style.cursor = 'crosshair';
             this.drawPen();
         } else {
             this.upperCanvas.style.cursor = 'default';
@@ -6924,7 +8789,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      *
      * @param {boolean} value - Specifies a value whether enable or disable freehand drawing. 
      *
-     * @returns {void}.
+     *  @returns {void}.
      */
     public freehandDraw(value: boolean): void {
         this.freeHandDraw(value);
@@ -6974,13 +8839,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.redrawActObj();
             this.refreshActiveObj();
             this.upperContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
+            this.lowerContext.filter = this.canvasFilter;
             this.upperCanvas.style.cursor = 'default';
-            let zoomState: number;
-            if (value === 3.75 || value === 1) {zoomState = 0.1; }
-            else if (value === -3.75) {zoomState = -0.1; }
-            else {
-                zoomState = value;
-            }
             if (this.degree !== 0) {
                 this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                 this.inMemoryContext.clearRect(0, 0, this.lowerCanvas.height, this.lowerCanvas.width);
@@ -6989,18 +8849,23 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 this.inMemoryContext.putImageData(this.currImgData, 0, 0);
             }
             if (value === 0.1 || value === -0.1) {this.lastX = this.lowerCanvas.width / 2; this.lastY = this.lowerCanvas.height / 2; }
-            if (value > 0) {
-                this.zoomImg(3.75);
-            }
-            else {
-                this.zoomImg(-3.75);
+            if (value === 1.1 || value === -1.1) {
+                this.zoomImg(value);
+            } else {
+                if (value > 0) {
+                    this.zoomImg(3.75);
+                }
+                else {
+                    this.zoomImg(-3.75);
+                }
             }
             this.refreshActiveObj();
             if (!isNullOrUndefined(activeObjShape)) {
                 if (activeObjShape === 'custom') {
-                    const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height - this.pannEnd.startY};
+                    const endPoint: Point = {x: this.lowerCanvas.width - this.pannEnd.startX, y: this.lowerCanvas.height -
+                        this.pannEnd.startY};
                     this.activeObj.activePoint = {startX: this.pannStart.startX, startY: this.pannStart.startY, endX: endPoint.x,
-                    endY: endPoint.y, width: endPoint.x - this.pannStart.startX, height: endPoint.y - this.pannStart.startY};
+                        endY: endPoint.y, width: endPoint.x - this.pannStart.startX, height: endPoint.y - this.pannStart.startY};
                     this.updateActiveObject(this.calcRatio(), this.activeObj.activePoint, this.activeObj);
                     this.drawObject('duplicate', this.activeObj);
                 } else {
@@ -7008,13 +8873,26 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 }
                 this.refreshToolbar('main', true, true);
             }
-            if (!this.isUndoRedo) {this.updateUndoRedoColl('zoom', zoomState, this.objColl); }
-            this.isUndoRedo = false;
             const zoomOut: HTMLElement = document.querySelector('#' + this.element.id + '_zoomOut');
             if (!isNullOrUndefined(zoomOut) && this.factor === 1) {
                 zoomOut.classList.add('e-disabled');
             } else if (!isNullOrUndefined(zoomOut)) {
                 zoomOut.classList.remove('e-disabled');
+            }
+            if (!this.togglePan) {
+                this.callMainToolbar(false, true);
+            }
+            this.autoEnablePan();
+            if (isNullOrUndefined(this.activeObj.activePoint) || this.activeObj.activePoint.width === 0) {
+                this.refreshToolbar('main');
+            } else {
+                this.refreshToolbar('main', true, true);
+            }
+            const panBtn: HTMLElement = this.element.querySelector('.e-img-pan .e-btn');
+            if (!isNullOrUndefined(panBtn) && this.togglePan) {
+                panBtn.classList.add('e-selected-btn');
+            } else if (!isNullOrUndefined(panBtn)) {
+                panBtn.classList.remove('e-selected-btn');
             }
         }
     }
@@ -7188,8 +9066,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.applyActObj();
         let obj: SelectionPoint; let isSelected: boolean;
         for (let i: number = 0; i < this.objColl.length; i++) {
-            if (this.objColl[i].currIndex === id) {
-                obj = extend({}, this.objColl[i], {}, true) as SelectionPoint;
+            if (this.objColl[i as number].currIndex === id) {
+                obj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
                 break;
             }
         }
@@ -7198,11 +9076,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         } else {
             isSelected = true;
             this.activeObj = obj;
+            this.lowerContext.filter = this.canvasFilter;
             this.redrawShape(this.activeObj);
             if (this.activeObj.shape === 'text') {
-                  this.refreshToolbar('text');
-             } else if (this.activeObj.shape === 'pen') {
-                  this.refreshToolbar('pen');
+                this.refreshToolbar('text');
+            } else if (this.activeObj.shape === 'pen') {
+                this.refreshToolbar('pen');
             } else {
                 this.refreshToolbar('shapes');
             }
@@ -7233,17 +9112,14 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     public deleteShape(id: string): void {
         this.applyActObj();
         for (let i: number = 0; i < this.objColl.length; i++) {
-            if (this.objColl[i].currIndex === id) {
+            if (this.objColl[i as number].currIndex === id) {
                 this.objColl.splice(i, 1);
                 break;
             }
         }
+        this.lowerContext.filter = this.canvasFilter;
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
-        this.lowerContext.drawImage(this.inMemoryCanvas, 0, 0);
-        for (let i: number = 0; i < this.objColl.length; i++) {
-            this.apply(this.objColl[i].shape, this.objColl[i]);
-            this.refreshActiveObj();
-        }
+        this.redrawImgWithObj();
         this.refreshToolbar('main');
     }
 
@@ -7270,8 +9146,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.applyActObj();
         let obj: SelectionPoint;
         for (let i: number = 0; i < this.objColl.length; i++) {
-            if (this.objColl[i].currIndex === id) {
-                obj = extend({}, this.objColl[i], {}, true) as SelectionPoint;
+            if (this.objColl[i as number].currIndex === id) {
+                obj = extend({}, this.objColl[i as number], {}, true) as SelectionPoint;
                 break;
             }
         }
@@ -7288,7 +9164,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         this.applyActObj();
         const shapeDetailsColl: ShapeSettings[] = [];
         for (let i: number = 0; i < this.objColl.length; i++) {
-            const shapeDetails: ShapeSettings = this.getObjDetails(this.objColl[i]);
+            const shapeDetails: ShapeSettings = this.getObjDetails(this.objColl[i as number]);
             shapeDetailsColl.push(shapeDetails);
         }
         return shapeDetailsColl;
@@ -7310,8 +9186,61 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             canvasWrapper.style.height = this.element.offsetHeight - this.toolbarHeight - 1 + 'px';
             this.lowerCanvas.height = this.upperCanvas.height = this.element.offsetHeight - this.toolbarHeight - 1;
         }
+        this.lowerContext.filter = this.canvasFilter;
         this.lowerContext.clearRect(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
         this.upperContext.clearRect(0, 0, this.upperCanvas.width, this.upperCanvas.height);
+    }
+
+    /**
+     * To apply the filters to an image
+     *
+     * @param {ImageFilterOptions } filterOption - Specifies the filter options to the image.
+     * @returns {void}.
+     */
+    public applyImageFilter(filterOption: ImageFilterOptions): void {
+        if (this.initialAdjustmentValue === '') {
+            this.initialAdjustmentValue = 'brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)';
+        }
+        this.lowerContext.filter = this.initialAdjustmentValue;
+        this.setFilter(filterOption.toString());
+    }
+
+    /**
+     * To apply the filters to an image
+     *
+     * @param {ImageFinetuneOptions } finetuneOption - Specifies the finetune options to the image.
+     * @param {number } value - Specifies the value for finetuning the image.
+     * @returns {void}.
+     *
+     */
+    public finetuneImage(finetuneOption: ImageFinetuneOptions, value: number): void {
+        if (this.initialAdjustmentValue === '') {
+            this.initialAdjustmentValue = 'brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)';
+        }
+        this.lowerContext.filter = this.initialAdjustmentValue;
+        switch (finetuneOption) {
+        case 'Brightness':
+            this.setBrightness(value);
+            break;
+        case 'Contrast':
+            this.setContrast(value);
+            break;
+        case 'Hue':
+            this.setHue(value);
+            break;
+        case 'Saturation':
+            this.setSaturation(value);
+            break;
+        case 'Opacity':
+            this.setOpacity(value);
+            break;
+        case 'Blur':
+            this.setBlur(value);
+            break;
+        case 'Exposure':
+            this.setExposure(value);
+            break;
+        }
     }
 
     /**
@@ -7370,7 +9299,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @private
      */
     public getBlob(url: string): Blob {
-        return null;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        return url as any;
     }
 
     /**
@@ -7425,7 +9355,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     /**
      * To save the signature with the given file type and file name.
      *
-     * @param {SignatureFileType} type - specify type of the file to be saved a signature.
+     * @param {FileType} type - specify type of the file to be saved a signature.
      * @param {string} fileName - specify name of the file to be saved a signature.
      *
      * @returns {void}.
@@ -7450,9 +9380,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     /**
      * Returns the persistence data for component.
      *
-     * @returns any.
+     * @returns {any}.
      * @private
      */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     public getLocalData(): any {
         return null;
     }
@@ -7466,12 +9397,12 @@ export type FileType = 'Png' | 'Jpeg' | 'Svg';
 /**
  * Defines the direction to flip the image on Image Editor.
  */
- export type Direction = 'Horizontal' | 'Vertical';
+export type Direction = 'Horizontal' | 'Vertical';
 
 /**
  * Defines the Image Editor shape type.
  */
- export type ShapeType = 'Rectangle' | 'Ellipse' | 'Line' | 'Text';
+export type ShapeType = 'Rectangle' | 'Ellipse' | 'Line' | 'Text';
 
 /**
  * Defines the theme for Image Editor.
@@ -7487,6 +9418,16 @@ export type ImageEditorCommands = 'Crop' | 'Transform' | 'Annotate' | 'ZoomIn' |
 | 'Open' | 'Reset' | 'Save' | 'Pan' | 'Move' | 'Pen' | 'Line' | 'Rectangle' | 'Ellipse' | 'Text'
 | 'CustomSelection' | 'CircleSelection' | 'SquareSelection' | 'RatioSelection'
 | 'RotateLeft' | 'RotateRight' | 'FlipHorizontal' | 'FlipVertical';
+
+/**
+ * Defines the image filter options
+ */
+export type ImageFilterOptions = 'Default' | 'Chrome' | 'Cold' | 'Warm' | 'Gray Scale' | 'Sepia' | 'Invert';
+
+/**
+ * Defines the image filter options
+ */
+export type ImageFinetuneOptions = 'Brightness' | 'Contrast' | 'Hue' | 'Saturation' | 'Exposure' | 'Opacity' | 'Blur';
 
 /**
  * Interface for zoom transition occur in the imageEditor.
@@ -7545,7 +9486,7 @@ export interface RotateEventArgs {
  */
 export interface FlipEventArgs {
     /**
-     * Returns the direction(Horizontal and vertical) to be flipped.  
+     * Returns the direction(Horizontal and vertical) to be flipped.
      */
     direction: string;
 }
@@ -7767,19 +9708,39 @@ interface Transition {
     /**
      * Gets function name called from the canvas.
      */
-    operation: string;
+    operation?: string;
     /**
      * Gets parameter value of respective function called from the canvas.
      */
-    value: string | number | FileList | Dimension | ImageData;
+    value?: string | number | FileList | Dimension | ImageData | Object;
     /**
      * Gets previous object value.
      */
-    previousObj?: SelectionPoint[];
+    previousObj?: SelectionPoint[] | Object | string;
     /**
      * Gets current object value.
      */
-    currentObj?: SelectionPoint[];
+    currentObj?: SelectionPoint[] | Object | string;
+    /**
+     * Gets previous zoom value.
+     */
+    factor?: number;
+    /**
+     * Gets previous rotate value.
+     */
+    degree?: number;
+    /**
+     * Gets previous flip value.
+     */
+    flipState?: string;
+    /**
+     * Gets previous sharpness value.
+     */
+    sharpen?: boolean;
+    /**
+     * Gets previous black and white value.
+     */
+    bw?: boolean;
 }
 
 /**
@@ -7802,6 +9763,50 @@ interface PenPoint {
      * Gets or sets the points collection of free hand drawing in imageEditor.
      */
     points: Point[];
+}
+
+/**
+ * Interface for Transition occur in the imageEditor.
+ *
+ * @private
+ */
+interface Adjustment {
+    /**
+     * Gets brightness level of image.
+     */
+    brightness: number;
+    /**
+     * Gets contrast level of image.
+     */
+    contrast: number;
+    /**
+     * Gets hue level of image.
+     */
+    hue: number;
+    /**
+     * Gets saturation level of image.
+     */
+    saturation: number;
+    /**
+     * Gets exposure level of image.
+     */
+    exposure: number;
+    /**
+     * Gets opacity level of image.
+     */
+    opacity: number;
+    /**
+     * Gets blur level of image.
+     */
+    blur: number;
+    /**
+     * Gets sharpness level of image.
+     */
+    sharpen: boolean;
+    /**
+     * Gets black and white level of image.
+     */
+    bw: boolean;
 }
 
 /**
@@ -7846,6 +9851,14 @@ interface Interaction {
      * Gets function name called from the canvas.
      */
     isZoomed: boolean;
+    /**
+     * Gets function name called from the canvas.
+     */
+    isFiltered: boolean;
+    /**
+     * Gets function name called from the canvas.
+     */
+    isSave: boolean;
 }
 
 /**
@@ -7966,4 +9979,28 @@ interface SelectionPoint {
      * Gets the flip object collection from the array.
      */
     flipObjColl?: string[];
+}
+
+/**
+ * Interface for filter option for the image.
+ */
+export interface ImageFilterEventArgs {
+    /**
+     * Specifies the when applying filter to an image.
+     */
+    filter: ImageFilterOptions;
+}
+
+/**
+ * Interface for filter option for the image.
+ */
+export interface FinetuneEventArgs {
+    /**
+     * Specifies the type of fine tunes.
+     */
+    finetune: ImageFinetuneOptions;
+    /**
+     * Specifies the value of the fine tunes.
+     */
+    value: number;
 }

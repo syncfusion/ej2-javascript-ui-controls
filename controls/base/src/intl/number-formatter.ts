@@ -43,7 +43,7 @@ const errorText: Object = {
     'ms': 'minimumSignificantDigits',
     'ls': 'maximumSignificantDigits',
     'mf': 'minimumFractionDigits',
-    'lf': 'maximumFractionDigits',
+    'lf': 'maximumFractionDigits'
 };
 const integerError: string = 'minimumIntegerDigits';
 const percentSign: string = 'percentSign';
@@ -79,9 +79,9 @@ export class NumberFormat {
             dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
         /* eslint-disable  @typescript-eslint/no-explicit-any */
         dOptions.percentSymbol = isBlazor() ? getValue('numberSymbols.percentSign', numObject) :
-            (<any>dOptions).numberMapper.numberSymbols[percentSign];
+            (<any>dOptions).numberMapper.numberSymbols[`${percentSign}`];
         dOptions.minusSymbol = isBlazor() ? getValue('numberSymbols.minusSign', numObject) :
-            (<any>dOptions).numberMapper.numberSymbols[minusSign];
+            (<any>dOptions).numberMapper.numberSymbols[`${minusSign}`];
         const symbols: any = dOptions.numberMapper.numberSymbols;
         if ((option.format) && !(base.formatRegex.test(option.format))) {
             cOptions = base.customFormat(option.format, dOptions, dependable.numericObject);

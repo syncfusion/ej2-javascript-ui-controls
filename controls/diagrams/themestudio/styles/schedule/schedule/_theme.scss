@@ -13,10 +13,8 @@
     }
 
     .e-header-calendar {
-      @if ($schedule-skin == 'tailwind' or $schedule-skin == 'bootstrap5' or $schedule-skin == 'FluentUI') {
-        background-color: $schedule-calendar-background;
-        box-shadow: $schedule-popup-box-shadow-1;
-      }
+      background-color: $schedule-calendar-background;
+      box-shadow: $schedule-calendar-shadow;
     }
 
     .e-vertical-view {
@@ -73,20 +71,11 @@
       }
 
       .e-time-cells-wrap table td {
-        background-color: $schedule-header-bg-color;
+        background-color: $schedule-time-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: 0 1px 1px 0;
-        color: $schedule-secondary-content-font-color;
-        @if ($schedule-skin == 'bootstrap4') {
-          color: $schedule-primary-content-font-color;
-        }
-        @if ($schedule-skin == 'tailwind') {
-          background-color: $schedule-tbar-default-bg;
-        }
-        @if ($schedule-skin == 'bootstrap5') {
-          background-color: $schedule-vertical-time-slot-color;
-        }
+        color: $schedule-time-cells-font-color;
       }
 
       .e-time-cells-wrap table td {
@@ -94,9 +83,7 @@
       }
 
       .e-time-cells-wrap .e-time-cells {
-        @if ($schedule-skin != 'tailwind' and $schedule-skin != 'bootstrap5') {
-          border-bottom-color: $schedule-content-border-color;
-        }
+        border-bottom-color: $schedule-time-cells-border-bottom-color;
       }
 
       .e-header-cells {
@@ -104,9 +91,7 @@
 
         &.e-current-day {
           color: $schedule-active-font-color;
-          @if ($schedule-skin == 'tailwind') {
-            font-weight: 500;
-          }
+          font-weight: $schedule-current-day-font-weight;
         }
       }
 
@@ -144,9 +129,7 @@
 
           &:hover {
             background-color: $schedule-select-bg-color;
-            @if ($schedule-skin == 'bootstrap5') {
-              color: $schedule-active-color;
-            }
+            color: $schedule-selected-cell-hover-font-color;
           }
         }
       }
@@ -157,9 +140,7 @@
 
         &:hover {
           background-color: $schedule-select-bg-color;
-          @if ($schedule-skin == 'bootstrap5') {
-            color: $schedule-active-color;
-          }
+          color: $schedule-selected-cell-hover-font-color;
         }
       }
 
@@ -200,19 +181,13 @@
         border-style: $border-type;
         border-width: $schedule-month-work-cells-border;
         color: $schedule-header-font-color;
-        text-align: left;
-
-        @if ($schedule-skin == 'tailwind') {
-          font-size: 12px;
-          text-align: center;
-          text-transform: uppercase;
-        }
+        font-size: $schedule-month-date-header-cell-font-size;
+        text-align: $schedule-month-date-header-cell-text-align;
+        text-transform: $schedule-month-date-header-cell-text-transform;
 
         &.e-current-day {
           color: $schedule-active-font-color;
-          @if ($schedule-skin == 'tailwind') {
-            font-weight: 500;
-          }
+          font-weight: $schedule-current-day-font-weight;
         }
       }
 
@@ -226,10 +201,7 @@
 
         &:hover {
           background: $schedule-hover-bg-color;
-          color: $schedule-hover-font-color;
-          @if ($schedule-skin == 'bootstrap5') {
-            color: $schedule-select-font-color;
-          }
+          color: $schedule-work-cell-hover-color;
         }
       }
 
@@ -244,11 +216,8 @@
       .e-current-date .e-date-header {
         background-color: $schedule-current-date-bg-color;
         border-radius: 50%;
-        color: $schedule-active-color;
+        color: $schedule-current-date-header-font-color;
         width: 20px;
-        @if ($schedule-skin == 'highcontrast') {
-          color: $schedule-active-font-color;
-        }
       }
 
       .e-selected-cell {
@@ -256,9 +225,7 @@
         color: $schedule-select-font-color;
 
         .e-date-header {
-          @if ($schedule-skin == 'highcontrast') {
-            color: $schedule-select-font-color;
-          }
+          color: $schedule-selected-date-header-cell-font-color;
         }
 
         .e-more-indicator {
@@ -272,6 +239,11 @@
     }
 
     .e-month-agenda-view {
+
+      .e-content-wrap .e-table-container {
+        overflow: auto;
+      }
+      
       .e-date-header-wrap table td {
         border-width: $schedule-month-agenda-header-cells-border;
         text-align: center;
@@ -306,9 +278,7 @@
 
         &.e-current-day {
           color: $schedule-active-font-color;
-          @if ($schedule-skin == 'tailwind') {
-            font-weight: 500;
-          }
+          font-weight: $schedule-current-day-font-weight;
         }
       }
 
@@ -382,6 +352,81 @@
 
       .e-current-timeline {
         border-left: 1px $border-type $schedule-active-border-color;
+      }
+    }
+
+    .e-timeline-year-view {
+      .e-work-cells {
+        background-color: $schedule-work-cells-bg-color;
+        border-color: $schedule-content-border-color;
+        border-style: $border-type;
+        border-width: 0 $border-size $border-size 0;
+        color: $schedule-primary-content-font-color;
+        padding: 0;
+    
+        &:hover:not(.e-other-month) {
+          background: $schedule-hover-bg-color;
+          color: $schedule-hover-font-color;
+        }
+    
+        &.e-work-days {
+          background-color: $schedule-workhour-bg-color;
+        }
+    
+        &.e-other-month {
+          color: $schedule-secondary-content-font-color;
+        }
+    
+        &.e-current-day .e-date-header {
+          background-color: $schedule-current-date-bg-color;
+          border-radius: 50%;
+          color: $schedule-current-day-active-color;
+          margin: 2px;
+          width: 20px;
+        }
+    
+        &.e-selected-cell {
+          background-color: $schedule-select-bg-color;
+          color: $schedule-select-font-color;
+    
+          .e-date-header {
+            color: $schedule-select-font-color;
+          }
+    
+          .e-more-indicator {
+            color: $schedule-select-font-color;
+          }
+    
+          &:hover {
+            background-color: $schedule-select-bg-color;
+          }
+        }
+    
+        &.e-disable-dates {
+          background-color: $schedule-disable-dates-color;
+    
+          .e-date-header {
+            cursor: default;
+            opacity: .35;
+    
+            &:hover {
+              text-decoration: none;
+            }
+          }
+    
+          &:hover {
+            background-color: $schedule-disable-dates-color;
+          }
+        }
+      }
+    
+      &.e-virtual-mask .e-work-cells {
+        background-color: $schedule-disable-dates-color;
+        box-shadow: inset 0 0 0 8px $schedule-work-cells-bg-color;
+    
+        &:hover {
+          background-color: $schedule-disable-dates-color;
+        }
       }
     }
 
@@ -489,17 +534,7 @@
     }
 
     .e-tip-content {
-      padding: 3px 6px;
-    }
-
-    @if ($schedule-skin == 'bootstrap4') {
-      .e-tip-content {
-        padding: 4px 8px 0;
-      }
-
-      .e-arrow-tip {
-        overflow: visible;
-      }
+      padding: $schedule-tip-content-padding;
     }
 
     .e-tip-content,

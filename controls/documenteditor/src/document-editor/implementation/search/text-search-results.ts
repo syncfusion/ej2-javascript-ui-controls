@@ -35,7 +35,7 @@ export class TextSearchResults {
         this.currentIndex = -1;
         if (!isNullOrUndefined(this.innerList)) {
             for (let i: number = this.innerList.length - 1; i >= 0; i--) {
-                this.innerList[i].destroy();
+                this.innerList[parseInt(i.toString(), 10)].destroy();
                 this.innerList.splice(i, 1);
             }
         }

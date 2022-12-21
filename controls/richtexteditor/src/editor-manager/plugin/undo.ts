@@ -107,11 +107,11 @@ export class UndoRedoManager {
         let range: Range = new NodeSelection().getRange(this.parent.currentDocument);
         const currentContainer: Node = this.parent.editableElement === range.startContainer.parentElement ?
             range.startContainer.parentElement : range.startContainer;
-        for (let i = currentContainer.childNodes.length - 1; i >= 0; i--) {
-            if (!isNullOrUndefined(currentContainer.childNodes[i]) && currentContainer.childNodes[i].nodeName === '#text' &&
-            currentContainer.childNodes[i].textContent.length === 0 && currentContainer.childNodes[i].nodeName !== 'IMG' &&
-            currentContainer.childNodes[i].nodeName !== 'BR' && currentContainer.childNodes[i].nodeName && 'HR') {
-                detach(currentContainer.childNodes[i]);
+        for (let i: number = currentContainer.childNodes.length - 1 ; i >= 0; i--) {
+            if (!isNullOrUndefined(currentContainer.childNodes[i as number]) && currentContainer.childNodes[i as number].nodeName === '#text' &&
+            currentContainer.childNodes[i as number].textContent.length === 0 && currentContainer.childNodes[i as number].nodeName !== 'IMG' &&
+            currentContainer.childNodes[i as number].nodeName !== 'BR' && currentContainer.childNodes[i as number].nodeName && 'HR') {
+                detach(currentContainer.childNodes[i as number]);
             }
         }
         range = new NodeSelection().getRange(this.parent.currentDocument);

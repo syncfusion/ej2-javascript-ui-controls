@@ -33,10 +33,10 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
 
     private destroyButtons(args: { type: string }): void {
         for (let i: number = 0; i < this.childRefs.length; i++) {
-            if (this.childRefs[i] && !this.childRefs[i].isDestroyed) {
-                this.childRefs[i].destroy();
-                if (this.childRefs[i].element) {
-                    this.childRefs[i].element.innerHTML = '';
+            if (this.childRefs[parseInt(i.toString(), 10)] && !this.childRefs[parseInt(i.toString(), 10)].isDestroyed) {
+                this.childRefs[parseInt(i.toString(), 10)].destroy();
+                if (this.childRefs[parseInt(i.toString(), 10)].element) {
+                    this.childRefs[parseInt(i.toString(), 10)].element.innerHTML = '';
                 }
             }
         }
@@ -45,11 +45,11 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             let elem: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-unboundcell');
             if (elem.length) {
                 for (let i: number = 0; i < elem.length; i++) {
-                    if (elem[i]) {
-                        if (elem[i].querySelector('.e-unboundcelldiv')) {
-                            elem[i].querySelector('.e-unboundcelldiv').innerHTML = '';
+                    if (elem[parseInt(i.toString(), 10)]) {
+                        if (elem[parseInt(i.toString(), 10)].querySelector('.e-unboundcelldiv')) {
+                            elem[parseInt(i.toString(), 10)].querySelector('.e-unboundcelldiv').innerHTML = '';
                         }
-                        elem[i].innerHTML = '';
+                        elem[parseInt(i.toString(), 10)].innerHTML = '';
                     }
                 }
                 elem = null;
@@ -84,7 +84,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             }
         } else {
             for (const command of cell.commands) {
-                node = this.renderButton(node, command, <number>attributes.index, command[uid]);
+                node = this.renderButton(node, command, <number>attributes.index, command[`${uid}`]);
             }
         }
         this.setAttributes(<HTMLElement>node, cell, attributes);

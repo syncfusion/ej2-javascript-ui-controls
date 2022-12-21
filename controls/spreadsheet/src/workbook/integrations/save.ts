@@ -129,7 +129,8 @@ export class WorkbookSave extends SaveWorker {
             skipProps.push('template');
         }
         for (let i: number = 0, sheetCount: number = this.parent.sheets.length; i < sheetCount; i++) {
-            executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i], skipProps, i), i]);
+            executeTaskAsync(
+                this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i as number], skipProps, i), i]);
         }
     }
 
@@ -235,16 +236,16 @@ export class WorkbookSave extends SaveWorker {
 
         for (i = 0; i < keys.length; i++) {
             inputElem = this.parent.createElement(
-                'input', { attrs: { type: 'hidden', name: keys[i] } }) as HTMLInputElement;
-            inputElem.value = this.saveSettings[keys[i]];
+                'input', { attrs: { type: 'hidden', name: keys[i as number] } }) as HTMLInputElement;
+            inputElem.value = this.saveSettings[keys[i as number]];
             formElem.appendChild(inputElem);
         }
 
         keys = Object.keys(this.customParams);
         for (i = 0; i < keys.length; i++) {
             inputElem = this.parent.createElement(
-                'input', { attrs: { type: 'hidden', name: keys[i] } }) as HTMLInputElement;
-            inputElem.value = this.customParams[keys[i]];
+                'input', { attrs: { type: 'hidden', name: keys[i as number] } }) as HTMLInputElement;
+            inputElem.value = this.customParams[keys[i as number]];
             formElem.appendChild(inputElem);
         }
 
@@ -265,6 +266,7 @@ export class WorkbookSave extends SaveWorker {
      * @hidden
      * @param {object} model - Specifies the workbook or sheet model.
      * @param {string[]} skipProp - specifies the skipprop.
+     * @param {string[]} sheetIdx - Specifies the sheet index.
      * @returns {string} - Get stringified workbook object.
      */
     private getStringifyObject(model: object, skipProp: string[] = [], sheetIdx?: number): string {
@@ -277,14 +279,13 @@ export class WorkbookSave extends SaveWorker {
             } else {
                 if (value && value.cells) {
                     for (let i: number = 0, len: number = (value.cells as CellModel[]).length; i < len; i++) {
-                        const cell: CellModel = value.cells[i];
+                        const cell: CellModel = value.cells[i as number];
                         const cellIdx: number[] = [Number(key), i];
                         if (cell && !cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
                             this.parent.notify(
                                 workbookFormulaOperation, {
                                     action: 'refreshCalculate', value: cell.formula, rowIndex: cellIdx[0],
-                                colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true
-                            });
+                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
                             cell.value = getCell(cellIdx[0], i, model).value;
                         }
                     }

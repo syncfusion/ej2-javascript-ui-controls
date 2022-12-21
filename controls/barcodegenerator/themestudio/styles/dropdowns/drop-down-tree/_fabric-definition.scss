@@ -1,4 +1,4 @@
-// sass-lint:disable-all
+/* stylelint-disable */
 $ddt-skin-name: 'fabric' !default;
 $ddt-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 0px rgba(0, 0, 0, 0.14), 0 3px 14px 0px rgba(0, 0, 0, 0.12) !default;
 $ddt-label-top: 15px !default;
@@ -63,7 +63,7 @@ $ddt-big-chip-ddi-ci-width: calc(100% - 77px) !default;
 $ddt-chip-text-line-height: 26px !default;
 $ddt-icon-bg-color: $content-bg-color !default;
 $ddt-remains-font-color: $neutral-secondary !default;
-$ddt-remains-padding: 0 0 0 16px!default;
+$ddt-remains-padding: 0 0 0 16px !default;
 $ddt-rtl-remains-padding: 0 16px 0 0 !default;
 $ddt-chip-font-size: 14px !default;
 $ddt-delim-padding: 6px 10px 0 10px !default;

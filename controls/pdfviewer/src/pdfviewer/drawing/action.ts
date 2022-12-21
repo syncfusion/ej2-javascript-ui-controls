@@ -102,10 +102,10 @@ export function findObjectUnderMouse(
     const offsetForSelector: number = pdfViewer.touchPadding / 2;
     let boundsDiff: number = 0;
     for (let i: number = 0; i < objects.length; i++) {
-        if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
-            const bounds: PdfBoundsModel = objects[i].wrapper.bounds;
+        if (!(objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Distance' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Line' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
+            const bounds: PdfBoundsModel = objects[parseInt(i.toString(), 10)].wrapper.bounds;
             let rotationValue: number = 0;
-            if (objects[i].shapeAnnotationType === 'Stamp' || objects[i].shapeAnnotationType === 'Image') {
+            if (objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Stamp' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Image') {
                 rotationValue = 25;
             }
             // eslint-disable-next-line max-len
@@ -113,10 +113,10 @@ export function findObjectUnderMouse(
                 // eslint-disable-next-line max-len
                 (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
                 if (pdfBase.tool instanceof NodeDrawingTool || pdfBase.tool instanceof StampTool) {
-                    actualTarget = objects[i];
+                    actualTarget = objects[parseInt(i.toString(), 10)];
                 } else {
                     if (!boundsDiff) {
-                        actualTarget = objects[i];
+                        actualTarget = objects[parseInt(i.toString(), 10)];
                         // eslint-disable-next-line max-len
                         boundsDiff = (offsetX - ((bounds.x - offsetForSelector) * pdfBase.getZoomFactor())) + (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) - offsetX) +
                         // eslint-disable-next-line max-len
@@ -127,23 +127,23 @@ export function findObjectUnderMouse(
                         // eslint-disable-next-line max-len
                         (offsetY - ((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor())) + (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) - offsetY);
                         if (boundsDiff > objectBounds) {
-                            actualTarget = objects[i];
+                            actualTarget = objects[parseInt(i.toString(), 10)];
                             boundsDiff = objectBounds;
                         } else if (boundsDiff === objectBounds) {
-                            actualTarget = objects[i];
+                            actualTarget = objects[parseInt(i.toString(), 10)];
                             boundsDiff = objectBounds;
-                        } else if ((objects[i].shapeAnnotationType === "Image") || (objects[i].shapeAnnotationType === "Stamp")) {
-                            actualTarget = objects[i];
+                        } else if ((objects[parseInt(i.toString(), 10)].shapeAnnotationType === "Image") || (objects[parseInt(i.toString(), 10)].shapeAnnotationType === "Stamp")) {
+                            actualTarget = objects[parseInt(i.toString(), 10)];
                         }
                     }
                 }
             }
         } else {
             const pt: PointModel = { x: offsetX / pdfBase.getZoomFactor(), y: offsetY / pdfBase.getZoomFactor() };
-            const obj: DrawingElement = findElementUnderMouse(objects[i] as IElement, pt, offsetForSelector);
-            let isOver: boolean = isPointOverConnector(objects[i], pt);
+            const obj: DrawingElement = findElementUnderMouse(objects[parseInt(i.toString(), 10)] as IElement, pt, offsetForSelector);
+            let isOver: boolean = isPointOverConnector(objects[parseInt(i.toString(), 10)], pt);
             if (obj && !isOver) {
-                const newpoint: PointModel = CalculateLeaderPoints(objects[i], obj);
+                const newpoint: PointModel = CalculateLeaderPoints(objects[parseInt(i.toString(), 10)], obj);
                 if (newpoint) {
                     const rect: Rect = Rect.toBounds([newpoint, newpoint]);
                     rect.Inflate(10);
@@ -153,7 +153,7 @@ export function findObjectUnderMouse(
                 }
             }
             if (obj && isOver) {
-                actualTarget = objects[i];
+                actualTarget = objects[parseInt(i.toString(), 10)];
             }
         }
     }
@@ -256,7 +256,7 @@ export function insertObject(obj: PdfAnnotationBaseModel, key: string, collectio
 export function findTargetShapeElement(container: Container, position: PointModel, padding?: number): DrawingElement {
     if (container && container.children) {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
-            const shapeElement: DrawingElement = container.children[i];
+            const shapeElement: DrawingElement = container.children[parseInt(i.toString(), 10)];
             let touchPadding = padding;
             // eslint-disable-next-line
             if (!isNullOrUndefined((shapeElement as any).children) && (shapeElement as any).children.length > 0) {

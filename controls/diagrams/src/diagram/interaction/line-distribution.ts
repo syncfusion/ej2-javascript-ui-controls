@@ -89,7 +89,7 @@ export class LineDistribution {
             const graphnodes: NodeModel[] = diagram.nodes;
             if (graphnodes.length > 0) {
                 for (let i: number = 0; i < graphnodes.length; i++) {
-                    const node: Node = diagram.nameTable[graphnodes[i].id];
+                    const node: Node = diagram.nameTable[graphnodes[parseInt(i.toString(), 10)].id];
                     this.addDynamicPortandDistrrbuteLine(graph, node, srcDirection, tarDirection, diagram);
                 }
             }
@@ -137,12 +137,12 @@ export class LineDistribution {
         const connectorObstacles: ConnectorObstacle[] = [];
         const globalConnectors: ConnectorModel[] = diagram.connectors;
         for (let i: number = 0; i < globalConnectors.length; i++) {
-            const connector: ConnectorModel = globalConnectors[i];
+            const connector: ConnectorModel = globalConnectors[parseInt(i.toString(), 10)];
             const pts: PointModel[] = [];
             for (let key: number = 0; key < connector.segments.length; key++) {
-                const seg: OrthogonalSegment = connector.segments[key] as OrthogonalSegment;
+                const seg: OrthogonalSegment = connector.segments[parseInt(key.toString(), 10)] as OrthogonalSegment;
                 for (let k: number = 0; k < seg.points.length; k++) {
-                    const pt: PointModel = seg.points[k];
+                    const pt: PointModel = seg.points[parseInt(k.toString(), 10)];
                     if (pts.length === 0 || !(Point.equals(pt, pts[pts.length - 1]))) {
                         pts.push(pt);
                     }
@@ -150,7 +150,7 @@ export class LineDistribution {
             }
             const obssegments: ObstacleSegmentValues[] = [];
             for (let j: number = 1; j < pts.length; j++) {
-                const obstacle: ObstacleSegmentValues = this.ObstacleSegment({ startpt: pts[j - 1], endpt: pts[j], id: connector.id });
+                const obstacle: ObstacleSegmentValues = this.ObstacleSegment({ startpt: pts[j - 1], endpt: pts[parseInt(j.toString(), 10)], id: connector.id });
                 obssegments.push(obstacle);
             }
 
@@ -158,14 +158,14 @@ export class LineDistribution {
             const segments: ObstacleSegmentValues[] = [];
             if (!isHorizontal) {
                 for (let key: number = 0; key < connectorObstacle.segments.length; key++) {
-                    const obstacle: ObstacleSegmentValues = connectorObstacle.segments[key];
+                    const obstacle: ObstacleSegmentValues = connectorObstacle.segments[parseInt(key.toString(), 10)];
                     if (obstacle.orientation === 'horizontal') {
                         segments.push(obstacle);
                     }
                 }
             } else {
                 for (let key: number = 0; key < connectorObstacle.segments.length; key++) {
-                    const obstacle: ObstacleSegmentValues = connectorObstacle.segments[key];
+                    const obstacle: ObstacleSegmentValues = connectorObstacle.segments[parseInt(key.toString(), 10)];
                     if (obstacle.orientation === 'vertical') {
                         segments.push(obstacle);
                     }
@@ -173,20 +173,20 @@ export class LineDistribution {
             }
 
             for (let j: number = 0; j < segments.length; j++) {
-                const obstacleSegment: ObstacleSegmentValues = segments[j];
+                const obstacleSegment: ObstacleSegmentValues = segments[parseInt(j.toString(), 10)];
                 if (!this.containsValue(graph, obstacleSegment.coord)) {
                     graph.push({ key: obstacleSegment.coord, value: [] });
                 }
 
                 let index: number;
                 for (let k: number = 0; k < graph.length; k++) {
-                    const key: number = graph[k].key;
+                    const key: number = graph[parseInt(k.toString(), 10)].key;
                     if (Number(key) === obstacleSegment.coord) {
                         index = k;
                         break;
                     }
                 }
-                graph[index].value.push(obstacleSegment);
+                graph[parseInt(index.toString(), 10)].value.push(obstacleSegment);
             }
 
             connectorObstacles.push(connectorObstacle);
@@ -194,7 +194,7 @@ export class LineDistribution {
 
         const modifiedgrap: ModifiedgrapObject[] = [];
         for (let m: number = 0; m < graph.length; m++) {
-            const row: GraphObject = graph[m];
+            const row: GraphObject = graph[parseInt(m.toString(), 10)];
             const sortedrow: ObstacleSegmentValues[] = row.value;
             sortedrow.sort();
 
@@ -206,23 +206,23 @@ export class LineDistribution {
             let maxEnd: number = Number.MIN_VALUE;
             groupby.push([] as ObstacleSegmentValues);
             for (let n: number = 0; n < sortedrow.length; n++) {
-                const obstacleSegment: ObstacleSegmentValues = sortedrow[n];
-                if (!((groupby[index] as ObstacleSegmentValues[]).length > 0) || maxEnd >= obstacleSegment.start) {
-                    (groupby[index] as ObstacleSegmentValues[]).push(obstacleSegment);
-                    maxEnd = Math.max(maxEnd, groupby[index][(groupby[index] as ObstacleSegmentValues[]).length - 1].end);
+                const obstacleSegment: ObstacleSegmentValues = sortedrow[parseInt(n.toString(), 10)];
+                if (!((groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length > 0) || maxEnd >= obstacleSegment.start) {
+                    (groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).push(obstacleSegment);
+                    maxEnd = Math.max(maxEnd, groupby[parseInt(index.toString(), 10)][(groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end);
                 } else {
                     index++;
                     groupby.push([] as ObstacleSegmentValues);
-                    (groupby[index] as ObstacleSegmentValues[]).push(obstacleSegment);
-                    maxEnd = groupby[index][(groupby[index] as ObstacleSegmentValues[]).length - 1].end;
+                    (groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).push(obstacleSegment);
+                    maxEnd = groupby[parseInt(index.toString(), 10)][(groupby[parseInt(index.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end;
                 }
             }
 
             for (let n: number = 0; n < groupby.length; n++) {
-                const group: ObstacleSegmentValues = groupby[n];
+                const group: ObstacleSegmentValues = groupby[parseInt(n.toString(), 10)];
                 const sortedGroup: ObstacleSegmentValues[] = [];
                 for (let j: number = 0; j < (group as ObstacleSegmentValues[]).length; j++) {
-                    const e: ObstacleSegmentValues = group[j];
+                    const e: ObstacleSegmentValues = group[parseInt(j.toString(), 10)];
                     if (e.start) {
                         sortedGroup.push(e);
                     }
@@ -231,7 +231,7 @@ export class LineDistribution {
 
                 const directed: ObstacleSegmentValues[] = [];
                 for (let j: number = 0; j < sortedGroup.length; j++) {
-                    const e: ObstacleSegmentValues = sortedGroup[j];
+                    const e: ObstacleSegmentValues = sortedGroup[parseInt(j.toString(), 10)];
                     if (e.direction === comparingDir) {
                         directed.push(e);
                     }
@@ -239,7 +239,7 @@ export class LineDistribution {
 
                 const reversedirected: ObstacleSegmentValues[] = [];
                 for (let j: number = 0; j < sortedGroup.length; j++) {
-                    const e: ObstacleSegmentValues = sortedGroup[j];
+                    const e: ObstacleSegmentValues = sortedGroup[parseInt(j.toString(), 10)];
                     if (e.direction !== comparingDir) {
                         reversedirected.push(e);
                     }
@@ -251,8 +251,8 @@ export class LineDistribution {
 
                     let j: number = 0;
                     while (j < reversedirected.length) {
-                        if (reversedirected[j].end > temp) {
-                            mutual.push(reversedirected[j]);
+                        if (reversedirected[parseInt(j.toString(), 10)].end > temp) {
+                            mutual.push(reversedirected[parseInt(j.toString(), 10)]);
                             reversedirected.splice(j, 1);
                         } else {
                             j++;
@@ -283,13 +283,13 @@ export class LineDistribution {
                 if (descAdding) {
                     subrow = directedRow;
                     for (let p: number = 0; p < mutualRow.length; p++) {
-                        const obj: ObstacleSegmentValues = mutualRow[p];
+                        const obj: ObstacleSegmentValues = mutualRow[parseInt(p.toString(), 10)];
                         subrow[subrow.length] = obj;
                     }
                 } else {
                     subrow = mutualRow;
                     for (let p: number = 0; p < directedRow.length; p++) {
-                        const obj: ObstacleSegmentValues = directedRow[p];
+                        const obj: ObstacleSegmentValues = directedRow[parseInt(p.toString(), 10)];
                         subrow[subrow.length] = obj;
                     }
                 }
@@ -306,21 +306,21 @@ export class LineDistribution {
 
                     for (let i: number = 0; i < subrow.length; i++) {
                         const newcoord: number = startCoord + (i * diff * directionModifier);
-                        for (let p: number = 0; p < (subrow[i] as ObstacleSegmentValues[]).length; p++) {
-                            const obstacleSegment: ObstacleSegmentValues = subrow[i][p];
+                        for (let p: number = 0; p < (subrow[parseInt(i.toString(), 10)] as ObstacleSegmentValues[]).length; p++) {
+                            const obstacleSegment: ObstacleSegmentValues = subrow[parseInt(i.toString(), 10)][parseInt(p.toString(), 10)];
                             obstacleSegment.coord = newcoord;
                             if (!this.containsValue((modifiedgrap as ModifiedgrapObject[]), obstacleSegment.coord)) {
                                 modifiedgrap.push({ key: obstacleSegment.coord, value: [] });
                             }
                             let index: number;
                             for (let k: number = 0; k < modifiedgrap.length; k++) {
-                                const keyCheck: number = modifiedgrap[k].key;
+                                const keyCheck: number = modifiedgrap[parseInt(k.toString(), 10)].key;
                                 if (keyCheck === obstacleSegment.coord) {
                                     index = k;
                                     break;
                                 }
                             }
-                            modifiedgrap[index].value.push(obstacleSegment);
+                            modifiedgrap[parseInt(index.toString(), 10)].value.push(obstacleSegment);
                         }
                     }
                 }
@@ -328,29 +328,29 @@ export class LineDistribution {
         }
 
         for (let m: number = 0; m < connectorObstacles.length; m++) {
-            const connectorObstacle: ConnectorObstacle = connectorObstacles[m];
+            const connectorObstacle: ConnectorObstacle = connectorObstacles[parseInt(m.toString(), 10)];
             const pts: PointModel[] = [];
             for (let i: number = 0; i < connectorObstacle.segments.length; i++) {
                 if (i === 0) {
-                    pts.push(this.getObstacleStartPoint(connectorObstacle.segments[i]));
+                    pts.push(this.getObstacleStartPoint(connectorObstacle.segments[parseInt(i.toString(), 10)]));
                 } else if (isHorizontal) {
-                    if (connectorObstacle.segments[i].orientation === 'vertical') {
-                        pts[pts.length - 1] = this.getObstacleStartPoint(connectorObstacle.segments[i]);
+                    if (connectorObstacle.segments[parseInt(i.toString(), 10)].orientation === 'vertical') {
+                        pts[pts.length - 1] = this.getObstacleStartPoint(connectorObstacle.segments[parseInt(i.toString(), 10)]);
                     }
                 } else if (!isHorizontal) {
-                    if (connectorObstacle.segments[i].orientation === 'horizontal') {
-                        pts[pts.length - 1] = this.getObstacleStartPoint(connectorObstacle.segments[i]);
+                    if (connectorObstacle.segments[parseInt(i.toString(), 10)].orientation === 'horizontal') {
+                        pts[pts.length - 1] = this.getObstacleStartPoint(connectorObstacle.segments[parseInt(i.toString(), 10)]);
                     }
                 }
 
-                pts.push(this.getObstacleEndPoint(connectorObstacle.segments[i]));
+                pts.push(this.getObstacleEndPoint(connectorObstacle.segments[parseInt(i.toString(), 10)]));
             }
             /* tslint:disable */
-            (connectorObstacle.wrapper as Connector)[obstacleCollection] = [];
+            (connectorObstacle.wrapper as Connector)[`${obstacleCollection}`] = [];
             for (let j: number = 0; j < pts.length; j++) {
-                const point: PointModel = pts[j];
+                const point: PointModel = pts[parseInt(j.toString(), 10)];
                 if (j === 0 || (j > 0 && !(Point.equals(point, pts[j - 1])))) {
-                    (connectorObstacle.wrapper as Connector)[obstacleCollection].push(this.getPointvalue(point.x, point.y));
+                    (connectorObstacle.wrapper as Connector)[`${obstacleCollection}`].push(this.getPointvalue(point.x, point.y));
                 }
             }
             /* tslint:enable */
@@ -434,9 +434,9 @@ export class LineDistribution {
 
         let i: number = 1;
         while (i < pts.length - 1) {
-            if (Point.equals(pts[i - 1], pts[i])) {
+            if (Point.equals(pts[i - 1], pts[parseInt(i.toString(), 10)])) {
                 pts.splice(i, 1);
-            } else if (Point.findAngle(pts[i - 1], pts[i]) === Point.findAngle(pts[i], pts[i + 1])) {
+            } else if (Point.findAngle(pts[i - 1], pts[parseInt(i.toString(), 10)]) === Point.findAngle(pts[parseInt(i.toString(), 10)], pts[i + 1])) {
                 pts.splice(i, 1);
             } else {
                 i++;
@@ -453,18 +453,18 @@ export class LineDistribution {
     private resetConnectorPoints(edge: ConnectorModel, diagram: Diagram): void {
         const obstacleCollection: string = 'obstaclePointCollection';
         if ((edge.segments[0] as OrthogonalSegment).points
-            && (edge.segments[0] as OrthogonalSegment).points.length > 0 && edge[obstacleCollection]) {
+            && (edge.segments[0] as OrthogonalSegment).points.length > 0 && edge[`${obstacleCollection}`]) {
             let connector: ConnectorModel = edge;
-            connector.sourcePoint = (edge as Connector)[obstacleCollection][0];
-            connector.targetPoint = (edge as Connector)[obstacleCollection][(edge as Connector)[obstacleCollection].length - 1];
+            connector.sourcePoint = (edge as Connector)[`${obstacleCollection}`][0];
+            connector.targetPoint = (edge as Connector)[`${obstacleCollection}`][(edge as Connector)[`${obstacleCollection}`].length - 1];
             let segments: OrthogonalSegment[];
             segments = [];
-            for (let i: number = 0; i < (edge as Connector)[obstacleCollection].length - 1; i++) {
-                const point1: Point = (edge as Connector)[obstacleCollection][i];
-                const point2: Point = (edge as Connector)[obstacleCollection][i + 1];
+            for (let i: number = 0; i < (edge as Connector)[`${obstacleCollection}`].length - 1; i++) {
+                const point1: Point = (edge as Connector)[`${obstacleCollection}`][parseInt(i.toString(), 10)];
+                const point2: Point = (edge as Connector)[`${obstacleCollection}`][i + 1];
                 let length: number = findDistance(point1, point2);
                 const direction: string = getConnectorDirection(point1, point2);
-                if (i === (edge as Connector)[obstacleCollection].length - 2) {
+                if (i === (edge as Connector)[`${obstacleCollection}`].length - 2) {
                     if ((diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
                         || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
                         || (diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
@@ -528,15 +528,15 @@ export class LineDistribution {
         }
 
         for (let i: number = 0; i < obstacleSegments.length; i++) {
-            const obstacleSegment: ObstacleSegmentValues = obstacleSegments[i];
+            const obstacleSegment: ObstacleSegmentValues = obstacleSegments[parseInt(i.toString(), 10)];
             while (k < segmentRow.length) {
                 if (k === segmentRow.length - 1) {
                     segmentRow[k + 1] = [] as ObstacleSegmentValues;
                 }
 
-                if (!((segmentRow[k] as ObstacleSegmentValues[]).length > 0)
-                    || segmentRow[k][(segmentRow[k] as ObstacleSegmentValues[]).length - 1].end < obstacleSegment.start) {
-                    (segmentRow[k] as ObstacleSegmentValues[]).push(obstacleSegment);
+                if (!((segmentRow[parseInt(k.toString(), 10)] as ObstacleSegmentValues[]).length > 0)
+                    || segmentRow[parseInt(k.toString(), 10)][(segmentRow[parseInt(k.toString(), 10)] as ObstacleSegmentValues[]).length - 1].end < obstacleSegment.start) {
+                    (segmentRow[parseInt(k.toString(), 10)] as ObstacleSegmentValues[]).push(obstacleSegment);
                     break;
                 }
 
@@ -588,8 +588,8 @@ export class LineDistribution {
             connectors = this.sortObjects(objects, inConnectors, diagram);
         }
         for (let i: number = 0; i <= connectors.length - 1; i++) {
-            const internalConnector: Connector = diagram.nameTable[connectors[i]];
-            internalConnector[obstacleCollection] = [];
+            const internalConnector: Connector = diagram.nameTable[connectors[parseInt(i.toString(), 10)]];
+            internalConnector[`${obstacleCollection}`] = [];
 
             let newPort: PointPortModel = findPort(node, inConnectors ? internalConnector.targetPortID : internalConnector.sourcePortID);
             const direction: string = targetDirection;
@@ -618,24 +618,24 @@ export class LineDistribution {
         let temp: string;
         for (let i: number = 0; i < objects.length; i++) {
             for (let j: number = i + 1; j < objects.length; j++) {
-                const internalConnector: Connector = diagram.nameTable[objects[i]];
-                const internalConnector2: Connector = diagram.nameTable[objects[j]];
+                const internalConnector: Connector = diagram.nameTable[objects[parseInt(i.toString(), 10)]];
+                const internalConnector2: Connector = diagram.nameTable[objects[parseInt(j.toString(), 10)]];
                 if (inConnectors) {
                     let childNode: NodeModel = diagram.nameTable[internalConnector.sourceID];
                     let childNode2: NodeModel = diagram.nameTable[internalConnector2.sourceID];
                     // For LeftToRight and RightToLeft we want to consider source node offsetY position
                     if (diagram.layout.orientation === 'LeftToRight' || diagram.layout.orientation === 'RightToLeft') {
                         if (childNode.offsetY > childNode2.offsetY) {
-                            temp = objects[i];
-                            objects[i] = objects[j];
-                            objects[j] = temp;
+                            temp = objects[parseInt(i.toString(), 10)];
+                            objects[parseInt(i.toString(), 10)] = objects[parseInt(j.toString(), 10)];
+                            objects[parseInt(j.toString(), 10)] = temp;
                         }
                     } else {
                         // For TopToBottom or BottomToTop means we want to consider source node offsetX position
                         if (childNode.offsetX > childNode2.offsetX) {
-                            temp = objects[i];
-                            objects[i] = objects[j];
-                            objects[j] = temp;
+                            temp = objects[parseInt(i.toString(), 10)];
+                            objects[parseInt(i.toString(), 10)] = objects[parseInt(j.toString(), 10)];
+                            objects[parseInt(j.toString(), 10)] = temp;
                         }
                     }
                 }
@@ -643,7 +643,7 @@ export class LineDistribution {
         }
         return objects;
     }
-    
+
 
     private shiftMatrixCells(
         value: number, startingCell: MatrixCellGroupObject, shiftChildren: boolean,
@@ -655,7 +655,7 @@ export class LineDistribution {
             const index: number = matrixRow.indexOf(startingCell);
 
             for (let i: number = index; i < matrixRow.length; i++) {
-                matrixRow[i].offset += value;
+                matrixRow[parseInt(i.toString(), 10)].offset += value;
             }
 
             if (shiftChildren) {
@@ -733,7 +733,7 @@ export class LineDistribution {
             this.shiftMatrixCells(validOffset - cell.offset, cell, false, null, matrixModel);
         } else {
             for (let i: number = 0; i < cell.children.length; i++) {
-                const matrixCellChild: MatrixCellGroupObject = cell.children[i];
+                const matrixCellChild: MatrixCellGroupObject = cell.children[parseInt(i.toString(), 10)];
                 if (!this.containsValue(cell.visitedChildren, matrixCellChild)) {
                     this.arrangeMatrix(matrixCellChild, cell, matrixModel);
                     cell.visitedChildren.push(matrixCellChild);
@@ -774,24 +774,24 @@ export class LineDistribution {
     private setAbsoluteTerminalPoint(point: PointModel, isSource: boolean, edge: Connector): void {
         const absolutePoints: string = 'absolutePoints';
         if (isSource) {
-            if (edge[absolutePoints] == null) {
-                edge[absolutePoints] = [];
+            if (edge[`${absolutePoints}`] == null) {
+                edge[`${absolutePoints}`] = [];
             }
 
-            if (edge[absolutePoints].length === 0) {
-                edge[absolutePoints].push(point);
+            if (edge[`${absolutePoints}`].length === 0) {
+                edge[`${absolutePoints}`].push(point);
             } else {
-                edge[absolutePoints][0] = point;
+                edge[`${absolutePoints}`][0] = point;
             }
         } else {
-            if (edge[absolutePoints] == null) {
-                edge[absolutePoints] = [];
-                edge[absolutePoints].push(null);
-                edge[absolutePoints].push(point);
-            } else if (edge[absolutePoints].length === 1) {
-                edge[absolutePoints].push(point);
+            if (edge[`${absolutePoints}`] == null) {
+                edge[`${absolutePoints}`] = [];
+                edge[`${absolutePoints}`].push(null);
+                edge[`${absolutePoints}`].push(point);
+            } else if (edge[`${absolutePoints}`].length === 1) {
+                edge[`${absolutePoints}`].push(point);
             } else {
-                edge[absolutePoints][edge[absolutePoints].length - 1] = point;
+                edge[`${absolutePoints}`][edge[`${absolutePoints}`].length - 1] = point;
             }
         }
     }
@@ -809,17 +809,17 @@ export class LineDistribution {
         const absolutePoints: string = 'absolutePoints';
         if (edge != null) {
             const pts: PointModel[] = [];
-            pts.push(edge[absolutePoints][0]);
+            pts.push(edge[`${absolutePoints}`][0]);
             for (let i: number = 0; i < points.length; i++) {
-                if (points[i] != null) {
-                    const pt: PointModel = points[i];
+                if (points[parseInt(i.toString(), 10)] != null) {
+                    const pt: PointModel = points[parseInt(i.toString(), 10)];
                     pts.push(pt);
                 }
             }
-            const tmp: PointModel[] = edge[absolutePoints];
+            const tmp: PointModel[] = edge[`${absolutePoints}`];
             pts.push(tmp[tmp.length - 1]);
 
-            edge[absolutePoints] = pts;
+            edge[`${absolutePoints}`] = pts;
         }
     }
     private updateFloatingTerminalPoint(edge: Connector, start: Node, end: Node, source: boolean): void {
@@ -828,7 +828,7 @@ export class LineDistribution {
 
     private getNextPoint(edge: Connector, opposite: Node, source: boolean): PointModel {
         const absolutePoints: string = 'absolutePoints';
-        const pts: PointModel[] = edge[absolutePoints];
+        const pts: PointModel[] = edge[`${absolutePoints}`];
         let point: PointModel = null;
 
         if (pts != null && pts.length >= 2) {
@@ -935,7 +935,7 @@ export class LineDistribution {
     }
     private updateFloatingTerminalPoints(state: Connector, source: Node, target: Node): void {
         const absolutePoints: string = 'absolutePoints';
-        const pts: PointModel[] = state[absolutePoints];
+        const pts: PointModel[] = state[`${absolutePoints}`];
         const p0: PointModel = pts[0];
         const pe: PointModel = pts[pts.length - 1];
 
@@ -951,10 +951,10 @@ export class LineDistribution {
         const absolutePoints: string = 'absolutePoints';
         const geometry: string = 'geometry';
         this.updateFixedTerminalPoints(connectors, diagram);
-        this.updatePoints(connectors, connectors[geometry].points);
+        this.updatePoints(connectors, connectors[`${geometry}`].points);
         this.updateFloatingTerminalPoints(connectors, diagram.nameTable[connectors.sourceID], diagram.nameTable[connectors.targetID]);
-        connectors[absolutePoints][0].y = connectors.sourcePoint.y;
-        connectors[absolutePoints][connectors[absolutePoints].length - 1].y = connectors.targetPoint.y;
+        connectors[`${absolutePoints}`][0].y = connectors.sourcePoint.y;
+        connectors[`${absolutePoints}`][connectors[`${absolutePoints}`].length - 1].y = connectors.targetPoint.y;
     }
     private adjustSegmentPoints(temppoints: PointModel[], points: PointModel[], diagram: Diagram): void {
 
@@ -1004,9 +1004,9 @@ export class LineDistribution {
         if (temppoints.length > 1) {
             if ((diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop')) {
                 for (let i: number = 1; i < temppoints.length - 1; i = i + 2) {
-                    if (temppoints[i].y !== temppoints[i + 1].y && (diagram.layout.orientation === 'TopToBottom'
+                    if (temppoints[parseInt(i.toString(), 10)].y !== temppoints[i + 1].y && (diagram.layout.orientation === 'TopToBottom'
                         || diagram.layout.orientation === 'BottomToTop')) {
-                        temppoints[i + 1].y = temppoints[i].y;
+                        temppoints[i + 1].y = temppoints[parseInt(i.toString(), 10)].y;
                     }
                 }
             } else {
@@ -1021,7 +1021,7 @@ export class LineDistribution {
                             check = false;
                         }
                     } else {
-                        temppoints[i + 1].x = temppoints[i].x;
+                        temppoints[i + 1].x = temppoints[parseInt(i.toString(), 10)].x;
                     }
                 }
             }
@@ -1031,12 +1031,12 @@ export class LineDistribution {
     private updateConnectorSegmentPoint(connector: Connector, diagram: Diagram): void {
         const absolutePoints: string = 'absolutePoints';
         const segments: OrthogonalSegment[] = [];
-        for (let i: number = 0; i < connector[absolutePoints].length - 1; i++) {
-            const point1: PointModel[] = connector[absolutePoints][i];
-            const point2: PointModel[] = connector[absolutePoints][i + 1];
+        for (let i: number = 0; i < connector[`${absolutePoints}`].length - 1; i++) {
+            const point1: PointModel[] = connector[`${absolutePoints}`][parseInt(i.toString(), 10)];
+            const point2: PointModel[] = connector[`${absolutePoints}`][i + 1];
             let length: number = findDistance(point1, point2);
             const direction: string = getConnectorDirection(point1, point2);
-            if (i === connector[absolutePoints].length - 2) {
+            if (i === connector[`${absolutePoints}`].length - 2) {
                 if ((diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
                     || (diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
                     || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
@@ -1075,7 +1075,7 @@ export class LineDistribution {
             const absolutePoints: string = 'absolutePoints';
             //let temppoints: PointModel[];
             this.getConnectorPoints(connector, diagram);
-            const temppoints: PointModel[] = (connector as Connector)[absolutePoints];
+            const temppoints: PointModel[] = (connector as Connector)[`${absolutePoints}`];
             this.updateConnectorSegmentPoints(temppoints, diagram);
             this.adjustSegmentPoints(temppoints, points, diagram);
             this.updateConnectorSegmentPoint(connector, diagram);
@@ -1101,10 +1101,10 @@ export class LineDistribution {
         this.createMatrixCells(matrixModel);
 
         for (let j: number = 0; j < matrixModel.matrix.length; j++) {
-            const matrixKey: number = matrixModel.matrix[j].key;
-            const matrixrow: MatrixCellGroupObject[] = matrixModel.matrix[matrixKey].value;
+            const matrixKey: number = matrixModel.matrix[parseInt(j.toString(), 10)].key;
+            const matrixrow: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(matrixKey.toString(), 10)].value;
             for (let i: number = 1; i < matrixrow.length; i++) {
-                const cell: MatrixCellGroupObject = matrixrow[i];
+                const cell: MatrixCellGroupObject = matrixrow[parseInt(i.toString(), 10)];
                 const prevCell: MatrixCellGroupObject = matrixrow[i - 1];
                 cell.offset += prevCell.offset + (prevCell.size / 2) + spacing + (cell.size / 2);
             }
@@ -1112,14 +1112,14 @@ export class LineDistribution {
 
 
         for (let j: number = 0; j < matrixModel.matrix[0].value.length; j++) {
-            const root: MatrixCellGroupObject = matrixModel.matrix[0].value[j];
+            const root: MatrixCellGroupObject = matrixModel.matrix[0].value[parseInt(j.toString(), 10)];
             this.arrangeMatrix(root, null, matrixModel);
         }
 
         for (let k: number = 0; k < matrixModel.matrix.length; k++) {
-            const row: MatrixCellGroupObject[] = matrixModel.matrix[k].value;
+            const row: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(k.toString(), 10)].value;
             for (let i: number = 0; i < row.length; i++) {
-                const cell: MatrixCellGroupObject = row[i];
+                const cell: MatrixCellGroupObject = row[parseInt(i.toString(), 10)];
                 if (cell.visitedParents.length > 1) {
                     let firstParent: MatrixCellGroupObject = cell.visitedParents[0];
                     let lastParent: MatrixCellGroupObject = cell.visitedParents[cell.visitedParents.length - 1];
@@ -1170,12 +1170,12 @@ export class LineDistribution {
         const spacing: number = isHorizontal ? layoutSettings.verticalSpacing : layoutSettings.horizontalSpacing;
 
         for (let i: number = 0; i < matrixModel.matrix.length; i++) {
-            const matrixrow1: MatrixCellGroupObject[] = matrixModel.matrix[i].value;
+            const matrixrow1: MatrixCellGroupObject[] = matrixModel.matrix[parseInt(i.toString(), 10)].value;
             for (let j: number = 0; j < matrixrow1.length; j++) {
-                const matrixCell: MatrixCellGroupObject = matrixrow1[j];
+                const matrixCell: MatrixCellGroupObject = matrixrow1[parseInt(j.toString(), 10)];
                 let start: number = matrixCell.offset - (matrixCell.size / 2);
                 for (let k: number = 0; k < (matrixCell.cells as CellObject[]).length; k++) {
-                    const cell: CellObject = matrixCell.cells[k];
+                    const cell: CellObject = matrixCell.cells[parseInt(k.toString(), 10)];
                     const type: string = this.getType(cell.type);
                     if (type === 'internalVertex') {
                         const internalVertex: CellObject = cell;
@@ -1202,10 +1202,10 @@ export class LineDistribution {
                         let isContainSibilingVertex: boolean = false;
                         if (parent) {
                             for (let l: number = 0; l < parent.visitedChildren.length; l++) {
-                                const children: MatrixCellGroupObject = parent.visitedChildren[l];
+                                const children: MatrixCellGroupObject = parent.visitedChildren[parseInt(l.toString(), 10)];
                                 const cells: CellObject[] = [];
                                 for (let m: number = 0; m < (children.cells as CellObject[]).length; m++) {
-                                    const cell: CellObject = children.cells[m];
+                                    const cell: CellObject = children.cells[parseInt(m.toString(), 10)];
                                     const type: string = this.getType(cell.type);
                                     if (type === 'internalVertex') {
                                         cells.push(cell);
@@ -1222,7 +1222,7 @@ export class LineDistribution {
                         const lineWidth: number = 1;
                         const edgeSpacing: number = 5;
                         for (let m: number = 0; m < internalEdges.edges.length; m++) {
-                            const internalConnector: Connector = internalEdges.edges[m];
+                            const internalConnector: Connector = internalEdges.edges[parseInt(m.toString(), 10)];
                             let pt: Point = this.getPointvalue(start + (lineWidth / 2.0), matrixModel.rowOffset[matrixCell.level]) as Point;
                             if (isHorizontal) {
                                 pt = this.getPointvalue(matrixModel.rowOffset[matrixCell.level], start + (lineWidth / 2.0)) as Point;
@@ -1231,12 +1231,12 @@ export class LineDistribution {
                             if (this.containsValue((this.getEdgeMapper() as EdgeMapperObject[]), internalConnector)) {
                                 let key: number;
                                 for (let l: number = 0; l < this.getEdgeMapper().length; l++) {
-                                    if ((this.getEdgeMapper())[l].key === internalConnector) {
+                                    if ((this.getEdgeMapper())[parseInt(l.toString(), 10)].key === internalConnector) {
                                         key = l;
                                         break;
                                     }
                                 }
-                                (this.getEdgeMapper())[key].value.push(pt as Point);
+                                (this.getEdgeMapper())[parseInt(key.toString(), 10)].value.push(pt as Point);
                             }
 
                             start += lineWidth + edgeSpacing;
@@ -1264,7 +1264,7 @@ export class LineDistribution {
             cell.offset += value;
             if (cell.visitedChildren.length > 0) {
                 for (let i: number = 0; i < cell.visitedChildren.length; i++) {
-                    let cellVisitedChild: MatrixCellGroupObject = cell.visitedChildren[i];
+                    let cellVisitedChild: MatrixCellGroupObject = cell.visitedChildren[parseInt(i.toString(), 10)];
                     this.translateMatrixCells(value, cellVisitedChild);
                 }
             }
@@ -1274,17 +1274,17 @@ export class LineDistribution {
         let ranks: IVertex[][] = matrixModel.model.ranks;
         for (let j: number = ranks.length - 1; j >= 0; j--) {
             let vertices: IVertex[] = [];
-            for (let v: number = 0; v < ranks[j].length; v++) {
-                let rank: IVertex = ranks[j][v];
+            for (let v: number = 0; v < ranks[parseInt(j.toString(), 10)].length; v++) {
+                let rank: IVertex = ranks[parseInt(j.toString(), 10)][parseInt(v.toString(), 10)];
                 let type: string = this.getType(rank.type);
                 if (type === 'internalVertex') {
-                    vertices.push(ranks[j][v]);
+                    vertices.push(ranks[parseInt(j.toString(), 10)][parseInt(v.toString(), 10)]);
                 }
             }
 
             let edges: IVertex[] = [];
-            for (let e: number = 0; e < ranks[j].length; e++) {
-                let rank: IVertex = ranks[j][e];
+            for (let e: number = 0; e < ranks[parseInt(j.toString(), 10)].length; e++) {
+                let rank: IVertex = ranks[parseInt(j.toString(), 10)][parseInt(e.toString(), 10)];
                 let type: string = this.getType(rank.type);
                 if (type === 'internalEdge') {
                     edges.push(rank);
@@ -1322,14 +1322,14 @@ export class LineDistribution {
                     const groupedges: IVertex[] = [];
 
                     for (let i: number = 0; i < edges.length; i++) {
-                        const edge: IVertex = edges[i];
+                        const edge: IVertex = edges[parseInt(i.toString(), 10)];
                         if (edge.target === childset) {
                             groupedges.push(edge);
                         }
                     }
 
                     for (let i: number = 0; i < groupedges.length; i++) {
-                        const internalEdgese: IVertex = groupedges[i];
+                        const internalEdgese: IVertex = groupedges[parseInt(i.toString(), 10)];
                         if (this.containsValue(parentset.identicalSibiling, internalEdgese.source.id)) {
                             internalEdgese.source.identicalSibiling = null;
                         }
@@ -1352,7 +1352,7 @@ export class LineDistribution {
     private selectIds(node: IEdge[], source: boolean): string[] {
         const returnIds: string[] = [];
         for (let i: number = 0; i < node.length; i++) {
-            const connector: IEdge = node[i];
+            const connector: IEdge = node[parseInt(i.toString(), 10)];
             if (source) {
 
                 {
@@ -1374,13 +1374,13 @@ export class LineDistribution {
             } else {
                 let isSame: boolean = true;
                 for (let i: number = 0; i < newList2.length; i++) {
-                    const o: string = newList2[i];
-                   // EJ2-63944 - Nodes overlapping in Complex hierarchical tree layout in linear arrangement.
-                   if(newList1.indexOf(o)===-1)
-                   {
+                    const o: string = newList2[parseInt(i.toString(), 10)];
+                    // EJ2-63944 - Nodes overlapping in Complex hierarchical tree layout in linear arrangement.
+                    if(newList1.indexOf(o)===-1)
+                    {
                        isSame = false;
                        break;
-                   }
+                    }
                 }
 
                 return isSame;
@@ -1420,7 +1420,7 @@ export class LineDistribution {
         keyValue: string | number | MatrixCellGroupObject | Connector | string[]):
         boolean {
         for (let i: number = 0; i < list.length; i++) {
-            if ((list[i] as MatrixCellGroupObject).key === keyValue || list[i] === keyValue) {
+            if ((list[parseInt(i.toString(), 10)] as MatrixCellGroupObject).key === keyValue || list[parseInt(i.toString(), 10)] === keyValue) {
                 return true;
             }
         }
@@ -1441,7 +1441,7 @@ export class LineDistribution {
         for (let j: number = ranks.length - 1; j >= 0; j--) {
             let maxDimension = 0.0;
             const index: number = (ranks.length - 1) - j;
-            const rank: IVertex[] = ranks[j].slice();//.ToList();
+            const rank: IVertex[] = ranks[parseInt(j.toString(), 10)].slice();//.ToList();
 
             // Creating new row and adding it to matrix
             const matrixRow: MatrixCellGroupObject[] = [];
@@ -1463,7 +1463,7 @@ export class LineDistribution {
                     (matrixCell.cells as IVertex[]).push(layoutCell as IVertex);
                     if (layoutCell.identicalSibiling != null) {
                         for (let i: number = 0; i < rank.length; i++) {
-                            const internalVertex = rank[i];
+                            const internalVertex = rank[parseInt(i.toString(), 10)];
                             const type: string = this.getType(internalVertex.type);
 
                             if (type === 'internalVertex' && this.containsValue(layoutCell.identicalSibiling, internalVertex.id)) {
@@ -1476,7 +1476,7 @@ export class LineDistribution {
                     }
 
                     for (let i: number = 0; i < (matrixCell.cells as CellObject[]).length; i++) {
-                        const internalVertex: CellObject = matrixCell.cells[i];
+                        const internalVertex: CellObject = matrixCell.cells[parseInt(i.toString(), 10)];
                         const type: string = this.getType(internalVertex.type);
                         if (type === 'internalVertex') {
                             const geometry = internalVertex.cell.geometry;
@@ -1485,7 +1485,7 @@ export class LineDistribution {
                             tempMatrixRow.push({ key: internalVertex.id, value: matrixCell });
                             if (internalVertex.connectsAsTarget.length > 0) {
                                 for (let k: number = 0; k < internalVertex.connectsAsTarget.length; k++) {
-                                    const internalEdgese: CellObject = internalVertex.connectsAsTarget[k];
+                                    const internalEdgese: CellObject = internalVertex.connectsAsTarget[parseInt(k.toString(), 10)];
                                     let key = null;
                                     if (this.containsValue(matrixCellMapper[index - 1].value, internalEdgese.ids)) {
                                         key = internalEdgese.ids;
@@ -1498,8 +1498,8 @@ export class LineDistribution {
                                         const parentcellValue = matrixCellMapper[index - 1].value;
                                         let parentMartixCell;
                                         for (let v: number = 0; v < parentcellValue.length; v++) {
-                                            if (parentcellValue[v].key === key) {
-                                                parentMartixCell = parentcellValue[v].value;
+                                            if (parentcellValue[parseInt(v.toString(), 10)].key === key) {
+                                                parentMartixCell = parentcellValue[parseInt(v.toString(), 10)].value;
                                                 break;
                                             }
                                         }
@@ -1524,7 +1524,7 @@ export class LineDistribution {
                     (matrixCell.cells as IVertex[]).push(layoutCell);
 
                     for (let i: number = 0; i < (matrixCell.cells as CellObject[]).length; i++) {
-                        const internalEdge: CellObject = matrixCell.cells[i];
+                        const internalEdge: CellObject = matrixCell.cells[parseInt(i.toString(), 10)];
                         const type1: string = this.getType(internalEdge.type);
 
                         if (type1 === 'internalEdge' && internalEdge.edges != null) {
@@ -1554,8 +1554,8 @@ export class LineDistribution {
                             const parentcell = matrixCellMapper[index - 1].value;
                             let parentMartixCell;
                             for (let v: number = 0; v < parentcell.length; v++) {
-                                if (parentcell[v].key === key) {
-                                    parentMartixCell = parentcell[v].value;
+                                if (parentcell[parseInt(v.toString(), 10)].key === key) {
+                                    parentMartixCell = parentcell[parseInt(v.toString(), 10)].value;
                                     break;
                                 }
                             }

@@ -266,13 +266,13 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
         let i: number;
         let items: MenuItemModel[] = this.items as objColl;
         const pIdField: string = this.getField('parentId');
-        if (item[pIdField]) {
-            idx = this.getIndex(item[pIdField].toString(), true);
+        if (item[`${pIdField}`]) {
+            idx = this.getIndex(item[`${pIdField}`].toString(), true);
             for (i = 0; i < idx.length; i++) {
-                if (!items[idx[i]].items) {
-                    items[idx[i]].items = [];
+                if (!items[idx[i as number]].items) {
+                    items[idx[i as number]].items = [];
                 }
-                items = items[idx[i]].items;
+                items = items[idx[i as number]].items;
             }
             items.push(item);
         } else {

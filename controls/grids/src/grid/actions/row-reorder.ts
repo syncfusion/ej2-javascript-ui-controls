@@ -81,7 +81,7 @@ export class RowDD {
         const selectedRows: Element[] = gObj.getSelectedRows();
         gObj.trigger(events.rowDragStartHelper, args);
         const cancel: string = 'cancel';
-        if (args[cancel]) {
+        if (args[`${cancel}`]) {
             return false;
         }
         removeElement(this.startedRow, '.e-indentcell');
@@ -359,14 +359,14 @@ export class RowDD {
         for (let i: number = 0, len: number = args.rows.length; i < len; i++) {
             if (frzCols) {
                 if (i % index === 0) {
-                    tbody.insertBefore(args.rows[i], target);
+                    tbody.insertBefore(args.rows[parseInt(i.toString(), 10)], target);
                 } else if (i % index === 1) {
-                    mtbody.insertBefore(args.rows[i], mTarget);
+                    mtbody.insertBefore(args.rows[parseInt(i.toString(), 10)], mTarget);
                 } else {
-                    frTbody.insertBefore(args.rows[i], frTarget);
+                    frTbody.insertBefore(args.rows[parseInt(i.toString(), 10)], frTarget);
                 }
             } else {
-                tbody.insertBefore(args.rows[i], target);
+                tbody.insertBefore(args.rows[parseInt(i.toString(), 10)], target);
             }
         }
         const tr: HTMLTableRowElement[] = [].slice.call(tbody.getElementsByClassName(literals.row));
@@ -383,13 +383,13 @@ export class RowDD {
                 if (i < this.parent.frozenRows) {
                     setRowsInTbody(
                         tbodyHeader, tbodyMovableHeader, frHdr, tr, mtr, frTr, (tbody: Element, rows: Element[]) => {
-                            tbody.appendChild(rows[i]);
+                            tbody.appendChild(rows[parseInt(i.toString(), 10)]);
                         }
                     );
                 } else {
                     setRowsInTbody(
                         tbodyContent, tbodyMovableContent, frCnt, tr, mtr, frTr, (tbody: Element, rows: Element[]) => {
-                            tbody.appendChild(rows[i]);
+                            tbody.appendChild(rows[parseInt(i.toString(), 10)]);
                         }
                     );
                 }
@@ -430,11 +430,11 @@ export class RowDD {
         this.parent.clearSelection();
         const targetRows: {target: Element, mTarget: Element, frTarget: Element} = this.refreshRowTarget(args);
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            tbody.appendChild(tr[i]);
+            tbody.appendChild(tr[parseInt(i.toString(), 10)]);
             if (frzCols) {
-                mtbody.appendChild(mtr[i]);
+                mtbody.appendChild(mtr[parseInt(i.toString(), 10)]);
                 if (isLeftRight) {
-                    frTbody.appendChild(frTr[i]);
+                    frTbody.appendChild(frTr[parseInt(i.toString(), 10)]);
                 }
             }
         }
@@ -486,13 +486,13 @@ export class RowDD {
         const frRightObject: Row<Column>[] = this.parent.getFrozenRightRowsObject();
         const currentViewData: Object[] = this.parent.getCurrentViewRecords();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            const index: number = parseInt(tr[i].getAttribute(literals.dataRowIndex), 10);
-            rowObj[i] = rowObjects[index];
-            recordobj[i] = currentViewData[index];
+            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10);
+            rowObj[parseInt(i.toString(), 10)] = rowObjects[parseInt(index.toString(), 10)];
+            recordobj[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
             if (this.parent.isFrozenGrid()) {
-                movobj[i] = movbObject[index];
+                movobj[parseInt(i.toString(), 10)] = movbObject[parseInt(index.toString(), 10)];
                 if (frTr) {
-                    frObj[i] = frRightObject[index];
+                    frObj[parseInt(i.toString(), 10)] = frRightObject[parseInt(index.toString(), 10)];
                 }
             }
         }
@@ -505,15 +505,15 @@ export class RowDD {
             }
         }
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            rows[i] = tr[i];
-            rowObjects[i] = rowObj[i];
-            currentViewData[i] = recordobj[i];
+            rows[parseInt(i.toString(), 10)] = tr[parseInt(i.toString(), 10)];
+            rowObjects[parseInt(i.toString(), 10)] = rowObj[parseInt(i.toString(), 10)];
+            currentViewData[parseInt(i.toString(), 10)] = recordobj[parseInt(i.toString(), 10)];
             if (this.parent.isFrozenGrid()) {
-                movbRows[i] = mtr[i];
-                movbObject[i] = movobj[i];
+                movbRows[parseInt(i.toString(), 10)] = mtr[parseInt(i.toString(), 10)];
+                movbObject[parseInt(i.toString(), 10)] = movobj[parseInt(i.toString(), 10)];
                 if (frTr) {
-                    frRightRows[i] = frTr[i];
-                    frRightObject[i] = frObj[i];
+                    frRightRows[parseInt(i.toString(), 10)] = frTr[parseInt(i.toString(), 10)];
+                    frRightObject[parseInt(i.toString(), 10)] = frObj[parseInt(i.toString(), 10)];
                 }
             }
         }
@@ -540,10 +540,10 @@ export class RowDD {
                 }
             });
             for (let i: number = 0, len: number = rowObjects.length; i < len; i++) {
-                if (!rowObjects[i]) {
+                if (!rowObjects[parseInt(i.toString(), 10)]) {
                     break;
                 }
-                if (rowObjects[i].isDetailRow) {
+                if (rowObjects[parseInt(i.toString(), 10)].isDetailRow) {
                     this.parent.getRowsObject().splice(i, 1);
                     i--;
                 }
@@ -566,7 +566,7 @@ export class RowDD {
             const indexes: number[] = [];
             if (this.parent.filterSettings.columns.length || this.parent.sortSettings.columns.length) {
                 for (let i: number = 0, len: number = args.rows.length; i < len; i++) {
-                    indexes.push(parseInt(args.rows[i].getAttribute(literals.dataRowIndex), 10));
+                    indexes.push(parseInt(args.rows[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10));
                 }
                 this.selectedRowColls = indexes;
             }
@@ -580,10 +580,10 @@ export class RowDD {
         const fromIdx: number = parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10);
         for (let i: number = 0, n: number = selectedIndexes.length; i < n; i++) {
             const currentV: string = 'currentViewData';
-            currentVdata[i] = this.parent[currentV][selectedIndexes[i]];
+            currentVdata[parseInt(i.toString(), 10)] = this.parent[`${currentV}`][selectedIndexes[parseInt(i.toString(), 10)]];
         }
         if (!this.parent.rowDropSettings.targetID && selectedIndexes.length === 0) {
-            currentVdata[0] = this.parent.currentViewData[fromIdx];
+            currentVdata[0] = this.parent.currentViewData[parseInt(fromIdx.toString(), 10)];
         }
         return currentVdata;
     }
@@ -597,8 +597,8 @@ export class RowDD {
             }).catch((e: Error) => {
                 const error: string = 'error';
                 const message: string = 'message';
-                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
-                    e[error] = e[error][message];
+                if (!isNullOrUndefined(e[`${error}`]) && !isNullOrUndefined(e[`${error}`][`${message}`])) {
+                    e[`${error}`] = e[`${error}`][`${message}`];
                 }
                 this.parent.trigger(events.actionFailure, e);
             });
@@ -614,23 +614,24 @@ export class RowDD {
         let dropIdx: number = toIndex + skip;
         let actualIdx: number = fromIndexes[0] + skip;
         for (let i: number = 0, len: number = fromIndexes.length; i < len; i++) {
-            draggedRecords[i] = currentViewData[fromIndexes[i] + skip];
+            draggedRecords[parseInt(i.toString(), 10)] = currentViewData[fromIndexes[parseInt(i.toString(), 10)] + skip];
         }
         for (let i: number = 0, len: number = selectedIndexes.length; i < len; i++) {
-            selectedRecords[i] = currentViewData[selectedIndexes[i] + skip];
+            selectedRecords[parseInt(i.toString(), 10)] = currentViewData[selectedIndexes[parseInt(i.toString(), 10)] + skip];
         }
         for (let i: number = 0, len: number = draggedRecords.length; i < len; i++) {
             if (i !== 0) {
                 for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
-                    if (JSON.stringify(this.parent.renderModule.data.dataManager.dataSource.json[j]) ===
-                        JSON.stringify(draggedRecords[i])) {
+                    if (JSON.stringify(this.parent.renderModule.data.dataManager.dataSource.json[parseInt(j.toString(), 10)]) ===
+                        JSON.stringify(draggedRecords[parseInt(i.toString(), 10)])) {
                         actualIdx = j;
                         break;
                     }
                 }
                 for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
                     if (JSON.stringify(
-                        this.parent.renderModule.data.dataManager.dataSource.json[j]) === JSON.stringify(draggedRecords[i - 1])) {
+                        this.parent.renderModule.data.dataManager.dataSource.json[parseInt(j.toString(), 10)]) === JSON
+                        .stringify(draggedRecords[i - 1])) {
                         if (actualIdx > j) {
                             dropIdx = j + 1;
                         }
@@ -648,8 +649,9 @@ export class RowDD {
         for (let i: number = 0, len: number = selectedRecords.length; i < len; i++) {
             for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
                 if (JSON.stringify(
-                    this.parent.renderModule.data.dataManager.dataSource.json[j]) === JSON.stringify(selectedRecords[i])) {
-                    selectedIndexes[i] = j - skip;
+                    this.parent.renderModule.data.dataManager.dataSource.json[parseInt(j.toString(), 10)]) === JSON
+                    .stringify(selectedRecords[parseInt(i.toString(), 10)])) {
+                    selectedIndexes[parseInt(i.toString(), 10)] = j - skip;
                     break;
                 }
             }
@@ -923,7 +925,7 @@ export class RowDD {
                 (srcControl.pageSettings.currentPage * srcControl.pageSettings.pageSize) - srcControl.pageSettings.pageSize : 0;
             this.selectedRows = [];
             for (let i: number = 0, len: number = records.length; i < len; i++) {
-                this.selectedRows.push(skip + selectedRows[i]);
+                this.selectedRows.push(skip + selectedRows[parseInt(i.toString(), 10)]);
             }
             srcControl.notify(events.rowsRemoved, { indexes: this.selectedRows, records: records });
             srcControl.notify(events.modelChanged, {

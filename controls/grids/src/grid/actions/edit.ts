@@ -89,14 +89,16 @@ export class Edit implements IAction {
     private updateColTypeObj(): void {
         const cols: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel;
         for (let i: number = 0; i < cols.length; i++) {
-            if (this.parent.editSettings.template || cols[i].editTemplate) {
+            if (this.parent.editSettings.template || cols[parseInt(i.toString(), 10)].editTemplate) {
                 const templteCell: string = 'templateedit';
-                cols[i].edit = extend(new Edit.editCellType[templteCell](this.parent), cols[i].edit || {});
+                cols[parseInt(i.toString(), 10)].edit = extend(new Edit.editCellType[`${templteCell}`](this.parent),
+                                                               cols[parseInt(i.toString(), 10)].edit || {});
             } else {
-                cols[i].edit = extend(
-                    new Edit.editCellType[cols[i].editType && Edit.editCellType[cols[i].editType] ?
-                        cols[i].editType : 'defaultedit'](this.parent, this.serviceLocator),
-                    cols[i].edit || {}
+                cols[parseInt(i.toString(), 10)].edit = extend(
+                    new Edit.editCellType[cols[parseInt(i.toString(), 10)].editType
+                        && Edit.editCellType[cols[parseInt(i.toString(), 10)].editType] ?
+                        cols[parseInt(i.toString(), 10)].editType : 'defaultedit'](this.parent, this.serviceLocator),
+                    cols[parseInt(i.toString(), 10)].edit || {}
                 );
             }
         }
@@ -492,7 +494,7 @@ export class Edit implements IAction {
         (options as { buttons: Object[] }).buttons = btnOptions;
         const obj: Dialog = new Dialog(options);
         const isStringTemplate: string = 'isStringTemplate';
-        obj[isStringTemplate] = true;
+        obj[`${isStringTemplate}`] = true;
         obj.appendTo(div);
         return obj;
     }
@@ -587,34 +589,36 @@ export class Edit implements IAction {
         if (gObj.editSettings.template) {
             const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>form).elements);
             for (let k: number = 0; k < elements.length; k++) {
-                if (((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
-                    elements[k].classList.contains('e-multiselect')) && !(elements[k].type === 'hidden' &&
-                    (parentsUntil(elements[k], 'e-switch-wrapper') || parentsUntil(elements[k], 'e-checkbox-wrapper')))) {
-                    const field: string = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
-                        setComplexFieldID(elements[k].getAttribute('id'));
-                    const column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
+                if (((elements[parseInt(k.toString(), 10)].hasAttribute('name') && (elements[parseInt(k.toString(), 10)].className !== 'e-multi-hidden')) ||
+                    elements[parseInt(k.toString(), 10)].classList.contains('e-multiselect')) && !(elements[parseInt(k.toString(), 10)].type === 'hidden' &&
+                    (parentsUntil(elements[parseInt(k.toString(), 10)], 'e-switch-wrapper') || parentsUntil(elements[parseInt(k.toString(), 10)], 'e-checkbox-wrapper')))) {
+                    const field: string = (elements[parseInt(k.toString(), 10)].hasAttribute('name')) ? setComplexFieldID(elements[parseInt(k.toString(), 10)].getAttribute('name')) :
+                        setComplexFieldID(elements[parseInt(k.toString(), 10)].getAttribute('id'));
+                    const column: Column = gObj.getColumnByField(field) || { field: field, type: elements[parseInt(k.toString(), 10)].getAttribute('type') } as Column;
                     let value: string | Date | boolean;
                     if (column.type === 'checkbox' || column.type === 'boolean') {
-                        value = elements[k].checked;
-                    } else if (elements[k].value) {
-                        value = elements[k].value;
-                        if ((<EJ2Intance>(elements[k] as Element)).ej2_instances &&
-                            (<Object[]>(<EJ2Intance>(elements[k] as Element)).ej2_instances).length &&
-                            !isNullOrUndefined((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].value)) {
-                            elements[k].blur();
-                            value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
+                        value = elements[parseInt(k.toString(), 10)].checked;
+                    } else if (elements[parseInt(k.toString(), 10)].value) {
+                        value = elements[parseInt(k.toString(), 10)].value;
+                        if ((<EJ2Intance>(elements[parseInt(k.toString(), 10)] as Element)).ej2_instances &&
+                            (<Object[]>(<EJ2Intance>(elements[parseInt(k.toString(), 10)] as Element)).ej2_instances).length &&
+                            !isNullOrUndefined((<EJ2Intance>(elements[parseInt(k.toString(), 10)] as Element)).ej2_instances[0].value)) {
+                            elements[parseInt(k.toString(), 10)].blur();
+                            value = ((<EJ2Intance>(elements[parseInt(k.toString(), 10)] as Element))
+                                .ej2_instances[0] as { value?: string | boolean | Date }).value;
                         }
-                    } else if ((<EJ2Intance>(elements[k] as Element)).ej2_instances) {
-                        value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
+                    } else if ((<EJ2Intance>(elements[parseInt(k.toString(), 10)] as Element)).ej2_instances) {
+                        value = ((<EJ2Intance>(elements[parseInt(k.toString(), 10)] as Element))
+                            .ej2_instances[0] as { value?: string | boolean | Date }).value;
                     }
                     if (column.edit && typeof column.edit.read === 'string') {
-                        value = getValue(column.edit.read, window)(elements[k], value);
+                        value = getValue(column.edit.read, window)(elements[parseInt(k.toString(), 10)], value);
                     } else if (column.edit && column.edit.read) {
-                        value = (column.edit.read as Function)(elements[k], value);
+                        value = (column.edit.read as Function)(elements[parseInt(k.toString(), 10)], value);
                     }
                     value = gObj.editModule.getValueFromType(column, value) as string;
-                    if (elements[k].type === 'radio') {
-                        if (elements[k].checked) {
+                    if (elements[parseInt(k.toString(), 10)].type === 'radio') {
+                        if (elements[parseInt(k.toString(), 10)].checked) {
                             DataUtil.setValue(column.field, value, editedData);
                         }
                     } else {
@@ -627,26 +631,27 @@ export class Edit implements IAction {
 
         const col: Column[] = (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate);
         for (let j: number = 0; j < col.length; j++) {
-            if (form[getComplexFieldID(col[j].field)]) {
-                let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[j].field)]);
-                inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[j].field)]];
+            if (form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]) {
+                let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]);
+                inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]];
                 let temp: HTMLInputElement[] = inputElements.filter((e: HTMLInputElement) =>
                     !isNullOrUndefined(((<EJ2Intance>(e as Element)).ej2_instances)));
                 if (temp.length === 0) {
                     temp = inputElements.filter((e: HTMLInputElement) => e.hasAttribute('name'));
                 }
                 for (let k: number = 0; k < temp.length; k++) {
-                    const value: number | string | Date | boolean = this.getValue(col[j], temp[k], editedData);
-                    DataUtil.setValue(col[j].field, value, editedData);
+                    const value: number | string | Date | boolean = this.getValue(col[parseInt(j.toString(), 10)],
+                                                                                  temp[parseInt(k.toString(), 10)], editedData);
+                    DataUtil.setValue(col[parseInt(j.toString(), 10)].field, value, editedData);
                 }
             }
         }
 
         const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
-            const col: Column = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
+            const col: Column = gObj.getColumnByUid(inputs[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                const value:  number | string | Date | boolean = this.getValue(col, inputs[i], editedData);
+                const value:  number | string | Date | boolean = this.getValue(col, inputs[parseInt(i.toString(), 10)], editedData);
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
@@ -735,11 +740,11 @@ export class Edit implements IAction {
         }
         const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
         for (let i: number = 0; i < elements.length; i++) {
-            if (elements[i].hasAttribute('name')) {
-                if ((<EJ2Intance>(elements[i] as Element)).ej2_instances &&
-                    (<Object[]>(<EJ2Intance>(elements[i] as Element)).ej2_instances).length &&
-                    !(<EJ2Intance>(elements[i] as Element)).ej2_instances[0].isDestroyed) {
-                    (<EJ2Intance>(elements[i] as Element)).ej2_instances[0].destroy();
+            if (elements[parseInt(i.toString(), 10)].hasAttribute('name')) {
+                if ((<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances &&
+                    (<Object[]>(<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances).length &&
+                    !(<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances[0].isDestroyed) {
+                    (<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances[0].destroy();
                 }
             }
         }
@@ -753,8 +758,9 @@ export class Edit implements IAction {
         this.destroyToolTip();
         const formObjects: FormValidator[] = [this.formObj, this.mFormObj, this.frFormObj, this.virtualFormObj];
         for (let i: number = 0; i < formObjects.length; i++) {
-            if (formObjects[i] && formObjects[i].element && !formObjects[i].isDestroyed) {
-                formObjects[i].destroy();
+            if (formObjects[parseInt(i.toString(), 10)] && formObjects[parseInt(i.toString(), 10)].element
+                && !formObjects[parseInt(i.toString(), 10)].isDestroyed) {
+                formObjects[parseInt(i.toString(), 10)].destroy();
             }
         }
         this.destroyToolTip();
@@ -841,7 +847,7 @@ export class Edit implements IAction {
                 if (commandColCell) {
                     for (let i: number = 0; i < commandColCell.length; i++) {
                         focusableEditCells = focusableEditCells.concat([].slice
-                            .call(commandColCell[i].querySelectorAll('.e-btn:not(.e-hide)')));
+                            .call(commandColCell[parseInt(i.toString(), 10)].querySelectorAll('.e-btn:not(.e-hide)')));
                     }
                 }
                 if (this.parent.isFrozenGrid()) {
@@ -925,21 +931,21 @@ export class Edit implements IAction {
         const isInline: boolean = this.parent.editSettings.mode === 'Normal';
         const idx: number = this.parent.getFrozenMode() === 'Right' && isInline ? 1 : 0;
         const form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
-            gObj.element.getElementsByClassName('e-gridform')[idx] as HTMLFormElement :
+            gObj.element.getElementsByClassName('e-gridform')[parseInt(idx.toString(), 10)] as HTMLFormElement :
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
         const index: number = this.parent.getFrozenMode() === 'Right' && isInline ? 0 : 1;
-        const mForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[index] as HTMLFormElement;
+        const mForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[parseInt(index.toString(), 10)] as HTMLFormElement;
         let rules: Object = {};
         const mRules: Object = {};
         const frRules: Object = {};
         cols = cols ? cols : gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
-            if (!cols[i].visible && (gObj.editSettings.mode !== 'Dialog' || (gObj.groupSettings.columns.indexOf(cols[i].field) === -1
+            if (!cols[parseInt(i.toString(), 10)].visible && (gObj.editSettings.mode !== 'Dialog' || (gObj.groupSettings.columns.indexOf(cols[parseInt(i.toString(), 10)].field) === -1
                 && gObj.editSettings.mode === 'Dialog'))) {
                 continue;
             }
-            if (cols[i].validationRules) {
-                setValidationRuels(cols[i], index, rules, mRules, frRules, cols.length);
+            if (cols[parseInt(i.toString(), 10)].validationRules) {
+                setValidationRuels(cols[parseInt(i.toString(), 10)], index, rules, mRules, frRules, cols.length);
             }
         }
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {

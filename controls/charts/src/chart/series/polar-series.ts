@@ -169,7 +169,7 @@ export class PolarSeries extends PolarRadarPanel {
             }
         }
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            let series: Series = seriesCollection[i];
+            let series: Series = seriesCollection[i as number];
             if (series.drawType.indexOf('Stacking') !== -1) {
                 if (series.stackingGroup) {
                     if (stackingGroup[series.stackingGroup] === undefined) {
@@ -191,7 +191,7 @@ export class PolarSeries extends PolarRadarPanel {
             }
         }
         for (let i: number = 0; i < seriesCollection.length; i++) {
-            let value: Series = seriesCollection[i];
+            let value: Series = seriesCollection[i as number];
             value.rectCount = vSeries.rectCount;
         }
     }
@@ -210,15 +210,16 @@ export class PolarSeries extends PolarRadarPanel {
         let count: number = 1;
         if (series.drawType === 'Scatter') {
             for (let point of series.points) {
-                if (!point.symbolLocations.length || !rectElements[count]) {
+                if (!point.symbolLocations.length || !rectElements[count as number]) {
                     continue;
                 }
-                markerAnimate(<HTMLElement>rectElements[count], delay, duration, series, point.index, point.symbolLocations[0], false);
+                markerAnimate(<HTMLElement>rectElements[count as number], delay, duration, series,
+                              point.index, point.symbolLocations[0], false);
                 count++;
             }
         } else {
             for (count = 1; count < rectElements.length; count++) {
-                this.doPolarRadarAnimation(<HTMLElement>rectElements[count], delay, duration, series);
+                this.doPolarRadarAnimation(<HTMLElement>rectElements[count as number], delay, duration, series);
             }
         }
     }

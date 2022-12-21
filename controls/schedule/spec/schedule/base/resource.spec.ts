@@ -1041,14 +1041,16 @@ describe('Schedule Resources', () => {
         });
         it('Checking scroll to resource method on Timeline month view', () => {
             schObj.scrollToResource(3);
-            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(240);
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            expect(conWrap.scrollTop).toEqual(240);
             schObj.scrollToResource(1, 'Categories');
-            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toBeGreaterThanOrEqual(59);
+            expect(conWrap.scrollTop).toBeGreaterThanOrEqual(59);
             schObj.scrollToResource('2', 'Projects');
-            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(180);
+            expect(conWrap.scrollTop).toEqual(180);
+            util.triggerScrollEvent(conWrap, conWrap.scrollTop);
             (schObj.element.querySelector('.e-resource-tree-icon.e-resource-collapse') as HTMLElement).click();
             schObj.scrollToResource(1, 'Categories');
-            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toBeGreaterThanOrEqual(59);
+            expect(conWrap.scrollTop).toBeGreaterThanOrEqual(59);
         });
     });
 
@@ -1097,6 +1099,807 @@ describe('Schedule Resources', () => {
             expect((appElements[0] as HTMLElement).style.backgroundColor).toEqual('rgb(255, 170, 0)');
             expect((appElements[1] as HTMLElement).style.backgroundColor).toEqual('rgb(116, 153, 225)');
             expect((appElements[2] as HTMLElement).style.backgroundColor).toEqual('rgb(248, 163, 152)');
+        });
+    });
+
+    describe('custom workDays with group by date support for vertical views', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    byGroupID: false,
+                    byDate: true,
+                    hideNonWorkingDays: true,
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId',
+                        title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'OwnerId',
+                        title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [1, 2, 3, 4], startHour: '00:00', endHour: '08:00', css: 'e-na' },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4], startHour: '08:00', endHour: '16:00', css: 'e-st' },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', workDays: [2, 6], startHour: '16:00', endHour: '23:59', css: 'e-mi' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
+                        workDaysField: 'workDays', startHourField: 'startHour', endHourField: 'endHour', cssClassField: 'css'
+                    }
+                ],
+                views: ['Day', 'Week', 'WorkWeek'],
+                currentView: 'Week',
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checked resources and dates checked for week view', () => {
+            expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(6);
+            expect(schObj.element.querySelectorAll('.e-header-day')[0].innerHTML).toEqual('Mon');
+            expect(schObj.element.querySelectorAll('.e-header-day')[1].innerHTML).toEqual('Tue');
+            expect(schObj.element.querySelectorAll('.e-header-day')[2].innerHTML).toEqual('Wed');
+            expect(schObj.element.querySelectorAll('.e-header-day')[3].innerHTML).toEqual('Thu');
+            expect(schObj.element.querySelectorAll('.e-header-day')[4].innerHTML).toEqual('Sat');
+            expect(schObj.element.querySelector('[data-id="Appointment_5"]').children[1].firstElementChild.innerHTML).toBe('Conference');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            const saveButton: HTMLElement = schObj.element.querySelector('.e-event-create') as HTMLElement;
+            saveButton.click();
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+        });
+
+        it('checked for different resource for week view ', () => {
+            const middleResource: HTMLCollection = schObj.element.querySelectorAll('.e-header-row')[2].children;
+            expect(middleResource[0].firstElementChild.innerHTML).toEqual('Nancy');
+            expect(middleResource[15].firstElementChild.innerHTML).toEqual('Michael');
+            expect(middleResource[7].firstElementChild.innerHTML).toEqual('Steven');
+        });
+
+        it('checked for resources length for week view', () => {
+            expect(schObj.element.querySelectorAll('.e-header-row')[2].children.length).toEqual(16);
+        });
+
+        it('checked colspan for week view', () => {
+            const firstLevelResource: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            expect(firstLevelResource[1].getAttribute('colspan')).toEqual('2');
+            expect(firstLevelResource[2].getAttribute('colspan')).toEqual('4');
+            expect(firstLevelResource[3].getAttribute('colspan')).toEqual('4');
+            expect(firstLevelResource[4].getAttribute('colspan')).toEqual('4');
+            expect(firstLevelResource[5].getAttribute('colspan')).toEqual('2');
+        });
+
+        it('checked resources and dates for day view', (done: DoneFn) => {
+            const firstLevelResource: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-header-day')[0].innerHTML).toEqual('Mon');
+                expect(firstLevelResource[1].getAttribute('colspan')).toEqual('2');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].firstElementChild.firstElementChild.innerHTML).toEqual('Nancy');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].children.length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                done();
+            };
+
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('checked next date checked for day view', (done: DoneFn) => {
+            const nextElement: HTMLElement = schObj.element.querySelector('.e-next');
+            util.triggerMouseEvent(nextElement as HTMLElement, 'click');
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-header-day')[0].innerHTML).toEqual('Tue');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].firstElementChild.firstElementChild.innerHTML).toEqual('Nancy');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].lastElementChild.firstElementChild.innerHTML).toEqual('Michael');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].children.length).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                expect(schObj.element.querySelector('[data-id="Appointment_5"]').children[1].firstElementChild.innerHTML).toBe('Conference');
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('checked next date colspan for day view', () => {
+            const firstLevelResource: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            expect(firstLevelResource[1].getAttribute('colspan')).toEqual('4');
+        });
+
+        it('checked previous date checked for day view', (done: DoneFn) => {
+            const previousElement: HTMLElement = schObj.element.querySelector('.e-prev');
+            util.triggerMouseEvent(previousElement as HTMLElement, 'click');
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-header-day')[0].innerHTML).toEqual('Mon');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].firstElementChild.firstElementChild.innerHTML).toEqual('Nancy');
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].children.length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('checked previous date colspan for day view', () => {
+            const firstLevelResource: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            expect(firstLevelResource[1].getAttribute('colspan')).toEqual('2');
+        });
+
+        it('checked resources and dates checked for workweek view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-header-day')[0].innerHTML).toEqual('Mon');
+                expect(schObj.element.querySelectorAll('.e-header-day')[1].innerHTML).toEqual('Tue');
+                expect(schObj.element.querySelectorAll('.e-header-day')[2].innerHTML).toEqual('Wed');
+                expect(schObj.element.querySelectorAll('.e-header-day')[3].innerHTML).toEqual('Thu');
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelector('[data-id="Appointment_5"]').children[1].firstElementChild.innerHTML).toBe('Conference');
+                done();
+            };
+            schObj.currentView = 'WorkWeek';
+            schObj.dataBind();
+        });
+
+        it('checked colspan for workweek view', () => {
+            const firstLevelResource: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            expect(firstLevelResource[1].getAttribute('colspan')).toEqual('2');
+            expect(firstLevelResource[2].getAttribute('colspan')).toEqual('4');
+            expect(firstLevelResource[3].getAttribute('colspan')).toEqual('4');
+            expect(firstLevelResource[4].getAttribute('colspan')).toEqual('4');
+        });
+
+        it('checked for different resource for workweek view', () => {
+            const middleResource: HTMLCollection = schObj.element.querySelectorAll('.e-header-row')[2].children;
+            expect(middleResource[0].firstElementChild.innerHTML).toEqual('Nancy');
+            expect(middleResource[13].firstElementChild.innerHTML).toEqual('Steven');
+            expect(middleResource[3].firstElementChild.innerHTML).toEqual('Michael');
+        });
+
+        it('checked for resources length for workweek view', () => {
+            expect(schObj.element.querySelectorAll('.e-header-row')[2].children.length).toEqual(14);
+        });
+    });
+
+    describe('custom workDays with group by date support for month view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    byDate: true,
+                    hideNonWorkingDays: true,
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId',
+                        title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'OwnerId',
+                        title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [1, 2, 3, 4] },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4] },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', workDays: [2, 6] }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', workDaysField: 'workDays'
+                    }
+                ],
+                views: ['Day', 'Week', 'WorkWeek', 'Month'],
+                currentView: 'Month',
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-work-cells')[20].lastElementChild.classList).toContain('e-appointment-wrapper');
+                done();
+            }
+            expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(5);
+            expect((schObj.element.querySelectorAll('.e-header-cells')[0] as HTMLElement).innerText).toEqual('Mon');
+            expect((schObj.element.querySelectorAll('.e-header-cells')[4] as HTMLElement).innerText).toEqual('Sat');
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(7);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(8);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(40);
+            expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[4].getAttribute('data-group-index')).toEqual('2');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[20] as HTMLElement, 'click');
+            const saveButton: HTMLElement = schObj.element.querySelector('.e-event-create') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and disabled showWeekend property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(4);
+                expect((schObj.element.querySelectorAll('.e-header-cells')[0] as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelectorAll('.e-header-cells')[3] as HTMLElement).innerText).toEqual('Thu');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(6);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(7);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(35);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[6].getAttribute('data-group-index')).toEqual('2');
+                expect(schObj.element.querySelectorAll('.e-week-number-wrapper tbody tr').length).toBe(5);
+                expect(schObj.element.querySelector('.e-week-number').innerHTML).toEqual('14');
+                done();
+            }
+            schObj.showWeekend = false;
+            schObj.showWeekNumber = true;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and schedule workdays property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(3);
+                expect((schObj.element.querySelectorAll('.e-header-cells')[0] as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelectorAll('.e-header-cells')[2] as HTMLElement).innerText).toEqual('Sat');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(20);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[3].getAttribute('data-group-index')).toEqual('1');
+                expect(schObj.element.querySelectorAll('.e-week-number').length).toEqual(0);
+                done();
+            }
+            schObj.showWeekNumber = false;
+            schObj.workDays = [1, 3, 6]
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and firstDayOfWeek property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(3);
+                expect((schObj.element.querySelectorAll('.e-header-cells')[0] as HTMLElement).innerText).toEqual('Wed');
+                expect((schObj.element.querySelectorAll('.e-header-cells')[2] as HTMLElement).innerText).toEqual('Mon');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(20);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[3].getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[0].getAttribute('colspan')).toEqual('2');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].getAttribute('colspan')).toEqual('1');
+                done();
+            }
+            schObj.firstDayOfWeek = 2;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with disabled hideNonWorkingDays', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(7);
+                expect((schObj.element.querySelectorAll('.e-header-cells')[0] as HTMLElement).innerText).toEqual('Sun');
+                expect((schObj.element.querySelectorAll('.e-header-cells')[4] as HTMLElement).innerText).toEqual('Thu');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(14);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(21);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(12);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(105);
+                expect(schObj.element.querySelectorAll('.e-header-cells')[0].getAttribute('colspan')).toEqual('3');
+                expect(schObj.element.querySelector('.e-resource-cells').getAttribute('colspan')).toEqual('2');
+                done();
+            }
+            schObj.firstDayOfWeek = 0;
+            schObj.workDays = [1, 2, 3, 4, 5];
+            schObj.group.hideNonWorkingDays = false;
+            schObj.showWeekend = true;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and allowInline', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                done();
+            }
+            schObj.group.hideNonWorkingDays = true;
+            schObj.allowInline = true;
+            schObj.dataBind();
+        });
+
+        it('Adding inline appointments with hideNonWorkingDays', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(6);
+                expect((eventElementList[4].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
+                done();
+            }
+            const targetWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[19] as HTMLElement;
+            util.triggerMouseEvent(targetWorkCell, 'click');
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Testing';
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('checked hideNonWorkingDays property without providing workdays field in resource datasource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells').length).toEqual(5);
+                expect((schObj.element.querySelectorAll('.e-header-cells')[0] as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelectorAll('.e-header-cells')[4] as HTMLElement).innerText).toEqual('Fri');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(10);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(15);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(8);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(75);
+                expect(schObj.element.querySelectorAll('.e-header-cells')[0].getAttribute('colspan')).toEqual('3');
+                expect(schObj.element.querySelector('.e-resource-cells').getAttribute('colspan')).toEqual('2');
+                done();
+            }
+            schObj.allowInline = false;
+            schObj.resources[1].dataSource = [
+                { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                { text: 'Steven', id: 2, groupId: 2, color: '#f8a398' },
+                { text: 'Michael', id: 3, groupId: 1, color: '#7499e1' }
+            ];
+            schObj.dataBind();
+        });
+    });
+
+    describe('custom workDays with group by date support for Week view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        let model: ScheduleModel;
+        beforeAll((done: DoneFn) => {
+            model = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    byDate: true,
+                    hideNonWorkingDays: true,
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId',
+                        title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'OwnerId',
+                        title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [1, 2, 3, 4] },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4] },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', workDays: [2, 6] }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', workDaysField: 'workDays'
+                    }
+                ],
+                views: ['Day', 'Week', 'WorkWeek', 'Month'],
+                currentView: 'Week',
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment-wrapper')[4].childElementCount).toBe(1);
+                done();
+            }
+            expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+            expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(5);
+            expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+            expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Sat');
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(7);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(8);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+            expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(384);
+            expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[4].getAttribute('data-group-index')).toEqual('2');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[180] as HTMLElement, 'click');
+            expect(schObj.element.querySelectorAll('.e-appointment-wrapper')[4].childElementCount).toBe(0);
+            const saveButton: HTMLElement = schObj.element.querySelector('.e-event-create') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and disabled showWeekend property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(4);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Thu');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(6);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(7);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(336);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[6].getAttribute('data-group-index')).toEqual('2');
+                expect(schObj.element.querySelector('.e-left-indent-wrap td').classList).toContain('e-week-number');
+                expect((schObj.element.querySelector('.e-week-number') as HTMLElement).innerText).toEqual('14');
+                expect((schObj.element.querySelector('.e-schedule-toolbar .e-date-range') as HTMLElement).innerText).toEqual('April 02 - 06, 2018');
+                done();
+            }
+            schObj.showWeekend = false;
+            schObj.showWeekNumber = true;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and schedule workdays property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(3);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Sat');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(192);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[3].getAttribute('data-group-index')).toEqual('1');
+                expect(schObj.element.querySelector('.e-left-indent-wrap td').classList.contains('e-week-number')).toBeFalsy();
+                expect((schObj.element.querySelector('.e-schedule-toolbar .e-date-range') as HTMLElement).innerText).toEqual('April 02 - 07, 2018');
+                done();
+            }
+            schObj.showWeekNumber = false;
+            schObj.workDays = [1, 3, 6]
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and firstDayOfWeek property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(3);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Wed');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(192);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[3].getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-header-row td')[0].getAttribute('colspan')).toEqual('2');
+                expect(schObj.element.querySelectorAll('.e-header-row')[1].firstElementChild.getAttribute('colspan')).toEqual('1');
+                expect((schObj.element.querySelector('.e-schedule-toolbar .e-date-range') as HTMLElement).innerText).toEqual('Mar 28 - Apr 02, 2018');
+                done();
+            }
+            schObj.firstDayOfWeek = 2;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with disabled hideNonWorkingDays', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(7);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Sun');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Sat');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(14);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(21);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(11);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(1008);
+                expect(schObj.element.querySelectorAll('.e-header-row td')[0].getAttribute('colspan')).toEqual('3');
+                expect(schObj.element.querySelectorAll('.e-header-row')[1].firstElementChild.getAttribute('colspan')).toEqual('2');
+                done();
+            }
+            schObj.firstDayOfWeek = 0;
+            schObj.workDays = [1, 2, 3, 4, 5];
+            schObj.group.hideNonWorkingDays = false;
+            schObj.showWeekend = true;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with enabled hideNonWorkingDays and allowInline', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(1);
+                done();
+            }
+            schObj.group.hideNonWorkingDays = true;
+            schObj.allowInline = true;
+            schObj.dataBind();
+        });
+
+        it('Adding inline appointments with hideNonWorkingDays', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(6);
+                expect((eventElementList[2].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
+                done();
+            }
+            const targetWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[163] as HTMLElement;
+            util.triggerMouseEvent(targetWorkCell, 'click');
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Testing';
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('Adding allday inline appointments with hideNonWorkingDays', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                const alldayApp: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-all-day-appointment'));
+                expect(eventElementList.length).toEqual(7);
+                expect(alldayApp.length).toEqual(2);
+                expect((alldayApp[0].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Allday appointment');
+                done();
+            }
+            const targetWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-all-day-cells')[2] as HTMLElement;
+            util.triggerMouseEvent(targetWorkCell, 'click');
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Allday appointment';
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('checked hideNonWorkingDays property without providing workdays field in resource datasource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
+                expect(schObj.element.querySelectorAll('.e-all-day-appointment').length).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(5);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Fri');
+                expect(schObj.element.querySelectorAll('.e-header-row')[1].childElementCount).toEqual(10);
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].childElementCount).toEqual(15);
+                expect(schObj.element.querySelector('.e-all-day-row').childElementCount).toEqual(15);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(720);
+                expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[1].getAttribute('data-group-index')).toEqual('1');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[2].getAttribute('data-group-index')).toEqual('2');
+                done();
+            }
+            schObj.allowInline = false;
+            schObj.resources[1].dataSource = [
+                { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                { text: 'Steven', id: 2, groupId: 2, color: '#f8a398' },
+                { text: 'Michael', id: 3, groupId: 1, color: '#7499e1' }
+            ];
+            schObj.dataBind();
+        });
+    });
+
+    describe('custom workDays with group byDate hideNonWorkingDays property for Week view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        let model: ScheduleModel;
+        beforeAll((done: DoneFn) => {
+            model = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                timeScale: {
+                    enable: false
+                },
+                group: {
+                    byDate: true,
+                    hideNonWorkingDays: true,
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId',
+                        title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'OwnerId',
+                        title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00', workDays: [1, 2, 3, 4] },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', workDays: [3, 4] },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', workDays: [2, 6] }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', workDaysField: 'workDays'
+                    }
+                ],
+                views: ['Day', 'Week', 'WorkWeek', 'Month'],
+                currentView: 'Week',
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking Timescale disabled layout', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-work-cells')[4].childElementCount).toBe(1);
+                done();
+            }
+            expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+            expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(5);
+            expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+            expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Sat');
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(7);
+            expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(8);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(8);
+            expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[4].getAttribute('data-group-index')).toEqual('2');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[4].childElementCount).toBe(0);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[4] as HTMLElement, 'click');
+            const saveButton: HTMLElement = schObj.element.querySelector('.e-event-create') as HTMLElement;
+            saveButton.click();
+        });
+
+        it('checked layout rendering with timescale disabled and disabled showWeekend property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(4);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Thu');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(6);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(7);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(7);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[6].getAttribute('data-group-index')).toEqual('2');
+                expect((schObj.element.querySelector('.e-schedule-toolbar .e-date-range') as HTMLElement).innerText).toEqual('April 02 - 06, 2018');
+                done();
+            }
+            schObj.showWeekend = false;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with timescale disabled and schedule workdays property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(3);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Sat');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(4);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[3].getAttribute('data-group-index')).toEqual('1');
+                expect((schObj.element.querySelector('.e-schedule-toolbar .e-date-range') as HTMLElement).innerText).toEqual('April 02 - 07, 2018');
+                done();
+            }
+            schObj.workDays = [1, 3, 6]
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with timescale disabled and firstDayOfWeek property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(3);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Wed');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(4);
+                expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[3].getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-header-row td')[0].getAttribute('colspan')).toEqual('2');
+                expect(schObj.element.querySelectorAll('.e-header-row')[1].firstElementChild.getAttribute('colspan')).toEqual('1');
+                expect((schObj.element.querySelector('.e-schedule-toolbar .e-date-range') as HTMLElement).innerText).toEqual('Mar 28 - Apr 02, 2018');
+                done();
+            }
+            schObj.firstDayOfWeek = 2;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with timescale and hideNonWorkingDays disabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(7);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Sun');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Sat');
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[1].childElementCount).toEqual(14);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap tbody tr')[2].childElementCount).toEqual(21);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(11);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(21);
+                expect(schObj.element.querySelectorAll('.e-header-row td')[0].getAttribute('colspan')).toEqual('3');
+                expect(schObj.element.querySelectorAll('.e-header-row')[1].firstElementChild.getAttribute('colspan')).toEqual('2');
+                done();
+            }
+            schObj.firstDayOfWeek = 0;
+            schObj.workDays = [1, 2, 3, 4, 5];
+            schObj.group.hideNonWorkingDays = false;
+            schObj.showWeekend = true;
+            schObj.dataBind();
+        });
+
+        it('checked layout rendering with with timescale disabled and enabling hideNonWorkingDays and allowInline', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                done();
+            }
+            schObj.group.hideNonWorkingDays = true;
+            schObj.allowInline = true;
+            schObj.dataBind();
+        });
+
+        it('Adding inline appointments with timescale disabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(6);
+                expect((eventElementList[0].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Testing');
+                done();
+            }
+            const targetWorkCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[1] as HTMLElement;
+            util.triggerMouseEvent(targetWorkCell, 'click');
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-inline-appointment')).toBeTruthy();
+            const inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
+            expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
+            inputElement.value = 'Testing';
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
+        });
+
+        it('checked timescale disabled without providing workdays field in resource datasource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(8);
+                expect(schObj.element.querySelectorAll('.e-header-row').length).toEqual(3);
+                expect(schObj.element.querySelector('.e-header-row').childElementCount).toEqual(5);
+                expect((schObj.element.querySelector('.e-header-row td').firstElementChild as HTMLElement).innerText).toEqual('Mon');
+                expect((schObj.element.querySelector('.e-header-row').lastElementChild.firstElementChild as HTMLElement).innerText).toEqual('Fri');
+                expect(schObj.element.querySelectorAll('.e-header-row')[1].childElementCount).toEqual(10);
+                expect(schObj.element.querySelectorAll('.e-header-row')[2].childElementCount).toEqual(15);
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(15);
+                expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('data-group-index')).toEqual('0');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[1].getAttribute('data-group-index')).toEqual('1');
+                expect(schObj.element.querySelectorAll('.e-work-cells')[2].getAttribute('data-group-index')).toEqual('2');
+                done();
+            }
+            schObj.allowInline = false;
+            schObj.resources[1].dataSource = [
+                { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                { text: 'Steven', id: 2, groupId: 2, color: '#f8a398' },
+                { text: 'Michael', id: 3, groupId: 1, color: '#7499e1' }
+            ];
+            schObj.dataBind();
         });
     });
 

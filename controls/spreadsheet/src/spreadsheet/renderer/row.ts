@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { IRowRenderer, ICellRenderer, CellRenderArgs } from '../common/index';
+import { IRowRenderer, ICellRenderer, CellRenderArgs, isImported } from '../common/index';
 import { getRowHeight, SheetModel, getCell, isHiddenRow, isHiddenCol } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
 import { getCellAddress, getCellIndexes, skipHiddenIdx } from '../../workbook/common/index';
@@ -16,7 +16,7 @@ export class RowRenderer implements IRowRenderer {
 
     constructor(parent?: Spreadsheet) {
         this.parent = parent;
-        this.element = this.parent.createElement('tr', { attrs: { 'role': 'row' } }) as HTMLTableRowElement;
+        this.element = this.parent.createElement('tr') as HTMLTableRowElement;
         this.cellRenderer = parent.serviceLocator.getService<ICellRenderer>('cell');
     }
 
@@ -63,10 +63,11 @@ export class RowRenderer implements IRowRenderer {
             const updateCells: Function = (): void => {
                 while (i <= len) {
                     if (!isHiddenCol(sheet, i)) {
-                        this.cellRenderer.render(<CellRenderArgs>{ colIdx: i, rowIdx: index, cell:
-                            getCell(index, i, sheet), address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow,
-                            isHeightCheckNeeded: true, pRow: pRow, first: index === this.parent.viewport.topIndex &&
-                            skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ? 'Row' : '' });
+                        this.cellRenderer.render(
+                            <CellRenderArgs>{ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet), address: getCellAddress(index, i),
+                                lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow, first:
+                                index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !==
+                                skipHiddenIdx(sheet, 0, true) ? 'Row' : '', skipFormatCheck: isImported(this.parent) });
                     }
                     i++;
                 }
@@ -95,4 +96,3 @@ export class RowRenderer implements IRowRenderer {
         this.parent = null; this.element = null;
     }
 }
- 

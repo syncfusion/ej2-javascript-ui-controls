@@ -972,7 +972,7 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
-  
+
   describe('Performing expand/collapse operation with paging', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {

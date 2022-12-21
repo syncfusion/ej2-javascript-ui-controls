@@ -16,13 +16,13 @@ export function processPathData(data: string): Object[] {
     const arrayCollection: Object[] = parsePathData(data);
     if (arrayCollection.length > 0) {
         for (let i: number = 0; i < arrayCollection.length; i++) {
-            const ob: Object = arrayCollection[i];
+            const ob: Object = arrayCollection[parseInt(i.toString(), 10)];
             let char: string = '';
             char = ob[0];
             switch (char.toLowerCase()) {
             case 'm':
                 for (j = 1; j < (ob as Object[]).length; j++) {
-                    collection.push({ command: char, x: ob[j], y: ob[j + 1] });
+                    collection.push({ command: char, x: ob[parseInt(j.toString(), 10)], y: ob[j + 1] });
                     j = j + 1;
                     if (char === 'm') {
                         char = 'l';
@@ -34,18 +34,18 @@ export function processPathData(data: string): Object[] {
             case 'l':
             case 't':
                 for (j = 1; j < (ob as Object[]).length; j++) {
-                    collection.push({ command: char, x: ob[j], y: ob[j + 1] });
+                    collection.push({ command: char, x: ob[parseInt(j.toString(), 10)], y: ob[j + 1] });
                     j = j + 1;
                 }
                 break;
             case 'h':
                 for (j = 1; j < (ob as Object[]).length; j++) {
-                    collection.push({ command: char, x: ob[j] });
+                    collection.push({ command: char, x: ob[parseInt(j.toString(), 10)] });
                 }
                 break;
             case 'v':
                 for (j = 1; j < (ob as Object[]).length; j++) {
-                    collection.push({ command: char, y: ob[j] });
+                    collection.push({ command: char, y: ob[parseInt(j.toString(), 10)] });
                 }
                 break;
             case 'z':
@@ -54,27 +54,27 @@ export function processPathData(data: string): Object[] {
             case 'c':
                 for (j = 1; j < (ob as Object[]).length; j++) {
                     collection.push({
-                        command: char, x1: ob[j], y1: ob[j + 1], x2: ob[j + 2], y2: ob[j + 3], x: ob[j + 4], y: ob[j + 5]
+                        command: char, x1: ob[parseInt(j.toString(), 10)], y1: ob[j + 1], x2: ob[j + 2], y2: ob[j + 3], x: ob[j + 4], y: ob[j + 5]
                     });
                     j = j + 5;
                 }
                 break;
             case 's':
                 for (j = 1; j < (ob as Object[]).length; j++) {
-                    collection.push({ command: char, x2: ob[j], y2: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
+                    collection.push({ command: char, x2: ob[parseInt(j.toString(), 10)], y2: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
                     j = j + 3;
                 }
                 break;
             case 'q':
                 for (j = 1; j < (ob as Object[]).length; j++) {
-                    collection.push({ command: char, x1: ob[j], y1: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
+                    collection.push({ command: char, x1: ob[parseInt(j.toString(), 10)], y1: ob[j + 1], x: ob[j + 2], y: ob[j + 3] });
                     j = j + 3;
                 }
                 break;
             case 'a':
                 for (j = 1; j < (ob as Object[]).length; j++) {
                     collection.push({
-                        command: char, r1: ob[j], r2: ob[j + 1], angle: ob[j + 2], largeArc: ob[j + 3],
+                        command: char, r1: ob[parseInt(j.toString(), 10)], r2: ob[j + 1], angle: ob[j + 2], largeArc: ob[j + 3],
                         sweep: ob[j + 4], x: ob[j + 5], y: ob[j + 6]
                     });
                     j = j + 6;
@@ -164,7 +164,7 @@ export function getRectanglePath(cornerRadius: number, height: number, width: nu
         point2 = points[i + 1];
         path += 'L' + point2.x + ' ' + point2.y;
         next = points[i + 2] || points[0];
-        path += 'Q' + corners[corner].x + ' ' + corners[corner].y + ' ' + next.x + ' ' + next.y;
+        path += 'Q' + corners[parseInt(corner.toString(), 10)].x + ' ' + corners[parseInt(corner.toString(), 10)].y + ' ' + next.x + ' ' + next.y;
         corner++;
     }
     return path;
@@ -183,7 +183,7 @@ export function getPolygonPath(collection: PointModel[]): string {
     path = 'M' + collection[0].x + ' ' + collection[0].y;
     let i: number;
     for (i = 1; i < collection.length; i++) {
-        seg = collection[i];
+        seg = collection[parseInt(i.toString(), 10)];
         path += 'L' + seg.x + ' ' + seg.y;
     }
     path += 'Z';
@@ -200,15 +200,15 @@ export function getPolygonPath(collection: PointModel[]): string {
     var k:number;
     for(k=0;k<collection.length;k++)
     {
-        collection[k].x = Math.round(collection[k].x)
-        collection[k].y = Math.round(collection[k].y)
+        collection[parseInt(k.toString(), 10)].x = Math.round(collection[parseInt(k.toString(), 10)].x)
+        collection[parseInt(k.toString(), 10)].y = Math.round(collection[parseInt(k.toString(), 10)].y)
     }
     let path: string = '';
     let seg: PointModel;
     path = 'M' + collection[0].x + ' ' + collection[0].y;
     let i: number;
     for (i = 1; i < collection.length; i++) {
-        seg = collection[i];
+        seg = collection[parseInt(i.toString(), 10)];
         path += 'L' + seg.x + ' ' + seg.y;
     }
     return path;
@@ -482,7 +482,7 @@ export function splitArrayCollection(arrayCollection: Object[]): Object[] {
     let x0: number; let y0: number; let x1: number; let y1: number; let x2: number; let y2: number;
     let x: number; let y: number; let length: number; let i: number;
     for (x = 0, y = 0, i = 0, length = arrayCollection.length; i < length; ++i) {
-        const path: Object = arrayCollection[i];
+        const path: Object = arrayCollection[parseInt(i.toString(), 10)];
         const seg: PathSegment = path;
         const char: string = seg.command;
         if (/[MLHVCSQTA]/.test(char)) {
@@ -539,11 +539,11 @@ export function splitArrayCollection(arrayCollection: Object[]): Object[] {
             case 'Z':
                 newSeg = { command: 'Z' };
                 x = x0; y = y0;
-                newSeg = arrayCollection[i];
+                newSeg = arrayCollection[parseInt(i.toString(), 10)];
                 break;
             }
             if (newSeg) {
-                arrayCollection[i] = newSeg;
+                arrayCollection[parseInt(i.toString(), 10)] = newSeg;
             }
         }
         if (char === 'M' || char === 'm') {
@@ -565,9 +565,9 @@ export function getPathString(arrayCollection: Object[]): string {
     let i: number;
     for (i = 0; i < arrayCollection.length; i++) {
         if (i === 0) {
-            getNewString += getString(arrayCollection[i]);
+            getNewString += getString(arrayCollection[parseInt(i.toString(), 10)]);
         } else {
-            getNewString += ' ' + getString(arrayCollection[i]);
+            getNewString += ' ' + getString(arrayCollection[parseInt(i.toString(), 10)]);
         }
     }
     return getNewString;

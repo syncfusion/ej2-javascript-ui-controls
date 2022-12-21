@@ -1,4 +1,4 @@
-﻿import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
 import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
@@ -12,7 +12,7 @@ import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable,
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -289,11 +289,11 @@ export class Predicate extends ChildProperty<Predicate> {
 
     /**
      * Defines the condition to add the new predicates on existing predicate with "and"/"or" operator.
-     * 
+     *
      * @default ''
      */
-     @Property()
-     public condition: string;
+    @Property()
+    public condition: string;
 }
 
 /**
@@ -379,7 +379,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
-     * > Check the [`Filter Menu Operator`](../../grid/filtering/filter-menu/#customizing-filter-menu-operators-list) customization.
+     * > Check the [`Filter Menu Operator`](../../grid/how-to/#customizing-filter-menu-operators-list/) customization.
      *
      * @default null
      */
@@ -389,7 +389,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
      *
      * @default false
      */
@@ -571,7 +571,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../grid/filtering/filtering/#diacritics-filter) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
      *
      * @default false
      */
@@ -902,6 +902,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isVirtualAdaptive: boolean = false;
     /** @hidden */
+    /**
+     * * If `requireTemplateRef` is set to false in the load event, then the template element can't be accessed in grid queryCellInfo, and rowDataBound events.
+     * * By default, React's grid queryCellInfo and rowDataBound events allow access to the template element.
+     * * Avoid accessing the template elements in the grid queryCellInfo and rowDataBound events to improve rendering performance by setting this value as false.
+     *
+     * @default true
+     */
+    public requireTemplateRef: boolean = true;
+    /** @hidden */
     public vRows: Row<Column>[] = [];
     /** @hidden */
     public vcRows: Row<Column>[] = [];
@@ -961,6 +970,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public disableSelectedRecords: Object[] = [];
     /** @hidden */
     public partialSelectedRecords: Object[] = [];
+    /** @hidden */
+    public lazyLoadRender: IRenderer;
+    /** @hidden */
+    public islazyloadRequest: boolean = false;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };
@@ -1155,7 +1168,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * If `enableAltRow` is set to true, the grid will render with `e-altrow` CSS class to the alternative tr elements.
-     * > Check the [`AltRow`](../../grid/row/row/#using-css-customize-alternate-rows/) to customize the styles of alternative rows.
+     * > Check the [`AltRow`](../../grid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
      * {% codeBlock src='grid/enableAltRow/index.md' %}{% endcodeBlock %}
      *
      * @default true
@@ -1337,7 +1350,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `allowExcelExport` set to true, then it will allow the user to export grid to Excel file.
      *
-     * > Check the [`ExcelExport`](../../grid/excel-export/excel-exporting/) to configure exporting document.
+     * > Check the [`ExcelExport`](../../grid/excel-exporting/) to configure exporting document.
      * {% codeBlock src='grid/allowExcelExport/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1347,7 +1360,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `allowPdfExport` set to true, then it will allow the user to export grid to Pdf file.
      *
-     * > Check the [`Pdfexport`](../../grid/pdf-export/pdf-export/) to configure the exporting document.
+     * > Check the [`Pdfexport`](../../grid/pdf-export/) to configure the exporting document.
      * {% codeBlock src='grid/allowPdfExport/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1405,7 +1418,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If set to false the filter bar will not be displayed.
      * Filter bar allows the user to filter grid records with required criteria.
      *
-     * > Check the [`Filtering`](../../grid/filtering/filtering/) to customize its default behavior.
+     * > Check the [`Filtering`](../../grid/filtering/) to customize its default behavior.
      * {% codeBlock src='grid/allowFiltering/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1481,7 +1494,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If `allowGrouping` set to true, then it will allow the user to dynamically group or ungroup columns.
      * Grouping can be done by drag and drop columns from column header to group drop area.
      *
-     * > Check the [`Grouping`](../../grid/grouping/grouping/) to customize its default behavior.
+     * > Check the [`Grouping`](../../grid/grouping/) to customize its default behavior.
      * {% codeBlock src='grid/allowGrouping/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1501,7 +1514,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      *
-     * > Check the [`Column menu`](../../grid/columns/column-menu/) for its configuration.
+     * > Check the [`Column menu`](../../grid/columns/#column-menu/) for its configuration.
      * {% codeBlock src='grid/showColumnMenu/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1531,7 +1544,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Configures the Grid aggregate rows.
      * {% codeBlock src='grid/aggregates/index.md' %}{% endcodeBlock %}
-     * > Check the [`Aggregates`](../../grid/aggregates/aggregates/) for its configuration.
+     * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
      *
      * @default []
      */
@@ -1541,7 +1554,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.
      *
-     * > Check the [`ColumnChooser`](../../grid/columns/column-chooser/) for its configuration.
+     * > Check the [`ColumnChooser`](../../grid/columns/#column-chooser/) for its configuration.
      * {% codeBlock src='grid/showColumnChooser/index.md' %}{% endcodeBlock %}
      *
      * @default false
@@ -1602,7 +1615,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.
      * > * The row template must be a table row.
      *
-     * > Check the [`Row Template`](../../grid/row/row-template/) customization.
+     * > Check the [`Row Template`](../../grid/row/) customization.
      */
     @Property()
     public rowTemplate: string;
@@ -1718,7 +1731,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * * CsvExport - Export the Grid to CSV(csvExport() method manually to make export.)<br><br>
      * The following code example implements the custom toolbar items.
      *
-     *  > Check the [`Toolbar`](../../grid/tool-bar/tool-bar-items/#custom-toolbar-items/) to customize its default items.
+     *  > Check the [`Toolbar`](../../grid/tool-bar/#custom-toolbar-items/) to customize its default items.
      *
      * {% codeBlock src="grid/toolbar-api/index.ts" %}{% endcodeBlock %}
      * {% codeBlock src='grid/toolbar/index.md' %}{% endcodeBlock %}
@@ -2505,9 +2518,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
         for (let i: number = 0; i < keyEntity.length; i++) {
-            const currentObject: Object = this[keyEntity[i]];
-            for (const val of ignoreOnPersist[keyEntity[i]]) {
-                delete currentObject[val];
+            const currentObject: Object = this[keyEntity[parseInt(i.toString(), 10)]];
+            for (const val of ignoreOnPersist[keyEntity[parseInt(i.toString(), 10)]]) {
+                delete currentObject[`${val}`];
             }
         }
         const temp: string = this.pageSettings.template;
@@ -2770,7 +2783,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             UnGroupIcon: 'ungroup the grouped column ',
             GroupedSortIcon: 'sort the grouped column ',
             GroupedDrag: 'Drag the grouped column',
-            GroupCaption:' is groupcaption cell',
+            GroupCaption: ' is groupcaption cell',
             CheckBoxLabel: 'checkbox',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
@@ -2787,6 +2800,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             DeleteRecord: 'Delete Record',
             FilterMenu: 'Filter',
             SelectAll: 'Select All',
+            AddCurrentSelection: 'Add current selection to filter',
             Blanks: 'Blanks',
             FilterTrue: 'True',
             FilterFalse: 'False',
@@ -2891,7 +2905,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.getDataModule().dataManager.dataSource.offline === true || this.getDataModule().dataManager.dataSource.url === undefined) {
             this.isVirtualAdaptive = true;
         }
-        this.trigger(events.load);
+        if ((<{ isReact?: boolean }>this).isReact) {
+            const args: LoadEventArgs = {requireTemplateRef: this.requireTemplateRef};
+            this.trigger(events.load, args);
+            if (!args.requireTemplateRef) {
+                this.requireTemplateRef = args.requireTemplateRef;
+            }
+        }
+        else {
+            this.trigger(events.load);
+        }
         prepareColumns(this.columns as Column[], this.enableColumnVirtualization, this);
         if (this.enablePersistence) {
             this.notify(events.columnsPrepared, {});
@@ -3135,7 +3158,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const rowCount: number = rows.length;
             for (let i: number = 0; i < rowCount; i++) {
                 maskTHead.appendChild(row.cloneNode(true));
-                (maskTHead.childNodes[i] as HTMLElement).style.height = rows[i].getBoundingClientRect().height + 'px';
+                (maskTHead.childNodes[parseInt(i.toString(), 10)] as HTMLElement).style
+                    .height = rows[parseInt(i.toString(), 10)].getBoundingClientRect().height + 'px';
             }
             maskTable.appendChild(maskTHead);
         }
@@ -3171,10 +3195,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 rowCount = (header && this.isFrozenGrid()) || (this.enableVirtualization && axisDirection) ? rows.length
                     : rowCount <= rows.length ? rowCount : rows.length;
                 for (let i: number = 0; i < rowCount; i++) {
-                    maskTBody.appendChild(this.applyMaskRow(rows[i].cloneNode(true) as Element, rows[i].getBoundingClientRect().height));
+                    maskTBody.appendChild(
+                        this.applyMaskRow(
+                            rows[parseInt(i.toString(), 10)].cloneNode(true) as Element,
+                            rows[parseInt(i.toString(), 10)].getBoundingClientRect().height));
                 }
                 if (addEditRow && addEditRow.classList.contains('e-editedrow')) {
-                    const addEditMaskRow: HTMLElement = maskTBody.childNodes[addEditRowIndex] as HTMLElement;
+                    const addEditMaskRow: HTMLElement = maskTBody.childNodes[parseInt(addEditRowIndex.toString(), 10)] as HTMLElement;
                     addEditMaskRow.style.height = this.getRowHeight() + 'px';
                     addEditMaskRow.classList.add('e-row');
                     if (addEditRow.classList.contains('e-altrow')) {
@@ -3190,7 +3217,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             maskTFoot.setAttribute('class', 'e-masked-tfoot');
             const rows: Element[] = [].slice.call(tfoot.querySelectorAll('tr'));
             for (let i: number = 0; i < rows.length; i++) {
-                maskTFoot.appendChild(this.applyMaskRow(rows[i].cloneNode(true) as Element, rows[i].getBoundingClientRect().height));
+                maskTFoot.appendChild(
+                    this.applyMaskRow(
+                        rows[parseInt(i.toString(), 10)].cloneNode(true) as Element,
+                        rows[parseInt(i.toString(), 10)].getBoundingClientRect().height));
             }
             maskTable.appendChild(maskTFoot);
         }
@@ -3229,7 +3259,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         (maskRow as HTMLElement).style.height = rowHeight + 'px';
         const maskCells: Element[] = [].slice.call(maskRow.childNodes);
         for (let i: number = 0; i < maskCells.length; i++) {
-            const maskCell: Element = maskCells[i];
+            const maskCell: Element = maskCells[parseInt(i.toString(), 10)];
             const displayAsCheckBoxCell: boolean = maskCell.firstChild && (maskCell.firstChild as Element).classList
                 && (maskCell.firstChild as Element).classList.contains('e-checkbox-wrapper');
             maskCell.removeAttribute('role');
@@ -3266,21 +3296,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const td: Element = this.createElement('td', { className: 'e-masked-cell e-rowcell' });
         for (let i: number = 0, colIndex: number = 0; i < colgroup.childNodes.length; i++) {
-            const col: HTMLElement = colgroup.childNodes[i] as HTMLElement;
+            const col: HTMLElement = colgroup.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
             const localTD: HTMLElement = td.cloneNode() as HTMLElement;
             localTD.innerHTML = this.getShimmerTemplate();
             if (!(col.classList.contains('e-group-intent') || col.classList.contains('e-detail-intent')
                 || col.classList.contains('e-drag-intent'))) {
-                if (this.rowRenderingMode === 'Vertical' && columns[colIndex]) {
-                    localTD.setAttribute('data-cell', columns[colIndex].headerText ? columns[colIndex].headerText
-                        : columns[colIndex].field);
+                if (this.rowRenderingMode === 'Vertical' && columns[parseInt(colIndex.toString(), 10)]) {
+                    localTD.setAttribute('data-cell', columns[parseInt(colIndex.toString(), 10)].headerText ?
+                        columns[parseInt(colIndex.toString(), 10)].headerText : columns[parseInt(colIndex.toString(), 10)].field);
                 }
                 if (col.style.display === 'none') {
                     localTD.classList.add('e-hide');
                 } else {
-                    localTD.style.textAlign = columns[colIndex] && columns[colIndex].textAlign ? columns[colIndex].textAlign.toLowerCase()
+                    localTD.style.textAlign = columns[parseInt(colIndex.toString(), 10)]
+                        && columns[parseInt(colIndex.toString(), 10)].textAlign ?
+                        columns[parseInt(colIndex.toString(), 10)].textAlign.toLowerCase()
                         : this.enableRtl ? 'right' : 'left';
-                    if (columns[colIndex] && (columns[colIndex].type === 'checkbox' || columns[colIndex].displayAsCheckBox)) {
+                    if (columns[parseInt(colIndex.toString(), 10)] && (columns[parseInt(colIndex.toString(), 10)].type === 'checkbox'
+                        || columns[parseInt(colIndex.toString(), 10)].displayAsCheckBox)) {
                         (localTD.firstChild as HTMLElement).classList.add('e-mask-checkbox-intent');
                     }
                 }
@@ -3310,8 +3343,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.maskRowContentScroll = false;
         const maskSpan: Element[] = [].slice.call(this.element.querySelectorAll('.e-mask:not(.e-shimmer-wave)'));
         for (let i: number = 0; i < maskSpan.length; i++) {
-            if (maskSpan[i]) {
-                maskSpan[i].classList.add('e-shimmer-wave');
+            if (maskSpan[parseInt(i.toString(), 10)]) {
+                maskSpan[parseInt(i.toString(), 10)].classList.add('e-shimmer-wave');
             }
         }
     }
@@ -3320,7 +3353,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const target: Element = e.target as Element;
         const maskTables: NodeListOf<Element> = target.querySelectorAll('.e-masked-table');
         for (let i: number = 0; i < maskTables.length; i++) {
-            const maskTable: Element = maskTables[i];
+            const maskTable: Element = maskTables[parseInt(i.toString(), 10)];
             if (maskTable) {
                 let minScrollTop: number = target.scrollHeight - maskTable.getBoundingClientRect().height;
                 minScrollTop = minScrollTop < 0 ? 0 : minScrollTop;
@@ -3340,7 +3373,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.contentMaskTable, this.movableContentMaskTable, this.rightContentMaskTable, this.footerContentMaskTable,
             this.movableFooterContentMaskTable, this.rightFooterContentMaskTable];
         for (let i: number = 0; i < maskTables.length; i++) {
-            const maskTable: Element = maskTables[i];
+            const maskTable: Element = maskTables[parseInt(i.toString(), 10)];
             if (maskTable) {
                 if (this.isFrozenGrid() && !closest(maskTable, '.e-gridfooter')) {
                     const parent: Element = maskTable.parentElement;
@@ -3409,7 +3442,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         colgroup.removeAttribute('id');
         colgroup.setAttribute('class', 'e-masked-colgroup');
         for (let i: number = 0; i < colgroup.childNodes.length; i++) {
-            (colgroup.childNodes[i] as Element).removeAttribute('class');
+            (colgroup.childNodes[parseInt(i.toString(), 10)] as Element).removeAttribute('class');
         }
         remove(maskTable.querySelector('.e-masked-colgroup'));
         maskTable.insertBefore(colgroup, maskTable.firstChild);
@@ -3431,8 +3464,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.getShowHideService = this.serviceLocator.getService<ShowHide>('showHideService');
             if (!isNullOrUndefined(gcol)) {
                 for (let index: number = 0; index < gcol.length; index++) {
-                    if (!isNullOrUndefined(gcol[index].hideAtMedia) && (isNullOrUndefined(gcol[index].visible) || gcol[index].visible)) {
-                        this.pushMediaColumn(gcol[index], index);
+                    if (!isNullOrUndefined(gcol[parseInt(index.toString(), 10)].hideAtMedia)
+                        && (isNullOrUndefined(gcol[parseInt(index.toString(), 10)].visible)
+                        || gcol[parseInt(index.toString(), 10)].visible)) {
+                        this.pushMediaColumn(gcol[parseInt(index.toString(), 10)], index);
                     }
                 }
             }
@@ -3443,8 +3478,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.mediaCol.push(col);
         this.media[col.uid] = window.matchMedia(col.hideAtMedia);
         this.mediaQueryUpdate(index, this.media[col.uid]);
-        this.mediaBindInstance[index] = this.mediaQueryUpdate.bind(this, index);
-        this.media[col.uid].addListener(this.mediaBindInstance[index] as null);
+        this.mediaBindInstance[parseInt(index.toString(), 10)] = this.mediaQueryUpdate.bind(this, index);
+        this.media[col.uid].addListener(this.mediaBindInstance[parseInt(index.toString(), 10)] as null);
     }
 
     /**
@@ -3456,7 +3491,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.enableColumnVirtualization) {
             const index: number = this.getColumnIndexByUid(col.uid);
             for (let i: number = 0; i < this.mediaCol.length; i++) {
-                if (col.uid === this.mediaCol[i].uid) {
+                if (col.uid === this.mediaCol[parseInt(i.toString(), 10)].uid) {
                     this.mediaCol.splice(i, 1);
                     return;
                 }
@@ -3472,7 +3507,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public mediaQueryUpdate(columnIndex: number, e?: MediaQueryList): void {
-        const col: Column = this.getColumns()[columnIndex];
+        const col: Column = this.getColumns()[parseInt(columnIndex.toString(), 10)];
         if (this.mediaCol.some((mediaColumn: Column) => mediaColumn.uid === col.uid)) {
             col.visible = e.matches;
             if (this.isInitialLoad) {
@@ -3508,7 +3543,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private removeMediaListener(): void {
         for (let i: number = 0; i < this.mediaCol.length; i++) {
-            this.media[this.mediaCol[i].uid].removeListener(this.mediaBindInstance[this.mediaCol[i].index] as null);
+            this.media[this.mediaCol[parseInt(i.toString(), 10)].uid]
+                .removeListener(this.mediaBindInstance[this.mediaCol[parseInt(i.toString(), 10)].index] as null);
         }
     }
 
@@ -3550,8 +3586,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             'serviceLocator', 'ariaService', 'keyboardModule', 'widthService', 'searchModule', 'showHider',
             'scrollModule', 'printModule', 'clipboardModule', 'focusModule'];
         for (let i: number = 0; i < modules.length; i++) {
-            if (this[modules[i]]) {
-                this[modules[i]] = null;
+            if (this[modules[parseInt(i.toString(), 10)]]) {
+                this[modules[parseInt(i.toString(), 10)]] = null;
             }
         }
         this.element.innerHTML = '';
@@ -3812,13 +3848,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (Object.getPrototypeOf(newProp).deepWatch) {
                 const pKeyField: string = this.getPrimaryKeyFieldNames()[0];
                 for (let i: number = 0, props: string[] = Object.keys(newProp.dataSource); i < props.length; i++) {
-                    this.setRowData(getValue(pKeyField, this.dataSource[props[i]]), this.dataSource[props[i]]);
+                    this.setRowData(
+                        getValue(pKeyField, this.dataSource[props[parseInt(i.toString(), 10)]]),
+                        this.dataSource[props[parseInt(i.toString(), 10)]]);
                 }
             } else if (pending.isPending) {
                 let gResult: Object = !isNullOrUndefined(this.dataSource) ? (<DataResult>this.dataSource).result : [];
                 const names: string[] = (pending.group || []);
                 for (let i: number = 0; i < names.length; i++) {
-                    gResult = DataUtil.group(<Object[]>gResult, names[i], pending.aggregates || []);
+                    gResult = DataUtil.group(<Object[]>gResult, names[parseInt(i.toString(), 10)], pending.aggregates || []);
                 }
                 this.dataSource = {
                     result: gResult, count: (<DataResult>this.dataSource).count,
@@ -3883,7 +3921,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public setProperties(prop: Object, muteOnChange?: boolean): void {
         super.setProperties(prop, muteOnChange);
         const filterSettings: string = 'filterSettings';
-        if (prop[filterSettings] && this.filterModule && muteOnChange) {
+        if (prop[`${filterSettings}`] && this.filterModule && muteOnChange) {
             this.filterModule.refreshFilter();
         }
     }
@@ -3928,9 +3966,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             headerCells = cells.length ? cells : headerCells;
         }
         for (let i: number = 0; i < headerCells.length; i++) {
-            const cell: Element = headerCells[i];
+            const cell: Element = headerCells[parseInt(i.toString(), 10)];
             if (this.allowGrouping || this.allowReordering || this.allowSorting) {
-                if (!cols[i].allowReordering || !cols[i].allowSorting || !cols[i].allowGrouping) {
+                if (!cols[parseInt(i.toString(), 10)].allowReordering || !cols[parseInt(i.toString(), 10)].allowSorting
+                    || !cols[parseInt(i.toString(), 10)].allowGrouping) {
                     cell.classList.add('e-defaultcursor');
                 } else {
                     cell.classList.add('e-mousepointer');
@@ -3939,20 +3978,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         for (let count: number = 0; count < stdHdrCell.length; count++) {
             if (this.allowReordering) {
-                stdHdrCell[count].classList.add('e-mousepointer');
+                stdHdrCell[parseInt(count.toString(), 10)].classList.add('e-mousepointer');
             }
         }
     }
 
     private updateColumnModel(columns: Column[], isRecursion?: boolean): void {
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
-            if (columns[i].columns) {
-                this.updateColumnModel(columns[i].columns as Column[], true);
+            if (columns[parseInt(i.toString(), 10)].columns) {
+                this.updateColumnModel(columns[parseInt(i.toString(), 10)].columns as Column[], true);
             } else {
-                this.columnModel.push(columns[i] as Column);
+                this.columnModel.push(columns[parseInt(i.toString(), 10)] as Column);
             }
         }
-        if(isNullOrUndefined(isRecursion) || !isRecursion) {
+        if (isNullOrUndefined(isRecursion) || !isRecursion) {
             this.updateColumnLevelFrozen();
             this.updateFrozenColumns();
             this.updateLockableColumns();
@@ -3965,7 +4004,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.frozenLeftCount || this.frozenRightCount) {
             for (let i: number = 0, len: number = cols.length; i < len; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const col: any = cols[i];
+                const col: any = cols[parseInt(i.toString(), 10)];
                 if (col.freeze === 'Left') {
                     col.freezeTable = literals.frozenLeft;
                     leftCols.push(col);
@@ -3991,7 +4030,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let count: number = 0;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const col: any = cols[i];
+            const col: any = cols[parseInt(i.toString(), 10)];
             if (directFrozenCount) {
                 if (i < directFrozenCount) {
                     col.freezeTable = literals.frozenLeft;
@@ -4027,7 +4066,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let movableCount: number = 0;
         const frozenColumns: number = this.getFrozenColumns();
         for (let i: number = 0; i < cols.length; i++) {
-            if (cols[i].lockColumn) {
+            if (cols[parseInt(i.toString(), 10)].lockColumn) {
                 if (i < frozenColumns) {
                     cols.splice(frozenCount, 0, cols.splice(i, 1)[0]);
                     frozenCount++;
@@ -4041,9 +4080,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private checkLockColumns(cols: Column[]): void {
         for (let i: number = 0; i < cols.length; i++) {
-            if (cols[i].columns) {
-                this.checkLockColumns(cols[i].columns as Column[]);
-            } else if (cols[i].lockColumn) {
+            if (cols[parseInt(i.toString(), 10)].columns) {
+                this.checkLockColumns(cols[parseInt(i.toString(), 10)].columns as Column[]);
+            } else if (cols[parseInt(i.toString(), 10)].lockColumn) {
                 this.lockcolPositionCount++;
             }
         }
@@ -4081,7 +4120,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getStackedHeaderColumnByHeaderText(stackedHeader: string, col: Column[]): Column {
         for (let i: number = 0; i < col.length; i++) {
-            const individualColumn: Column = col[i];
+            const individualColumn: Column = col[parseInt(i.toString(), 10)];
             if (individualColumn.field === stackedHeader || individualColumn.headerText === stackedHeader) {
                 this.stackedColumn = individualColumn;
                 break;
@@ -4258,7 +4297,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} returns the element
      */
     public getRowByIndex(index: number): Element {
-        return this.contentModule.getRowByIndex(index);
+        if (this.enableVirtualization && this.groupSettings.enableLazyLoading) {
+            return this.lazyLoadRender.getRowByIndex(index);
+        } else {
+            return this.contentModule.getRowByIndex(index);
+        }
     }
 
     /**
@@ -4278,7 +4321,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} returns the element
      */
     public getFrozenRowByIndex(index: number): Element {
-        return this.getFrozenDataRows()[index];
+        return this.getFrozenDataRows()[parseInt(index.toString(), 10)];
     }
 
     /**
@@ -4326,7 +4369,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const row: Element = closest(cell, '.' + literals.row);
                 const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
                 const frzCols: number = this.getFrozenColumns();
-                const tableName: freezeTable = this.columnModel[cellIndex].getFreezeTableName();
+                const tableName: freezeTable = this.columnModel[parseInt(cellIndex.toString(), 10)].getFreezeTableName();
                 let rows: Row<{}>[] = <Row<{}>[]>this.contentModule.getRows();
                 let index: number = cellIndex + this.getIndentCount();
                 if (this.isFrozenGrid()) {
@@ -4345,7 +4388,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 let column: Column;
                 if (Object.keys(rowsObject).length) {
                     rowData = rowsObject[0].data;
-                    column = rowsObject[0].cells[index].column as Column;
+                    column = rowsObject[0].cells[parseInt(index.toString(), 10)].column as Column;
                 }
                 args = { cell: cell, cellIndex: cellIndex, row: row, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
@@ -4408,7 +4451,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public addMovableRows(fRows: HTMLElement[], mrows: HTMLElement[]): HTMLElement[] {
         for (let i: number = 0, len: number = mrows.length; i < len; i++) {
-            fRows.push(mrows[i]);
+            fRows.push(mrows[parseInt(i.toString(), 10)]);
         }
         return fRows;
     }
@@ -4416,11 +4459,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private generateDataRows(rows: HTMLElement[], includAdd?: boolean): Element[] {
         const dRows: Element[] = [];
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            if (rows[i].classList.contains(literals.row) && (!rows[i].classList.contains('e-hiddenrow') || includAdd)) {
+            if (rows[parseInt(i.toString(), 10)].classList.contains(literals.row)
+                && (!rows[parseInt(i.toString(), 10)].classList.contains('e-hiddenrow') || includAdd)) {
                 if (this.isCollapseStateEnabled()) {
-                    dRows[parseInt(rows[i].getAttribute('data-rowindex'), 10)] = rows[i];
+                    dRows[parseInt(rows[parseInt(i.toString(), 10)].getAttribute('data-rowindex'), 10)] = rows[parseInt(i.toString(), 10)];
                 } else {
-                    dRows.push(rows[i] as Element);
+                    dRows.push(rows[parseInt(i.toString(), 10)] as Element);
                 }
             }
         }
@@ -4534,16 +4578,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             col.getFreezeTableName() === 'frozen-right' ? this.getFrozenRightRowsObject() : this.contentModule.getRows();
         const selectedRow: Object = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0];
-        const tr: Element = selectedRow ? this.element.querySelector('[data-uid=' + selectedRow[rowuID] + ']') : null;
+        const tr: Element = selectedRow ? this.element.querySelector('[data-uid=' + selectedRow[`${rowuID}`] + ']') : null;
         if (!isNullOrUndefined(tr)) {
-            setValue(field, value, selectedRow[rowData]);
+            setValue(field, value, selectedRow[`${rowData}`]);
             let left: number = this.getFrozenLeftColumnsCount() || this.getFrozenColumns();
             const movable: number = this.getMovableColumnsCount();
             if (this.isRowDragable() && !isRight) {
                 left++;
             }
             const frIdx: number = left + movable;
-            const td: Element = this.enableVirtualization ? tr.children[fieldIdx] : this.getCellFromIndex(selectedRow[rowIdx], fieldIdx);
+            const td: Element = this.enableVirtualization ? tr.children[parseInt(fieldIdx.toString(), 10)]
+                : this.getCellFromIndex(selectedRow[`${rowIdx}`], fieldIdx);
             if (!isNullOrUndefined(td)) {
                 const Idx: number = col.getFreezeTableName() === 'movable' ? left : col.getFreezeTableName() === 'frozen-right' ? frIdx : 0;
                 if (this.groupSettings.columns.length) {
@@ -4555,8 +4600,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.isRowDragable() && !isRight) {
                     fieldIdx++;
                 }
-                const sRow: Cell<Column> = selectedRow[cells][fieldIdx - Idx];
-                cell.refreshTD(td, sRow, selectedRow[rowData], { index: selectedRow[rowIdx] });
+                const sRow: Cell<Column> = selectedRow[`${cells}`][fieldIdx - Idx];
+                cell.refreshTD(td, sRow, selectedRow[`${rowData}`], { index: selectedRow[`${rowIdx}`] });
                 if (this.aggregates.length > 0) {
                     this.notify(events.refreshFooterRenderer, {});
                     if (this.groupSettings.columns.length > 0) {
@@ -4565,11 +4610,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
                 /* tslint:disable:no-string-literal */
                 if (!isNullOrUndefined(selectedRow) && !isNullOrUndefined(selectedRow['changes'])) {
-                    selectedRow['changes'][field] = value;
+                    selectedRow['changes'][`${field}`] = value;
                 }
                 /* tslint:disable:no-string-literal */
                 this.trigger(events.queryCellInfo, {
-                    cell: td, column: col, data: selectedRow[rowData]
+                    cell: td, column: col, data: selectedRow[`${rowData}`]
                 });
             }
         } else {
@@ -4582,6 +4627,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public refreshReactColumnTemplateByUid(columnUid: string): void {
         if ((<{ isReact?: boolean }>this).isReact) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4594,29 +4640,51 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const indent: number = this.getIndentCount();
                 let childIndent: number = 0;
                 let isChildRow: boolean =  false;
-                const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
                 for (let j: number = 0; j < rows.length; j++) {
-                    let rowsObj: Row<Column> = this.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
-                    if (isChildGrid && !rowsObj && parentsUntil(rows[j], 'e-childgrid')) {
-                        const gridObj: IGrid = (parentsUntil(rows[j], 'e-childgrid') as EJ2Intance).ej2_instances[0];
-                        rowsObj = gridObj.getRowObjectFromUID(rows[j].getAttribute('data-uid'));
+                    let rowsObj: Row<Column> = this.getRowObjectFromUID(rows[parseInt(j.toString(), 10)].getAttribute('data-uid'));
+                    if (isChildGrid && !rowsObj && parentsUntil(rows[parseInt(j.toString(), 10)], 'e-childgrid')) {
+                        const gridObj: IGrid = (parentsUntil(rows[parseInt(j.toString(), 10)], 'e-childgrid') as EJ2Intance).ej2_instances[0];
+                        rowsObj = gridObj.getRowObjectFromUID(rows[parseInt(j.toString(), 10)].getAttribute('data-uid'));
                         childIndent  = gridObj.getIndentCount();
                         isChildRow = true;
                     }
-                    if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index) && !rows[j].classList.contains('e-editedrow')) {
-                        for (let i: number = 0; i < rowsObj[cells].length; i++) {
-                            const cell: Cell<Column> = rowsObj[cells][i];
+                    if (rowsObj && rowsObj.isDataRow && !isNullOrUndefined(rowsObj.index) && !rows[parseInt(j.toString(), 10)].classList.contains('e-editedrow')) {
+                        for (let i: number = 0; i < rowsObj[`${cells}`].length; i++) {
+                            const cell: Cell<Column> = rowsObj[`${cells}`][parseInt(i.toString(), 10)];
                             if (cell.isTemplate) {
                                 const cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                                const td: Element = isChildGrid ? rows[j].children[cell.index + (isChildRow ? childIndent : indent)] :
-                                    this.getCellFromIndex(j, i - indent);
-                                cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[rowIdx] });
+                                const td: Element = isChildGrid ? rows[parseInt(j.toString(), 10)]
+                                    .children[cell.index + (isChildRow ? childIndent : indent)] : this.getCellFromIndex(j, i - indent);
+                                cellRenderer.refreshTD(td, cell, rowsObj.data, { index: rowsObj[`${rowIdx}`] });
                             }
                         }
                     }
                     isChildRow = false;
                 }
             });
+        }
+    }
+
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public refreshGroupCaptionFooterTemplate(): void {
+        const isChildGrid: boolean = this.childGrid && this.element.querySelectorAll('.e-childgrid').length ? true : false;
+        const rows: NodeListOf<Element> = this.getContentTable().querySelectorAll('.e-groupcaptionrow, .e-groupfooterrow');
+        for (let i: number = 0; i < rows.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            let gridObj: IGrid = this;
+            let rowsObj: Row<Column> = this.getRowObjectFromUID(rows[parseInt(i.toString(), 10)].getAttribute('data-uid'));
+            if (isChildGrid && !rowsObj && parentsUntil(rows[parseInt(i.toString(), 10)], 'e-childgrid')) {
+                gridObj = (parentsUntil(rows[parseInt(i.toString(), 10)], 'e-childgrid') as EJ2Intance).ej2_instances[0];
+                rowsObj = gridObj.getRowObjectFromUID(rows[parseInt(i.toString(), 10)].getAttribute('data-uid'));
+            }
+            if (rowsObj) {
+                const cells: Object[] = rowsObj.cells.filter((cell: Cell<{}>) => cell.isDataCell);
+                const args: Object = { cells: cells, data: rowsObj.data, dataUid: rowsObj.uid };
+                gridObj.notify(events.refreshAggregateCell, args);
+            }
         }
     }
 
@@ -4631,7 +4699,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const rowsObj: Row<Column>[] = (<{ rows?: Row<Column>[] }>this.headerModule).rows;
             const cellIndex: number = this.getNormalizedColumnIndex(columnUid);
             for (let j: number = 0; j < rowsObj.length; j++) {
-                const cell: Cell<Column> = rowsObj[j][cells][cellIndex];
+                const cell: Cell<Column> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
                 if (cell && cell.column.uid === columnUid) {
                     const headerCellRenderer: HeaderCellRenderer = new HeaderCellRenderer(this, this.serviceLocator);
                     const td: Element = parentsUntil(this.element.querySelectorAll('[e-mappinguid=' + columnUid + ']')[0], 'e-templatecell');
@@ -4659,7 +4727,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const selectedRow: Row<Column> = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0] as Row<Column>;
         const selectRowEle: Element[] = selectedRow ? [].slice.call(
-            this.element.querySelectorAll('[data-uid=' + selectedRow[rowuID] + ']')) : undefined;
+            this.element.querySelectorAll('[data-uid=' + selectedRow[`${rowuID}`] + ']')) : undefined;
         if (!isNullOrUndefined(selectedRow) && selectRowEle.length) {
             selectedRow.changes = rowData;
             if (this.isFrozenGrid()) {
@@ -4726,8 +4794,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return undefined;
         }
         const index: number = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
-        return this.getMovableDataRows()[rowIndex] &&
-            this.getMovableDataRows()[rowIndex].getElementsByClassName(literals.rowCell)[columnIndex - index];
+        return this.getMovableDataRows()[parseInt(rowIndex.toString(), 10)] &&
+            this.getMovableDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell)[columnIndex - index];
     }
 
     /**
@@ -4740,7 +4808,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getFrozenRightCellFromIndex(rowIndex: number, columnIndex: number): Element {
         const index: number = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
         const rows: Element[] = this.getFrozenRightDataRows();
-        return rows[rowIndex] && rows[rowIndex].getElementsByClassName(literals.rowCell)[columnIndex - index];
+        return rows[parseInt(rowIndex.toString(), 10)] && rows[parseInt(rowIndex.toString(), 10)]
+            .getElementsByClassName(literals.rowCell)[columnIndex - index];
     }
 
     /**
@@ -4750,7 +4819,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} Returns the Element
      */
     public getColumnHeaderByIndex(index: number): Element {
-        return this.getHeaderTable().getElementsByClassName('e-headercell')[index];
+        return this.getHeaderTable().getElementsByClassName('e-headercell')[parseInt(index.toString(), 10)];
     }
 
     /**
@@ -4782,7 +4851,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} Returns the Element
      */
     public getFrozenLeftColumnHeaderByIndex(index: number): Element {
-        return this.getFrozenVirtualHeader().getElementsByClassName('e-headercell')[index];
+        return this.getFrozenVirtualHeader().getElementsByClassName('e-headercell')[parseInt(index.toString(), 10)];
     }
 
     /**
@@ -4914,7 +4983,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getColumnIndexByField(field: string): number {
         const cols: Column[] = this.getColumns();
         for (let i: number = 0; i < cols.length; i++) {
-            if (cols[i].field === field) {
+            if (cols[parseInt(i.toString(), 10)].field === field) {
                 return i;
             }
         }
@@ -5031,7 +5100,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const columnNames: string[] = [];
         let column: Column;
         for (let i: number = 0, len: number = this.getColumns().length; i < len; i++) {
-            column = this.getColumns()[i] as Column;
+            column = this.getColumns()[parseInt(i.toString(), 10)] as Column;
             if (column.visible) {
                 columnNames.push(column.field);
             }
@@ -5097,8 +5166,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getPrimaryKeyFieldNames(): string[] {
         const keys: string[] = [];
         for (let k: number = 0; k < this.columnModel.length; k++) {
-            if ((this.columnModel[k] as Column).isPrimaryKey) {
-                keys.push((this.columnModel[k] as Column).field);
+            if ((this.columnModel[parseInt(k.toString(), 10)] as Column).isPrimaryKey) {
+                keys.push((this.columnModel[parseInt(k.toString(), 10)] as Column).field);
             }
         }
         return keys;
@@ -5173,7 +5242,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getSelectedColumnsUid(): string[] {
         const uid: string[] = [];
         if (this.selectionModule) {
-            this.selectionModule.selectedColumnsIndexes.filter((i: number) => uid.push(this.getColumns()[i].uid));
+            this.selectionModule.selectedColumnsIndexes.filter((i: number) => uid.push(this.getColumns()[parseInt(i.toString(), 10)].uid));
         }
         return uid;
     }
@@ -5262,7 +5331,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.frozenName = 'Right';
         } else if (this.frozenLeftCount && this.frozenRightCount) {
             this.frozenName = 'Left-Right';
-        } else if (this.frozenColumns && this.frozenRows) {
+        } else if (this.frozenColumns || this.frozenRows) {
             this.frozenName = 'Left';
         } else {
             this.frozenName = undefined;
@@ -5319,20 +5388,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private splitFrozenCount(columns: Column[]): void {
         for (let i: number = 0; i < columns.length; i++) {
-            if (columns[i].columns) {
-                this.splitFrozenCount(columns[i].columns as Column[]);
+            if (columns[parseInt(i.toString(), 10)].columns) {
+                this.splitFrozenCount(columns[parseInt(i.toString(), 10)].columns as Column[]);
             } else {
-                if (columns[i].freeze === 'Right') {
-                    if (columns[i].visible !== false) { this.visibleFrozenRight++; }
-                    this.frozenRightColumns.push(columns[i]);
+                if (columns[parseInt(i.toString(), 10)].freeze === 'Right') {
+                    if (columns[parseInt(i.toString(), 10)].visible !== false) { this.visibleFrozenRight++; }
+                    this.frozenRightColumns.push(columns[parseInt(i.toString(), 10)]);
                     this.frozenRightCount++;
-                } else if (columns[i].freeze === 'Left') {
-                    if (columns[i].visible !== false) { this.visibleFrozenLeft++; }
-                    this.frozenLeftColumns.push(columns[i]);
+                } else if (columns[parseInt(i.toString(), 10)].freeze === 'Left') {
+                    if (columns[parseInt(i.toString(), 10)].visible !== false) { this.visibleFrozenLeft++; }
+                    this.frozenLeftColumns.push(columns[parseInt(i.toString(), 10)]);
                     this.frozenLeftCount++;
                 } else {
-                    if (columns[i].visible !== false) { this.visibleMovable++; }
-                    this.movableColumns.push(columns[i]);
+                    if (columns[parseInt(i.toString(), 10)].visible !== false) { this.visibleMovable++; }
+                    this.movableColumns.push(columns[parseInt(i.toString(), 10)]);
                     this.movableCount++;
                 }
             }
@@ -5360,13 +5429,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let visibleFrozenColumns: number = 0;
         const columns: Column[] = this.columnModel;
         for (let i: number = 0; i < this.frozenColumns; i++) {
-            if (columns[i].visible) {
+            if (columns[parseInt(i.toString(), 10)].visible) {
                 visibleFrozenColumns++;
             }
         }
         if (this.frozenLeftCount || this.frozenRightCount) {
             for (let i: number = 0; i < columns.length; i++) {
-                if (columns[i].visible && (columns[i].freeze === 'Left' || columns[i].freeze === 'Right')) {
+                if (columns[parseInt(i.toString(), 10)].visible && (columns[parseInt(i.toString(), 10)].freeze === 'Left'
+                    || columns[parseInt(i.toString(), 10)].freeze === 'Right')) {
                     visibleFrozenColumns++;
                 }
             }
@@ -5377,10 +5447,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private getVisibleFrozenCount(cols: Column[], cnt: number): number {
         if (!this.frozenLeftCount && !this.frozenRightCount) {
             for (let i: number = 0, len: number = cols.length; i < len; i++) {
-                if (cols[i].columns) {
-                    cnt = this.getVisibleFrozenCount(cols[i].columns as Column[], cnt);
+                if (cols[parseInt(i.toString(), 10)].columns) {
+                    cnt = this.getVisibleFrozenCount(cols[parseInt(i.toString(), 10)].columns as Column[], cnt);
                 } else {
-                    if (cols[i].isFrozen && cols[i].visible) {
+                    if (cols[parseInt(i.toString(), 10)].isFrozen && cols[parseInt(i.toString(), 10)].visible) {
                         cnt++;
                     }
                 }
@@ -5391,10 +5461,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getFrozenCount(cols: Column[], cnt: number, index?: number): number {
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].columns) {
-                cnt = this.getFrozenCount(cols[i].columns as Column[], cnt, index);
+            if (cols[parseInt(i.toString(), 10)].columns) {
+                cnt = this.getFrozenCount(cols[parseInt(i.toString(), 10)].columns as Column[], cnt, index);
             } else {
-                if (cols[i].isFrozen && index > this.frozenColumns - 1) {
+                if (cols[parseInt(i.toString(), 10)].isFrozen && index > this.frozenColumns - 1) {
                     cnt++;
                 }
                 index++;
@@ -5808,11 +5878,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const applyWidth: Function = (index: number, width: number) => {
             if (ispercentageWidth(this)) {
                 const newWidth: string = (width / parentOffset * 100).toFixed(1) + '%';
-                headerCol[index].style.width = newWidth;
-                contentCol[index].style.width = newWidth;
+                headerCol[parseInt(index.toString(), 10)].style.width = newWidth;
+                contentCol[parseInt(index.toString(), 10)].style.width = newWidth;
             } else {
-                headerCol[index].style.width = width + 'px';
-                contentCol[index].style.width = width + 'px';
+                headerCol[parseInt(index.toString(), 10)].style.width = width + 'px';
+                contentCol[parseInt(index.toString(), 10)].style.width = width + 'px';
             }
             this.notify(events.columnWidthChanged, { index: index, width: width });
         };
@@ -5949,7 +6019,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         setStyleAttribute(<HTMLElement>headerTable.querySelector(literals.colGroup).childNodes[0], { 'display': disValue });
         setStyleAttribute(<HTMLElement>contentTable.querySelector(literals.colGroup).childNodes[0], { 'display': disValue });
         for (let i: number = 0; i < this.getRows().length; i++) {
-            const ele: Element = rows[i].firstElementChild;
+            const ele: Element = rows[parseInt(i.toString(), 10)].firstElementChild;
             if (enable) {
                 addClass([ele], 'e-hide');
             } else {
@@ -5957,7 +6027,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         for (let j: number = 0; j < headerTable.querySelectorAll('th.e-rowdragheader, th.e-mastercell').length; j++) {
-            const ele: Element = headerRows[j];
+            const ele: Element = headerRows[parseInt(j.toString(), 10)];
             if (enable) {
                 addClass([ele], 'e-hide');
             } else {
@@ -6029,34 +6099,35 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let i: number = 0, len: number = gCols.length; i < len; i++) {
                 j = 0;
                 for (let sLen: number = sCols.length; j < sLen; j++) {
-                    if (sCols[j].field === gCols[i]) {
+                    if (sCols[parseInt(j.toString(), 10)].field === gCols[parseInt(i.toString(), 10)]) {
                         flag = true;
                         break;
                     }
                 }
                 if (!flag) {
-                    sCols.push({ field: gCols[i], direction: 'Ascending', isFromGroup: true });
+                    sCols.push({ field: gCols[parseInt(i.toString(), 10)], direction: 'Ascending', isFromGroup: true });
                 } else {
                     if (this.allowSorting) {
-                        this.sortedColumns.push(sCols[j].field);
+                        this.sortedColumns.push(sCols[parseInt(j.toString(), 10)].field);
                     } else {
-                        sCols[j].direction = 'Ascending';
+                        sCols[parseInt(j.toString(), 10)].direction = 'Ascending';
                     }
                 }
                 if (!this.groupSettings.showGroupedColumn) {
                     const column: Column = this.enableColumnVirtualization ?
-                        (<Column[]>this.columns).filter((c: Column) => c.field === gCols[i])[0] : this.getColumnByField(gCols[i]);
+                        (<Column[]>this.columns).filter((c: Column) => c.field === gCols[parseInt(i.toString(), 10)])[0]
+                        : this.getColumnByField(gCols[parseInt(i.toString(), 10)]);
                     if (column) {
                         column.visible = false;
                     } else {
-                        this.log('initial_action', { moduleName: 'group', columnName: gCols[i] });
+                        this.log('initial_action', { moduleName: 'group', columnName: gCols[parseInt(i.toString(), 10)] });
                     }
                 }
             }
         }
         if (!gCols.length) {
             for (let i: number = 0; i < sCols.length; i++) {
-                this.sortedColumns.push(sCols[i].field);
+                this.sortedColumns.push(sCols[parseInt(i.toString(), 10)].field);
             }
         }
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
@@ -6288,7 +6359,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     if (col.disableHtmlEncode) {
                         (<{ enableHtmlParse?: boolean }>this.toolTipObj).enableHtmlParse = false;
                     }
-                    this.toolTipObj.open(element);
+                    this.toolTipObj['open'](element);
                 }
             }
         }
@@ -6306,16 +6377,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if ([].slice.call(this.element.getElementsByClassName('e-frozenhover')).length && e.type === 'mouseout') {
                 const rows: Element[] = [].slice.call(this.element.getElementsByClassName('e-frozenhover'));
                 for (let i: number = 0; i < rows.length; i++) {
-                    rows[i].classList.remove('e-frozenhover');
+                    rows[parseInt(i.toString(), 10)].classList.remove('e-frozenhover');
                 }
             } else if (row) {
                 const rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[data-rowindex="' + row.getAttribute(literals.dataRowIndex) + '"]'));
                 rows.splice(rows.indexOf(row), 1);
                 for (let i: number = 0; i < rows.length; i++) {
-                    if (row.getAttribute('aria-selected') !== 'true' && rows[i]) {
-                        rows[i].classList.add('e-frozenhover');
-                    } else if (rows[i]) {
-                        rows[i].classList.remove('e-frozenhover');
+                    if (row.getAttribute('aria-selected') !== 'true' && rows[parseInt(i.toString(), 10)]) {
+                        rows[parseInt(i.toString(), 10)].classList.add('e-frozenhover');
+                    } else if (rows[parseInt(i.toString(), 10)]) {
+                        rows[parseInt(i.toString(), 10)].classList.remove('e-frozenhover');
                     }
                 }
             }
@@ -6328,7 +6399,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return true;
         }
         for (let i: number = 0; i < cols.length; i++) {
-            if (cols[i].clipMode === 'EllipsisWithTooltip') {
+            if (cols[parseInt(i.toString(), 10)].clipMode === 'EllipsisWithTooltip') {
                 return true;
             }
         }
@@ -6485,7 +6556,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const args: RecordClickEventArgs = this.getRowInfo(e.target as Element) as RecordClickEventArgs;
         const cancel: string = 'cancel';
-        args[cancel] = false;
+        args[`${cancel}`] = false;
         let isDataRow: boolean = false;
         const tr: Element = closest(<Node>e.target, 'tr');
         if (tr && tr.getAttribute('data-uid')) {
@@ -6578,16 +6649,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (const key of keys) {
-                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
-                    if (Array.isArray(this[key]) && key === 'columns') {
-                        setColumnIndex(<Column[]>this[key]);
-                        this.mergeColumns(<Column[]>dataObj[key], <Column[]>this[key]);
-                        this[key] = dataObj[key];
+                if ((typeof this[`${key}`] === 'object') && !isNullOrUndefined(this[`${key}`])) {
+                    if (Array.isArray(this[`${key}`]) && key === 'columns') {
+                        setColumnIndex(<Column[]>this[`${key}`]);
+                        this.mergeColumns(<Column[]>dataObj[`${key}`], <Column[]>this[`${key}`]);
+                        this[`${key}`] = dataObj[`${key}`];
                     } else {
-                        extend(this[key], dataObj[key]);
+                        extend(this[`${key}`], dataObj[`${key}`]);
                     }
                 } else {
-                    this[key] = dataObj[key];
+                    this[`${key}`] = dataObj[`${key}`];
                 }
             }
             this.isProtectedOnChange = false;
@@ -6597,13 +6668,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         const storedColumns: Column[] = (<Column[]>storedColumn);
         for (let i: number = 0; i < storedColumns.length; i++) {
-            const localCol: Column = columns.filter((tCol: Column) => tCol.index === storedColumns[i].index)[0];
+            const localCol: Column = columns.filter((tCol: Column) => tCol.index === storedColumns[parseInt(i.toString(), 10)].index)[0];
             if (!isNullOrUndefined(localCol)) {
                 if (localCol.columns && localCol.columns.length) {
-                    this.mergeColumns(<Column[]>storedColumns[i].columns, <Column[]>localCol.columns);
-                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], {}, true);
+                    this.mergeColumns(<Column[]>storedColumns[parseInt(i.toString(), 10)].columns, <Column[]>localCol.columns);
+                    storedColumns[parseInt(i.toString(), 10)] = <Column>extend(
+                        localCol, storedColumns[parseInt(i.toString(), 10)], {}, true);
                 } else {
-                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], {}, true);
+                    storedColumns[parseInt(i.toString(), 10)] = <Column>extend(
+                        localCol, storedColumns[parseInt(i.toString(), 10)], {}, true);
                 }
             }
         }
@@ -7104,18 +7177,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getRowIndexByPrimaryKey(value: string | Object): number {
         const pkName: string = this.getPrimaryKeyFieldNames()[0];
-        value = typeof value === 'object' ? value[pkName] : value;
+        value = typeof value === 'object' ? value[`${pkName}`] : value;
         const rows: Row<Column>[] = this.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
-            if (rows[i].isDetailRow || rows[i].isCaptionRow) {
+            if (rows[parseInt(i.toString(), 10)].isDetailRow || rows[parseInt(i.toString(), 10)].isCaptionRow) {
                 continue;
             }
-            let pKvalue: object | string = rows[i].data[pkName];
+            let pKvalue: object | string = rows[parseInt(i.toString(), 10)].data[`${pkName}`];
             if (pkName.split('.').length > 1) {
-                pKvalue = performComplexDataOperation(pkName, rows[i].data);
+                pKvalue = performComplexDataOperation(pkName, rows[parseInt(i.toString(), 10)].data);
             }
             if (pKvalue === value) {
-                return rows[i].index;
+                return rows[parseInt(i.toString(), 10)].index;
             }
         }
         return -1;
@@ -7133,8 +7206,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.updateColumnModel(this.columns as Column[]);
         const gCols: Column[] = this.columnModel;
         for (let i: number = 0; i < gCols.length; i++) {
-            if (field === gCols[i].field) {
-                column = gCols[i];
+            if (field === gCols[parseInt(i.toString(), 10)].field) {
+                column = gCols[parseInt(i.toString(), 10)];
             }
         }
         return column;
@@ -7151,8 +7224,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.updateColumnModel(this.columns as Column[]);
         const gCols: Column[] = this.columnModel;
         for (let i: number = 0; i < gCols.length; i++) {
-            if (uid === gCols[i].uid) {
-                column = gCols[i];
+            if (uid === gCols[parseInt(i.toString(), 10)].uid) {
+                column = gCols[parseInt(i.toString(), 10)];
             }
         }
         return column;
@@ -7349,7 +7422,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         { height += this.element.querySelector('.e-groupdroparea').clientHeight; }
         if (this.aggregates.length > 0 && !isNullOrUndefined(this.element.querySelector('.e-summaryrow').clientHeight))
         {  for (let i: number = 0; i < this.element.getElementsByClassName('e-summaryrow').length; i++) {
-            height += this.element.getElementsByClassName('e-summaryrow')[i].clientHeight;
+            height += this.element.getElementsByClassName('e-summaryrow')[parseInt(i.toString(), 10)].clientHeight;
         }
         }
         return height;
@@ -7438,22 +7511,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public setHeaderText(columns: Column[], include: string[]): Column[] {
         for (let i: number = 0; i < columns.length; i++) {
-            const column: Column = this.getColumnByUid(columns[i].uid);
-            columns[i].headerText = column.headerText;
+            const column: Column = this.getColumnByUid(columns[parseInt(i.toString(), 10)].uid);
+            columns[parseInt(i.toString(), 10)].headerText = column.headerText;
             if (!isNullOrUndefined(column.template)) {
-                columns[i].template = 'true';
+                columns[parseInt(i.toString(), 10)].template = 'true';
             }
-            if (columns[i].format) {
-                columns[i].format = getNumberFormat(this.getFormat(columns[i].format), columns[i].type, this.isExcel);
-
+            if (columns[parseInt(i.toString(), 10)].format) {
+                columns[parseInt(i.toString(), 10)].format = getNumberFormat(
+                    this.getFormat(columns[parseInt(i.toString(), 10)].format),
+                    columns[parseInt(i.toString(), 10)].type, this.isExcel);
             }
-            if (columns[i].columns) {
-                this.setHeaderText(columns[i].columns as Column[], include);
+            if (columns[parseInt(i.toString(), 10)].columns) {
+                this.setHeaderText(columns[parseInt(i.toString(), 10)].columns as Column[], include);
             }
-            const keys: string[] = Object.keys(columns[i]);
+            const keys: string[] = Object.keys(columns[parseInt(i.toString(), 10)]);
             for (let j: number = 0; j < keys.length; j++) {
-                if (include.indexOf(keys[j]) < 0) {
-                    delete columns[i][keys[j]];
+                if (include.indexOf(keys[parseInt(j.toString(), 10)]) < 0) {
+                    delete columns[parseInt(i.toString(), 10)][keys[parseInt(j.toString(), 10)]];
                 }
             }
         }
@@ -7471,7 +7545,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public isCollapseStateEnabled(): boolean {
         const isExpanded: string = 'isExpanded';
-        return this[isExpanded] === false;
+        return this[`${isExpanded}`] === false;
     }
 
     /**
@@ -7531,21 +7605,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * @hidden
+     * @param {any} callBack - specifies the callBack method
      * @returns {void}
+     * @hidden
      */
-    public renderTemplates(): void {
+    // eslint-disable-next-line
+    public renderTemplates(callBack?: any): void {
         const isReactChild: boolean = this.parentDetails && this.parentDetails.parentInstObj && this.parentDetails.parentInstObj.isReact;
         if (isReactChild) {
             this.parentDetails.parentInstObj['portals'] = this.parentDetails.parentInstObj['portals']
                 .concat(this['portals']);
-            this.parentDetails.parentInstObj.renderTemplates();
+            this.parentDetails.parentInstObj.renderTemplates(callBack);
             this['portals'] = undefined;
         }
         else {
             const portals: string = 'portals';
-            this.notify('reactTemplateRender', this[portals]);
-            this.renderReactTemplates();
+            this.notify('reactTemplateRender', this[`${portals}`]);
+            this.renderReactTemplates(callBack);
         }
     }
 
@@ -7582,8 +7658,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const loopstring: string[] = [literals.addedRecords, literals.changedRecords, literals.deletedRecords];
             const keyField: string = this.getPrimaryKeyFieldNames()[0];
             for (let i: number = 0; i < loopstring.length; i++) {
-                if (changes[loopstring[i]]) {
-                    compareChanges(this, changes, loopstring[i], keyField);
+                if (changes[loopstring[parseInt(i.toString(), 10)]]) {
+                    compareChanges(this, changes, loopstring[parseInt(i.toString(), 10)], keyField);
                 }
             }
         }
@@ -7617,7 +7693,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const index: number = parseInt(tr.getAttribute(literals.dataRowIndex), 10);
         remove(tr);
         if (this.getFrozenColumns()) {
-            const mtr: Element = this.getMovableRows()[index];
+            const mtr: Element = this.getMovableRows()[parseInt(index.toString(), 10)];
             remove(mtr);
         }
     }
@@ -7626,8 +7702,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const rowObj: Row<Column>[] = this.getRowsObject();
         const keyField: string = this.getPrimaryKeyFieldNames()[0];
         for (let i: number = 0; i < rowObj.length; i++) {
-            if (!result.filter((e: Object) => { return e[keyField] === rowObj[i].data[keyField]; }).length) {
-                this.deleteRowElement(rowObj[i]);
+            if (!result.filter((e: Object) => { return e[`${keyField}`] === rowObj[parseInt(i.toString(), 10)].data[`${keyField}`]; }).length) {
+                this.deleteRowElement(rowObj[parseInt(i.toString(), 10)]);
                 rowObj.splice(i, 1);
                 i--;
             }
@@ -7635,15 +7711,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         for (let i: number = 0; i < result.length; i++) {
             let isRowExist: boolean;
             oldValues.filter((e: Object) => {
-                if (e[keyField] === result[i][keyField]) {
-                    if (e !== result[i]) {
-                        this.setRowData(result[i][keyField], result[i]);
+                if (e[`${keyField}`] === result[parseInt(i.toString(), 10)][`${keyField}`]) {
+                    if (e !== result[parseInt(i.toString(), 10)]) {
+                        this.setRowData(result[parseInt(i.toString(), 10)][`${keyField}`], result[parseInt(i.toString(), 10)]);
                     }
                     isRowExist = true;
                 }
             });
             if (!isRowExist) {
-                this.renderRowElement(result[i], i);
+                this.renderRowElement(result[parseInt(i.toString(), 10)], i);
             }
         }
         this.currentViewData = result;
@@ -7712,10 +7788,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public updateVisibleExpandCollapseRows(): void {
         const rows: Row<Column>[] = this.getRowsObject();
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            if ((rows[i].isDataRow || rows[i].isAggregateRow) && (this.getRowElementByUID(rows[i].uid) as HTMLTableRowElement).style.display === 'none') {
-                (<{ visible?: boolean }>rows[i]).visible = false;
+            if ((rows[parseInt(i.toString(), 10)].isDataRow || rows[parseInt(i.toString(), 10)].isAggregateRow)
+                && (this.getRowElementByUID(rows[parseInt(i.toString(), 10)].uid) as HTMLTableRowElement).style.display === 'none') {
+                (<{ visible?: boolean }>rows[parseInt(i.toString(), 10)]).visible = false;
             } else {
-                (<{ visible?: boolean }>rows[i]).visible = true;
+                (<{ visible?: boolean }>rows[parseInt(i.toString(), 10)]).visible = true;
             }
         }
     }

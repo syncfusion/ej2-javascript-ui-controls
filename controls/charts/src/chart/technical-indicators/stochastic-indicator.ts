@@ -53,10 +53,10 @@ export class StochasticIndicator extends TechnicalAnalysis {
             if (indicator.showZones) {
                 for (let i: number = 0; i < validData.length; i++) {
                     upperCollection.push(this.getDataPoint(
-                        validData[i].x, indicator.overBought, validData[i], indicator.targetSeries[2],
+                        validData[i as number].x, indicator.overBought, validData[i as number], indicator.targetSeries[2],
                         upperCollection.length));
                     lowerCollection.push(this.getDataPoint(
-                        validData[i].x, indicator.overSold, validData[i], indicator.targetSeries[3],
+                        validData[i as number].x, indicator.overSold, validData[i as number], indicator.targetSeries[3],
                         lowerCollection.length));
                 }
             }
@@ -88,14 +88,14 @@ export class StochasticIndicator extends TechnicalAnalysis {
             const temp: Object[] = [];
             const values: Object[] = [];
             for (let i: number = 0; i < data.length; i++) {
-                const value: number = Number(data[i].y);
+                const value: number = Number(data[i as number].y);
                 temp.push(value);
             }
             let length: number = temp.length;
             while (length >= count) {
                 let sum: number = 0;
                 for (let i: number = period - 1; i < (period + kPeriod - 1); i++) {
-                    sum = sum + (temp[i] as number);
+                    sum = sum + (temp[i as number] as number);
 
                 }
                 sum = sum / kPeriod;
@@ -107,8 +107,8 @@ export class StochasticIndicator extends TechnicalAnalysis {
             for (let i: number = 0; i < data.length; i++) {
                 if (!(i < len)) {
                     pointCollection.push(this.getDataPoint(
-                        data[i].x, Number(values[i - len]), data[i], sourceSeries, pointCollection.length));
-                    data[i].y = Number((values[i - len]));
+                        data[i as number].x, Number(values[i - len]), data[i as number], sourceSeries, pointCollection.length));
+                    data[i as number].y = Number((values[i - len]));
                 }
             }
         }
@@ -127,9 +127,9 @@ export class StochasticIndicator extends TechnicalAnalysis {
         const closeValues: Object[] = [];
         const modifiedSource: Points[] = [];
         for (let j: number = 0; j < data.length; j++) {
-            lowValues[j] = data[j].low;
-            highValues[j] = data[j].high;
-            closeValues[j] = data[j].close;
+            lowValues[j as number] = data[j as number].low;
+            highValues[j as number] = data[j as number].high;
+            closeValues[j as number] = data[j as number].close;
         }
         if (data.length > period) {
             const mins: Object[] = [];
@@ -138,7 +138,7 @@ export class StochasticIndicator extends TechnicalAnalysis {
                 maxs.push(0);
                 mins.push(0);
                 modifiedSource.push(this.getDataPoint(
-                    data[i].x, data[i].close, data[i], series, modifiedSource.length));
+                    data[i as number].x, data[i as number].close, data[i as number], series, modifiedSource.length));
             }
             for (let i: number = period - 1; i < data.length; ++i) {
                 let min: number = Number.MAX_VALUE;
@@ -154,10 +154,10 @@ export class StochasticIndicator extends TechnicalAnalysis {
             for (let i: number = period - 1; i < data.length; ++i) {
                 let top: number = 0;
                 let bottom: number = 0;
-                top += (closeValues[i] as number) - (mins[i] as number);
-                bottom += (maxs[i] as number) - (mins[i] as number);
+                top += (closeValues[i as number] as number) - (mins[i as number] as number);
+                bottom += (maxs[i as number] as number) - (mins[i as number] as number);
                 modifiedSource.push(this.getDataPoint(
-                    data[i].x, (top / bottom) * 100, data[i], series, modifiedSource.length));
+                    data[i as number].x, (top / bottom) * 100, data[i as number], series, modifiedSource.length));
             }
         }
         return modifiedSource;

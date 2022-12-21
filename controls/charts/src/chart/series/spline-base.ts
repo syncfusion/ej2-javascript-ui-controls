@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-case-declarations */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
@@ -39,7 +40,7 @@ export class SplineBase extends LineBase {
         let pointIndex: number = 0;
         realPoints = this.filterEmptyPoints(series);
         for (let i: number = 0; i < realPoints.length; i++) {
-            point = realPoints[i];
+            point = realPoints[i as number];
             if (point.x === null || point.x === '') {
                 continue;
             } else {
@@ -50,30 +51,30 @@ export class SplineBase extends LineBase {
         }
         let isLow: boolean = false;
         this.splinePoints = this.findSplineCoefficients(points, series, isLow);
-        if(series.type === "SplineRangeArea"){
-            isLow = !isLow
+        if (series.type === 'SplineRangeArea'){
+            isLow = !isLow;
             this.lowSplinePoints = this.findSplineCoefficients(points, series, isLow);
         }
         if (points.length > 1) {
             series.drawPoints = [];
-            series.lowDrawPoints= [];
+            series.lowDrawPoints = [];
             for (const point of points) {
                 if (point.index !== 0) {
                     const previous: number = this.getPreviousIndex(points, point.index - 1, series);
-                    if(series.type === "SplineRangeArea") {
-                        points[previous].yValue = points[previous].high > points[previous].low ? (points[previous].high as number) : (points[previous].low as number);
+                    if (series.type === 'SplineRangeArea') {
+                        points[previous as number].yValue = points[previous as number].high > points[previous as number].low ? (points[previous as number].high as number) : (points[previous as number].low as number);
                         point.yValue = point.high > point.low ? (point.high as number) : (point.low as number);
                     }
                     value = this.getControlPoints(
-                        points[previous], point, this.splinePoints[previous],
+                        points[previous as number], point, this.splinePoints[previous as number],
                         this.splinePoints[point.index], series
                     );
                     series.drawPoints.push(value);
-                    if(series.type === "SplineRangeArea"){       
-                        points[previous].yValue = points[previous].low < points[previous].high ? (points[previous].low as number) : (points[previous].high as number);
-                        point.yValue = point.low < point.high ? (point.low as number) : (point.high as number);                 
+                    if (series.type === 'SplineRangeArea'){
+                        points[previous as number].yValue = points[previous as number].low < points[previous as number].high ? (points[previous as number].low as number) : (points[previous as number].high as number);
+                        point.yValue = point.low < point.high ? (point.low as number) : (point.high as number);
                         lowPoints = this.getControlPoints(
-                            points[previous], point, this.lowSplinePoints[previous],
+                            points[previous as number], point, this.lowSplinePoints[previous as number],
                             this.lowSplinePoints[point.index], series
                         );
                         series.lowDrawPoints.push(lowPoints);
@@ -100,7 +101,7 @@ export class SplineBase extends LineBase {
         if (series.emptyPointSettings.mode !== 'Drop') {
             return i;
         }
-        while (isNullOrUndefined(points[i]) && i > -1) {
+        while (isNullOrUndefined(points[i as number]) && i > -1) {
             i = i - 1;
         }
         return i;
@@ -109,7 +110,7 @@ export class SplineBase extends LineBase {
         if (series.emptyPointSettings.mode !== 'Drop') {
             return i;
         }
-        while (isNullOrUndefined(points[i]) && i < points.length) {
+        while (isNullOrUndefined(points[i as number]) && i < points.length) {
             i = i + 1;
         }
         return i;
@@ -120,10 +121,10 @@ export class SplineBase extends LineBase {
         }
         const points: Points[] = seriesPoints ? seriesPoints : extend([], series.points, null, true) as Points[];
         for (let i: number = 0; i < points.length; i++) {
-            points[i].index = i;
-            if (points[i].isEmpty) {
-                points[i].symbolLocations = [];
-                points[i].regions = [];
+            points[i as number].index = i;
+            if (points[i as number].isEmpty) {
+                points[i as number].symbolLocations = [];
+                points[i as number].regions = [];
                 points.splice(i, 1);
                 i--;
             }
@@ -178,42 +179,41 @@ export class SplineBase extends LineBase {
     /**
      *  To find Monotonic Spline Coefficients
      */
-     private monotonicSplineCoefficients(points: Points[], series: Series, isLow: boolean): number[] {
+    private monotonicSplineCoefficients(points: Points[], series: Series, isLow: boolean): number[] {
         const count: number = points.length;
         const ySpline: number[] = [];
         const dx: number[] = [];
         const dy: number[] = [];
         const slope: number[] = [];
         let interPoint: number;
-        let slopeLength: number;
         for (let i: number = 0; i < count - 1; i++) {
-            if (series.type === "SplineRangeArea") {
+            if (series.type === 'SplineRangeArea') {
                 if (!isLow) {
                     points[i + 1].yValue = points[i + 1].high > points[i + 1].low ? (points[i + 1].high as number) : (points[i + 1].low as number);
-                    points[i].yValue = points[i].high > points[i].low ? (points[i].high as number) : (points[i].low as number);
+                    points[i as number ].yValue = points[i as number].high > points[i as number].low ? (points[i as number].high as number) : (points[i as number].low as number);
                 }
                 if (isLow) {
                     points[i + 1].yValue = points[i + 1].low < points[i + 1].high ? (points[i + 1].low as number) : (points[i + 1].high as number);
-                    points[i].yValue = points[i].low < points[i].high ? (points[i].low as number) : (points[i].high as number);
+                    points[i as number].yValue = points[i as number].low < points[i as number].high ? (points[i as number].low as number) : (points[i as number].high as number);
                 }
             }
-            dx[i] = points[i + 1].xValue - points[i].xValue;
-            dy[i] = points[i + 1].yValue - points[i].yValue;
-            slope[i] = dy[i] / dx[i];
+            dx[i as number] = points[i + 1].xValue - points[i as number].xValue;
+            dy[i as number] = points[i + 1].yValue - points[i as number].yValue;
+            slope[i as number] = dy[i as number] / dx[i as number];
         }
         //interpolant points
-        slopeLength = slope.length;
+        const slopeLength: number = slope.length;
         // to find the first and last co-efficient value
         ySpline[0] = slope[0];
         ySpline[count - 1] = slope[slopeLength - 1];
         //to find the other co-efficient values
         for (let j: number = 0; j < dx.length; j++) {
             if (slopeLength > j + 1) {
-                if (slope[j] * slope[j + 1] <= 0) {
+                if (slope[j as number] * slope[j + 1] <= 0) {
                     ySpline[j + 1] = 0;
                 } else {
-                    interPoint = dx[j] + dx[j + 1];
-                    ySpline[j + 1] = 3 * interPoint / ((interPoint + dx[j + 1]) / slope[j] + (interPoint + dx[j]) / slope[j + 1]);
+                    interPoint = dx[j as number] + dx[j + 1];
+                    ySpline[j + 1] = 3 * interPoint / ((interPoint + dx[j + 1]) / slope[j as number] + (interPoint + dx[j as number]) / slope[j + 1]);
                 }
             }
         }
@@ -230,11 +230,11 @@ export class SplineBase extends LineBase {
         cardinalSplineTension = cardinalSplineTension < 0 ? 0 : cardinalSplineTension > 1 ? 1 : cardinalSplineTension;
         for (let i: number = 0; i < count; i++) {
             if (i === 0) {
-                ySpline[i] = (count > 2) ? (cardinalSplineTension * (points[i + 2].xValue - points[i].xValue)) : 0;
+                ySpline[i as number] = (count > 2) ? (cardinalSplineTension * (points[i + 2].xValue - points[i as number].xValue)) : 0;
             } else if (i === (count - 1)) {
-                ySpline[i] = (count > 2) ? (cardinalSplineTension * (points[count - 1].xValue - points[count - 3].xValue)) : 0;
+                ySpline[i as number] = (count > 2) ? (cardinalSplineTension * (points[count - 1].xValue - points[count - 3].xValue)) : 0;
             } else {
-                ySpline[i] = (cardinalSplineTension * (points[i + 1].xValue - points[i - 1].xValue));
+                ySpline[i as number] = (cardinalSplineTension * (points[i + 1].xValue - points[i - 1].xValue));
             }
         }
         return ySpline;
@@ -248,7 +248,7 @@ export class SplineBase extends LineBase {
         const ySpline: number[] = [];
         const ySplineDuplicate: number[] = [];
         for (let i: number = 0; i < count - 1; i++) {
-            if (series.type === "SplineRangeArea") {
+            if (series.type === 'SplineRangeArea') {
                 if (!isLow) {
                     points[1].yValue = points[1].high > points[1].low ? (points[1].high as number) : (points[1].low as number);
                     points[0].yValue = points[0].high > points[0].low ? (points[0].high as number) : (points[0].low as number);
@@ -292,35 +292,35 @@ export class SplineBase extends LineBase {
         ySpline[0] = ySplineDuplicate[0] = 0;
         ySpline[points.length - 1] = 0;
         for (let i: number = 1; i < count - 1; i++) {
-            if(series.type === "SplineRangeArea"){
-                if(!isLow){
+            if (series.type === 'SplineRangeArea'){
+                if (!isLow){
                     points[i + 1].yValue = points[i + 1].low > points[i + 1].high ? (points[i + 1].low as number) : (points[i + 1].high as number);
-                    points[i].yValue = points[i].low > points[i].high ? (points[i].low as number) : (points[i].high as number);
+                    points[i as number].yValue = points[i as number].low > points[i as number].high ? (points[i as number].low as number) : (points[i as number].high as number);
                     points[i - 1].yValue = points[i - 1].low > points[i - 1].high ? (points[i - 1].low as number) : (points[i - 1].high as number);
                 }
-                if(isLow){
+                if (isLow){
                     points[i + 1].yValue = points[i + 1].high < points[i + 1].low ? (points[i + 1].high as number) : (points[i + 1].low as number);
-                    points[i].yValue = points[i].high < points[i].low ? (points[i].high as number) : (points[i].low as number);
+                    points[i as number].yValue = points[i as number].high < points[i as number].low ? (points[i as number].high as number) : (points[i as number].low as number);
                     points[i - 1].yValue = points[i - 1].high < points[i - 1].low ? (points[i - 1].high as number) : (points[i - 1].low as number);
                 }
             }
-            coefficient1 = points[i].xValue - points[i - 1].xValue;
+            coefficient1 = points[i as number].xValue - points[i - 1].xValue;
             coefficient2 = points[i + 1].xValue - points[i - 1].xValue;
-            coefficient3 = points[i + 1].xValue - points[i].xValue;
-            dy1 = points[i + 1].yValue - points[i].yValue || null;
-            dy2 = points[i].yValue - points[i - 1].yValue || null;
+            coefficient3 = points[i + 1].xValue - points[i as number].xValue;
+            dy1 = points[i + 1].yValue - points[i as number].yValue || null;
+            dy2 = points[i as number].yValue - points[i - 1].yValue || null;
 
             if (coefficient1 === 0 || coefficient2 === 0 || coefficient3 === 0) {
-                ySpline[i] = 0;
-                ySplineDuplicate[i] = 0;
+                ySpline[i as number] = 0;
+                ySplineDuplicate[i as number] = 0;
             } else {
                 const p: number = 1 / (coefficient1 * ySpline[i - 1] + 2 * coefficient2);
-                ySpline[i] = -p * coefficient3;
-                ySplineDuplicate[i] = p * (6 * (dy1 / coefficient3 - dy2 / coefficient1) - coefficient1 * ySplineDuplicate[i - 1]);
+                ySpline[i as number] = -p * coefficient3;
+                ySplineDuplicate[i as number] = p * (6 * (dy1 / coefficient3 - dy2 / coefficient1) - coefficient1 * ySplineDuplicate[i - 1]);
             }
         }
         for (let k: number = count - 2; k >= 0; k--) {
-            ySpline[k] = ySpline[k] * ySpline[k + 1] + ySplineDuplicate[k];
+            ySpline[k as number] = ySpline[k as number] * ySpline[k + 1] + ySplineDuplicate[k as number];
         }
         return ySpline;
     }

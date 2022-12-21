@@ -6,7 +6,28 @@ import { getTextNode } from '../common/common';
 /**
  * Defines the icon position of button.
  */
-export type IconPosition = 'Left' | 'Right' | 'Top' | 'Bottom';
+export enum IconPosition {
+    /**
+     * Positions the Icon at the left of the text content in the Button.
+     */
+    Left = 'Left',
+
+    /**
+     * Positions the Icon at the right of the text content in the Button.
+     */
+    Right = 'Right',
+
+    /**
+     * Positions the Icon at the top of the text content in the Button.
+     */
+    Top = 'Top',
+
+    /**
+     * Positions the Icon at the bottom of the text content in the Button.
+     */
+    Bottom = 'Bottom',
+}
+
 export const buttonObserver: Observer = new Observer();
 
 const cssClassName: CssClassNameT = {
@@ -38,10 +59,12 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * * Left: The icon will be positioned to the left of the text content.
      * * Right: The icon will be positioned to the right of the text content.
      *
-     * @default "left"
+     * @isenumeration true
+     * @default IconPosition.Left
+     * @asptype IconPosition
      */
     @Property('Left')
-    public iconPosition: IconPosition;
+    public iconPosition: string | IconPosition;
 
     /**
      * Defines class/multiple classes separated by a space for the Button that is used to include an icon.

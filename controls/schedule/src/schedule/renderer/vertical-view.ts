@@ -114,6 +114,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         if (!args.isPreventScrollUpdate) {
             if (this.parent.uiStateValues.isInitial) {
+                if (this.parent.currentView.indexOf('Timeline') > -1) {
+                    content.scrollTop = this.parent.uiStateValues.top;
+                }
                 this.scrollToWorkHour();
                 this.parent.uiStateValues.isInitial = false;
             } else {
@@ -177,10 +180,22 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public generateColumnLevels(): TdData[][] {
-        const level: TdData[] = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
+        let level: TdData[] = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
         let columnLevels: TdData[][] = [];
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             columnLevels = this.parent.resourceBase.generateResourceLevels(level);
+            if (this.parent.activeViewOptions.group.hideNonWorkingDays) {
+                while (columnLevels[0].length === 0) {
+                    this.parent.setProperties({ selectedDate: this.parent.activeView.getNextPreviousDate(this.previousNextAction) }, true);
+                    this.parent.activeView.getRenderDates();
+                    if (this.parent.headerModule) {
+                        this.parent.headerModule.setCalendarDate(this.parent.selectedDate);
+                        this.parent.headerModule.updateDateRange();
+                    }
+                    level = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
+                    columnLevels = this.parent.resourceBase.generateResourceLevels(level);
+                }
+            }
             if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 const resourceLevel: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
                 const resStartHour: string = resourceLevel.resourceData[resourceLevel.resource.startHourField] as string;
@@ -319,10 +334,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (isNullOrUndefined(rowIndex) || isNaN(rowIndex) || rowIndex === timeTrs.length) { return; }
         const curTimeWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.TIMELINE_WRAPPER_CLASS));
         for (let i: number = 0, length: number = currentDateIndex[0]; i < length; i++) {
-            curTimeWrap[i].appendChild(createElement('div', { className: cls.PREVIOUS_TIMELINE_CLASS, styles: 'top:' + topInPx }));
+            curTimeWrap[parseInt(i.toString(), 10)].appendChild(createElement('div', { className: cls.PREVIOUS_TIMELINE_CLASS, styles: 'top:' + topInPx }));
         }
         for (const day of currentDateIndex) {
-            curTimeWrap[day].appendChild(createElement('div', { className: cls.CURRENT_TIMELINE_CLASS, styles: 'top:' + topInPx }));
+            curTimeWrap[parseInt(day.toString(), 10)].appendChild(createElement('div', { className: cls.CURRENT_TIMELINE_CLASS, styles: 'top:' + topInPx }));
         }
         const currentTimeEle: HTMLElement = createElement('div', {
             innerHTML: this.parent.getTimeString(this.parent.getCurrentTime()),
@@ -331,8 +346,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         });
         if (rowIndex <= timeTrs.length) {
             removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
-            if (timeTrs[rowIndex]) {
-                addClass([timeTrs[rowIndex].lastElementChild as Element], cls.HIDE_CHILDS_CLASS);
+            if (timeTrs[parseInt(rowIndex.toString(), 10)]) {
+                addClass([timeTrs[parseInt(rowIndex.toString(), 10)].lastElementChild as Element], cls.HIDE_CHILDS_CLASS);
             }
             prepend([currentTimeEle], timeCellsWrap);
             currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
@@ -497,7 +512,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let nth: Element;
         for (let i: number = 0; i < rowCount; i++) {
             const ntr: Element = trEle.cloneNode() as Element;
-            const data: TdData = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
+            const data: TdData = { className: [(this.colLevels[parseInt(i.toString(), 10)][0] && this.colLevels[parseInt(i.toString(), 10)][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(cls.HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(cls.WEEK_NUMBER_CLASS);
                 const weekNo: string = this.parent.getWeekNumberContent(this.renderDates);
@@ -540,9 +555,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         const lastLevel: TdData[] = this.colLevels[rowCount - 1];
         for (let i: number = 0; i < rowCount; i++) {
             const ntr: Element = trEle.cloneNode() as Element;
-            const level: TdData[] = this.colLevels[i];
+            const level: TdData[] = this.colLevels[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < level.length; j++) {
-                ntr.appendChild(this.createTd(level[j]));
+                ntr.appendChild(this.createTd(level[parseInt(j.toString(), 10)]));
             }
             tbl.querySelector('tbody').appendChild(ntr);
         }
@@ -555,7 +570,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     public createAllDayRow(table: Element, tdData: TdData[]): void {
         const ntr: Element = createElement('tr', { className: cls.ALLDAY_ROW_CLASS });
         for (let j: number = 0; j < tdData.length; j++) {
-            const td: TdData = <TdData>extend({}, tdData[j]);
+            const td: TdData = <TdData>extend({}, tdData[parseInt(j.toString(), 10)]);
             td.className = [cls.ALLDAY_CELLS_CLASS];
             td.type = 'alldayCells';
             const ntd: Element = this.createTd(td);
@@ -792,7 +807,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             const startDate: Date = new Date(new Date(timeSlots[0].date.getTime()).
                 setHours(startTime.getHours(), startTime.getMinutes(), startTime.getMilliseconds()));
             for (let i: number = 0; i < timeSlots.length; i++) {
-                if (timeSlots[i].date.getTime() > startDate.getTime()) {
+                if (timeSlots[parseInt(i.toString(), 10)].date.getTime() > startDate.getTime()) {
                     startTime.setHours(
                         timeSlots[i - 1].date.getHours(), timeSlots[i - 1].date.getMinutes(), timeSlots[i - 1].date.getMilliseconds());
                     return new Date(startTime);

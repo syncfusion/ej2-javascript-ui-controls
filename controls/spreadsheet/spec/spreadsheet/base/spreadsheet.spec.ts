@@ -1104,6 +1104,61 @@ describe('Spreadsheet base module ->', () => {
         });
     });
 
+    describe('', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('scroll down with autofill Popup Open', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            let td: HTMLElement = helper.invoke('getCell', [0, 3]);
+            let coords = td.getBoundingClientRect();
+            let autoFillCoords = autoFill.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+            setTimeout(() => {
+                helper.click('#spreadsheet_autofilloptionbtn');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.notify(onContentScroll, { scrollTop: 100, scrollLeft: 0 });
+                setTimeout((): void => {
+                    expect(spreadsheet.viewport.topIndex).toBe(0);
+                    done();
+                }, 20);
+            });           
+        });
+    });
+
+    describe('Scrolling with Enable Virtualization as False->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rowCount: 50, colCount: 50 }], scrollSettings: { enableVirtualization: false } }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Horizontal scroll', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 100 });
+            setTimeout((): void => {
+                expect(spreadsheet.viewport.leftIndex).toBe(0);
+                done();
+            }, 20);
+        });
+        it('Vertical scroll', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.notify(onContentScroll, { scrollTop: 200, scrollLeft: 0 });
+            setTimeout((): void => {
+                expect(spreadsheet.viewport.topIndex).toBe(0);
+                done();
+            }, 20);
+        });          
+    });
 
 
     describe('CR-Issues ->', () => {

@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/tslint/config */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
@@ -88,7 +90,7 @@ export class RangeSlider {
         option.id = this.elementId + '_SelectedArea';
         option.fill = disabledColor || style.selectedRegionColor || range.themeStyle.selectedRegionColor;
         this.selectedElement = renderer.drawRectangle(option) as Element;
-        this.selectedElement.setAttribute('aria-label', 'Range Slider with '+ range.rangeSlider.points.length + ' data points');
+        this.selectedElement.setAttribute('aria-label', 'Range Slider with ' + range.rangeSlider.points.length + ' data points');
         (this.selectedElement as HTMLElement).style.cursor = '-webkit-grab';
         this.leftSlider = renderer.createGroup({
             'id': this.elementId + '_LeftSlider', 'style': 'cursor: ew-resize'
@@ -260,7 +262,7 @@ export class RangeSlider {
             zoomPosition: (this.control.enableRtl ? range.max - this.currentEnd :
                 this.currentStart - range.min) / range.delta,
             zoomFactor: (this.currentEnd - this.currentStart) / range.delta,
-            selectedPeriod: this.selectedPeriod ? this.selectedPeriod : '',
+            selectedPeriod: this.selectedPeriod ? this.selectedPeriod : ''
         };
         this.control.trigger('changed', argsData);
     }
@@ -328,14 +330,14 @@ export class RangeSlider {
                 e.preventDefault();
             }
             if (this.selectedPeriod) {
-                let periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
+                const periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
                 if (periodSelectorModule) {
-                    let buttons: PeriodsModel[] = periodSelectorModule.control.periods;
+                    const buttons: PeriodsModel[] = periodSelectorModule.control.periods;
                     buttons.map(function (period) {
                         period.selected = false;
                     });
                     periodSelectorModule.selectedIndex = undefined;
-                    let selectedIndex: number = periodSelectorModule.findSelectedIndex(control.startValue, control.endValue, buttons);
+                    const selectedIndex: number = periodSelectorModule.findSelectedIndex(control.startValue, control.endValue, buttons);
                     periodSelectorModule.setSelectedStyle(selectedIndex);
                 }
             }
@@ -440,14 +442,14 @@ export class RangeSlider {
         } else if (this.currentSlider === 'firstLevelLabels' || this.currentSlider === 'secondLevelLabels') {
             const secondLabel: VisibleLabels = control.rangeAxis[this.currentSlider][this.labelIndex + 1];
             if (this.selectedPeriod) {
-                let periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
+                const periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
                 if (periodSelectorModule) {
-                    let buttons: PeriodsModel[] = periodSelectorModule.control.periods;
+                    const buttons: PeriodsModel[] = periodSelectorModule.control.periods;
                     buttons.map(function (period) {
                         period.selected = false;
                     });
                     periodSelectorModule.selectedIndex = undefined;
-                    let selectedIndex: number = periodSelectorModule.findSelectedIndex(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), buttons)
+                    const selectedIndex: number = periodSelectorModule.findSelectedIndex(control.rangeAxis[this.currentSlider][this.labelIndex].value, (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), buttons);
                     periodSelectorModule.setSelectedStyle(selectedIndex);
                 }
             }

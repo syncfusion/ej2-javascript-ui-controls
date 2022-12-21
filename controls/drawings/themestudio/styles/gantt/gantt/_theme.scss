@@ -73,6 +73,7 @@
         border-bottom-color: $gantt-header-border-color;
         border-bottom-width: $gantt-header-border-bottom-width;
         border-right-color: $gantt-header-border-color;
+        border-left-color: $gantt-header-border-color;
         color: $gantt-header-color;
         height: $gantt-header-border-height;
       }
@@ -127,7 +128,7 @@
 
       .e-gantt-child-taskbar-inner-div {
         background-color: $gantt-child-task-bar;
-        border: $gantt-child-task-bar-border;
+        outline: $gantt-child-task-bar-border;
         border-radius: $gantt-parent-progress-bar-border-radius;
       }
 
@@ -157,7 +158,7 @@
 
       .e-gantt-parent-taskbar-inner-div {
         background-color: $gantt-parent-task-bar;
-        border: $gantt-parent-task-bar-border;
+        outline: $gantt-parent-task-bar-border;
         border-radius: $gantt-parent-progress-bar-border-radius;
       }
 
@@ -231,6 +232,7 @@
 
         .e-gantt-right-arrow {
           border-right-color: $event-marker-label-color;
+          border-left-color: $event-marker-label-color !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
@@ -352,15 +354,17 @@
       }
 
       .e-gantt-unscheduled-taskbar-right {
-        border-bottom-left-radius: $gantt-unscheduled-taskbar-left-radius;
-        border-bottom-right-radius: $gantt-unscheduled-taskbar-right-radius;
-        border-top-left-radius: $gantt-unscheduled-taskbar-left-radius;
-        border-top-right-radius: $gantt-unscheduled-taskbar-right-radius;
+        border-top-left-radius: $gantt-unscheduled-taskbar-curved-radius;
+        border-bottom-left-radius: $gantt-unscheduled-taskbar-curved-radius;
+        border-top-right-radius: $gantt-unscheduled-taskbar-straight-radius;
+        border-bottom-right-radius: $gantt-unscheduled-taskbar-straight-radius;
       }
 
       .e-gantt-unscheduled-taskbar-left {
-        border-bottom-left-radius: $gantt-progress-bar-left-radius;
-        border-top-left-radius: $gantt-progress-bar-left-radius;
+        border-bottom-left-radius: $gantt-unscheduled-taskbar-straight-radius;
+        border-top-left-radius: $gantt-unscheduled-taskbar-straight-radius;
+        border-bottom-right-radius: $gantt-unscheduled-taskbar-curved-radius;
+        border-top-right-radius: $gantt-unscheduled-taskbar-curved-radius;
       }
 
       .e-task-label {
@@ -571,6 +575,11 @@
 
   .e-gantt-dialog {
 
+    .e-dlg-content{
+      .e-rte-quick-popup.e-hide{
+        border: none !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
     .e-dlg-header {
       color: $gantt-dialog-header-font-color;
     }

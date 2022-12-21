@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../chart/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories } from '../../common/utils/enum';import { GroupModes } from './enum';
+import { Property, ChildProperty, Complex, createElement, Browser } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector } from '../../common/model/base';import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape } from '../../chart/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, EmptyPointSettingsModel, ConnectorModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, TextWrap } from '../../common/utils/enum';import { GroupModes } from './enum';
 
 /**
  * Interface for a class AccumulationAnnotationSettings
@@ -188,10 +188,41 @@ export interface AccumulationDataLabelSettingsModel {
     /**
      * Used to format the data label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the data label, e.g, 20°C.
-     *  
+     *
      * @default ''
      */
     format?: string;
+
+    /**
+     * Specifies the maximum width of the data label.Use this property to limit label width and apply wrap or trimming to the label.
+     *
+     * @default 'null'
+     */
+
+    maxWidth?: number;
+
+    /**
+     * Defines the text overflow behavior to employ when the data label text overflow.
+     * * Clip - Truncates data label when it overflows the bounds.
+     * * Ellipsis - Specifies an ellipsis (“...”) to the data label when it overflows the bounds.
+     * You can define maximum width of label by setting maxWidth property.
+     *
+     * @default 'Ellipsis'
+     */
+
+    textOverflow?: LabelOverflow;
+
+    /**
+     * Defines the text wrap behavior to employ when the data label overflow.
+     * * Normal - Truncates data label when it overflows the bounds.
+     * * Wrap - Specifies to break a data label once it is too long to fit on a line by itself.
+     * * AnyWhere - Specifies to break a data label at any point if there are no otherwise-acceptable break points in the line.
+     * You can define maximum width of label by setting maxWidth property.
+     *
+     * @default 'Normal'
+     */
+
+    textWrap?: TextWrap;
 
 }
 
@@ -326,7 +357,8 @@ export interface AccumulationSeriesModel {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
-     * * Image -Render a image.     * 
+     * * Image -Render a image.   *
+     *
      * @default 'SeriesType'
      */
 
@@ -334,6 +366,7 @@ export interface AccumulationSeriesModel {
 
     /**
      * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     *
      * @default ''
      */
 
@@ -398,7 +431,7 @@ export interface AccumulationSeriesModel {
     /**
      * Radius of the pie series and its values in percentage.
      *
-     * @default '80%'
+     * @default null
      */
     radius?: string;
 

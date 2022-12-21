@@ -601,7 +601,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         };
         this.trigger('load', loadEventData, () => {
 
-            this.theme = this.theme;
             this.setTheme();
 
             this.createSvg(this);
@@ -629,8 +628,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     private setTheme(): void {
         this.themeStyle = getBulletThemeColor(this.theme);
-        if ((this.targetColor === null || this.targetColor === "#191919" || this.valueFill == null) && this.theme.indexOf("Fluent") > -1) {
-            this.valueFill = this.targetColor =  this.theme === "FluentDark" ? "#797775" : "#A19F9D"; 
+        if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Fluent') > -1) {
+            this.valueFill = this.targetColor =  this.theme === 'FluentDark' ? '#797775' : '#A19F9D';
         }
     }
 
@@ -641,18 +640,18 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if (!this.maximum) {
             this.maximum = 0;
             for (let i: number = 0; i < this.ranges.length; i++) {
-                this.maximum = this.maximum > this.ranges[i].end ? this.maximum : this.ranges[i].end;
+                this.maximum = this.maximum > this.ranges[i as number].end ? this.maximum : this.ranges[i as number].end;
             }
         }
         if (this.maximum === null) {
             if (!isNullOrUndefined(this.dataSource)) {
                 for (let i: number = 0; i < Object.keys(this.dataSource).length; i++) {
-                    if (this.dataSource[i][this.targetField] > this.dataSource[i][this.valueField]) {
-                        this.maximum = this.maximum > this.dataSource[i][this.targetField] ? this.maximum + this.interval :
-                            this.dataSource[i][this.targetField] + this.interval;
+                    if (this.dataSource[i as number][this.targetField] > this.dataSource[i as number][this.valueField]) {
+                        this.maximum = this.maximum > this.dataSource[i as number][this.targetField] ? this.maximum + this.interval :
+                            this.dataSource[i as number][this.targetField] + this.interval;
                     } else {
-                        this.maximum = this.maximum > this.dataSource[i][this.valueField] ? this.maximum + this.interval :
-                            this.dataSource[i][this.valueField] + this.interval;
+                        this.maximum = this.maximum > this.dataSource[i as number][this.valueField] ? this.maximum + this.interval :
+                            this.dataSource[i as number][this.valueField] + this.interval;
                     }
                 }
             } else {
@@ -993,7 +992,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         }
         let label: Size;
         for (let i: number = 0, len: number = Object.keys(this.dataSource).length; i < len; i++) {
-            label = measureText((this.dataSource[i][this.categoryField] || ''), this.categoryLabelStyle);
+            label = measureText((this.dataSource[i as number][this.categoryField] || ''), this.categoryLabelStyle);
             if (label.width > this.maxLabelSize.width) {
                 this.maxLabelSize.width = label.width;
             }
@@ -1009,12 +1008,12 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const rangeCollection: RangeModel[] = this.ranges;
         this.visibleRanges = [];
         for (let i: number = 0, len: number = rangeCollection.length; i < len; i++) {
-            range = <Range>rangeCollection[i];
+            range = <Range>rangeCollection[i as number];
             range.index = i;
             // eslint-disable-next-line no-self-assign
             range.color = range.color;
             this.visibleRanges.push(range);
-            rangeCollection[i] = range;
+            rangeCollection[i as number] = range;
         }
     }
 
@@ -1108,12 +1107,13 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const enableRtl: boolean = this.enableRtl;
         let data: Object;
         let featureBounds: IFeatureBarBounds;
+        const alignment: string = this.dataLabel.labelStyle.textAlignment;
         const format: string = this.labelFormat ? this.labelFormat : '';
         const isCustomFormat: boolean = format.match('{value}') !== null;
         if (this.dataLabel.enable) {
             for (let i: number = 0, len: number = Object.keys(this.dataSource).length; i < len; i++) {
-                data = this.dataSource[i];
-                featureBounds = this.scale.featureBarBounds[i];
+                data = this.dataSource[i as number];
+                featureBounds = this.scale.featureBarBounds[i as number];
                 let labelText: string = (data[this.valueField]).toString();
                 this.format = this.intl.getNumberFormat({
                     format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
@@ -1136,7 +1136,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     }
                     y = featureBounds.y + featureBounds.height / 2;
                 } else {
-                    anchor = 'middle';
+                    anchor = (alignment === 'Far') ? 'end' : ((alignment === 'Near') ? 'start' : 'middle');
                     x = featureBounds.y + featureBounds.height / 2;
                     y = featureBounds.x + (enableRtl ? featureBounds.width + (this.type === 'Rect' ? -elementSpacing : elementSpacing) : 0) +
                         (this.type === 'Rect' ? elementSpacing : -elementSpacing);
@@ -1144,7 +1144,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                         y = y - (textHeight / 3);
                     }
                 }
-                let labelOptions: TextOption = new TextOption(
+                const labelOptions: TextOption = new TextOption(
                     this.element.id + '_DataLabel_' + i,
                     x, y, anchor, labelText, transform, 'middle');
                 textElement(
@@ -1541,7 +1541,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const modules: ModuleDeclaration[] = [];
         let rangeName: boolean;
         for (let i: number = 0; i < this.ranges.length; i++) {
-            if (this.ranges[i].name !== null) {
+            if (this.ranges[i as number].name !== null) {
                 rangeName = true;
             }
         }

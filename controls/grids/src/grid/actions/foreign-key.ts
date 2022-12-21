@@ -32,9 +32,11 @@ export class ForeignKey extends Data {
 
     private initForeignKeyColumns(columns: Column[]): void {
         for (let i: number = 0; i < columns.length; i++) {
-            columns[i].dataSource = (columns[i].dataSource instanceof DataManager ? <DataManager>columns[i].dataSource :
-                (isNullOrUndefined(columns[i].dataSource) ? new DataManager() : 'result' in columns[i].dataSource ? columns[i].dataSource :
-                    new DataManager(columns[i].dataSource as Object[])));
+            columns[parseInt(i.toString(), 10)].dataSource = (columns[parseInt(i.toString(), 10)].dataSource instanceof DataManager ?
+                <DataManager>columns[parseInt(i.toString(), 10)].dataSource :
+                (isNullOrUndefined(columns[parseInt(i.toString(), 10)].dataSource) ? new DataManager() :
+                    'result' in columns[parseInt(i.toString(), 10)].dataSource ? columns[parseInt(i.toString(), 10)].dataSource :
+                        new DataManager(columns[parseInt(i.toString(), 10)].dataSource as Object[])));
         }
     }
 
@@ -70,12 +72,13 @@ export class ForeignKey extends Data {
         const allPromise: Promise<Object>[] = [];
         for (let i: number = 0; i < foreignColumns.length; i++) {
             let promise: Promise<Object>;
-            const query: Query = args.isComplex ? this.genarateColumnQuery(foreignColumns[i]) :
-                <Query>this.genarateQuery(foreignColumns[i], <{ records?: Object[] }>args.result.result, false, true);
+            const query: Query = args.isComplex ? this.genarateColumnQuery(foreignColumns[parseInt(i.toString(), 10)]) :
+                <Query>this.genarateQuery(foreignColumns[parseInt(i.toString(), 10)],
+                <{ records?: Object[] }>args.result.result, false, true);
             query.params = this.parent.query.params;
-            const dataSource: DataManager = <DataManager>foreignColumns[i].dataSource;
+            const dataSource: DataManager = <DataManager>foreignColumns[parseInt(i.toString(), 10)].dataSource;
             if (dataSource && 'result' in dataSource) {
-                const def: Deferred = this.eventfPromise(args, query, dataSource, foreignColumns[i]);
+                const def: Deferred = this.eventfPromise(args, query, dataSource, foreignColumns[parseInt(i.toString(), 10)]);
                 promise = def.promise;
             } else if (!dataSource.ready || dataSource.dataSource.offline) {
                 promise = dataSource.executeQuery(query);
@@ -88,13 +91,15 @@ export class ForeignKey extends Data {
         }
         <Promise<Object>>Promise.all(allPromise).then((responses: ReturnType[]) => {
             for (let i: number = 0; i < responses.length; i++) {
-                foreignColumns[i].columnData = responses[i].result;
-                if (foreignColumns[i].editType === 'dropdownedit' && 'result' in foreignColumns[i].dataSource) {
-                    foreignColumns[i].edit.params = extend(foreignColumns[i].edit.params, {
-                        dataSource: responses[i].result,
+                foreignColumns[parseInt(i.toString(), 10)].columnData = responses[parseInt(i.toString(), 10)].result;
+                if (foreignColumns[parseInt(i.toString(), 10)].editType === 'dropdownedit' && 'result' in foreignColumns[parseInt(i.toString(), 10)].dataSource) {
+                    foreignColumns[parseInt(i.toString(), 10)].edit.params = extend(foreignColumns[parseInt(i.toString(), 10)]
+                        .edit.params, {
+                        dataSource: responses[parseInt(i.toString(), 10)].result,
                         query: new Query(), fields: {
-                            value: foreignColumns[i].foreignKeyField || foreignColumns[i].field,
-                            text: foreignColumns[i].foreignKeyValue
+                            value: foreignColumns[parseInt(i.toString(), 10)].foreignKeyField ||
+                                foreignColumns[parseInt(i.toString(), 10)].field,
+                            text: foreignColumns[parseInt(i.toString(), 10)].foreignKeyValue
                         }
                     });
                 }
@@ -124,12 +129,12 @@ export class ForeignKey extends Data {
             const filteredValue: Object[] = DataUtil.distinct(<Object[]>e, field, false);
             field = fromData ? column.field : column.foreignKeyField;
             for (let i: number = 0; i < filteredValue.length; i++) {
-                if (filteredValue[i] && (<Date>filteredValue[i]).getDay) {
+                if (filteredValue[parseInt(i.toString(), 10)] && (<Date>filteredValue[parseInt(i.toString(), 10)]).getDay) {
                     predicates.push(
-                        getDatePredicate({ field: field, operator: 'equal', value: <string>filteredValue[i], matchCase: false })
+                        getDatePredicate({ field: field, operator: 'equal', value: <string>filteredValue[parseInt(i.toString(), 10)], matchCase: false })
                     );
                 } else {
-                    predicates.push(new Predicate(field, 'equal', <string>filteredValue[i], false));
+                    predicates.push(new Predicate(field, 'equal', <string>filteredValue[parseInt(i.toString(), 10)], false));
                 }
             }
         }

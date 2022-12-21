@@ -475,7 +475,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private chipCreation(data: string[] | number[] | ChipModel[]): void {
         let chipListArray: HTMLElement[] = [];
         for (let i: number = 0; i < data.length; i++) {
-            const fieldsData: ChipFields = this.getFieldValues(data[i]);
+            const fieldsData: ChipFields = this.getFieldValues(data[i as number]);
             const chipArray: HTMLElement[] = this.elementCreation(fieldsData);
             const className: string[] = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
                 (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
@@ -627,17 +627,17 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private multiSelection(newProp: number[] | string[]): void {
         const items: NodeListOf<Element> = this.element.querySelectorAll('.' + 'e-chip');
         for (let j: number = 0; j < newProp.length; j++) {
-            if (typeof newProp[j] === 'string') {
+            if (typeof newProp[j as number] === 'string') {
                 for (let k: number = 0; k < items.length; k++) {
-                    if (newProp[j] !== k) {
-                        if (newProp[j] === items[k].attributes[5].value) {
+                    if (newProp[j as number] !== k) {
+                        if (newProp[j as number] === items[k as number].attributes[5].value) {
                             this.multiSelectedChip.push(k);
                             break;
                         }
                     }
                 }
             } else {
-                this.multiSelectedChip.push(newProp[j] as number);
+                this.multiSelectedChip.push(newProp[j as number] as number);
             }
         }
     }
@@ -651,18 +651,18 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             if (callFromProperty) {
                 const chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
                 for (let i: number = 0; i < chipElements.length; i++) {
-                    chipElements[i].setAttribute('aria-selected', 'false');
-                    chipElements[i].classList.remove(classNames.active);
+                    chipElements[i as number].setAttribute('aria-selected', 'false');
+                    chipElements[i as number].classList.remove(classNames.active);
                 }
             }
             const fieldData: number[] | HTMLElement[] | string[] = fields instanceof Array ? fields : <number[] | HTMLElement[]>[fields];
             for (let i: number = 0; i < fieldData.length; i++) {
-                let chipElement: HTMLElement = fieldData[i] instanceof HTMLElement ? fieldData[i] as HTMLElement
-                    : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i] as number] as HTMLElement;
+                let chipElement: HTMLElement = fieldData[i as number] instanceof HTMLElement ? fieldData[i as number] as HTMLElement
+                    : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i as number] as number] as HTMLElement;
                 if (selectionType !== 'index') {
                     for (let j: number = 0; j < this.chips.length; j++) {
-                        chipNodes = this.element.querySelectorAll('.' + classNames.chip)[j] as HTMLElement;
-                        const fieldsData: ChipFields = this.getFieldValues(this.chips[j]);
+                        chipNodes = this.element.querySelectorAll('.' + classNames.chip)[j as number] as HTMLElement;
+                        const fieldsData: ChipFields = this.getFieldValues(this.chips[j as number]);
                         if (selectionType === 'value') {
                             if (fieldsData.value !== null) {
                                 chipValue = chipNodes.dataset.value;
@@ -670,9 +670,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         } else if (selectionType === 'text') {
                             chipValue = chipNodes.innerText;
                         }
-                        if (chipValue === fieldData[i].toString()) {
+                        if (chipValue === fieldData[i as number].toString()) {
                             index = j;
-                            chipElement = this.element.querySelectorAll('.' + classNames.chip)[index] as HTMLElement;
+                            chipElement = this.element.querySelectorAll('.' + classNames.chip)[index as number] as HTMLElement;
                         }
                     }
                 }
@@ -724,14 +724,14 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             const selectedItems: SelectedItems = { texts: [], Indexes: [], data: [], elements: [] };
             const items: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.active);
             for (let i: number = 0; i < items.length; i++) {
-                const chip: HTMLElement = items[i] as HTMLElement;
+                const chip: HTMLElement = items[i as number] as HTMLElement;
                 selectedItems.elements.push(chip);
                 const index: number = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
                 selectedItems.Indexes.push(index);
-                (selectedItems.data as ChipModel[]).push((this.chips as ChipModel[])[index]);
-                const text: string = typeof this.chips[index] === 'object' ?
-                    (this.chips[index] as ChipModel).text ? (this.chips[index] as ChipModel).text.toString()
-                        : null : this.chips[index].toString();
+                (selectedItems.data as ChipModel[]).push((this.chips as ChipModel[])[index as number]);
+                const text: string = typeof this.chips[index as number] === 'object' ?
+                    (this.chips[index as number] as ChipModel).text ? (this.chips[index as number] as ChipModel).text.toString()
+                        : null : this.chips[index as number].toString();
                 selectedItems.texts.push(text);
             }
             const selectedItem: SelectedItem = {
@@ -881,7 +881,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         let chip: string | number = null;
         let value: string;
         for (let i: number = 0; i < chipListEle.length; i++) {
-            const selectedEle: Element = this.element.querySelectorAll('.e-chip')[i];
+            const selectedEle: Element = this.element.querySelectorAll('.e-chip')[i as number];
             if (selectedEle.getAttribute('aria-selected') === 'true') {
                 value = selectedEle.getAttribute('data-value');
                 if (this.selection === 'Single' && selectedEle.classList.contains('e-active')) {

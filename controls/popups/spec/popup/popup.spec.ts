@@ -831,7 +831,7 @@ describe('Popup # ', () => {
             document.body.style.margin ="8px";
         });
     });
-
+    
     describe(" EJ2-64385 - unwire event should be called even when destroyed with calling hide method", function() {
         var popEle = createElement('div',{id:"posPopup"});
         var popObj:any;

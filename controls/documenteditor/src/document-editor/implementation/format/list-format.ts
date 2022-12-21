@@ -159,7 +159,13 @@ export class WListFormat {
         this.list = undefined;
     }
     public destroy(): void {
-        this.clearFormat();
+        if (!isNullOrUndefined(this.uniqueListFormat)) {
+            WListFormat.uniqueListFormats.remove(this.uniqueListFormat);
+        }
+        this.uniqueListFormat = undefined;
+        this.list = undefined;
+        this.ownerBase = undefined;
+        this.baseStyle = undefined;
     }
     public static clear(): void {
         this.uniqueListFormats.clear();

@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, getCell, SpreadsheetModel, Spreadsheet } from '../../../src/index';
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, getComponent  } from '@syncfusion/ej2-base';
 
 /**
  *  Spreadsheet Ribbon spec
@@ -406,6 +406,355 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         });
 
     });
+
+    describe('UI - Interaction for Chart Design Tab->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply Switch Row/Column->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
+            helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Undo after apply Switch Row/Column->', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Opening Chart Theme Dropdown->', (done: Function) => {
+            helper.switchRibbonTab(6)
+            helper.getElement('#' + helper.id + '_chart_theme').click();
+            helper.getElement('.e-item[aria-label="Fabric"]').click();
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Fabric');
+                done();
+            }, 20);
+        });
+        it('Opening Chart Type Dropdown->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedColumn').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Hovering mouse over Differner Types of Chart in Chart Types Dropdown->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            const Column: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item');
+            (getComponent(Column.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: Column.getBoundingClientRect().left + 5, y: Column.getBoundingClientRect().top + 5 }, document, Column);
+
+            const bar : HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Bar"]');
+            (getComponent(bar.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: bar.getBoundingClientRect().left + 5, y: bar.getBoundingClientRect().top + 5 }, document, bar);
+
+            const Area: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Area"]');
+            (getComponent(Area.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: Area.getBoundingClientRect().left + 5, y: Area.getBoundingClientRect().top + 5 }, document, Area);
+
+            const Pie: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Pie/Doughnut"]');
+            (getComponent(Pie.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: Pie.getBoundingClientRect().left + 5, y: Pie.getBoundingClientRect().top + 5 }, document, Pie);
+
+            const Line: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(Line.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: Line.getBoundingClientRect().left + 5, y: Line.getBoundingClientRect().top + 5 }, document, Line);
+
+            const Scatter: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Scatter"]');
+            (getComponent(Scatter.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: Scatter.getBoundingClientRect().left + 5, y: Scatter.getBoundingClientRect().top + 5 }, document, Scatter);
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Opening Chart Element Dropdown->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PHAxes').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Choosing Pv Axes Chart Element Dropdown->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PVAxes').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+    });
+
+    describe('UI - Interaction for Conditional Formatting, Borders, Merge, Re-apply Filter->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Hovering mouse over Differner Types of Formats in CF menu->', (done: Function) => {
+            helper.invoke('selectRange', ['D2:D11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const databars: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Data Bars"]');
+            (getComponent(databars.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: databars.getBoundingClientRect().left + 5, y: databars.getBoundingClientRect().top + 5 }, document, databars);
+
+            const colorscales: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Color Scales"]');
+            (getComponent(colorscales.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: colorscales.getBoundingClientRect().left + 5, y: colorscales.getBoundingClientRect().top + 5 }, document, colorscales);
+
+            const iconsets: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Icon Sets"]');
+            (getComponent(iconsets.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: iconsets.getBoundingClientRect().left + 5, y: iconsets.getBoundingClientRect().top + 5 }, document, iconsets);
+            helper.getElement('#ThreeArrows').click();
+            expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-3arrows-3');
+            expect(helper.invoke('getCell', [5, 3]).children[0].classList).toContain('e-3arrows-2');
+            expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
+            done();
+        });
+        it('Clear Conditional Formatting from entire Sheet->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_cr_sheet').click();
+            expect(helper.invoke('getCell', [1, 3]).querySelector('e-3arrows-3')).toBeNull();
+            expect(helper.invoke('getCell', [5, 3]).querySelector('e-3arrows-2')).toBeNull();
+            expect(helper.invoke('getCell', [6, 3]).querySelector('e-3arrows-1')).toBeNull();
+            done();
+        });
+        it('Apply Different Colors and Styles in Border Popup->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            const borderColor: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Color"]');
+            (getComponent(borderColor.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: borderColor.getBoundingClientRect().left + 5, y: borderColor.getBoundingClientRect().top + 5 }, document, borderColor);
+            helper.getElement('.e-tile[aria-label="#ec407aff"]').click();
+            helper.click('.e-border-color .e-primary');
+            const borderStyle: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Style"]');
+            (getComponent(borderStyle.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: borderStyle.getBoundingClientRect().left + 5, y: borderStyle.getBoundingClientRect().top + 5 }, document, borderStyle);
+            helper.getElement('#' + helper.id + '_2px').click();
+            helper.getElement('.e-menu-item[aria-label="Top Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].style.borderTop).toBe('2px solid #ec407a');
+            done();
+        });
+        it('Apply "3px" style in Border Popup->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            const borderColor: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Color"]');
+            (getComponent(borderColor.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: borderColor.getBoundingClientRect().left + 5, y: borderColor.getBoundingClientRect().top + 5 }, document, borderColor);
+            helper.getElement('.e-border-color .e-mode-switch-btn').click();
+            helper.click('.e-border-color .e-primary');
+            const borderStyle: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Style"]');
+            (getComponent(borderStyle.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: borderStyle.getBoundingClientRect().left + 5, y: borderStyle.getBoundingClientRect().top + 5 }, document, borderStyle);
+            helper.getElement('#' + helper.id + '_3px').click();
+            helper.getElement('.e-menu-item[aria-label="Left Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].style.borderLeft).toBe('3px solid #ec407a');
+            done();
+        });
+        it('Apply "Dashed" style in Border Popup->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            const borderStyle: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Style"]');
+            (getComponent(borderStyle.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: borderStyle.getBoundingClientRect().left + 5, y: borderStyle.getBoundingClientRect().top + 5 }, document, borderStyle);
+            helper.getElement('#' + helper.id + '_dashed').click();
+            helper.getElement('.e-menu-item[aria-label="Right Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].style.borderRight).toBe('1px dashed #ec407a');
+            done();
+        });
+        it('Apply Vertical Border->', (done: Function) => {
+            helper.invoke('selectRange', ['E6']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Vertical Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[5].cells[4].style.borderRight).toBe('1px dashed #ec407a');
+            expect(helper.getInstance().sheets[0].rows[5].cells[4].style.borderLeft).toBe('1px dashed #ec407a');
+
+            done();
+        });
+        it('Apply Insdie Border->', (done: Function) => {
+            helper.invoke('selectRange', ['E7:F8']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Inside Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[6].cells[4].style.borderBottom).toBe('1px dashed #ec407a');
+            expect(helper.getInstance().sheets[0].rows[7].cells[4].style.borderTop).toBe('1px dashed #ec407a');
+            done();
+        });
+        it('Apply No Border->', (done: Function) => {
+            helper.invoke('selectRange', ['E5:F8']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="No Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[6].cells[4].style.borderBottom).toBe('');
+            expect(helper.getInstance().sheets[0].rows[7].cells[4].style.borderTop).toBe('');
+            done();
+        });
+        it('Apply Re-apply Filter->', (done: Function) => {
+            helper.invoke('selectRange', ['E1']);
+            helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_reapplyfilter').click();
+                expect(helper.invoke('getCell', [0, 0]).children[0].classList).toContain('e-filter-btn');
+                expect(helper.invoke('getCell', [0, 4]).children[0].children[0].classList).toContain('e-filtered');
+                done();
+            });
+        });
+        it('Apply Merge All->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_sorting').click();
+            helper.getElement('#' + helper.id + '_clearfilter').click();
+            helper.invoke('selectRange', ['K3:L5']);
+            helper.getElement('#' + helper.id + '_merge_dropdownbtn').click();
+            helper.getElement('.e-item[aria-label="Merge All"]').click();
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].colSpan).toBe(2);
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBe(3);
+            done();
+        });
+        it('Apply UnMerge->', (done: Function) => {
+            helper.invoke('selectRange', ['K3']);
+            helper.getElement('#' + helper.id + '_merge_dropdownbtn').click();
+            helper.getElement('.e-item[aria-label="Unmerge"]').click();
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].colSpan).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBeUndefined();
+            done();
+        });
+        it('Apply Merge Horizontally->', (done: Function) => {
+            helper.invoke('selectRange', ['K3:L5']);
+            helper.getElement('#' + helper.id + '_merge_dropdownbtn').click();
+            helper.getElement('.e-item[aria-label="Merge Horizontally"]').click();
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].colSpan).toBe(2);
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBeUndefined();
+            done();
+        });
+        it('Apply Merge Vertically->', (done: Function) => {
+            helper.invoke('selectRange', ['K3:L5']);
+            helper.getElement('#' + helper.id + '_merge_dropdownbtn').click();
+            helper.getElement('.e-item[aria-label="Merge Vertically"]').click();
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].colSpan).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[2].cells[10].rowSpan).toBe(3);
+            done();
+        });
+    });
+
+    describe('UI - Interaction for Find & Replace, Custom Format Dialog, View Tab & Data Tab ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('checking 0 of 0 in Find Dialog', (done: Function) => {
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                const findEditor: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-text-findNext-short');
+                findEditor.value = 'ShOe';
+                findEditor.focus();
+                helper.triggerKeyNativeEvent(88, false, false, findEditor, 'keyup');
+                expect(findEditor.nextElementSibling.textContent).toBe('0 of 5');
+                findEditor.value = '';
+                helper.triggerKeyNativeEvent(88, false, false, findEditor, 'keyup');
+                expect(findEditor.nextElementSibling.textContent).toBe('0 of 0');
+                done();
+            });
+        });
+        it('Choosing Format in Custom format Dialog->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Custom').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-custom-format-dlg.e-dialog');
+                helper.getElement('.e-custom-listview .e-list-item:nth-child(3)').click();
+                helper.click('.e-custom-format-dlg .e-dlg-content .e-btn');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [4, 4]).textContent).toBe('20.00');
+                    done();
+                });
+            });
+        });
+        it('Hide Headers with Find Dialog->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.switchRibbonTab(5);
+            helper.click('#' + helper.id + '_headers');
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-findtool-dlg.e-dialog')).not.toBeNull();
+                helper.invoke('selectRange', ['E5']);
+                done();
+            });
+        });
+        it('Apply Freeze Row->', (done: Function) => {
+            helper.click('#' + helper.id + '_freezerows');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
+                expect(helper.getInstance().sheets[0].frozenColumns).toBe(0);
+                done();
+            });
+        });
+        it('Apply Freeze Column->', (done: Function) => {
+            helper.click('#' + helper.id + '_freezecolumns');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
+                expect(helper.getInstance().sheets[0].frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Apply Protect Workbook in Protected sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                helper.click('#' + helper.id + '_protectworkbook');
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-protectworkbook-dlg.e-dialog');
+                    (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
+                    setTimeout(() => {
+                        var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[1] as HTMLElement).textContent;
+                        expect(btnText).toBe('Unprotect Workbook');
+                        done();
+                    }, 50);
+                });
+            });
+        });
+        it('UnprotectWorkbook in Protected Sheet', (done: Function) => {
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                var btnText =  (document.getElementsByClassName('e-tbar-btn-text')[1] as HTMLElement).textContent;
+                expect(btnText).toBe('Protect Workbook');
+                done();
+            }, 50);
+        });
+    });
+    
     describe('CR-Issues ->', () => {
         describe('I257035 ->', () => {
             beforeEach((done: Function) => {
@@ -443,6 +792,27 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             let spreadsheet:Spreadsheet = helper.getInstance();
             spreadsheet.addToolbarItems('Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }], 2);
             expect(spreadsheet.ribbonModule.ribbon.items[0].header.text).toBe('Huis');
+        });
+    });
+    describe('EJ2-63732 ->', () => {
+        beforeAll((done: Function) => {
+            model = {
+                sheets: [
+                    {
+                        ranges: [{ dataSource: defaultData }]
+                    }
+                ]
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll((): void => {
+            helper.invoke('destroy');
+        });
+        it('Selected Icon in Font dropdown is not shown after choosing Comic Sans MS Font', (): void => {
+            helper.click('_font_name .e-btn-icon');
+            helper.click(`#${helper.id}_font_name-popup li:nth-child(7)`);
+            helper.click('_font_name .e-btn-icon');
+            expect(helper.getElements('.e-menu-icon')[0].classList).toContain('e-selected-icon');
         });
     });
 });

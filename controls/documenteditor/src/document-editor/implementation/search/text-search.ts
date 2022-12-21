@@ -51,12 +51,12 @@ export class TextSearch {
             || textToFind.indexOf('^') > -1 || textToFind.indexOf('?') > -1) {
             let text: string = '';
             for (let i: number = 0; i < textToFind.length; i++) {
-                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '['
-                    || textToFind[i] === ']' || textToFind[i] === '$' || textToFind[i] === '{' || textToFind[i] === '}'
-                    || textToFind[i] === '*' || textToFind[i] === '|' || textToFind[i] === '^' || textToFind[i] === '?') {
-                    text += '\\' + textToFind[i];
+                if (textToFind[parseInt(i.toString(), 10)] === '(' || textToFind[parseInt(i.toString(), 10)] === ')' || textToFind[parseInt(i.toString(), 10)] === '.' || textToFind[parseInt(i.toString(), 10)] === '['
+                    || textToFind[parseInt(i.toString(), 10)] === ']' || textToFind[parseInt(i.toString(), 10)] === '$' || textToFind[parseInt(i.toString(), 10)] === '{' || textToFind[parseInt(i.toString(), 10)] === '}'
+                    || textToFind[parseInt(i.toString(), 10)] === '*' || textToFind[parseInt(i.toString(), 10)] === '|' || textToFind[parseInt(i.toString(), 10)] === '^' || textToFind[parseInt(i.toString(), 10)] === '?') {
+                    text += '\\' + textToFind[parseInt(i.toString(), 10)];
                 } else {
-                    text += textToFind[i];
+                    text += textToFind[parseInt(i.toString(), 10)];
                 }
             }
             textToFind = text;
@@ -64,7 +64,7 @@ export class TextSearch {
         if (option === 'WholeWord' || option === 'CaseSensitiveWholeWord') {
             textToFind = this.wordBefore + textToFind + this.wordAfter;
         }
-        return new RegExp(textToFind, (option === 'CaseSensitive' || option === 'CaseSensitiveWholeWord') ? 'g' : 'ig');
+        return RegExp(textToFind, (option === 'CaseSensitive' || option === 'CaseSensitiveWholeWord') ? 'g' : 'ig');
     }
     public isPatternEmpty(pattern: RegExp): boolean {
         const wordEmpty: string = this.wordBefore + this.wordAfter;
@@ -140,7 +140,7 @@ export class TextSearch {
     /* eslint-disable-next-line max-len */
     public updateMatchedTextLocation(matches: RegExpExecArray[], results: TextSearchResults, textInfo: Dictionary<TextElementBox, number>, indexInInline: number, inlines: ElementBox, isFirstMatch: boolean, selectionEnd: TextPosition, startPosition?: number): void {
         for (let i: number = 0; i < matches.length; i++) {
-            const match: RegExpExecArray = matches[i];
+            const match: RegExpExecArray = matches[parseInt(i.toString(), 10)];
             let isMatched: boolean;
             if (!(isNullOrUndefined(startPosition)) && match.index < startPosition) {
                 continue;
@@ -148,7 +148,7 @@ export class TextSearch {
             const result: TextSearchResult = results.addResult();
             const spanKeys: TextElementBox[] = textInfo.keys;
             for (let j: number = 0; j < spanKeys.length; j++) {
-                const span: TextElementBox = spanKeys[j];
+                const span: TextElementBox = spanKeys[parseInt(j.toString(), 10)];
                 const startIndex: number = textInfo.get(span);
                 let spanLength: number = span.length;
                 // IndexInInline Handled specifically for simple find operation to start from starting point
@@ -253,10 +253,10 @@ export class TextSearch {
         
         let headerFootersColletion: HeaderFooters[] = this.documentHelper.headersFooters;
         for(let i: number = 0; i < headerFootersColletion.length; i++ ) {
-            let headerFooters: HeaderFooters = headerFootersColletion[i];
+            let headerFooters: HeaderFooters = headerFootersColletion[parseInt(i.toString(), 10)];
             if (headerFooters) {
                 for (const index in headerFooters) {
-                    let headerFooter: HeaderFooterWidget = headerFooters[index];
+                    let headerFooter: HeaderFooterWidget = headerFooters[parseInt(index.toString(), 10)];
                     if (!isNullOrUndefined(headerFooter) && !isNullOrUndefined(headerFooter.page)) {
                         this.findInlineText(headerFooter, pattern, findOption, isFirstMatch, results, selectionEnd);
                     }

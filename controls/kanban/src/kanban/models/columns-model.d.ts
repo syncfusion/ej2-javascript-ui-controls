@@ -7,9 +7,11 @@ export interface ColumnsModel {
 
     /**
      * Defines the column keyField. It supports both number and string type.
-     * String type supports the multiple column keys and number type does not support the multiple column keys. 
+     * String type supports the multiple column keys and number type does not support the multiple column keys.
+     *
      * @default null
      */
+
     keyField?: string | number;
 
     /**

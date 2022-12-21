@@ -23,7 +23,6 @@ let maxHeight: number;
 let minWidth: number;
 let maxWidth: number;
 let containerElement: HTMLElement;
-/* eslint-disable */
 let resizeStart: Function = null;
 let resize: Function = null;
 let resizeEnd: Function = null;
@@ -65,11 +64,11 @@ export function createResize(args: ResizeArgs): void {
     containerElement = getDOMElement(args.boundary);
     const directions: string[] = args.direction.split(' ');
     for (let i: number = 0; i < directions.length; i++) {
-        if (dialogBorderResize.indexOf(directions[i]) >= 0 && directions[i]) {
-            setBorderResizeElm(directions[i]);
-        } else if (directions[i].trim() !== '') {
+        if (dialogBorderResize.indexOf(directions[i as number]) >= 0 && directions[i as number]) {
+            setBorderResizeElm(directions[i as number]);
+        } else if (directions[i as number].trim() !== '') {
             const resizeHandler: HTMLElement = createElement(
-                'div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] }
+                'div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i as number] }
             );
             targetElement.appendChild(resizeHandler);
         }
@@ -148,7 +147,7 @@ function wireEvents(args?: any): void  {
     }
     const resizers: NodeListOf<Element> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < resizers.length; i++) {
-        selectedHandler = resizers[i] as HTMLElement;
+        selectedHandler = resizers[i as number] as HTMLElement;
         EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
         const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         EventHandler.add(selectedHandler, eventName, onTouchStart, args);
@@ -156,7 +155,7 @@ function wireEvents(args?: any): void  {
     const borderResizers: NodeListOf<Element> = targetElement.querySelectorAll('.e-dialog-border-resize');
     if (!isNOU(borderResizers)) {
         for (let i: number = 0; i < borderResizers.length; i++) {
-            selectedHandler = borderResizers[i] as HTMLElement;
+            selectedHandler = borderResizers[i as number] as HTMLElement;
             EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
             const eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
             EventHandler.add(selectedHandler, eventName, onTouchStart, args);
@@ -194,7 +193,7 @@ function onMouseDown(e: MouseEvent): void {
         }
     }
     if (this.targetEle && targetElement && targetElement.querySelector('.' + DIALOG_RESIZABLE)) {
-        containerElement = this.target === 'body' || 'document.body' || document.body ? null : this.targetEle;
+        containerElement = this.target === ('body' || 'document.body' || document.body) ? null : this.targetEle;
         maxWidth = this.targetEle.clientWidth;
         maxHeight = this.targetEle.clientHeight;
     }
@@ -202,7 +201,7 @@ function onMouseDown(e: MouseEvent): void {
     EventHandler.add(target, 'mousemove', onMouseMove, this);
     EventHandler.add(document, 'mouseup', onMouseUp, this);
     for (let i: number = 0; i < RESTRICT_LEFT.length; i++) {
-        if (targetElement.classList.contains(RESTRICT_LEFT[i])) {
+        if (targetElement.classList.contains(RESTRICT_LEFT[i as number])) {
             setLeft = false;
         } else {
             setLeft = true;
@@ -253,6 +252,10 @@ function calculateValues(): void {
 function onTouchStart(e: TouchEvent | MouseEvent): void {
     targetElement = (e.target as HTMLElement).parentElement;
     calculateValues();
+    const dialogResizeElement: boolean = targetElement.classList.contains( 'e-dialog' );
+    if ( ( ( e.target as HTMLElement ).classList.contains( RESIZE_HANDLER ) || ( e.target as HTMLElement ).classList.contains( 'e-dialog-border-resize' ) ) && dialogResizeElement ) {
+        ( e.target as HTMLElement ).classList.add( FOCUSED_HANDLER );
+    }
     const coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
     originalMouseX = coordinates.pageX;
     originalMouseY = coordinates.pageY;
@@ -266,7 +269,7 @@ function onTouchStart(e: TouchEvent | MouseEvent): void {
     const touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
     const target: Document | HTMLElement = (isNOU(containerElement)) ? document : containerElement;
     EventHandler.add(target, touchMoveEvent, onMouseMove, this);
-    EventHandler.add(document, touchEndEvent, onMouseUp);
+    EventHandler.add(document, touchEndEvent, onMouseUp, this);
 }
 
 /* istanbul ignore next */
@@ -284,8 +287,8 @@ function onMouseMove(e: MouseEvent): void {
     if (!isNOU(selectedHandler)) {
         let resizeTowards: string = '';
         for (let i: number = 0; i < elementClass.length; i++) {
-            if (selectedHandler.classList.contains('e-' + elementClass[i])) {
-                resizeTowards = elementClass[i];
+            if (selectedHandler.classList.contains('e-' + elementClass[i as number])) {
+                resizeTowards = elementClass[i as number];
             }
         }
         if (!isNOU(resize)) {
@@ -547,12 +550,12 @@ export function setMaxHeight(value: number): void {
 export function removeResize(): void {
     const handlers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < handlers.length; i++ ) {
-        detach(handlers[i]);
+        detach(handlers[i as number]);
     }
     const borderResizers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.e-dialog-border-resize');
     if (!isNOU(borderResizers)) {
         for (let i: number = 0; i < borderResizers.length; i++ ) {
-            detach(borderResizers[i]);
+            detach(borderResizers[i as number]);
         }
     }
 }

@@ -9,6 +9,8 @@ export * from './search-settings';
 export * from './search-settings-model';
 export * from './details-view-settings-model';
 export * from './details-view-settings';
+export * from './virtualization-settings-model';
+export * from './virtualization-settings';
 export * from './contextMenu-settings';
 export * from './contextMenu-settings-model';
 export * from './navigation-pane-settings-model';

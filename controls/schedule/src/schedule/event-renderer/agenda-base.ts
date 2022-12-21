@@ -47,39 +47,41 @@ export class AgendaBase extends ViewBase {
             listElements.forEach((element: HTMLElement, li: number) => {
                 const appWrapper: HTMLElement = createElement('div', {
                     className: cls.APPOINTMENT_CLASS, attrs: {
-                        'data-id': 'Appointment_' + listData[li][this.parent.eventFields.id],
-                        'data-guid': listData[li].Guid as string,
+                        'data-id': 'Appointment_' + listData[parseInt(li.toString(), 10)][`${this.parent.eventFields.id}`],
+                        'data-guid': listData[parseInt(li.toString(), 10)].Guid as string,
                         'role': 'button',
                         'tabindex': '0',
-                        'aria-disabled': this.parent.eventBase.getReadonlyAttribute(listData[li]),
+                        'aria-disabled': this.parent.eventBase.getReadonlyAttribute(listData[parseInt(li.toString(), 10)]),
                         'aria-pressed': 'false',
-                        'aria-label': this.parent.getAnnouncementString(listData[li])
+                        'aria-label': this.parent.getAnnouncementString(listData[parseInt(li.toString(), 10)])
                     }
                 });
                 if (!isNullOrUndefined(groupIndex)) {
                     appWrapper.setAttribute('data-group-index', groupIndex.toString());
                 }
-                this.parent.eventBase.applyResourceColor(appWrapper, listData[li], 'borderColor', groupOrder);
+                this.parent.eventBase.applyResourceColor(appWrapper, listData[parseInt(li.toString(), 10)], 'borderColor', groupOrder);
                 let templateEle: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     addClass([appWrapper], cls.EVENT_TEMPLATE);
                     const scheduleId: string = this.parent.element.id + '_';
                     const viewName: string = this.parent.activeViewOptions.eventTemplateName;
                     const templateId: string = scheduleId + viewName + 'eventTemplate';
-                    templateEle = this.parent.getAppointmentTemplate()(listData[li], this.parent, 'eventTemplate', templateId, false);
-                    if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
-                        const iconClass: string = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
-                            cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
+                    templateEle = this.parent.getAppointmentTemplate()(listData[parseInt(li.toString(), 10)], this.parent, 'eventTemplate', templateId, false);
+                    if (!isNullOrUndefined(listData[parseInt(li.toString(), 10)][fieldMapping.recurrenceRule])) {
+                        const iconClass: string =
+                            (listData[parseInt(li.toString(), 10)][fieldMapping.id] ===
+                                listData[parseInt(li.toString(), 10)][fieldMapping.recurrenceID]) ?
+                                cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
                         appWrapper.appendChild(createElement('div', { className: cls.ICON + ' ' + iconClass }));
                     }
                 } else {
-                    templateEle = this.createAppointment(listData[li]);
+                    templateEle = this.createAppointment(listData[parseInt(li.toString(), 10)]);
                 }
                 append([].slice.call(templateEle), appWrapper);
                 util.removeChildren(element);
                 element.appendChild(appWrapper);
                 const args: EventRenderedArgs = {
-                    data: extend({}, listData[li], null, true) as Record<string, any>,
+                    data: extend({}, listData[parseInt(li.toString(), 10)], null, true) as Record<string, any>,
                     element: element as HTMLElement, cancel: false
                 };
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
@@ -179,7 +181,7 @@ export class AgendaBase extends ViewBase {
                     const data: Record<string, any>[] = [];
                     agendaDate = firstDate;
                     // eslint-disable-next-line max-len
-                    const resDataCollection: Record<string, any>[] = this.parent.eventBase.filterEvents(agendaDate, agendaLastDate, agendaCollection, resData[res]);
+                    const resDataCollection: Record<string, any>[] = this.parent.eventBase.filterEvents(agendaDate, agendaLastDate, agendaCollection, resData[parseInt(res.toString(), 10)]);
                     if (resDataCollection.length > 0 || !this.parent.hideEmptyAgendaDays || this.parent.currentView === 'MonthAgenda') {
                         for (let r: number = 0; r < noOfDays; r++) {
                             // eslint-disable-next-line max-len
@@ -189,19 +191,22 @@ export class AgendaBase extends ViewBase {
                                 data.push(resDayCollection[0]);
                                 eventObj = {
                                     rowSpan: 1, type: 'eventColumn', resource: resColl[resColl.length - 1],
-                                    groupIndex: resData[res].groupIndex, groupOrder: resData[res].groupOrder,
-                                    resourceData: resData[res].resourceData, eventData: resDayCollection, date: agendaDate
+                                    groupIndex: resData[parseInt(res.toString(), 10)].groupIndex,
+                                    groupOrder: resData[parseInt(res.toString(), 10)].groupOrder,
+                                    resourceData: resData[parseInt(res.toString(), 10)].resourceData,
+                                    eventData: resDayCollection, date: agendaDate
                                 };
                                 dateObj = {
-                                    rowSpan: 1, type: 'dateColumn', resource: resColl[resColl.length - 1],
-                                    groupOrder: resData[res].groupOrder, resourceData: resData[res].resourceData,
+                                    rowSpan: 1, type: 'dateColumn', resource: resColl[parseInt((resColl.length - 1).toString(), 10)],
+                                    groupOrder: resData[parseInt(res.toString(), 10)].groupOrder,
+                                    resourceData: resData[parseInt(res.toString(), 10)].resourceData,
                                     date: agendaDate
                                 };
-                                if (!lastLevelInfo[tempIndex]) {
-                                    lastLevelInfo[tempIndex] = [];
+                                if (!lastLevelInfo[parseInt(tempIndex.toString(), 10)]) {
+                                    lastLevelInfo[parseInt(tempIndex.toString(), 10)] = [];
                                 }
-                                lastLevelInfo[tempIndex].push(eventObj);
-                                lastLevelInfo[tempIndex].push(dateObj);
+                                lastLevelInfo[parseInt(tempIndex.toString(), 10)].push(eventObj);
+                                lastLevelInfo[parseInt(tempIndex.toString(), 10)].push(dateObj);
                                 tempIndex++;
                             }
                             agendaDate = util.addDays(agendaDate, 1);
@@ -209,12 +214,13 @@ export class AgendaBase extends ViewBase {
                                 || this.parent.currentView === 'MonthAgenda') {
                                 lastLevelInfo[lastLevelInfo.length - 1][1].cssClass = cls.AGENDA_DAY_BORDER_CLASS;
                                 const tempObj: TdData = {
-                                    rowSpan: data.length, type: 'resourceColumn', resource: resColl[resColl.length - 1],
-                                    groupOrder: resData[res].groupOrder.slice(0, -1), resourceData: resData[res].resourceData,
+                                    rowSpan: data.length, type: 'resourceColumn', resource: resColl[parseInt((resColl.length - 1).toString(), 10)],
+                                    groupOrder: resData[parseInt(res.toString(), 10)].groupOrder.slice(0, -1),
+                                    resourceData: resData[parseInt(res.toString(), 10)].resourceData,
                                     groupIndex: (lastLevelInfo.length - data.length), className: [cls.RESOURCE_NAME],
                                     date: agendaDate
                                 };
-                                lastLevelInfo[lastLevelInfo.length - data.length].push(tempObj);
+                                lastLevelInfo[parseInt((lastLevelInfo.length - data.length).toString(), 10)].push(tempObj);
                                 tempLastLevelInfo.push(<TdData>extend({}, tempObj, null, true));
                                 break;
                             }
@@ -229,15 +235,15 @@ export class AgendaBase extends ViewBase {
                         let z: number = 0;
                         for (let u: number = 0; u < tempLastLevelInfo.length; u++) {
                             // eslint-disable-next-line max-len
-                            if (tempLastLevelInfo[u].groupOrder[topResources.length - (y + 1)] === data[x][topResources[topResources.length - (y + 1)].idField]) {
-                                totalRowSpan = totalRowSpan + tempLastLevelInfo[u].rowSpan;
-                                tempGroupedData.push(<TdData>extend({}, tempLastLevelInfo[u], null, true));
+                            if (tempLastLevelInfo[parseInt(u.toString(), 10)].groupOrder[topResources.length - (y + 1)] === data[parseInt(x.toString(), 10)][topResources[topResources.length - (y + 1)].idField]) {
+                                totalRowSpan = totalRowSpan + tempLastLevelInfo[parseInt(u.toString(), 10)].rowSpan;
+                                tempGroupedData.push(<TdData>extend({}, tempLastLevelInfo[parseInt(u.toString(), 10)], null, true));
                             }
                             if (++z === tempLastLevelInfo.length && tempGroupedData.length > 0) {
                                 tempGroupedData[0].rowSpan = totalRowSpan;
                                 tempGroupedData[0].type = 'parentColumnLevel_' + (y + 1);
                                 tempGroupedData[0].resource = topResources[topResources.length - (y + 1)];
-                                tempGroupedData[0].resourceData = data[x];
+                                tempGroupedData[0].resourceData = data[parseInt(x.toString(), 10)];
                                 tempGroupedData[0].date = agendaDate;
                                 lastLevelInfo[tempGroupedData[0].groupIndex].push(tempGroupedData[0]);
                                 tempGroupedData = [];
@@ -266,22 +272,22 @@ export class AgendaBase extends ViewBase {
             let tContentCollection: TdData[] = [];
             const parentCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection.slice(0, -1);
             for (let w: number = 0; w < tContent.length; w++) {
-                tContentCollection = tContentCollection.concat(tContent[w]);
+                tContentCollection = tContentCollection.concat(tContent[parseInt(w.toString(), 10)]);
             }
             level = (parentCollection.length > 0) ? 'parentColumnLevel_' + parentCollection.length : 'resourceColumn';
             const rowSpanCollection: TdData[] = tContentCollection.filter((data: TdData) => data.type === level);
             for (let x: number = 0; x < rowSpanCollection.length; x++) {
-                rowSpan = rowSpan + rowSpanCollection[x].rowSpan;
+                rowSpan = rowSpan + rowSpanCollection[parseInt(x.toString(), 10)].rowSpan;
             }
         }
         for (let row: number = 0; row < tContent.length; row++) {
             ntr = tr.cloneNode() as Element;
-            for (let col: number = tContent[row].length - 1; col >= 0; col--) {
-                const data: AgendaSlotData = tContent[row][col];
+            for (let col: number = tContent[parseInt(row.toString(), 10)].length - 1; col >= 0; col--) {
+                const data: AgendaSlotData = tContent[parseInt(row.toString(), 10)][parseInt(col.toString(), 10)];
                 let ntd: Element = td.cloneNode() as Element;
                 if (data.type === 'dateColumn') {
                     if (this.parent.activeViewOptions.group.byDate || this.parent.currentView === 'MonthAgenda') {
-                        tempData = tContent[row][col];
+                        tempData = tContent[parseInt(row.toString(), 10)][parseInt(col.toString(), 10)];
                         continue;
                     }
                     ntd.setAttribute('data-date', data.date.getTime().toString());

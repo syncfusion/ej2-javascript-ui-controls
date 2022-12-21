@@ -225,7 +225,7 @@ export class ContextMenu {
     public getItemIndex(item: string): number {
         const itemId: string = this.getMenuId(item);
         for (let i: number = 0; i < this.currentItems.length; i++) {
-            if ((this.currentItems[i].id === itemId) || (this.currentItems[i].id === item)) {
+            if ((this.currentItems[i as number].id === itemId) || (this.currentItems[i as number].id === item)) {
                 return i;
             }
         }
@@ -240,10 +240,10 @@ export class ContextMenu {
 
     private enableItems(items: string[], enable?: boolean, isUniqueId?: boolean): void {
         for (let i: number = 0; i < items.length; i++) {
-            if (this.checkValidItem(items[i]) === 1) {
-                this.contextMenu.enableItems([this.getMenuId(items[i])], enable, isUniqueId);
-            } else if (this.checkValidItem(items[i]) === 2) {
-                this.contextMenu.enableItems([items[i]], enable, isUniqueId);
+            if (this.checkValidItem(items[i as number]) === 1) {
+                this.contextMenu.enableItems([this.getMenuId(items[i as number])], enable, isUniqueId);
+            } else if (this.checkValidItem(items[i as number]) === 2) {
+                this.contextMenu.enableItems([items[i as number]], enable, isUniqueId);
             }
         }
     }
@@ -354,8 +354,8 @@ export class ContextMenu {
                     break;
                 case 'delete':
                     for (let j: number = 0; j < details.length; j++) {
-                        if (!hasEditAccess(details[j])) {
-                            createDeniedDialog(this.parent, details[j], events.permissionEdit);
+                        if (!hasEditAccess(details[j as number])) {
+                            createDeniedDialog(this.parent, details[j as number], events.permissionEdit);
                             return;
                         }
                     }
@@ -364,8 +364,8 @@ export class ContextMenu {
                     /* istanbul ignore next */
                 case 'download':
                     for (let i: number = 0; i < details.length; i++) {
-                        if (!hasDownloadAccess(details[i])) {
-                            createDeniedDialog(this.parent, details[i], events.permissionDownload);
+                        if (!hasDownloadAccess(details[i as number])) {
+                            createDeniedDialog(this.parent, details[i as number], events.permissionDownload);
                             return;
                         }
                     }
@@ -508,9 +508,9 @@ export class ContextMenu {
         const items: MenuItemModel[] = [];
         for (let i: number = 0; i < data.length; i++) {
             let item: MenuItemModel;
-            const itemId: string = this.getMenuId(data[i]);
-            const itemText: string = getLocaleText(this.parent, data[i]);
-            switch (data[i]) {
+            const itemId: string = this.getMenuId(data[i as number]);
+            const itemText: string = getLocaleText(this.parent, data[i as number]);
+            switch (data[i as number]) {
             case '|':
                 item = { separator: true };
                 break;

@@ -289,6 +289,7 @@ describe('Schedule year view', () => {
                 monthHeaderTemplate: '<div class="date-text">${(data.date).getMonth()}</div>',
                 cellTemplate: '<div class="date-text">${(data.date).getDate()}</div>',
                 cellHeaderTemplate: '<div class="date-text">${(data.date).getDate()}</div>',
+                dateRangeTemplate: '<div class="date-text">${(data.startDate).getDate()}-${(data.endDate).getDate()}</div>',
                 views: [
                     { option: 'Year' }
                 ]
@@ -304,6 +305,12 @@ describe('Schedule year view', () => {
                 .toBe('<tr><th><div class="date-text">0</div></th><th><div class="date-text">1</div></th><th><div class="date-text">2</div></th><th><div class="date-text">3</div></th><th><div class="date-text">4</div></th><th><div class="date-text">5</div></th><th><div class="date-text">6</div></th></tr>');
             expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[0][`innerHTML`]).toBe('<div class="date-text">26</div><div class="date-text">26</div>');
             expect(schObj.element.querySelectorAll('.e-cell.e-work-cells')[6][`innerHTML`]).toBe('<div class="date-text">1</div><div class="date-text">1</div>');
+            expect(schObj.element.querySelectorAll('.e-tbar-btn-text')[0]["innerHTML"]).toBe('<div class="date-text">1-31</div>');
+        });
+        it('remove daterange', () => {
+            expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(3);
+            schObj.element.querySelector('.e-date-range').remove();
+            expect(schObj.element.querySelector('.e-toolbar-left').children.length).toEqual(2);
         });
     });
 

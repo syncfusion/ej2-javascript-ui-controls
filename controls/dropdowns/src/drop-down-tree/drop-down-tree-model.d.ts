@@ -59,6 +59,12 @@ export interface FieldsModel {
     query?: Query;
 
     /**
+     * Specifies whether the node can be selected by users or not 
+     * When set to false, the user interaction is prevented for the corresponding node. 
+     */
+    selectable?: string;
+
+    /**
      * Specifies the mapping field for the selected state of the Dropdown Tree item.
      */
     selected?: string;
@@ -199,7 +205,7 @@ export interface DropDownTreeModel extends ComponentModel{
      *
      * @default {value: 'value', text: 'text', dataSource: [], child: 'child', parentValue: 'parentValue', hasChildren: 'hasChildren',
      *  expanded: 'expanded', htmlAttributes: 'htmlAttributes', iconCss: 'iconCss', imageUrl: 'imageUrl',
-     *  query: null, selected: 'selected', tableName: null, tooltip: 'tooltip'}
+     *  query: null, selected: 'selected', selectable: 'selectable', tableName: null, tooltip: 'tooltip' }
      */
     fields?: FieldsModel;
 
@@ -369,6 +375,14 @@ export interface DropDownTreeModel extends ComponentModel{
      * @default false
      */
     showCheckBox?: boolean;
+
+    /**
+     * Specifies whether to allow rendering of untrusted HTML values in the Dropdown Tree component.
+     * While enable this property, it sanitize suspected untrusted strings and script, and update in the Dropdown Tree component.
+     * 
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.

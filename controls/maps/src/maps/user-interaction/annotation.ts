@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsdoc/require-param */
 import { Maps, IAnnotationRenderingEventArgs, annotationRendering, Annotation } from '../index';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../utils/helper';
@@ -62,7 +60,7 @@ export class Annotations {
                     this.map, this.map, argsData.content, this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 const length: number = templateElement.length;
                 for (let i: number = 0; i < length; i++) {
-                    childElement.appendChild(templateElement[i]);
+                    childElement.appendChild(templateElement[i as number]);
                 }
             } else {
                 childElement.appendChild(createElement('div', {

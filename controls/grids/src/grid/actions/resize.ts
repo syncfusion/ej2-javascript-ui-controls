@@ -149,7 +149,7 @@ export class Resize implements IAction {
         const indentWidthClone: NodeListOf<Element> = [].slice.call(headerTable.querySelector('tr').getElementsByClassName('e-grouptopleftcell'));
         if (indentWidthClone.length > 0) {
             for (let i: number = 0; i < indentWidthClone.length; i++) {
-                indentWidth += (<HTMLElement>indentWidthClone[i]).offsetWidth;
+                indentWidth += (<HTMLElement>indentWidthClone[parseInt(i.toString(), 10)]).offsetWidth;
             }
         }
         const detailsElement: HTMLElement = <HTMLElement>contentTable.querySelector('.e-detailrowcollapse') ||
@@ -162,11 +162,11 @@ export class Resize implements IAction {
         const footerText: Element[] = [];
         if (footerTable) {
             for (let i: number = 0; i < footerTextClone.length; i++) {
-                footerText[i] = footerTextClone[i].cloneNode(true) as Element;
+                footerText[parseInt(i.toString(), 10)] = footerTextClone[parseInt(i.toString(), 10)].cloneNode(true) as Element;
             }
         }
         for (let i: number = 0; i < contentTextClone.length; i++) {
-            contentText[i] = contentTextClone[i].cloneNode(true) as Element;
+            contentText[parseInt(i.toString(), 10)] = contentTextClone[parseInt(i.toString(), 10)].cloneNode(true) as Element;
         }
         const wHeader: number = this.createTable(headerTable, headerText, headerDivTag);
         let wFooter: number = null;
@@ -177,20 +177,20 @@ export class Resize implements IAction {
         if (footerText.length) {
             wFooter = this.createTable(footerTable, footerText, footerDivTag);
         }
-        const columnbyindex: Column = gObj.getColumns()[columnIndexByField];
+        const columnbyindex: Column = gObj.getColumns()[parseInt(columnIndexByField.toString(), 10)];
         const width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
         const colMaxWidth: number =  columnbyindex.maxWidth && parseFloat(columnbyindex.maxWidth.toString());
         if (parseInt(width, 10) > colMaxWidth) {
             columnbyindex.width = colMaxWidth;
         }
-        this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField] as Column);
+        this.widthService.setColumnWidth(gObj.getColumns()[parseInt(columnIndexByField.toString(), 10)] as Column);
         const result: boolean = gObj.getColumns().some((x: Column) => x.width === null
             || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
             const element: Column[] = (gObj.getColumns() as Column[]);
             for (let i: number = 0; i < element.length; i++) {
-                if (element[i].visible) {
-                    tWidth = tWidth + parseFloat(element[i].width as string);
+                if (element[parseInt(i.toString(), 10)].visible) {
+                    tWidth = tWidth + parseFloat(element[parseInt(i.toString(), 10)].width as string);
                 }
             }
         }
@@ -251,9 +251,9 @@ export class Resize implements IAction {
 
     private findColumn(fName: string[]): void {
         for (let i: number = 0; i < fName.length; i++) {
-            const fieldName: string = fName[i] as string;
+            const fieldName: string = fName[parseInt(i.toString(), 10)] as string;
             const columnIndex: number = this.parent.getColumnIndexByField(fieldName);
-            const column: Column = this.parent.getColumns()[columnIndex];
+            const column: Column = this.parent.getColumns()[parseInt(columnIndex.toString(), 10)];
             if (columnIndex > -1 && !isNullOrUndefined(column) && column.visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
@@ -283,7 +283,7 @@ export class Resize implements IAction {
         for (let i: number = 0; i < text.length; i++) {
             const tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;
-            tr.appendChild(text[i]);
+            tr.appendChild(text[parseInt(i.toString(), 10)]);
             myTable.appendChild(tr);
         }
         mySubDiv.appendChild(myTable);
@@ -337,8 +337,8 @@ export class Resize implements IAction {
         if (this.parent.getHeaderTable()) {
             const element: HTMLElement[] = this.getResizeHandlers();
             for (let i: number = 0; i < element.length; i++) {
-                if (element[i].parentElement.offsetHeight > 0) {
-                    element[i].style.height = element[i].parentElement.offsetHeight + 'px';
+                if (element[parseInt(i.toString(), 10)].parentElement.offsetHeight > 0) {
+                    element[parseInt(i.toString(), 10)].style.height = element[parseInt(i.toString(), 10)].parentElement.offsetHeight + 'px';
                 }
             }
             this.setHandlerHeight();
@@ -364,7 +364,7 @@ export class Resize implements IAction {
     private setHandlerHeight(): void {
         const element: HTMLElement[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName(resizeClassList.suppress));
         for (let i: number = 0; i < element.length; i++) {
-            element[i].style.height = element[i].parentElement.offsetHeight + 'px';
+            element[parseInt(i.toString(), 10)].style.height = element[parseInt(i.toString(), 10)].parentElement.offsetHeight + 'px';
         }
     }
 
@@ -426,9 +426,9 @@ export class Resize implements IAction {
                             this.parent,
                             (tableName: freezeTable, row: Element) => {
                                 if (this.parent.rowHeight) {
-                                    row[i].style.height = this.parent.rowHeight + 'px';
+                                    row[parseInt(i.toString(), 10)].style.height = this.parent.rowHeight + 'px';
                                 } else {
-                                    row[i].style.removeProperty('height');
+                                    row[parseInt(i.toString(), 10)].style.removeProperty('height');
                                 }
                             },
                             [ftr, mtr, frTr]
@@ -502,7 +502,7 @@ export class Resize implements IAction {
     private updateResizeEleHeight(): void {
         const elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().getElementsByClassName('e-rhandler'));
         for (let i: number = 0; i < elements.length; i++) {
-            elements[i].style.height = this.element.parentElement.offsetHeight + 'px';
+            elements[parseInt(i.toString(), 10)].style.height = this.element.parentElement.offsetHeight + 'px';
         }
     }
 
@@ -584,7 +584,7 @@ export class Resize implements IAction {
         for (const col of columns) {
             let totalWidth: number = 0;
             for (let i: number = 0; i < columns.length; i++) {
-                totalWidth += parseFloat(columns[i].width.toString());
+                totalWidth += parseFloat(columns[parseInt(i.toString(), 10)].width.toString());
             }
             const colData: { [key: string]: number } = this.getColData(col, (parseFloat(col.width as string)) * mousemove / totalWidth);
             const colWidth: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
@@ -695,7 +695,7 @@ export class Resize implements IAction {
         const headerRows: Element[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('th'));
         headerRows.push(this.parent.element);
         for (const row of headerRows) {
-            row.classList[action](resizeClassList.cursor);
+            row.classList[`${action}`](resizeClassList.cursor);
         }
     }
 
@@ -731,7 +731,7 @@ export class Resize implements IAction {
             }
         }
         for (let i: number = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
-            height += tr[i].offsetHeight;
+            height += tr[parseInt(i.toString(), 10)].offsetHeight;
         }
         const pos: OffsetPosition = this.calcPos(rect);
         if (parentsUntil(rect, 'e-frozen-right-header')) {

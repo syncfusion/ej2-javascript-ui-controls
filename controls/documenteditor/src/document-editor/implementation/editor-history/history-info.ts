@@ -53,7 +53,7 @@ export class HistoryInfo extends BaseHistoryInfo {
             } else {
                 let i: number = 0;
                 while (i < this.modifiedActions.length) {
-                    const baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[i];
+                    const baseHistoryInfo: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
                     baseHistoryInfo.revert();
                     i = i + 1;
                 }

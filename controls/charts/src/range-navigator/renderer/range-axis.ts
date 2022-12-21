@@ -10,7 +10,7 @@ import { IntervalType } from '../../chart/utils/enum';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { FontModel } from '../../common/model/base-model';
 import { Axis, VisibleLabels } from '../../chart/axis/axis';
-import { MajorGridLinesModel, VisibleLabelsModel, MajorTickLinesModel } from '../../chart/axis/axis-model';
+import { MajorGridLinesModel, MajorTickLinesModel } from '../../chart/axis/axis-model';
 import { ILabelRenderEventsArgs } from '../model/range-navigator-interface';
 
 
@@ -63,8 +63,8 @@ export class RangeNavigatorAxis extends DateTime {
         this.lowerValues = [];
         const labelLength: number = chartAxis.visibleLabels.length;
         for (let i: number = 0; i < labelLength; i++) {
-            this.lowerValues.push(this.firstLevelLabels[i].value);
-            pointX = (valueToCoefficient(this.firstLevelLabels[i].value, chartAxis) * rect.width) + rect.x;
+            this.lowerValues.push(this.firstLevelLabels[i as number].value);
+            pointX = (valueToCoefficient(this.firstLevelLabels[i as number].value, chartAxis) * rect.width) + rect.x;
             if (pointX >= rect.x && (rect.x + rect.width) >= pointX) {
                 majorGrid = majorGrid.concat('M ' + pointX + ' ' + (control.bounds.y + control.bounds.height) +
                     ' L ' + pointX + ' ' + control.bounds.y + ' ');
@@ -294,7 +294,7 @@ export class RangeNavigatorAxis extends DateTime {
             this.findSuitableFormat(axis, control);
         }
         for (let i: number = 0, len: number = maxLabels; i < len; i++) {
-            label = axis.visibleLabels[i];
+            label = axis.visibleLabels[i as number];
             label.size = measureText(<string>label.text, axis.labelStyle);
             if (control.secondaryLabelAlignment === 'Middle') {
                 pointX = (valueToCoefficient((label.value + intervalInTime / 2), axis) * rect.width) + rect.x;
@@ -389,23 +389,23 @@ export class RangeNavigatorAxis extends DateTime {
             : 0;
 
         for (let i: number = 0; i < labelLength; i++) {
-            currentX = (valueToCoefficient((labels[i].value + interval / 2), axis) * bounds.width) + bounds.x;
-            labels[i].size = measureText(<string>labels[i].text, axis.labelStyle);
+            currentX = (valueToCoefficient((labels[i as number].value + interval / 2), axis) * bounds.width) + bounds.x;
+            labels[i as number].size = measureText(<string>labels[i as number].text, axis.labelStyle);
             //edgelabelPlacements
             if (i === 0 && currentX < bounds.x) {
-                currentX = bounds.x + labels[i].size.width / 2;
+                currentX = bounds.x + labels[i as number].size.width / 2;
             }
             if ((axis.actualIntervalType as RangeIntervalType) === 'Quarter') {
                 if (i !== 0) {
-                    if ((labels[i].text.indexOf('Quarter') > -1) &&
-                        (this.isIntersect(axis, currentX, labels[i].size.width, prevX, labels[i - 1].size.width))) {
+                    if ((labels[i as number].text.indexOf('Quarter') > -1) &&
+                        (this.isIntersect(axis, currentX, labels[i as number].size.width, prevX, labels[i - 1].size.width))) {
                         labels.every((label: VisibleLabels) => {
                             label.text = label.text.toString().replace('Quarter', 'QTR'); return true;
                         });
                         axis.visibleLabels = labels;
                         this.findSuitableFormat(axis, control);
                     } else {
-                        if (this.isIntersect(axis, currentX, labels[i].size.width, prevX, labels[i - 1].size.width)) {
+                        if (this.isIntersect(axis, currentX, labels[i as number].size.width, prevX, labels[i - 1].size.width)) {
                             labels.every((label: VisibleLabels) => {
                                 label.text = label.text.toString().replace('QTR', 'Q'); return true;
                             });
@@ -414,8 +414,8 @@ export class RangeNavigatorAxis extends DateTime {
                     }
                 }
             } else if ((axis.actualIntervalType as RangeIntervalType) === 'Weeks') {
-                if ((i !== 0) && ((labels[i].text.indexOf('Week') > -1) &&
-                    (this.isIntersect(axis, currentX, labels[i].size.width, prevX, labels[i - 1].size.width)))) {
+                if ((i !== 0) && ((labels[i as number].text.indexOf('Week') > -1) &&
+                    (this.isIntersect(axis, currentX, labels[i as number].size.width, prevX, labels[i - 1].size.width)))) {
                     labels.every((label: VisibleLabels) => {
                         label.text = label.text.toString().replace('Week', 'W'); return true;
                     });
@@ -433,7 +433,7 @@ export class RangeNavigatorAxis extends DateTime {
      * @param {number} index label index
      */
     private findAlignment(axis: Axis, index: number): number {
-        const label: VisibleLabels = axis.visibleLabels[index];
+        const label: VisibleLabels = axis.visibleLabels[index as number];
         const nextLabel: VisibleLabels = axis.visibleLabels[index + 1];
         const bounds: Rect = this.rangeNavigator.bounds;
         return (this.rangeNavigator.secondaryLabelAlignment === 'Near' ?

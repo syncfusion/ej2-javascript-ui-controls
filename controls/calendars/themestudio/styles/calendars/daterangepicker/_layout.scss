@@ -652,6 +652,12 @@
 
 
 @media screen and (orientation: landscape) {
+    .e-daterangepicker .e-calendar.e-device .e-month table{
+        display: inline-block;
+        height: $range-calendar-landscape-height;
+        overflow: auto;
+    }
+
     .e-daterangepick-mob-popup-wrap {
      @if $skin-name == 'material' {
         #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {

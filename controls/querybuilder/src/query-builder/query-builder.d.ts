@@ -744,7 +744,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      *
      * @param {RuleModel} rule - 'rule' to be passed to get the sql.
      * @param {boolean} allowEscape - Set `true` if it exclude the escape character.
-     * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
+     *  @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
      * @returns {object} - Sql query from rules.
      */
     getSqlFromRules(rule?: RuleModel, allowEscape?: boolean, sqlLocale?: boolean): string;

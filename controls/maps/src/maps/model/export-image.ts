@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { triggerDownload, getElementByID } from '../utils/helper';
@@ -16,19 +15,21 @@ export class ImageExport {
      *
      * @param {Maps} control - Specifies the instance of the map
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: Maps) {
     }
     /**
      * To export the file as image/svg format
      *
-     * @param {ExportType} type - Specifies the type of the image file
-     * @param {string} fileName - Specifies the file name of the image file
+     * @param {Maps} maps - Specifies the Maps instance.
+     * @param {ExportType} type - Specifies the type of the image file for exporting.
+     * @param {string} fileName - Specifies the file name of the image file for exporting.
      * @param {boolean} allowDownload - Specifies whether to download image as a file or not.
-     * @returns {Promise<string>} - Returns the promise string.
+     * @returns {Promise<string>} - Specifies the base64 string of the exported image which is returned when the allowDownload is set to false.
      * @private
      */
     public export(maps: Maps, type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const imageCanvasElement: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -38,11 +39,10 @@ export class ImageExport {
                 }
             });
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-            const toolbarEle: HTMLElement = document.getElementById(maps.element.id + '_ToolBar');
             const svgParent: HTMLElement = document.getElementById(maps.element.id + '_Tile_SVG_Parent');
             let svgDataElement: string;
             let tileSvg: Element;
-            let svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
+            const svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
             if (!maps.isTileMap) {
                 svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                     maps.svgObject.outerHTML + '</svg>';
@@ -90,8 +90,8 @@ export class ImageExport {
                     image.src = url;
                 } else {
                     const svgParentElement: HTMLElement = document.getElementById(maps.element.id + '_MapAreaBorder');
-                    let top: number = parseFloat(svgParentElement.getAttribute('y'));
-                    let left: number = parseFloat(svgParentElement.getAttribute('x'));
+                    const top: number = parseFloat(svgParentElement.getAttribute('y'));
+                    const left: number = parseFloat(svgParentElement.getAttribute('x'));
                     const imgxHttp: XMLHttpRequest = new XMLHttpRequest();
                     const imgTileLength: number = maps.mapLayerPanel.tiles.length;
                     for (let i: number = 0; i <= imgTileLength + 1; i++) {
@@ -101,7 +101,7 @@ export class ImageExport {
                         ctxt.fillStyle = maps.background ? maps.background : '#FFFFFF';
                         ctxt.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
                         ctxt.font = maps.titleSettings.textStyle.size + ' Arial';
-                        let titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
+                        const titleElement: HTMLElement = document.getElementById(maps.element.id + '_Map_title');
                         if (!isNullOrUndefined(titleElement)) {
                             ctxt.fillStyle = titleElement.getAttribute('fill');
                             ctxt.fillText(
@@ -174,5 +174,6 @@ export class ImageExport {
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

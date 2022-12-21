@@ -64,6 +64,7 @@ export function expression(value?: RegExp): RegExp {
 export function compile(template: string, helper?: Object, ignorePrefix?: boolean): () => string {
     const argName: string = 'data';
     const evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
+    // eslint-disable-next-line
     const condtion = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
     var hrefRegex = (/(?:href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)((.)([\\w)(!-;/?-■\\s]+)['])/g);
     if(str.match(valueRegEx)){
@@ -93,7 +94,7 @@ export function compile(template: string, helper?: Object, ignorePrefix?: boolea
         }
     }
     `;
-    const fnCode: string = "var str=\"" + evalExpResult + "\";" + condtion + " return str;";
+    const fnCode: string = 'var str=\"' + evalExpResult + '\";' + condtion + ' return str;';
     const fn: Function = new Function(argName, fnCode);
     return fn.bind(helper);
 }

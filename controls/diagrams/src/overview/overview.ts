@@ -240,10 +240,10 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
 
     private getDiagram(element: HTMLElement, instance: string): Diagram {
         let diagram: Diagram;
-        const n: number = element[instance].length;
+        const n: number = element[`${instance}`].length;
         for (let i: number = 0; i < n; i++) {
-            if (hasClass(element[instance][i].element, 'e-diagram')) {
-                diagram = element[instance][i];
+            if (hasClass(element[`${instance}`][parseInt(i.toString(), 10)].element, 'e-diagram')) {
+                diagram = element[`${instance}`][parseInt(i.toString(), 10)];
                 break;
             }
         }
@@ -379,7 +379,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         view.diagramLayerDiv = null;
         view.diagramLayer = null;
         const domTable: string = 'domTable';
-        window[domTable][this.id + 'html_layer'] = null;
+        window[`${domTable}`][this.id + 'html_layer'] = null;
     }
 
     private renderHtmlLayer(canvas: HTMLElement): HTMLElement {

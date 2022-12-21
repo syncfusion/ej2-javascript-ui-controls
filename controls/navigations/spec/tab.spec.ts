@@ -10930,6 +10930,131 @@ describe('Tab Control', () => {
             expect(tab.element.getAttribute('aria-owns')).toEqual(tab.element.querySelector('.e-toolbar-items').id);
         });
     });
+    describe('tab key support in tabitems', () => {
+        let tab: any;
+        let keyEventArgs: any;
+        let toolbar: DomElements;
+        let toolbarObj: any;
+        beforeEach((): void => {
+            tab = undefined;
+            const ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            tab = new Tab();
+            tab.appendTo('#ej2Tab');
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        afterAll((): void => {
+            document.getElementById('scroll').remove();
+        });
+        it('tab key support in  popup mode', () => {
+            tab = new Tab({
+                overflowMode: 'Popup',
+                items: [
+                    { header: { 'text': 'header-item1' }, content: 'Content1', tabIndex: 1 },
+                    { header: { 'text': 'header-item2' }, content: 'Content2', tabIndex: 2 },
+                    { header: { 'text': 'header-item3' }, content: 'Content3', tabIndex: 3 },
+                    { header: { 'text': 'header-item4' }, content: 'Content4', tabIndex: 4 }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = document.getElementById('ej2Tab');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            const ele1 = tab.element.querySelectorAll('.e-toolbar-item').item(0).firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe ('1');
+            expect(ele1.getAttribute('data-tabindex')).toBe ('1');
+            const ele2 = tab.element.querySelectorAll('.e-toolbar-item').item(1).firstChild;
+            expect(ele2.getAttribute('tabindex')).toBe ('2');
+            expect(ele2.getAttribute('data-tabindex')).toBe ('2');
+            const ele3 = tab.element.querySelectorAll('.e-toolbar-item').item(2).firstChild;
+            expect(ele3.getAttribute('tabindex')).toBe ('3');
+            expect(ele3.getAttribute('data-tabindex')).toBe ('3');
+            const ele4 = tab.element.querySelectorAll('.e-toolbar-item').item(3).firstChild;
+            expect(ele4.getAttribute('tabindex')).toBe ('4');
+            expect(ele4.getAttribute('data-tabindex')).toBe ('4');
+            tab.enableTab(1, false);
+            expect(ele2.getAttribute('tabindex')).toBe (null);
+            expect(ele2.getAttribute('data-tabindex')).toBe ('2');
+            tab.enableTab(1, true);
+            expect(ele2.getAttribute('tabindex')).toBe ('2');
+            expect(ele2.getAttribute('data-tabindex')).toBe ('2');
+        });
+        it('tab key support in  scrollable mode', () => {
+            tab = new Tab({
+                overflowMode: 'Scrollable',
+                items: [
+                    { header: { 'text': 'header-item1' }, content: 'Content1', tabIndex: 1 },
+                    { header: { 'text': 'header-item2' }, content: 'Content2', tabIndex: 2 }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = document.getElementById('ej2Tab');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: element
+            };
+            tab.keyHandler(keyEventArgs);
+            tab.refreshActiveTab();
+            const ele1 = tab.element.querySelectorAll('.e-toolbar-item').item(0).firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe ('1');
+            expect(ele1.getAttribute('data-tabindex')).toBe ('1');
+            const ele2 = tab.element.querySelectorAll('.e-toolbar-item').item(1).firstChild;
+            expect(ele2.getAttribute('tabindex')).toBe ('2');
+            expect(ele2.getAttribute('data-tabindex')).toBe ('2');
+        });
+    });
+    
+    describe('While using underscore on tab id ', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab_123' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('wrong content is shown for the selected tab item', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item1" }, content: "Content1" }
+                ]
+            });
+            tab.appendTo('#ej2Tab_123');
+            let element: HTMLElement = document.getElementById('ej2Tab_123');
+            const ele1: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(0);
+            expect(ele1.classList.contains('e-active')).toEqual(true);
+            const contentItem1: HTMLElement = element.querySelectorAll('.e-item')[0] as HTMLElement;
+            expect(ele1.getAttribute('id')).toEqual(contentItem1.getAttribute('aria-labelledby'));
+            const ele2: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(1);
+            ele2.click();
+            expect(ele1.classList.contains('e-active')).toEqual(false);
+            expect(ele2.classList.contains('e-active')).toEqual(true);
+            const contentItem2: HTMLElement = element.querySelectorAll('.e-item')[1] as HTMLElement;
+            expect(ele2.getAttribute('id')).toEqual(contentItem2.getAttribute('aria-labelledby'));
+            const ele3: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(2);
+            ele3.click();
+            expect(ele2.classList.contains('e-active')).toEqual(false);
+            expect(ele3.classList.contains('e-active')).toEqual(true);
+            const contentItem3: HTMLElement = element.querySelectorAll('.e-item')[2] as HTMLElement;
+            expect(ele3.getAttribute('id')).toEqual(contentItem3.getAttribute('aria-labelledby'));
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

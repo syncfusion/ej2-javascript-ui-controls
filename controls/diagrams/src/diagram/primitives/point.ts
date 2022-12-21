@@ -156,7 +156,7 @@ export class Point extends ChildProperty<Point> {
     public static getLengthFromListOfPoints(points: PointModel[]): number {
         let length: number = 0;
         for (let j: number = 0; j < points.length - 1; j++) {
-            length += this.distancePoints(points[j], points[j + 1]);
+            length += this.distancePoints(points[parseInt(j.toString(), 10)], points[j + 1]);
         }
         return length;
     }

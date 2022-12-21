@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable prefer-const */
 /* eslint-disable jsdoc/require-returns */
@@ -90,15 +91,15 @@ export class BulletTooltip {
             this.bulletAxis.format = this.bulletAxis.bulletChart.intl.getNumberFormat({
                 format: isCustomFormat ? '' : format, useGrouping: this.bulletAxis.bulletChart.enableGroupSeparator
             });
-            currentVal = this.control.dataSource[measureId][this.control.valueField];
-            targetVal = targetVal.concat(this.control.dataSource[measureId][this.control.targetField]);
-            categoryVal = this.control.dataSource[measureId][this.control.categoryField];
+            currentVal = this.control.dataSource[measureId as string][this.control.valueField];
+            targetVal = targetVal.concat(this.control.dataSource[measureId as string ][this.control.targetField]);
+            categoryVal = this.control.dataSource[measureId as string][this.control.categoryField];
             let labelCurrentText: string = currentVal ? (currentVal).toString() : '';
             let labelTargetText: string = targetVal ? (targetVal).toString() : '';
             let labelCategoryText: string = categoryVal ? (categoryVal).toString() : '';
             labelCurrentText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +currentVal);
             for (let i: number = 0; i < targetVal.length; i++) {
-                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i]));
+                targetValues = targetValues.concat(this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +targetVal[i as number]));
             }
             labelCategoryText = this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, +categoryVal);
             data = { value: labelCurrentText, target: targetValues, category: labelCategoryText };
@@ -134,7 +135,7 @@ export class BulletTooltip {
             } else {
                 let argsText: string = 'Value : ' + argsData.value;
                 for (let i: number = 0; i < argsData.target.length; i++) {
-                    argsText += '<br/> Target' + (i === 0 ? '' : '_' + i) + ' : ' + argsData.target[i];
+                    argsText += '<br/> Target' + (i === 0 ? '' : '_' + i) + ' : ' + argsData.target[i as number];
                 }
                 argsData.text = argsText;
                 this.control.trigger(tooltipRender, argsData);

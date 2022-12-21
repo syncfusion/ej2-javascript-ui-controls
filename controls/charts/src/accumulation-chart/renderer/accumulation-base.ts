@@ -112,7 +112,7 @@ export class AccumulationBase {
         if ((<HTMLElement>event.target).id.indexOf('_Series_') > -1 || (<HTMLElement>event.target).id.indexOf('_datalabel_') > -1) {
             const pointIndex: number = indexFinder((<HTMLElement>event.target).id).point;
             if (isNaN(pointIndex) || ((<HTMLElement>event.target).id.indexOf('_datalabel_') > -1 &&
-                this.accumulation.visibleSeries[0].points[pointIndex].labelPosition === 'Outside')) {
+                this.accumulation.visibleSeries[0].points[pointIndex as number].labelPosition === 'Outside')) {
                 return null;
             }
             this.explodePoints(pointIndex, this.accumulation);
@@ -269,17 +269,12 @@ export class AccumulationBase {
      */
     private deExplodeSlice(index: number, sliceId: string, animationDuration: number): void {
         const element: Element = getElement(sliceId + index);
-        if (element) {
-            const borderElement: boolean = (<Element>element.parentNode.lastChild).hasAttribute('transform');
-            if (borderElement) {
-                (<Element>element.parentNode.lastChild).removeAttribute('transform');
-            }
-        }
         const transform: string = element ? element.getAttribute('transform') : null;
         if (
             this.accumulation.enableAnimation && element && transform &&
             transform !== 'translate(0, 0)' && transform !== 'translate(0)'
         ) {
+            // eslint-disable-next-line security/detect-unsafe-regex
             const result: RegExpExecArray = /translate\((-?\d+\.?\d*),?\s*(-?\d+[.]?\d*)?\)/.exec(transform);
             this.performAnimation(
                 index, sliceId, 0, 0, +result[1], +result[2] || 0, animationDuration, true
@@ -342,7 +337,7 @@ export class AccumulationBase {
         const chart: AccumulationChart = this.accumulation;
         const values: string[] = sliceId.split('_');
         const seriesIndex: number = parseInt(sliceId.split('_')[values.length - 3], 10);
-        const point: AccPoints = chart.visibleSeries[seriesIndex].points[index];
+        const point: AccPoints = chart.visibleSeries[seriesIndex as number].points[index as number];
         if (duration <= 0) {
             this.setTranslate(
                 index, sliceId,

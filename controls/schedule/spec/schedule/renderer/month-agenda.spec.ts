@@ -255,6 +255,19 @@ describe('Month-agenda view rendering', () => {
 
             // Date header template not applicable in month view
 
+            it('dateRange template', () => {
+                const model: ScheduleModel = {
+                    currentView: 'MonthAgenda', 
+                    selectedDate: new Date(2017, 9, 5),
+                    dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
+                };
+                schObj = util.createSchedule(model, []);
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">9-9</div>');
+                schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
+                schObj.dataBind();
+                expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/5/17, 12:00 AM-10/5/17, 12:00 AM</div>');
+            });
+
             it('cell template', () => {
                 const templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
                 const model: ScheduleModel = {
@@ -722,6 +735,44 @@ describe('Month-agenda view rendering', () => {
             util.triggerMouseEvent(schObj.eventWindow.dialogObject.element.querySelector('.e-event-save'), 'click');
         });
     });
+
+    describe('Month Agenda view with different interval count', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {
+                height: '500px',
+                views: [
+                    { option: 'MonthAgenda', isSelected: true },
+                    { option: 'MonthAgenda', interval: 2, displayName: '2 Months' },
+                    { option: 'MonthAgenda', interval: 3, displayName: '3 Months' }
+                ]
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking height of content wrapper and appointment wrapper with different intervals', () => {
+            expect(schObj.viewCollections.length).toEqual(3);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month-agenda');
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap')).offsetHeight).toEqual(426);
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap').firstElementChild).offsetHeight).toEqual(202);
+            expect((<HTMLElement>schObj.element.querySelector('.e-appointment-wrap')).offsetHeight).toEqual(224);
+            schObj.changeCurrentView('MonthAgenda', 1);
+            schObj.dataBind();
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap')).offsetHeight).toEqual(426);
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap').firstElementChild).offsetHeight).toEqual(341);
+            expect((<HTMLElement>schObj.element.querySelector('.e-appointment-wrap')).offsetHeight).toEqual(85);
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('2 MONTHS');
+            schObj.changeCurrentView('MonthAgenda', 2);
+            schObj.dataBind();
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap')).offsetHeight).toEqual(426);
+            expect((<HTMLElement>schObj.element.querySelector('.e-content-wrap').firstElementChild).offsetHeight).toEqual(341);
+            expect((<HTMLElement>schObj.element.querySelector('.e-appointment-wrap')).offsetHeight).toEqual(85);
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('3 MONTHS');
+        });
+    });
+
 
     it('memory leak', () => {
         profile.sample();

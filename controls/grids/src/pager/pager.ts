@@ -275,12 +275,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             PagerDropDown: 'Items per page',
             PagerAllDropDown: 'Items',
             All: 'All',
-            Container:'Pager Container',
+            Container: 'Pager Container',
             Information: 'Pager Information',
             ExternalMsg: 'Pager external message',
             Page: 'Page ',
             Of: ' of ',
-            Pages: ' Pages',
+            Pages: ' Pages'
         };
         this.containerModule = new NumericContainer(this);
         this.pagerMessageModule = new PagerMessage(this);
@@ -629,7 +629,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         let focusedTabIndexElement: Element;
         const tabindexElements: NodeListOf<Element> = this.element.querySelectorAll('[tabindex]:not([tabindex="-1"])');
         for ( let i: number = 0; i < tabindexElements.length; i++) {
-            const element: Element = tabindexElements[i];
+            const element: Element = tabindexElements[parseInt(i.toString(), 10)];
             if (element && (element.classList.contains('e-focused') || element.classList.contains('e-input-focus'))) {
                 focusedTabIndexElement = element;
                 break;
@@ -647,11 +647,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 (dropDownPage as HTMLElement).tabIndex = 0;
             } else {
                 for (let i: number = 0; i < focusablePagerElements.length; i++) {
-                    if (currentItemPagerFocus === focusablePagerElements[i]) {
+                    if (currentItemPagerFocus === focusablePagerElements[parseInt(i.toString(), 10)]) {
                         const incrementNumber: number = i + 1;
                         if (incrementNumber < focusablePagerElements.length) {
                             e.preventDefault();
-                            (focusablePagerElements[incrementNumber] as HTMLElement).focus();
+                            (focusablePagerElements[parseInt(incrementNumber.toString(), 10)] as HTMLElement).focus();
                         }
                         break;
                     }
@@ -669,11 +669,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             this.addFocus(focusablePagerElements[focusablePagerElements.length - 1], true);
         } else if (focusablePagerElements.length > 0) {
             for (let i: number = 0; i < focusablePagerElements.length; i++) {
-                if (currentItemPagerFocus === focusablePagerElements[i]) {
+                if (currentItemPagerFocus === focusablePagerElements[parseInt(i.toString(), 10)]) {
                     const decrementNumber: number = i - 1;
                     if (decrementNumber >= 0) {
                         e.preventDefault();
-                        (focusablePagerElements[decrementNumber] as HTMLElement).focus();
+                        (focusablePagerElements[parseInt(decrementNumber.toString(), 10)] as HTMLElement).focus();
                     } else if (this.hasParent) {
                         const rows: Element[] = (this.parent as {getRows(): Element[]}).getRows();
                         const lastRow: Element = rows[rows.length - 1];
@@ -764,7 +764,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         const tabIndexElements: NodeListOf<Element> = this.element.querySelectorAll('[tabindex]:not([tabindex="-1"])');
         if (tabIndexElements.length > 1) {
             for ( let i: number = 1; i < tabIndexElements.length; i++) {
-                const element: Element = tabIndexElements[i];
+                const element: Element = tabIndexElements[parseInt(i.toString(), 10)];
                 if (element) {
                     (element as HTMLElement).tabIndex = -1;
                 }
@@ -797,8 +797,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         const classList: string[] = ['e-mfirst', 'e-mprev', 'e-first', 'e-prev', 'e-pp',
             'e-np', 'e-next', 'e-last', 'e-mnext', 'e-mlast'];
         for ( let i: number = 0; i < classList.length; i++) {
-            if (element && element.classList.contains(classList[i])) {
-                currentClass = classList[i];
+            if (element && element.classList.contains(classList[parseInt(i.toString(), 10)])) {
+                currentClass = classList[parseInt(i.toString(), 10)];
                 return currentClass;
             }
         }
@@ -819,11 +819,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         const targetChildrens: HTMLCollection = target.children;
         let pagerElements: Element[] = previousElements;
         for (let i: number = 0; i < targetChildrens.length; i++) {
-            const element: Element = targetChildrens[i];
+            const element: Element = targetChildrens[parseInt(i.toString(), 10)];
             if (element.children.length > 0 && !element.classList.contains('e-pagesizes')) {
                 pagerElements = this.getFocusablePagerElements(element, pagerElements);
             } else {
-                const tabindexElement: Element = targetChildrens[i];
+                const tabindexElement: Element = targetChildrens[parseInt(i.toString(), 10)];
                 if (tabindexElement.hasAttribute('tabindex') && !element.classList.contains('e-disable')
                     && (element as HTMLElement).style.display !== 'none'
                     && !isNullOrUndefined((element as HTMLElement).offsetParent)){
@@ -1029,6 +1029,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private getUpdatedURL(uri: string, key: string, value: string): string {
+        // eslint-disable-next-line security/detect-non-literal-regexp
         const regx: RegExp = new RegExp('([?|&])' + key + '=.*?(&|#|$)', 'i');
         if (uri.match(regx)) {
             return uri.replace(regx, '$1' + key + '=' + value + '$2');
@@ -1072,7 +1073,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         const classList: string[] = ['.e-mfirst', '.e-mprev', '.e-mnext', '.e-mlast'];
         if (!Browser.isDevice) {
             for (let i: number = 0; i < classList.length; i++) {
-                const element: Element = this.element.querySelector(classList[i]);
+                const element: Element = this.element.querySelector(classList[parseInt(i.toString(), 10)]);
                 element.setAttribute('aria-label', element.getAttribute('title'));
             }
         }

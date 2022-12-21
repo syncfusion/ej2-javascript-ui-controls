@@ -136,8 +136,12 @@ export interface ICellRenderer {
     renderColHeader(index: number, row: Element, refChild?: Element): void;
     renderRowHeader(index: number, row: Element, refChild?: Element): void;
     render(args: CellRenderArgs): Element;
-    refreshRange(range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean): void;
-    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean): void;
+    refreshRange(
+        range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
+        skipFormatCheck?: boolean): void;
+    refresh(
+        rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
+        skipFormatCheck?: boolean): void;
 }
 
 /**
@@ -276,6 +280,8 @@ export interface CellRenderArgs {
     refChild?: Element;
     formulaRefresh?: boolean;
     checkCF?: boolean;
+    skipFormatCheck?: boolean;
+    isDependentRefresh?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {

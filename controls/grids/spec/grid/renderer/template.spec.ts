@@ -8,6 +8,7 @@ import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { HeaderCellInfoEventArgs, QueryCellInfoEventArgs, RowDataBoundEventArgs } from '../../../src/grid/base/interface';
 
 describe('Template render module', () => {
     describe('column template render', () => {
@@ -105,13 +106,75 @@ describe('Template render module', () => {
         
             afterAll(() => {
                 destroy(gObj);
-                document.getElementById('template').remove();
+                document.getElementById('templateObj').remove();
                 gObj = null;
             });
         
         });
+        
+        // for coverage
+        describe('react header and column template inner element not getting', () => {
+            let gObj: Grid;
+            let child: HTMLElement;
+            beforeAll((done: Function) => {
+                let template1: Element = createElement('div', { id: 'templateObj1' });
+                template1.innerHTML = '<button class="tempcell">${ShipCity}</button>';
+                document.body.appendChild(template1);
+                let template2: Element = createElement('div', { id: 'templateObj2' });
+                template2.innerHTML = '<button class="tempcell">Ship City</button>';
+                document.body.appendChild(template2);
+                gObj = createGrid(
+                    {
+                        dataSource: data, allowPaging: false,
+                        columns: [
+                                { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                                { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                                { field: 'ShipCity', headerText: 'Ship City', width: 150,
+                                headerTemplate: '#templateObj2', template: '#templateObj1' },
+                                { field: 'ShipName', headerText: 'Ship Name', width: 150, }
+                        ],
+                        load: function() {
+                            expect(this.isReact).toBe(undefined);
+                            expect(this.requireTemplateRef).toBe(true);
+                            this.isReact = true;
+                        },
+                        headerCellInfo: function(args: HeaderCellInfoEventArgs) {
+                            if (args.cell.isTemplate) {
+                                child = args.node.querySelector('.tempcell');
+                                expect(child).not.toBe(null);
+                            }
+                        },
+                        queryCellInfo: function(args: QueryCellInfoEventArgs) {
+                            if (args.column.field === "ShipCity") {
+                                child = args.cell.querySelector('.tempcell');
+                                expect(child).not.toBe(null);
+                            }
+                        },
+                        rowDataBound: function (args: RowDataBoundEventArgs) {
+                            const templateCell = args.row.querySelectorAll(".e-templatecell");
+                            if (templateCell && templateCell.length) {
+                                for (let i: number = 0; i < templateCell.length; i++) {
+                                    const child = templateCell[i].querySelector('.tempcell');
+                                    expect(child).not.toBe(null);
+                                }
+                            }
+                        }
+                    }, done);
+            });
 
-});
+            it("dummy", () => {
+                expect(1).toBe(1);// for coverage
+            });
+        
+            afterAll(() => {
+                destroy(gObj);
+                document.getElementById('templateObj1').remove();
+                document.getElementById('templateObj2').remove();
+                gObj = null;
+            });
+        
+        });
+    });
 
     describe('row template render', () => {
         let gridObj: Grid;

@@ -46,7 +46,7 @@ export class NodeCutter {
             (isCollapsed) ? clone.setStartBefore(node) : clone.setEndAfter(node);
             let fragment : DocumentFragment = clone.extractContents();
             if ( isCollapsed ) {
-                node = parent.childNodes[index] as HTMLElement;
+                node = parent.childNodes[index as number] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, false) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
                     const isEmpty: boolean = (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG'
@@ -64,7 +64,7 @@ export class NodeCutter {
                     }
                 }
             } else {
-                node = parent.childNodes.length > 1 ? parent.childNodes[index] as HTMLElement :
+                node = parent.childNodes.length > 1 ? parent.childNodes[index as number] as HTMLElement :
                     parent.childNodes[0] as HTMLElement;
                 fragment = this.spliceEmptyNode(fragment, true) as DocumentFragment;
                 if (fragment && fragment.childNodes.length > 0) {
@@ -93,10 +93,10 @@ export class NodeCutter {
         if (fragment.childNodes.length === 1 && fragment.childNodes[0].nodeName !== 'IMG') {
             const firstChild: Node = fragment.childNodes[0];
             for (let i: number = 0; !isNOU(firstChild.childNodes) && i < firstChild.childNodes.length; i++) {
-                if (firstChild.childNodes[i].nodeName === 'IMG' || (firstChild.childNodes[i].nodeName === 'SPAN' &&
-                ((firstChild.childNodes[i] as HTMLElement).classList.contains('e-video-wrap') ||
+                if (firstChild.childNodes[i as number].nodeName === 'IMG' || (firstChild.childNodes[i as number].nodeName === 'SPAN' &&
+                ((firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-video-wrap') ||
                 (firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-embed-video-wrap') ||
-                (firstChild.childNodes[i] as HTMLElement).classList.contains('e-audio-wrap')))) {
+                (firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-audio-wrap')))) {
                     result = false;
                 }
             }
@@ -114,7 +114,7 @@ export class NodeCutter {
             len = fragment.childNodes.length - 1;
         }
         if (len > -1 && !isStart) {
-            this.spliceEmptyNode(fragment.childNodes[len], isStart);
+            this.spliceEmptyNode(fragment.childNodes[len as number], isStart);
         } else if (len > -1) {
             this.spliceEmptyNode(fragment.childNodes[0], isStart);
         } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG' && !((fragment as Element).classList.contains('e-video-wrap')) && !((fragment as Element).classList.contains('e-audio-wrap'))) {
@@ -129,9 +129,9 @@ export class NodeCutter {
         indexes = (isStart) ? indexes : indexes.reverse();
         let position: number = indexes[0];
         for (let num: number = 0;
-            num < indexes.length && ((isStart) ? (indexes[num] < index) : (indexes[num] >= index) );
+            num < indexes.length && ((isStart) ? (indexes[num as number] < index) : (indexes[num as number] >= index) );
             num++ ) {
-            position = indexes[num];
+            position = indexes[num as number];
         }
         return position;
     }

@@ -569,6 +569,19 @@ describe('Schedule Timeline Month view', () => {
                 toEqual('<span>10/1/17, 12:00 AM</span>');
         });
 
+        it('dateRange template', () => {
+            const model: ScheduleModel = {
+                currentView: 'TimelineMonth', views: ['Day', 'Week', 'TimelineMonth', 'Month'], 
+                selectedDate: new Date(2017, 9, 5),
+                dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">9-9</div>');
+            schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/1/17, 12:00 AM-10/31/17, 12:00 AM</div>');
+        });
+
         it('events template', (done: DoneFn) => {
             const model: ScheduleModel = {
                 height: '580px', selectedDate: new Date(2018, 4, 1), currentView: 'TimelineMonth',

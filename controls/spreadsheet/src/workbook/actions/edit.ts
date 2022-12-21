@@ -63,7 +63,8 @@ export class WorkbookEdit {
         switch (action) {
         case 'updateCellValue':
             args.isFormulaDependent = this.updateCellValue(
-                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly, <string>args.formula);
+                <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly, <string>args.formula,
+                <boolean>args.skipFormatCheck);
             break;
         }
     }
@@ -87,7 +88,8 @@ export class WorkbookEdit {
     }
 
     private updateCellValue(
-        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string): boolean {
+        address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, formula?: string,
+        skipFormatCheck?: boolean): boolean {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -99,11 +101,8 @@ export class WorkbookEdit {
         }
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         let cell: CellModel = getCell(range[0], range[1], sheet, true);
-        let prevVal: string;
         if (!cell) {
             cell = sheet.rows[range[0]].cells[range[1]] = {};
-        } else {
-            prevVal = cell.value;
         }
         if (!isValueOnly) {
             let isFormula: boolean = checkIsFormula(value);
@@ -127,7 +126,7 @@ export class WorkbookEdit {
                 sheetIndex: sheetIdx,
                 isFormula: isFormula
             };
-            if (isNotTextFormat) {
+            if (isNotTextFormat && !skipFormatCheck) {
                 const dateEventArgs: { [key: string]: string | number } = {
                     value: value,
                     rowIndex: range[0],

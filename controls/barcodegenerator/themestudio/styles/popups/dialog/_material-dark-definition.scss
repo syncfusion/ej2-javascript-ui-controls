@@ -5,15 +5,16 @@ $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
 $resize-hanlder-bottom-rtl: 2px;
 
-//default 
+//default
 $dialog-bg-color: $grey-800 !default;
 $dialog-icon-color: $grey-dark-font !default;
 $dialog-active-icon-color: $grey-dark-font !default;
-$dialog-close-button-left: 6px !default;
+$dialog-close-button-left: 0 !default;
 $dialog-close-button-right: 8px !default;
 $dialog-header-border: none !default;
 $dialog-border: none !default;
 $dialog-footer-content-border-top: none !default;
+$dialog-alert-footer-content-border-top: none !default;
 $dialog-close-icon-normal-opacity: initial !default;
 $dialog-close-icon-active-opacity: initial !default;
 $dialog-close-icon-content: '\e7fc' !default;
@@ -71,7 +72,7 @@ $dialog-bigger-close-icon-margin-left: -5px !default;
 $dialog-bigger-close-icon-margin-right: -5px !default;
 $dialog-bigger-close-button-bottom: 3px !default;
 $dialog-bigger-close-button-height: 36px !default;
-$dialog-bigger-close-button-left: 6px !default;
+$dialog-bigger-close-button-left: 3px !default;
 $dialog-bigger-close-button-width: 36px !default;
 $dialog-btn-border-color: transparent !default;
 $dialog-btn-bg-color: transparent !default;
@@ -80,4 +81,5 @@ $dialog-hover-focus-btn-bg-color: rgba($grey-white, .18) !default;
 $dialog-active-btn-bg-color: rgba($grey-white, .18) !default;
 $dialog-headericon-bottom: 0 !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+
 //enddefault

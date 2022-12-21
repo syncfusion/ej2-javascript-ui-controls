@@ -61,7 +61,7 @@ export class Container extends DiagramElement {
         if (this.hasChildren()) {
             //Measuring the children
             for (let i: number = 0; i < this.children.length; i++) {
-                child = this.children[i];
+                child = this.children[parseInt(i.toString(), 10)];
                 if (child.horizontalAlignment === 'Stretch' && !availableSize.width) {
                     availableSize.width = child.bounds.width;
                 }
@@ -100,11 +100,11 @@ export class Container extends DiagramElement {
             /**
              * Adding padding to the group bounds during initial rendering and for the group selection
              */
-            if(this.desiredBounds!==undefined){
-            this.desiredBounds.width+=this.padding.left+this.padding.right; 
-            this.desiredBounds.height+=this.padding.top+this.padding.bottom; 
-            this.desiredBounds.x-=this.padding.left;
-            this.desiredBounds.y-=this.padding.top;
+            if (this.desiredBounds !== undefined) {
+                this.desiredBounds.width += this.padding.left + this.padding.right;
+                this.desiredBounds.height += this.padding.top + this.padding.bottom;
+                this.desiredBounds.x -= this.padding.left;
+                this.desiredBounds.y -= this.padding.top;
             }
             if (this.desiredBounds) {
                 desired = new Size(this.desiredBounds.width, this.desiredBounds.height);
@@ -136,7 +136,7 @@ export class Container extends DiagramElement {
             if (this.hasChildren()) {
                 //Measuring the children
                 for (let i: number = 0; i < this.children.length; i++) {
-                    child = this.children[i];
+                    child = this.children[parseInt(i.toString(), 10)];
                     let arrange: boolean = false;
                     if (child.horizontalAlignment === 'Stretch') {
                         child.offsetX = this.offsetX;
@@ -190,7 +190,7 @@ export class Container extends DiagramElement {
 
     /**
      * Considers the padding of the element when measuring its desired size
-     * @param {Size} size- provide the size value
+     * @param {Size} size - provide the size value
      */
     protected applyPadding(size: Size): void {
         size.width += this.padding.left + this.padding.right;
@@ -201,7 +201,7 @@ export class Container extends DiagramElement {
      * Finds the offset of the child element with respect to the container
      *
      * @param {DiagramElement} child - provide the child value
-     * @param {PointModel} center- provide the center value
+     * @param {PointModel} center - provide the center value
      */
     protected findChildOffsetFromCenter(child: DiagramElement, center: PointModel): void {
         const topLeft: PointModel = { x: center.x - child.desiredSize.width / 2, y: center.y - child.desiredSize.height / 2 };

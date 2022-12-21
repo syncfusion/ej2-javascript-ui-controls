@@ -205,7 +205,7 @@ export class HyperlinkDialog {
         this.documentHelper.updateFocus();
         this.bookmarks = [];
         for (let i: number = 0; i < this.documentHelper.bookmarks.keys.length; i++) {
-            const bookmark: string = this.documentHelper.bookmarks.keys[i];
+            const bookmark: string = this.documentHelper.bookmarks.keys[parseInt(i.toString(), 10)];
             if (bookmark.indexOf('_') !== 0) {
                 this.bookmarks.push(bookmark);
             }

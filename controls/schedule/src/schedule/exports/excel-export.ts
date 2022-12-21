@@ -65,7 +65,7 @@ export class ExcelExport {
         const exportColumns: ExportFieldInfo[] = exportOptions.fieldsInfo || [];
         if (exportColumns.length === 0) {
             const fields: string[] = exportOptions.fields || Object.keys(this.parent.eventFields).map((field: string) =>
-                (<Record<string, any>>this.parent.eventFields)[field]) as string[];
+                (<Record<string, any>>this.parent.eventFields)[`${field}`]) as string[];
             fields.forEach((field: string) => { exportColumns.push({ name: field, text: field }); });
         }
         return exportColumns;

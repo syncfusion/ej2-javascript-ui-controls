@@ -2272,7 +2272,7 @@ describe('Inline Editing module', () => {
             setTimeout(done, 600);
         });
 
-        it('ensure edit form', () => {
+        it('ensure edit form', (done: Function) => {
             expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(0);
             expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
             expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
@@ -2282,6 +2282,7 @@ describe('Inline Editing module', () => {
             expect(Object.keys(data).length).not.toBe(0);
             expect(gridObj.contentModule.editedRowIndex).toBe(0);
             expect(gridObj.getRowsObject()[0].data.FIELD2).toBe((data as any).FIELD2);
+            setTimeout(done, 600);
         });
 
         it('scroll', (done: Function) => {

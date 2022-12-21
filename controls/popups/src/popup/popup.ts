@@ -213,7 +213,6 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      *
      * @event 'object'
      */
-    /* eslint-disable */
     @Event()
     public open: EmitType<Object>;
     /* eslint-enable */
@@ -222,7 +221,6 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      *
      * @event 'object'
      */
-    /* eslint-disable */
     @Event()
     public close: EmitType<Object>;
     /* eslint-enable */
@@ -234,7 +232,6 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      *
      * @event 'object'
      */
-    /* eslint-disable */
     @Event()
     public targetExitViewport: EmitType<Object>;
     /* eslint-enable */
@@ -245,7 +242,6 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
     /* HtmlElement variable */
     private fmDialogContainer: HTMLElement;
-
     /**
      * Called internally if any of the property value changed.
      *
@@ -433,7 +429,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     private isElementOnViewport(relateToElement: HTMLElement, scrollElement: HTMLElement): boolean {
         const scrollParents: HTMLElement[] = this.getScrollableParent(relateToElement);
         for ( let parent: number = 0; parent < scrollParents.length; parent ++ ) {
-            if (this.isElementVisible(relateToElement, scrollParents[parent])) {
+            if (this.isElementVisible(relateToElement, scrollParents[parent as number])) {
                 continue;
             }else {
                 return false;
@@ -734,7 +730,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     public show(animationOptions?: AnimationModel, relativeElement?: HTMLElement): void {
         this.fmDialogContainer = <HTMLElement>this.element.getElementsByClassName('e-file-select-wrap')[0];
         this.wireEvents();
-        if(this.fmDialogContainer && Browser.isIos) {
+        if (this.fmDialogContainer && Browser.isIos) {
             this.fmDialogContainer.style.display = 'block';
         }
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {
@@ -810,10 +806,11 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         let parent: HTMLElement = element.parentElement;
         while (parent && parent.tagName !== 'HTML') {
             const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
-            if (parentStyle.position === 'fixed' && !isNullOrUndefined(this.element) && this.element.offsetParent && 
+            if (parentStyle.position === 'fixed' && !isNullOrUndefined(this.element) && this.element.offsetParent &&
             this.element.offsetParent.tagName === 'BODY') {
-                    this.element.style.top = window.scrollY > parseInt(this.element.style.top) ? formatUnit(window.scrollY - parseInt(this.element.style.top))
-                : formatUnit(parseInt(this.element.style.top) - window.scrollY);
+                this.element.style.top = window.scrollY > parseInt(this.element.style.top, 10) ?
+                    formatUnit(window.scrollY - parseInt(this.element.style.top, 10))
+                    : formatUnit(parseInt(this.element.style.top, 10) - window.scrollY);
                 this.element.style.position = 'fixed';
                 this.fixedParent = true;
             }
@@ -878,9 +875,9 @@ export function getZindexPartial(element: HTMLElement): number {
     }
     const childrenZindex: string[] = [];
     for (let i: number = 0; i < document.body.children.length; i++) {
-        if (!element.isEqualNode(document.body.children[i])) {
-            const index: string = document.defaultView.getComputedStyle(document.body.children[i], null).getPropertyValue('z-index');
-            const position: string = document.defaultView.getComputedStyle(document.body.children[i], null).getPropertyValue('position');
+        if (!element.isEqualNode(document.body.children[i as number])) {
+            const index: string = document.defaultView.getComputedStyle(document.body.children[i as number], null).getPropertyValue('z-index');
+            const position: string = document.defaultView.getComputedStyle(document.body.children[i as number], null).getPropertyValue('position');
             if (index !== 'auto' && position !== 'static') {
                 childrenZindex.push(index);
             }
@@ -891,9 +888,9 @@ export function getZindexPartial(element: HTMLElement): number {
     if (!isNullOrUndefined(element.parentElement) && element.parentElement.tagName !== 'BODY') {
         const childNodes: HTMLElement[] = [].slice.call(element.parentElement.children);
         for (let i: number = 0; i < childNodes.length; i++) {
-            if (!element.isEqualNode(childNodes[i])) {
-                const index: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('z-index');
-                const position: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('position');
+            if (!element.isEqualNode(childNodes[i as number])) {
+                const index: string = document.defaultView.getComputedStyle(childNodes[i as number], null).getPropertyValue('z-index');
+                const position: string = document.defaultView.getComputedStyle(childNodes[i as number], null).getPropertyValue('position');
                 if (index !== 'auto' && position !== 'static') {
                     siblingsZindex.push(index);
                 }
@@ -915,10 +912,10 @@ export function getZindexPartial(element: HTMLElement): number {
 export function getMaxZindex(tagName: string[] = ['*']): number {
     const maxZindex: string[] = [];
     for (let i: number = 0; i < tagName.length; i++ ) {
-        const elements: HTMLCollectionOf<Element> = document.getElementsByTagName(tagName[i]);
+        const elements: HTMLCollectionOf<Element> = document.getElementsByTagName(tagName[i as number]);
         for (let i: number = 0; i < elements.length; i++) {
-            const index: string = document.defaultView.getComputedStyle(elements[i], null).getPropertyValue('z-index');
-            const position: string = document.defaultView.getComputedStyle(elements[i], null).getPropertyValue('position');
+            const index: string = document.defaultView.getComputedStyle(elements[i as number], null).getPropertyValue('z-index');
+            const position: string = document.defaultView.getComputedStyle(elements[i as number], null).getPropertyValue('position');
             if (index !== 'auto' && position !== 'static') {
                 maxZindex.push(index);
             }

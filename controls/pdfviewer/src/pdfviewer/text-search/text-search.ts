@@ -640,14 +640,19 @@ export class TextSearch {
         }
         matchIndex = 0;
         let linestring:string = "";
-        let mergedText:string= pageText.replace(/\r\n/g, " ");;
+        let mergedText: string = pageText.replace(/ \r\n/g, " ");
+        mergedText = mergedText.replace(/\r\n/g, " ");
         mergedText = mergedText.replace(/[^a-zA-Z0-9 ]/g, '');
         searchString = searchString.replace(/[^a-zA-Z0-9 ]/g, '');
         let result:any = mergedText.match(searchString);
         if (!this.isMatchCase) {
             result = mergedText.match(searchString.toLowerCase());
         }
-        result = pageText.slice(result.index, pageText.length)
+        if (isNullOrUndefined(result)) {
+            return indiuvalLineArray;
+        } else {
+            result = pageText.slice(result.index, pageText.length);
+        }
         let pageCheck= result;
         for (var i = 0; i < searchArray.length; i++) {
             let searchArrayText = linestring + searchArray[i];

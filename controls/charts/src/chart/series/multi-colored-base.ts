@@ -77,7 +77,7 @@ export class MultiColoredSeries extends LineBase {
             let segment : ChartSegmentModel;
             let value : number;
             for (let i : number = 0; i < segments.length ; i++) {
-                segment = segments[i];
+                segment = segments[i as number];
                 value = isXSegment ? currentPoint.xValue : currentPoint.yValue;
                 if (value <= this.getAxisValue(segment.value, isXSegment ? series.xAxis : series.yAxis, series.chart) ||
                     (!segment.value && segment.value !== 0)) {
@@ -131,14 +131,14 @@ export class MultiColoredSeries extends LineBase {
         let attributeOptions: PathAttributes;
         let areaBorderCount: number = 0;
         for (let index: number = 0; index < length; index++) {
-            segment = segments[index] as ChartSegment;
+            segment = segments[index as number] as ChartSegment;
             value = this.getAxisValue(segment.value, axis, series.chart);
             clipPath = this.createClipRect(index ? this.getAxisValue(segments[index - 1].value, axis, series.chart)
                 : axis.visibleRange.min,
                                            value, series, index, isXSegment);
             if (clipPath) {
                 options.map((option: PathOption) => {
-                    areaBorderCount+= 1;
+                    areaBorderCount += 1;
                     attributeOptions = {
                         'clip-path': clipPath,
                         'stroke-dasharray': segment.dashArray,
@@ -149,8 +149,8 @@ export class MultiColoredSeries extends LineBase {
                         'id': option.id + '_Segment_' + index,
                         'd': option.d
                     };
-                    if (areaBorderCount % 2 == 0 && this.chart.multiColoredAreaSeriesModule && series.border.color != "transparent" &&  attributeOptions['stroke-width'] !== 0) {
-                        attributeOptions.fill = "transparent";
+                    if (areaBorderCount % 2 === 0 && this.chart.multiColoredAreaSeriesModule && series.border.color !== 'transparent' &&  attributeOptions['stroke-width'] !== 0) {
+                        attributeOptions.fill = 'transparent';
                     }
                     pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
                     series.seriesElement.appendChild(
@@ -241,5 +241,5 @@ export class MultiColoredSeries extends LineBase {
             return +segmentValue;
         }
     }
-    
+
 }

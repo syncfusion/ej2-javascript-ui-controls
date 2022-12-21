@@ -151,15 +151,15 @@ export function getCell(
     if (!row || !row.cells) {
         if (isInitRow) {
             if (!row) {
-                sheet.rows[rowIndex] = { cells: [] };
+                sheet.rows[rowIndex as number] = { cells: [] };
             } else {
-                sheet.rows[rowIndex].cells = [];
+                sheet.rows[rowIndex as number].cells = [];
             }
         } else {
             return returnEmptyObjIfNull ? {} : null;
         }
     }
-    return sheet.rows[rowIndex].cells[colIndex] || (returnEmptyObjIfNull ? {} : null);
+    return sheet.rows[rowIndex as number].cells[colIndex as number] || (returnEmptyObjIfNull ? {} : null);
 }
 
 /**
@@ -172,15 +172,15 @@ export function getCell(
  * @returns {void} - set the cell.
  */
 export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean): void {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = { cells: [] };
-    } else if (!sheet.rows[rowIndex].cells) {
-        sheet.rows[rowIndex].cells = [];
+    if (!sheet.rows[rowIndex as number]) {
+        sheet.rows[rowIndex as number] = { cells: [] };
+    } else if (!sheet.rows[rowIndex as number].cells) {
+        sheet.rows[rowIndex as number].cells = [];
     }
-    if (isExtend && sheet.rows[rowIndex].cells[colIndex]) {
-        extend(sheet.rows[rowIndex].cells[colIndex], cell, null, true);
+    if (isExtend && sheet.rows[rowIndex as number].cells[colIndex as number]) {
+        extend(sheet.rows[rowIndex as number].cells[colIndex as number], cell, null, true);
     } else {
-        sheet.rows[rowIndex].cells[colIndex] = cell;
+        sheet.rows[rowIndex as number].cells[colIndex as number] = cell;
     }
 }
 
@@ -194,10 +194,11 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
     const defaultProps: CellStyleModel = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
         color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
         border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
-    const changedProps: CellStyleModel = {};
+    const changedProps: CellStyleModel = {}; let styleVal: string;
     Object.keys(defaultKey ? defaultProps : style).forEach((propName: string): void => {
-        if (style[propName] !== defaultProps[propName]) {
-            changedProps[propName] = style[propName];
+        styleVal = style[`${propName}`];
+        if (styleVal !== defaultProps[`${propName}`]) {
+            changedProps[`${propName}`] = styleVal;
         }
     });
     return changedProps;

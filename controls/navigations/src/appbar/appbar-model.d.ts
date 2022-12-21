@@ -8,21 +8,21 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface AppBarModel extends ComponentModel{
 
     /**
-     *  Specifies the mode of the AppBar that defines the AppBar height. The possible values for this property are as follows:
-     *  * Regular
-     *  * Prominent
-     *  * Dense
+     * Specifies the mode of the AppBar that defines the AppBar height. The possible values for this property are as follows:
+     * * Regular
+     * * Prominent
+     * * Dense
      *
-     *  @default 'Regular'
+     * @default 'Regular'
      */
     mode?: AppBarMode;
 
     /**
-     *  Specifies the position of the AppBar. The possible values for this property are as follows:
-     *  * Top
-     *  * Bottom
+     * Specifies the position of the AppBar. The possible values for this property are as follows:
+     * * Top
+     * * Bottom
      *
-     *  @default 'Top'
+     * @default 'Top'
      */
     position?: AppBarPosition;
 
@@ -49,13 +49,13 @@ export interface AppBarModel extends ComponentModel{
     htmlAttributes?: Record<string, string>;
 
     /**
-     *  Specifies the color mode that defines the color of the AppBar component. The possible values for this property are as follows:
-     *  * Light
-     *  * Dark
-     *  * Primary
-     *  * Inherit
+     * Specifies the color mode that defines the color of the AppBar component. The possible values for this property are as follows:
+     * * Light
+     * * Dark
+     * * Primary
+     * * Inherit
      *
-     *  @default 'Light'
+     * @default 'Light'
      */
     colorMode?: AppBarColor;
 

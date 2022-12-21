@@ -82,12 +82,12 @@ export class Sort implements IAction {
             } else {
                 const sortedCols: SortDescriptorModel[] = [];
                 for (let i: number = 0, len: number = gCols.length; i < len; i++) {
-                    index = this.getSortedColsIndexByField(gCols[i], sortedCols);
-                    if (this.columnName === gCols[i]) {
+                    index = this.getSortedColsIndexByField(gCols[parseInt(i.toString(), 10)], sortedCols);
+                    if (this.columnName === gCols[parseInt(i.toString(), 10)]) {
                         flag = true;
                         sortedCols.push(sortedColumn);
                     } else {
-                        const sCol: SortDescriptorModel = this.getSortColumnFromField(gCols[i]);
+                        const sCol: SortDescriptorModel = this.getSortColumnFromField(gCols[parseInt(i.toString(), 10)]);
                         sortedCols.push({ field: sCol.field, direction: sCol.direction, isFromGroup: sCol.isFromGroup });
                     }
                 }
@@ -183,7 +183,7 @@ export class Sort implements IAction {
         if (!isMultiSort) {
             if (this.parent.allowGrouping) {
                 for (let i: number = 0, len: number = this.sortedColumns.length; i < len; i++) {
-                    if (this.parent.groupSettings.columns.indexOf(this.sortedColumns[i]) < 0) {
+                    if (this.parent.groupSettings.columns.indexOf(this.sortedColumns[parseInt(i.toString(), 10)]) < 0) {
                         this.sortedColumns.splice(i, 1);
                         len--;
                         i--;
@@ -226,8 +226,8 @@ export class Sort implements IAction {
         this.sortedColumns.length = 0;
         const sortColumns: SortDescriptorModel[] = this.sortSettings.columns;
         for (let i: number = 0; i < sortColumns.length; i++) {
-            if (!sortColumns[i].isFromGroup) {
-                this.sortedColumns.push(sortColumns[i].field);
+            if (!sortColumns[parseInt(i.toString(), 10)].isFromGroup) {
+                this.sortedColumns.push(sortColumns[parseInt(i.toString(), 10)].field);
             }
         }
     }
@@ -244,7 +244,7 @@ export class Sort implements IAction {
             return;
         }
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            this.removeSortColumn(cols[i].field);
+            this.removeSortColumn(cols[parseInt(i.toString(), 10)].field);
         }
     }
 
@@ -272,11 +272,11 @@ export class Sort implements IAction {
         this.removeSortIcons();
         const args: Object = { requestType: 'sorting', type: events.actionBegin, target: this.currentTarget };
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].field === field) {
-                if (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1) {
+            if (cols[parseInt(i.toString(), 10)].field === field) {
+                if (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[parseInt(i.toString(), 10)].field) > -1) {
                     continue;
                 }
-                this.sortedColumns.splice(this.sortedColumns.indexOf(cols[i].field), 1);
+                this.sortedColumns.splice(this.sortedColumns.indexOf(cols[parseInt(i.toString(), 10)].field), 1);
                 cols.splice(i, 1);
                 this.isRemove = true;
                 if (this.isModelChanged) {
@@ -293,7 +293,7 @@ export class Sort implements IAction {
     private getSortedColsIndexByField(field: string, sortedColumns?: SortDescriptorModel[]): number {
         const cols: SortDescriptorModel[] = sortedColumns ? sortedColumns : this.sortSettings.columns;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].field === field) {
+            if (cols[parseInt(i.toString(), 10)].field === field) {
                 return i;
             }
         }
@@ -480,16 +480,16 @@ export class Sort implements IAction {
         const cols: SortDescriptorModel[] = this.sortSettings.columns;
         const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            header = gObj.getColumnHeaderByField(cols[i].field);
-            if (fieldNames.indexOf(cols[i].field) === -1 || isNullOrUndefined(header)) { continue; }
-            this.aria.setSort(<HTMLElement>header, (cols[i].direction).toLowerCase() as SortDirection);
+            header = gObj.getColumnHeaderByField(cols[parseInt(i.toString(), 10)].field);
+            if (fieldNames.indexOf(cols[parseInt(i.toString(), 10)].field) === -1 || isNullOrUndefined(header)) { continue; }
+            this.aria.setSort(<HTMLElement>header, (cols[parseInt(i.toString(), 10)].direction).toLowerCase() as SortDirection);
             if (cols.length > 1) {
                 header.querySelector('.e-headercelldiv').insertBefore(
                     this.parent.createElement('span', { className: 'e-sortnumber', innerHTML: (i + 1).toString() }),
                     header.querySelector('.e-headertext'));
             }
             filterElement = header.querySelector('.e-sortfilterdiv');
-            if (cols[i].direction === 'Ascending') {
+            if (cols[parseInt(i.toString(), 10)].direction === 'Ascending') {
                 classList(filterElement, ['e-ascending', 'e-icon-ascending'], []);
             } else {
                 classList(filterElement, ['e-descending', 'e-icon-descending'], []);
@@ -504,12 +504,13 @@ export class Sort implements IAction {
         const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         for (let i: number = position ? position : 0,
             len: number = !isNullOrUndefined(position) ? position + 1 : cols.length; i < len; i++) {
-            header = gObj.getColumnHeaderByField(cols[i].field);
-            if (isNullOrUndefined(header) || (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
-                !header.querySelector('.e-sortfilterdiv'))) {
+            header = gObj.getColumnHeaderByField(cols[parseInt(i.toString(), 10)].field);
+            if (isNullOrUndefined(header) || (gObj.allowGrouping
+                && gObj.groupSettings.columns.indexOf(cols[parseInt(i.toString(), 10)].field) > -1
+                && !header.querySelector('.e-sortfilterdiv'))) {
                 continue;
             }
-            if (fieldNames.indexOf(cols[i].field) === -1) { continue; }
+            if (fieldNames.indexOf(cols[parseInt(i.toString(), 10)].field) === -1) { continue; }
             this.aria.setSort(<HTMLElement>header, 'none');
             classList(
                 header.querySelector('.e-sortfilterdiv'), [], ['e-descending', 'e-icon-descending', 'e-ascending', 'e-icon-ascending']);
@@ -521,8 +522,8 @@ export class Sort implements IAction {
 
     private getSortColumnFromField(field: string): SortDescriptorModel {
         for (let i: number = 0, len: number = this.sortSettings.columns.length; i < len; i++) {
-            if (this.sortSettings.columns[i].field === field) {
-                return this.sortSettings.columns[i];
+            if (this.sortSettings.columns[parseInt(i.toString(), 10)].field === field) {
+                return this.sortSettings.columns[parseInt(i.toString(), 10)];
             }
         }
         return false as SortDescriptorModel;

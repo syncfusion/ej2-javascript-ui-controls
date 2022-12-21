@@ -13,6 +13,7 @@ export class WSectionFormat {
     private static uniqueSectionFormats: WUniqueFormats = new WUniqueFormats();
     private static uniqueFormatType: number = 10;
     public ownerBase: Object;
+    public columns: WColumnFormat[] = [];
 
     public get headerDistance(): number {
         return this.getPropertyValue('headerDistance') as number;
@@ -134,14 +135,42 @@ export class WSectionFormat {
     public set pageNumberStyle(value: FootEndNoteNumberFormat) {
         this.setPropertyValue('pageNumberStyle', value);
     }
+    public get numberOfColumns(): number {
+        return this.getPropertyValue('numberOfColumns') as number;
+    }
+    public set numberOfColumns(value: number) {
+        this.setPropertyValue('numberOfColumns', value);
+    }
+    public get equalWidth(): boolean {
+        return this.getPropertyValue('equalWidth') as boolean;
+    }
+    public set equalWidth(value: boolean) {
+        this.setPropertyValue('equalWidth', value);
+    }
+    public get lineBetweenColumns(): boolean {
+        return this.getPropertyValue('lineBetweenColumns') as boolean;
+    }
+    public set lineBetweenColumns(value: boolean) {
+        this.setPropertyValue('lineBetweenColumns', value);
+    }
+    public get breakCode(): string {
+        return this.getPropertyValue('breakCode') as string;
+    }
+    public set breakCode(value: string) {
+        this.setPropertyValue('breakCode', value);
+    }
+
     public constructor(node?: Object) {
         this.ownerBase = node;
+        this.columns = [];
     }
     public destroy(): void {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
             WSectionFormat.uniqueSectionFormats.remove(this.uniqueSectionFormat);
         }
         this.uniqueSectionFormat = undefined;
+        this.ownerBase = undefined;
+        this.columns = undefined;
     }
     private hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueSectionFormat)) {
@@ -220,6 +249,18 @@ export class WSectionFormat {
             case 'pageNumberStyle' :
                 value = 'Arabic';
                 break;
+            case 'numberOfColumns' :
+                value = 1;
+                break;
+            case 'equalWidth' :
+                value = true;
+                break;
+            case 'lineBetweenColumns':
+                value = false;
+                break;
+            case 'breakCode':
+                value = 'NewPage';
+                break;
 
         }
         return value;
@@ -274,7 +315,10 @@ export class WSectionFormat {
         this.addUniqueSectionFormat('initialFootNoteNumber', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('initialEndNoteNumber', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('pageNumberStyle', property, propValue, uniqueSectionFormatTemp);
-
+        this.addUniqueSectionFormat('numberOfColumns', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('equalWidth', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('lineBetweenColumns', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('breakCode', property, propValue, uniqueSectionFormatTemp);
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }
 
@@ -288,11 +332,13 @@ export class WSectionFormat {
     }
     public copyFormat(format: WSectionFormat, history?: EditorHistory): void {
         if (history && (history.isUndoing || history.isRedoing)) {
-            this.uniqueSectionFormat = format.uniqueSectionFormat;
+            this.uniqueSectionFormat = format.uniqueSectionFormat;            
+            this.columns = format.columns;
         } else {
             if (!isNullOrUndefined(format)) {
                 if (!isNullOrUndefined(format.uniqueSectionFormat) && format.uniqueSectionFormat.propertiesHash) {
                     this.updateUniqueSectionFormat(format);
+                    this.columns = format.columns;
                 }
             }
         }
@@ -316,9 +362,138 @@ export class WSectionFormat {
     public cloneFormat(): WSectionFormat {
         const format: WSectionFormat = new WSectionFormat();
         format.uniqueSectionFormat = this.uniqueSectionFormat;
+        format.columns = this.columns;
         return format;
     }
     public static clear(): void {
         this.uniqueSectionFormats.clear();
+    }
+}
+/**
+ * @private
+ */
+export class WColumnFormat {
+    private uniqueColumnFormat: WUniqueFormat = undefined;
+    private static uniqueColumnFormats: WUniqueFormats = new WUniqueFormats();
+    private static uniqueFormatType: number = 11;
+    public ownerBase: Object;
+    private indexIn: number;
+    public constructor(node?: Object) {
+        this.ownerBase = node;
+    }
+    public destroy(): void {
+        if (!isNullOrUndefined(this.uniqueColumnFormat)) {
+            WColumnFormat.uniqueColumnFormats.remove(this.uniqueColumnFormat);
+        }
+        this.uniqueColumnFormat = undefined;
+        this.ownerBase = undefined;
+    }
+    private hasValue(property: string): boolean {
+        if (!isNullOrUndefined(this.uniqueColumnFormat)) {
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueColumnFormat.uniqueFormatType, property);
+            return this.uniqueColumnFormat.propertiesHash.containsKey(propertyType);
+        }
+        return false;
+    }
+
+    get index() {
+        return this.indexIn;
+    }
+    set index(value: number) {
+        this.indexIn = value;
+    }
+    get width(): number {
+        return this.getPropertyValue('width') as number;
+    }
+    set width(value: number) {
+        this.setPropertyValue('width', value);
+    }
+    get space(): number {
+        return this.getPropertyValue('space') as number;
+    }
+    set space(value: number) {
+        this.setPropertyValue('space', value);
+    }
+    public getPropertyValue(property: string): Object {
+        const hasValue: boolean = this.hasValue(property);
+        if (hasValue) {
+            const propertyType: number = WUniqueFormat.getPropertyType(WColumnFormat.uniqueFormatType, property);
+            if (!isNullOrUndefined(this.uniqueColumnFormat) && this.uniqueColumnFormat.propertiesHash.containsKey(propertyType)) {
+                return this.uniqueColumnFormat.propertiesHash.get(propertyType);
+            }
+        }
+        return WColumnFormat.getPropertyDefaultValue(property);
+    }
+    private static getPropertyDefaultValue(property: string): Object {
+        let value: Object = undefined;
+        switch (property) {
+            case 'width':
+                value = 36;
+                break;
+            case 'space':
+                value = 0;
+                break;
+        }
+        return value;
+    }
+    private setPropertyValue(property: string, value: Object): void {
+        if (isNullOrUndefined(value) || value === '') {
+            value = WColumnFormat.getPropertyDefaultValue(property);
+        }
+        if (isNullOrUndefined(this.uniqueColumnFormat)) {
+            this.initializeUniqueColumnFormat(property, value);
+        } else {
+            const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueColumnFormat.uniqueFormatType, property);
+            if (this.uniqueColumnFormat.propertiesHash.containsKey(propertyType) &&
+                this.uniqueColumnFormat.propertiesHash.get(propertyType) === value) {
+                //Do nothing, since no change in property value and return
+                return;
+            }
+            this.uniqueColumnFormat = WColumnFormat.uniqueColumnFormats.updateUniqueFormat(this.uniqueColumnFormat, property, value);
+        }
+    }
+    private initializeUniqueColumnFormat(property: string, propValue: Object): void {
+        const uniqueColumnFormatTemp: Dictionary<number, object> = new Dictionary<number, object>();
+        this.addUniqueColumnFormat('width', property, propValue, uniqueColumnFormatTemp);
+        this.addUniqueColumnFormat('space', property, propValue, uniqueColumnFormatTemp);
+        this.uniqueColumnFormat = WColumnFormat.uniqueColumnFormats.addUniqueFormat(uniqueColumnFormatTemp, WColumnFormat.uniqueFormatType);
+    }
+    private addUniqueColumnFormat(property: string, modifiedProperty: string, propValue: Object, uniqueColumnFormatTemp: Dictionary<number, object>): void {
+        const propertyType: number = WUniqueFormat.getPropertyType(WColumnFormat.uniqueFormatType, property);
+        if (property === modifiedProperty) {
+            uniqueColumnFormatTemp.add(propertyType, propValue);
+        } else {
+            uniqueColumnFormatTemp.add(propertyType, WColumnFormat.getPropertyDefaultValue(property));
+        }
+    }
+    public updateUniqueColumnFormat(format: WColumnFormat): void {
+        let hash: Dictionary<number, object> = undefined;
+        if (this.uniqueColumnFormat) {
+            hash = this.uniqueColumnFormat.mergeProperties(format.uniqueColumnFormat);
+            if (this.uniqueColumnFormat.referenceCount === 0) {
+                WColumnFormat.uniqueColumnFormats.remove(this.uniqueColumnFormat);
+                this.uniqueColumnFormat = undefined;
+            }
+        }
+        this.uniqueColumnFormat = new WUniqueFormat(WColumnFormat.uniqueFormatType);
+        if (isNullOrUndefined(hash)) {
+            hash = this.uniqueColumnFormat.mergeProperties(format.uniqueColumnFormat);
+        }
+        this.uniqueColumnFormat = WColumnFormat.uniqueColumnFormats.addUniqueFormat(hash, WColumnFormat.uniqueFormatType);
+    }
+    public cloneFormat(): WColumnFormat {
+        const colFormat: WColumnFormat = new WColumnFormat(undefined);
+        colFormat.width = this.width;
+        colFormat.space = this.space;
+        return colFormat;
+    }
+    public copyFormat(colFormat: WColumnFormat): void {
+        if (!isNullOrUndefined(colFormat) && !isNullOrUndefined(colFormat.uniqueColumnFormat)) {
+            this.width = colFormat.width;
+            this.space = colFormat.space;
+        }
+    }
+    public static clear(): void {
+        this.uniqueColumnFormats.clear();
     }
 }

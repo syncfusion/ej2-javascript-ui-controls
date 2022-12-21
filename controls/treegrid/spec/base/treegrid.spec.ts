@@ -1937,6 +1937,32 @@ describe('EJ2-58631 - Extra line adding when using setRowData method', () => {
   });
 });
 
+describe('EJ2-64501 - shimmer effect check for normal tree grid', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+      },
+      done
+    );
+  });
+  it('Show Mask Row', () => {
+    gridObj.grid.showMaskRow();
+    expect(gridObj.getContent().querySelector('.e-masked-table')).toBeTruthy();
+});
+it('Remove Mask Row', () => {
+    gridObj.grid.removeMaskRow();
+    expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+});
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
 describe('EJ2-65573- The expanded or collapsed state is not read properly by the NVDA screen reader', () => {
   let gridObj: TreeGrid;
   beforeAll((done: Function) => {
@@ -2119,6 +2145,50 @@ describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', (
     expect(rows[0].cells[0].classList.contains('e-lastrowcell')).toBe(false);
     gridObj.setRowData(lastdata.TaskID, lastdata as object)
     expect(rows[lenValue].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+  });
+
+  describe('keyBoard Interaction for expand/collapse child row', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          height: 350,
+          treeColumnIndex: 2,
+          allowPaging: true,
+          pageSettings: { pageSize: 10 },
+          allowSelection: true,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 70, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+            { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+            { field: 'priority', headerText: 'Priority', width: 90 }
+          ],
+        },
+        done
+      );
+    });
+    it('keyBoard Interaction', () => {
+      gridObj.selectRow(1);
+      gridObj.keyboardModule.keyAction({
+        action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+        target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1]
+      } as any);
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true)
+      gridObj.keyboardModule.keyAction({
+        action: 'ctrlShiftDownArrow', preventDefault: preventDefault,
+        target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1]
+      } as any);
+      expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true)
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
   });
 
   afterAll(() => {

@@ -60,14 +60,14 @@ export function randomId(): string {
 export function getIndex(comp: Diagram, id: string): number {
     if (comp.nodes && comp.nodes.length > 0) {
         for (let i: number = 0; i < comp.nodes.length; i++) {
-            if (comp.nodes[i].id === id) {
+            if (comp.nodes[parseInt(i.toString(), 10)].id === id) {
                 return i;
             }
         }
     }
     if (comp.connectors && comp.connectors.length > 0) {
         for (let i: number = 0; i < comp.connectors.length; i++) {
-            if (comp.connectors[i].id === id) {
+            if (comp.connectors[parseInt(i.toString(), 10)].id === id) {
                 return i;
             }
         }
@@ -272,8 +272,8 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
     const keys: string = 'properties';
     const prop: string = 'propName';
     if (obj) {
-        key = obj[prop];
-        const sourceObject: Object = obj[keys] || obj;
+        key = obj[`${prop}`];
+        const sourceObject: Object = obj[`${keys}`] || obj;
         let properties: string[] = [];
         properties = properties.concat(Object.keys(sourceObject));
         let customProperties: string[] = [];
@@ -298,28 +298,28 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
                     //const constructorId: string = 'constructor';
                     //const name: string = 'name';
                     // eslint-disable-next-line no-prototype-builtins
-                    const isEventEmmitter: boolean = obj[property] && obj.hasOwnProperty('observers') ? true : false;
+                    const isEventEmmitter: boolean = obj[`${property}`] && obj.hasOwnProperty('observers') ? true : false;
                     if (!isEventEmmitter) {
-                        if (obj[property] instanceof Array) {
-                            newObject[property] = cloneArray(
-                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
+                        if (obj[`${property}`] instanceof Array) {
+                            newObject[`${property}`] = cloneArray(
+                                (internalProp.indexOf(property) === -1 && obj[`${keys}`]) ? obj[`${keys}`][`${property}`] : obj[`${property}`],
                                 additionalProp, property, cloneBlazorProp);
-                        } else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
-                            newObject[property] = obj[property].cloneNode(true).innerHtml;
-                        } else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
-                            newObject[property] = cloneObject(
-                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
+                        } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof HTMLElement) {
+                            newObject[`${property}`] = obj[`${property}`].cloneNode(true).innerHtml;
+                        } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof Object) {
+                            newObject[`${property}`] = cloneObject(
+                                (internalProp.indexOf(property) === -1 && obj[`${keys}`]) ? obj[`${keys}`][`${property}`] : obj[`${property}`],
                                 undefined, undefined, cloneBlazorProp);
                         } else {
-                            newObject[property] = obj[property];
+                            newObject[`${property}`] = obj[`${property}`];
                         }
                     }
                 } else {
-                    if (obj[property]) {
-                        newObject[property] = {
+                    if (obj[`${property}`]) {
+                        newObject[`${property}`] = {
                             actualSize: {
-                                width: obj[property].actualSize.width, height: obj[property].actualSize.height
-                            }, offsetX: obj[property].offsetX, offsetY: obj[property].offsetY
+                                width: obj[`${property}`].actualSize.width, height: obj[`${property}`].actualSize.height
+                            }, offsetX: obj[`${property}`].offsetX, offsetY: obj[`${property}`].offsetY
                         };
                     }
                 }
@@ -370,12 +370,12 @@ export function cloneArray(sourceArray: Object[], additionalProp?: Function | st
     if (sourceArray) {
         clonedArray = [];
         for (let i: number = 0; i < sourceArray.length; i++) {
-            if (sourceArray[i] instanceof Array) {
-                clonedArray.push(sourceArray[i]);
-            } else if (sourceArray[i] instanceof Object) {
-                clonedArray.push(cloneObject(sourceArray[i], additionalProp, key, cloneBlazorProp));
+            if (sourceArray[parseInt(i.toString(), 10)] instanceof Array) {
+                clonedArray.push(sourceArray[parseInt(i.toString(), 10)]);
+            } else if (sourceArray[parseInt(i.toString(), 10)] instanceof Object) {
+                clonedArray.push(cloneObject(sourceArray[parseInt(i.toString(), 10)], additionalProp, key, cloneBlazorProp));
             } else {
-                clonedArray.push(sourceArray[i]);
+                clonedArray.push(sourceArray[parseInt(i.toString(), 10)]);
             }
         }
     }
@@ -400,22 +400,22 @@ export function extendObject(options: Object, childObject: Object): Object {
         }
         //const target: Object = childObject;
         for (const property of Object.keys(options)) {
-            if (options[property] instanceof Array) {
-                const extendeArray: Object[] = extendArray(options[property], childObject[properties][property]);
-                if (!childObject[properties][property] || !childObject[properties][property].length) {
-                    childObject[property] = extendeArray;
+            if (options[`${property}`] instanceof Array) {
+                const extendeArray: Object[] = extendArray(options[`${property}`], childObject[`${properties}`][`${property}`]);
+                if (!childObject[`${properties}`][`${property}`] || !childObject[`${properties}`][`${property}`].length) {
+                    childObject[`${property}`] = extendeArray;
                 }
-            } else if (options[property] instanceof Array === false && options[property] instanceof HTMLElement) {
-                childObject[property] = options[property].cloneNode(true).innerHtml;
-            } else if (options[property] instanceof Array === false && options[property] instanceof Object) {
-                const extendedObject: Object = extendObject(options[property], childObject[properties][property]);
-                if (extendedObject[properties] && !Object.keys(extendedObject[properties]).length) {
-                    delete extendedObject[properties];
+            } else if (options[`${property}`] instanceof Array === false && options[`${property}`] instanceof HTMLElement) {
+                childObject[`${property}`] = options[`${property}`].cloneNode(true).innerHtml;
+            } else if (options[`${property}`] instanceof Array === false && options[`${property}`] instanceof Object) {
+                const extendedObject: Object = extendObject(options[`${property}`], childObject[`${properties}`][`${property}`]);
+                if (extendedObject[`${properties}`] && !Object.keys(extendedObject[`${properties}`]).length) {
+                    delete extendedObject[`${properties}`];
                 }
-                childObject[property] = extendedObject;
+                childObject[`${property}`] = extendedObject;
             } else {
-                childObject[property] = childObject[properties][property] !== undefined ?
-                    childObject[property] : options[property];
+                childObject[`${property}`] = childObject[`${properties}`][`${property}`] !== undefined ?
+                    childObject[`${property}`] : options[`${property}`];
             }
         }
     }
@@ -439,19 +439,19 @@ export function extendArray(sourceArray: Object[], childArray: Object[]): Object
         reset = true;
     }
     for (let i: number = 0; i < sourceArray.length; i++) {
-        if (sourceArray[i] instanceof Array) {
+        if (sourceArray[parseInt(i.toString(), 10)] instanceof Array) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const extendedArray: Object[] = extendArray(sourceArray[i] as Object[], childArray[i] as Object[]);
+            const extendedArray: Object[] = extendArray(sourceArray[parseInt(i.toString(), 10)] as Object[], childArray[parseInt(i.toString(), 10)] as Object[]);
             if (reset) {
                 clonedArray.push(extendArray);
             }
-        } else if (sourceArray[i] instanceof Object) {
-            const extendedObject: Object = extendObject(sourceArray[i], childArray[i]);
+        } else if (sourceArray[parseInt(i.toString(), 10)] instanceof Object) {
+            const extendedObject: Object = extendObject(sourceArray[parseInt(i.toString(), 10)], childArray[parseInt(i.toString(), 10)]);
             if (reset) {
                 clonedArray.push(extendedObject);
             }
         } else {
-            clonedArray.push(sourceArray[i]);
+            clonedArray.push(sourceArray[parseInt(i.toString(), 10)]);
         }
     }
     return clonedArray;
@@ -519,14 +519,14 @@ export function wordBreakToString(value: TextWrap | TextDecoration): string {
  */
 export function bBoxText(textContent: string, options: TextAttributes): number {
     const measureWindowElement: string = 'measureElement';
-    window[measureWindowElement].style.visibility = 'visible';
-    const svg: SVGElement = window[measureWindowElement].children[2];
+    window[`${measureWindowElement}`].style.visibility = 'visible';
+    const svg: SVGElement = window[`${measureWindowElement}`].children[2];
     const text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
     applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
         + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
     const bBox: number = text.getBBox().width;
-    window[measureWindowElement].style.visibility = 'hidden';
+    window[`${measureWindowElement}`].style.visibility = 'hidden';
     return bBox;
 }
 /**
@@ -570,7 +570,7 @@ export function overFlow(text: string, options: TextAttributes): string {
     } while (bounds <= options.width);
     temp = temp.substr(0, i);
     for (t = i; t < j; t++) {
-        temp += text[t];
+        temp += text[parseInt(t.toString(), 10)];
         bounds = bBoxText(temp, options);
         if (bounds >= options.width) {
             text = text.substr(0, temp.length - 1);

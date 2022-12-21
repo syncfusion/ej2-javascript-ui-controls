@@ -1,4 +1,4 @@
-import { ChartLocation, getUnicodeText, textTrim, withInBounds } from "../../common/utils/helper";import { ILegendRegions } from '../../common/model/interface';import { BaseLegend, LegendOptions, Location } from "../../common/legend/legend";import { ChartDrawType, ChartSeriesType, LegendMode, LegendPosition } from "../../chart/utils/enum";import { Alignment, LegendTitlePosition } from "../../common/utils/enum";import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';import { Series } from "../../chart/series/chart-series";import { legendClick, legendRender, regSub, regSup } from "../../common/model/constants";import { IStockLegendClickEventArgs, IStockLegendRenderEventArgs, StockChartBorder, StockChartFont, StockMargin } from "../model/base";import { Browser } from "@syncfusion/ej2-base";import { StockChart } from "../../stock-chart/index";import { Axis } from '../../chart/axis/axis';import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { Theme } from "../../common/model/theme";import { ContainerPadding } from '../../common/model/base';import { ContainerPaddingModel } from '../../common/model/base-model';import { StockChartFontModel, StockChartBorderModel, StockMarginModel } from '../model/base-model';import { LocationModel } from "../../common";
+import { ChartLocation, getUnicodeText, textTrim, withInBounds } from '../../common/utils/helper';import { ILegendRegions } from '../../common/model/interface';import { ChartDrawType, ChartSeriesType, LegendMode, LegendPosition } from '../../chart/utils/enum';import { Alignment, LegendTitlePosition } from '../../common/utils/enum';import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';import { Series } from '../../chart/series/chart-series';import { legendClick, legendRender, regSub, regSup } from '../../common/model/constants';import { IStockLegendClickEventArgs, IStockLegendRenderEventArgs, StockChartBorder, StockChartFont, StockMargin } from '../model/base';import { Browser } from '@syncfusion/ej2-base';import { StockChart } from '../../stock-chart/index';import { Axis } from '../../chart/axis/axis';import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { Theme } from '../../common/model/theme';import { ContainerPadding } from '../../common/model/base';import { ContainerPaddingModel } from '../../common/model/base-model';import { StockChartFontModel, StockChartBorderModel, StockMarginModel } from '../model/base-model';import { LocationModel } from '../../common';
 
 /**
  * Interface for a class StockChartLegendSettings
@@ -65,13 +65,13 @@ export interface StockChartLegendSettingsModel {
     position?: LegendPosition;
 
     /**
-    * Mode of legend items
-    * * Series: Legend items generated based on series count.
-    * * Point: Legend items generated based on unique data points. 
-    * * Range: Legend items generated based on range color mapping property. 
-    * * Gradient: Single linear bar generated based on range color mapping property.
-    * This property is applicable for chart component only.
-    */
+     * Mode of legend items
+     * * Series: Legend items generated based on series count.
+     * * Point: Legend items generated based on unique data points.
+     * * Range: Legend items generated based on range color mapping property.
+     * * Gradient: Single linear bar generated based on range color mapping property.
+     * This property is applicable for chart component only.
+     */
     mode?: LegendMode;
 
     /**

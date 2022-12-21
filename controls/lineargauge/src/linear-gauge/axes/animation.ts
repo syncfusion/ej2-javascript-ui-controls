@@ -1,19 +1,18 @@
-/* eslint-disable valid-jsdoc */
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from './axis';
 import { animationComplete } from '../model/constant';
-import { Size, Rect, valueToCoefficient, PathOption } from '../utils/helper';
+import { Size, valueToCoefficient, PathOption } from '../utils/helper';
 import { calculateShapes, getBox, VisibleRange } from '../utils/helper';
 
 /**
- * @private
  * To handle the animation for gauge
+ *
+ * @private
  */
 export class Animations {
 
     public gauge: LinearGauge;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
         this.gauge = gauge;
     }
@@ -21,9 +20,11 @@ export class Animations {
     /**
      * To do the marker pointer animation.
      *
-     * @return {void}
-     * @private
+     * @param element - Specifies the element of the marker pointer to which animation must be propagated.
+     * @param axis - Specifies the axis in which the marker pointer is available to which animation must be propagated.
+     * @param pointer - Specifies the pointer to which the animation must be propagated.
      */
+
     public performMarkerAnimation(element: Element, axis: Axis, pointer: Pointer): void {
         const markerElement: HTMLElement = <HTMLElement>element;
         let options: PathOption; let timeStamp: number;
@@ -88,7 +89,7 @@ export class Animations {
                     }
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 if (!isNullOrUndefined(cy)) {
                     markerElement.setAttribute('cy', cy.toString());
                     markerElement.setAttribute('cx', cx.toString());
@@ -118,16 +119,13 @@ export class Animations {
 
     public performBarAnimation(element: Element, axis: Axis, pointer: Pointer): void {
         const radix: number = 10; let timeStamp: number; let value2: number; let value1: number;
-        let height: number; let currentValue: number;
+        let currentValue: number;
         let clipHeight: string; let clipY: string; let clipX: string; let clipVal: number;
-        let rectX: number; let rectWidth: number;
         let clipWidth: string; let currentHeight: number; let clipElement: HTMLElement;
         const range: VisibleRange = axis.visibleRange;
         const pointerElement: HTMLElement = <HTMLElement>element;
-        let pathElement: Element; let svgPathElement: SVGPathElement; let clipRect: Rect;
         const lineHeight: number = (this.gauge.orientation === 'Vertical') ? axis.lineBounds.height : axis.lineBounds.width;
         const lineY: number = (this.gauge.orientation === 'Vertical') ? axis.lineBounds.y : axis.lineBounds.x;
-        const size: Size = new Size(this.gauge.availableSize.width, this.gauge.availableSize.height);
         let start: number = typeof(pointer.startValue) === 'string' ? parseInt(pointer.startValue, 10) : pointer.startValue;
         const end: number = pointer.currentValue;
         start = (start === end) ? range.min : start;
@@ -196,7 +194,7 @@ export class Animations {
                     }
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 if (tagName === 'path') {
                     if (start === 0 && this.gauge.container.type === 'Thermometer') {
                         pointerElement.parentElement.children[1].remove();

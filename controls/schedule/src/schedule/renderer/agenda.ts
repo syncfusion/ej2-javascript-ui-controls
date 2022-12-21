@@ -154,7 +154,7 @@ export class Agenda extends AgendaBase implements IRenderer {
                     this.parent.activeViewOptions.allowVirtualScrolling = false;
                     date = firstDate;
                     if (this.parent.headerModule) {
-                        this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
+                        this.parent.headerModule.updateDateRange();
                         this.parent.headerModule.updateHeaderItems('remove');
                     }
                 }
@@ -224,8 +224,8 @@ export class Agenda extends AgendaBase implements IRenderer {
                 prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.wireEventActions();
                 for (let s: number = 0, element: HTMLCollection = tBody.children; s < element.length; s++) {
-                    if (element[s].getAttribute('data-row-index') === topElement.getAttribute('data-column-index')) {
-                        const scrollToValue: number = (<HTMLElement>element[s]).offsetTop -
+                    if (element[parseInt(s.toString(), 10)].getAttribute('data-row-index') === topElement.getAttribute('data-column-index')) {
+                        const scrollToValue: number = (<HTMLElement>element[parseInt(s.toString(), 10)]).offsetTop -
                             (<HTMLElement>this.element.querySelector('.e-agenda-item')).offsetHeight;
                         target.scrollTop = scrollToValue;
                         break;
@@ -271,7 +271,7 @@ export class Agenda extends AgendaBase implements IRenderer {
                 filterElement = closest(li, '.' + cls.AGENDA_CELLS_CLASS);
             } else {
                 for (let a: number = 0, length: number = liCollection.length; a < length; a++) {
-                    li = liCollection[a];
+                    li = liCollection[parseInt(a.toString(), 10)];
                     liDetails = li.getBoundingClientRect();
                     if (liDetails.top >= 0) {
                         filterElement = closest(li, '.' + cls.AGENDA_CELLS_CLASS);
@@ -285,7 +285,7 @@ export class Agenda extends AgendaBase implements IRenderer {
 
     private updateHeaderText(date?: Date): void {
         if (this.parent.showHeaderBar) {
-            this.parent.headerModule.updateDateRange(this.getDateRangeText(date));
+            this.parent.headerModule.updateDateRange(date);
         }
     }
 

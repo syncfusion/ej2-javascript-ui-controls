@@ -22,8 +22,8 @@ export class ServiceLocator {
      */
     /* eslint-enable */
     public register<T>(name: string, type: T): void {
-        if (isNullOrUndefined(this.services[name])) {
-            this.services[name] = type;
+        if (isNullOrUndefined(this.services[`${name}`])) {
+            this.services[`${name}`] = type;
         }
     }
 
@@ -36,11 +36,11 @@ export class ServiceLocator {
      * @deprecated
      */
     public getService<T>(name: string): T {
-        if (isNullOrUndefined(this.services[name])) {
+        if (isNullOrUndefined(this.services[`${name}`])) {
             // eslint-disable-next-line
             throw `The service ${name} is not registered`;
         }
 
-        return <T>this.services[name];
+        return <T>this.services[`${name}`];
     }
 }

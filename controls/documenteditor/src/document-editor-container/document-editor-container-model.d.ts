@@ -14,35 +14,35 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     showPropertiesPane?: boolean;
 
     /**
-     * Enable or disable toolbar in document editor container.
+     * Enable or disable the toolbar in document editor container.
      *
      * @default true
      */
     enableToolbar?: boolean;
 
     /**
-     * Restrict editing operation.
+     * Specifies the restrict editing operation.
      *
      * @default false
      */
     restrictEditing?: boolean;
 
     /**
-     * Enable or disable spell checker in document editor container.
+     * Enable or disable the spell checker in document editor container.
      *
      * @default false
      */
     enableSpellCheck?: boolean;
 
     /**
-     * Enable or disable track changes in document editor container.
+     * Enable or disable the track changes in document editor container.
      *
      * @default false
      */
     enableTrackChanges?: boolean;
 
     /**
-     * Layout Type
+     * Gets or sets the Layout Type.
      *
      * @default Pages
      */
@@ -64,14 +64,14 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     userColor?: string;
 
     /**
-     * Enable local paste
+     * Enables the local paste.
      *
      * @default false
      */
     enableLocalPaste?: boolean;
 
     /**
-     * Sfdt service URL.
+     * Gets or sets the Sfdt service URL.
      *
      * @default ''
      */
@@ -86,12 +86,12 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     zIndex?: number;
 
     /**
-     * Enable rendering with strict Content Security policy.
+     * Enables the rendering with strict Content Security policy.
      */
     enableCsp?: boolean;
 
     /**
-     * Gets or set a value indicating whether comment is enabled or not
+     * Gets or sets a value indicating whether comment is enabled or not
      *
      * @default true
      */
@@ -112,7 +112,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     height?: string;
 
     /**
-     * Enable partial lock and edit module.
+     * Enables the partial lock and edit module.
      *
      * @default false
      */
@@ -217,7 +217,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     contentControl?: EmitType<Object>;
 
     /**
-     * This event is triggered before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
+     * Triggers before a server request is started, allows you to modify the XMLHttpRequest object (setting additional headers, if needed).
      */
     beforeXmlHttpRequestSend?: EmitType<XmlHttpRequestEventArgs>;
 
@@ -229,10 +229,10 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     documentEditorSettings?: DocumentEditorSettingsModel;
 
     /**
-    * Gets the settings and properties of the document that is opened in Document editor component.
-    *
-    * @default {}
-    */
+     * Gets the settings and properties of the document that is opened in Document editor component.
+     *
+     * @default {}
+     */
     documentSettings?: DocumentSettingsModel;
 
     /**
@@ -248,7 +248,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     toolbarItems?: (CustomToolbarItemModel | ToolbarItem)[];
 
     /**
-     * Add custom headers to XMLHttpRequest.
+     * Adds the custom headers to XMLHttpRequest.
      *
      * @default []
      */

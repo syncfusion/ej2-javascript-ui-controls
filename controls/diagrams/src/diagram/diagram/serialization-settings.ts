@@ -14,12 +14,14 @@ import { ChildProperty, Property } from '@syncfusion/ej2-base';
  * });
  * diagram.appendTo('#diagram');
  * ```
+ *
  * @default {}
  */
 export class SerializationSettings extends ChildProperty<SerializationSettings> {
 
     /**
      * Enables or Disables serialization of default values.
+     *
      * @default false
      */
     @Property(false)

@@ -2,12 +2,11 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { INumberIndex, IDataSet, IAxisSet, IPivotValues } from '../../base/engine';
 import { AxisSetModel } from './pivotvalues-model';
 
-// eslint-disable
 /**
  * Configures the properties in pivotvalues fields.
  */
 /** @hidden */
-// eslint-enable
+
 export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
 
     /**
@@ -113,10 +112,10 @@ export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
     public rowHeaders: string | number | Date;
 }
 
-/* eslint-disable */
 /**
  * @hidden
  */
+
 export interface PivotValues extends IPivotValues {
     [key: number]: {
         [key: number]: number | string | Object | AxisSetModel;

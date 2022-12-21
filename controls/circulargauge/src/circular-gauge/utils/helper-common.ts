@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /**
  * Specifies Circular-Gauge Common Helper methods
  */
@@ -16,7 +15,6 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
  *
  * @param  {string} text - Specifies the text.
  * @param  {FontModel} font - Specifies the font.
- * @param  {string} id - Specifies the id of the text.
  * @returns {Size} - Returns the size of the text.
  * @private
  */
@@ -29,7 +27,7 @@ export function measureText(text: string, font: FontModel): Size {
     const style: string = 'position: absolute; visibility: hidden;' +
         ';left: 0px; top: -100px; white-space: nowrap;' + getFontStyle(font);
     htmlObject.innerHTML = text;
-    htmlObject.setAttribute('style', style);
+    htmlObject.style.cssText = style;
     return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
 }
 
@@ -111,7 +109,7 @@ export function appendPath(options: PathOption, element: Element, gauge: Circula
     functionName = functionName ? functionName : 'Path';
     const htmlObject: HTMLElement = gauge.renderer['draw' + functionName](options) as HTMLElement;
     htmlObject.setAttribute('transform', options.transform);
-    htmlObject.setAttribute('style', options.style);
+    htmlObject.style.cssText = options.style;
     element.appendChild(htmlObject);
     return htmlObject;
 }
@@ -405,8 +403,8 @@ export function getRangePath(
             return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
         } else {
             return arcWidthPathCalculation(start, end, innerStart, innerEnd, radius, startRadius, endRadius, arcRadius, clockWise,
-                                        center, null, null, null, null,
-                                        startWidth, endWidth, degree, range, axis
+                                           center, null, null, null, null,
+                                           startWidth, endWidth, degree, range, axis
             );
         }
     } else {
@@ -456,7 +454,6 @@ export function arcWidthPathCalculation(
                                                             axis.endAngle, axis.direction === 'ClockWise');
         const pointPosition: GaugeLocation = (startWidth < ((endWidth))) ?
             getLocationFromAngle(startValueToAngle, endRadius, center) : getLocationFromAngle(startValueToAngle, startRadius, center);
-        // eslint-disable-next-line max-len
         const endDistance: number = Math.sqrt((Math.pow((innerEnd.x - pointPosition.x), 2)) + (Math.pow((innerEnd.y - pointPosition.y), 2)));
         const endRadii: number = endDistance / 2;
         const centerStartDistance: number = Math.sqrt((Math.pow((center.x - innerStart.x), 2)) + (Math.pow((center.y - innerStart.y), 2)));
@@ -656,13 +653,12 @@ export function getCirclePath(start: GaugeLocation, end: GaugeLocation, radius: 
 export function getTemplateFunction(template: string, gauge: CircularGauge): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let e: any;
     try {
         if (isNaN(parseFloat(template)) && document.querySelectorAll(template).length) {
             if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
                 templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } else if ((gauge as any).isVue || (gauge as any).isVue3) {
             templateFn = templateComplier(template);
         }
@@ -755,8 +751,8 @@ export function getLabelFormat(format: string): string {
  */
 export function calculateShapes(location: GaugeLocation, shape: string, size: Size, url: string, options: PathOption): PathOption {
     let path: string;
-    const width: number = size.width;
-    const height: number = size.height;
+    const width: number = typeof size.width === 'string' ? parseFloat(<string>size.width) : size.width;
+    const height: number = typeof size.height === 'string' ? parseFloat(<string>size.height) : size.height;
     const locX: number = location.x;
     const locY: number = location.y;
     const x: number = location.x + (-width / 2);

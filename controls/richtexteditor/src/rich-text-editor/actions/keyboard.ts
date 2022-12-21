@@ -187,7 +187,7 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
         const curkeyCode: number = e.which;
         const keys: string[] = Object.keys(this.keyConfigs);
         for (const key of keys) {
-            const configCollection: string[] = this.keyConfigs[key].split(',');
+            const configCollection: string[] = this.keyConfigs[`${key}`].split(',');
             for (const rconfig of configCollection) {
                 const rKeyObj: KeyData = KeyboardEvents.getKeyConfigData(rconfig.trim());
                 if (isAltKey === rKeyObj.altKey && (isCtrlKey === rKeyObj.ctrlKey || isMetaKey) &&
@@ -211,7 +211,7 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
      */
     private static getKeyConfigData(config: string): KeyData {
         if (config in this.configCache) {
-            return this.configCache[config];
+            return this.configCache[`${config}`];
         }
         const keys: string[] = config.toLowerCase().split('+');
         const keyData: KeyData = {
@@ -226,13 +226,13 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
         } else {
             keyData.keyCode = KeyboardEvents.getKeyCode(keys[keys.length - 1]);
         }
-        KeyboardEvents.configCache[config] = keyData;
+        KeyboardEvents.configCache[`${config}`] = keyData;
         return keyData;
     }
 
     // Return the keycode value as string
     private static getKeyCode(keyVal: string): number {
-        return keyCode[keyVal] || keyVal.toUpperCase().charCodeAt(0);
+        return keyCode[`${keyVal}`] || keyVal.toUpperCase().charCodeAt(0);
     }
 }
 

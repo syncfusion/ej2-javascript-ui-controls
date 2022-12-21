@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
@@ -163,8 +164,8 @@ export class StripLine {
      * @returns {Date} parsed date
      */
     private dateParse(value: Date | Object, chart: Chart): Date {
-        let dateParser: Function = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-        let dateFormatter: Function = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        const dateParser: Function = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        const dateFormatter: Function = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
         return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
     }
     /**
@@ -400,8 +401,8 @@ export class StripLine {
 
         } else {
             for (let i: number = 0; i < axes.length; i++) {
-                if (stripline.segmentAxisName === axes[i].name) {
-                    segment = axes[i];
+                if (stripline.segmentAxisName === axes[i as number].name) {
+                    segment = axes[i as number];
                 }
             }
             return segment;

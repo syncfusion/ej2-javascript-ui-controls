@@ -1,7 +1,7 @@
 import { createElement, remove, extend, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as cls from '../base/css-constant';
-import { GroupType, DateGroup } from '../../base/types';
+import { DateGroup } from '../../base/types';
 import { IFieldOptions, IDataOptions, IAxisSet, IGroupSettings, ICustomGroups, IDataSet, IField } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -27,15 +27,16 @@ export class Grouping implements IAction {
     private dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
 
     private handlers: {
-        load: Function; /* eslint-disable-line */
+        load: Function;
     };
 
-    /* eslint-disable-next-line */
     /**
      * Constructor for the group UI rendering.
+     *
+     * @param {PivotView} parent - Instance.
      * @hidden
      */
-    constructor(parent?: PivotView) {   /* eslint-disable-line */
+    constructor(parent?: PivotView) {
         this.parent = parent;
         this.parent.groupingModule = this;
         this.addEventListener();
@@ -43,6 +44,7 @@ export class Grouping implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @returns {string} - string
      * @private
      */
@@ -51,16 +53,16 @@ export class Grouping implements IAction {
     }
 
     private render(args: { target: HTMLElement; option: string; parentElement: HTMLElement }): void {
-        let target: HTMLElement = args.target;
-        let option: string = args.option;
-        let parentElement: HTMLElement = args.parentElement;
+        const target: HTMLElement = args.target;
+        const option: string = args.option;
+        const parentElement: HTMLElement = args.parentElement;
         this.parentElement = parentElement;
         this.selectedCellsInfo = [];
         this.isUpdate = false;
-        let colIndex: number = Number(target.getAttribute('data-colindex'));
-        let rowIndex: number = Number(target.getAttribute('index'));
-        let cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet);
-        let fieldName: string = cell.valueSort.axis.toString();
+        const colIndex: number = Number(target.getAttribute('data-colindex'));
+        const rowIndex: number = Number(target.getAttribute('index'));
+        const cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
+        const fieldName: string = cell.valueSort.axis.toString();
         this.selectedCellsInfo = this.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
         this.selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(), cellInfo: cell });
         if (option.replace(parentElement.id, '').indexOf('_custom_group') !== -1) {
@@ -72,14 +74,15 @@ export class Grouping implements IAction {
 
     /**
      * Returns the selected members/headers by checing the valid members from the pivot table.
+     *
      * @function getSelectedOptions
      * @param  {SelectedCellsInfo[]} selectedCellsInfo - Get the members name from the given selected cells information
      * @returns {string[]} - string
      * @hidden
      */
     public getSelectedOptions(selectedCellsInfo: SelectedCellsInfo[]): string[] {
-        let selectedOptions: string[] = [];
-        for (let option of selectedCellsInfo) {
+        const selectedOptions: string[] = [];
+        for (const option of selectedCellsInfo) {
             if (PivotUtil.inArray(option.name, selectedOptions) === -1) {
                 selectedOptions.push(option.name);
             }
@@ -87,15 +90,15 @@ export class Grouping implements IAction {
         return selectedOptions;
     }
     private createGroupSettings(fieldName: string): void {
-        let fieldList: IField = this.parent.engineModule.fieldList[fieldName];
-        let group: IGroupSettings = this.getGroupSettings(fieldName);
+        const fieldList: IField = this.parent.engineModule.fieldList[fieldName as string];
+        const group: IGroupSettings = this.getGroupSettings(fieldName);
         if (this.selectedCellsInfo.length > 0) {
             let type: string;
             let isInvalid: boolean = false;
             if (fieldList.isCustomField) {
                 if (!group) {
-                    let dateGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(this.dateGroup, ''));
-                    let customGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(/_custom_group/g, ''));
+                    const dateGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(this.dateGroup, ''));
+                    const customGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(/_custom_group/g, ''));
                     if (dateGroup) {
                         isInvalid = false;
                         type = 'date';
@@ -145,15 +148,15 @@ export class Grouping implements IAction {
         }
     }
     private updateUnGroupSettings(fieldName: string): void {
-        let fieldList: IField = this.parent.engineModule.fieldList[fieldName];
+        const fieldList: IField = this.parent.engineModule.fieldList[fieldName as string];
         let groupFields: IGroupSettings[] = PivotUtil.cloneGroupSettings(this.parent.dataSourceSettings.groupSettings);
-        let group: IGroupSettings = this.getGroupSettings(fieldName);
+        const group: IGroupSettings = this.getGroupSettings(fieldName);
         if (this.selectedCellsInfo.length > 0) {
             let type: string;
             if (fieldList.isCustomField) {
                 if (!group) {
-                    let dateGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(this.dateGroup, ''));
-                    let customGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(/_custom_group/g, ''));
+                    const dateGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(this.dateGroup, ''));
+                    const customGroup: IGroupSettings = this.getGroupSettings(fieldName.replace(/_custom_group/g, ''));
                     if (dateGroup) {
                         type = 'date';
                         fieldName = fieldName.replace(this.dateGroup, '');
@@ -173,7 +176,7 @@ export class Grouping implements IAction {
             if (type === 'date' || type === 'number') {
                 groupFields = this.validateSettings(fieldName, groupFields, type, []);
             } else if (type === 'custom') {
-                let selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
+                const selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
                 groupFields = this.validateSettings(fieldName, groupFields, type, selectedOptions);
             }
             this.updateDateSource(groupFields, type);
@@ -188,13 +191,14 @@ export class Grouping implements IAction {
         }
     }
 
-    private removeGroupSettings(fieldName: string, selectedOptions: string[], groupFields: IGroupSettings[], groupNames: string[], type?: GroupType): IGroupSettings[] {    /* eslint-disable-line */
-        let index: number = groupNames.indexOf(fieldName);
+    private removeGroupSettings(
+        fieldName: string, selectedOptions: string[], groupFields: IGroupSettings[], groupNames: string[]): IGroupSettings[] {
+        const index: number = groupNames.indexOf(fieldName);
         if (index !== -1) {
-            let field: IGroupSettings = groupFields[index];
+            const field: IGroupSettings = groupFields[index as number];
             for (let j: number = 0, len: number = field.customGroups.length; j < len; j++) {
-                if (field.customGroups[j]) {
-                    let group: ICustomGroups = field.customGroups[j];
+                if (field.customGroups[j as number]) {
+                    const group: ICustomGroups = field.customGroups[j as number];
                     if (PivotUtil.inArray(group.groupName, selectedOptions) !== -1) {
                         groupFields = this.modifyParentGroupItems(fieldName, groupFields, [group.groupName], group.items, groupNames);
                         field.customGroups.splice(j, 1);
@@ -209,7 +213,7 @@ export class Grouping implements IAction {
     }
 
     private getGroupSettings(fieldName: string): IGroupSettings {
-        for (let group of this.parent.dataSourceSettings.groupSettings) {
+        for (const group of this.parent.dataSourceSettings.groupSettings) {
             if (group.name === fieldName) {
                 return group;
             }
@@ -218,7 +222,7 @@ export class Grouping implements IAction {
     }
 
     private isDateType(fieldName: string): boolean {
-        for (let format of this.parent.dataSourceSettings.formatSettings) {
+        for (const format of this.parent.dataSourceSettings.formatSettings) {
             if (format.name === fieldName && format.type) {
                 return true;
             }
@@ -228,6 +232,7 @@ export class Grouping implements IAction {
 
     /**
      * Returns the selected members/headers by checing the valid members from the pivot table.
+     *
      * @function getSelectedCells
      * @param  {string} axis - Spicifies the axis name for the given field.
      * @param  {string} fieldName - Gets selected members for the given field name.
@@ -236,14 +241,12 @@ export class Grouping implements IAction {
      * @hidden
      */
     public getSelectedCells(axis: string, fieldName: string, name: string): SelectedCellsInfo[] {
-        let selectedCellsInfo: SelectedCellsInfo[] = [];
-        /* eslint-disable */
-        let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
-        /* eslint-enable */
-        for (let element of selectedElements) {
-            let colIndex: number = Number(element.getAttribute('data-colindex'));
-            let rowIndex: number = Number(element.getAttribute('index'));
-            let cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet);
+        const selectedCellsInfo: SelectedCellsInfo[] = []; // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        for (const element of selectedElements) {
+            const colIndex: number = Number(element.getAttribute('data-colindex'));
+            const rowIndex: number = Number(element.getAttribute('index'));
+            const cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
             if (cell && (cell.axis === axis) && !(cell.type === 'grand sum' || cell.type === 'sum') &&
                 cell.valueSort.axis === fieldName && name !== cell.actualText.toString()) {
                 selectedCellsInfo.push({
@@ -256,9 +259,8 @@ export class Grouping implements IAction {
         }
         return selectedCellsInfo;
     }
-
     private createGroupDialog(fieldName: string, type: string): void {
-        let groupDialog: HTMLElement = createElement('div', {
+        const groupDialog: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_GroupDialog',
             className: 'e-group-field-settings',
             attrs: { 'data-field': fieldName, 'data-type': type }
@@ -276,7 +278,7 @@ export class Grouping implements IAction {
             locale: this.parent.locale,
             width: 300,
             height: 'auto',
-            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
+            position: { X: 'center', Y: 'center' },
             buttons: [
                 {
                     click: this.updateGroupSettings.bind(this),
@@ -301,301 +303,298 @@ export class Grouping implements IAction {
         this.groupDialog.appendTo(groupDialog);
     }
     private createGroupOptions(fieldName: string, type: string): HTMLElement {
-        let groupInstance: Grouping = this; /* eslint-disable-line */
-        let mainDiv: HTMLElement = createElement('div', {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const groupInstance: Grouping = this;
+        const mainDiv: HTMLElement = createElement('div', {
             className: 'e-group-field-div-content', id: this.parentElement.id + '_group_field_div_content',
             attrs: { 'data-fieldName': fieldName, 'data-type': type }
         });
-        let groupWrapperDiv1: HTMLElement = createElement('div', { className: 'e-group-option-container' });
+        const groupWrapperDiv1: HTMLElement = createElement('div', { className: 'e-group-option-container' });
         mainDiv.appendChild(groupWrapperDiv1);
         // this.parentElement.appendChild(mainDiv);
-        let dataSource: IDataOptions = this.parent.dataSourceSettings;
-        let groupField: IGroupSettings = PivotUtil.getFieldByName(fieldName, dataSource.groupSettings) as IGroupSettings;
+        const dataSource: IDataOptions = this.parent.dataSourceSettings;
+        const groupField: IGroupSettings = PivotUtil.getFieldByName(fieldName, dataSource.groupSettings) as IGroupSettings;
         switch (type) {
-            case 'custom':
-                {
-                    let caption: string;
-                    let dataFields: IFieldOptions[] = dataSource.rows;
-                    dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
-                    let actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
-                    let currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields) as IFieldOptions;
-                    let nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields) as IFieldOptions;
-                    if (currentField) {
-                        let newFieldName: string = fieldName + '_custom_group';
-                        caption = nextField ? nextField.caption :
-                            this.parent.engineModule.fieldList[actualField.name].caption + (newFieldName.match(/_custom_group/g).length + 1);
+        case 'custom':
+            {
+                let caption: string;
+                let dataFields: IFieldOptions[] = dataSource.rows;
+                dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
+                const actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
+                const currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields) as IFieldOptions;
+                const nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields) as IFieldOptions;
+                if (currentField) {
+                    const newFieldName: string = fieldName + '_custom_group';
+                    caption = nextField ? nextField.caption :
+                        this.parent.engineModule.fieldList[actualField.name].caption + (newFieldName.match(/_custom_group/g).length + 1);
+                }
+                const captionInputTextDiv1: HTMLElement = createElement('div', {
+                    className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
+                });
+                const captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-container' });
+                const captionInputField1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_caption_option',
+                    className: 'e-group-caption-text',
+                    attrs: { 'type': 'text' }
+                }) as HTMLInputElement;
+                captionInputDiv1.appendChild(captionInputTextDiv1);
+                captionInputDiv1.appendChild(captionInputField1);
+                groupWrapperDiv1.appendChild(captionInputDiv1);
+                const inputTextDiv1: HTMLElement = createElement('div', {
+                    className: 'e-input-option-text', innerHTML: this.parent.localeObj.getConstant('groupTitle')
+                });
+                const inputDiv1: HTMLElement = createElement('div', { className: 'e-group-input-container' });
+                const inputField1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_input_option',
+                    className: 'e-group-input-text',
+                    attrs: { 'type': 'text' }
+                }) as HTMLInputElement;
+                inputDiv1.appendChild(inputTextDiv1);
+                inputDiv1.appendChild(inputField1);
+                groupWrapperDiv1.appendChild(inputDiv1);
+                const captionInputObj1: MaskedTextBox = new MaskedTextBox({
+                    placeholder: this.parent.localeObj.getConstant('captionName'),
+                    enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
+                    value: caption, width: '100%',
+                    cssClass: this.parent.cssClass
+                });
+                captionInputObj1.isStringTemplate = true;
+                captionInputObj1.appendTo(captionInputField1);
+                const inputObj1: MaskedTextBox = new MaskedTextBox({
+                    placeholder: this.parent.localeObj.getConstant('groupName'),
+                    enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
+                    width: '100%',
+                    cssClass: this.parent.cssClass
+                });
+                inputObj1.isStringTemplate = true;
+                inputObj1.appendTo(inputField1);
+            }
+            break;
+        case 'date':
+        case 'number':
+            {
+                const startAtWrapper: HTMLElement = createElement('div', {
+                    className: 'e-group-start-option-container'
+                });
+                const startAtOptionDiv1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_start_option',
+                    className: 'e-group_start_option',
+                    attrs: { 'type': 'checkbox' }
+                }) as HTMLInputElement;
+                const startAtInputField1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_start_input',
+                    className: 'e-group_start_input',
+                    attrs: { 'type': 'text' }
+                }) as HTMLInputElement;
+                startAtWrapper.appendChild(startAtOptionDiv1);
+                startAtWrapper.appendChild(startAtInputField1);
+                groupWrapperDiv1.appendChild(startAtWrapper);
+                const endAtWrapper: HTMLElement = createElement('div', {
+                    className: 'e-group-end-option-container'
+                });
+                const endAtOptionDiv1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_end_option',
+                    className: 'e-group_end_option',
+                    attrs: { 'type': 'checkbox' }
+                }) as HTMLInputElement;
+                const endAtInputField1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_end_input',
+                    className: 'e-group_end_input',
+                    attrs: { 'type': 'text' }
+                }) as HTMLInputElement;
+                endAtWrapper.appendChild(endAtOptionDiv1);
+                endAtWrapper.appendChild(endAtInputField1);
+                groupWrapperDiv1.appendChild(endAtWrapper);
+                const intervalWrapper: HTMLElement = createElement('div', {
+                    className: 'e-group-interval-option-container'
+                });
+                const intervalTextDiv1: HTMLElement = createElement('div', {
+                    className: 'e-group-inerval-option-text', innerHTML: this.parent.localeObj.getConstant('groupBy')
+                });
+                const intervalInputField1: HTMLInputElement = createElement('input', {
+                    id: this.parentElement.id + 'group_interval_input',
+                    className: 'e-group_interval_input',
+                    attrs: { 'type': 'text' }
+                }) as HTMLInputElement;
+                intervalWrapper.appendChild(intervalTextDiv1);
+                intervalWrapper.appendChild(intervalInputField1);
+                groupWrapperDiv1.appendChild(intervalWrapper);
+                let startAt: string = undefined;
+                let endAt: string = undefined;
+                if (type === 'date') {
+                    let selectedGroups: string[] = [];
+                    const groupData: { [key: string]: Object }[] = [
+                        { value: 'Seconds', text: this.parent.localeObj.getConstant('Seconds') },
+                        { value: 'Minutes', text: this.parent.localeObj.getConstant('Minutes') },
+                        { value: 'Hours', text: this.parent.localeObj.getConstant('Hours') },
+                        { value: 'Days', text: this.parent.localeObj.getConstant('Days') },
+                        { value: 'Months', text: this.parent.localeObj.getConstant('Months') },
+                        { value: 'QuarterYear', text: this.parent.localeObj.getConstant('QuarterYear') },
+                        { value: 'Quarters', text: this.parent.localeObj.getConstant('Quarters') },
+                        { value: 'Years', text: this.parent.localeObj.getConstant('Years') }
+                    ];
+                    if (groupField && groupField.type === 'Date') {
+                        selectedGroups = groupField.groupInterval;
+                        startAt = groupField.startingAt ? groupField.startingAt.toString() : undefined;
+                        endAt = groupField.endingAt ? groupField.endingAt.toString() : undefined;
+                    } else {
+                        selectedGroups = ['Months'];
                     }
-                    let captionInputTextDiv1: HTMLElement = createElement('div', {
-                        className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
-                    });
-                    /* eslint-enable max-len */
-                    let captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-container' });
-                    let captionInputField1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_caption_option',
-                        className: 'e-group-caption-text',
-                        attrs: { 'type': 'text' }
-                    }) as HTMLInputElement;
-                    captionInputDiv1.appendChild(captionInputTextDiv1);
-                    captionInputDiv1.appendChild(captionInputField1);
-                    groupWrapperDiv1.appendChild(captionInputDiv1);
-                    let inputTextDiv1: HTMLElement = createElement('div', {
-                        className: 'e-input-option-text', innerHTML: this.parent.localeObj.getConstant('groupTitle')
-                    });
-                    let inputDiv1: HTMLElement = createElement('div', { className: 'e-group-input-container' });
-                    let inputField1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_input_option',
-                        className: 'e-group-input-text',
-                        attrs: { 'type': 'text' }
-                    }) as HTMLInputElement;
-                    inputDiv1.appendChild(inputTextDiv1);
-                    inputDiv1.appendChild(inputField1);
-                    groupWrapperDiv1.appendChild(inputDiv1);
-                    let captionInputObj1: MaskedTextBox = new MaskedTextBox({
-                        placeholder: this.parent.localeObj.getConstant('captionName'),
+                    const startAtInputObj: DateTimePicker = new DateTimePicker({
+                        placeholder: this.parent.localeObj.getConstant('chooseDate'),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
-                        value: caption, width: '100%',
-                        cssClass: this.parent.cssClass
-                    });
-                    captionInputObj1.isStringTemplate = true;
-                    captionInputObj1.appendTo(captionInputField1);
-                    let inputObj1: MaskedTextBox = new MaskedTextBox({
-                        placeholder: this.parent.localeObj.getConstant('groupName'),
-                        enableRtl: this.parent.enableRtl,
-                        locale: this.parent.locale,
+                        format: 'dd/MM/yyyy hh:mm:ss a',
+                        enabled: !(startAt === undefined),
                         width: '100%',
                         cssClass: this.parent.cssClass
                     });
-                    inputObj1.isStringTemplate = true;
-                    inputObj1.appendTo(inputField1);
-                }
-                break;
-            case 'date':
-            case 'number':
-                {
-                    let startAtWrapper: HTMLElement = createElement('div', {
-                        className: 'e-group-start-option-container'
+                    startAtInputObj.isStringTemplate = true;
+                    startAtInputObj.appendTo(startAtInputField1);
+                    const endAtInputObj: DateTimePicker = new DateTimePicker({
+                        placeholder: this.parent.localeObj.getConstant('chooseDate'),
+                        enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
+                        format: 'dd/MM/yyyy hh:mm:ss a',
+                        enabled: !(endAt === undefined),
+                        width: '100%',
+                        cssClass: this.parent.cssClass
                     });
-                    let startAtOptionDiv1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_start_option',
-                        className: 'e-group_start_option',
-                        attrs: { 'type': 'checkbox' }
-                    }) as HTMLInputElement;
-                    let startAtInputField1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_start_input',
-                        className: 'e-group_start_input',
-                        attrs: { 'type': 'text' }
-                    }) as HTMLInputElement;
-                    startAtWrapper.appendChild(startAtOptionDiv1);
-                    startAtWrapper.appendChild(startAtInputField1);
-                    groupWrapperDiv1.appendChild(startAtWrapper);
-                    let endAtWrapper: HTMLElement = createElement('div', {
-                        className: 'e-group-end-option-container'
-                    });
-                    let endAtOptionDiv1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_end_option',
-                        className: 'e-group_end_option',
-                        attrs: { 'type': 'checkbox' }
-                    }) as HTMLInputElement;
-                    let endAtInputField1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_end_input',
-                        className: 'e-group_end_input',
-                        attrs: { 'type': 'text' }
-                    }) as HTMLInputElement;
-                    endAtWrapper.appendChild(endAtOptionDiv1);
-                    endAtWrapper.appendChild(endAtInputField1);
-                    groupWrapperDiv1.appendChild(endAtWrapper);
-                    let intervalWrapper: HTMLElement = createElement('div', {
-                        className: 'e-group-interval-option-container'
-                    });
-                    let intervalTextDiv1: HTMLElement = createElement('div', {
-                        className: 'e-group-inerval-option-text', innerHTML: this.parent.localeObj.getConstant('groupBy')
-                    });
-                    let intervalInputField1: HTMLInputElement = createElement('input', {
-                        id: this.parentElement.id + 'group_interval_input',
-                        className: 'e-group_interval_input',
-                        attrs: { 'type': 'text' }
-                    }) as HTMLInputElement;
-                    intervalWrapper.appendChild(intervalTextDiv1);
-                    intervalWrapper.appendChild(intervalInputField1);
-                    groupWrapperDiv1.appendChild(intervalWrapper);
-                    let startAt: string = undefined;
-                    let endAt: string = undefined;
-                    if (type === 'date') {
-                        let selectedGroups: string[] = [];
-                        let groupData: { [key: string]: Object }[] = [  /* eslint-disable-line */
-                            { value: 'Seconds', text: this.parent.localeObj.getConstant('Seconds') },
-                            { value: 'Minutes', text: this.parent.localeObj.getConstant('Minutes') },
-                            { value: 'Hours', text: this.parent.localeObj.getConstant('Hours') },
-                            { value: 'Days', text: this.parent.localeObj.getConstant('Days') },
-                            { value: 'Months', text: this.parent.localeObj.getConstant('Months') },
-                            { value: 'QuarterYear', text: this.parent.localeObj.getConstant('QuarterYear') },
-                            { value: 'Quarters', text: this.parent.localeObj.getConstant('Quarters') },
-                            { value: 'Years', text: this.parent.localeObj.getConstant('Years') }
-                        ];
-                        if (groupField && groupField.type === 'Date') {
-                            selectedGroups = groupField.groupInterval;
-                            startAt = groupField.startingAt ? groupField.startingAt.toString() : undefined;
-                            endAt = groupField.endingAt ? groupField.endingAt.toString() : undefined;
-                        } else {
-                            selectedGroups = ['Months'];
-                        }
-                        let startAtInputObj: DateTimePicker = new DateTimePicker({
-                            placeholder: this.parent.localeObj.getConstant('chooseDate'),
-                            enableRtl: this.parent.enableRtl,
-                            locale: this.parent.locale,
-                            format: 'dd/MM/yyyy hh:mm:ss a',
-                            enabled: !(startAt === undefined),
-                            width: '100%',
-                            cssClass: this.parent.cssClass
-                        });
-                        startAtInputObj.isStringTemplate = true;
-                        startAtInputObj.appendTo(startAtInputField1);
-                        let endAtInputObj: DateTimePicker = new DateTimePicker({
-                            placeholder: this.parent.localeObj.getConstant('chooseDate'),
-                            enableRtl: this.parent.enableRtl,
-                            locale: this.parent.locale,
-                            format: 'dd/MM/yyyy hh:mm:ss a',
-                            enabled: !(endAt === undefined),
-                            width: '100%',
-                            cssClass: this.parent.cssClass
-                        });
-                        endAtInputObj.isStringTemplate = true;
-                        endAtInputObj.appendTo(endAtInputField1);
-                        MultiSelect.Inject(CheckBoxSelection);
-                        /* eslint-disable */
-                        let intervalObj: MultiSelect = new MultiSelect({
-                            dataSource: groupData,
-                            value: selectedGroups as string[],
-                            fields: { text: 'text', value: 'value' },
-                            mode: 'CheckBox',
-                            showDropDownIcon: true,
-                            enableSelectionOrder: false,
-                            placeholder: this.parent.localeObj.getConstant('selectGroup'),
-                            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
-                            enableRtl: this.parent.enableRtl,
-                            locale: this.parent.locale,
-                            cssClass: this.parent.cssClass,
-                            select: () => {
-                                groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
-                            },
-                            removed: () => {
-                                if ((intervalObj as any).checkBoxSelectionModule.activeLi.length === 0) {
-                                    groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-                                }
+                    endAtInputObj.isStringTemplate = true;
+                    endAtInputObj.appendTo(endAtInputField1);
+                    MultiSelect.Inject(CheckBoxSelection);
+                    const intervalObj: MultiSelect = new MultiSelect({
+                        dataSource: groupData,
+                        value: selectedGroups as string[],
+                        fields: { text: 'text', value: 'value' },
+                        mode: 'CheckBox',
+                        showDropDownIcon: true,
+                        enableSelectionOrder: false,
+                        placeholder: this.parent.localeObj.getConstant('selectGroup'),
+                        filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
+                        enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
+                        cssClass: this.parent.cssClass,
+                        select: () => {
+                            groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
+                        },
+                        removed: () => { // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            if ((intervalObj as any).checkBoxSelectionModule.activeLi.length === 0) {
+                                groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                             }
-                        });
-                        /* eslint-enable */
-                        intervalObj.isStringTemplate = true;
-                        intervalObj.appendTo(intervalInputField1);
-                        startAtInputObj.value = startAt === undefined ? null : new Date(startAt);
-                        startAtInputObj.dataBind();
-                        endAtInputObj.value = endAt === undefined ? null : new Date(endAt);
-                        endAtInputObj.dataBind();
+                        }
+                    });
+                    intervalObj.isStringTemplate = true;
+                    intervalObj.appendTo(intervalInputField1);
+                    startAtInputObj.value = startAt === undefined ? null : new Date(startAt);
+                    startAtInputObj.dataBind();
+                    endAtInputObj.value = endAt === undefined ? null : new Date(endAt);
+                    endAtInputObj.dataBind();
+                } else {
+                    let selectedInterval: number = undefined;
+                    if (groupField && groupField.type === 'Number') {
+                        selectedInterval = groupField.rangeInterval;
+                        startAt = groupField.startingAt ? groupField.startingAt.toString() : undefined;
+                        endAt = groupField.endingAt ? groupField.endingAt.toString() : undefined;
                     } else {
-                        let selectedInterval: number = undefined;
-                        if (groupField && groupField.type === 'Number') {
-                            selectedInterval = groupField.rangeInterval;
-                            startAt = groupField.startingAt ? groupField.startingAt.toString() : undefined;
-                            endAt = groupField.endingAt ? groupField.endingAt.toString() : undefined;
-                        } else {
-                            selectedInterval = 2;
-                        }
-                        let startAtInputObj: NumericTextBox = new NumericTextBox({
-                            placeholder: this.parent.localeObj.getConstant('enterValue'),
-                            enableRtl: this.parent.enableRtl,
-                            locale: this.parent.locale,
-                            showClearButton: true,
-                            format: '###',
-                            value: startAt === undefined ? undefined : parseInt(startAt, 10),
-                            enabled: !(startAt === undefined),
-                            width: '100%',
-                            cssClass: this.parent.cssClass
-                        });
-                        startAtInputObj.isStringTemplate = true;
-                        startAtInputObj.appendTo(startAtInputField1);
-                        let endAtInputObj: NumericTextBox = new NumericTextBox({
-                            placeholder: this.parent.localeObj.getConstant('enterValue'),
-                            enableRtl: this.parent.enableRtl,
-                            locale: this.parent.locale,
-                            showClearButton: true,
-                            format: '###',
-                            value: endAt === undefined ? undefined : parseInt(endAt, 10),
-                            enabled: !(endAt === undefined),
-                            width: '100%',
-                            cssClass: this.parent.cssClass
-                        });
-                        endAtInputObj.isStringTemplate = true;
-                        endAtInputObj.appendTo(endAtInputField1);
-                        let intervalObj: NumericTextBox = new NumericTextBox({
-                            placeholder: this.parent.localeObj.getConstant('enterValue'),
-                            enableRtl: this.parent.enableRtl,
-                            locale: this.parent.locale,
-                            showClearButton: true,
-                            format: '###',
-                            min: 1,
-                            value: selectedInterval,
-                            width: '100%',
-                            cssClass: this.parent.cssClass
-                        });
-                        intervalObj.isStringTemplate = true;
-                        intervalObj.appendTo(intervalInputField1);
+                        selectedInterval = 2;
                     }
-                    let startAtObj: CheckBox = new CheckBox({
-                        label: this.parent.localeObj.getConstant('startAt'),
-                        checked: !(startAt === undefined),
+                    const startAtInputObj: NumericTextBox = new NumericTextBox({
+                        placeholder: this.parent.localeObj.getConstant('enterValue'),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
-                        cssClass: this.parent.cssClass,
-                        change: (args: ChangeEventArgs) => {
-                            let startAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
-                                getInstance(select('#' + this.parentElement.id + 'group_start_input'), DateTimePicker) as DateTimePicker :
-                                getInstance(select('#' + this.parentElement.id + 'group_start_input'), NumericTextBox) as NumericTextBox);
-                            startAtObj.enabled = args.checked;
-                            startAtObj.dataBind();
-                        }
+                        showClearButton: true,
+                        format: '###',
+                        value: startAt === undefined ? undefined : parseInt(startAt, 10),
+                        enabled: !(startAt === undefined),
+                        width: '100%',
+                        cssClass: this.parent.cssClass
                     });
-                    startAtObj.isStringTemplate = true;
-                    startAtObj.appendTo(startAtOptionDiv1);
-                    let endAtObj: CheckBox = new CheckBox({
-                        label: this.parent.localeObj.getConstant('endAt'),
-                        checked: !(endAt === undefined),
+                    startAtInputObj.isStringTemplate = true;
+                    startAtInputObj.appendTo(startAtInputField1);
+                    const endAtInputObj: NumericTextBox = new NumericTextBox({
+                        placeholder: this.parent.localeObj.getConstant('enterValue'),
                         enableRtl: this.parent.enableRtl,
                         locale: this.parent.locale,
-                        cssClass: this.parent.cssClass,
-                        change: (args: ChangeEventArgs) => {
-                            let endAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
-                                getInstance(select('#' + this.parentElement.id + 'group_end_input'), DateTimePicker) as DateTimePicker :
-                                getInstance(select('#' + this.parentElement.id + 'group_end_input'), NumericTextBox) as NumericTextBox);
-                            endAtObj.enabled = args.checked;
-                            endAtObj.dataBind();
-                        }
+                        showClearButton: true,
+                        format: '###',
+                        value: endAt === undefined ? undefined : parseInt(endAt, 10),
+                        enabled: !(endAt === undefined),
+                        width: '100%',
+                        cssClass: this.parent.cssClass
                     });
-                    endAtObj.isStringTemplate = true;
-                    endAtObj.appendTo(endAtOptionDiv1);
+                    endAtInputObj.isStringTemplate = true;
+                    endAtInputObj.appendTo(endAtInputField1);
+                    const intervalObj: NumericTextBox = new NumericTextBox({
+                        placeholder: this.parent.localeObj.getConstant('enterValue'),
+                        enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
+                        showClearButton: true,
+                        format: '###',
+                        min: 1,
+                        value: selectedInterval,
+                        width: '100%',
+                        cssClass: this.parent.cssClass
+                    });
+                    intervalObj.isStringTemplate = true;
+                    intervalObj.appendTo(intervalInputField1);
                 }
-                break;
+                const startAtObj: CheckBox = new CheckBox({
+                    label: this.parent.localeObj.getConstant('startAt'),
+                    checked: !(startAt === undefined),
+                    enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
+                    cssClass: this.parent.cssClass,
+                    change: (args: ChangeEventArgs) => {
+                        const startAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
+                            getInstance(select('#' + this.parentElement.id + 'group_start_input'), DateTimePicker) as DateTimePicker :
+                            getInstance(select('#' + this.parentElement.id + 'group_start_input'), NumericTextBox) as NumericTextBox);
+                        startAtObj.enabled = args.checked;
+                        startAtObj.dataBind();
+                    }
+                });
+                startAtObj.isStringTemplate = true;
+                startAtObj.appendTo(startAtOptionDiv1);
+                const endAtObj: CheckBox = new CheckBox({
+                    label: this.parent.localeObj.getConstant('endAt'),
+                    checked: !(endAt === undefined),
+                    enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
+                    cssClass: this.parent.cssClass,
+                    change: (args: ChangeEventArgs) => {
+                        const endAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
+                            getInstance(select('#' + this.parentElement.id + 'group_end_input'), DateTimePicker) as DateTimePicker :
+                            getInstance(select('#' + this.parentElement.id + 'group_end_input'), NumericTextBox) as NumericTextBox);
+                        endAtObj.enabled = args.checked;
+                        endAtObj.dataBind();
+                    }
+                });
+                endAtObj.isStringTemplate = true;
+                endAtObj.appendTo(endAtOptionDiv1);
+            }
+            break;
         }
         return mainDiv;
     }
-    /* eslint-disable  */
     private updateGroupSettings(): void {
-        let dialogElement: HTMLElement = this.groupDialog.element;
-        let groupType: string = dialogElement.getAttribute('data-type');
-        let fieldName: string = dialogElement.getAttribute('data-field');
+        const dialogElement: HTMLElement = this.groupDialog.element;
+        const groupType: string = dialogElement.getAttribute('data-type');
+        const fieldName: string = dialogElement.getAttribute('data-field');
         let groupFields: IGroupSettings[] =
             PivotUtil.cloneGroupSettings(this.parent.dataSourceSettings.groupSettings);
         if (groupFields.length === 0 && !this.parent.clonedDataSet && !this.parent.clonedReport) {
-            let dataSet: IDataSet[] = this.parent.engineModule.data as IDataSet[];
+            const dataSet: IDataSet[] = this.parent.engineModule.data as IDataSet[];
             this.parent.clonedDataSet = PivotUtil.getClonedData(dataSet) as IDataSet[];
             this.parent.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
             this.parent.clonedReport = extend({}, this.parent.dataSourceSettings, null, true) as DataSourceSettings;
             this.parent.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
         }
         if (groupType === 'custom') {
-            let inputInstance: MaskedTextBox =
+            const inputInstance: MaskedTextBox =
                 getInstance(select('#' + this.parentElement.id + 'group_input_option'), MaskedTextBox) as MaskedTextBox;
-            let captionInputInstance: MaskedTextBox =
+            const captionInputInstance: MaskedTextBox =
                 getInstance(select('#' + this.parentElement.id + 'group_caption_option'), MaskedTextBox) as MaskedTextBox;
             removeClass([inputInstance.element], cls.EMPTY_FIELD);
             if (inputInstance.value === null || inputInstance.value === '') {
@@ -603,19 +602,19 @@ export class Grouping implements IAction {
                 inputInstance.element.focus();
                 return;
             }
-            let selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
-            let customGroup: ICustomGroups = { groupName: inputInstance.value, items: selectedOptions };
+            const selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
+            const customGroup: ICustomGroups = { groupName: inputInstance.value, items: selectedOptions };
             let splicedItems: string[] = [];
             let newItems: string[] = [];
             let field: IGroupSettings = { name: fieldName, caption: captionInputInstance.value, type: 'Custom', customGroups: [] };
             let isUpdated: boolean = false;
             for (let i: number = 0, len: number = groupFields.length; i < len; i++) {
-                if (groupFields[i].name === fieldName) {
-                    field = groupFields[i];
+                if (groupFields[i as number].name === fieldName) {
+                    field = groupFields[i as number];
                     field.caption = captionInputInstance.value;
                     for (let j: number = 0, len: number = field.customGroups.length; j < len; j++) {
-                        if (field.customGroups[j]) {
-                            let group: ICustomGroups = field.customGroups[j];
+                        if (field.customGroups[j as number]) {
+                            const group: ICustomGroups = field.customGroups[j as number];
                             if (group.items && PivotExportUtil.isContainCommonElements(group.items, selectedOptions)) {
                                 splicedItems = this.mergeArray(splicedItems, [group.groupName]);
                                 newItems = this.mergeArray(newItems, group.items);
@@ -625,8 +624,8 @@ export class Grouping implements IAction {
                             }
                         }
                     }
-                    for (let item of selectedOptions) {
-                        let index: number = newItems.indexOf(item);
+                    for (const item of selectedOptions) {
+                        const index: number = newItems.indexOf(item);
                         if (index !== -1) {
                             newItems.splice(index, 1);
                         }
@@ -643,25 +642,26 @@ export class Grouping implements IAction {
                 this.isUpdate = true;
                 groupFields.push(field);
             }
-            groupFields = this.validateSettings(fieldName, groupFields, groupType, (splicedItems.length === 0 ? customGroup.items : splicedItems), newItems);
+            groupFields = this.validateSettings(fieldName, groupFields, groupType, (splicedItems.length === 0 ?
+                customGroup.items : splicedItems), newItems);
         } else if (groupType === 'date' || groupType === 'number') {
-            let startCheckBoxInstance: CheckBox = getInstance(select('#' + this.parentElement.id + 'group_start_option'), CheckBox) as CheckBox;
-            let endCheckBoxInstance: CheckBox = getInstance(select('#' + this.parentElement.id + 'group_end_option'), CheckBox) as CheckBox;
-            let startInputInstance: DateTimePicker | NumericTextBox = (groupType === 'date' ?
+            const startCheckBoxInstance: CheckBox = getInstance(select('#' + this.parentElement.id + 'group_start_option'), CheckBox) as CheckBox;
+            const endCheckBoxInstance: CheckBox = getInstance(select('#' + this.parentElement.id + 'group_end_option'), CheckBox) as CheckBox;
+            const startInputInstance: DateTimePicker | NumericTextBox = (groupType === 'date' ?
                 getInstance(select('#' + this.parentElement.id + 'group_start_input'), DateTimePicker) as DateTimePicker :
                 getInstance(select('#' + this.parentElement.id + 'group_start_input'), NumericTextBox) as NumericTextBox);
-            let endInputInstance: DateTimePicker | NumericTextBox = (groupType === 'date' ?
+            const endInputInstance: DateTimePicker | NumericTextBox = (groupType === 'date' ?
                 getInstance(select('#' + this.parentElement.id + 'group_end_input'), DateTimePicker) as DateTimePicker :
                 getInstance(select('#' + this.parentElement.id + 'group_end_input'), NumericTextBox) as NumericTextBox);
-            let intervalInstance: MultiSelect | NumericTextBox = (groupType === 'date' ?
+            const intervalInstance: MultiSelect | NumericTextBox = (groupType === 'date' ?
                 getInstance(select('#' + this.parentElement.id + 'group_interval_input'), MultiSelect) as MultiSelect :
                 getInstance(select('#' + this.parentElement.id + 'group_interval_input'), NumericTextBox) as NumericTextBox);
-            let startAt: string = startCheckBoxInstance.checked ? startInputInstance.value.toString() : undefined;
-            let endAt: string = endCheckBoxInstance.checked ? endInputInstance.value.toString() : undefined;
-            let field: IGroupSettings = { name: fieldName, startingAt: startAt, endingAt: endAt };
+            const startAt: string = startCheckBoxInstance.checked ? startInputInstance.value.toString() : undefined;
+            const endAt: string = endCheckBoxInstance.checked ? endInputInstance.value.toString() : undefined;
+            const field: IGroupSettings = { name: fieldName, startingAt: startAt, endingAt: endAt };
             if (groupType === 'date') {
-                let selectedItems: DateGroup[] = [];
-                for (let list of intervalInstance.value as string[]) {
+                const selectedItems: DateGroup[] = [];
+                for (const list of intervalInstance.value as string[]) {
                     selectedItems.push(list as DateGroup);
                 }
                 field.type = 'Date';
@@ -672,7 +672,7 @@ export class Grouping implements IAction {
             }
             let isUpdated: boolean = false;
             for (let i: number = 0, len: number = groupFields.length; i < len; i++) {
-                if (groupFields[i].name === fieldName) {
+                if (groupFields[i as number].name === fieldName) {
                     groupFields.splice(i, 1, field);
                     this.isUpdate = true;
                     isUpdated = true;
@@ -689,8 +689,8 @@ export class Grouping implements IAction {
         this.updateDateSource(groupFields, groupType);
     }
     private getGroupBasedSettings(groupFields: IGroupSettings[]): { [key: string]: IGroupSettings[] } {
-        let groups: { [key: string]: IGroupSettings[] } = {};
-        for (let group of groupFields) {
+        const groups: { [key: string]: IGroupSettings[] } = {};
+        for (const group of groupFields) {
             if (groups[group.type]) {
                 groups[group.type].push(group);
             } else {
@@ -700,26 +700,28 @@ export class Grouping implements IAction {
         return groups;
     }
     private getGroupByName(groupFields: IGroupSettings[]): { [key: string]: IGroupSettings[] } {
-        let customFields: { [key: string]: IGroupSettings[] } = {};
-        for (let field of groupFields) {
-            let name: string = field.name.replace(/_custom_group/g, '');
-            if (customFields[name]) {
-                customFields[name].push(field);
+        const customFields: { [key: string]: IGroupSettings[] } = {};
+        for (const field of groupFields) {
+            const name: string = field.name.replace(/_custom_group/g, '');
+            if (customFields[name as string]) {
+                customFields[name as string].push(field);
             } else {
-                customFields[name] = [field];
+                customFields[name as string] = [field as IGroupSettings];
             }
         }
         return customFields;
     }
-    private validateSettings(fieldName: string, groupFields: IGroupSettings[], groupType: string, splicedItems: string[], newItems?: string[]): IGroupSettings[] {
+    private validateSettings(
+        fieldName: string, groupFields: IGroupSettings[], groupType: string, splicedItems: string[],
+        newItems?: string[]): IGroupSettings[] {
         let validatedSettings: IGroupSettings[] = [];
-        let groups: { [key: string]: IGroupSettings[] } = this.getGroupBasedSettings(groupFields);
-        let groupOrders: string[] = ['Date', 'Number', 'Custom'];
+        const groups: { [key: string]: IGroupSettings[] } = this.getGroupBasedSettings(groupFields);
+        const groupOrders: string[] = ['Date', 'Number', 'Custom'];
         if (groups[groupOrders[2]] && groupType === 'custom') {
-            let customFields: { [key: string]: IGroupSettings[] } = this.getGroupByName(groups[groupOrders[2]]);
+            const customFields: { [key: string]: IGroupSettings[] } = this.getGroupByName(groups[groupOrders[2]]);
             if (customFields[fieldName.replace(/_custom_group/g, '')]) {
                 let customGroups: IGroupSettings[] = customFields[fieldName.replace(/_custom_group/g, '')];
-                let fields: string[] = customGroups.map((item: IGroupSettings, pos: number) => item.name);
+                const fields: string[] = customGroups.map((item: IGroupSettings) => item.name);
                 if (newItems) {
                     customGroups = this.modifyParentGroupItems(fieldName, customGroups, splicedItems, newItems, fields);
                 } else {
@@ -727,13 +729,13 @@ export class Grouping implements IAction {
                 }
             }
             let orderedGroups: IGroupSettings[] = [];
-            for (let field of Object.keys(customFields)) {
-                let fields: string[] = customFields[field].map((item: IGroupSettings, pos: number) => item.name);
-                orderedGroups = this.reOrderSettings(customFields[field], fields, orderedGroups, field);
+            for (const field of Object.keys(customFields)) {
+                const fields: string[] = customFields[field as string].map((item: IGroupSettings) => item.name);
+                orderedGroups = this.reOrderSettings(customFields[field as string], fields, orderedGroups, field);
             }
             groups[groupOrders[2]] = orderedGroups;
         } else if ((groupType === 'date' || groupType === 'number') && !newItems) {
-            let groupFields: IGroupSettings[] = groupType === 'date' ? groups[groupOrders[0]] : groups[groupOrders[1]];
+            const groupFields: IGroupSettings[] = groupType === 'date' ? groups[groupOrders[0]] : groups[groupOrders[1]];
             if (groupType === 'date') {
                 groups[groupOrders[0]] = groupFields.filter((field: IGroupSettings) => { return field.name !== fieldName; });
             } else {
@@ -741,34 +743,35 @@ export class Grouping implements IAction {
             }
             this.isUpdate = true;
         }
-        for (let order of groupOrders) {
-            if (groups[order]) {
-                validatedSettings = validatedSettings.concat(groups[order]);
+        for (const order of groupOrders) {
+            if (groups[order as string]) {
+                validatedSettings = validatedSettings.concat(groups[order as string]);
             }
         }
         return validatedSettings;
     }
-    private reOrderSettings(customGroups: IGroupSettings[], fields: string[], orderedSettings: IGroupSettings[], fieldName: string): IGroupSettings[] {
-        let index: number = fields.indexOf(fieldName);
-        if (index > -1 && customGroups[index].customGroups && customGroups[index].customGroups.length > 0) {
-            orderedSettings.push(customGroups[index]);
+    private reOrderSettings(
+        customGroups: IGroupSettings[], fields: string[], orderedSettings: IGroupSettings[], fieldName: string): IGroupSettings[] {
+        const index: number = fields.indexOf(fieldName);
+        if (index > -1 && customGroups[index as number].customGroups && customGroups[index as number].customGroups.length > 0) {
+            orderedSettings.push(customGroups[index as number]);
             this.reOrderSettings(customGroups, fields, orderedSettings, fieldName + '_custom_group');
         }
         return orderedSettings;
     }
-    private modifyParentGroupItems(fieldName: string, groupFields: IGroupSettings[], splicedItems: string[], newItems: string[], fields: string[]): IGroupSettings[] {
-        let index: number = fields.indexOf(fieldName + '_custom_group');
+    private modifyParentGroupItems(
+        fieldName: string, groupFields: IGroupSettings[], splicedItems: string[], newItems: string[], fields: string[]): IGroupSettings[] {
+        const index: number = fields.indexOf(fieldName + '_custom_group');
         if (index !== -1) {
-            let field: IGroupSettings = groupFields[index];
-            let selectedOptions: string[] = [];
+            const field: IGroupSettings = groupFields[index as number];
             if (field.customGroups && field.customGroups.length > 0) {
                 for (let i: number = 0, len: number = field.customGroups.length; i < len; i++) {
-                    if (field.customGroups[i]) {
+                    if (field.customGroups[i as number]) {
                         let isItemsUpdated: boolean = false;
-                        let group: ICustomGroups = field.customGroups[i];
+                        const group: ICustomGroups = field.customGroups[i as number];
                         if (group.items) {
-                            for (let item of splicedItems) {
-                                let pos: number = group.items.indexOf(item);
+                            for (const item of splicedItems) {
+                                const pos: number = group.items.indexOf(item);
                                 if (pos !== -1) {
                                     group.items.splice(pos, 1);
                                     this.isUpdate = true;
@@ -787,15 +790,15 @@ export class Grouping implements IAction {
     }
 
     private mergeArray(collection1: string[], collection2: string[]): string[] {
-        let resultArray: string[] = [];
-        let array: string[] = collection1.concat(collection2);
+        const resultArray: string[] = [];
+        const array: string[] = collection1.concat(collection2);
         let len: number = array.length;
-        let assoc: { [key: string]: boolean } = {};
+        const assoc: { [key: string]: boolean } = {};
         while (len--) {
-            let item: string = String(array[len]);
-            if (!assoc[item]) {
+            const item: string = String(array[len as number]);
+            if (!assoc[item as string]) {
                 resultArray.unshift(item);
-                assoc[item] = true;
+                assoc[item as string] = true;
             }
         }
         return resultArray;
@@ -811,6 +814,8 @@ export class Grouping implements IAction {
     }
 
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -822,6 +827,8 @@ export class Grouping implements IAction {
     }
 
     /**
+     *
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -832,6 +839,7 @@ export class Grouping implements IAction {
 
     /**
      * To destroy the pivot button event listener
+     *
      * @returns {void}
      * @hidden
      */

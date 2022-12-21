@@ -46,18 +46,18 @@ export class CommandColumn {
         const row: Row<Column> = gObj.getRowObjectFromUID(closest(target, '.' + literals.row).getAttribute('data-uid'));
         const cols: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
         for (let i: number = 0; i < cols.length; i++) {
-            if (cols[i].commands) {
-                const commandCols: Object[] = cols[i].commands;
+            if (cols[parseInt(i.toString(), 10)].commands) {
+                const commandCols: Object[] = cols[parseInt(i.toString(), 10)].commands;
                 for (let j: number = 0; j < commandCols.length; j++) {
                     const idInString: string = 'uid';
                     const typeInString: string = 'type';
-                    if (commandCols[j][idInString] === uid && commandCols[j][typeInString] === type) {
-                        commandColumn = commandCols[j];
+                    if (commandCols[parseInt(j.toString(), 10)][`${idInString}`] === uid && commandCols[parseInt(j.toString(), 10)][`${typeInString}`] === type) {
+                        commandColumn = commandCols[parseInt(j.toString(), 10)];
                     } else {
                         const buttons: HTMLElement[] = [].slice.call(closest(target, '.e-unboundcell').querySelectorAll('button'));
                         const index: number = buttons.findIndex((ele: HTMLElement) => ele === target);
-                        if (index < commandCols.length && commandCols[index][typeInString] === type) {
-                            commandColumn = commandCols[index];
+                        if (index < commandCols.length && commandCols[parseInt(index.toString(), 10)][`${typeInString}`] === type) {
+                            commandColumn = commandCols[parseInt(index.toString(), 10)];
                         }
                     }
                 }
@@ -145,10 +145,10 @@ export class CommandColumn {
         const uid: string = 'uid';
         const col: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
         for (let i: number = 0; i < col.length; i++) {
-            if (col[i].commands) {
-                const commandCol: Object[] = col[i].commands;
+            if (col[parseInt(i.toString(), 10)].commands) {
+                const commandCol: Object[] = col[parseInt(i.toString(), 10)].commands;
                 for (let j: number = 0; j < commandCol.length; j++) {
-                    commandCol[j][uid] = getUid('gridcommand');
+                    commandCol[parseInt(j.toString(), 10)][`${uid}`] = getUid('gridcommand');
                 }
             }
         }

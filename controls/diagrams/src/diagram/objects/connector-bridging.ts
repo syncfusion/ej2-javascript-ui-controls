@@ -32,7 +32,7 @@ export class ConnectorBridging {
             const bridgeSpacing: number = conn.bridgeSpace; const bgedir: BridgeDirection = diagram.bridgeDirection;
             let count: number = -1; const quads: ConnectorModel[] = diagram.connectors;
             for (let q: number = 0; q < quads.length; q++) {
-                const connector1: ConnectorModel = quads[q];
+                const connector1: ConnectorModel = quads[parseInt(q.toString(), 10)];
                 if (conn && connector1 && conn.id !== connector1.id) {
                     const points2: PointModel[] = this.getPoints(connector1 as Connector); const bounds1: Rect = Rect.toBounds(points2);
                     if (this.intersectsRect(bounds, bounds1)) {
@@ -41,7 +41,7 @@ export class ConnectorBridging {
                             for (let i: number = 0; i < intersectPts.length; i++) {
                                 let fullLength: number = 0; let length: number = 0; let segmentIndex: number = 0;
                                 let pointIndex: number = 0;
-                                const obj: LengthFraction = this.getLengthAtFractionPoint(conn, intersectPts[i]);
+                                const obj: LengthFraction = this.getLengthAtFractionPoint(conn, intersectPts[parseInt(i.toString(), 10)]);
                                 if (obj.pointIndex !== -1) {
                                     length = obj.lengthFractionIndex; fullLength = obj.fullLength;
                                     segmentIndex = obj.segmentIndex;
@@ -58,16 +58,16 @@ export class ConnectorBridging {
                                     if (conn.type === 'Straight') {
                                         end = conn.targetPoint;
                                     } else {
-                                        end = conn.intermediatePoints[pointIndex];
+                                        end = conn.intermediatePoints[parseInt(pointIndex.toString(), 10)];
                                     }
                                     const angle: number = this.angleCalculation(start, end);
                                     if (lastBridge.length) {
                                         const fixedPoint: PointModel = conn.sourcePoint;
                                         const fix: number = Math.abs(this.lengthCalculation(fixedPoint, enBridge)); let var1: number = 0;
                                         let insertAt: number = -1; count = -1;
-                                        for (let k: number = 0; k < lastBridge[segmentIndex].bridges.length; k++) {
+                                        for (let k: number = 0; k < lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.length; k++) {
                                             count++;
-                                            const arcSeg: Bridge = lastBridge[segmentIndex].bridges[k];
+                                            const arcSeg: Bridge = lastBridge[parseInt(segmentIndex.toString(), 10)].bridges[parseInt(k.toString(), 10)];
                                             var1 = Math.abs(this.lengthCalculation(fixedPoint, arcSeg.endPoint));
                                             if (fix < var1) {
                                                 insertAt = count; break;
@@ -77,18 +77,18 @@ export class ConnectorBridging {
                                             //let paths: ArcSegment;
                                             // eslint-disable-next-line max-len
                                             const paths: ArcSegment = this.createSegment(stBridge, enBridge, angle, bgedir, pointIndex, conn, diagram);
-                                            paths.target = connector1.id; lastBridge[segmentIndex].bridges.splice(insertAt, 0, paths);
-                                            lastBridge[segmentIndex].bridges.join();
-                                            lastBridge[segmentIndex].bridgeStartPoint.splice(insertAt, 0, stBridge);
-                                            lastBridge[segmentIndex].bridgeStartPoint.join();
-                                            lastBridge[segmentIndex].segmentIndex = segmentIndex;
+                                            paths.target = connector1.id; lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.splice(insertAt, 0, paths);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.join();
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.splice(insertAt, 0, stBridge);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.join();
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].segmentIndex = segmentIndex;
                                         } else {
                                             //let paths: ArcSegment;
                                             // eslint-disable-next-line max-len
                                             const paths: ArcSegment = this.createSegment(stBridge, enBridge, angle, bgedir, pointIndex, conn, diagram);
-                                            paths.target = connector1.id; lastBridge[segmentIndex].bridges.push(paths);
-                                            lastBridge[segmentIndex].bridgeStartPoint.push(stBridge);
-                                            lastBridge[segmentIndex].segmentIndex = segmentIndex;
+                                            paths.target = connector1.id; lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.push(paths);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint.push(stBridge);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].segmentIndex = segmentIndex;
                                         }
                                     } else {
                                         if (!isNaN(stBridge.x) && !isNaN(stBridge.y) && !this.isEmptyPoint(enBridge)) {
@@ -102,9 +102,9 @@ export class ConnectorBridging {
                                             arcs.target = connector1.id;
                                             const stPoints: PointModel[] = []; const edPoints: PointModel[] = [];
                                             stPoints.push(stBridge); edPoints.push(enBridge);
-                                            lastBridge[segmentIndex] = bgseg; lastBridge[segmentIndex].bridges.push(arcs);
-                                            lastBridge[segmentIndex].bridgeStartPoint = stPoints;
-                                            lastBridge[segmentIndex].segmentIndex = segmentIndex;
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)] = bgseg; lastBridge[parseInt(segmentIndex.toString(), 10)].bridges.push(arcs);
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].bridgeStartPoint = stPoints;
+                                            lastBridge[parseInt(segmentIndex.toString(), 10)].segmentIndex = segmentIndex;
                                         }
                                     }
                                 }
@@ -127,10 +127,10 @@ export class ConnectorBridging {
      */
     public firstBridge(bridgeList: BridgeSegment[], connector: Connector, bridgeSpacing: number): void {
         for (let i: number = 0; i < bridgeList.length; i++) {
-            const bridge: BridgeSegment = bridgeList[i];
+            const bridge: BridgeSegment = bridgeList[parseInt(i.toString(), 10)];
             for (let k: number = 1; k < bridge.bridges.length; k++) {
-                if (Point.findLength(bridge.bridges[k].endPoint, bridge.bridges[k - 1].endPoint) < bridgeSpacing) {
-                    bridge.bridges[k - 1].endPoint = bridge.bridges[k].endPoint;
+                if (Point.findLength(bridge.bridges[parseInt(k.toString(), 10)].endPoint, bridge.bridges[k - 1].endPoint) < bridgeSpacing) {
+                    bridge.bridges[k - 1].endPoint = bridge.bridges[parseInt(k.toString(), 10)].endPoint;
                     const subBridge: Bridge = bridge.bridges[k - 1];
                     const arc: string = this.createBridgeSegment(
                         subBridge.startPoint,
@@ -140,7 +140,7 @@ export class ConnectorBridging {
             }
             let pre: PointModel = connector.sourcePoint;
             for (let j: number = 0; j < bridge.bridges.length; j++) {
-                const subBridge: Bridge = bridge.bridges[j]; //const preventChecking: boolean = true;
+                const subBridge: Bridge = bridge.bridges[parseInt(j.toString(), 10)]; //const preventChecking: boolean = true;
                 pre = subBridge.endPoint; connector.bridges.push(subBridge);
             }
         }
@@ -230,7 +230,7 @@ export class ConnectorBridging {
         let pre: PointModel;
         let found: PointModel = { x: 0, y: 0 };
         for (let i: number = 0; i < pts.length; i++) {
-            const pt: PointModel = pts[i];
+            const pt: PointModel = pts[parseInt(i.toString(), 10)];
             if (!pre) {
                 pre = pt;
                 continue;
@@ -259,7 +259,7 @@ export class ConnectorBridging {
         const points: PointModel[] = [];
         if (connector.intermediatePoints && (connector.type === 'Straight' || connector.type === 'Orthogonal')) {
             for (let j: number = 0; j < connector.intermediatePoints.length; j++) {
-                points.push(connector.intermediatePoints[j]);
+                points.push(connector.intermediatePoints[parseInt(j.toString(), 10)]);
             }
         }
         return points;
@@ -286,10 +286,10 @@ export class ConnectorBridging {
         }
         const points: PointModel[] = [];
         for (let i: number = 0; i < points1.length - 1; i++) {
-            const pt: PointModel[] = this.inter1(points1[i], points1[i + 1], points2, zOrder, bridgeDirection);
+            const pt: PointModel[] = this.inter1(points1[parseInt(i.toString(), 10)], points1[i + 1], points2, zOrder, bridgeDirection);
             if (pt.length > 0) {
                 for (let k: number = 0; k < pt.length; k++) {
-                    points.push(pt[k]);
+                    points.push(pt[parseInt(k.toString(), 10)]);
                 }
             }
             if (self && points2.length >= 1) {
@@ -312,10 +312,10 @@ export class ConnectorBridging {
         bridgeDirection: BridgeDirection): PointModel[] {
         const points1: PointModel[] = [];
         for (let i: number = 0; i < pts.length - 1; i++) {
-            const point: PointModel = intersect2(startPt, endPt, pts[i], pts[i + 1]);
+            const point: PointModel = intersect2(startPt, endPt, pts[parseInt(i.toString(), 10)], pts[i + 1]);
             if (!this.isEmptyPoint(point)) {
                 let angle: number = this.angleCalculation(startPt, endPt);
-                let angle1: number = this.angleCalculation(pts[i], pts[i + 1]);
+                let angle1: number = this.angleCalculation(pts[parseInt(i.toString(), 10)], pts[i + 1]);
                 angle = this.checkForHorizontalLine(angle);
                 angle1 = this.checkForHorizontalLine(angle1);
                 switch (bridgeDirection) {
@@ -364,11 +364,11 @@ export class ConnectorBridging {
         let previouspt2: PointModel = pt1;
         const points: PointModel[] = [];
         for (let i: number = 0; i < connector.intermediatePoints.length; i++) {
-            const point2: PointModel = connector.intermediatePoints[i];
+            const point2: PointModel = connector.intermediatePoints[parseInt(i.toString(), 10)];
             points.push(point2);
         }
         for (let j: number = 0; j < points.length; j++) {
-            const pt2: PointModel = points[j];
+            const pt2: PointModel = points[parseInt(j.toString(), 10)];
             const suspect: number = this.getSlope(pt2, pt1, pointAt, connector);
             if (suspect < confirm) {
                 confirm = suspect;

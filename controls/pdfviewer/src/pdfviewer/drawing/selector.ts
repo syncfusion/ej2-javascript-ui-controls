@@ -114,14 +114,14 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         container.children = [];
         if (this.formFields && this.formFields.length > 0) {
             for (let i: number = 0; i < this.formFields.length; i++) {
-                const node: PdfFormFieldBaseModel = diagram.pdfViewer.nameTable[this.formFields[i].id];
+                const node: PdfFormFieldBaseModel = diagram.pdfViewer.nameTable[this.formFields[parseInt(i.toString(), 10)].id];
                 const wrapper: Container = node.wrapper;
                 container.children.push(wrapper);
             }
         } else if (this.annotations) {
             for (let i: number = 0; i < this.annotations.length; i++) {
-                if (!isNullOrUndefined(this.annotations[i])) {
-                    const node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[i].id];
+                if (!isNullOrUndefined(this.annotations[parseInt(i.toString(), 10)])) {
+                    const node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[parseInt(i.toString(), 10)].id];
                     const wrapper: Container = node.wrapper;
                     container.children.push(wrapper);
                 }

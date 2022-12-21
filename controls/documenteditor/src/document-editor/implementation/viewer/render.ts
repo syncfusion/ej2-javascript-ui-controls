@@ -17,7 +17,7 @@ import { SearchWidgetInfo, WColor, CharacterRangeType } from '../../index';
 import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
-import { WSectionFormat } from '../format';
+import { WColumnFormat, WSectionFormat } from '../format';
 import { FontScriptType, TextWrappingStyle } from '../../index';
 import { TextSizeInfo } from './text-helper';
 import { DocumentCanvasElement, DocumentCanvasRenderingContext2D } from './document-canvas';
@@ -116,7 +116,7 @@ export class Renderer {
             this.renderHFWidgets(page, page.footerWidgetIn, width, false);
         }
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
-            this.render(page, page.bodyWidgets[i]);
+            this.render(page, page.bodyWidgets[parseInt(i.toString(), 10)]);
             if (page.footnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
                 this.renderfootNoteWidget(page, page.footnoteWidget, width);
             }
@@ -172,21 +172,21 @@ export class Renderer {
         } else {
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
             let footerHeight: number;
-            if (isNullOrUndefined(page.footerWidget.sectionFormat)) {
+            if (isNullOrUndefined(page.footerWidgetIn.sectionFormat)) {
                 footerHeight = page.boundingRectangle.height -
                 /* eslint-disable-next-line max-len */
-                Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
+                Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
             } else {
                 footerHeight = page.boundingRectangle.height -
                 /* eslint-disable-next-line max-len */
-                Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+                Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
             }
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
             pageHt = page.boundingRectangle.height - footerDistance;
         }
         this.renderFloatingItems(page, widget.floatingElements, 'Behind');
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
-            const block: BlockWidget = widget.childWidgets[i] as BlockWidget;
+            const block: BlockWidget = widget.childWidgets[parseInt(i.toString(), 10)] as BlockWidget;
             if (!isHeader) {
                 height += block.height;
             }
@@ -226,7 +226,7 @@ export class Renderer {
 
             let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
                 /* eslint-disable-next-line max-len */
-                this.getScaledValue(Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin)));
+                this.getScaledValue(Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin)));
             //Maximum footer height limit
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
             this.renderDashLine(ctx, left, top + footerHeight, pageWidth, '#000000', false);
@@ -242,7 +242,7 @@ export class Renderer {
         const footerWidgetHeight: number = ((page.boundingRectangle.height) / 100) * 40;
         const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
         let actualHeight: number = page.boundingRectangle.height -
-            Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
+            Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin));
         return Math.max((page.boundingRectangle.height) - footerWidgetHeight, actualHeight);
     }
 
@@ -309,18 +309,65 @@ export class Renderer {
         if (this.isFieldCode) {
             this.isFieldCode = false;
         }
-        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements, 'Behind');
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
+                this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'Behind');
+            }
+        }
+        // let isClipped: boolean = false;
+        // if (bodyWidget.sectionFormat.columns.length > 1) {
+        //     let colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
+        //     if (colIndex !== bodyWidget.sectionFormat.columns.length - 1) {
+        //         let width: number = (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space / 2);
+        //         isClipped = true;
+        //         this.clipRect(page.bodyWidgets[colIndex].x, page.bodyWidgets[colIndex].y, this.getScaledValue(width), this.getScaledValue(page.boundingRectangle.height));
+        //     }
+        // }
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
-            const widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
+            const widget: Widget = bodyWidget.childWidgets[parseInt(i.toString(), 10)] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
                 ((bodyWidget.childWidgets[0] as TableWidget).childWidgets.length > 0) &&
                 page.repeatHeaderRowTableWidget) {
                 /* eslint-disable-next-line max-len */
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
+
             this.renderWidget(page, widget);
         }
-        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements, 'InFrontOfText');
+        // if (isClipped) {
+        //     this.pageContext.restore();
+        // }
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
+                this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'InFrontOfText');
+            }
+        }
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            if (page.bodyWidgets[parseInt(i.toString(), 10)].sectionFormat.lineBetweenColumns === true) {
+                if (page.bodyWidgets[parseInt(i.toString(), 10)].indexInOwner !== 0 && page.bodyWidgets.length > 1) {
+                    const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+                    let linestartY: number = this.getScaledValue(Math.max((page.headerWidgetIn.y + page.headerWidgetIn.height), topMargin));
+                    const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
+                    const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
+                    let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
+                        /* eslint-disable-next-line max-len */
+                        this.getScaledValue(Math.max(page.footerWidgetIn.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidgetIn.sectionFormat.bottomMargin)));
+                    footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
+                    let inBetweenSpace: number = (page.bodyWidgets[parseInt(i.toString(), 10)].x - (page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.x + page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.width)) / 2;
+                    let startX = inBetweenSpace + (page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.x + page.bodyWidgets[parseInt(i.toString(), 10)].previousRenderedWidget.width);
+                    let startY: number = linestartY / this.documentHelper.zoomFactor;
+                    let endX: number = startX;
+                    let endY: number;
+                    if (page.footnoteWidget) {
+                        endY = ((footerHeight - (page.footerWidgetIn.height / 2)) - page.footnoteWidget.height * this.documentHelper.zoomFactor) / this.documentHelper.zoomFactor;
+                    } else {
+                        endY = (footerHeight - (page.footerWidgetIn.height / 2)) / this.documentHelper.zoomFactor;
+                    }
+                    let color: string = '#000000';
+                    this.renderSingleBorder(color, startX, startY, endX, endY, 0.5, "Single");
+                }
+            }
+        }
     }
 
     private renderFloatingItems(page: Page, floatingElements: (ShapeBase | TableWidget)[], wrappingType: TextWrappingStyle): void {
@@ -438,7 +485,7 @@ export class Renderer {
             return;
         }
         //Updated client area for current page
-        page.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
+        page.viewer.updateClientArea(page.bodyWidgets[0], page);
         let top: number = page.viewer.clientArea.y;
         let parentTable: TableWidget = header.ownerTable.getSplitWidgets()[0] as TableWidget;
         for (let i: number = 0; i <= header.rowIndex; i++) {
@@ -570,9 +617,15 @@ export class Renderer {
                 let indent: number = HelperMethods.convertPointToPixel(paraWidget.leftIndent + paraWidget.rightIndent);
                 return (this.documentHelper.visibleBounds.width - (indent) - (this.viewer.padding.right * 4) - (this.viewer.padding.left * 2)) / this.documentHelper.zoomFactor;
             } else {
-                let sectionFormat: WSectionFormat = page.bodyWidgets[0].sectionFormat;
-                let width: number = sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin;
-                return HelperMethods.convertPointToPixel(width + hangingIndent - (paraWidget.rightIndent + paraWidget.leftIndent));
+                let section: BodyWidget = paraWidget.bodyWidget as BodyWidget;
+                if (section instanceof BodyWidget && section.sectionFormat.columns.length > 1) {
+                    let colIndex: number = section.page.bodyWidgets.indexOf(section);
+                    return (section.sectionFormat.columns[colIndex] as WColumnFormat).width + HelperMethods.convertPointToPixel(hangingIndent - (paraWidget.rightIndent + paraWidget.leftIndent));
+                }
+                else {
+                    let width: number = section.sectionFormat.pageWidth - section.sectionFormat.leftMargin - section.sectionFormat.rightMargin;
+                    return HelperMethods.convertPointToPixel(width + hangingIndent - (paraWidget.rightIndent + paraWidget.leftIndent));
+                }
             }
         }
     }
@@ -636,7 +689,14 @@ export class Renderer {
                 let widget: BlockWidget = bodyWidget.childWidgets[j] as BlockWidget;
                 if (i === 0 && j === 0) {
                     let ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
-                    this.renderSolidLine(ctx, this.getScaledValue(96, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
+                    let xPos: number = page.bodyWidgets[0].x;
+                    if (page.bodyWidgets.length > 1) {
+                        let footWidth = page.bodyWidgets[0].width;
+                        this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), footWidth * this.documentHelper.zoomFactor, '#000000');
+
+                    } else {
+                        this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
+                    }
                 }
                 if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
@@ -971,7 +1031,10 @@ export class Renderer {
                 let color: string = this.documentHelper.authors.get(currentCharFormat.revisions[0].author);
                 this.pageContext.fillStyle = HelperMethods.getColor(color);
             }
-            if (lineWidget.isEndsWithPageBreak) {
+            if (lineWidget.isEndsWithColumnBreak) {
+                characterFont = this.retriveCharacterformat(currentCharFormat, 0.7);
+                text = "....." + l10n.getConstant('Column Break') + ".....";
+            } else if (lineWidget.isEndsWithPageBreak) {
                 characterFont = this.retriveCharacterformat(currentCharFormat, 0.7);
                 if (lineWidget.paragraph.bidi) {
                     text = String.fromCharCode(182) + '.....' + l10n.getConstant('Page Break') + '.....';
@@ -1013,7 +1076,11 @@ export class Renderer {
             }
             if (lineWidget.paragraph.containerWidget instanceof BodyWidget && !isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {
                 if (lineWidget.paragraph.containerWidget.sectionIndex !== (lineWidget.paragraph.nextRenderedWidget.containerWidget as BodyWidget).sectionIndex && lineWidget.isLastLine()) {
-                    text = ':::::' + l10n.getConstant('Section Break Next Page') + ':::::';
+                    if ((lineWidget.paragraph.nextRenderedWidget.containerWidget as BodyWidget).sectionFormat.breakCode === 'NoBreak' && lineWidget.paragraph.containerWidget.index !== (lineWidget.paragraph.nextRenderedWidget.containerWidget as BodyWidget).index) {
+                        text = ':::::' + l10n.getConstant('Section Break Continuous') + ':::::';
+                    } else {
+                        text = ':::::' + l10n.getConstant('Section Break Next Page') + ':::::';
+                    }
                     characterFont = this.retriveCharacterformat(currentCharFormat, 0.7);
                     if(lineWidget.isEndsWithPageBreak){
                         if (lineWidget.paragraph.bidi) {

@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../index';
 import { ExportType } from '../utils/enum';
 import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-export';
@@ -15,7 +15,7 @@ export class PdfExport {
      *
      * @param {CircularGauge} control - Specfies the instance of the gauge.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line
     constructor(control: CircularGauge) {
     }
 
@@ -30,9 +30,10 @@ export class PdfExport {
      * @returns {Promise<string>} - Returns the promise string
      * @private
      */
-    public export(gauge: CircularGauge, type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
+    public export(gauge: CircularGauge, type: ExportType, fileName: string, orientation?: PdfPageOrientation,
+                  allowDownload?: boolean): Promise<string> {
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -41,7 +42,6 @@ export class PdfExport {
                     'height': gauge.availableSize.height.toString()
                 }
             });
-            const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
             const exportElement: HTMLElement = gauge.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
@@ -90,5 +90,6 @@ export class PdfExport {
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

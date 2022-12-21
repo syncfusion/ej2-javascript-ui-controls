@@ -104,14 +104,14 @@ export class VirtualScroll {
     private initScroll(): void {
         let i: number = 0;
         while (i < this.parent.sheets.length) {
-            if (!this.scroll[i]) { this.scroll.push({ rowCount: 0, colCount: 0 }); } i++;
+            if (!this.scroll[i as number]) { this.scroll.push({ rowCount: 0, colCount: 0 }); } i++;
         }
     }
 
     private setScrollCount(count: number, layout: string): void {
         const activeSheetIdx: number = this.parent.activeSheetIndex;
-        if (!this.scroll[activeSheetIdx][layout + 'Count'] || this.scroll[activeSheetIdx][layout + 'Count'] !== count) {
-            this.scroll[activeSheetIdx][layout + 'Count'] = count;
+        if (!this.scroll[activeSheetIdx as number][layout + 'Count'] || this.scroll[activeSheetIdx as number][layout + 'Count'] !== count) {
+            this.scroll[activeSheetIdx as number][layout + 'Count'] = count;
         }
     }
 
@@ -295,7 +295,7 @@ export class VirtualScroll {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let count: number = 0;
         for (let i: number = idx; i <= prevIdx; i++) {
-            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) {
+            if ((sheet[`${layout}`])[i as number] && (sheet[`${layout}`])[i as number].hidden) {
                 count++;
             }
         }
@@ -308,7 +308,7 @@ export class VirtualScroll {
     private hiddenCount(startIdx: number, endIdx: number, layout: string = 'rows'): number {
         let index: number = 0; const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = startIdx; i <= endIdx; i++) {
-            if ((sheet[layout])[i] && (sheet[layout])[i].hidden) { index++; }
+            if ((sheet[`${layout}`])[i as number] && (sheet[`${layout}`])[i as number].hidden) { index++; }
         }
         return index;
     }
@@ -580,7 +580,7 @@ export class VirtualScroll {
             }
         } else {
             if (args.index !== this.scroll[this.parent.activeSheetIndex].colCount - 1) {
-                let width: number = this.getVTrackHeight('width'); let newWidth: number = width;
+                const width: number = this.getVTrackHeight('width'); let newWidth: number = width;
                 if (args.index >= this.scroll[this.parent.activeSheetIndex].colCount) {
                     if (args.start === undefined) {
                         newWidth += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetIndex].colCount, args.index, true);
@@ -605,7 +605,7 @@ export class VirtualScroll {
     }
 
     private getVTrackHeight(str: string): number {
-        let height: string = (this.content.nextElementSibling as HTMLElement).style[str];
+        let height: string = (this.content.nextElementSibling as HTMLElement).style[`${str}`];
         if (height.includes('e+')) {
             height = height.split('px')[0];
             const heightArr: string[] = height.split('e+');
@@ -646,8 +646,8 @@ export class VirtualScroll {
     }
 
     private updateVTrack(header: HTMLElement, size: number, sizeStr: string): void {
-        (header.nextElementSibling as HTMLElement).style[sizeStr] = `${size}px`;
-        (this.content.nextElementSibling as HTMLElement).style[sizeStr] = `${size}px`;
+        (header.nextElementSibling as HTMLElement).style[`${sizeStr}`] = `${size}px`;
+        (this.content.nextElementSibling as HTMLElement).style[`${sizeStr}`] = `${size}px`;
         if (sizeStr === 'width' && this.parent.allowScrolling) {
             (this.parent.getScrollElement().firstElementChild as HTMLElement).style.width = `${size}px`;
         }

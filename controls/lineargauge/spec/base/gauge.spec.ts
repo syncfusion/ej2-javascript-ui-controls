@@ -496,7 +496,7 @@ describe('Linear gauge control', () => {
         });
 
         it('Checking resize event', () => {
-            gauge.gaugeResize(<Event>{});
+            gauge.gaugeResize();
         });
     });
     it('memory leak', () => {     

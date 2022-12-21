@@ -1,5 +1,5 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
-import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange } from '../index';
+import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange, isImported } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress, initiateSort, beginAction } from '../../workbook/index';
@@ -88,11 +88,11 @@ export class Sort {
         const rowId: number = this.parent.getActiveSheet().usedRange.rowIndex - 1;
         const sheetIdx: number = args ? args.sheetIdx : this.parent.activeSheetIndex;
         for (let j : number = 0; j < sort.length; j++) {
-            if (sort[j].sheetIndex === sheetIdx) {
+            if (sort[j as number].sheetIndex === sheetIdx) {
                 for (let i: number = 0; i < rowId; i++) {
-                    cell = this.parent.getCell(i, sort[j].columnIndex);
+                    cell = this.parent.getCell(i, sort[j as number].columnIndex);
                     if (cell && cell.querySelector('.e-filter-icon')) {
-                        if (sort[j].order === 'Ascending' || sort[j].order === 'OnTop') {
+                        if (sort[j as number].order === 'Ascending' || sort[j as number].order === 'OnTop') {
                             if (!cell.querySelector('.e-filter-icon').classList.contains('e-sortasc-filter')) {
                                 cell.querySelector('.e-filter-icon').classList.add('e-sortasc-filter');
                             }
@@ -123,7 +123,7 @@ export class Sort {
             content: args.error,
             beforeOpen: (openArgs: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
-                    dialogName: args.error === l10n.getConstant("MultiRangeSortError") ? "MultiRangeSortDialog" : "SortRangeDialog",
+                    dialogName: args.error === l10n.getConstant('MultiRangeSortError') ? 'MultiRangeSortDialog' : 'SortRangeDialog',
                     content: args.error,
                     element: openArgs.element, target: openArgs.target, cancel: openArgs.cancel
                 };
@@ -145,7 +145,7 @@ export class Sort {
     private initiateCustomSortHandler(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (!this.isValidSortRange() || sheet.rows.length == 0) {
+        if (!this.isValidSortRange() || sheet.rows.length === 0) {
             this.sortRangeAlertHandler({ error: l10n.getConstant('SortOutOfRangeError') });
             return;
         }
@@ -287,7 +287,7 @@ export class Sort {
             }
         }
         const fields: { [key: string]: string }[] = [];
-        let text: string; 
+        let text: string;
         let value: string;
         for (range[1]; range[1] <= range[3]; range[1]++) {
             const cell: CellModel = getCell(range[0], range[1], sheet);
@@ -591,7 +591,8 @@ export class Sort {
                 this.parent.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: i, colIndex: j });
             }
         }
-        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range, true, true);
+        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+            range, true, true, false, false, isImported(this.parent));
         if (sheetIdx === this.parent.activeSheetIndex && sheet.conditionalFormats && sheet.conditionalFormats.length) {
             this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range });
         }

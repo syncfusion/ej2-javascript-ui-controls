@@ -1,10 +1,10 @@
 /**
  * IncrementalSearch module file
  */
-import { isNullOrUndefined } from "@syncfusion/ej2-base";
-import { DataManager } from "@syncfusion/ej2-data";
-import { FieldSettingsModel } from "@syncfusion/ej2-lists";
-
+ import { isNullOrUndefined } from "@syncfusion/ej2-base";
+ import { DataManager } from "@syncfusion/ej2-data";
+ import { FieldSettingsModel } from "@syncfusion/ej2-lists";
+ 
 let queryString: string = '';
 let prevString: string = '';
 let matches: Element[] = [];
@@ -79,8 +79,8 @@ export function incrementalSearch(
  */
 export function Search(
     inputVal: string, items: HTMLElement[], searchType: SearchType, ignoreCase?: boolean, dataSource?: string[] | number[] | boolean[] | {
-        [key: string]: Object}[], fields?: any, type?: string): { [key: string]: Element | number } {
-    const listItems: Element[] = items;
+        [key: string]: Object}[], fields?: any, type?: string): { [key: string]: Element | number} {
+    const listItems: HTMLElement[] = items;
     ignoreCase = ignoreCase !== undefined && ignoreCase !== null ? ignoreCase : true;
     const itemData: { [key: string]: Element | number } = { item: null, index: null };
     if (inputVal && inputVal.length) {
@@ -97,7 +97,7 @@ export function Search(
                 (dataSource as { [key: string]: Object }[]).filter(function (data: any) {
                 Array.prototype.slice.call(fieldValue).forEach(function (value: string | number) {
                     if (type === 'object' && checkField.textContent.toString().indexOf(data[value]) !== -1 && checkField.getAttribute('data-value') === data[fields.value]  || type === 'string' && checkField.textContent.toString().indexOf(data) !== -1) {
-                    filterValue = type === 'object' ? data[value] : data;
+                       filterValue = type === 'object' ? data[value] : data;
                     }
                 });
             })

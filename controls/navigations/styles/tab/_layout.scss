@@ -31,9 +31,7 @@
         }
 
         .e-indicator + .e-toolbar-item:last-child.e-active {
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            margin: 1px 2px 0 0;
-          }
+          margin: $tab-bgr-active-last-margin;
         }
       }
 
@@ -52,14 +50,7 @@
         }
 
         .e-scroll-nav {
-          width: 50px;
-          @if $tab-skin == 'FluentUI' {
-            width: 38px;
-          }
-          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            border-radius: 4px;
-            width: 38px;
-          }
+          width: $tab-bgr-hscroll-items-nav-width;
         }
       }
 
@@ -93,21 +84,17 @@
         }
 
         .e-text-wrap {
-          height: $tab-big-height;
-
-          @if $tab-skin == 'fabric' {
-            height: $tab-big-height - 2;
-          }
-          @else if $tab-skin == 'highcontrast' {
-            height: $tab-big-height - 4;
-          }
+          height: $tab-bgr-item-textwrap-height;
         }
 
         .e-tab-text {
           font-size: $tab-big-font-size;
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-            align-self: auto;
-          }
+          margin-bottom: $tab-bgr-item-text-margin-bottom;
+        }
+
+        &.e-ileft:not(.e-icon) .e-tab-icon::before {
+          position: relative;
+          top: $tab-item-left-icon-before-top;
         }
 
         &.e-active {
@@ -118,43 +105,19 @@
             margin: $tab-mob-boot-item-margin;
           }
 
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            &.e-ileft:not(.e-icon) .e-tab-icon::before {
-              position: relative;
-              top: -.5px;
-            }
+          &.e-ileft:not(.e-icon) .e-tab-icon::before {
+            position: relative;
+            top: $tab-item-left-icon-before-top;
           }
 
           .e-text-wrap {
-            height: $tab-big-active-text-container-height;
+            height: $tab-bgr-item-textwrap-height;
             margin-top: $tab-active-text-container-margin;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-big-height - 4;
-            }
           }
 
           &.e-ileft .e-text-wrap,
           &.e-iright .e-text-wrap {
-            height: $tab-big-active-it-text-container-height;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-big-height - 4;
-            }
-          }
-
-          &.e-ileft .e-text-wrap {
-            padding: $tab-big-ileft-active-text-wrap-padding;
-
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              padding: 0;
-            }
+            height: $tab-bgr-item-textwrap-height;
           }
         }
 
@@ -180,10 +143,7 @@
           height: $tab-big-icon-container-size;
           min-width: $tab-big-icon-container-size;
           width: $tab-big-icon-container-size;
-
-          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            line-height: $tab-big-icon-container-size;
-          }
+          line-height: $tab-bgr-icon-line-height;
         }
 
         .e-tab-icon,
@@ -198,13 +158,11 @@
           }
         }
 
-        @if $tab-skin == 'FluentUI' {
-          .e-icon-right {
-            margin: $tab-big-it-text-margin;
+        .e-icon-right {
+          margin: 0 0 0 12px;
 
-            @media screen and (max-width: 480px) {
-              margin: $tab-mob-it-text-margin;
-            }
+          @media screen and (max-width: 480px) {
+            margin: $tab-bgr-mob-item-iconright-margin;
           }
         }
 
@@ -238,17 +196,6 @@
 
           .e-close-icon {
             right: $tab-big-close-icon-top-bottom-right;
-          }
-
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-
-            .e-text-wrap {
-              height: auto;
-            }
-
-            &.e-active .e-tab-wrap {
-              height: 72px;
-            }
           }
         }
 
@@ -285,14 +232,7 @@
           }
 
           .e-text-wrap {
-            height: $tab-big-pop-item-height;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-pop-item-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-big-pop-item-height - 4;
-            }
+            height: $tab-bgr-pop-item-textwrap-height;
           }
 
           .e-tab-text + .e-close-icon[style = 'display:block'] {
@@ -391,12 +331,8 @@
           &::before {
             font-size: $tab-big-nav-icon-size;
             line-height: $tab-big-nav-icon-container-size;
-            top: 0;
+            top: $tab-bgr-scroll-nav-arrow-before-top;
             vertical-align: initial;
-
-            @if $tab-skin == 'highcontrast' {
-              top: -2px;
-            }
           }
         }
       }
@@ -427,41 +363,20 @@
           &::before {
             font-size: $tab-big-nav-icon-size;
             line-height: $tab-big-nav-icon-container-size;
-            top: 0;
+            top: $tab-bgr-scroll-nav-arrow-before-top;
             vertical-align: initial;
 
             @media screen and (max-width: 480px) {
               font-size: $tab-mob-nav-icon-size;
             }
-
-            @if $tab-skin == 'highcontrast' {
-              top: -2px;
-            }
           }
 
           &:hover {
-            @if $tab-skin == 'bootstrap' {
-              line-height: 42px;
-            }
-            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-              line-height: 38px;
-            }
+            line-height: $tab-bgr-hor-pop-lineheight;
 
             &::before {
-              top: $tab-big-hover-nav-pop-icon-top;
-
-              @if $tab-skin == 'bootstrap' {
-                line-height: 42px;
-                top: .5px;
-              }
-              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-                line-height: 38px;
-                top: .5px;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                top: -2px;
-              }
+              line-height: $tab-bgr-hor-pop-lineheight;
+              top: $tab-bgr-hor-pop-hover-top;
             }
           }
         }
@@ -470,37 +385,16 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $tab-skin == 'bootstrap' {
-              line-height: 42px;
-            }
-            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-              line-height: 38px;
-            }
+            line-height: $tab-bgr-hor-pop-lineheight;
 
             &::before {
-              top: $tab-big-hover-nav-pop-icon-top;
-
-              @if $tab-skin == 'bootstrap' {
-                line-height: 42px;
-              }
-              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-                line-height: 38px;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                top: -2px;
-              }
+              line-height: $tab-bgr-hor-pop-lineheight;
+              top: $tab-bgr-scroll-nav-arrow-before-top;
             }
 
             &:hover {
-              @if $tab-skin == 'bootstrap' {
-                line-height: 42px;
-                top: -2px;
-              }
-              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-                line-height: 38px;
-                top: -2px;
-              }
+              line-height: $tab-bgr-hor-pop-lineheight;
+              top: $tab-bgr-hor-focus-pop-hover-top;
             }
           }
         }
@@ -540,20 +434,13 @@
               padding-top: $tab-big-even-boot-active-item-padding-bottom;
             }
 
-            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-              .e-close-icon::before {
-                top: .5px;
-              }
+            .e-close-icon::before {
+              top: $tab-bgr-bottom-active-close-top;
+            }
 
-              &.e-itop .e-text-wrap,
-              &.e-ibottom .e-text-wrap {
-                height: initial;
-              }
-
-              &.e-itop .e-close-icon::before,
-              &.e-ibottom .e-close-icon::before {
-                top: 1.5px;
-              }
+            &.e-itop .e-close-icon::before,
+            &.e-ibottom .e-close-icon::before {
+              top: $tab-bgr-bottom-active-itop-close-top;
             }
           }
 
@@ -565,15 +452,12 @@
               margin: $tab-mob-even-last-item-margin;
             }
 
-            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4'or $tbar-skin == 'bootstrap5' {
+            .e-tab-text {
+              padding-top: $tab-bgr-bottom-active-text-padding-top;
+            }
 
-              .e-tab-text {
-                padding-top: .5px;
-              }
-
-              .e-close-icon::before {
-                top: 0;
-              }
+            .e-close-icon::before {
+              top: $tab-bgr-bottom-active-last-close-top;
             }
           }
 
@@ -583,17 +467,6 @@
             padding-top: 0;
           }
 
-          &.e-itop.e-active .e-tab-wrap:focus,
-          &.e-ibottom.e-active .e-tab-wrap:focus {
-
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-
-              .e-icon-close::before {
-                top: -1px;
-              }
-            }
-          }
-
           &.e-ileft.e-active .e-text-wrap {
             margin: $tab-big-even-ileft-active-text-wrap-margin;
           }
@@ -601,22 +474,6 @@
           &.e-active .e-text-wrap {
             height: $tab-big-even-active-text-container-height;
             padding: 0;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-big-height - 4;
-            }
-          }
-
-          &.e-active.e-itop .e-text-wrap,
-          &.e-active.e-ibottom .e-text-wrap {
-            height: $tab-big-height;
-
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              height: auto;
-            }
           }
 
           &.e-itop.e-active .e-text-wrap,
@@ -625,13 +482,7 @@
           }
 
           &.e-ileft.e-active {
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-big-height - 4;
-            }
+            height: $tab-big-even-active-text-container-height;
           }
         }
       }
@@ -678,12 +529,9 @@
             }
           }
 
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-
-            &.e-ileft.e-icon {
-              min-height: $tab-big-height;
-              min-width: $tab-big-height;
-            }
+          &.e-ileft.e-icon {
+            min-height: $tab-bgr-vertical-icon-min-height;
+            min-width: $tab-bgr-vertical-icon-min-width;
           }
         }
 
@@ -736,18 +584,6 @@
           height: $tab-big-tb-icon-height;
         }
 
-        .e-toolbar-item.e-active,
-        .e-toolbar-item:not(.e-separator):last-child.e-active {
-
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-
-            .e-text-wrap::before {
-              bottom: -10px;
-              top: auto;
-            }
-          }
-        }
-
         .e-scroll-nav {
           height: $tab-big-icon-top-bottom-item-height;
         }
@@ -762,12 +598,6 @@
               font-size: $tab-mob-nav-vicon-size;
             }
           }
-        }
-      }
-
-      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-        &.e-rtl .e-toolbar-item.e-active {
-          margin: 0 0 0 2px;
         }
       }
 
@@ -797,14 +627,7 @@
           }
 
           .e-tab-wrap:focus .e-text-wrap {
-            height: $tab-big-height;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-big-height - 4;
-            }
+            height: $tab-bgr-item-textwrap-height;
           }
 
           &.e-itop,
@@ -832,14 +655,7 @@
               height: $tab-big-pop-item-height;
 
               .e-text-wrap {
-                height: $tab-big-pop-item-height;
-
-                @if $tab-skin == 'fabric' {
-                  height: $tab-big-pop-item-height - 2;
-                }
-                @else if $tab-skin == 'highcontrast' {
-                  height: $tab-big-pop-item-height - 4;
-                }
+                height: $tab-bgr-pop-item-textwrap-height;
               }
             }
 
@@ -857,25 +673,12 @@
             &.e-active {
 
               .e-tab-wrap:focus .e-text-wrap {
-                height: $tab-big-height;
+                height: $tab-bgr-item-textwrap-height;
                 padding: 0;
-
-                @if $tab-skin == 'fabric' {
-                  height: $tab-big-height - 2;
-                }
-                @else if $tab-skin == 'highcontrast' {
-                  height: $tab-big-height - 4;
-                }
               }
 
               &.e-ileft {
-
-                @if $tab-skin == 'fabric' {
-                  height: $tab-big-height - 2;
-                }
-                @else if $tab-skin == 'highcontrast' {
-                  height: $tab-big-height - 4;
-                }
+                height: $tab-big-even-active-text-container-height;
               }
             }
           }
@@ -940,22 +743,15 @@
 
     &.e-rtl {
 
-      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
+      .e-tab-header {
 
-        .e-tab-header {
+        &.e-horizontal-bottom {
 
-          .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child.e-active {
-            margin: $tab-big-rtl-item-margin;
-          }
+          .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {
+            margin: $tab-bgr-rtl-bottom-item-margin;
 
-          &.e-horizontal-bottom {
-
-            .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {
-              margin: 0 0 0 2px;
-
-              &.e-active {
-                margin: 0 0 0 2px;
-              }
+            &.e-active {
+              margin: $tab-bgr-rtl-bottom-active-margin;
             }
           }
         }
@@ -985,10 +781,7 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child,
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-alt-first-item-margin;
-          padding: 0;
-          @if $tab-skin == 'tailwind' {
-            padding: 0 12px;
-          }
+          padding: $tab-bgr-fill-active-item-padding;
         }
 
         .e-toolbar-item {
@@ -997,6 +790,7 @@
             height: $tab-big-fill-height;
             margin: $tab-alt-item-margin;
             min-height: $tab-big-fill-height;
+            padding: $tab-bgr-fill-active-item-padding;
 
             @media screen and (max-width: 480px) {
               height: $tab-mob-fill-height;
@@ -1021,57 +815,34 @@
           }
 
           .e-text-wrap {
-            height: $tab-big-fill-height;
+            height: $tab-bgr-fill-item-textwrap-height;
 
             @media screen and (max-width: 480px) {
               height: $tab-mob-fill-height;
             }
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-fill-height - 2;
-            }
-
-            @if $tab-skin == 'highcontrast' {
-              height: $tab-big-fill-height - 4;
-            }
           }
 
           &.e-active {
-            padding: $tab-alt-big-active-item-padding;
+            padding: $tab-bgr-fill-active-item-padding;
 
             .e-tab-wrap {
               margin-bottom: $tab-fill-big-active-item-wrap-margin-bottom;
             }
 
             .e-text-wrap {
-              height: $tab-big-fill-height;
+              height: $tab-bgr-fill-item-textwrap-height;
 
               @media screen and (max-width: 480px) {
                 height: $tab-mob-fill-height;
-              }
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-big-fill-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-big-fill-height - 4;
               }
             }
 
             &.e-ileft .e-text-wrap,
             &.e-iright .e-text-wrap {
-              height: $tab-fill-big-active-it-text-container-height;
+              height: $tab-bgr-fill-active-ileft-textwrap-height;
 
               @media screen and (max-width: 480px) {
                 height: $tab-fill-big-active-it-text-container-height;
-              }
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-big-fill-height - 2;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                height: $tab-big-fill-height - 4;
               }
             }
           }
@@ -1107,14 +878,6 @@
 
           .e-toolbar-item.e-active .e-text-wrap {
             height: $tab-fill-big-even-active-text-height;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-big-fill-height - 2;
-            }
-
-            @if $tab-skin == 'highcontrast' {
-              height: $tab-big-fill-height - 4;
-            }
           }
 
           .e-toolbar-item.e-itop .e-text-wrap,
@@ -1140,33 +903,13 @@
             }
 
             .e-tab-wrap:focus .e-text-wrap {
-              height: $tab-focus-big-fill-height;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-big-fill-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-big-fill-height - 4;
-              }
+              height: $tab-bgr-fill-focused-wrap-height;
             }
 
             &.e-active .e-tab-wrap:focus {
 
               .e-text-wrap {
-                @if $tab-skin == 'fabric' {
-                  height: $tab-big-fill-height - 2;
-                }
-                @else if $tab-skin == 'highcontrast' {
-                  height: $tab-big-fill-height - 4;
-                }
-              }
-
-              .e-close-icon::before {
-
-                @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-                  top: 1px;
-                }
+                height: $tab-bgr-fill-focused-wrap-height;
               }
             }
 
@@ -1180,19 +923,6 @@
                 @media screen and (max-width: 480px) {
                   height: auto;
                 }
-              }
-            }
-          }
-
-          &.e-horizontal-bottom {
-
-            .e-tab-wrap:focus .e-text-wrap {
-              @if $tab-skin == 'fabric' {
-                height: $tab-big-fill-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-big-fill-height - 4;
               }
             }
           }
@@ -1222,18 +952,13 @@
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child,
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-big-alt-first-item-margin;
-          padding: 0;
-          @if $tab-skin == 'tailwind' {
-            padding: 0 12px;
-          }
+          padding: $tab-bgr-background-active-padding;
         }
 
         .e-toolbar-item {
 
           &:not(.e-separator) {
-            @if $tab-skin != 'bootstrap5' {
-              margin: $tab-alt-item-margin;
-            }
+            padding: $tab-bgr-background-active-padding;
           }
 
           .e-tab-wrap {
@@ -1245,34 +970,10 @@
           }
 
           &.e-active {
-            padding: $tab-alt-big-active-item-padding;
+            padding: $tab-bgr-background-active-padding;
 
             .e-tab-wrap {
               margin-bottom: $tab-bg-big-active-item-wrap-margin-bottom;
-            }
-
-            .e-text-wrap {
-              height: $tab-big-height;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-big-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-big-height - 4;
-              }
-            }
-          }
-
-          &:hover {
-            @if $tab-skin == 'highcontrast' {
-              &.e-itop,
-              &.e-ibottom {
-
-                .e-text-wrap {
-                  height: auto;
-                }
-              }
             }
           }
         }
@@ -1311,14 +1012,8 @@
         .e-toolbar-item:not(.e-separator) {
           margin: $tab-big-rtl-item-margin;
 
-          @if $tab-skin == 'FluentUI' {
-            .e-icon-right {
-              margin: $tab-rtl-big-it-text-margin;
-
-              @media screen and (max-width: 480px) {
-                margin: $tab-rtl-mob-it-text-margin;
-              }
-            }
+          .e-icon-right {
+            margin: $tab-bgr-rtl-icon-right-margin;
           }
 
           .e-icon-left + .e-tab-text {
@@ -1464,10 +1159,7 @@
       &::before {
         content: '';
         position: absolute;
-
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-          display: block;
-        }
+        display: $tab-nrml-hdr-before-display;
       }
 
       &:not(.e-vertical) {
@@ -1502,35 +1194,34 @@
             margin: $tab-mob-last-item-margin;
           }
         }
-        @if $tab-skin == 'FluentUI' {
-          .e-toolbar-item.e-active {
-            position: relative;
 
-            &:hover::before {
-              left: 0;
-              right: 0;
-            }
+        .e-toolbar-item.e-active {
+          position: $tab-nrml-item-active-position;
 
-            &::before {
-              background-color: $tab-alt-hdr-bg-color;
-              bottom: 0;
-              content: '';
-              height: 2px;
-              left: 8px;
-              position: absolute;
-              right: 8px;
-              transition: left .267s cubic-bezier(.1, .25, .75, .9) 0s, right .267s cubic-bezier(.1, .25, .75, .9) 0s;
-            }
+          &:hover::before {
+            left: $tab-nrml-item-active-hover-before-left;
+            right: $tab-nrml-item-active-hover-before-right;
+          }
 
-            &::after {
-              color: transparent;
-              content: attr(data-content);
-              display: block;
-              font-weight: bold;
-              height: 1px;
-              overflow: hidden;
-              visibility: hidden;
-            }
+          &::before {
+            background-color: $tab-nrml-item-active-before-bg-font;
+            bottom: $tab-nrml-item-active-before-bottom;
+            content: $tab-nrml-item-active-before-content;
+            height: $tab-nrml-item-active-before-height;
+            left: $tab-nrml-item-active-before-left;
+            position: $tab-nrml-item-active-before-position;
+            right: $tab-nrml-item-active-before-left;
+            transition: $tab-nrml-item-active-before-transition;
+          }
+
+          &::after {
+            color: $tab-nrml-item-active-after-font;
+            content: $tab-nrml-item-active-after-content;
+            display: $tab-nrml-item-active-after-display;
+            font-weight: $tab-nrml-item-active-after-font-weight;
+            height: $tab-nrml-item-active-after-height;
+            overflow: $tab-nrml-item-active-after-overflow;
+            visibility: $tab-nrml-item-active-after-overflow;
           }
         }
       }
@@ -1545,32 +1236,13 @@
           }
         }
 
-        @if $tab-skin == 'bootstrap'or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-
-          &[style *= 'overflow: hidden'] .e-toolbar-item:not(.e-separator).e-active {
-            margin-bottom: 0;
-          }
-        }
-
-        @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-          .e-hscroll-bar {
-            padding: 0 1px;
-          }
+        .e-hscroll-bar {
+          padding: $tab-nrml-hscroll-bar-padding;
         }
 
         .e-scroll-nav {
-          width: 40px;
-          @if $tab-skin == 'FluentUI' {
-            width: 32px;
-          }
-          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            border-radius: 4px;
-            width: 32px;
-          }
-
-          @if $tab-skin == 'tailwind' {
-            width: 24px;
-          }
+          width: $tab-nrml-hscroll-items-nav-width;
+          border-radius: $tab-nrml-hscroll-items-bdr-radius;
         }
 
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
@@ -1604,12 +1276,8 @@
         height: $tab-border-width;
         left: 0;
         right: 0;
-        transition: left .125s cubic-bezier(.35, 0, .25, 1), right .25s cubic-bezier(.35, 0, .25, 1);
-
-        @if $tab-skin == 'tailwind' {
-          border-radius: $tab-border-width;
-          transition: all .4s cubic-bezier(.25, .46, .45, .94);
-        }
+        border-radius: $tab-nrml-vertical-indicator-bdr-radius;
+        transition: $tab-nrml-indicator-transition;
       }
 
       .e-toolbar-item {
@@ -1646,17 +1314,10 @@
           align-content: center;
           align-items: center;
           display: inline-flex;
-          height: $tab-nrml-height;
+          height: $tab-nrml-item-text-wrap-height;
 
           @media screen and (max-width: 480px) {
             height: $tab-big-height;
-          }
-
-          @if $tab-skin == 'fabric' {
-            height: $tab-nrml-height - 2;
-          }
-          @else if $tab-skin == 'highcontrast' {
-            height: $tab-nrml-height - 4;
           }
         }
 
@@ -1666,15 +1327,11 @@
           font-size: $tab-nrml-font-size;
           font-weight: $tab-font-weight;
           text-transform: $tab-text-transform;
+          align-self: auto;
+          margin-bottom: $tab-nrml-item-text-margin-bottom;
 
           @media screen and (max-width: 480px) {
             font-size: $tab-big-font-size;
-          }
-        }
-
-        @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-          .e-tab-text {
-            align-self: auto;
           }
         }
 
@@ -1687,75 +1344,41 @@
           }
 
           .e-text-wrap {
-            height: $tab-nrml-active-text-container-height;
+            height: $tab-nrml-item-text-wrap-height;
             margin-top: $tab-active-text-container-margin;
 
             @media screen and (max-width: 480px) {
               height: $tab-big-active-text-container-height;
             }
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-nrml-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-nrml-height - 4;
-            }
           }
 
           .e-tab-wrap {
             margin-bottom: $tab-nrml-active-item-wrap-margin-bottom;
-
-            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-              &:hover {
-                border: 0;
-              }
-            }
           }
 
           .e-tab-text {
             font-weight: $tab-semi-font-weight;
           }
 
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-            .e-tab-text {
-              align-self: auto;
-            }
+          .e-tab-icon::before {
+            top: $tab-item-icon-before-top;
+            left: $tab-item-icon-before-left;
           }
 
-          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            .e-tab-icon::before {
-              top: -1px;
-            }
+          .e-icon-top.e-tab-icon::before,
+          .e-icon-bottom.e-tab-icon::before {
+            left: 0;
           }
 
           &.e-ileft,
           &.e-iright {
 
             .e-text-wrap {
-              height: $tab-nrml-active-it-text-container-height;
-              padding: $tab-nrml-ileft-active-text-wrap-padding;
+              height: $tab-nrml-item-text-wrap-height;
+              padding: 0;
 
               @media screen and (max-width: 480px) {
                 height: $tab-big-active-it-text-container-height;
-              }
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-height - 2;
-                padding: 0;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-height - 4;
-                padding: 0;
-              }
-            }
-
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              .e-tab-wrap .e-tab-text {
-                align-self: auto;
-              }
-
-              .e-tab-wrap:focus .e-tab-text {
-                align-self: auto;
               }
             }
           }
@@ -1781,11 +1404,7 @@
         }
 
         .e-close-icon::before {
-          top: $tab-pop-close-icon-top;
-
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-            top: 1px;
-          }
+          top: 1px;
         }
 
         .e-icons.e-tab-icon {
@@ -1793,10 +1412,7 @@
           height: $tab-nrml-icon-container-size;
           min-width: $tab-nrml-icon-container-size;
           width: $tab-nrml-icon-container-size;
-
-          @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-            line-height: $tab-nrml-icon-container-size;
-          }
+          line-height: $tab-nrml-item-tabicon-line-height;
 
           @media screen and (max-width: 480px) {
             height: $tab-mob-icon-container-size;
@@ -1813,6 +1429,17 @@
           }
         }
 
+        .e-tab-icon::before {
+          position: relative;
+          top: $tab-item-icon-before-top;
+          left: $tab-item-icon-before-left;
+        }
+
+        .e-icon-top.e-tab-icon::before,
+        .e-icon-bottom.e-tab-icon::before {
+          left: 0;
+        }
+
         &.e-icon {
 
           .e-tab-wrap {
@@ -1825,13 +1452,11 @@
           }
         }
 
-        @if $tab-skin == 'FluentUI' {
-          .e-icon-right {
-            margin: $tab-nrml-it-text-margin;
+        .e-icon-right {
+          margin: 0 0 0 8px;
 
-            @media screen and (max-width: 480px) {
-              margin: $tab-mob-it-text-margin;
-            }
+          @media screen and (max-width: 480px) {
+            margin: $tab-bgr-mob-item-iconright-margin;
           }
         }
 
@@ -1877,9 +1502,6 @@
           &.e-active {
 
             .e-tab-wrap {
-              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-                height: 62px;
-              }
 
               &:focus {
 
@@ -1947,9 +1569,7 @@
 
           &:not(.e-separator) {
             margin: $tab-pop-item-margin;
-            @if $tab-skin == 'tailwind' {
-              padding: 0;
-            }
+            padding: 0;
           }
 
           .e-tab-wrap {
@@ -1964,15 +1584,8 @@
           }
 
           .e-text-wrap {
-            height: $tab-nrml-pop-item-height;
+            height: $tab-nrml-pop-item-textwrap-height;
             width: 100%;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-nrml-pop-item-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-nrml-pop-item-height - 4;
-            }
           }
 
           .e-tab-text {
@@ -2113,16 +1726,8 @@
           font-size: $tab-nrml-nav-icon-size;
           line-height: $tab-nrml-nav-icon-container-size;
           position: relative;
-          top: 0;
+          top: $tab-nrml-scroll-nav-arrow-before-top;
           vertical-align: initial;
-
-          @if $tab-skin == 'fabric' {
-            top: -1px;
-          }
-
-          @if $tab-skin == 'highcontrast' {
-            top: -2px;
-          }
         }
 
         .e-nav-arrow {
@@ -2171,16 +1776,8 @@
             font-size: $tab-nrml-nav-icon-size;
             line-height: $tab-nrml-nav-icon-container-size;
             position: relative;
-            top: 0;
+            top: $tab-nrml-scroll-nav-arrow-before-top;
             vertical-align: initial;
-
-            @if $tab-skin == 'fabric' {
-              top: -1px;
-            }
-
-            @if $tab-skin == 'highcontrast' {
-              top: -2px;
-            }
 
             @media screen and (max-width: 480px) {
               font-size: $tab-mob-nav-icon-size;
@@ -2188,39 +1785,14 @@
           }
 
           &:hover {
-            @if $tab-skin == 'bootstrap' {
-              line-height: 34px;
-            }
-            @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-              line-height: 32px;
-            }
+            line-height: $tab-nrml-hor-pop-lineheight;
 
             &::before {
-              top: $tab-nrml-hover-nav-pop-icon-top;
+              line-height: $tab-nrml-hor-pop-lineheight;
+              top: $tab-nrml-scroll-nav-arrow-before-top;
 
-              @if $tab-skin == 'fabric' {
-                top: -1px;
-              }
-
-              @if $tab-skin == 'bootstrap' {
-                line-height: 34px;
-                top: 0;
-
-                @media screen and (max-width: 480px) {
-                  line-height: 43px;
-                }
-              }
-              @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-                line-height: 32px;
-                top: 0;
-
-                @media screen and (max-width: 480px) {
-                  line-height: 43px;
-                }
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                top: -2px;
+              @media screen and (max-width: 480px) {
+                line-height: $tab-nrml-mob-hor-pop-lineheight;
               }
             }
           }
@@ -2250,36 +1822,20 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-              line-height: 32px;
-            }
+            line-height: $tab-nrml-hor-focus-pop-lineheight;
 
             &::before {
-              top: $tab-nrml-hover-nav-pop-icon-top;
+              line-height: $tab-nrml-hor-focus-pop-lineheight;
+              top: $tab-nrml-scroll-nav-arrow-before-top;
 
-              @if $tab-skin == 'fabric' {
-                top: -1px;
-              }
-
-              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-                line-height: 32px;
-                top: 0;
-
-                @media screen and (max-width: 480px) {
-                  line-height: 43px;
-                }
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                top: -2px;
+              @media screen and (max-width: 480px) {
+                line-height: $tab-nrml-mob-hor-pop-lineheight;
               }
             }
 
             &:hover {
-              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-                line-height: 32px;
-                top: -.5px;
-              }
+              line-height: $tab-nrml-hor-focus-pop-lineheight;
+              top: $tab-nrml-hor-focus-pop-hover-top;
             }
           }
         }
@@ -2287,35 +1843,33 @@
 
       &.e-horizontal-bottom {
 
-        @if $tab-skin == 'FluentUI' {
-          .e-toolbar-items .e-toolbar-item.e-active {
-            position: relative;
+        .e-toolbar-items .e-toolbar-item.e-active {
+          position: $tab-nrml-item-active-position;
 
-            &:hover::before {
-              left: 0;
-              right: 0;
-            }
+          &:hover::before {
+            left: $tab-nrml-item-active-hover-before-left;
+            right: $tab-nrml-item-active-hover-before-right;
+          }
 
-            &::before {
-              background-color: $tab-alt-hdr-bg-color;
-              content: '';
-              height: 2px;
-              left: 8px;
-              position: absolute;
-              right: 8px;
-              top: 0;
-              transition: left .267s cubic-bezier(.1, .25, .75, .9) 0s, right .267s cubic-bezier(.1, .25, .75, .9) 0s;
-            }
+          &::before {
+            background-color: $tab-nrml-item-active-before-bg-font;
+            content: $tab-nrml-item-active-before-content;
+            height: $tab-nrml-item-active-before-height;
+            left: $tab-nrml-item-active-before-left;
+            position: $tab-nrml-item-active-before-position;
+            right: $tab-nrml-item-active-before-left;
+            top: $tab-nrml-item-active-before-bottom;
+            transition: $tab-nrml-item-active-before-transition;
+          }
 
-            &::after {
-              color: transparent;
-              content: attr(data-content);
-              display: block;
-              font-weight: bold;
-              height: 1px;
-              overflow: hidden;
-              visibility: hidden;
-            }
+          &::after {
+            color: $tab-nrml-item-active-after-font;
+            content: $tab-nrml-item-active-after-content;
+            display: $tab-nrml-item-active-after-display;
+            font-weight: $tab-nrml-item-active-after-font-weight;
+            height: $tab-nrml-item-active-after-height;
+            overflow: $tab-nrml-item-active-after-overflow;
+            visibility: $tab-nrml-item-active-after-overflow;
           }
         }
 
@@ -2323,10 +1877,8 @@
           bottom: auto;
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-          .e-hscroll-bar {
-            margin-top: -1px;
-          }
+        .e-hscroll-bar {
+          margin-top: $tab-nrml-active-item-tabicon-before-top;
         }
 
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
@@ -2356,49 +1908,18 @@
             }
 
             .e-text-wrap {
-              height: $tab-nrml-height;
-              padding: $tab-even-active-text-container-padding;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-height - 2;
-                padding: 0;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-height - 4;
-                padding: 0;
-              }
+              height: $tab-nrml-item-text-wrap-height;
+              padding: 0;
             }
 
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              .e-text-wrap::before,
-              &:not(.e-separator):last-child .e-text-wrap::before {
+            .e-text-wrap::before,
+            &:not(.e-separator):last-child .e-text-wrap::before {
+              top: $tab-nrml-bottom-active-before-top;
+            }
+
+            &.e-itop {
+              .e-tab-wrap:focus .e-close-icon::before {
                 top: 0;
-              }
-
-              &.e-itop {
-
-                @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-                  .e-tab-wrap:focus .e-close-icon::before {
-                    top: 0;
-                  }
-
-                  .e-text-wrap {
-                    height: auto;
-                  }
-                }
-              }
-            }
-
-            &.e-ileft {
-
-              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-                .e-tab-wrap .e-tab-text {
-                  align-self: auto;
-                }
-
-                .e-tab-wrap:focus .e-tab-text {
-                  align-self: auto;
-                }
               }
             }
           }
@@ -2454,12 +1975,8 @@
 
         .e-indicator {
           display: $tab-indicator-display;
-          transition: top .125s cubic-bezier(.35, 0, .25, 1), bottom .25s cubic-bezier(.35, 0, .25, 1);
+          transition: $tab-nrml-vertical-indicator-transition;
           width: 2px;
-
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-            transition: initial;
-          }
         }
 
         .e-toolbar-items {
@@ -2509,14 +2026,11 @@
           }
 
           &.e-ileft.e-icon {
+            min-height: $tab-nrml-vertical-icon-min-height;
+            min-width: $tab-nrml-vertical-icon-min-width;
 
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              min-height: $tab-nrml-height;
-              min-width: $tab-nrml-height;
-
-              .e-tab-icon {
-                margin: auto;
-              }
+            .e-tab-icon {
+              margin: $tab-nrml-vertical-tabicon-margin;
             }
           }
 
@@ -2545,36 +2059,33 @@
             right: 0;
           }
 
-          @if $tab-skin == 'FluentUI' {
-            .e-toolbar-items .e-toolbar-item.e-active {
-              position: relative;
+          .e-toolbar-items .e-toolbar-item.e-active {
 
-              &:hover::before {
-                bottom: 0;
-                height: 100%;
-              }
+            &:hover::before {
+              bottom: $tab-nrml-item-active-before-bottom;
+              height: $tab-nrml-vertical-hover-before-height;
+            }
 
-              &::before {
-                background-color: $tab-alt-hdr-bg-color;
-                bottom: 10px;
-                content: '';
-                height: 60%;
-                left: 99%;
-                position: absolute;
-                right: 0;
-                transition: bottom .267s cubic-bezier(.1, .25, .75, .9) 0s, height .267s cubic-bezier(.1, .25, .75, .9) 0s;
-                width: 2px;
-              }
+            &::before {
+              background-color: $tab-nrml-item-active-before-bg-font;
+              bottom: $tab-nrml-vertical-before-bottom;
+              content: $tab-nrml-item-active-before-content;
+              height: $tab-nrml-vertical-before-height;
+              left: $tab-nrml-vertical-before-left;
+              position: $tab-nrml-item-active-before-position;
+              right: $tab-nrml-item-active-before-bottom;
+              transition: $tab-nrml-vertical-before-transition;
+              width: $tab-nrml-item-active-before-height;
+            }
 
-              &::after {
-                color: transparent;
-                content: attr(data-content);
-                display: block;
-                font-weight: bold;
-                height: 1px;
-                overflow: hidden;
-                visibility: hidden;
-              }
+            &::after {
+              color: $tab-nrml-item-active-after-font;
+              content: $tab-nrml-item-active-after-content;
+              display: $tab-nrml-item-active-after-display;
+              font-weight: $tab-nrml-item-active-after-font-weight;
+              height: $tab-nrml-item-active-after-height;
+              overflow: $tab-nrml-item-active-after-overflow;
+              visibility: $tab-nrml-item-active-after-overflow;
             }
           }
         }
@@ -2602,36 +2113,33 @@
             }
           }
 
-          @if $tab-skin == 'FluentUI' {
-            .e-toolbar-items .e-toolbar-item.e-active {
-              position: relative;
+          .e-toolbar-items .e-toolbar-item.e-active {
 
-              &:hover::before {
-                bottom: 0;
-                height: 100%;
-              }
+            &:hover::before {
+              bottom: $tab-nrml-item-active-before-bottom;
+              height: $tab-nrml-vertical-hover-before-height;
+            }
 
-              &::before {
-                background-color: $tab-alt-hdr-bg-color;
-                bottom: 10px;
-                content: '';
-                height: 60%;
-                left: 0;
-                position: absolute;
-                right: 99%;
-                transition: bottom .267s cubic-bezier(.1, .25, .75, .9) 0s, height .267s cubic-bezier(.1, .25, .75, .9) 0s;
-                width: 2px;
-              }
+            &::before {
+              background-color: $tab-nrml-item-active-before-bg-font;
+              bottom: $tab-nrml-vertical-before-bottom;
+              content: $tab-nrml-item-active-before-content;
+              height: $tab-nrml-vertical-before-height;
+              left: $tab-nrml-item-active-before-bottom;
+              position: $tab-nrml-item-active-before-position;
+              right: $tab-nrml-vertical-before-left;
+              transition: $tab-nrml-vertical-before-transition;
+              width: $tab-nrml-item-active-before-height;
+            }
 
-              &::after {
-                color: transparent;
-                content: attr(data-content);
-                display: block;
-                font-weight: bold;
-                height: 1px;
-                overflow: hidden;
-                visibility: hidden;
-              }
+            &::after {
+              color: $tab-nrml-item-active-after-font;
+              content: $tab-nrml-item-active-after-content;
+              display: $tab-nrml-item-active-after-display;
+              font-weight: $tab-nrml-item-active-after-font-weight;
+              height: $tab-nrml-item-active-after-height;
+              overflow: $tab-nrml-item-active-after-overflow;
+              visibility: $tab-nrml-item-active-after-overflow;
             }
           }
         }
@@ -2813,29 +2321,26 @@
 
         .e-toolbar-item.e-active,
         .e-toolbar-item:not(.e-separator):last-child.e-active {
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-            .e-text-wrap {
-              position: static;
+          .e-text-wrap {
+            position: $tab-nrml-vertical-text-position;
+          }
 
-              &::before {
-                content: none;
-              }
-            }
+          .e-text-wrap::before {
+            border: $tab-active-wrap-before-border;
+            content: $tab-active-wrap-before-content;
+            display: none;
+            position: $tab-active-wrap-before-position;
+            top: $tab-active-wrap-before-top;
+            width: $tab-active-wrap-before-width;
+          }
 
-            .e-tab-wrap::before {
-              content: '';
-              display: block;
-              position: absolute;
-              top: 96%;
-              width: calc(100% - 16px);
-
-              @if $tab-skin == 'fabric' {
-                border: 1px solid $theme-primary;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                border: 1px solid $selection-bg;
-              }
-            }
+          .e-tab-wrap::before {
+            content: $tab-nrml-vertical-wrap-before-content;
+            display: $tab-nrml-vertical-wrap-before-display;
+            position: $tab-nrml-vertical-wrap-before-position;
+            top: $tab-nrml-vertical-wrap-before-top;
+            width: $tab-nrml-vertical-wrap-before-width;
+            border: $tab-nrml-vertical-wrap-before-border;
           }
         }
 
@@ -2858,10 +2363,7 @@
         &.e-vertical {
 
           .e-indicator {
-
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              width: 3px;
-            }
+            width: $tab-nrml-vertical-indicator-width;
           }
 
           .e-toolbar-item.e-active,
@@ -2885,19 +2387,15 @@
 
           .e-toolbar-item.e-active,
           .e-toolbar-item:not(.e-separator):last-child.e-active {
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              .e-tab-wrap::before {
-                top: 0;
-              }
+            .e-tab-wrap::before {
+              top: $tab-nrml-bottom-wrap-before-top;
             }
           }
         }
       }
 
-      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-        &.e-rtl .e-tab-header .e-toolbar-item.e-active {
-          margin: 0 0 0 2px;
-        }
+      &.e-rtl .e-tab-header .e-toolbar-item.e-active {
+        margin: $tab-nrml-vertical-rtl-active-margin;
       }
 
       &.e-vertical-tab {
@@ -2916,14 +2414,7 @@
           height: $tab-nrml-height;
 
           .e-text-wrap {
-            height: $tab-nrml-height;
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-nrml-height - 2;
-            }
-            @else if $tab-skin == 'highcontrast' {
-              height: $tab-nrml-height - 4;
-            }
+            height: $tab-nrml-item-text-wrap-height;
           }
         }
 
@@ -2952,14 +2443,7 @@
             height: $tab-nrml-pop-item-height;
 
             .e-text-wrap {
-              height: $tab-nrml-pop-item-height;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-pop-item-height - 2;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-pop-item-height - 4;
-              }
+              height: $tab-nrml-pop-item-textwrap-height;
             }
           }
 
@@ -2977,24 +2461,8 @@
           &.e-active {
 
             .e-tab-wrap:focus .e-text-wrap {
-              height: $tab-nrml-height;
+              height: $tab-nrml-item-text-wrap-height;
               padding: 0;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-height - 2;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-height - 4;
-              }
-            }
-
-            &.e-ileft {
-
-              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-                .e-tab-wrap:focus .e-tab-text {
-                  align-self: auto;
-                }
-              }
             }
           }
 
@@ -3174,12 +2642,6 @@
           min-height: $tab-mob-fill-height;
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-          &::before {
-            display: none;
-          }
-        }
-
         .e-indicator {
           display: none;
         }
@@ -3195,10 +2657,7 @@
           &:not(.e-tbar-pos) .e-toolbar-item:first-child,
           &:not(.e-tbar-pos) .e-toolbar-item:last-child {
             margin: $tab-nrml-alt-first-item-margin;
-            padding: 0;
-            @if $tab-skin == 'tailwind' {
-              padding: 0 8px;
-            }
+            padding: $tab-nrml-background-active-padding;
           }
         }
 
@@ -3208,6 +2667,7 @@
             height: $tab-nrml-fill-height;
             margin: $tab-alt-item-margin;
             min-height: $tab-nrml-fill-height;
+            padding: $tab-nrml-background-active-padding;
 
             @media screen and (max-width: 480px) {
               height: $tab-mob-fill-height;
@@ -3232,41 +2692,25 @@
           }
 
           .e-text-wrap {
-            height: $tab-nrml-fill-height;
+            height: $tab-nrml-fill-item-textwrap-height;
 
             @media screen and (max-width: 480px) {
               height: $tab-mob-fill-height;
             }
-
-            @if $tab-skin == 'fabric' {
-              height: $tab-nrml-fill-height - 2;
-            }
-
-            @if $tab-skin == 'highcontrast' {
-              height: $tab-nrml-fill-height - 4;
-            }
           }
 
           &.e-active {
-            padding: $tab-alt-nrml-active-item-padding;
+            padding: $tab-nrml-background-active-padding;
 
             .e-tab-wrap {
               margin-bottom: $tab-fill-nrml-active-item-wrap-margin-bottom;
             }
 
             .e-text-wrap {
-              height: $tab-nrml-fill-height;
+              height: $tab-nrml-fill-item-textwrap-height;
 
               @media screen and (max-width: 480px) {
                 height: $tab-mob-fill-height;
-              }
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-fill-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-fill-height - 4;
               }
             }
 
@@ -3280,13 +2724,6 @@
 
               @media screen and (max-width: 480px) {
                 height: $tab-fill-big-active-it-text-container-height;
-              }
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-fill-height - 2;
-              }
-              @else if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-fill-height - 4;
               }
             }
           }
@@ -3336,18 +2773,10 @@
               padding: 0;
 
               .e-text-wrap {
-                height: $tab-nrml-fill-height;
+                height: $tab-nrml-fill-item-textwrap-height;
 
                 @media screen and (max-width: 480px) {
                   height: $tab-mob-fill-height;
-                }
-
-                @if $tab-skin == 'fabric' {
-                  height: $tab-nrml-fill-height - 2;
-                }
-
-                @if $tab-skin == 'highcontrast' {
-                  height: $tab-nrml-fill-height - 4;
                 }
               }
             }
@@ -3389,33 +2818,14 @@
             height: $tab-focus-nrml-fill-height;
 
             .e-text-wrap {
-              height: $tab-focus-nrml-fill-height;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-fill-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-fill-height - 4;
-              }
+              height: $tab-nrml-fill-focused-wrap-height;
             }
           }
 
           &.e-active .e-tab-wrap:focus {
 
-            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-              .e-text-wrap {
-                @if $tab-skin == 'fabric' {
-                  height: $tab-nrml-fill-height - 2;
-                }
-                @else if $tab-skin == 'highcontrast' {
-                  height: $tab-nrml-fill-height - 4;
-                }
-              }
-
-              .e-close-icon::before {
-                top: 1px;
-              }
+            .e-text-wrap {
+              height: $tab-nrml-fill-focused-wrap-height;
             }
           }
 
@@ -3454,34 +2864,17 @@
 
       .e-tab-header {
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-          &::before {
-            display: none;
-          }
-        }
-
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child,
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-nrml-alt-first-item-margin;
-          padding: 0;
-          @if $tab-skin == 'tailwind' {
-            padding: 0 8px;
-          }
+          padding: $tab-nrml-background-active-padding;
         }
 
         .e-toolbar-item {
 
           &:not(.e-separator) {
-            margin: $tab-alt-item-margin;
-          }
-
-          &:hover {
-            @if $tab-skin == 'highcontrast' {
-              &.e-itop .e-text-wrap,
-              &.e-ibottom .e-text-wrap {
-                height: auto;
-              }
-            }
+            margin: 0;
+            padding: $tab-nrml-background-active-padding;
           }
 
           .e-tab-wrap {
@@ -3493,37 +2886,22 @@
           }
 
           &.e-active {
-            padding: $tab-alt-nrml-active-item-padding;
+            padding: $tab-nrml-background-active-padding;
 
             .e-tab-wrap {
               margin-bottom: $tab-bg-nrml-active-item-wrap-margin-bottom;
             }
 
-            .e-text-wrap {
-              height: $tab-nrml-height;
-
-              @if $tab-skin == 'fabric' {
-                height: $tab-nrml-height - 2;
-              }
-
-              @if $tab-skin == 'highcontrast' {
-                height: $tab-nrml-height - 4;
-              }
-            }
-
             .e-tab-text {
-              font-weight: $tab-light-font-weight;
+              font-weight: $tab-background-active-text-font-weight;
             }
           }
         }
 
         &.e-vertical {
 
-          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-
-            .e-indicator {
-              display: none;
-            }
+          .e-indicator {
+            display: $tab-nrml-background-vertical-indicator-display;
           }
 
           .e-toolbar-items {
@@ -3557,14 +2935,7 @@
             &.e-active {
 
               .e-text-wrap {
-                height: $tab-nrml-pop-item-height;
-
-                @if $tab-skin == 'fabric' {
-                  height: $tab-nrml-pop-item-height - 2;
-                }
-                @else if $tab-skin == 'highcontrast' {
-                  height: $tab-nrml-pop-item-height - 4;
-                }
+                height: $tab-nrml-pop-item-textwrap-height;
               }
             }
           }
@@ -3591,19 +2962,11 @@
           margin: $tab-nrml-rtl-item-margin;
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-          .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child.e-active {
-            margin: $tab-nrml-rtl-item-margin;
-          }
-        }
-
         .e-toolbar-item:not(.e-separator) {
           margin: $tab-nrml-rtl-item-margin;
 
-          @if $tab-skin == 'FluentUI' {
-            .e-icon-right {
-              margin: $tab-rtl-nrml-it-text-margin;
-            }
+          .e-icon-right {
+            margin: $tab-nrml-rtl-icon-right-margin;
           }
 
           .e-icon-left + .e-tab-text {
@@ -3630,20 +2993,10 @@
           }
         }
 
-        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-          &.e-horizontal-bottom {
+        &.e-horizontal-bottom {
 
-            .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {
-              margin: 0 0 0 2px;
-
-              &.e-active {
-                margin: 0 0 0 2px;
-
-                .e-tab-text {
-                  margin-bottom: 0;
-                }
-              }
-            }
+          .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {
+            margin: $tab-nrml-vertical-rtl-active-margin;
           }
         }
 
@@ -3754,17 +3107,10 @@
       align-content: center;
       align-items: center;
       display: inline-flex;
-      height: $tab-nrml-height;
+      height: $tab-nrml-item-text-wrap-height;
 
       @media screen and (max-width: 480px) {
         height: $tab-big-height;
-      }
-
-      @if $tab-skin == 'fabric' {
-        height: $tab-nrml-height - 2;
-      }
-      @else if $tab-skin == 'highcontrast' {
-        height: $tab-nrml-height - 4;
       }
     }
 
@@ -3774,15 +3120,10 @@
       font-size: $tab-nrml-font-size;
       font-weight: $tab-font-weight;
       text-transform: $tab-text-transform;
+      align-self: auto;
 
       @media screen and (max-width: 480px) {
         font-size: $tab-big-font-size;
-      }
-    }
-
-    @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-      .e-tab-text {
-        align-self: auto;
       }
     }
 
@@ -3800,11 +3141,7 @@
     }
 
     .e-close-icon::before {
-      top: $tab-pop-close-icon-top;
-
-      @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-        top: 1px;
-      }
+      top: 1px;
     }
 
     .e-icons.e-tab-icon {
@@ -3812,10 +3149,7 @@
       height: $tab-nrml-icon-container-size;
       min-width: $tab-nrml-icon-container-size;
       width: $tab-nrml-icon-container-size;
-
-      @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-        line-height: $tab-nrml-icon-container-size;
-      }
+      line-height: $tab-nrml-item-tabicon-line-height;
 
       @media screen and (max-width: 480px) {
         height: $tab-mob-icon-container-size;
@@ -3844,13 +3178,11 @@
       }
     }
 
-    @if $tab-skin == 'FluentUI' {
-      .e-icon-right {
-        margin: $tab-nrml-it-text-margin;
+    .e-icon-right {
+      margin: 0 0 0 8px;
 
-        @media screen and (max-width: 480px) {
-          margin: $tab-mob-it-text-margin;
-        }
+      @media screen and (max-width: 480px) {
+        margin: $tab-bgr-mob-item-iconright-margin;
       }
     }
 
@@ -3978,21 +3310,12 @@
     }
 
     .e-text-wrap {
-      height: $tab-big-height;
-
-      @if $tab-skin == 'fabric' {
-        height: $tab-big-height - 2;
-      }
-      @else if $tab-skin == 'highcontrast' {
-        height: $tab-big-height - 4;
-      }
+      height: $tab-bgr-item-textwrap-height;
     }
 
     .e-tab-text {
       font-size: $tab-big-font-size;
-      @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-        align-self: auto;
-      }
+      align-self: auto;
     }
 
     .e-icons.e-close-icon {
@@ -4017,10 +3340,7 @@
       height: $tab-big-icon-container-size;
       min-width: $tab-big-icon-container-size;
       width: $tab-big-icon-container-size;
-
-      @if $tab-skin == 'bootstrap4' or $tbar-skin == 'bootstrap5' {
-        line-height: $tab-big-icon-container-size;
-      }
+      line-height: $tab-bgr-icon-line-height;
     }
 
     .e-tab-icon,
@@ -4035,13 +3355,11 @@
       }
     }
 
-    @if $tab-skin == 'FluentUI' {
-      .e-icon-right {
-        margin: $tab-big-it-text-margin;
+    .e-icon-right {
+      margin: 0 0 0 12px;
 
-        @media screen and (max-width: 480px) {
-          margin: $tab-mob-it-text-margin;
-        }
+      @media screen and (max-width: 480px) {
+        margin: $tab-bgr-mob-item-iconright-margin;
       }
     }
 
@@ -4075,17 +3393,6 @@
 
       .e-close-icon {
         right: $tab-big-close-icon-top-bottom-right;
-      }
-
-      @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
-
-        .e-text-wrap {
-          height: auto;
-        }
-
-        &.e-active .e-tab-wrap {
-          height: 72px;
-        }
       }
     }
 

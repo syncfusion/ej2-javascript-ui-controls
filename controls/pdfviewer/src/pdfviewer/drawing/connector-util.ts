@@ -30,12 +30,12 @@ export function getSegmentPath(connector: PdfAnnotationBaseModel, points: PointM
     let pts: PointModel[] = [];
     let j: number = 0;
     while (j < points.length) {
-        pts.push({ x: points[j].x, y: points[j].y });
+        pts.push({ x: points[parseInt(j.toString(), 10)].x, y: points[parseInt(j.toString(), 10)].y });
         j++;
     }
     pts = clipDecorators(connector, pts);
     for (let k: number = 0; k < pts.length; k++) {
-        getPt = pts[k];
+        getPt = pts[parseInt(k.toString(), 10)];
         if (k === 0) {
             path = 'M' + getPt.x + ' ' + getPt.y;
         }
@@ -218,7 +218,7 @@ export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMode
 export function updateDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): string {
     let distance: string;
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
-        const textElement: TextElement = (obj.wrapper.children[i] as TextElement);
+        const textElement: TextElement = (obj.wrapper.children[parseInt(i.toString(), 10)] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
             distance = measure.setConversion(findPointsLength([points[0], points[1]]) * measure.pixelToPointFactor, obj);
             textElement.content = distance;
@@ -238,7 +238,7 @@ export function updateDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMo
 export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureAnnotation): string {
     let radius: string;
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
-        const textElement: TextElement = (obj.wrapper.children[i] as TextElement);
+        const textElement: TextElement = (obj.wrapper.children[parseInt(i.toString(), 10)] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
             radius = measure.setConversion((obj.bounds.width / 2) * measure.pixelToPointFactor, obj);
             textElement.content = radius;
@@ -294,7 +294,7 @@ export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointMod
 export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): string {
     let perimeter: string;
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
-        const textElement: TextElement = (obj.wrapper.children[i] as TextElement);
+        const textElement: TextElement = (obj.wrapper.children[parseInt(i.toString(), 10)] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
             perimeter = measure.calculatePerimeter(obj);
             textElement.content = perimeter;
@@ -312,7 +312,7 @@ export function updatePerimeterLabel(obj: PdfAnnotationBaseModel, points: PointM
  */
 export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
-        const textElement: TextElement = (obj.wrapper.children[i] as TextElement);
+        const textElement: TextElement = (obj.wrapper.children[parseInt(i.toString(), 10)] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
             obj.wrapper.children.splice(i, 1);
         }
@@ -327,7 +327,7 @@ export function removePerimeterLabel(obj: PdfAnnotationBaseModel): void {
 export function updateCalibrateLabel(obj: PdfAnnotationBaseModel): void {
     if (obj.wrapper && obj.wrapper.children) {
         for (let i: number = 0; i < obj.wrapper.children.length; i++) {
-            const textElement: TextElement = (obj.wrapper.children[i] as TextElement);
+            const textElement: TextElement = (obj.wrapper.children[parseInt(i.toString(), 10)] as TextElement);
             if (textElement && !isNullOrUndefined(textElement.content)) {
                 textElement.content = obj.notes;
                 textElement.childNodes[0].text = textElement.content;
@@ -350,7 +350,7 @@ export function getPolygonPath(collection: PointModel[]): string {
     path = 'M' + collection[0].x + ' ' + collection[0].y;
     let i: number;
     for (i = 1; i < collection.length; i++) {
-        seg = collection[i];
+        seg = collection[parseInt(i.toString(), 10)];
         path += 'L' + seg.x + ' ' + seg.y;
     }
     path += 'Z';
@@ -446,7 +446,7 @@ export function isPointOverConnector(connector: PdfAnnotationBaseModel, referenc
     const vertexPoints: PointModel[] = connector.vertexPoints;
     if (!isNullOrUndefined(vertexPoints)) {
         for (let i: number = 0; i < vertexPoints.length - 1; i++) {
-            const start: PointModel = vertexPoints[i];
+            const start: PointModel = vertexPoints[parseInt(i.toString(), 10)];
             const end: PointModel = vertexPoints[i + 1];
             const rect: Rect = Rect.toBounds([start, end]);
             rect.Inflate(10);

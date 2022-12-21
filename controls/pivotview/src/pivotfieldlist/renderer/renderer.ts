@@ -12,9 +12,10 @@ export class Render {
     public parent: PivotFieldList;
 
     /** Constructor for render module
+     *
      * @param {PivotFieldList} parent - Instance of field list.
      */
-    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
+    constructor(parent: PivotFieldList) {
         this.parent = parent;
         this.parent.dialogRenderer = new DialogRenderer(this.parent);
         this.parent.treeViewModule = new TreeViewRenderer(this.parent);
@@ -23,6 +24,7 @@ export class Render {
     }
     /**
      * Initialize the pivot table rendering
+     *
      * @returns {void}
      * @private
      */

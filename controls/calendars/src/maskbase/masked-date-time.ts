@@ -213,6 +213,10 @@ export class MaskedDateTime {
         }
         if ((!args.e.altKey && !args.e.ctrlKey) && (args.e.key === ARROWUP || args.e.key === ARROWDOWN)) {
             let start: number = this.parent.inputElement.selectionStart;
+            let formatText: string = '';
+            if (this.validCharacters.indexOf(this.hiddenMask[start]) !== -1) {
+                 formatText = this.hiddenMask[start];
+            }
             this.dateAlteration(args.e.key === ARROWDOWN ? true : false);
             let inputValue: string = this.dateformat.replace(this.formatRegex, this.formatCheck());
             this.isHiddenMask = true;
@@ -221,6 +225,12 @@ export class MaskedDateTime {
             this.previousHiddenMask = this.hiddenMask;
             this.previousValue = inputValue;
             this.parent.inputElement.value = inputValue;
+            for (var i = 0; i < this.hiddenMask.length; i++){
+                if (formatText === this.hiddenMask[i]){
+                    start = i;
+                    break;
+                }
+            }
             this.parent.inputElement.selectionStart = start;
             this.validCharacterCheck();
         }
@@ -612,6 +622,10 @@ export class MaskedDateTime {
     private maskInputHandler(): void {
         let start: number = this.parent.inputElement.selectionStart;
         let selectionChar: string = this.previousHiddenMask[start - 1];
+        let formatText: string = '';
+            if (this.validCharacters.indexOf(this.hiddenMask[start]) !== -1) {
+                 formatText = this.hiddenMask[start];
+            }
         let inputValue: string;
         this.differenceCheck();
         inputValue = this.dateformat.replace(this.formatRegex, this.formatCheck());
@@ -622,12 +636,23 @@ export class MaskedDateTime {
         this.previousHiddenMask = this.hiddenMask;
         this.previousValue = inputValue;
         this.parent.inputElement.value = inputValue;
+        this.parent.inputElement.value = inputValue;
+        for (var i = 0; i < this.hiddenMask.length; i++){
+            if (formatText === this.hiddenMask[i]){
+                start = i;
+                break;
+            }
+        }
         this.parent.inputElement.selectionStart = start;
         this.validCharacterCheck();
         if ((this.isNavigate || this.isDeletion) && !this.isDeleteKey ) {
           let isbackward: boolean = this.isNavigate ? false : true;
             this.isNavigate = this.isDeletion = false;
             this.navigateSelection(isbackward);
+        }
+        if (this.isDeleteKey)
+        {
+            this.isDeletion = false;
         }
         this.isDeleteKey = false;
         // this.setSelection(selectionChar);

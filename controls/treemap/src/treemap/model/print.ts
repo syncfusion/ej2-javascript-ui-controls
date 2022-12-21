@@ -16,19 +16,20 @@ export class Print {
      *
      * @param {TreeMap} control - Specifies the treemap instance.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: TreeMap) {
     }
 
     /**
      * This method is used to perform the print functionality in treemap.
      *
+     * @param {TreeMap} treeMap - Specifies the treemap instance.
      * @param { string[] | string | Element} elements - Specifies the element.
      * @returns {void}
      * @private
      */
     public print(treeMap: TreeMap, elements?: string[] | string | Element): void {
-        let printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        const printWindow: Window = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         printWindow.moveTo(0, 0);
         printWindow.resizeTo(screen.availWidth, screen.availHeight);
         const argsData: IPrintEventArgs = {
@@ -44,6 +45,7 @@ export class Print {
     /**
      * To get the html string of the Maps
      *
+     * @param {TreeMap} treeMap - Specifies the treemap instance.
      * @param {string[] | string | Element} elements - Specifies the element
      * @returns {Element} - Returns the element
      * @private
@@ -77,9 +79,10 @@ export class Print {
     }
     /**
      * To destroy the Print module.
-     * 
+     *
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

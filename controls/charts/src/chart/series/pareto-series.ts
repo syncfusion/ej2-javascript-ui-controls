@@ -76,11 +76,11 @@ export class ParetoSeries extends ColumnBase {
         let count: number = 0;
         const length: number = data.length;
         for (let i: number = 0; i < length; i++) {
-            sum += data[i][series.yName];
+            sum += data[i as number][series.yName];
         }
         for (let i: number = 0; i < length; i++) {
-            count = count + data[i][series.yName];
-            data[i][series.yName] = Math.round((count / sum) * 100);
+            count = count + data[i as number][series.yName];
+            data[i as number][series.yName] = Math.round((count / sum) * 100);
         }
         return data;
     }

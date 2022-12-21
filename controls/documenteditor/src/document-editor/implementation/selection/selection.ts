@@ -76,6 +76,9 @@ export class Selection {
      * @private
      */
     public skipFormatRetrieval: boolean = false;
+    /**
+     * @private
+     */
     public isModifyingSelectionInternally: boolean = false;
     private startInternal: TextPosition;
     private endInternal: TextPosition;
@@ -211,7 +214,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionCharacterFormat
-     * @returns {SelectionCharacterFormat} - Returns selection character format.
+     * @returns {SelectionCharacterFormat} Returns the selection character format.
      */
     public get characterFormat(): SelectionCharacterFormat {
         return this.characterFormatIn;
@@ -221,7 +224,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionParagraphFormat
-     * @returns {SelectionParagraphFormat} - Returns selection paragraph format.
+     * @returns {SelectionParagraphFormat} Returns the selection paragraph format.
      */
     public get paragraphFormat(): SelectionParagraphFormat {
         return this.paragraphFormatIn;
@@ -231,7 +234,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionSectionFormat
-     * @returns {SelectionSectionFormat} - Returns selection section format.
+     * @returns {SelectionSectionFormat} Returns the selection section format.
      */
     public get sectionFormat(): SelectionSectionFormat {
         return this.sectionFormatIn;
@@ -241,7 +244,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionTableFormat
-     * @returns {SelectionTableFormat} - Returns selection table format.
+     * @returns {SelectionTableFormat} Returns the selection table format.
      */
     public get tableFormat(): SelectionTableFormat {
         return this.tableFormatIn;
@@ -251,7 +254,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionCellFormat
-     * @returns {SelectionCellFormat} - Returns selection cell format.
+     * @returns {SelectionCellFormat} Returns the selection cell format.
      */
     public get cellFormat(): SelectionCellFormat {
         return this.cellFormatIn;
@@ -261,7 +264,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionRowFormat
-     * @returns {SelectionRowFormat} - Returns selection row format.
+     * @returns {SelectionRowFormat} Returns selection row format.
      */
     public get rowFormat(): SelectionRowFormat {
         return this.rowFormatIn;
@@ -271,7 +274,7 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionImageFormat
-     * @returns {SelectionImageFormat} - Returns selection image format.
+     * @returns {SelectionImageFormat} Returns the selection image format.
      */
     public get imageFormat(): SelectionImageFormat {
         return this.imageFormatInternal;
@@ -297,7 +300,7 @@ export class Selection {
     /**
      * Gets the page number where the selection starts.
      *
-     * @returns {number} - Returns the selection start page number.
+     * @returns {number} Returns the selection start page number.
      */
     public get startPage(): number {
         if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
@@ -309,7 +312,7 @@ export class Selection {
     /**
      * Gets the page number where the selection ends.
      *
-     * @returns {number} - Returns the selection end page number.
+     * @returns {number} Returns the selection end page number.
      */
     public get endPage(): number {
         if (!this.owner.isDocumentLoaded || isNullOrUndefined(this.viewer)
@@ -324,7 +327,7 @@ export class Selection {
      *
      * @default false
      * @private
-     * @returns {boolean} - Returns isForward
+     * @returns {boolean} Returns isForward
      */
     public get isForward(): boolean {
         return this.start.isExistBefore(this.end);
@@ -333,7 +336,7 @@ export class Selection {
      * Determines whether the selection is in footnote or not.
      *
      * @default false
-     * @returns {boolean} - Returns true if selection is in footnote
+     * @returns {boolean} Returns true if selection is in footnote
      * @private
      */
     public get isinFootnote(): boolean {
@@ -373,13 +376,13 @@ export class Selection {
         return this.start.isAtSamePosition(this.end);
     }
     /**
-     * Returns start hierarchical index.
+     * Returns the start hierarchical index.
      */
     public get startOffset(): string {
         return this.getHierarchicalIndexByPosition(this.start);
     }
     /**
-     * Returns end hierarchical index.
+     * Returns the end hierarchical index.
      */
     public get endOffset(): string {
         return this.getHierarchicalIndexByPosition(this.end);
@@ -404,7 +407,7 @@ export class Selection {
      *
      * @default ''
      * @aspType string
-     * @returns {string}
+     * @returns {string} Returns the text within selection.
      */
     public get text(): string {
         return this.getText(false);
@@ -438,9 +441,10 @@ export class Selection {
     }
 
     /**
-     * Gets the bookmark name collection in current selection
+     * Gets the bookmark name collection in current selection.
      *
      * @param includeHidden - Decide whether to include hidden bookmark name in current selection or not.
+     * @returns Returns the bookmark name collection in current selection.
      */
     public getBookmarks(includeHidden?: boolean): string[] {
         return this.getSelBookmarks(includeHidden);
@@ -452,7 +456,9 @@ export class Selection {
         return isNullOrUndefined(this.end);
     }
     /**
-     * Returns true if selection is in field
+     * Returns true if selection is in field.
+     * 
+     * @returns Returns true if selection is in field; Otherwise, false.
      */
     public get isInField(): boolean {
         if (!isNullOrUndefined(this.getHyperlinkField(true))) {
@@ -463,7 +469,7 @@ export class Selection {
     /** 
      * Gets the field information for the selected field. 
      * 
-     * @returns { FieldInfo } – Return {FieldInfo} if selection is in field, otherwise `undefined` 
+     * @returns { FieldInfo } Returns `FieldInfo` if selection is in field, otherwise `undefined` 
      * > Returns `undefined` for text, image, table, shape. For nested fields, it returns combined field code and result. 
      */
     public getFieldInfo(): FieldInfo {
@@ -614,7 +620,7 @@ export class Selection {
     /**
      * Moves the selection to the start of specified page number.
      *
-     * @param pageNumber
+     * @param pageNumber Specify the page number to move selection.
      * @returns {void}
      */
     public goToPage(pageNumber: number): void {
@@ -675,10 +681,10 @@ export class Selection {
      */
     public select(selectionSettings: SelectionSettings): void;
     /**
-     * Selects content based on start and end hierarchical index.
+     * Selects the content based on the specified start and end hierarchical index.
      *
-     * @param start start hierarchical index.
-     * @param end end hierarchical index.
+     * @param start Specify the start hierarchical index.
+     * @param end Specify the end hierarchical index.
      * @returns {void}
      */
     public select(start: string, end: string): void;
@@ -699,10 +705,10 @@ export class Selection {
         }
     }
     /**
-     * Selects based on start and end hierarchical index.
+     * Selects the content based on the specified start and end hierarchical index.
      *
-     * @param start
-     * @param end
+     * @param start Specify the start index to select.
+     * @param end Specify the end index to select.
      * @returns {void}
      */
     public selectByHierarchicalIndex(start: string, end: string): void {
@@ -711,9 +717,9 @@ export class Selection {
         this.selectPosition(startPosition, endPosition);
     }
     /**
-     * Select the current field if selection is in field
+     * Selects the current field if selection is in field
      *
-     * @param fieldStart
+     * @param fieldStart Specify the field start to select.
      * @returns {void}
      */
     public selectField(fieldStart?: FieldElementBox): void {
@@ -1406,9 +1412,9 @@ export class Selection {
         }
     }
     /**
-     * Selects Current word
+     * Selects the current word.
      *
-     * @param excludeSpace
+     * @param excludeSpace True if exclude white space; Otherwise, false.
      * @returns {void}
      */
     public selectCurrentWord(excludeSpace?: boolean): void {
@@ -1418,7 +1424,7 @@ export class Selection {
         this.selectRange(startPosition, endPosition);
     }
     /**
-     * Selects current paragraph
+     * Selects the current paragraph.
      *
      * @returns {void}
      */
@@ -1431,7 +1437,7 @@ export class Selection {
         }
     }
     /**
-     * Selects current line.
+     * Selects the current line.
      *
      * @returns {void}
      */
@@ -1442,7 +1448,7 @@ export class Selection {
         }
     }
     /**
-     * Moves selection to start of the document.
+     * Moves the selection to the start of the document.
      *
      * @returns {void}
      */
@@ -1450,7 +1456,7 @@ export class Selection {
         this.handleControlHomeKey();
     }
     /**
-     * Moves selection to end of the document.
+     * Moves the selection to the end of the document.
      *
      * @returns {void}
      */
@@ -1458,7 +1464,7 @@ export class Selection {
         this.handleControlEndKey();
     }
     /**
-     * Moves selection to current paragraph start.
+     * Moves the selection to the current paragraph start.
      *
      * @returns {void}
      */
@@ -1475,7 +1481,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Moves selection to current paragraph end.
+     * Moves the selection to the current paragraph end.
      *
      * @returns {void}
      */
@@ -1492,7 +1498,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Moves selection to next line.
+     * Moves the selection to the next line.
      *
      * @returns {void}
      */
@@ -1500,7 +1506,7 @@ export class Selection {
         this.moveDown();
     }
     /**
-     * Moves selection to previous line.
+     * Moves the selection to the previous line.
      *
      * @returns {void}
      */
@@ -1508,7 +1514,7 @@ export class Selection {
         this.moveUp();
     }
     /**
-     * Moves selection to next character.
+     * Moves the selection to the next character.
      *
      * @returns {void}
      */
@@ -1516,7 +1522,7 @@ export class Selection {
         this.handleRightKey();
     }
     /**
-     * Moves selection to previous character.
+     * Moves the selection to the previous character.
      *
      * @returns {void}
      */
@@ -1559,7 +1565,7 @@ export class Selection {
         }
     }
     /**
-     * Extends selection to paragraph start.
+     * Extends the selection to the paragraph start.
      *
      * @returns {void}
      */
@@ -1572,7 +1578,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extend selection to paragraph end.
+     * Extends the selection to the paragraph end.
      *
      * @returns {void}
      */
@@ -1625,7 +1631,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * To navigate to next footnote from current selection
+     * Navigates to the next footnote from the current selection.
      *
      * @returns {void}
      */
@@ -1654,7 +1660,7 @@ export class Selection {
         }
     }
     /**
-     * To navigate to previous footnote from current selection
+     * Navigates to the previous footnote from the current selection.
      *
      * @returns {void}
      */
@@ -1683,7 +1689,7 @@ export class Selection {
         }
     }
     /**
-     * To navigate to next Endnote from current selection
+     * Navigates to the next endnote from the current selection
      *
      * @returns {void}
      */
@@ -1709,7 +1715,7 @@ export class Selection {
         }
     }
     /**
-     * To navigate to previous Endnote from current selection
+     * Navigates to the previous endnote from the current selection.
      *
      * @returns {void}
      */
@@ -1776,7 +1782,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extends selection to previous line.
+     * Extends the selection to previous line.
      *
      * @returns {void}
      */
@@ -1788,7 +1794,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extend selection to line end
+     * Extends the selection to line end
      *
      * @returns {void}
      */
@@ -1801,7 +1807,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extends selection to line start.
+     * Extends the selection to line start.
      *
      * @returns {void}
      */
@@ -1839,8 +1845,17 @@ export class Selection {
             this.upDownSelectionLength = this.start.location.x;
         }
         this.upDownSelectionLength = this.start.location.x;
+        let beforeUp = this.start.currentWidget.paragraph.bodyWidget.indexInOwner;
         this.start.moveUp(this, this.upDownSelectionLength);
-        this.end.setPositionInternal(this.start);
+        let afterUp = this.start.currentWidget.paragraph.bodyWidget.indexInOwner;
+        if (beforeUp === afterUp || beforeUp !== this.start.currentWidget.paragraph.bodyWidget.index) {
+            this.end.setPositionInternal(this.start);
+        } else {
+            do {
+                this.start.moveUp(this, this.upDownSelectionLength);
+            } while (beforeUp !== this.start.currentWidget.paragraph.bodyWidget.indexInOwner);
+            this.end.setPositionInternal(this.start);
+        }
         this.fireSelectionChanged(true);
     }
     /**
@@ -1863,8 +1878,18 @@ export class Selection {
             }
             this.upDownSelectionLength = this.start.location.x;
         }
+        this.upDownSelectionLength = this.start.location.x;
+        let beforeDown = this.start.currentWidget.paragraph.bodyWidget.indexInOwner;
         this.start.moveDown(this, this.upDownSelectionLength);
-        this.end.setPositionInternal(this.start);
+        let afterDown = this.start.currentWidget.paragraph.bodyWidget.indexInOwner;
+        if (beforeDown === afterDown || beforeDown !== this.start.currentWidget.paragraph.bodyWidget.index) {
+            this.end.setPositionInternal(this.start);
+        } else {
+            do {
+                this.start.moveDown(this, this.upDownSelectionLength);
+            } while (beforeDown !== this.start.currentWidget.paragraph.bodyWidget.indexInOwner);
+            this.end.setPositionInternal(this.start);
+        }
         this.fireSelectionChanged(true);
     }
     private updateForwardSelection(): void {
@@ -1971,7 +1996,7 @@ export class Selection {
     }
 
     /**
-     * Moves selection to start of the current line.
+     * Moves the selection to start of the current line.
      *
      * @returns {void} 
      */
@@ -1986,7 +2011,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Moves selection to end of the current line.
+     * Moves the selection to end of the current line.
      *
      * @returns {void}
      */
@@ -2064,9 +2089,9 @@ export class Selection {
         let textPosition: TextPosition = undefined;
         const documentStart: TextPosition = this.owner.documentStart;
         const lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
-        if (!isNullOrUndefined(documentStart) && lastPage.bodyWidgets[0].childWidgets.length > 0) {
+        if (!isNullOrUndefined(documentStart) && lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1].childWidgets.length > 0) {
             let block: BlockWidget = undefined;
-            const section: BodyWidget = lastPage.bodyWidgets[0] as BodyWidget;
+            const section: BodyWidget = lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1] as BodyWidget;
             const blocks: IWidget[] = section.childWidgets;
             const lastBlkItem: number = blocks.length - 1;
             const lastBlock: BlockWidget = blocks[lastBlkItem] as BlockWidget;
@@ -2883,7 +2908,7 @@ export class Selection {
         }
     }
     /**
-     * Extends selection backward.
+     * Extends the selection backward.
      *
      * @returns {void}
      */
@@ -2901,7 +2926,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extends selection forward.
+     * Extends the selection forward.
      *
      * @returns {void}
      */
@@ -2934,7 +2959,7 @@ export class Selection {
         return false;
     }
     /**
-     * Extends selection to word start.
+     * Extends the selection to word start.
      *
      * @returns {void}
      */
@@ -2942,7 +2967,7 @@ export class Selection {
         this.extendToWordStartInternal(false);
     }
     /**
-     * Extends selection to word end.
+     * Extends the selection to word end.
      *
      * @returns {void}
      */
@@ -2976,7 +3001,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extends selection to word end.
+     * Extends the selection to word end.
      *
      * @returns {void}
      */
@@ -3001,7 +3026,7 @@ export class Selection {
         this.fireSelectionChanged(true);
     }
     /**
-     * Extend selection to next line.
+     * Extends the selection to next line.
      *
      * @returns {void}
      */
@@ -3137,7 +3162,12 @@ export class Selection {
                     let ind: number = block.containerWidget.bodyWidgets.indexOf(block);
                     index = ind + ';' + offset;
                 } else {
-                    index = block.index + ';' + offset;
+                    // if (block instanceof BodyWidget && block.sectionFormat.columns.length > 1) {
+                    //         index = block.indexInOwner + ';' + offset;
+                    // }
+                    // else {
+                        index = block.index + ';' + offset;
+                    // }
                 }
             }
             if (block instanceof TextFrame) {
@@ -3278,21 +3308,24 @@ export class Selection {
         }
         return headerFooterWidget;
     }
+
     /**
      * @private
      * @returns {BodyWidget}
      */
     public getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-            let bodyWidget: BodyWidget = this.documentHelper.pages[i].bodyWidgets[0];
-            if (bodyWidget.index === sectionIndex) {
-                if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
-                    (bodyWidget.lastChild as Widget).index >= blockIndex) {
-                    return bodyWidget;
+            for (let j: number = 0; j < this.documentHelper.pages[i].bodyWidgets.length; j++) {
+                let bodyWidget: BodyWidget = this.documentHelper.pages[i].bodyWidgets[j];
+                if (bodyWidget.index === sectionIndex) {
+                    if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
+                        (bodyWidget.lastChild as Widget).index >= blockIndex) {
+                        return bodyWidget;
+                    }
                 }
-            }
-            if (bodyWidget.index > sectionIndex) {
-                break;
+                if (bodyWidget.index > sectionIndex) {
+                    break;
+                }
             }
         }
         return undefined;
@@ -3767,9 +3800,16 @@ export class Selection {
                     //Splitted blocks
                     const startPage: number = this.documentHelper.pages.indexOf(start.containerWidget.page);
                     const endPage: number = this.documentHelper.pages.indexOf(block.containerWidget.page);
+                    if (startPage === endPage) {
+                        return start.containerWidget.indexInOwner < block.containerWidget.indexInOwner;
+                    }
                     if (startPage === endPage && start.containerWidget.containerWidget instanceof FootNoteWidget && block.containerWidget.containerWidget instanceof FootNoteWidget) {
                         const startindex: number = this.documentHelper.pages[startPage].footnoteWidget.bodyWidgets.indexOf(start.containerWidget);
                         const endindex: number = this.documentHelper.pages[endPage].footnoteWidget.bodyWidgets.indexOf(block.containerWidget);
+                        return startindex < endindex;
+                    } else if (startPage === endPage && start.containerWidget.index !== block.containerWidget.index) {
+                        const startindex: number = this.documentHelper.pages[startPage].bodyWidgets.indexOf(start.containerWidget);
+                        const endindex: number = this.documentHelper.pages[endPage].bodyWidgets.indexOf(block.containerWidget);
                         return startindex < endindex;
                     } else {
                         return startPage < endPage;
@@ -5875,7 +5915,8 @@ export class Selection {
      * @private
      */
     //Body Widget 
-    public getLineWidgetBodyWidget(widget: Widget, point: Point): LineWidget {
+    public getLineWidgetBodyWidget(widget: Widget, point: Point, isGetFirstChild?: boolean ): LineWidget {
+        isGetFirstChild = isNullOrUndefined(isGetFirstChild) ? true : isGetFirstChild;
         let bodyWgt: BodyWidget = widget as BodyWidget;
         if (bodyWgt instanceof BlockContainer) {
             for (let x: number = 0; x < bodyWgt.floatingElements.length; x++) {
@@ -5912,7 +5953,10 @@ export class Selection {
                 if (childWidget instanceof Widget && (childWidget as Widget).y <= point.y
                     && ((childWidget as Widget).y + (childWidget as Widget).height) >= point.y) {
                     if (childWidget instanceof ParagraphWidget) {
+                        // if ((childWidget as Widget).x <= point.x
+                        // && ((childWidget as Widget).x + (childWidget as Widget).width) >= point.x) {
                         return this.getLineWidgetParaWidget((childWidget as ParagraphWidget), point);
+                    // }// return this.getLineWidgetParaWidget((childWidget as ParagraphWidget), point);
                     } else {
                         let table: TableWidget = childWidget as TableWidget;
                         if (table.wrapTextAround) {
@@ -5924,26 +5968,30 @@ export class Selection {
             }
         }
         let line: LineWidget = undefined;
-        if (widget.childWidgets.length > 0) {
-            const firstChild: IWidget = widget.childWidgets[0];
-            if (firstChild instanceof Widget && (firstChild as Widget).y <= point.y) {
-                if ((widget.childWidgets[widget.childWidgets.length - 1] as Widget) instanceof ParagraphWidget) {
-
-                    line = this.getLineWidgetParaWidget((widget.childWidgets[widget.childWidgets.length - 1] as ParagraphWidget), point);
-                } else {
-
-                    line = this.getLineWidgetTableWidget((widget.childWidgets[widget.childWidgets.length - 1] as TableWidget), point);
-                }
-            } else {
-                let childWidget: Widget = undefined;
-                if (firstChild instanceof Widget) {
-                    childWidget = firstChild as Widget;
-                }
-                if (!isNullOrUndefined(childWidget)) {
-                    if (childWidget instanceof ParagraphWidget) {
-                        line = this.getLineWidgetParaWidget((firstChild as ParagraphWidget), point);
+        if (isGetFirstChild) {
+            if (widget.childWidgets.length > 0) {
+                const firstChild: IWidget = widget.childWidgets[0];
+                if (firstChild instanceof Widget && (firstChild as Widget).y <= point.y) {
+                    if ((widget.childWidgets[widget.childWidgets.length - 1] as Widget) instanceof ParagraphWidget) {
+                        for(let i:number=0; i<widget.childWidgets.length;i++){
+                            line = this.getLineWidgetParaWidget((widget.childWidgets[i] as ParagraphWidget), point);
+                        }
                     } else {
-                        line = this.getLineWidgetTableWidget((firstChild as TableWidget), point);
+                        for(let i:number=0; i<widget.childWidgets.length;i++){
+                        line = this.getLineWidgetTableWidget((widget.childWidgets[i] as TableWidget), point);
+                        }
+                    }
+                } else {
+                    let childWidget: Widget = undefined;
+                    if (firstChild instanceof Widget) {
+                        childWidget = firstChild as Widget;
+                    }
+                    if (!isNullOrUndefined(childWidget)) {
+                        if (childWidget instanceof ParagraphWidget) {
+                            line = this.getLineWidgetParaWidget((firstChild as ParagraphWidget), point);
+                        } else {
+                            line = this.getLineWidgetTableWidget((firstChild as TableWidget), point);
+                        }
                     }
                 }
             }
@@ -5973,11 +6021,43 @@ export class Selection {
             top += line.height;
         }
         let lineWidget: LineWidget = undefined;
-        if (childWidgets.length > 0) {
-            if (widget.y <= point.y) {
-                lineWidget = childWidgets[childWidgets.length - 1] as LineWidget;
+        if(widget.bodyWidget.page.bodyWidgets.length > 1 && widget.bodyWidget.sectionFormat.columns.length > 1){
+            let lastLine: LineWidget;
+            let previousParagraph: ParagraphWidget;
+            for (let k: number = 0; k < widget.childWidgets.length; k++) {
+                lastLine = widget.childWidgets[k] as LineWidget;
+            }
+            let nextBlock: ParagraphWidget = lastLine.paragraph.nextRenderedWidget as ParagraphWidget;
+            if (lastLine.isLastLine() && isNullOrUndefined(nextBlock) && (widget.y < point.y)) {
+                let previousBodyWidget: BodyWidget = widget.bodyWidget.previousRenderedWidget as BodyWidget;
+                if (!isNullOrUndefined(previousBodyWidget)) {
+                    for (let i: number = 0; i < previousBodyWidget.childWidgets.length; i++) {
+                        previousParagraph = previousBodyWidget.childWidgets[i] as ParagraphWidget;
+                        if (previousParagraph.y <= point.y && previousParagraph.y > widget.y) {
+                            for (let j: number = 0; j < previousParagraph.childWidgets.length; j++) {
+                                let previousLine: LineWidget = previousParagraph.childWidgets[j] as LineWidget;
+                                point.x = previousBodyWidget.x + previousLine.paragraph.width;
+                                lineWidget = this.viewer.documentHelper.getLineWidget(point);
+                            }
+                        }
+                    }
+                    if (isNullOrUndefined(lineWidget) && previousBodyWidget.index > 0) {
+                        lineWidget = this.viewer.documentHelper.getLineWidget(point);
+                    }
+                }
+            } else if (widget.y == point.y) {
+                lineWidget = this.viewer.documentHelper.getLineWidget(point);
             } else {
                 lineWidget = childWidgets[0] as LineWidget;
+            }
+        }
+       else{
+            if (childWidgets.length > 0) {
+                if (widget.y <= point.y) {
+                    lineWidget = childWidgets[childWidgets.length - 1] as LineWidget;
+                } else {
+                    lineWidget = childWidgets[0] as LineWidget;
+                }
             }
         }
         return lineWidget;
@@ -6327,7 +6407,7 @@ export class Selection {
                         if (isRtlText && isParaBidi) {
                             index = 0;
                         }
-                        if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" || (element as TextElementBox).text !== '\f')) || includeParagraphMark) {
+                        if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" || (element as TextElementBox).text !== '\f' || (element as TextElementBox).text !== String.fromCharCode(14))) || includeParagraphMark) {
                             left += element.margin.left + element.width + element.padding.left;
                         }
                     } else if (element instanceof TextElementBox) {
@@ -6395,7 +6475,7 @@ export class Selection {
                             }
                         }
                     }
-                    if (element instanceof TextElementBox && ((element as TextElementBox).text === '\v' || (element as TextElementBox).text === '\f')) {
+                    if (element instanceof TextElementBox && ((element as TextElementBox).text === '\v' || (element as TextElementBox).text === '\f' || (element as TextElementBox).text === String.fromCharCode(14))) {
                         index = 0;
                     }
                 } else {
@@ -7024,8 +7104,9 @@ export class Selection {
         }
     }
     /**
-     * Returns the context type of previous character or element.
+     * Gets the context type of previous character or element.
      * @param isElement - Decides whether to get previous context type from element or character. By default, character.
+     * @returns Returns the context type of previous character or element.
      */
     public getPreviousContextType(isElement?: boolean): string {
         let contextType: string;
@@ -7043,8 +7124,9 @@ export class Selection {
         return undefined;
     }
     /**
-     * Returns the context type of next character or element.
+     * Gets the context type of next character or element.
      * @param isElement - Decides whether to get next context type from element or character. By default, character.
+     * @return Returns the context type of next character or element.
      */
     public getNextContextType(isElement?: boolean): string {
         let contextType: string;
@@ -9762,15 +9844,33 @@ export class Selection {
         this.isSkipLayouting = undefined;
         this.isImageSelected = undefined;
         if (!isNullOrUndefined(this.documentHelper)) {
-            this.documentHelper.destroy();
+            this.documentHelper = undefined;
         }
         this.contextTypeInternal = undefined;
         this.isRetrieveFormatting = undefined;
+        if (this.characterFormatIn) {
+            this.characterFormatIn.destroy();
+        }
         this.characterFormatIn = undefined;
+        if (this.paragraphFormatIn) {
+            this.paragraphFormatIn.destroy();
+        }
         this.paragraphFormatIn = undefined;
+        if (this.sectionFormatIn) {
+            this.sectionFormatIn.destroy();
+        }
         this.sectionFormatIn = undefined;
+        if (this.tableFormatIn) {
+            this.tableFormatIn.destroy();
+        }
         this.tableFormatIn = undefined;
+        if (this.cellFormatIn) {
+            this.cellFormatIn.destroy();
+        }
         this.cellFormatIn = undefined;
+        if (this.rowFormatIn) {
+            this.rowFormatIn.destroy();
+        }
         this.rowFormatIn = undefined;
         this.imageFormatInternal = undefined;
         this.skipFormatRetrieval = undefined;
@@ -9839,7 +9939,7 @@ export class Selection {
     }
     /**
      * Selects the specified bookmark.
-     * @param name
+     * @param name Specify the name of the bookmark to select.
      */
     public selectBookmark(name: string): void {
         this.navigateBookmark(name);
@@ -9960,7 +10060,7 @@ export class Selection {
     }
 
     /**
-     * Navigate to previous comment in the document.
+     * Navigates to the previous comment in the document.
      *
      * @returns {void}
      */
@@ -9968,7 +10068,7 @@ export class Selection {
         this.commentNavigateInternal(false);
     }
     /**
-     * Navigate to next comment in the document.
+     * Navigates to the next comment in the document.
      *
      * @returns {void}
      */
@@ -9996,7 +10096,7 @@ export class Selection {
         }
     }
     /**
-     * Navigate to previous revision in the document.
+     * Navigates to the previous revision in the document.
      *
      * @returns {void}
      */
@@ -10004,7 +10104,7 @@ export class Selection {
         this.revisionNavigateInternal(false);
     }
     /**
-     * Navigate to next revision in the document.
+     * Navigates to the next revision in the document.
      *
      * @returns {void}
      */
@@ -10084,7 +10184,7 @@ export class Selection {
                 let endPosition: TextPosition = new TextPosition(this.owner);
                 if (lastElement instanceof WCharacterFormat) {
                     let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
-                    if (currentPara.isEndsWithPageBreak) {
+                    if (currentPara.isEndsWithPageBreak || currentPara.isEndsWithColumnBreak) {
                         this.owner.trackChangesPane.isTrackingPageBreak = true;
                         endPosition.setPositionParagraph(currentPara.nextRenderedWidget.childWidgets[0] as LineWidget, 0);
                     } else {
@@ -10304,7 +10404,7 @@ export class Selection {
         }
     }
     /**
-     * Navigate to next editing region, where current user can edit.
+     * Navigates to the next editing region, where current user can edit.
      *
      * @returns {void}
      */
@@ -10340,7 +10440,7 @@ export class Selection {
         }
     }
     /**
-     * Highlight all the editing region, where current user can edit.
+     * Highlights all the editing region, where current user can edit.
      *
      * @returns {void}
      */
@@ -10364,9 +10464,9 @@ export class Selection {
         return undefined;
     }
     /**
-     * Returns true if selection is inside the edit region
-     *
-     * @returns {boolean}
+     * Determines whether the selection is inside the edit region.
+     * 
+     * @returns {boolean} Returns true if the selection is inside the edit region; Otherwise, false.
      */
     public isSelectionInEditRegion(): boolean {
         if (!this.documentHelper.isDocumentProtected) {
@@ -10374,6 +10474,12 @@ export class Selection {
         }
         return this.checkSelectionIsAtEditRegion();
     }
+    /**
+     * Determines whether the specified start and end position of the selection is inside the edit region.
+     * @param {TextPosition} start Specify the start position of the selection.
+     * @param {TextPosition} end Specify the end position of the selection.
+     * @returns {boolean} Returns true if the specified start and end position of the selection is inside the edit region; Otherwise, false.
+     */
     public checkSelectionIsAtEditRegion(start?: TextPosition, end?: TextPosition): boolean {
         if (isNullOrUndefined(start) && isNullOrUndefined(end)) {
             start = this.start;

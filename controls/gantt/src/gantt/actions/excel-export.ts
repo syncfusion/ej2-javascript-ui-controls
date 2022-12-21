@@ -1,6 +1,7 @@
 import { TreeGrid, ExcelExport as TreeGridExcel } from '@syncfusion/ej2-treegrid';
 import { Gantt } from '../base/gantt';
 import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Gantt Excel Export module
@@ -47,6 +48,11 @@ export class ExcelExport {
     private bindEvents(): void {
         this.parent.treeGrid.beforeExcelExport = (args: Object) => {
             this.parent.trigger('beforeExcelExport', args);
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
         };
         this.parent.treeGrid.excelQueryCellInfo = (args: ExcelQueryCellInfoEventArgs) => {
             this.parent.trigger('excelQueryCellInfo', args);
@@ -56,6 +62,11 @@ export class ExcelExport {
         };
         this.parent.treeGrid.excelExportComplete = (args: ExcelExportCompleteArgs) => {
             this.parent.trigger('excelExportComplete', args);
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+                this.parent.hideMaskRow();
+            } else {
+                this.parent.hideSpinner();
+            }
         };
     }
 }

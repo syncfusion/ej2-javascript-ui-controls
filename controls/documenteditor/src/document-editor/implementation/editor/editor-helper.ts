@@ -60,7 +60,7 @@ export class HelperMethods {
     public static indexOfAny(text: string, wordSplitCharacter: string[]): any {
         let index: any = undefined;
         for (let j: number = 0; j < wordSplitCharacter.length; j++) {
-            const temp: number = text.indexOf(wordSplitCharacter[j]);
+            const temp: number = text.indexOf(wordSplitCharacter[parseInt(j.toString(), 10)]);
             if (temp !== -1 && isNullOrUndefined(index)) {
                 index = temp;
             } else if (temp !== -1 && temp < index) {
@@ -73,7 +73,7 @@ export class HelperMethods {
     public static lastIndexOfAny(text: string, wordSplitCharacter: string[]): number {
         for (let i: number = text.length - 1; i >= 0; i--) {
             for (let j: number = 0; j <= wordSplitCharacter.length - 1; j++) {
-                if (text[i] === wordSplitCharacter[j]) {
+                if (text[parseInt(i.toString(), 10)] === wordSplitCharacter[parseInt(j.toString(), 10)]) {
                     return i;
                 }
             }
@@ -233,7 +233,7 @@ export class HelperMethods {
     public static trimStart(text: string): string {
         let i: number = 0;
         for (i; i < text.length; i++) {
-            if (text[i] !== ' ') {
+            if (text[parseInt(i.toString(), 10)] !== ' ') {
                 break;
             }
         }
@@ -249,7 +249,7 @@ export class HelperMethods {
     public static trimEnd(text: string): string {
         let i: number = text.length - 1;
         for (i; i >= 0; i--) {
-            if (text[i] !== ' ') {
+            if (text[parseInt(i.toString(), 10)] !== ' ') {
                 break;
             }
         }
@@ -303,6 +303,17 @@ export class HelperMethods {
         characterFormat.fontFamilyAscii = isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
         characterFormat.fontFamilyNonFarEast = isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
         characterFormat.fontFamilyFarEast = isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
+        if (format.hasValue('fontFamily')) {
+            if (isNullOrUndefined(characterFormat.fontFamilyAscii)) {
+                characterFormat.fontFamilyAscii = format.fontFamily;
+            }
+            if (isNullOrUndefined(characterFormat.fontFamilyNonFarEast)) {
+                characterFormat.fontFamilyNonFarEast = format.fontFamily;
+            }
+            if (isNullOrUndefined(characterFormat.fontFamilyFarEast)) {
+                characterFormat.fontFamilyFarEast = format.fontFamily;
+            }
+        }
     }
     /// <summary>
     /// To check whether the font name is theme font or not.
@@ -449,7 +460,7 @@ export class HelperMethods {
             const valArry: string[] = splitBy ? value.split(splitBy) : value.split(' ');
             for (let i: number = 0; i < valArry.length; i++) {
                 /* eslint-disable-next-line max-len */
-                text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
+                text += splitBy ? valArry[parseInt(i.toString(), 10)].charAt(0).toUpperCase() + valArry[parseInt(i.toString(), 10)].slice(1, valArry[parseInt(i.toString(), 10)].length) : this.capitaliseFirstInternal(valArry[parseInt(i.toString(), 10)]);
                 if (valArry.length >= 0 && !splitBy) {
                     text += ' ';
                 }

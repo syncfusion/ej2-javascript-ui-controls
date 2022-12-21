@@ -27,12 +27,14 @@ export class Background extends ChildProperty<Background> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default ''
      */
     @Property('')
     public source: string;
     /**
      * Defines the background color of diagram
+     *
      * @default 'transparent'
      */
     @Property('transparent')
@@ -42,6 +44,7 @@ export class Background extends ChildProperty<Background> {
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
+     *
      * @default 'None'
      */
     @Property('None')
@@ -58,6 +61,7 @@ export class Background extends ChildProperty<Background> {
      * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
      * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
      * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
+     *
      * @default 'None'
      */
     @Property('None')
@@ -66,18 +70,21 @@ export class Background extends ChildProperty<Background> {
 export class FitOptions extends ChildProperty<FitOptions> {
     /**
      * Defines whether the diagram has to be horizontally/vertically fit into the viewport
+     *
      * @default 'Page'
      */
     @Property('Page')
     public mode: FitModes;
     /**
      * Defines the region that has to be fit into the viewport
+     *
      * @default 'PageSettings'
      */
     @Property('PageSettings')
     public region: DiagramRegions;
     /**
      * Defines the space to be left between the viewport and the content
+     *
      *  @default { left: 25, right: 25, top: 25, bottom: 25 }
      */
     @Complex<MarginModel>({top: 25, bottom: 25, left: 25, right: 25}, Margin)
@@ -90,12 +97,14 @@ export class FitOptions extends ChildProperty<FitOptions> {
     public canZoomIn: boolean;
     /**
      * Defines the custom region that has to be fit into the viewport
+     *
      * @default undefined
      */
     @Property(undefined)
     public customBounds: Rect;
     /**
      * Enables/Disables  fit while render
+     *
      * @default false
      */
     @Property(false)
@@ -117,6 +126,7 @@ export class FitOptions extends ChildProperty<FitOptions> {
  * });
  * diagram.appendTo('#diagram');
  * ```
+ *
  * @default {}
  */
 export class PageSettings extends ChildProperty<PageSettings> {
@@ -314,10 +324,11 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
 
     /**
      * Specifies the percentage of scale value for each ZoomIn or ZoomOut functionality.
+     *
      * @default 0.2
      */
-     @Property(0.2)
-     public zoomFactor: number;
+    @Property(0.2)
+    public zoomFactor: number;
 }
 
 

@@ -36,25 +36,27 @@ export class Crud {
                     }
                     modifiedData.forEach((data: Record<string, any>, index: number) => {
                         if (!data[this.parent.sortSettings.field]) {
-                            let columnData: Record<string, any>[] = this.parent.getColumnData(data[this.parent.keyField]);
+                            const columnData: Record<string, any>[] = this.parent.getColumnData(data[this.parent.keyField]);
                             if (this.parent.sortSettings.direction === 'Ascending' && columnData.length > 0) {
-                                data[this.parent.sortSettings.field] = (columnData[columnData.length - 1][this.parent.sortSettings.field]) + index + 1;
+                                data[this.parent.sortSettings.field] =
+                                (columnData[columnData.length - 1][this.parent.sortSettings.field]) + index + 1;
                             } else if (this.parent.sortSettings.direction === 'Descending' && columnData.length > 0) {
                                 data[this.parent.sortSettings.field] = columnData[0][this.parent.sortSettings.field] + index + 1;
                             }
                             if (columnData.length === 0) {
-                                data[this.parent.sortSettings.field] = 1;   
+                                data[this.parent.sortSettings.field] = 1;
                             }
                         }
                     });
                     if (!(cardData instanceof Array)) {
                         if (!index && this.parent.sortSettings.direction === 'Descending') {
+                            // eslint-disable-next-line max-len
                             this.parent.getColumnData(modifiedData[0][this.parent.keyField]).filter((obj: Record<string, any>, count: number) => {
                                 if (obj[this.parent.sortSettings.field] === modifiedData[0][this.parent.sortSettings.field]) {
                                     index = count + 1;
                                 }
                             });
-                        }   
+                        }
                     }
                     if (index !== 0 && !index && this.parent.sortSettings.direction === 'Descending') {
                         index = 0;
@@ -148,7 +150,7 @@ export class Crud {
             if (!isNullOrUndefined(cardIndex)) {
                 for (let j: number = 0; j < cardsId.length; j++) {
                     columnAllDatas.filter((data: Record<string, any>, index: number) => {
-                        if (data[this.parent.cardSettings.headerField] === cardsId[j] && index <= cardIndex) {
+                        if (data[this.parent.cardSettings.headerField] === cardsId[j as number] && index <= cardIndex) {
                             originalIndex.push(index);
                         }
                     });
@@ -158,16 +160,16 @@ export class Crud {
                 }
                 if (this.parent.sortSettings.direction === 'Ascending') {
                     for (let i: number = cardIndex; i < columnAllDatas.length; i++) {
-                        if (cardsId.indexOf(columnAllDatas[i][this.parent.cardSettings.headerField] as string) === -1) {
-                            columnAllDatas[i][this.parent.sortSettings.field] = ++num;
-                            finalData.push(columnAllDatas[i]);
+                        if (cardsId.indexOf(columnAllDatas[i as number][this.parent.cardSettings.headerField] as string) === -1) {
+                            columnAllDatas[i as number][this.parent.sortSettings.field] = ++num;
+                            finalData.push(columnAllDatas[i as number]);
                         }
                     }
                 } else {
                     for (let i: number = cardIndex - 1; i >= 0; i--) {
-                        if (cardsId.indexOf(columnAllDatas[i][this.parent.cardSettings.headerField] as string) === -1) {
-                            columnAllDatas[i][this.parent.sortSettings.field] = ++num;
-                            finalData.push(columnAllDatas[i]);
+                        if (cardsId.indexOf(columnAllDatas[i as number][this.parent.cardSettings.headerField] as string) === -1) {
+                            columnAllDatas[i as number][this.parent.sortSettings.field] = ++num;
+                            finalData.push(columnAllDatas[i as number]);
                         }
                     }
                 }

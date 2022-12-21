@@ -1,5 +1,7 @@
+/* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
 import { compile as templateComplier, remove, merge, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel } from '../model/base-model';
@@ -33,10 +35,9 @@ export function stringToNumberSize(value: string, containerSize: number): number
 /**
  * Function to measure the height and width of the text.
  *
- * @param  {string} text
- * @param  {FontModel} font
- * @param  {string} id
- * @returns no
+ * @param  {string} text - Specifies the text to be measured.
+ * @param  {FontModel} font - Specifies the font of the text.
+ * @returns {Size} Returns the size of the text.
  * @private
  */
 export function measureText(text: string, font: FontModel): Size {
@@ -61,8 +62,10 @@ export function measureText(text: string, font: FontModel): Size {
 }
 
 /**
- * @private
  * Trim the title text
+ *
+ * @private
+ *
  */
 export function textTrim(maxWidth: number, text: string, font: FontModel): string {
     let label: string = text;
@@ -152,8 +155,8 @@ export function removeElement(id: string): void {
 /** @private */
 export function isPointerDrag(axes: AxisModel[]): boolean {
     let pointerEnable: boolean = false;
-    axes.map((axis: Axis, index: number) => {
-        axis.pointers.map((pointer: Pointer, index: number) => {
+    axes.map((axis: Axis) => {
+        axis.pointers.map((pointer: Pointer) => {
             if (pointer.enableDrag) {
                 pointerEnable = true;
             }
@@ -178,14 +181,14 @@ export function getFontStyle(font: FontModel): string {
     return style;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function textFormatter(format: string, data: any, gauge: LinearGauge): string {
     if (isNullOrUndefined(format)) {
         return null;
     }
     const keys: string[] = Object.keys(data);
     for (const key of keys) {
-        format = format.split('{' + key + '}').join(formatValue(data[key], gauge).toString());
+        format = format.split('{' + key + '}').join(formatValue(data[key as string], gauge).toString());
     }
     return format;
 }
@@ -216,11 +219,10 @@ export function getLabelFormat(format: string): string {
 export function getTemplateFunction(template: string, gauge: LinearGauge): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let templateFn: any = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let e: any;
     try {
         if (document.querySelectorAll(template).length) {
             templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } else if ((gauge as any).isVue || (gauge as any).isVue3) {
             templateFn = templateComplier(template);
         }
@@ -243,9 +245,10 @@ export function getElementOffset(childElement: HTMLElement, parentElement: HTMLE
 /**
  * To trigger the download element
  *
- * @param fileName
- * @param type
- * @param url
+ * @param {string} fileName - Specifies the name of the exported file.
+ * @param {ExportType} type - Specifies the extension type of the file to which the Linear Gauge must be exported.
+ * @param {string} url - Specifies the blob URL of the exported file of Linear Gauge.
+ * @param {boolean} isDownload - Specifies whether the exported file must be downloaded or not.
  */
 export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
     createElement('a', {
@@ -377,8 +380,7 @@ export class RectOption {
     public ['stroke-width']: number;
     public ['stroke-dasharray']: string;
     constructor(
-        id: string, fill: string, border: BorderModel, opacity: number, rect: Rect, transform?: string,
-        dashArray?: string) {
+        id: string, fill: string, border: BorderModel, opacity: number, rect: Rect) {
         this.opacity = opacity;
         this.id = id;
         this.y = rect.y;
@@ -489,15 +491,15 @@ export function getPointer(target: HTMLElement, gauge: LinearGauge): IVisiblePoi
     split = target.id.replace(gauge.element.id, '').split('_');
     const axisIndex: number = parseInt(split[2], radix);
     const pointIndex: number = parseInt(split[4], radix);
-    const axis: Axis = <Axis>gauge.axes[axisIndex];
-    const pointer: Pointer = <Pointer>gauge.axes[axisIndex].pointers[pointIndex];
+    const axis: Axis = <Axis>gauge.axes[axisIndex as number];
+    const pointer: Pointer = <Pointer>gauge.axes[axisIndex as number].pointers[pointIndex as number];
     return { axis: axis, axisIndex: axisIndex, pointer: pointer, pointerIndex: pointIndex };
 }
 
 /** @private */
 export function getRangeColor(value: number, ranges: Range[]): string {
     let rangeColor: string = null;
-    ranges.forEach((range: Range, index: number) => {
+    ranges.forEach((range: Range) => {
         if ((value >= range.start && range.end >= value) && range.start !== range.end) {
             rangeColor = range.interior;
         }
@@ -508,9 +510,9 @@ export function getRangeColor(value: number, ranges: Range[]): string {
 /**
  * Function to get the mouse position
  *
- * @param pageX
- * @param pageY
- * @param element
+ * @param {number} pageX - Specifies the horizontal position of the click event.
+ * @param {number} pageY - Specifies the vertical position of the click event.
+ * @param {number} element - Specifies the target element of the client event.
  */
 export function getMousePosition(pageX: number, pageY: number, element: Element): GaugeLocation {
     const elementRect: ClientRect = element.getBoundingClientRect();
@@ -527,33 +529,33 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
 export function getRangePalette(theme: LinearGaugeTheme): string[] {
     let palette: string[];
     switch (theme.toLowerCase()) {
-        case 'tailwind':
-            palette = ['#0369A1', '#14B8A6', '#15803D', '#334155', '#5A61F6',
+    case 'tailwind':
+        palette = ['#0369A1', '#14B8A6', '#15803D', '#334155', '#5A61F6',
             '#65A30D', '#8B5CF6', '#9333EA', '#F59E0B', '#F97316'];
-            break;
-        case 'tailwinddark':
-            palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
+        break;
+    case 'tailwinddark':
+        palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
             '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
-            break;
-        case 'bootstrap5':
-            palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
+        break;
+    case 'bootstrap5':
+        palette = ['#262E0B', '#668E1F', '#AF6E10', '#862C0B', '#1F2D50',
             '#64680B', '#311508', '#4C4C81', '#0C7DA0', '#862C0B'];
-            break;
-        case 'bootstrap5dark':
-            palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
+        break;
+    case 'bootstrap5dark':
+        palette = ['#5ECB9B', '#A860F1', '#EBA844', '#557EF7', '#E9599B',
             '#BFC529', '#3BC6CF', '#7A68EC', '#74B706', '#EA6266'];
-            break;
-        case 'fluent':
-            palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
-                '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
-            break;
-        case 'fluentdark':
-            palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
-                '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
-            break;
-        default:
-            palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];
-            break;
+        break;
+    case 'fluent':
+        palette = ['#614570', '#4C6FB1', '#CC6952', '#3F579A', '#4EA09B',
+            '#6E7A89', '#D4515C', '#E6AF5D', '#639751', '#9D4D69'];
+        break;
+    case 'fluentdark':
+        palette = ['#8AB113', '#2A72D5', '#43B786', '#584EC6', '#E85F9C',
+            '#6E7A89', '#EA6266', '#EBA844', '#26BC7A', '#BC4870'];
+        break;
+    default:
+        palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];
+        break;
     }
     return palette;
 }
@@ -667,44 +669,44 @@ export function getBox(
     location: Rect, boxName: string, orientation: Orientation,
     size: Size, type: string, containerWidth: number, axis: Axis, cornerRadius: number): string {
     let path: string = ' ';
-    let radius: number = cornerRadius;
-    let x1: number; let y1: number; let rectWidth: number; let rectHeight: number;
-    let bottomRadius: number; let topRadius: number;
+    let radius: number = cornerRadius; let horizontalRadius: number;
+    let x1: number; let y1: number; let rectWidth: number; let rectHeight: number; let verticalRadius: number;
+    let bottomRadius: number; let topRadius: number; let horizontalCurve: number; let verticalCurve: number;
     switch (boxName) {
     case 'RoundedRectangle':
         x1 = location.x;
         y1 = location.y;
         rectWidth = location.width;
         rectHeight = location.height;
-        if(((orientation === 'Vertical' && location.height === 0) || (orientation === 'Horizontal' && location.width === 0)) && radius > 10){
+        if (((orientation === 'Vertical' && location.height === 0) || (orientation === 'Horizontal' && location.width === 0)) && radius > 10){
             radius = 10;
         }
-        let horizontalCurve = x1 + rectWidth - radius;
-        let verticalCurve = y1 + rectHeight - radius;
-        let verticalRadius = radius + y1;
-        let horizontalRadius = radius + x1;
-            if(type === 'container' || type === 'bar' && ((orientation === 'Vertical' && location.height !== 0) || (orientation === 'Horizontal' && location.width !== 0))){
-                if(horizontalRadius > (x1 + (rectWidth/2))){
-                    horizontalRadius = x1 + (rectWidth/2);
-                    horizontalCurve = horizontalRadius;
-                }
-                if(verticalRadius > (y1 + (rectHeight/2))){
-                    verticalRadius = y1 + (rectHeight/2);
-                    verticalCurve = verticalRadius;
-                }
+        horizontalCurve = x1 + rectWidth - radius;
+        verticalCurve = y1 + rectHeight - radius;
+        verticalRadius = radius + y1;
+        horizontalRadius = radius + x1;
+        if (type === 'container' || type === 'bar' && ((orientation === 'Vertical' && location.height !== 0) || (orientation === 'Horizontal' && location.width !== 0))) {
+            if (horizontalRadius > (x1 + (rectWidth / 2))){
+                horizontalRadius = x1 + (rectWidth / 2);
+                horizontalCurve = horizontalRadius;
             }
-            if (type === 'bar' && ((orientation === 'Vertical' && location.height === 0) || (orientation === 'Horizontal' && location.width === 0))) {
-                if (location.width < radius / 2 && !axis.isInversed) {
-                    horizontalCurve = horizontalCurve + radius + radius / 2;
-                } else if (location.width < radius / 2 && axis.isInversed) {
-                    horizontalRadius = x1 - Math.ceil(radius / 4);
-                }
-                if (location.height < radius / 2 && !axis.isInversed) {
-                    verticalRadius = y1 - Math.ceil(radius / 4);
-                } else if (location.height < radius / 2 && axis.isInversed) {
-                    verticalCurve = verticalCurve + radius + radius / 2;
-                }
+            if (verticalRadius > (y1 + (rectHeight / 2))) {
+                verticalRadius = y1 + (rectHeight / 2);
+                verticalCurve = verticalRadius;
             }
+        }
+        if (type === 'bar' && ((orientation === 'Vertical' && location.height === 0) || (orientation === 'Horizontal' && location.width === 0))) {
+            if (location.width < radius / 2 && !axis.isInversed) {
+                horizontalCurve = horizontalCurve + radius + radius / 2;
+            } else if (location.width < radius / 2 && axis.isInversed) {
+                horizontalRadius = x1 - Math.ceil(radius / 4);
+            }
+            if (location.height < radius / 2 && !axis.isInversed) {
+                verticalRadius = y1 - Math.ceil(radius / 4);
+            } else if (location.height < radius / 2 && axis.isInversed) {
+                verticalCurve = verticalCurve + radius + radius / 2;
+            }
+        }
         path = 'M' + ' ' + x1 + ' ' + verticalRadius + ' Q ' + x1 + ' ' + y1 + ' ' + horizontalRadius + ' ' + y1 + ' ';
         path += 'L' + ' ' + horizontalCurve + ' ' + y1 + ' Q ' + (x1 + rectWidth) + ' ' + y1 + ' '
                 + (x1 + rectWidth) + ' ' + verticalRadius + ' ';

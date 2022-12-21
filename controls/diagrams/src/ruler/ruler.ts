@@ -445,8 +445,8 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rulerSvgElements: NodeListOf<SVGSVGElement> | any = rulerObj.getElementsByTagName('svg');
         for (i = 0; i < rulerSvgElements.length; i++) {
-            if (rulerSvgElements[i]) {
-                rulerSvg = rulerSvgElements[i];
+            if (rulerSvgElements[parseInt(i.toString(), 10)]) {
+                rulerSvg = rulerSvgElements[parseInt(i.toString(), 10)];
             }
             break;
         }
@@ -494,7 +494,7 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
                 svg = createSvgElement('svg', attr);
                 if (rulerSpace.childNodes.length > 0) {
                     for (let i: number = rulerSpace.childNodes.length - 1; i >= 0; i--) {
-                        rulerSpace.childNodes[i].parentNode.removeChild(rulerSpace.childNodes[i]);
+                        rulerSpace.childNodes[parseInt(i.toString(), 10)].parentNode.removeChild(rulerSpace.childNodes[parseInt(i.toString(), 10)]);
                     }
                 }
                 rulerSpace.appendChild(svg);

@@ -117,3 +117,28 @@ describe('Custom Toolbar with Desroy Validatio', () => {
                 container.destroy();
             });
 });
+//https://syncfusion.atlassian.net/browse/EJ2-60031
+describe('updating the custom toolbar validation', () => {
+    let container: DocumentEditorContainer;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ enableToolbar: false });
+        container.appendTo(element);
+    });
+    afterAll(() => {
+        expect(() => { container.destroy(); }).not.toThrowError();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        document.body.innerHTML = '';
+        element = undefined;
+        container = undefined;
+    });
+    it('updating the custom toolbar', () => {
+        console.log('updating the custom toolbar');
+        expect(container.toolbarItems = ['Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Comments'
+            , 'TrackChanges']).not.toThrowError;
+    }, 500);
+});  

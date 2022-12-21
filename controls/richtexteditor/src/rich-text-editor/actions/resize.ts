@@ -26,7 +26,7 @@ export class Resize {
     }
 
     private renderResizable(): void {
-        const enableRtlClass = (this.parent.enableRtl) ? classes.CLS_RTE_RES_WEST : classes.CLS_RTE_RES_EAST;
+        const enableRtlClass : string = (this.parent.enableRtl) ? classes.CLS_RTE_RES_WEST : classes.CLS_RTE_RES_EAST;
         this.resizer = this.parent.createElement('div', {
             id: this.parent.getID() + '-resizable', className: 'e-icons'
                 + ' ' + classes.CLS_RTE_RES_HANDLE + ' ' + enableRtlClass

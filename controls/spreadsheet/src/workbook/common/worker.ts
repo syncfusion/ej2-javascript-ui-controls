@@ -123,13 +123,13 @@ class WorkerHelper {
             if (typeof this.workerTask === 'object') {
                 keys = Object.keys(this.workerTask);
                 for (i = 0; i < keys.length; i++) {
-                    if (this.workerTask[keys[i]].toString().indexOf('function') < 0) {
-                        workerFunction = 'function ' + this.workerTask[keys[i]].toString();
+                    if (this.workerTask[keys[i as number]].toString().indexOf('function') < 0) {
+                        workerFunction = 'function ' + this.workerTask[keys[i as number]].toString();
                     } else {
-                        workerFunction = this.workerTask[keys[i]].toString();
+                        workerFunction = this.workerTask[keys[i as number]].toString();
                         isHaveFunction = true;
                     }
-                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i]) + '= ' + workerFunction + '; \n');
+                    workerCode += ((i === 0 ? 'self.workerTask' : keys[i as number]) + '= ' + workerFunction + '; \n');
                 }
             }
         }

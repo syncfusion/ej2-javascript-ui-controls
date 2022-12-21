@@ -95,12 +95,12 @@ export class TaskProcessor extends DateProcessor {
         const rootData: Object[] = [];
         let index: number;
         for (let i: number = 0; i < mappingData.length; i++) {
-            const groupData: Group = mappingData[i];
+            const groupData: Group = mappingData[i as number];
             if (!isNullOrUndefined(groupData.key)) {
                 index = this.taskIds.indexOf(groupData.key.toString());
                 if (index > -1) {
                     if (!isNullOrUndefined(groupData.key)) {
-                        dataSource[index][this.parent.taskFields.child] = groupData.items;
+                        dataSource[index as number][this.parent.taskFields.child] = groupData.items;
                         continue;
                     }
                 }
@@ -118,10 +118,10 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(taskIdMapping) && !isNullOrUndefined(parentIdMapping)) {
             const data: object[] = [];
             for (let i: number = 0; i < this.dataArray.length; i++) {
-                const tempData: Object = this.dataArray[i];
+                const tempData: Object = this.dataArray[i as number];
                 data.push(extend({}, {}, tempData, true));
-                if (!isNullOrUndefined(tempData[taskIdMapping])) {
-                    this.taskIds.push(tempData[taskIdMapping].toString());
+                if (!isNullOrUndefined(tempData[taskIdMapping as string])) {
+                    this.taskIds.push(tempData[taskIdMapping as string].toString());
                 }
             }
             if (!this.parent.taskFields.child) {
@@ -163,26 +163,26 @@ export class TaskProcessor extends DateProcessor {
      */
     private constructResourceViewDataSource(resources: Object[], data: Object[], unassignedTasks: Object[]): void {
         for (let i: number = 0; i < data.length; i++) {
-            const tempData: Object = data[i];
+            const tempData: Object = data[i as number];
             const child: string = this.parent.taskFields.child;
             const resourceData: [] = tempData && tempData[this.parent.taskFields.resourceInfo];
             const resourceIdMapping: string = this.parent.resourceFields.id;
-            if ((!tempData[child]  || tempData[child].length === 0) && resourceData && resourceData.length) {
+            if ((!tempData[child as string]  || tempData[child as string].length === 0) && resourceData && resourceData.length) {
                 resourceData.forEach((resource: number | object) => {
-                    const id: string = (typeof resource === 'object') ? resource[resourceIdMapping] :
+                    const id: string = (typeof resource === 'object') ? resource[resourceIdMapping as string] :
                         resource;
                     for (let j: number = 0; j < resources.length; j++) {
-                        if (resources[j][resourceIdMapping].toString() === id.toString()) {
-                            if (resources[j][child]) {
-                                resources[j][child].push(tempData);
+                        if (resources[j as number][resourceIdMapping as string].toString() === id.toString()) {
+                            if (resources[j as number][child as string]) {
+                                resources[j as number][child as string].push(tempData);
                             } else {
-                                resources[j][child] = [tempData];
+                                resources[j as number][child as string] = [tempData];
                             }
                             break;
                         }
                     }
                 });
-            } else if (!tempData[child] || (tempData[child] && tempData[child].length === 0)) {
+            } else if (!tempData[child as string] || (tempData[child as string] && tempData[child as string].length === 0)) {
                 unassignedTasks.push(tempData);
             }
             if (tempData[this.parent.taskFields.child] && tempData[this.parent.taskFields.child].length) {
@@ -211,8 +211,8 @@ export class TaskProcessor extends DateProcessor {
     private calculateSharedTaskUniqueIds(): void {
         for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
             const value: string[] = [];
-            value[0] = this.parent.getTaskIds()[i][0];
-            value[1] = this.parent.getTaskIds()[i].slice(1);
+            value[0] = this.parent.getTaskIds()[i as number][0];
+            value[1] = this.parent.getTaskIds()[i as number].slice(1);
             if (value[0] !== 'R') {
                 const sharedRecords: IGanttData[] = [];
                 const ids: string[] = [];
@@ -223,7 +223,7 @@ export class TaskProcessor extends DateProcessor {
                     }
                 });
                 for (let j: number = 0; j < sharedRecords.length; j++) {
-                    sharedRecords[j].ganttProperties.sharedTaskUniqueIds = ids;
+                    sharedRecords[j as number].ganttProperties.sharedTaskUniqueIds = ids;
                 }
             }
         }
@@ -231,7 +231,7 @@ export class TaskProcessor extends DateProcessor {
     private prepareRecordCollection(data: Object[], level: number, parentItem?: IGanttData): void {
         const length: number = data.length;
         for (let i: number = 0; i < length; i++) {
-            const tempData: Object = data[i];
+            const tempData: Object = data[i as number];
             if (!isNullOrUndefined(this.parent.taskFields.segmentId)) {
                 const segmentData: Object[] = this.segmentCollection.
                     filter((x: Group) => x.key === tempData[this.parent.taskFields.id]);
@@ -298,9 +298,9 @@ export class TaskProcessor extends DateProcessor {
         const length: number = columns.length;
         if (length) {
             for (let i: number = 0; i < length; i++) {
-                const fieldName: string  = ganttRecord[columns[i].field];
+                const fieldName: string  = ganttRecord[columns[i as number].field];
                 if (fieldName === undefined) {
-                    this.parent.setRecordValue(columns[i].field, data[columns[i].field], ganttRecord);
+                    this.parent.setRecordValue(columns[i as number].field, data[columns[i as number].field], ganttRecord);
                 }
             }
         }
@@ -346,7 +346,6 @@ export class TaskProcessor extends DateProcessor {
             this.parent.setRecordValue('parentId', data[taskSettings.parentID], ganttProperties, true);
         }
         this.addCustomFieldValue(data, ganttData);
-        ganttData.checkboxState = 'uncheck';
         this.parent.setRecordValue('isAutoSchedule', autoSchedule, ganttProperties, true);
         this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
         this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
@@ -455,7 +454,7 @@ export class TaskProcessor extends DateProcessor {
         if (onLoad) {
             segments.sort((a: ITaskSegment, b: ITaskSegment) => {
                 const startDate: string = this.parent.taskFields.startDate;
-                return this.getDateFromFormat(a[startDate]).getTime() - this.getDateFromFormat(b[startDate]).getTime();
+                return this.getDateFromFormat(a[startDate as string]).getTime() - this.getDateFromFormat(b[startDate as string]).getTime();
             });
         } else {
             segments.sort((a: ITaskSegment, b: ITaskSegment) => {
@@ -476,7 +475,7 @@ export class TaskProcessor extends DateProcessor {
             if (!isNullOrUndefined(segments) && segments.length > 1) {
                 this.sortSegmentsData(segments, onLoad, data.ganttProperties);
                 for (let i: number = 0; i < segments.length; i++) {
-                    let segment: ITaskSegment = segments[i];
+                    let segment: ITaskSegment = segments[i as number];
                     let startDate: Date = onLoad ? segment[taskSettings.startDate] : segment.startDate;
                     let endDate: Date = onLoad ? segment[taskSettings.endDate] : segment.endDate;
                     let duration: number = onLoad ? segment[taskSettings.duration] : segment.duration;
@@ -528,7 +527,7 @@ export class TaskProcessor extends DateProcessor {
                     ganttSegments.push(segment);
                     if (!isNullOrUndefined(ganttSegments[i - 1])) {
                         const offsetDuration: number = this.getDuration(
-                            ganttSegments[i - 1].endDate, ganttSegments[i].startDate, data.ganttProperties.durationUnit,
+                            ganttSegments[i - 1].endDate, ganttSegments[i as number].startDate, data.ganttProperties.durationUnit,
                             data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
                         segment.offsetDuration = offsetDuration;
                         if (offsetDuration < 1) {
@@ -547,11 +546,13 @@ export class TaskProcessor extends DateProcessor {
                     } else {
                         segment.offsetDuration = 0;
                     }
-                    taskData.push(this.setSegmentTaskData(segment, segments[i]));
+                    taskData.push(this.setSegmentTaskData(segment, segments[i as number]));
                 }
                 this.parent.setRecordValue('duration', sumOfDuration, data.ganttProperties, true);
-                this.parent.setRecordValue('endDate', ganttSegments[ganttSegments.length - 1].endDate, data.ganttProperties, true);
-                if (!isNullOrUndefined(taskSettings.endDate)) {
+                if (!isNullOrUndefined(ganttSegments[ganttSegments.length - 1])) {
+                    this.parent.setRecordValue('endDate', ganttSegments[ganttSegments.length - 1].endDate, data.ganttProperties, true);
+                }
+                if (!isNullOrUndefined(taskSettings.endDate) && !isNullOrUndefined(ganttSegments[ganttSegments.length - 1])) {
                     this.parent.setRecordValue(this.parent.taskFields.endDate, ganttSegments[ganttSegments.length - 1].endDate, data, true);
                 }
                 this.parent.setRecordValue('taskData.' + this.parent.taskFields.segments, taskData, data);
@@ -597,7 +598,7 @@ export class TaskProcessor extends DateProcessor {
             const actualOneDayWork: number = (this.parent.secondsPerDay) / 3600;
             const durationInDay: number = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
             for (index = 0; index < resourcesLength; index++) {
-                resourceUnit = resources[index][this.parent.resourceFields.unit]; //in percentage
+                resourceUnit = resources[index as number][this.parent.resourceFields.unit]; //in percentage
                 resourceOneDayWork = resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork; //in hours
                 work += (resourceOneDayWork * durationInDay);
             }
@@ -615,8 +616,8 @@ export class TaskProcessor extends DateProcessor {
         }
         if (ganttData.childRecords.length > 0 && this.parent.isOnEdit) {
             let childCompletedWorks: number = 0
-            for (let i = 0; i < ganttData.childRecords.length; i++) {
-                childCompletedWorks += ganttData.childRecords[i].ganttProperties.work;
+            for (let i: number = 0; i < ganttData.childRecords.length; i++) {
+                childCompletedWorks += ganttData.childRecords[i as number].ganttProperties.work;
             }
             work += childCompletedWorks;
         }
@@ -656,9 +657,9 @@ export class TaskProcessor extends DateProcessor {
             let ganttProperties: ITaskData;
             let ganttData: IGanttData;
             for (let index: number = 0; index < this.parent.flatData.length; index++) {
-                data = this.parent.flatData[index].taskData;
-                ganttProperties = this.parent.flatData[index].ganttProperties;
-                ganttData = this.parent.flatData[index];
+                data = this.parent.flatData[index as number].taskData;
+                ganttProperties = this.parent.flatData[index as number].ganttProperties;
+                ganttData = this.parent.flatData[index as number];
                 this.parent.setRecordValue('resourceInfo', this.setResourceInfo(data), ganttProperties, true);
                 this.updateResourceName(ganttData);
             }
@@ -673,7 +674,7 @@ export class TaskProcessor extends DateProcessor {
                 if (taskSettings.parentID) {
                     const id: string = data[taskSettings.id];
                     const index: number = this.taskIds.indexOf(id.toString());
-                    const tempData: object = (index > -1) ? this.dataArray[index] : {};
+                    const tempData: object = (index > -1) ? this.dataArray[index as number] : {};
                     if (!isNullOrUndefined(this.parent.taskFields.segmentId)) {
                         const segmentDataCollection: Object[] = this.segmentCollection.
                             filter((x: Group) => x.key === tempData[this.parent.taskFields.id]);
@@ -695,7 +696,7 @@ export class TaskProcessor extends DateProcessor {
 
     private updateExpandStateMappingValue(ganttData: IGanttData, data: Object): void {
         const expandStateMapping: string = this.parent.taskFields.expandState;
-        const mappingValue: string = data[expandStateMapping];
+        const mappingValue: string = data[expandStateMapping as string];
         let updatableValue: boolean;
         if (expandStateMapping && ganttData.hasChildRecords) {
             if (!isNullOrUndefined(mappingValue)) {
@@ -856,7 +857,7 @@ export class TaskProcessor extends DateProcessor {
             let resourceUnit: number;
             let index: number;
             for (index = 0; index < resourcesLength; index++) {
-                resourceUnit = resources[index][this.parent.resourceFields.unit]; //in percentage
+                resourceUnit = resources[index as number][this.parent.resourceFields.unit]; //in percentage
                 totalResourceOneDayWork += (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork); //in hours
             }
             const totalHours: number = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
@@ -904,7 +905,7 @@ export class TaskProcessor extends DateProcessor {
             individualUnit = parseFloat(individualUnit.toFixed(2));
         }
         for (let index: number = 0; index < resourcesLength; index++) {
-            resources[index][this.parent.resourceFields.unit] = individualUnit;
+            resources[index as number][this.parent.resourceFields.unit] = individualUnit;
         }
         //To update the unit value in data source
         this.updateResourceName(ganttData);
@@ -1212,7 +1213,7 @@ export class TaskProcessor extends DateProcessor {
     public updateMappingData(ganttData: IGanttData, fieldName: string): void {
         const columnMapping: Object = this.parent.columnMapping;
         const ganttProp: ITaskData = ganttData.ganttProperties;
-        if (isNullOrUndefined(columnMapping[fieldName]) && fieldName !== 'taskType' && fieldName !== 'segments') {
+        if (isNullOrUndefined(columnMapping[fieldName as string]) && fieldName !== 'taskType' && fieldName !== 'segments') {
             return;
         }
         if (fieldName === 'predecessorName') {
@@ -1224,9 +1225,9 @@ export class TaskProcessor extends DateProcessor {
             const resourcesId: number[] = []; let resourcesName: string[] = [];
             if (!isNullOrUndefined(resourceData)) {
                 for (let i: number = 0; i < resourceData.length; i++) {
-                    resourcesId.push(resourceData[i][resourceSettings.id]);
-                    let resName: string = resourceData[i][resourceSettings.name];
-                    const resourceUnit: number = resourceData[i][resourceSettings.unit];
+                    resourcesId.push(resourceData[i as number][resourceSettings.id]);
+                    let resName: string = resourceData[i as number][resourceSettings.name];
+                    const resourceUnit: number = resourceData[i as number][resourceSettings.unit];
                     if (resourceUnit !== 100) {
                         resName += '[' + resourceUnit + '%' + ']';
                     }
@@ -1235,27 +1236,27 @@ export class TaskProcessor extends DateProcessor {
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             this.updateTaskDataResource(ganttData);
-            this.parent.setRecordValue(columnMapping[fieldName], resourcesName.join(','), ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName as string], resourcesName.join(','), ganttData);
         } else if (fieldName === 'startDate' || fieldName === 'endDate') {
-            this.setRecordDate(ganttData, ganttProp[fieldName], columnMapping[fieldName]);
+            this.setRecordDate(ganttData, ganttProp[fieldName as string], columnMapping[fieldName as string]);
         } else if (fieldName === 'duration') {
-            this.setRecordDuration(ganttData, columnMapping[fieldName]);
+            this.setRecordDuration(ganttData, columnMapping[fieldName as string]);
         } else if (fieldName === 'work') {
             this.parent.setRecordValue(
-                'taskData.' + columnMapping[fieldName],
+                'taskData.' + columnMapping[fieldName as string],
                 this.getWorkString(ganttProp.work, ganttProp.workUnit), ganttData);
-            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
         } else if (fieldName === 'type') {
-            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
-            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
         } else if (fieldName === 'manual') {
-            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
-            this.parent.setRecordValue(columnMapping[fieldName], !ganttProp.isAutoSchedule, ganttData);
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName as string], !ganttProp.isAutoSchedule, ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName as string], !ganttProp.isAutoSchedule, ganttData);
         } else if (fieldName === 'segments') {
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.segments, this.segmentTaskData(ganttData), ganttData);
         } else {
-            this.parent.setRecordValue('taskData.' + columnMapping[fieldName], ganttProp[fieldName], ganttData);
-            this.parent.setRecordValue(columnMapping[fieldName], ganttProp[fieldName], ganttData);
+            this.parent.setRecordValue('taskData.' + columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
+            this.parent.setRecordValue(columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
         }
     }
 
@@ -1269,16 +1270,16 @@ export class TaskProcessor extends DateProcessor {
         for (let i: number = 0; i < segments.length; i++) {
             if (this.parent.isEdit || (this.parent.editModule && this.parent.editModule.dialogModule &&
                 getValue('isEdit', this.parent.editModule.dialogModule)) || (this.parent.contextMenuModule && getValue('isEdit', this.parent.contextMenuModule))) {
-                taskData[i] = {};
+                taskData[i as number] = {};
             }
             if (!isNullOrUndefined(taskSettings.startDate)) {
-                taskData[i][this.parent.taskFields.startDate] = segments[i].startDate;
+                taskData[i as number][this.parent.taskFields.startDate] = segments[i as number].startDate;
             }
             if (!isNullOrUndefined(taskSettings.endDate)) {
-                taskData[i][this.parent.taskFields.endDate] = segments[i].endDate;
+                taskData[i as number][this.parent.taskFields.endDate] = segments[i as number].endDate;
             }
             if (!isNullOrUndefined(taskSettings.duration)) {
-                taskData[i][this.parent.taskFields.duration] = Number(segments[i].duration);
+                taskData[i as number][this.parent.taskFields.duration] = Number(segments[i as number].duration);
             }
         }
         return taskData;
@@ -1299,27 +1300,27 @@ export class TaskProcessor extends DateProcessor {
             for (let i: number = 0; i < resourceData.length; i++) {
                 let isAdded: boolean = false;
                 for (let j: number = 0; j < preTaskResources.length; j++) {
-                    if (typeof preTaskResources[j] === 'number' || typeof preTaskResources[j] === 'string') {
-                        if (parseInt(preTaskResources[j] as string, 10) === parseInt(resourceData[i][resourceSettings.id], 10)) {
-                            preTaskResources[j] = resourceData[i];
+                    if (typeof preTaskResources[j as number] === 'number' || typeof preTaskResources[j as number] === 'string') {
+                        if (parseInt(preTaskResources[j as number] as string, 10) === parseInt(resourceData[i as number][resourceSettings.id], 10)) {
+                            preTaskResources[j as number] = resourceData[i as number];
                             isAdded = true;
                             break;
                         }
-                    } else if (preTaskResources[j][resourceSettings.id] === resourceData[i][resourceSettings.id] && typeof preTaskResources[j] !== 'number') {
-                        preTaskResources[j] = extend({}, preTaskResources[j], resourceData[i], true);
+                    } else if (preTaskResources[j as number][resourceSettings.id] === resourceData[i as number][resourceSettings.id] && typeof preTaskResources[j as number] !== 'number') {
+                        preTaskResources[j as number] = extend({}, preTaskResources[j as number], resourceData[i as number], true);
                         isAdded = true;
                         break;
                     }
                 }
                 if (!isAdded) {
-                    preTaskResources.push(resourceData[i]);
+                    preTaskResources.push(resourceData[i as number]);
                 }
             }
             const data: IGanttData[] = [];
             for (let k: number = 0; k < preTaskResources.length; k++) {
                 resourceData.filter((resourceInfo: Object) => {
-                    if (resourceInfo[resourceSettings.id] === preTaskResources[k][resourceSettings.id]) {
-                        data.push(preTaskResources[k]);
+                    if (resourceInfo[resourceSettings.id] === preTaskResources[k as number][resourceSettings.id]) {
+                        data.push(preTaskResources[k as number]);
                     }
                 });
             }
@@ -1498,20 +1499,20 @@ export class TaskProcessor extends DateProcessor {
         const resources: Object[] = [];
         for (let count: number = 0; count < resourceIdCollection.length; count++) {
             const resource: Object[] = resourceData.filter((resourceInfo: Object) => {
-                if (typeof (resourceIdCollection[count]) === 'object' &&
-                    resourceIdCollection[count][resourceIDMapping] === resourceInfo[resourceIDMapping]) {
+                if (typeof (resourceIdCollection[count as  number]) === 'object' &&
+                    resourceIdCollection[count as number][resourceIDMapping as string] === resourceInfo[resourceIDMapping as string]) {
                     return true;
                 } else {
-                    return (resourceIdCollection[count] === resourceInfo[resourceIDMapping]);
+                    return (resourceIdCollection[count as number] === resourceInfo[resourceIDMapping as string]);
                 }
             });
             const ganttDataResource: Object = extend({}, resource[0]);
             resources.push(ganttDataResource);
-            if (!isNullOrUndefined(resourceUnitMapping) && !isNullOrUndefined(resourceIdCollection[count][resourceUnitMapping])) {
-                ganttDataResource[resourceUnitMapping] = resourceIdCollection[count][resourceUnitMapping];
+            if (!isNullOrUndefined(resourceUnitMapping) && !isNullOrUndefined(resourceIdCollection[count as number][resourceUnitMapping as string])) {
+                ganttDataResource[resourceUnitMapping as string] = resourceIdCollection[count as number][resourceUnitMapping as string];
             }
-            if (!isNullOrUndefined(resourceGroup) && !isNullOrUndefined(resourceIdCollection[count][resourceGroup])) {
-                ganttDataResource[resourceGroup] = resourceIdCollection[count][resourceGroup];
+            if (!isNullOrUndefined(resourceGroup) && !isNullOrUndefined(resourceIdCollection[count as number][resourceGroup as string])) {
+                ganttDataResource[resourceGroup as string] = resourceIdCollection[count as number][resourceGroup as string];
             }
         }
         this.updateResourceUnit(resources);
@@ -1530,8 +1531,8 @@ export class TaskProcessor extends DateProcessor {
             const length: number = resourceData.length;
             let index: number;
             for (index = 0; index < length; index++) {
-                if (isNullOrUndefined(resourceData[index][resourceUnit])) {
-                    resourceData[index][resourceUnit] = 100;
+                if (isNullOrUndefined(resourceData[index as number][resourceUnit as string])) {
+                    resourceData[index as number][resourceUnit as string] = 100;
                 }
             }
         }
@@ -1551,7 +1552,7 @@ export class TaskProcessor extends DateProcessor {
             const taskResources: Object = extend([], [], data.taskData[this.parent.taskFields.resourceInfo], true);
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, [], data);
             for (let i: number = 0; i < resourceLength; i++) {
-                const resource: Object = resourceInfo[i];
+                const resource: Object = resourceInfo[i as number];
                 let resName: string = resource[this.parent.resourceFields.name];
                 const resourceUnit: number = resource[this.parent.resourceFields.unit];
                 if (resourceUnit !== 100) {
@@ -1562,9 +1563,9 @@ export class TaskProcessor extends DateProcessor {
                     const mapping: string = taskMapping.resourceInfo;
                     // eslint-disable-next-line
                     if (typeof (taskResources[i] === 'object')) {
-                        data.taskData[mapping].push(taskResources[i]);
+                        data.taskData[mapping as string].push(taskResources[i as number]);
                     } else {
-                        data.taskData[mapping].push(resource[this.parent.resourceFields.id]);
+                        data.taskData[mapping as string].push(resource[this.parent.resourceFields.id]);
                     }
                 }
             }
@@ -1657,8 +1658,8 @@ export class TaskProcessor extends DateProcessor {
             let ganttData: IGanttData;
             this.parent.secondsPerDay = this.getSecondsPerDay();
             for (let index: number = 0; index < this.parent.flatData.length; index++) {
-                data = this.parent.flatData[index].taskData;
-                ganttData = this.parent.flatData[index];
+                data = this.parent.flatData[index as number].taskData;
+                ganttData = this.parent.flatData[index as number];
                 if (!isNullOrUndefined(this.parent.taskFields.duration)) {
                     this.setRecordDuration(ganttData, this.parent.taskFields.duration);
                 }
@@ -1701,15 +1702,15 @@ export class TaskProcessor extends DateProcessor {
         tasks = this.setSortedChildTasks(resourceTask);
         this.updateOverlappingIndex(tasks);
         for (let count: number = 1; count < tasks.length; count++) {
-            currentTask = tasks[count];
+            currentTask = tasks[count as number];
             const cStartDate: Date = new Date(currentTask.ganttProperties.startDate.getTime());
             const cEndDate: Date = new Date(currentTask.ganttProperties.endDate.getTime()); //task 2
             const range: IWorkTimelineRanges[] = [];
             // eslint-disable-next-line
             const rangeObj: IWorkTimelineRanges = {};
             for (let index: number = 0; index < count; index++) {
-                const tStartDate: Date = tasks[index].ganttProperties.startDate;
-                const tEndDate: Date = tasks[index].ganttProperties.endDate; // task 1
+                const tStartDate: Date = tasks[index as number].ganttProperties.startDate;
+                const tEndDate: Date = tasks[index as number].ganttProperties.endDate; // task 1
                 const rangeObj: IWorkTimelineRanges = {};
                 if (this._isInStartDateRange(cStartDate, tStartDate, tEndDate) || this._isInEndDateRange(cEndDate, tStartDate, tEndDate)) {
                     if ((tStartDate.getTime() > cStartDate.getTime() && tStartDate.getTime() < cEndDate.getTime()
@@ -1743,7 +1744,7 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateOverlappingIndex(tasks: IGanttData[]): void {
         for (let i: number = 0; i < tasks.length; i++) {
-            tasks[i].ganttProperties.eOverlapIndex = i;
+            tasks[i as number].ganttProperties.eOverlapIndex = i;
         }
     }
     /**
@@ -1755,8 +1756,8 @@ export class TaskProcessor extends DateProcessor {
      */
     public calculateRangeLeftWidth(ranges: IWorkTimelineRanges[]): void {
         for (let count: number = 0; count < ranges.length; count++) {
-            ranges[count].left = this.getTaskLeft(ranges[count].from, false);
-            ranges[count].width = this.getTaskWidth(ranges[count].from, ranges[count].to);
+            ranges[count as number].left = this.getTaskLeft(ranges[count as number].from, false);
+            ranges[count as number].width = this.getTaskWidth(ranges[count as number].from, ranges[count as number].to);
         }
     }
     /**
@@ -1777,13 +1778,13 @@ export class TaskProcessor extends DateProcessor {
             .sortBy(this.parent.taskFields.startDate, 'Ascending'));
         for (let i: number = 0; i < sortedRanges.length; i++) {
             if (finalRange.length === 0 && i === 0) {
-                finalRange.push(sortedRanges[i]);
+                finalRange.push(sortedRanges[i as number]);
                 continue;
             }
             currentTopRange = finalRange[finalRange.length - 1];
             cStartDate = currentTopRange.from;
             cEndDate = currentTopRange.to;
-            cCompareRange = sortedRanges[i];
+            cCompareRange = sortedRanges[i as number];
             tStartDate = cCompareRange.from;
             tEndDate = cCompareRange.to;
             if ((cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() >= tEndDate.getTime())
@@ -1796,7 +1797,7 @@ export class TaskProcessor extends DateProcessor {
                 || (cEndDate.getTime() < tStartDate.getTime() && this.checkStartDate(cEndDate).getTime() === tStartDate.getTime())) {
                 currentTopRange.to = tEndDate;
             } else if (cEndDate.getTime() < tStartDate.getTime() && this.checkStartDate(cEndDate).getTime() !== tStartDate.getTime()) {
-                finalRange.push(sortedRanges[i]);
+                finalRange.push(sortedRanges[i as number]);
             }
         }
         if (isSplit) {
@@ -1851,8 +1852,8 @@ export class TaskProcessor extends DateProcessor {
     private splitRangeForDayMode(range: IWorkTimelineRanges, fromField: string, toField: string): IWorkTimelineRanges[] {
         const fromString: string = fromField ? fromField : 'from';
         const toString: string = toField ? toField : 'to';
-        let tempStart: Date = new Date(range[fromString]);
-        const end: Date = new Date(range[toString]);
+        let tempStart: Date = new Date(range[fromString as string]);
+        const end: Date = new Date(range[toString as string]);
         const ranges: IWorkTimelineRanges[] = [];
         let rangeObject: CObject = {};
         if (tempStart.getTime() < end.getTime()) {
@@ -1863,33 +1864,33 @@ export class TaskProcessor extends DateProcessor {
                 const sHour: number = this.parent.dataOperation.getSecondsInDecimal(tempStart);
                 let startRangeIndex: number = -1;
                 for (let i: number = 0; i < this.parent.workingTimeRanges.length; i++) {
-                    const val: IWorkingTimeRange = this.parent.workingTimeRanges[i];
+                    const val: IWorkingTimeRange = this.parent.workingTimeRanges[i as number];
                     if (sHour >= val.from && sHour <= val.to) {
                         startRangeIndex = i;
                         break;
                     }
                 }
                 if (startRangeIndex !== -1) {
-                    nextAvailDuration = Math.round(this.parent.workingTimeRanges[startRangeIndex].to - sHour);
+                    nextAvailDuration = Math.round(this.parent.workingTimeRanges[startRangeIndex as number].to - sHour);
                     nEndDate.setSeconds(nEndDate.getSeconds() + nextAvailDuration);
                 }
                 const taskName: string = 'task';
                 if (nEndDate.getTime() < end.getTime()) {
                     rangeObject = {};
                     if (range.task) {
-                        rangeObject[taskName] = extend([], range.task);
+                        rangeObject[taskName as string] = extend([], range.task);
                     }
-                    rangeObject[fromString] = nStart;
-                    rangeObject[toString] = nEndDate;
+                    rangeObject[fromString as string] = nStart;
+                    rangeObject[toString as string] = nEndDate;
                     rangeObject.isSplit = true;
                     ranges.push(rangeObject);
                 } else {
                     rangeObject = {};
                     if (range.task) {
-                        rangeObject[taskName] = extend([], range.task);
+                        rangeObject[taskName as string] = extend([], range.task);
                     }
-                    rangeObject[fromString] = nStart;
-                    rangeObject[toString] = end;
+                    rangeObject[fromString as string] = nStart;
+                    rangeObject[toString as string] = end;
                     rangeObject.isSplit = true;
                     ranges.push(rangeObject);
                 }
@@ -1904,16 +1905,16 @@ export class TaskProcessor extends DateProcessor {
         const splitArray: IWorkTimelineRanges[] = [];
         for (let i: number = 0; i < ranges.length; i++) {
             // eslint-disable-next-line
-            splitArray.push.apply(splitArray, this.splitRangeForWeekMode(ranges[i], fromField, toField));
+            splitArray.push.apply(splitArray, this.splitRangeForWeekMode(ranges[i as number], fromField, toField));
         }
         return splitArray;
     }
     private splitRangeForWeekMode(range: IWorkTimelineRanges, fromField: string, toField: string): IWorkTimelineRanges[] {
         const from: string = fromField ? fromField : 'from';
         const to: string = toField ? toField : 'to';
-        let start: Date = new Date(range[from]);
-        let tempStart: Date = new Date(range[from]);
-        const end: Date = new Date(range[to]);
+        let start: Date = new Date(range[from as string]);
+        let tempStart: Date = new Date(range[from as string]);
+        const end: Date = new Date(range[to as string]);
         let isInSplit: boolean = false;
         const ranges: IWorkTimelineRanges[] = [];
         let rangeObj: CObject = {};
@@ -1925,9 +1926,9 @@ export class TaskProcessor extends DateProcessor {
                     tempEndDate.setDate(tempStart.getDate() - 1);
                     this.setTime(this.parent.defaultEndTime, tempEndDate);
                     rangeObj = {};
-                    rangeObj[from] = start;
+                    rangeObj[from as string] = start;
                     rangeObj.isSplit = true;
-                    rangeObj[to] = tempEndDate;
+                    rangeObj[to as string] = tempEndDate;
                     if (range.task) {
                         rangeObj.task = extend([], range.task, true);
                     }
@@ -1947,8 +1948,8 @@ export class TaskProcessor extends DateProcessor {
                     if (range.task) {
                         rangeObj.task = extend([], range.task, true);
                     }
-                    rangeObj[from] = start;
-                    rangeObj[to] = end;
+                    rangeObj[from as string] = start;
+                    rangeObj[to as string] = end;
                     rangeObj.isSplit = true;
                     ranges.push(rangeObj);
                 }
@@ -1971,7 +1972,7 @@ export class TaskProcessor extends DateProcessor {
         const length: number = flatData.length;
 
         for (let i: number = 0; i < length; i++) {
-            const data: IGanttData = flatData[i];
+            const data: IGanttData = flatData[i as number];
             this.updateTaskLeftWidth(data);
         }
     }
@@ -2009,7 +2010,7 @@ export class TaskProcessor extends DateProcessor {
         const flatData: IGanttData[] = this.parent.flatData;
         const length: number = flatData.length;
         for (let i: number = 0; i < length; i++) {
-            const data: IGanttData = flatData[i];
+            const data: IGanttData = flatData[i as number];
             const task: ITaskData = data.ganttProperties;
             this.updateWidthLeft(data);
             if (this.parent.taskMode !== 'Auto' && data.hasChildRecords) {
@@ -2038,7 +2039,7 @@ export class TaskProcessor extends DateProcessor {
             const totalTaskWidth: number = this.splitTasksDuration(segments) * this.parent.perDayWidth;
             let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
             for (let i: number = 0; i < segments.length; i++) {
-                const segment: ITaskSegment = segments[i];
+                const segment: ITaskSegment = segments[i as number];
                 if (i === 0 && !isNullOrUndefined(ganttRecord.startDate) &&
                     segment.startDate.getTime() !== ganttRecord.startDate.getTime()) {
                     segment.startDate = ganttRecord.startDate;
@@ -2156,7 +2157,7 @@ export class TaskProcessor extends DateProcessor {
             let milestoneCount: number = 0; let totalProgress: number = 0; let childCompletedWorks: number = 0;
             let childData: IGanttData;
             for (let count: number = 0; count < childLength; count++) {
-                childData = childRecords[count] as IGanttData;
+                childData = childRecords[count as number] as IGanttData;
                 if (this.parent.isOnDelete && childData.isDelete) {
                     if (childLength === 1 && this.parent.viewType === 'ProjectView') {
                         deleteUpdate = true;

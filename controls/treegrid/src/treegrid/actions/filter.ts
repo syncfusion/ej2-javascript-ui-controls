@@ -81,7 +81,7 @@ export class Filter {
         this.filteredResult = [];
         this.isHierarchyFilter = false;
         for (let f: number = 0; f < this.flatFilteredData.length; f++) {
-            const rec: ITreeData = this.flatFilteredData[f];
+            const rec: ITreeData = this.flatFilteredData[parseInt(f.toString(), 10)];
             this.addParentRecord(rec);
             const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
                 : this.parent.searchSettings.hierarchyMode;
@@ -172,27 +172,27 @@ export class Filter {
         const childRec: ITreeData[] = getObject('childRecords', records);
         let isExist: boolean = false;
         for (let count: number = 0; count < childRec.length; count++) {
-            const ischild: Object[] = childRec[count].childRecords;
+            const ischild: Object[] = childRec[parseInt(count.toString(), 10)].childRecords;
             const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ?
                 this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
             if (((hierarchyMode === 'Child' || hierarchyMode === 'Both') && (this.parent.grid.filterSettings.columns.length !== 0
                 || this.parent.grid.searchSettings.key !== ''))) {
                 const uniqueIDValue: Object = getValue('uniqueIDFilterCollection', this.parent);
-                if (!Object.prototype.hasOwnProperty.call(uniqueIDValue, childRec[count].uniqueID)) {
-                    this.filteredResult.push(childRec[count]);
-                    setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
+                if (!Object.prototype.hasOwnProperty.call(uniqueIDValue, childRec[parseInt(count.toString(), 10)].uniqueID)) {
+                    this.filteredResult.push(childRec[parseInt(count.toString(), 10)]);
+                    setValue('uniqueIDFilterCollection.' + childRec[parseInt(count.toString(), 10)].uniqueID, childRec[parseInt(count.toString(), 10)], this.parent);
                     isExist = true;
                 }
             }
             if ((hierarchyMode === 'None')
                 && (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== '')) {
-                if (this.flatFilteredData.indexOf(childRec[count]) !== -1) {
+                if (this.flatFilteredData.indexOf(childRec[parseInt(count.toString(), 10)]) !== -1) {
                     isExist = true;
                     break;
                 }
             }
             if (!isNullOrUndefined(ischild) && ischild.length) {
-                isExist = this.checkChildExsist(childRec[count]);
+                isExist = this.checkChildExsist(childRec[parseInt(count.toString(), 10)]);
             }
             if ((hierarchyMode === 'Child' || hierarchyMode === 'Both') && childRec.length) {
                 isExist = true;
@@ -204,14 +204,14 @@ export class Filter {
         const record: ITreeData[] = this.filteredResult;
         const len: number = this.filteredResult.length;
         for (let c: number = 0; c < len; c++) {
-            const parent: ITreeData =  getParentData(this.parent, record[c].parentUniqueID);
+            const parent: ITreeData =  getParentData(this.parent, record[parseInt(c.toString(), 10)].parentUniqueID);
             const isPrst: boolean = record.indexOf(parent) !== -1;
             if (isPrst) {
-                const parent: ITreeData = getParentData(this.parent, record[c].parentUniqueID, true);
-                record[c].filterLevel = parent.filterLevel + 1;
+                const parent: ITreeData = getParentData(this.parent, record[parseInt(c.toString(), 10)].parentUniqueID, true);
+                record[parseInt(c.toString(), 10)].filterLevel = parent.filterLevel + 1;
             } else {
-                record[c].filterLevel = 0;
-                this.filteredParentRecs.push(record[c]);
+                record[parseInt(c.toString(), 10)].filterLevel = 0;
+                this.filteredParentRecs.push(record[parseInt(c.toString(), 10)]);
             }
         }
     }
@@ -221,7 +221,7 @@ export class Filter {
         const len: number = flatData.length;
         let currentRecord: ITreeData;
         for (count; count < len; count++) {
-            currentRecord = flatData[count];
+            currentRecord = flatData[parseInt(count.toString(), 10)];
             const fLevel: number = currentRecord.filterLevel;
             if (fLevel || fLevel === 0 || !isNullOrUndefined(currentRecord.hasFilteredChildRecords)) {
                 currentRecord.hasFilteredChildRecords = null;

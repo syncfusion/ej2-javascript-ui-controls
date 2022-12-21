@@ -289,7 +289,7 @@ export class Filter {
                         this.filterSuccessHandler(
                             new DataManager(jsonData),
                             { action: 'filtering', filterCollection: predicates, field: predicates[0].field, sIdx: args.sIdx,
-                            isInternal: isInternal, prevPredicates: eventArgs && eventArgs.previousPredicates });
+                                isInternal: isInternal, prevPredicates: eventArgs && eventArgs.previousPredicates });
                         resolveFn();
                     });
                 return;
@@ -359,7 +359,7 @@ export class Filter {
         if (this.parent.filterCollection) {
             let count: number = 0; let filterColl: FilterCollectionModel;
             for (let i: number = 0, len: number = this.parent.filterCollection.length; i < len; i++) {
-                filterColl = this.parent.filterCollection[count];
+                filterColl = this.parent.filterCollection[count as number];
                 if (filterColl.sheetIndex === sheetIdx && filterColl.filterRange === rangeAddr) {
                     this.parent.filterCollection.splice(count, 1);
                 } else {
@@ -439,15 +439,15 @@ export class Filter {
         const predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
         const sortCollection: SortCollectionModel[] = this.parent.sortCollection;
         for (let i: number = 0; i < predicates.length; i++) {
-            if (predicates[i].field === field) {
+            if (predicates[i as number].field === field) {
                 className = ' e-filtered';
                 break;
             }
         }
         if (sortCollection) {
             for (let i: number = 0; i < sortCollection.length; i++) {
-                if (sortCollection[i].sheetIndex === sheetIdx && sortCollection[i].columnIndex === colIdx) {
-                    className += sortCollection[i].order === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
+                if (sortCollection[i as number].sheetIndex === sheetIdx && sortCollection[i as number].columnIndex === colIdx) {
+                    className += sortCollection[i as number].order === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
                     break;
                 }
             }
@@ -659,7 +659,7 @@ export class Filter {
         let indeterminate: boolean =  false;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const addNodes: (data: { [key: string]: Object }) => void = (data: { [key: string]: Object }): void => {
-            idColl[dId] = true;
+            idColl[`${dId}`] = true;
             if (isFilterHidden(sheet, Number(data['__rowIndex']) - 1)) {
                 indeterminate = true;
             } else {
@@ -671,24 +671,24 @@ export class Filter {
             date = data[args.column.field] as Date;
             if (typeof date === 'object' && !!Date.parse(date.toString())) {
                 value = date.getFullYear().toString();
-                if (!idColl[value]) {
+                if (!idColl[`${value}`]) {
                     grpObj = { __rowIndex: value, hasChild: true };
                     grpObj[args.column.field] = value;
                     groupedYears.push(grpObj);
-                    idColl[value] = true;
+                    idColl[`${value}`] = true;
                 }
                 monthNum = date.getMonth();
-                month = months[monthNum];
+                month = months[monthNum as number];
                 mId = value + ' ' + month;
-                if (!idColl[mId]) {
+                if (!idColl[`${mId}`]) {
                     grpObj = { __rowIndex: mId, pId: value, hasChild: true, month: monthNum };
                     grpObj[args.column.field] = month;
                     groupedMonths.push(grpObj);
-                    idColl[mId] = true;
+                    idColl[`${mId}`] = true;
                 }
                 day = date.getDate();
                 dId = mId + ' ' + day.toString();
-                if (!idColl[dId]) {
+                if (!idColl[`${dId}`]) {
                     grpObj = { __rowIndex: dId, pId: mId };
                     grpObj[args.column.field] = day;
                     groupedData.push(grpObj);
@@ -702,7 +702,7 @@ export class Filter {
                     dId = 'text ' + data[args.column.field].toString().toLowerCase();
                     value = <string>data[args.column.field];
                 }
-                if (!idColl[dId]) {
+                if (!idColl[`${dId}`]) {
                     grpObj = { __rowIndex: dId };
                     grpObj[args.column.field] = value;
                     otherData.push(grpObj);
@@ -723,10 +723,10 @@ export class Filter {
             groupedData = groupedData.concat(otherData);
         }
         const nodeClick: Function = (args: NodeKeyPressEventArgs | NodeClickEventArgs ): void => {
-            let checkedNode: HTMLLIElement[] = [args.node];
+            const checkedNode: HTMLLIElement[] = [args.node];
             if ((args.event.target as Element).classList.contains('e-fullrow') || (args.event as KeyboardEventArgs).key == 'Enter') {
-               let getNodeDetails: { [key: string]: Object } = treeViewObj.getNode(args.node);
-                if (getNodeDetails.isChecked == 'true') {
+                const getNodeDetails: { [key: string]: Object } = treeViewObj.getNode(args.node);
+                if (getNodeDetails.isChecked === 'true') {
                     treeViewObj.uncheckAll(checkedNode);
                 } else {
                     treeViewObj.checkAll(checkedNode);
@@ -762,18 +762,18 @@ export class Filter {
             }
             cBox.indeterminate = indeterminate;
             cBox.checked = !indeterminate;
-        }
+        };
         const selectAllObj: { [key: string]: Object } = {};
         selectAllObj[args.column.field] = this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll');
         const selectAll: Element = createCboxWithWrap(
             getUid('cbox'), (excelFilter as any).createCheckbox(selectAllObj[args.column.field], false, selectAllObj), 'e-ftrchk');
-        selectAll.classList.add('e-spreadsheet-ftrchk')
+        selectAll.classList.add('e-spreadsheet-ftrchk');
         const cBoxFrame: Element = selectAll.querySelector('.e-frame');
         cBoxFrame.classList.add('e-selectall');
         selectAll.addEventListener('click', selectAllClick.bind(this));
         args.element.appendChild(selectAll);
         const cBox: HTMLInputElement = selectAll.querySelector('.e-chk-hidden') as HTMLInputElement;
-        const treeViewEle = this.parent.createElement('div');
+        const treeViewEle: HTMLElement = this.parent.createElement('div');
         const treeViewObj: TreeView = new TreeView({
             fields: { dataSource: groupedData, id: '__rowIndex', parentID: 'pId', text: args.column.field, hasChildren: 'hasChild' },
             enableRtl: this.parent.enableRtl, showCheckBox: true, cssClass: 'e-checkboxtree', checkedNodes: checkedNodes,
@@ -843,15 +843,15 @@ export class Filter {
         if (isNotEqual) {
             predicate = { field: field, ignoreAccent: false, matchCase: false, predicate: 'and', operator: 'notequal' };
             for (let i: number = 0, len: number = allNodes.length; i < len; i++) {
-                if (checkedNodes.indexOf(allNodes[i]) === -1) {
-                    valArr = allNodes[i].split(' ');
+                if (checkedNodes.indexOf(allNodes[i as number]) === -1) {
+                    valArr = allNodes[i as number].split(' ');
                     setDate();
                 }
             }
         } else {
             predicate = { field: field, ignoreAccent: false, matchCase: false, predicate: 'or', operator: 'equal' };
             for (let i: number = 0, len: number = checkedNodes.length; i < len; i++) {
-                valArr = checkedNodes[i].split(' ');
+                valArr = checkedNodes[i as number].split(' ');
                 if (valArr.length === 3) {
                     setDate();
                 } else {
@@ -883,19 +883,19 @@ export class Filter {
         if (searchValue) {
             filteredList = new DataManager(groupedData).executeLocal(new Query().where(
                 new Predicate(treeViewObj.fields.text, 'contains', searchValue, true)));
-            const filterId: { [key: string]: boolean } = {}; const predicates = []; let key: string; let initList: Object[];
+            const filterId: { [key: string]: boolean } = {}; const predicates: Predicate[] = []; let key: string; let initList: Object[];
             const strFilter: boolean = isNaN(Number(searchValue));
             let expandId: string[]; let level: number;
             if (strFilter) {
                 for (let i: number = 0; i < filteredList.length; i++) {
-                    if (!filteredList[i]['hasChild']) {
+                    if (!filteredList[i as number]['hasChild']) {
                         continue;
                     }
-                    predicates.push(new Predicate('pId', 'equal', filteredList[i]['__rowIndex'], false));
-                    key = filteredList[i]['pId'];
-                    if (!filterId[key]) {
+                    predicates.push(new Predicate('pId', 'equal', filteredList[i as number]['__rowIndex'], false));
+                    key = filteredList[i as number]['pId'];
+                    if (!filterId[`${key}`]) {
                         predicates.push(new Predicate('__rowIndex', 'equal', key, false));
-                        filterId[key] = true;
+                        filterId[`${key}`] = true;
                     }
                 }
                 initList = filteredList;
@@ -903,27 +903,27 @@ export class Filter {
             } else {
                 let year: string; const filterParentId: { [key: string]: boolean } = {}; expandId = [];
                 for (let i: number = 0; i < filteredList.length; i++) {
-                    key = filteredList[i]['pId'];
+                    key = filteredList[i as number]['pId'];
                     if (key) {
                         year = key.split(' ')[0];
-                        if (!filterId[key]) {
+                        if (!filterId[`${key}`]) {
                             predicates.push(new Predicate('__rowIndex', 'equal', key, false));
-                            filterId[key] = true;
+                            filterId[`${key}`] = true;
                             expandId.push(year);
                             expandId.push(key);
                         }
-                        if (!filterParentId[year]) {
-                            if (!filterId[year]) {
+                        if (!filterParentId[`${year}`]) {
+                            if (!filterId[`${year}`]) {
                                 predicates.push(new Predicate('__rowIndex', 'equal', year, false));
-                                filterId[year] = true;
+                                filterId[`${year}`] = true;
                             }
-                            predicates.push(new Predicate('__rowIndex', 'equal', filteredList[i]['__rowIndex'], false));
+                            predicates.push(new Predicate('__rowIndex', 'equal', filteredList[i as number]['__rowIndex'], false));
                         }
                     } else {
-                        key = filteredList[i]['__rowIndex'];
-                        if (!filterParentId[key]) {
+                        key = filteredList[i as number]['__rowIndex'];
+                        if (!filterParentId[`${key}`]) {
                             predicates.push(new Predicate('__rowIndex', 'contains', key, false));
-                            filterParentId[key] = true;
+                            filterParentId[`${key}`] = true;
                         }
                     }
                 }
@@ -931,7 +931,7 @@ export class Filter {
             }
             if (filteredList.length) {
                 if (predicates.length) {
-                    filteredList = initList.concat(new DataManager(groupedData).executeLocal(new Query().where(Predicate.or(predicates))));             
+                    filteredList = initList.concat(new DataManager(groupedData).executeLocal(new Query().where(Predicate.or(predicates))));
                 }
                 changeData();
                 treeViewObj.checkAll();
@@ -973,7 +973,7 @@ export class Filter {
         const fullRange: number[] = [range[0], colIndex - 1, range[2], colIndex - 1];
         const totalRange: { address: string, filteredCol: boolean, otherColPredicate: PredicateModel[] } = this.getPredicateRange(
             fullRange, this.filterCollection.get(sheetIdx), colIndex - 1) as { address: string, filteredCol: boolean,
-                otherColPredicate: PredicateModel[] };
+            otherColPredicate: PredicateModel[] };
         const otherColPredicate: PredicateModel[] = totalRange.otherColPredicate;
         const addr: string = `${sheet.name}!${totalRange.address}`;
         const fullAddr: string = getRangeAddress(fullRange);
@@ -984,8 +984,9 @@ export class Filter {
         if (isDateCol && !totalRange.filteredCol) {
             dateColData = [];
         }
-        getData(this.parent, addr, true, true, null, true, null, null, false, fullAddr, null, dateColData).then((jsonData:
-            { [key: string]: CellModel }[]) => {
+        getData(
+            this.parent, addr, true, true, null, true, null, null, false, fullAddr, null, dateColData).then((
+            jsonData: { [key: string]: CellModel }[]) => {
             let checkBoxData: DataManager;
             this.parent.element.style.position = 'relative';
             this.parent.element.classList.add('e-filter-open');
@@ -993,7 +994,8 @@ export class Filter {
                 if (dateColData || !otherColPredicate.length) {
                     checkBoxData = new DataManager(dateColData || jsonData);
                 } else {
-                    const data: Object[] = new DataManager(jsonData).executeLocal(new Query().where(Predicate.and(this.getPredicates(otherColPredicate))));
+                    const data: Object[] = new DataManager(jsonData).executeLocal(
+                        new Query().where(Predicate.and(this.getPredicates(otherColPredicate))));
                     checkBoxData = new DataManager(data);
                 }
                 const beforeCboxRender: Function = (args: FilterCheckboxArgs): void => {
@@ -1099,12 +1101,9 @@ export class Filter {
      */
     private filterCboxValueHandler(args: { value: string | number, column: object, data: object }): void {
         if (args.column && args.data) {
-            const fieldKey: string = 'field';
-            const field: string = args.column[fieldKey] as string;
-            const dataKey: string = 'dataObj';
-            const rowKey: string = '__rowIndex';
+            const field: string = args.column['field'] as string;
             if (args.value) {
-                const indexes: number[] = getCellIndexes(field + args.data[dataKey][rowKey]);
+                const indexes: number[] = getCellIndexes(field + args.data['dataObj']['__rowIndex']);
                 const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
                 if (cell && cell.format) {
                     args.value = this.parent.getDisplayText(cell);
@@ -1123,7 +1122,7 @@ export class Filter {
         const l10n: L10n = this.parent.serviceLocator.getService(locale); 
         const sortOrder: SortOrder = target.classList.contains('e-filter-sortasc') ? 'Ascending'
             : target.classList.contains('e-filter-sortdesc') ? 'Descending' : null;
-        if(sortOrder === "Ascending"){
+        if (sortOrder === 'Ascending') {
             target.setAttribute('aria-label', l10n.getConstant('SortAscending'));
         }
         else{
@@ -1141,8 +1140,8 @@ export class Filter {
         this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
         let prevSort: SortCollectionModel;
         for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
-            if (this.parent.sortCollection[i] && this.parent.sortCollection[i].sheetIndex === sheetIdx) {
-                prevSort = this.parent.sortCollection[i];
+            if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === sheetIdx) {
+                prevSort = this.parent.sortCollection[i as number];
                 this.parent.sortCollection.splice(i, 1);
             }
         }
@@ -1188,7 +1187,7 @@ export class Filter {
             predicates = predicates.concat(args.filterCollection);
             if (predicates.length) {
                 for (let i: number = 0; i < predicates.length; i++) {
-                    args.field = predicates[i].field;
+                    args.field = predicates[i as number].field;
                 }
             }
         }
@@ -1212,7 +1211,7 @@ export class Filter {
         for (let index: number = 0; index < fields.length; index++) {
             let sameIndex: number = -1;
             for (let filterIndex: number = 0; filterIndex < predicates.length; filterIndex++) {
-                if (predicates[filterIndex].field === fields[index].field) {
+                if (predicates[filterIndex as number].field === fields[index as number].field) {
                     sameIndex = filterIndex;
                     break;
                 }
@@ -1247,7 +1246,7 @@ export class Filter {
             }
         }
         if (range.indexOf('!') < 0) {
-            range = this.parent.sheets[sheetIdx].name + '!' + range;
+            range = this.parent.sheets[sheetIdx as number].name + '!' + range;
         }
         this.parent.showSpinner();
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1280,7 +1279,7 @@ export class Filter {
         const predicateList: Predicate[] = [];
         const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(predicateModel);
         for (const prop of Object.keys(excelPredicate)) {
-            predicateList.push(<Predicate>excelPredicate[prop]);
+            predicateList.push(<Predicate>excelPredicate[`${prop}`]);
         }
         return predicateList;
     }
@@ -1348,7 +1347,7 @@ export class Filter {
                 } else if (type === 'LongDate') {
                     format = 'EEEE, MMMM d, y';
                 } else {
-                    format = cell.format;   
+                    format = cell.format;
                 }
                 break;
             }
@@ -1368,7 +1367,7 @@ export class Filter {
     private clearFilterHandler(args?: { field?: string, isAction?: boolean, preventRefresh?: boolean, sheetIndex?: number }): void {
         const sheetIndex: number = args && args.sheetIndex !== undefined ? args.sheetIndex : this.parent.activeSheetIndex;
         if (args && args.field) {
-            let predicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIndex));
+            const predicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIndex));
             if (predicates && predicates.length) {
                 this.updatePredicate(predicates, args.field);
                 this.initiateFilterUIHandler(
@@ -1379,7 +1378,8 @@ export class Filter {
             const filterArgs: { [key: string]: boolean | number } = { isFiltered: false, isClearAll: true, sheetIndex: sheetIndex };
             this.getFilteredColumnHandler(filterArgs);
             if (filterArgs.isFiltered || (args && args.preventRefresh)) {
-                let eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number, cancel: boolean };
+                let eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number,
+                    cancel: boolean };
                 const sheet: SheetModel = getSheet(this.parent, sheetIndex);
                 const filterRange: { useFilterRange: boolean, range: number[] } = this.filterRange.get(sheetIndex);
                 const range: number[] = filterRange.range;
@@ -1394,7 +1394,7 @@ export class Filter {
                 this.filterCollection.set(sheetIndex, []);
                 const filterColl: FilterCollectionModel[] = this.parent.filterCollection;
                 for (let i: number = 0, len: number = filterColl && filterColl.length; i < len; i++) {
-                    if (filterColl[i].sheetIndex === sheetIndex) {
+                    if (filterColl[i as number].sheetIndex === sheetIndex) {
                         filterColl.splice(i, 1);
                         break;
                     }
@@ -1525,13 +1525,13 @@ export class Filter {
                 const value: (string | number | boolean | Date)[] = []; const type: string[] = []; const predi: string[] = [];
                 const predicate: PredicateModel[] = this.filterCollection.get(args.sheetIdx);
                 for (let i: number = 0; i < predicate.length; i++) {
-                    if (predicate[i].field && predicate[i].operator) {
-                        const colIdx: number = getCellIndexes(predicate[i].field + '1')[1];
+                    if (predicate[i as number].field && predicate[i as number].operator) {
+                        const colIdx: number = getCellIndexes(predicate[i as number].field + '1')[1];
                         colCollection.push(colIdx);
-                        condition.push(predicate[i].operator);
-                        value.push(isNullOrUndefined(predicate[i].value) ? '' : predicate[i].value);
-                        type.push(predicate[i].type);
-                        predi.push(predicate[i].predicate);
+                        condition.push(predicate[i as number].operator);
+                        value.push(isNullOrUndefined(predicate[i as number].value) ? '' : predicate[i as number].value);
+                        type.push(predicate[i as number].type);
+                        predi.push(predicate[i as number].predicate);
                     }
                 }
                 const address: string  = getRangeAddress(args.filterRange);
@@ -1550,7 +1550,7 @@ export class Filter {
     private updateFilter(args?: { initLoad: boolean, isOpen: boolean }): void {
         if (this.parent.filterCollection && (args.initLoad || args.isOpen)) {
             for (let i: number = 0; i < this.parent.filterCollection.length; i++) {
-                const filterCol: FilterCollectionModel = this.parent.filterCollection[i];
+                const filterCol: FilterCollectionModel = this.parent.filterCollection[i as number];
                 let sIdx: number = filterCol.sheetIndex;
                 if (i === 0 && !this.parent.isOpen && !args.isOpen) {
                     sIdx = 0;
@@ -1559,19 +1559,19 @@ export class Filter {
                 if (filterCol.column) {
                     for (let j: number = 0; j < filterCol.column.length; j++) {
                         const predicateCol: PredicateModel = {
-                            field: getCellAddress(0, filterCol.column[j]).charAt(0),
-                            operator: this.getFilterOperator(filterCol.criteria[j]), value: typeof filterCol.value[j] === 'string' ?
-                            (<string>filterCol.value[j]).split('*').join('') : filterCol.value[j],
-                            predicate: filterCol.predicates && filterCol.predicates[j],
-                            type: filterCol.dataType && filterCol.dataType[j]
+                            field: getCellAddress(0, filterCol.column[j as number]).charAt(0),
+                            operator: this.getFilterOperator(filterCol.criteria[j as number]), value: typeof filterCol.value[j as number]
+                            === 'string' ? (<string>filterCol.value[j as number]).split('*').join('') : filterCol.value[j as number],
+                            predicate: filterCol.predicates && filterCol.predicates[j as number],
+                            type: filterCol.dataType && filterCol.dataType[j as number]
                         };
                         predicates.push(predicateCol);
                     }
                 }
                 for (let i: number = 0; i < predicates.length - 1; i++) {
-                    if (predicates[i].field === predicates[i + 1].field) {
-                        if (!predicates[i].predicate) {
-                            predicates[i].predicate = 'or';
+                    if (predicates[i as number].field === predicates[i + 1].field) {
+                        if (!predicates[i as number].predicate) {
+                            predicates[i as number].predicate = 'or';
                         }
                         if (!predicates[i + 1].predicate) {
                             predicates[i + 1].predicate = 'or';
@@ -1692,9 +1692,9 @@ export class Filter {
                     const filterCollection: PredicateModel[] = this.filterCollection.get(sheetIdx);
                     let isPredicateRemoved: boolean;
                     for (let i: number = filterCollection.length - 1; i >= 0; i--) {
-                        const colIdx: number = getColIndex(filterCollection[i].field);
+                        const colIdx: number = getColIndex(filterCollection[i as number].field);
                         if (args.end < colIdx) {
-                            filterCollection[i].field = getColumnHeaderText(colIdx - (args.end - args.start + 1) + 1);
+                            filterCollection[i as number].field = getColumnHeaderText(colIdx - (args.end - args.start + 1) + 1);
                         }
                         else if (args.start <= colIdx && args.end >= colIdx) {
                             isPredicateRemoved = true;
@@ -1704,12 +1704,12 @@ export class Filter {
                     const sortColl: SortCollectionModel[] = this.parent.sortCollection;
                     if (sortColl) {
                         for (let i: number = 0; i < sortColl.length; i++) {
-                            if (sortColl[i].sheetIndex === sheetIdx) {
-                                if (args.end < sortColl[i].columnIndex) {
-                                    sortColl[i].columnIndex = sortColl[i].columnIndex - (args.end - args.start + 1);
+                            if (sortColl[i as number].sheetIndex === sheetIdx) {
+                                if (args.end < sortColl[i as number].columnIndex) {
+                                    sortColl[i as number].columnIndex = sortColl[i as number].columnIndex - (args.end - args.start + 1);
                                     break;
                                 }
-                                else if (args.start <= sortColl[i].columnIndex && args.end >= sortColl[i].columnIndex) {
+                                else if (args.start <= sortColl[i as number].columnIndex && args.end >= sortColl[i as number].columnIndex) {
                                     sortColl.splice(i, 1);
                                     break;
                                 }
@@ -1754,10 +1754,10 @@ export class Filter {
             const sortColl: SortCollectionModel[] = this.parent.sortCollection;
             if (sortColl) {
                 for (let i: number = sortColl.length - 1; i >= 0; i--) {
-                    if (args.sheetIndex === sortColl[i].sheetIndex) {
+                    if (args.sheetIndex === sortColl[i as number].sheetIndex) {
                         sortColl.splice(i, 1);
-                    } else if (args.sheetIndex < sortColl[i].sheetIndex) {
-                        sortColl[i].sheetIndex -= 1;
+                    } else if (args.sheetIndex < sortColl[i as number].sheetIndex) {
+                        sortColl[i as number].sheetIndex -= 1;
                     }
                 }
             }

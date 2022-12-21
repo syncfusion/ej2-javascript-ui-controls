@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
-
-### AutoComplete
-
-#### Bug Fixes
-
-- `#I420089` - The issue "API documentation broken on autocomplete Component" has been resolved.
-
-## 20.3.59 (2022-11-29)
+## 20.4.38 (2022-12-21)
 
 ### ListBox
 
@@ -18,51 +10,17 @@
 
 - `#F37860` - Issue with "Command button not working properly for multiselect in ListBox in Mac" has been resolved.
 
-## 20.3.58 (2022-11-22)
-
-### MultiSelect
+### DropDownList
 
 #### Bug Fixes
 
-- `#FB38693` - The issue "Multiselect dropdown icon is not aligned properly" has been resolved.
-
-## 20.3.56 (2022-11-08)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#F178523` - Issue with "Script error thrown when we drag and drop the listbox item in angular platform" has been resolved.
-
-## 20.3.50 (2022-10-18)
-
-### Dropdown Tree
-
-#### Bug Fixes
-
-- `#I408860` - The issue with "While focus the item using tab key, focus disappeared instead of focus the first popup element in the Angular Dropdown Tree component" has been resolved.
-
-## 20.3.49 (2022-10-11)
+- `#I397894` - The issue "aria-label added on input element instead of wrapper element while adding the aria-label by using Html Attribute property" has been resolved.
 
 ### ListBox
 
 #### Bug Fixes
 
 - `#I409839` - Issue with "Script error thrown while drag and drop after removed the item from listbox using removeItem method" has been resolved.
-
-### DropDownList
-
-#### Bug Fixes
-
-- `#I409074` - The issue "Previous value not updated properly in change event argument when we clear the value" has been resolved.
-
-## 20.3.48 (2022-10-05)
-
-### Mention
-
-#### Bug Fixes
-
-- Issue with `Localization` and `Accessibility` has been resolved.
 
 ## 20.3.47 (2022-09-29)
 

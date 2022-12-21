@@ -163,6 +163,13 @@
           outline-offset: 0;
         }
       }
+
+      &.e-inherit {
+        &:focus,
+        &:active {
+          box-shadow: none;
+        }
+      }
     }
 
     &.e-rtl {

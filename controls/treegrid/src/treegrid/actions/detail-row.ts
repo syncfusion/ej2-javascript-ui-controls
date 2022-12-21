@@ -53,7 +53,7 @@ export class DetailRow {
 
     private setIndentVisibility(args: Object): void {
         const visible: string = 'visible';
-        args[visible] = false;
+        args[`${visible}`] = false;
     }
 
     private dataBoundArg(): void {
@@ -61,9 +61,9 @@ export class DetailRow {
             return !e.classList.contains('e-detailrow');
         });
         for (let i: number = 0; i < detailele.length; i++) {
-            const elements: Object = detailele[i].getElementsByClassName('e-detailrowcollapse');
-            const detailData: Row<Object> = this.parent.grid.getRowObjectFromUID(detailele[i].getAttribute('data-Uid'));
-            const parentItem: Object = getObject('parentItem', this.parent.grid.getCurrentViewRecords()[i]);
+            const elements: Object = detailele[parseInt(i.toString(), 10)].getElementsByClassName('e-detailrowcollapse');
+            const detailData: Row<Object> = this.parent.grid.getRowObjectFromUID(detailele[parseInt(i.toString(), 10)].getAttribute('data-Uid'));
+            const parentItem: Object = getObject('parentItem', this.parent.grid.getCurrentViewRecords()[parseInt(i.toString(), 10)]);
             if (isNullOrUndefined(parentItem) || !isNullOrUndefined(parentItem) &&
         getExpandStatus(this.parent, detailData.data, this.parent.grid.getCurrentViewRecords())) {
                 this.parent.grid.detailRowModule.expand(elements[0]);
@@ -82,7 +82,7 @@ export class DetailRow {
             return;
         }
         for (let i: number = 0; i < args.detailrows.length; i++) {
-            args.detailrows[i].style.display = args.action;
+            args.detailrows[parseInt(i.toString(), 10)].style.display = args.action;
         }
     }
     private detaildataBound(args: DetailDataBoundEventArgs): void {
@@ -107,11 +107,11 @@ export class DetailRow {
         }
         const focusElement: Row<Object>[] | HTMLCollectionOf<HTMLTableRowElement> = this.parent.grid.contentModule.getRows();
         for (let i: number = 0; i < focusElement.length; i++) {
-            (focusElement[i].cells[0] as Cell<Column> ).visible = false;
+            (focusElement[parseInt(i.toString(), 10)].cells[0] as Cell<Column> ).visible = false;
         }
         const focusModule: FocusStrategy = getObject('focusModule', this.parent.grid);
         const matrix: string = 'refreshMatrix';
-        focusModule[matrix](true)({ rows: this.parent.grid.contentModule.getRows() });
+        focusModule[`${matrix}`](true)({ rows: this.parent.grid.contentModule.getRows() });
     }
     /**
      * Destroys the DetailModule.

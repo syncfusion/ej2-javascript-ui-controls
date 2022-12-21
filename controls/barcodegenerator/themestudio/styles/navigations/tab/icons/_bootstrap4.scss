@@ -1,4 +1,5 @@
 @include export-module('tab-bootstrap4-icons') {
+
   /*! tab icons */
   #{&}.e-tab {
 
@@ -15,33 +16,18 @@
         }
       }
 
-      .e-scroll-nav {
-
-        .e-nav-left-arrow::before {
-          content: '\e71f';
-        }
-
-        .e-nav-right-arrow::before {
-          content: '\e70b';
-        }
-      }
-
       .e-close-icon::before {
         content: '\e745';
         position: relative;
       }
 
       .e-popup-up-icon::before {
-        content: '\e721';
-
         @media screen and (max-width: 480px) {
           content: '\e781';
         }
       }
 
       .e-popup-down-icon::before {
-        content: '\e744';
-
         @media screen and (max-width: 480px) {
           content: '\e781';
         }
@@ -65,17 +51,6 @@
     &.e-vertical-tab {
 
       .e-tab-header {
-
-        .e-scroll-nav {
-
-          .e-nav-up-arrow::before {
-            content: '\e734';
-          }
-
-          .e-nav-down-arrow::before {
-            content: '\e705';
-          }
-        }
 
         .e-popup-up-icon {
 

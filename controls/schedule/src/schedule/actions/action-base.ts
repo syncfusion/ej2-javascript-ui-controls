@@ -160,8 +160,8 @@ export class ActionBase {
                 let startTime: Date = this.actionObj.start;
                 let endTime: Date = this.actionObj.end;
                 if (multiData && multiData.length > 0) {
-                    startTime = multiData[index][this.parent.eventFields.startTime] as Date;
-                    endTime = multiData[index][this.parent.eventFields.endTime] as Date;
+                    startTime = multiData[parseInt(index.toString(), 10)][this.parent.eventFields.startTime] as Date;
+                    endTime = multiData[parseInt(index.toString(), 10)][this.parent.eventFields.endTime] as Date;
                 }
                 timeElement.innerHTML = this.parent.getTimeString(startTime) + ' - ' +
                     this.parent.getTimeString(endTime);
@@ -461,7 +461,7 @@ export class ActionBase {
             addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
             this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
             setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
-            const cellTd: Element = workCells[day];
+            const cellTd: Element = workCells[parseInt(day.toString(), 10)];
             if (cellTd && isNullOrUndefined(this.parent.eventDragArea)) {
                 this.monthEvent.renderElement(cellTd, appointmentElement, true);
                 this.actionObj.cloneElement.push(appointmentElement);

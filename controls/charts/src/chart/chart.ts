@@ -1,3 +1,7 @@
+/* eslint-disable curly */
+/* eslint-disable @typescript-eslint/tslint/config */
+/* eslint-disable no-case-declarations */
+/* eslint-disable max-len */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
@@ -192,8 +196,8 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      * The opacity for background.
      * @default 1
      */
-     @Property(1)
-     public opacity: number;
+    @Property(1)
+    public opacity: number;
 }
 /**
  * Configures the zooming behavior for the chart.
@@ -452,7 +456,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * `splineRangeAreaSeriesModule` is used to add splineRangeArea series in chart.
      */
-     public splineRangeAreaSeriesModule: SplineRangeAreaSeries;
+    public splineRangeAreaSeriesModule: SplineRangeAreaSeries;
     /**
      * `tooltipModule` is used to manipulate and add tooltip to the series.
      */
@@ -1568,7 +1572,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public isLegendClicked: boolean = false;
 
     public isZoomed: boolean = false;
-    private previousTargetId: string = "";
+    private previousTargetId: string = '';
     private currentPointIndex: number = 0;
     private currentSeriesIndex: number = 0;
     private currentLegendIndex: number = 0;
@@ -1592,10 +1596,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (const key of keys) {
-                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
-                    extend(this[key], dataObj[key]);
+                if ((typeof this[key as string] === 'object') && !isNullOrUndefined(this[key as string])) {
+                    extend(this[key as string], dataObj[key as string]);
                 } else {
-                    this[key] = dataObj[key];
+                    this[key as string] = dataObj[key as string];
                 }
             }
             this.isProtectedOnChange = false;
@@ -1618,11 +1622,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 start = 1;
             }
             for (let i: number = start; i < elementId.length; i++) {
-                if (!regex.test(elementId[i]) && elementId.indexOf('-') === -1 &&
-                    elementId.indexOf('_') === -1 && elementId.indexOf('\\') === -1 && !numberRegex.test(elementId[i])) {
-                    childElementId += ('\\' + elementId[i]);
+                if (!regex.test(elementId[i as number]) && elementId.indexOf('-') === -1 &&
+                    elementId.indexOf('_') === -1 && elementId.indexOf('\\') === -1 && !numberRegex.test(elementId[i as number])) {
+                    childElementId += ('\\' + elementId[i as number]);
                 } else {
-                    childElementId += elementId[i];
+                    childElementId += elementId[i as number];
                 }
             }
             return childElementId;
@@ -1639,7 +1643,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.id = this.isIdHasSpecialCharacter(this.element.id);
         // It is used for checking blazor framework or not.
         const blazor: string = 'Blazor';
-        this.isBlazor = window[blazor];
+        this.isBlazor = window[blazor as string];
         this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateVariable();
@@ -1675,9 +1679,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.tooltipModule) {
             this.tooltipModule.previousPoints = [];
         }
-        this.element.setAttribute('tabindex', "0");
+        this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-label', this.description || this.title);
-        this.element.setAttribute("class", this.element.getAttribute("class") + " e-chart-focused");
+        this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
         if (this.element.id === '') {
             const collection: number = document.getElementsByClassName('e-chart').length;
             this.element.id = 'chart_' + this.chartid + '_' + collection;
@@ -1720,7 +1724,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.setTheme();
 
-        this.createChartSvg();        
+        this.createChartSvg();
 
         this.markerRender = new Marker(this);
 
@@ -1797,7 +1801,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         removeElement('chartmeasuretext');
         this.removeSelection();
-        
         if (this.markerRender) {
             this.markerRender.mergeXvalues(this.visibleSeries);
         }
@@ -1809,7 +1812,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let series: Series;
         let isCalculateStacking: boolean = false;
         for (let i: number = 0, len: number = this.visibleSeries.length; i < len; i++) {
-            series = <Series>this.visibleSeries[i];
+            series = <Series>this.visibleSeries[i as number];
             series.position = series.rectCount = undefined;
             if (((series.type.indexOf('Stacking') !== -1) || (series.drawType.indexOf('Stacking') !== -1
                 && this.chartAreaType === 'PolarRadar')) && !isCalculateStacking) {
@@ -2061,7 +2064,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     protected renderCanvasSeries(item: Series): void {
         let svgElement: Element;
-        let divElement: Element;
+        // eslint-disable-next-line prefer-const
         svgElement = (this.enableCanvas) ?
             svgElement : this.svgObject;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2196,7 +2199,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         series.xData = []; series.yData = [];
         let dataSource: Object | DataManager;
         const isAngular: string = 'isAngular';
-        if (this[isAngular]) {
+        if (this[isAngular as string]) {
             dataSource = Object.keys(series.dataSource).length ? series.dataSource : this.dataSource;
         } else {
             dataSource = series.dataSource || this.dataSource;
@@ -2234,9 +2237,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
         const height: number = this.availableSize.height - top - this.border.width - margin.bottom;
         if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
-            if (this.stockChart.legendSettings.position === "Top") {
+            if (this.stockChart.legendSettings.position === 'Top') {
                 top += this.stockChart.stockLegendModule.legendBounds.height;
-            } else if (this.stockChart.legendSettings.position === "Left") {
+            } else if (this.stockChart.legendSettings.position === 'Left') {
                 left += this.stockChart.stockLegendModule.legendBounds.width;
             }
         }
@@ -2317,7 +2320,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
         }
         for (let i: number = 0, len: number = axes.length; i < len; i++) {
-            axis = <Axis>axes[i]; axis.series = [];
+            axis = <Axis>axes[i as number]; axis.series = [];
             axis.labels = []; axis.indexLabels = {};
             for (const series of this.visibleSeries) {
                 this.initAxis(series, axis, true);
@@ -2393,7 +2396,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const count: number = colors.length;
         const seriesCollection: SeriesModel[] = this.series.sort((a: SeriesModel, b: SeriesModel) => { return a.zOrder - b.zOrder; });
         for (let i: number = 0, len: number = seriesCollection.length; i < len; i++) {
-            series = <Series>seriesCollection[i];
+            series = <Series>seriesCollection[i as number];
             // for y axis label issue during chart navigation
             series.category = seriesCollection[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
@@ -2435,7 +2438,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 break;
             }
             this.visibleSeries.push(series);
-            seriesCollection[i] = series;
+            seriesCollection[i as number] = series;
         }
     }
 
@@ -2507,9 +2510,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const backGroundImage: string = this.backgroundImage;
         const fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
         if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
-            if (this.stockChart.legendSettings.position === "Top") {
+            if (this.stockChart.legendSettings.position === 'Top') {
                 y += this.stockChart.stockLegendModule.legendBounds.height;
-            } else if (this.stockChart.legendSettings.position === "Left") {
+            } else if (this.stockChart.legendSettings.position === 'Left') {
                 x += this.stockChart.stockLegendModule.legendBounds.width;
             }
         }
@@ -2605,9 +2608,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public removeSeries(index: number): void {
         this.redraw = false; //fix for remove svg not working when use animatemethod.
-        if (this.visibleSeries[index]) {
-            this.visibleSeries[index].xAxis.orientation = null;
-            this.visibleSeries[index].yAxis.orientation = null;
+        if (this.visibleSeries[index as number]) {
+            this.visibleSeries[index as number].xAxis.orientation = null;
+            this.visibleSeries[index as number].yAxis.orientation = null;
         }
         for (let i: number = 0; i < this.axes.length; i++) {
             if ((this.axes[i as number] as Axis).orientation === null) {
@@ -2746,9 +2749,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.remove(this.element, 'dblclick', this.chartOnDoubleClick);
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
-        EventHandler.remove(this.element, "keydown", this.chartKeyDown);
+        EventHandler.remove(this.element, 'keydown', this.chartKeyDown);
         EventHandler.remove(document.body, 'keydown', this.documentKeyHandler);
-		EventHandler.remove(this.element, "keyup", this.chartKeyUp);
+        EventHandler.remove(this.element, 'keyup', this.chartKeyUp);
 
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -2785,9 +2788,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.add(this.element, 'dblclick', this.chartOnDoubleClick, this);
         EventHandler.add(this.element, 'contextmenu', this.chartRightClick, this);
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
-        EventHandler.add(this.element, "keydown", this.chartKeyDown, this);
+        EventHandler.add(this.element, 'keydown', this.chartKeyDown, this);
         EventHandler.add(document.body, 'keydown', this.documentKeyHandler, this);
-		EventHandler.add(this.element, "keyup", this.chartKeyUp, this);
+        EventHandler.add(this.element, 'keyup', this.chartKeyUp, this);
 
         this.resizeBound = this.chartResize.bind(this);
         window.addEventListener(
@@ -3000,45 +3003,45 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns {boolean} false
      * @private
      */
-     public chartKeyDown(e: KeyboardEvent): boolean {
-         let actionKey: string = "";
-         if ((this.isZoomed && e.code == "Tab") || e.code == "Space") {
-             e.preventDefault();
-         }
-         if (this.tooltip.enable && ((e.code == "Tab" && this.previousTargetId.indexOf("Series") > -1) || e.code === "Escape")) {
-             actionKey = "ESC";
-         }
-         if (this.highlightMode != "None" && e.code == "Tab" && this.previousTargetId.indexOf("_chart_legend_") > -1) {
+    public chartKeyDown(e: KeyboardEvent): boolean {
+        let actionKey: string = '';
+        if ((this.isZoomed && e.code === 'Tab') || e.code === 'Space') {
+            e.preventDefault();
+        }
+        if (this.tooltip.enable && ((e.code === 'Tab' && this.previousTargetId.indexOf('Series') > -1) || e.code === 'Escape')) {
+            actionKey = 'ESC';
+        }
+        if (this.highlightMode !== 'None' && e.code === 'Tab' && this.previousTargetId.indexOf('_chart_legend_') > -1) {
             if (this.highlightModule) {
                 this.highlightModule.removeLegendHighlightStyles();
             }
         }
-         if (e.ctrlKey && (e.key === '+' || e.code === 'Equal' || e.key === '-' || e.code === 'Minus')) {
-             e.preventDefault();
-             this.isZoomed = this.zoomModule && (this.zoomSettings.enableDeferredZooming || this.zoomSettings.enableSelectionZooming ||
-                 this.zoomSettings.enablePinchZooming || this.zoomSettings.enableMouseWheelZooming);
-             //this.tooltipModule.fadeOut(this.element);
-             actionKey = this.isZoomed ? e.code : "";
-         }
-         else if (e["keyCode"] === 82 && this.isZoomed) { // KeyCode 82 (R) for reseting
-             e.preventDefault();
-             this.isZoomed = false;
-             actionKey = "R";
-         }
-         else if (e.code.indexOf("Arrow") > -1) {
-             e.preventDefault();
-             actionKey = this.isZoomed ? e.code : "";
-         }
+        if (e.ctrlKey && (e.key === '+' || e.code === 'Equal' || e.key === '-' || e.code === 'Minus')) {
+            e.preventDefault();
+            this.isZoomed = this.zoomModule && (this.zoomSettings.enableDeferredZooming || this.zoomSettings.enableSelectionZooming ||
+                this.zoomSettings.enablePinchZooming || this.zoomSettings.enableMouseWheelZooming);
+            //this.tooltipModule.fadeOut(this.element);
+            actionKey = this.isZoomed ? e.code : '';
+        }
+        else if (e['keyCode'] === 82 && this.isZoomed) { // KeyCode 82 (R) for reseting
+            e.preventDefault();
+            this.isZoomed = false;
+            actionKey = 'R';
+        }
+        else if (e.code.indexOf('Arrow') > -1) {
+            e.preventDefault();
+            actionKey = this.isZoomed ? e.code : '';
+        }
 
-         if (e.ctrlKey && (e.key === 'p')) {
-             e.preventDefault();
-             actionKey = "CtrlP";
-         }
+        if (e.ctrlKey && (e.key === 'p')) {
+            e.preventDefault();
+            actionKey = 'CtrlP';
+        }
 
-         if (actionKey != "")
-             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
+        if (actionKey !== '')
+            this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
 
-         return false;
+        return false;
     }
 
     /**
@@ -3047,153 +3050,153 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns {boolean} false
      * @private
      */
-     public chartKeyUp(e: KeyboardEvent): boolean {
-        let actionKey: string = "";
+    public chartKeyUp(e: KeyboardEvent): boolean {
+        let actionKey: string = '';
         let targetId: string = e.target['id'];
         let groupElement: HTMLElement;
         let markerGroup: HTMLElement;
-        let targetElement: HTMLElement = e.target as HTMLElement;
+        const targetElement: HTMLElement = e.target as HTMLElement;
 
-        let titleElement: HTMLElement = getElement(this.element.id + "_ChartTitle") as HTMLElement;
-        let seriesElement: HTMLElement = getElement(this.element.id + "SeriesCollection") as HTMLElement;
-        let legendElement: HTMLElement = getElement(this.element.id + "_chart_legend_translate_g") as HTMLElement;
-        let pagingElement: HTMLElement = getElement(this.element.id + "_chart_legend_pageup") as HTMLElement;
+        const titleElement: HTMLElement = getElement(this.element.id + '_ChartTitle') as HTMLElement;
+        const seriesElement: HTMLElement = getElement(this.element.id + 'SeriesCollection') as HTMLElement;
+        const legendElement: HTMLElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
+        const pagingElement: HTMLElement = getElement(this.element.id + '_chart_legend_pageup') as HTMLElement;
 
-        if (titleElement) { titleElement.setAttribute("class", "e-chart-focused"); }
+        if (titleElement) { titleElement.setAttribute('class', 'e-chart-focused'); }
         if (seriesElement && seriesElement.firstElementChild && seriesElement.firstElementChild.children[1]) {
-            let firstChild: HTMLElement = seriesElement.firstElementChild.children[1] as HTMLElement;
-            let className: string = firstChild.getAttribute("class");
-            if (className && className.indexOf("e-chart-focused") === -1) {
-                className = className + " e-chart-focused";
+            const firstChild: HTMLElement = seriesElement.firstElementChild.children[1] as HTMLElement;
+            let className: string = firstChild.getAttribute('class');
+            if (className && className.indexOf('e-chart-focused') === -1) {
+                className = className + ' e-chart-focused';
             } else if (!className) {
-                className = "e-chart-focused";
+                className = 'e-chart-focused';
             }
-            firstChild.setAttribute("class", className);
+            firstChild.setAttribute('class', className);
         }
         if (legendElement) {
-            let firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
-            let className: string = firstChild.getAttribute("class");
-            if (className && className.indexOf("e-chart-focused") === -1) {
-                className = className + " e-chart-focused";
+            const firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute('class');
+            if (className && className.indexOf('e-chart-focused') === -1) {
+                className = className + ' e-chart-focused';
             }
             else if (!className) {
-                className = "e-chart-focused";
+                className = 'e-chart-focused';
             }
-            firstChild.setAttribute("class", className);
+            firstChild.setAttribute('class', className);
         }
-        if (pagingElement) { pagingElement.setAttribute("class", "e-chart-focused"); }
+        if (pagingElement) { pagingElement.setAttribute('class', 'e-chart-focused'); }
 
 
-        if (e.code == "Tab") {
+        if (e.code === 'Tab') {
 
-            if (this.previousTargetId != "") {
-                if ((this.previousTargetId.indexOf("_Series_") > -1 && targetId.indexOf("_Series_") == -1)) {
-                    groupElement = getElement(this.element.id + "SeriesCollection") as HTMLElement;
-                    let previousElement = this.previousTargetId.indexOf("_Symbol") > -1 ?
-                        getElement(this.element.id + "SymbolGroup" + this.currentSeriesIndex).children[this.currentPointIndex + 1] :
-                        (this.previousTargetId.indexOf("_Point_") > -1 ?
+            if (this.previousTargetId !== '') {
+                if ((this.previousTargetId.indexOf('_Series_') > -1 && targetId.indexOf('_Series_') === -1)) {
+                    groupElement = getElement(this.element.id + 'SeriesCollection') as HTMLElement;
+                    const previousElement: Element = this.previousTargetId.indexOf('_Symbol') > -1 ?
+                        getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex).children[this.currentPointIndex + 1] :
+                        (this.previousTargetId.indexOf('_Point_') > -1 ?
                             groupElement.children[this.currentSeriesIndex].children[this.currentPointIndex + 1] :
                             groupElement.children[this.currentSeriesIndex]);
                     this.setTabIndex(previousElement as HTMLElement, groupElement.firstElementChild as HTMLElement);
                     this.currentPointIndex = 0;
                     this.currentSeriesIndex = 0;
                 }
-                else if (this.previousTargetId.indexOf("_chart_legend_page") > -1 && targetId.indexOf("_chart_legend_page") == -1
-                    && targetId.indexOf("_chart_legend_g_") == -1) {
-                    this.setTabIndex(e.target as HTMLElement, getElement(this.element.id + "_chart_legend_pageup") as HTMLElement);
+                else if (this.previousTargetId.indexOf('_chart_legend_page') > -1 && targetId.indexOf('_chart_legend_page') === -1
+                    && targetId.indexOf('_chart_legend_g_') === -1) {
+                    this.setTabIndex(e.target as HTMLElement, getElement(this.element.id + '_chart_legend_pageup') as HTMLElement);
                 }
-                else if (this.previousTargetId.indexOf("_chart_legend_g_") > -1 && targetId.indexOf("_chart_legend_g_") == -1) {
-                    groupElement = getElement(this.element.id + "_chart_legend_translate_g") as HTMLElement;
+                else if (this.previousTargetId.indexOf('_chart_legend_g_') > -1 && targetId.indexOf('_chart_legend_g_') === -1) {
+                    groupElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
                     this.setTabIndex(groupElement.children[this.currentLegendIndex] as HTMLElement, groupElement.firstElementChild as HTMLElement);
                 }
             }
 
             this.previousTargetId = targetId;
 
-            if (targetId.indexOf("SeriesGroup") > -1) {
-                this.currentSeriesIndex = +targetId.split("SeriesGroup")[1];
-                targetElement.removeAttribute("tabindex");
+            if (targetId.indexOf('SeriesGroup') > -1) {
+                this.currentSeriesIndex = +targetId.split('SeriesGroup')[1];
+                targetElement.removeAttribute('tabindex');
                 targetElement.blur();
-                if (targetElement.children[1].id.indexOf("_Point_") == -1) {
-                    markerGroup = getElement(this.element.id + "SymbolGroup" + targetId.split("SeriesGroup")[1]) as HTMLElement;
+                if (targetElement.children[1].id.indexOf('_Point_') === -1) {
+                    markerGroup = getElement(this.element.id + 'SymbolGroup' + targetId.split('SeriesGroup')[1]) as HTMLElement;
                 }
                 targetId = this.focusChild((markerGroup != null ? markerGroup.children[1] : targetElement.children[1]) as HTMLElement);
             }
-            actionKey = this.highlightMode !== "None" || this.tooltip.enable ? "Tab" : "";
+            actionKey = this.highlightMode !== 'None' || this.tooltip.enable ? 'Tab' : '';
         }
-        else if (e.code.indexOf("Arrow") > -1) {
+        else if (e.code.indexOf('Arrow') > -1) {
             e.preventDefault();
             this.previousTargetId = targetId;
-            if (targetId.indexOf("_chart_legend_page") > -1) {
-                if (e.code == "ArrowLeft") {
-                    getElement(this.element.id + "_chart_legend_pagedown").removeAttribute("tabindex");
-                    this.focusChild(getElement(this.element.id + "_chart_legend_pageup") as HTMLElement);
+            if (targetId.indexOf('_chart_legend_page') > -1) {
+                if (e.code === 'ArrowLeft') {
+                    getElement(this.element.id + '_chart_legend_pagedown').removeAttribute('tabindex');
+                    this.focusChild(getElement(this.element.id + '_chart_legend_pageup') as HTMLElement);
                 }
-                else if (e.code == "ArrowRight") {
-                    getElement(this.element.id + "_chart_legend_pageup").removeAttribute("tabindex");
-                    this.focusChild(getElement(this.element.id + "_chart_legend_pagedown") as HTMLElement);
+                else if (e.code === 'ArrowRight') {
+                    getElement(this.element.id + '_chart_legend_pageup').removeAttribute('tabindex');
+                    this.focusChild(getElement(this.element.id + '_chart_legend_pagedown') as HTMLElement);
                 }
             }
-            else if ((targetId.indexOf("_chart_legend_") > -1)) {
-                let legendElement: HTMLCollection = targetElement.parentElement.children;
-                legendElement[this.currentLegendIndex].removeAttribute("tabindex");
+            else if ((targetId.indexOf('_chart_legend_') > -1)) {
+                const legendElement: HTMLCollection = targetElement.parentElement.children;
+                legendElement[this.currentLegendIndex].removeAttribute('tabindex');
 
-                this.currentLegendIndex += (e.code == "ArrowUp" || e.code == "ArrowRight") ? + 1 : - 1;
+                this.currentLegendIndex += (e.code === 'ArrowUp' || e.code === 'ArrowRight') ? + 1 : - 1;
                 this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.length);
 
-                let currentLegend: Element = legendElement[this.currentLegendIndex];
+                const currentLegend: Element = legendElement[this.currentLegendIndex];
                 this.focusChild(currentLegend as HTMLElement);
                 targetId = currentLegend.children[1].id;
-                actionKey = this.highlightMode !== "None" ? "ArrowMove" : "";
+                actionKey = this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
-            else if (targetId.indexOf("_Series_") > -1) {
+            else if (targetId.indexOf('_Series_') > -1) {
                 groupElement = targetElement.parentElement.parentElement;
                 let currentPoint: Element = e.target as Element;
-                targetElement.removeAttribute("tabindex");
+                targetElement.removeAttribute('tabindex');
                 targetElement.blur();
 
-                if (e.code == "ArrowRight" || e.code == "ArrowLeft") {
-                    let seriesIndexes: number[] = [];
+                if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+                    const seriesIndexes: number[] = [];
                     for (let i: number = 0; i < groupElement.children.length; i++) {
-                        if (groupElement.children[i].id.indexOf("SeriesGroup") > -1) {
-                            seriesIndexes.push(+groupElement.children[i].id.split("SeriesGroup")[1]);
+                        if (groupElement.children[i as number].id.indexOf('SeriesGroup') > -1) {
+                            seriesIndexes.push(+groupElement.children[i as number].id.split('SeriesGroup')[1]);
                         }
                     }
-                    this.currentSeriesIndex = seriesIndexes.indexOf(this.currentSeriesIndex) + (e.code == "ArrowRight" ? 1 : -1);
+                    this.currentSeriesIndex = seriesIndexes.indexOf(this.currentSeriesIndex) + (e.code === 'ArrowRight' ? 1 : -1);
                     this.currentPointIndex = 0;
                     this.currentSeriesIndex = seriesIndexes[this.getActualIndex(this.currentSeriesIndex, seriesIndexes.length)];
-                    groupElement = getElement(this.element.id + "SeriesGroup" + this.currentSeriesIndex) as HTMLElement;
-                    markerGroup = getElement(this.element.id + "SymbolGroup" + this.currentSeriesIndex) as HTMLElement;
-                    currentPoint = groupElement.children[1].id.indexOf("_Point_") == -1 && markerGroup ? markerGroup.children[1] :
+                    groupElement = getElement(this.element.id + 'SeriesGroup' + this.currentSeriesIndex) as HTMLElement;
+                    markerGroup = getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex) as HTMLElement;
+                    currentPoint = groupElement.children[1].id.indexOf('_Point_') === -1 && markerGroup ? markerGroup.children[1] :
                         groupElement.children[1];
                 }
                 else {
-                    this.currentPointIndex += e.code == "ArrowUp" ? 1 : -1;
-                    if (targetId.indexOf("_Symbol") > -1) {
+                    this.currentPointIndex += e.code === 'ArrowUp' ? 1 : -1;
+                    if (targetId.indexOf('_Symbol') > -1) {
                         this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                            getElement(this.element.id + "SymbolGroup" + this.currentSeriesIndex).childElementCount - 1);
-                        currentPoint = getElement(this.element.id + "_Series_" + this.currentSeriesIndex + "_Point_" +
-                            this.currentPointIndex + "_Symbol");
+                                                                     getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex).childElementCount - 1);
+                        currentPoint = getElement(this.element.id + '_Series_' + this.currentSeriesIndex + '_Point_' +
+                            this.currentPointIndex + '_Symbol');
                     }
-                    else if (targetId.indexOf("_Point_") > -1) {
+                    else if (targetId.indexOf('_Point_') > -1) {
                         this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
-                            getElement(this.element.id + "SeriesGroup" + this.currentSeriesIndex).childElementCount - 1);
-                        currentPoint = getElement(this.element.id + "_Series_" + this.currentSeriesIndex + "_Point_" +
+                                                                     getElement(this.element.id + 'SeriesGroup' + this.currentSeriesIndex).childElementCount - 1);
+                        currentPoint = getElement(this.element.id + '_Series_' + this.currentSeriesIndex + '_Point_' +
                             this.currentPointIndex);
                     }
                 }
 
                 targetId = this.focusChild(currentPoint as HTMLElement);
-                actionKey = this.tooltip.enable || this.highlightMode !== "None" ? "ArrowMove" : "";
+                actionKey = this.tooltip.enable || this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
         }
-        else if ((e.code == "Enter" || e.code == "Space") && ((targetId.indexOf("_chart_legend_") > -1) ||
-            (targetId.indexOf("_Point_") > -1))) {
-            targetId = (targetId.indexOf("_chart_legend_page") > -1) ? targetId : ((targetId.indexOf("_chart_legend_") > -1) ?
+        else if ((e.code === 'Enter' || e.code === 'Space') && ((targetId.indexOf('_chart_legend_') > -1) ||
+            (targetId.indexOf('_Point_') > -1))) {
+            targetId = (targetId.indexOf('_chart_legend_page') > -1) ? targetId : ((targetId.indexOf('_chart_legend_') > -1) ?
                 targetElement.children[1].id : targetId);
-            actionKey = "Enter";
+            actionKey = 'Enter';
         }
-        if (actionKey !== "") {
+        if (actionKey !== '') {
             this.chartKeyboardNavigations(e, targetId, actionKey);
         }
 
@@ -3203,27 +3206,27 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
         if (previousElement) {
-            previousElement.removeAttribute("tabindex");
+            previousElement.removeAttribute('tabindex');
         }
         if (currentElement) {
-            currentElement.setAttribute("tabindex", "0");
+            currentElement.setAttribute('tabindex', '0');
         }
     }
 
     private getActualIndex(index: number, totalLength: number): number {
-        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index)
+        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
     }
 
     private focusChild(element: HTMLElement): string {
-        element.setAttribute("tabindex", "0");
-        let className: string = element.getAttribute("class");
-        element.setAttribute("tabindex", "0");
-        if (className && className.indexOf("e-chart-focused") === -1) {
-            className = "e-chart-focused " + className;
+        element.setAttribute('tabindex', '0');
+        let className: string = element.getAttribute('class');
+        element.setAttribute('tabindex', '0');
+        if (className && className.indexOf('e-chart-focused') === -1) {
+            className = 'e-chart-focused ' + className;
         } else if (!className) {
-            className = "e-chart-focused";
+            className = 'e-chart-focused';
         }
-        element.setAttribute("class", className);
+        element.setAttribute('class', className);
         element.focus();
         return element.id;
     }
@@ -3238,97 +3241,95 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (e.altKey && e.keyCode === 74 && !isNullOrUndefined(this.element)) {
             this.element.focus();
         }
-    };
+    }
 
 
     private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
         switch (actionKey) {
-            case "Tab":
-            case "ArrowMove":
-                if(this.highlightModule) {
-                    this.highlightModule.removeLegendHighlightStyles();
+        case 'Tab':
+        case 'ArrowMove':
+            if (this.highlightModule) {
+                this.highlightModule.removeLegendHighlightStyles();
+            }
+            if (targetId.indexOf('_Point_') > -1) {
+                const seriesIndex: number = +(targetId.split('_Series_')[1].split('_Point_')[0]);
+                const pointIndex: number = +(targetId.split('_Series_')[1].replace('_Symbol', '').split('_Point_')[1]);
+                const pointRegion: ChartLocation = this.visibleSeries[seriesIndex as number].points[pointIndex as number].symbolLocations[0];
+                this.mouseX = pointRegion.x + this.initialClipRect.x;
+                this.mouseY = pointRegion.y + this.initialClipRect.y;
+                if (this.highlightModule) {
+                    this.highlightModule.highlightChart(document.getElementById(targetId), 'mousemove');
+                    this.highlightModule.completeSelection(document.getElementById(targetId), 'mousemove');
                 }
-                if (targetId.indexOf("_Point_") > -1) {
-                    let seriesIndex = +(targetId.split("_Series_")[1].split("_Point_")[0]);
-                    let pointIndex = +(targetId.split("_Series_")[1].replace("_Symbol", "").split("_Point_")[1]);
-
-                    let pointRegion: ChartLocation = this.visibleSeries[seriesIndex].points[pointIndex].symbolLocations[0];
-                    this.mouseX = pointRegion.x + this.initialClipRect.x;
-                    this.mouseY = pointRegion.y + this.initialClipRect.y;
-                    if (this.highlightModule) {
-                        this.highlightModule.highlightChart(document.getElementById(targetId), "mousemove");
-                        this.highlightModule.completeSelection(document.getElementById(targetId), "mousemove");
-                    }
-                    if (this.tooltipModule) {
-                        this.tooltipModule.tooltip();
-                    }
+                if (this.tooltipModule) {
+                    this.tooltipModule.tooltip();
                 }
-                if (this.highlightModule && this.highlightMode !== 'None') {
-                    targetId = targetId.indexOf("_chart_legend_g_") > -1 ? document.getElementById(targetId).firstChild['id'] : targetId;
-                    let legendID: string = this.element.id + '_chart_legend';
-                    let legendItemsId: string[] = [legendID + '_text_', legendID + '_shape_marker_',
+            }
+            if (this.highlightModule && this.highlightMode !== 'None') {
+                targetId = targetId.indexOf('_chart_legend_g_') > -1 ? document.getElementById(targetId).firstChild['id'] : targetId;
+                const legendID: string = this.element.id + '_chart_legend';
+                const legendItemsId: string[] = [legendID + '_text_', legendID + '_shape_marker_',
                     legendID + '_shape_'];
-                    for (let i: number = 0; i < legendItemsId.length; i++) {
-                        let id: string = legendItemsId[i];
-                        if (targetId.indexOf(id) > -1) {
-                            document.getElementById(targetId).setAttribute("class", "")
-                            this.highlightModule.legendSelection(this, parseInt(targetId.split(id)[1], 10),
-                                document.getElementById(targetId), "mousemove");
-                            break;
-                        }
+                for (let i: number = 0; i < legendItemsId.length; i++) {
+                    const id: string = legendItemsId[i as number];
+                    if (targetId.indexOf(id) > -1) {
+                        document.getElementById(targetId).setAttribute('class', '');
+                        this.highlightModule.legendSelection(this, parseInt(targetId.split(id)[1], 10),
+                                                             document.getElementById(targetId), 'mousemove');
+                        break;
                     }
                 }
-                break;
+            }
+            break;
 
-            case "Enter":
-            case "Space":
-                if (targetId.indexOf("_chart_legend_") > -1) {
-                    this.isLegendClicked = true;
-                    this.legendModule.click(e as Event);
-                    this.focusChild(document.getElementById(targetId).parentElement);
-                } else {
-                    this.selectionModule.calculateSelectedElements(document.getElementById(targetId) , "click")
-                }
-                break;
-            case "CtrlP":
-                this.print();
-                break;
-            case "ESC":
-                this.tooltipModule.removeTooltip(1);
-                break;
-            case "Equal":
-            case "Minus":
-                this.zoomModule.isZoomed = this.zoomModule.performedUI = true;
-                this.zoomModule.isPanning = this.isChartDrag = false;
-                if (actionKey == "Equal") {
-                    this.zoomModule.toolkit.zoomInOutCalculation(1, this, this.axisCollections, this.zoomSettings.mode);
-                }
-                else {
-                    this.zoomModule.toolkit.zoomInOutCalculation(-1, this, this.axisCollections, this.zoomSettings.mode);
-                }
-                this.zoomModule.performZoomRedraw(this);
-                this.element.focus();
-                break;
-            case "ArrowUp":
-            case "ArrowDown":
-            case "ArrowLeft":
-            case "ArrowRight":
-                let yArrowPadding = actionKey == "ArrowUp" ? 10 : (actionKey == "ArrowDown" ? -10 : 0);
-                let xArrowPadding = actionKey == "ArrowLeft" ? -10 : (actionKey == "ArrowRight" ? 10 : 0);
-                this.zoomModule.isPanning = this.isChartDrag = true;
-                this.zoomModule.doPan(this, this.axisCollections, xArrowPadding, yArrowPadding);
-                this.zoomModule.performZoomRedraw(this);
-                this.element.focus();
-                break;
-            case "R":
-                this.zoomModule.toolkit.reset(e);
-                break;
+        case 'Enter':
+        case 'Space':
+            if (targetId.indexOf('_chart_legend_') > -1) {
+                this.isLegendClicked = true;
+                this.legendModule.click(e as Event);
+                this.focusChild(document.getElementById(targetId).parentElement);
+            } else {
+                this.selectionModule.calculateSelectedElements(document.getElementById(targetId) , 'click');
+            }
+            break;
+        case 'CtrlP':
+            this.print();
+            break;
+        case 'ESC':
+            this.tooltipModule.removeTooltip(1);
+            break;
+        case 'Equal':
+        case 'Minus':
+            this.zoomModule.isZoomed = this.zoomModule.performedUI = true;
+            this.zoomModule.isPanning = this.isChartDrag = false;
+            if (actionKey === 'Equal') {
+                this.zoomModule.toolkit.zoomInOutCalculation(1, this, this.axisCollections, this.zoomSettings.mode);
+            }
+            else {
+                this.zoomModule.toolkit.zoomInOutCalculation(-1, this, this.axisCollections, this.zoomSettings.mode);
+            }
+            this.zoomModule.performZoomRedraw(this);
+            this.element.focus();
+            break;
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'ArrowLeft':
+        case 'ArrowRight':
+            const yArrowPadding: number = actionKey === 'ArrowUp' ? 10 : (actionKey === 'ArrowDown' ? -10 : 0);
+            const xArrowPadding: number = actionKey === 'ArrowLeft' ? -10 : (actionKey === 'ArrowRight' ? 10 : 0);
+            this.zoomModule.isPanning = this.isChartDrag = true;
+            this.zoomModule.doPan(this, this.axisCollections, xArrowPadding, yArrowPadding);
+            this.zoomModule.performZoomRedraw(this);
+            this.element.focus();
+            break;
+        case 'R':
+            this.zoomModule.toolkit.reset(e);
+            break;
         }
 
     }
 
-   
 
 
     /**
@@ -3343,9 +3344,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.clickCount++;
         let timeInterval: number = 0;
         const isAngular: string = 'isAngular';
-        if (this[isAngular]) {
+        if (this[isAngular as string]) {
             const observers: string = 'observers';
-            timeInterval = this.pointDoubleClick[observers].length > 0 ? 400 : 0;
+            timeInterval = this.pointDoubleClick[observers as string].length > 0 ? 400 : 0;
         } else {
             timeInterval = this.pointDoubleClick ? 400 : 0;
         }
@@ -3387,16 +3388,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const index: string[] = targetElement.id.split('_AxisLabel_');
             const axisIndex: number = +index[0].slice(-1);
             const labelIndex: number = +index[1];
-            const currentAxis: Axis = this.axisCollections[axisIndex];
+            const currentAxis: Axis = this.axisCollections[axisIndex as number];
             if (currentAxis.visible && (axisIndex === 0 || axisIndex === 1)) {
                 this.trigger(event, {
                     chart: this,
                     axis: currentAxis,
-                    text: currentAxis.visibleLabels[labelIndex].text as string,
+                    text: currentAxis.visibleLabels[labelIndex as number].text as string,
                     labelID: targetElement.id,
                     index: labelIndex,
                     location: new ChartLocation(clickEvt.pageX, clickEvt.pageY),
-                    value: currentAxis.visibleLabels[labelIndex].value
+                    value: currentAxis.visibleLabels[labelIndex as number].value
                 });
             }
         }
@@ -3435,7 +3436,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (id && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
             const title: string = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
-                targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title :
+                targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index as number].title :
                     targetId.indexOf('_ChartSubTitle') > -1 ? this.subTitle : this.legendSettings.title;
             showTooltip(
                 title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip',
@@ -3581,7 +3582,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public setAnnotationValue(annotationIndex: number, content: string): void {
         const parentNode: Element = getElement(this.element.id + '_Annotation_Collections');
-        const annotation: ChartAnnotationSettings = <ChartAnnotationSettings>this.annotations[annotationIndex];
+        const annotation: ChartAnnotationSettings = <ChartAnnotationSettings>this.annotations[annotationIndex as number];
         let element: HTMLElement;
         if (content !== null) {
             annotation.content = content;
@@ -3623,8 +3624,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         /*! Set theme */
         this.themeStyle = getThemeColor(this.theme, this.enableCanvas);
 
-        let style: HTMLStyleElement = document.createElement('style');
-        style.setAttribute('id', (<HTMLElement>this.element).id + "Keyboard_chart_focus");
+        const style: HTMLStyleElement = document.createElement('style');
+        style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_chart_focus');
         style.innerHTML = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
         'path[id*=_Point_]:focus, text[id*=_ChartTitle]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
             'path[id*=_Point_]:focus-visible, text[id*=_ChartTitle]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';

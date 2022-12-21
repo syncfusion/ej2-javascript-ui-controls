@@ -5,7 +5,7 @@ $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
 $resize-hanlder-bottom-rtl: 2px;
 
-//default 
+//default
 $dialog-bg-color: $neutral-white !default;
 $dialog-content-bg-color: $neutral-white !default;
 $dialog-content-font-color: $neutral-light-font !default;
@@ -19,11 +19,12 @@ $dialog-active-icon-color: $theme-primary !default;
 $dialog-icon-bg-normal: $neutral-light-font !default;
 $dialog-footer-bg-color: $neutral-white !default;
 $dialog-shadow-color: 0 0 20px rgba($shadow, .3) !default;
-$dialog-close-button-left: 7px !default;
+$dialog-close-button-left: 0 !default;
 $dialog-close-button-right: 11px !default;
 $dialog-close-icon-normal-opacity: initial !default;
 $dialog-close-icon-active-opacity: initial !default;
 $dialog-footer-content-border-top: none !default;
+$dialog-alert-footer-content-border-top: none !default;
 $dialog-close-icon-content: '\e7a7' !default;
 $header-content-border-radius: 1px 1px 0 0 !default;
 $dialog-close-icon-font-size: 16px !default;
@@ -71,7 +72,7 @@ $dialog-bigger-close-icon-margin-left: -8px !default;
 $dialog-bigger-close-icon-margin-right: -1px !default;
 $dialog-bigger-close-button-bottom: 4px !default;
 $dialog-bigger-close-button-height: 40px !default;
-$dialog-bigger-close-button-left: 12px !default;
+$dialog-bigger-close-button-left: 4px !default;
 $dialog-bigger-close-button-width: 40px !default;
 $dialog-btn-border-color: transparent !default;
 $dialog-btn-bg-color: transparent !default;
@@ -80,4 +81,5 @@ $dialog-hover-focus-btn-bg-color: transparent !default;
 $dialog-active-btn-bg-color: transparent !default;
 $dialog-headericon-bottom: 0 !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+
 //enddefault

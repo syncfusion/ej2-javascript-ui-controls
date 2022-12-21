@@ -88,7 +88,7 @@ export class Year extends ViewBase implements IRenderer {
     public renderCalendarHeader(currentDate: Date): HTMLElement {
         const headerWrapper: HTMLElement = createElement('div', { className: 'e-header e-month' });
         const headerContent: HTMLElement = createElement('div', { className: 'e-day e-title' });
-        if (this.parent.monthHeaderTemplate) {
+        if (this.parent.activeViewOptions.monthHeaderTemplate) {
             const args: CellTemplateArgs = { date: currentDate, type: 'monthHeader' };
             this.renderTemplates(this.parent.getMonthHeaderTemplate(), args, 'monthHeaderTemplate',
                                  this.parent.activeViewOptions.monthHeaderTemplateName, headerContent);
@@ -114,7 +114,7 @@ export class Year extends ViewBase implements IRenderer {
             tr.appendChild(createElement('th'));
         }
         for (let i: number = 0; i < util.WEEK_LENGTH; i++) {
-            if (this.parent.dayHeaderTemplate) {
+            if (this.parent.activeViewOptions.dayHeaderTemplate) {
                 const th: HTMLElement = createElement('th');
                 const args: CellTemplateArgs = { date: currentWeek, type: 'dayHeader' };
                 this.renderTemplates(this.parent.getDayHeaderTemplate(), args, 'dayHeaderTemplate',
@@ -176,9 +176,14 @@ export class Year extends ViewBase implements IRenderer {
                     addClass([td], classList);
                 }
                 tr.appendChild(td);
-                EventHandler.add(td, 'click', this.onCellClick, this);
-                if (!this.parent.isAdaptive) {
-                    EventHandler.add(td, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
+                if (!this.parent.isMinMaxDate(date)) {
+                    addClass([td], cls.DISABLE_DATES);
+                }
+                else {
+                    EventHandler.add(td, 'click', this.onCellClick, this);
+                    if (!this.parent.isAdaptive) {
+                        EventHandler.add(td, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
+                    }
                 }
                 this.parent.trigger(event.renderCell, { elementType: 'workCells', element: td, date: date });
             }
@@ -351,6 +356,7 @@ export class Year extends ViewBase implements IRenderer {
         if (!args.isPreventScrollUpdate) {
             if (this.parent.uiStateValues.isInitial) {
                 this.parent.uiStateValues.isInitial = false;
+                this.parent.uiStateValues.top = this.parent.uiStateValues.left = 0;
             } else {
                 if (leftPanelElement) {
                     leftPanelElement.scrollTop = this.parent.uiStateValues.top;

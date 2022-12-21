@@ -51,7 +51,7 @@ export interface IAccLegendClickEventArgs extends IChartEventArgs {
     point: AccPoints;
     /** Defines the current legend text */
     legendText: string;
-} 
+}
 /**
  * Accumulation Chart TooltipRender event arguments.
  */

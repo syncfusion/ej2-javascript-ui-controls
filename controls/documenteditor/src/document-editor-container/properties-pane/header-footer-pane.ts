@@ -275,6 +275,13 @@ export class HeaderFooterProperties {
         }
     }
     public destroy(): void {
+        if (this.element) {
+            this.element.innerHTML = '';
+            if (this.element.parentElement) {
+                this.element.parentElement.removeChild(this.element);
+            }
+        }
+        this.element = undefined;
         if (this.firstPage) {
             this.firstPage.destroy();
         }

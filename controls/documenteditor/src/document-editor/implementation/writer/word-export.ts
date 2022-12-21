@@ -2,7 +2,7 @@ import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageFormatInfo, HelperMethods } from '../index';
-import { Dictionary, TabJustification, TabLeader, LocaleId } from '../../index';
+import { Dictionary, TabJustification, TabLeader, WColumnFormat, LocaleId } from '../../index';
 import { WTabStop } from '../index';
 import { ProtectionType, CompatibilityMode } from '../../base';
 import { DocumentHelper } from '../viewer';
@@ -457,7 +457,7 @@ export class WordExport {
         const files: Promise<Blob>[] = [];
         if (excelFiles && excelFiles.length > 0) {
             for (let i: number = 0; i < excelFiles.length; i++) {
-                const fileName: string = excelFiles.keys[i];
+                const fileName: string = excelFiles.keys[parseInt(i.toString(), 10)];
                 const excelFile: ZipArchive = excelFiles.get(fileName);
                 const excelPromise: Promise<Blob> = excelFile.saveAsBlob();
                 files.push(excelPromise);
@@ -707,7 +707,7 @@ export class WordExport {
         writer.writeStartElement(undefined, 'body', this.wNamespace);
         const count: number = this.document.sections.length;
         for (let i: number = 0; i < count; i++) {
-            this.section = this.document.sections[i];
+            this.section = this.document.sections[parseInt(i.toString(), 10)];
             this.lastSection = i === count - 1;
             this.serializeSection(writer, this.section, i === count - 1);
             this.section = undefined;
@@ -748,22 +748,22 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'name', undefined, this.mThemes.fontSchemeName);
             writer.writeStartElement(undefined, 'majorFont', this.aNamespace);
             for (let i: number = 0; i < this.mThemes.fontScheme.majorFontScheme.fontSchemeList.length; i++) {
-                let theme: any = this.mThemes.fontScheme.majorFontScheme.fontSchemeList[i];
+                let theme: any = this.mThemes.fontScheme.majorFontScheme.fontSchemeList[parseInt(i.toString(), 10)];
                 this.themeFont(writer, theme);
             }
             let keys: string[] = Object.keys(this.mThemes.fontScheme.majorFontScheme.fontTypeface);
             for (let key of keys) {
-                this.themeType(writer, key, this.mThemes.fontScheme.majorFontScheme.fontTypeface[key]);
+                this.themeType(writer, key, this.mThemes.fontScheme.majorFontScheme.fontTypeface[`${key}`]);
             }
             writer.writeEndElement();
             writer.writeStartElement(undefined, 'minorFont', this.aNamespace);
             for (let i: number = 0; i < this.mThemes.fontScheme.minorFontScheme.fontSchemeList.length; i++) {
-                let theme: any = this.mThemes.fontScheme.minorFontScheme.fontSchemeList[i];
+                let theme: any = this.mThemes.fontScheme.minorFontScheme.fontSchemeList[parseInt(i.toString(), 10)];
                 this.themeFont(writer, theme);
             }
             keys = Object.keys(this.mThemes.fontScheme.minorFontScheme.fontTypeface);
             for (let key of keys) {
-                this.themeType(writer, key, this.mThemes.fontScheme.minorFontScheme.fontTypeface[key]);
+                this.themeType(writer, key, this.mThemes.fontScheme.minorFontScheme.fontTypeface[`${key}`]);
             }
             writer.writeEndElement();
             writer.writeEndElement();
@@ -809,7 +809,7 @@ export class WordExport {
     }
     private serializeCommentInternal(writer: XmlWriter, comments: any[]): void {
         for (let i: number = 0; i < comments.length; i++) {
-            const comment: any = comments[i];
+            const comment: any = comments[parseInt(i.toString(), 10)];
             writer.writeStartElement('w', 'comment', this.wNamespace);
             writer.writeAttributeString('w', 'id', this.wNamespace, this.commentId[comment.commentId].toString());
             if (comment.author && comment.author !== ' ') {
@@ -825,7 +825,7 @@ export class WordExport {
             for (let k: number = 0; k < blocks.length; k++) {
                 this.isInsideComment = true;
                 this.commentParaID++;
-                this.serializeBodyItem(writer, blocks[k], true);
+                this.serializeBodyItem(writer, blocks[parseInt(k.toString(), 10)], true);
                 this.isInsideComment = false;
             }
             if (blocks.length === 0) {
@@ -869,7 +869,7 @@ export class WordExport {
     }
     private serializeCommentsExInternal(writer: XmlWriter, comments: any[], isReply: boolean): void {
         for (let i: number = 0; i < comments.length; i++) {
-            const comment: any = comments[i];
+            const comment: any = comments[parseInt(i.toString(), 10)];
             writer.writeStartElement('w15', 'commentEx', this.wNamespace);
             //if (comment.blocks.length > 0) {
             const syncParaID: number = this.commentParaIDInfo[comment.commentId];
@@ -893,13 +893,18 @@ export class WordExport {
         if (section.headersFooters) {
             this.serializeHFReference(writer, section.headersFooters);
         }
+
         // if (IsNeedToSerializeSectionFootNoteProperties(section))
         //     SerializeFootnoteProperties(section);
         // if (IsNeedToSerializeSectionEndNoteProperties(section))
         //     SerializeEndnoteProperties(section);
-        this.serializeSectionType(writer, 'nextPage');
+        if (section.sectionFormat.breakCode === 'NoBreak') {
+            this.serializeSectionType(writer, 'continuous');
+        } else {
+            this.serializeSectionType(writer, 'nextPage');
+        }
         this.serializePageSetup(writer, section.sectionFormat);
-        this.serializeColumns(writer);
+        this.serializeColumns(writer, section.sectionFormat);
         this.serializeFootNotesPr(writer, section.sectionFormat);
         this.serializeEndNotesPr(writer, section.sectionFormat);
         // this.serializeSectionProtection(section);
@@ -1054,11 +1059,29 @@ export class WordExport {
     }
 
     // Serialize the column properties of section.
-    private serializeColumns(writer: XmlWriter): void {
-        writer.writeStartElement(undefined, 'cols', this.wNamespace);
-        writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '1');
-        writer.writeAttributeString(undefined, 'space', this.wNamespace, '0');
-        writer.writeEndElement();
+    private serializeColumns(writer: XmlWriter, sectionFormat: any): void {
+        if (sectionFormat.numberOfColumns !== undefined && sectionFormat.numberOfColumns > 1) {
+            writer.writeStartElement(undefined, 'cols', this.wNamespace);
+            writer.writeAttributeString(undefined, 'num', this.wNamespace, sectionFormat.numberOfColumns.toString());
+            if (sectionFormat.lineBetweenColumns) {
+                writer.writeAttributeString(undefined, 'sep', this.wNamespace, '1');
+            }
+            if (sectionFormat.equalWidth) {
+                writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '1');
+            } else {
+                writer.writeAttributeString(undefined, 'equalWidth', this.wNamespace, '0');
+                if (sectionFormat.columns !== undefined && sectionFormat.columns.length > 0) {
+                    for (let i = 0; i < sectionFormat.columns.length; i++) {
+                        writer.writeStartElement(undefined, 'col', this.wNamespace);                        
+                        writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(sectionFormat.columns[parseInt(i.toString(), 10)].width * this.twentiethOfPoint).toString());
+                        writer.writeAttributeString(undefined, 'space', this.wNamespace, this.roundToTwoDecimal(sectionFormat.columns[parseInt(i.toString(), 10)].space * this.twentiethOfPoint).toString());
+                        writer.writeEndElement();
+                    }
+                }
+            }
+
+            writer.writeEndElement();
+        }
         // ColumnCollection columns = section.Columns;
 
         // writer.WriteStartElement('cols', this.wNamespace);
@@ -1252,7 +1275,7 @@ export class WordExport {
     // Serializes the bodyItems
     private serializeBodyItems(writer: XmlWriter, blockCollection: any, isLastSection: boolean): void {
         for (let i: number = 0; i < blockCollection.length; i++) {
-            this.serializeBodyItem(writer, blockCollection[i], isLastSection);
+            this.serializeBodyItem(writer, blockCollection[parseInt(i.toString(), 10)], isLastSection);
         }
     }
     // serialize the content Control
@@ -5026,7 +5049,11 @@ export class WordExport {
             writer.writeStartElement(undefined, 'br', this.wNamespace);
             writer.writeAttributeString('w', 'type', this.wNamespace, 'page');
             writer.writeEndElement();
-        } else if (encodeURI(span.text) === '%02') {
+        } else if (span.text === String.fromCharCode(14)) {
+            writer.writeStartElement(undefined, 'br', this.wNamespace);
+            writer.writeAttributeString('w', 'type', this.wNamespace, 'column');
+            writer.writeEndElement();
+        }  else if (encodeURI(span.text) === '%02') {
             writer.writeStartElement(undefined, 'footnoteRef', this.wNamespace);
             writer.writeEndElement();
         } else if (encodeURI(span.text) === '%02' && efType === 'endnote') {
@@ -5595,26 +5622,18 @@ export class WordExport {
             if (!isNullOrUndefined(characterFormat.fontFamilyAscii)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyAscii) ? 'asciiTheme' : 'ascii';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamily);
-            } else {
-                writer.writeAttributeString(undefined, 'ascii', this.wNamespace, characterFormat.fontFamily);
             }
             if (!isNullOrUndefined(characterFormat.fontFamilyFarEast)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyFarEast) ? 'eastAsiaTheme' : 'eastAsia';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyFarEast);
-            } else {
-                writer.writeAttributeString(undefined, 'eastAsia', this.wNamespace, characterFormat.fontFamily);
             }
             if (!isNullOrUndefined(characterFormat.fontFamilyNonFarEast)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyNonFarEast) ? 'hAnsiTheme' : 'hAnsi';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyNonFarEast);
-            } else {
-                writer.writeAttributeString(undefined, 'hAnsi', this.wNamespace, characterFormat.fontFamily);
             }
             if (!isNullOrUndefined(characterFormat.fontFamilyBidi)) {
                 let key: string = HelperMethods.isThemeFont(characterFormat.fontFamilyBidi) ? 'cstheme' : 'cs';
                 writer.writeAttributeString(undefined, key, this.wNamespace, characterFormat.fontFamilyBidi);
-            } else {
-                writer.writeAttributeString(undefined, 'cs', this.wNamespace, characterFormat.fontFamily);
             }
             writer.writeEndElement(); //end         
         }

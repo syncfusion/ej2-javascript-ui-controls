@@ -40,7 +40,7 @@ export function getPath(element: Element | Node, text: string, hasId: boolean): 
     let path: string = hasId ? '' : '/';
     const len: number = matched.length - (hasId ? 1 : 2);
     for (let i: number = len; i >= 0; i--) {
-        path += matched[i] + '/';
+        path += matched[i as number] + '/';
     }
     return path;
 }
@@ -56,7 +56,7 @@ export function getPathId(node: Element): string[] {
     const matched: string[] = getParents(node, node.getAttribute('data-uid'), true);
     const ids: string[] = [];
     for (let i: number = matched.length - 1; i >= 0; i--) {
-        ids.push(matched[i]);
+        ids.push(matched[i as number]);
     }
     return ids;
 }
@@ -73,7 +73,7 @@ export function getPathNames(element: Element, text: string): string[] {
     const matched: string[] = getParents(element, text, false);
     const names: string[] = [];
     for (let i: number = matched.length - 1; i >= 0; i--) {
-        names.push(matched[i]);
+        names.push(matched[i as number]);
     }
     return names;
 }
@@ -166,7 +166,7 @@ export function activeElement(action: string, parent: IFileManager): boolean {
         getModule(parent, blurEle[0]);
         if (action === 'cut') {
             while (i < blurEle.length) {
-                addBlur(blurEle[i]);
+                addBlur(blurEle[i as number]);
                 i++;
             }
         }
@@ -176,8 +176,8 @@ export function activeElement(action: string, parent: IFileManager): boolean {
     parent.enablePaste = true;
     parent.notify(events.showPaste, {});
     while (i < parent.activeRecords.length) {
-        parent.actionRecords.push(parent.activeRecords[i]);
-        parent.selectedNodes.push(getValue('name', parent.activeRecords[i]));
+        parent.actionRecords.push(parent.activeRecords[i as number]);
+        parent.selectedNodes.push(getValue('name', parent.activeRecords[i as number]));
         i++;
     }
     if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) &&
@@ -186,7 +186,7 @@ export function activeElement(action: string, parent: IFileManager): boolean {
         parent.isSearchCut = true;
         let i: number = 0;
         while (i < parent.selectedItems.length) {
-            parent.selectedNodes.push(parent.selectedItems[i]);
+            parent.selectedNodes.push(parent.selectedItems[i as number]);
             i++;
         }
     }
@@ -216,7 +216,7 @@ export function removeBlur(parent?: IFileManager, hover?: string): void {
         parent.element.querySelectorAll('.' + CLS.HOVER);
     let i: number = 0;
     while (i < blurEle.length) {
-        blurEle[i].classList.remove((!hover) ? CLS.BLUR : CLS.HOVER);
+        blurEle[i as number].classList.remove((!hover) ? CLS.BLUR : CLS.HOVER);
         i++;
     }
 }
@@ -271,7 +271,7 @@ export function searchWordHandler(parent: IFileManager, value: string, isLayoutC
     } else {
         if (!parent.isFiltered) {
             if (parent.isSortByClicked) {
-                parent.notify(events.layoutChange, { files: (parent.oldView === 'Details') ? parent.detailsviewModule.gridObj.dataSource : parent.largeiconsviewModule.items });
+                parent.notify(events.layoutChange, { files: (parent.oldView === 'Details') ? parent.detailsviewModule.gridObj.dataSource : parent.largeiconsviewModule.allItems });
                 parent.isSortByClicked = false;
             } else {
                 read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
@@ -625,7 +625,7 @@ export function setNodeId(result: ReadArgs, rootId: string): void {
     // eslint-disable-next-line
     const dirs: Object[] = getDirectories(result.files);
     for (let i: number = 0, len: number = dirs.length; i < len; i++) {
-        setValue('_fm_id', rootId + '_' + i, dirs[i]);
+        setValue('_fm_id', rootId + '_' + i, dirs[i as number]);
     }
 }
 
@@ -639,8 +639,8 @@ export function setNodeId(result: ReadArgs, rootId: string): void {
 // eslint-disable-next-line
 export function setDateObject(args: Object[]): void {
     for (let i: number = 0; i < args.length; i++) {
-        setValue('_fm_created', new Date(getValue('dateCreated', args[i])), args[i]);
-        setValue('_fm_modified', new Date(getValue('dateModified', args[i])), args[i]);
+        setValue('_fm_created', new Date(getValue('dateCreated', args[i as number])), args[i as number]);
+        setValue('_fm_modified', new Date(getValue('dateModified', args[i as number])), args[i as number]);
     }
 }
 
@@ -750,7 +750,7 @@ export function setNextPath(parent: IFileManager, path: string): void {
     const key: string = isNOU(getValue('id', root)) ? 'name' : 'id';
     for (let i: number = currfolders.length - 1, len: number = folders.length - 1; i < len; i++) {
         const eventName: string = (folders[i + 1] === '') ? events.finalizeEnd : events.initialEnd;
-        const newPath: string = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
+        const newPath: string = (folders[i as number] === '') ? '/' : (parent.path + folders[i as number] + '/');
         // eslint-disable-next-line
         const data: Object = getObject(parent, key, folders[i]);
         const id: string = getValue('_fm_id', data);
@@ -828,8 +828,8 @@ export function pasteHandler(parent: IFileManager): void {
 export function validateSubFolder(parent: IFileManager, data: { [key: string]: Object; }[], dropPath: string, dragPath: string): boolean {
     let subFolder: boolean = false;
     for (let i: number = 0; i < data.length; i++) {
-        if (!getValue('isFile', data[i])) {
-            const tempTarget: string = getFullPath(parent, data[i], dragPath);
+        if (!getValue('isFile', data[i as number])) {
+            const tempTarget: string = getFullPath(parent, data[i as number], dragPath);
             if (dropPath.indexOf(tempTarget) === 0) {
                 const result: ReadArgs = {
                     files: null,
@@ -844,7 +844,7 @@ export function validateSubFolder(parent: IFileManager, data: { [key: string]: O
                 break;
             }
         } else {
-            const srcData: string = parent.dragNodes[i];
+            const srcData: string = parent.dragNodes[i as number];
             let len: number = 0;
             if (srcData) {
                 len = srcData.lastIndexOf('/');
@@ -904,7 +904,7 @@ export function getParentPath(oldPath: string): string {
     const path: string[] = oldPath.split('/');
     let newPath: string = path[0] + '/';
     for (let i: number = 1; i < path.length - 2; i++) {
-        newPath += path[i] + '/';
+        newPath += path[i as number] + '/';
     }
     return newPath;
 }
@@ -954,9 +954,9 @@ export function doPasteUpdate(parent: IFileManager, operation: string, result: R
     }
     const flag: boolean = false;
     for (let count: number = 0; (count < result.files.length) && !flag; count++) {
-        parent.pasteNodes.push(<string>result.files[count][parent.hasId ? 'id' : 'name']);
+        parent.pasteNodes.push(<string>result.files[count as number][parent.hasId ? 'id' : 'name']);
         if (parent.isDragDrop) {
-            parent.droppedObjects.push(result.files[count]);
+            parent.droppedObjects.push(result.files[count as number]);
         }
     }
     parent.duplicateItems = [];
@@ -1018,8 +1018,8 @@ export function getDuplicateData(parent: IFileManager, name: string): object {
     // eslint-disable-next-line
     const records: object[] = parent.isDragDrop ? parent.dragData : parent.actionRecords;
     for (let i: number = 0; i < records.length; i++) {
-        if (getValue('name', records[i]) === name) {
-            data = records[i];
+        if (getValue('name', records[i as number]) === name) {
+            data = records[i as number];
             break;
         }
     }
@@ -1040,7 +1040,7 @@ export function createVirtualDragElement(parent: IFileManager): void {
         parent.dragNodes = [];
         let i: number = 0;
         while (i < parent.selectedItems.length) {
-            parent.dragNodes.push(parent.selectedItems[i]);
+            parent.dragNodes.push(parent.selectedItems[i as number]);
             i++;
         }
         if (parent.selectedItems.length === 0 && parent.dragData && parent.dragData.length === 1) {
@@ -1139,7 +1139,7 @@ export function dragStartHandler(parent: IFileManager, args: DragEventArgs, drag
     } else if (!dragArgs.cancel) {
         let i: number = 0;
         while (i < parent.activeElements.length) {
-            addBlur(parent.activeElements[i]);
+            addBlur(parent.activeElements[i as number]);
             i++;
         }
         parent.trigger('fileDragStart', dragArgs, (dragArgs: FileDragEventArgs) => {
@@ -1189,7 +1189,7 @@ export function removeDropTarget(parent: IFileManager): void {
 export function removeItemClass(parent: IFileManager, value: string): void {
     const ele: NodeListOf<Element> = parent.element.querySelectorAll('.' + value);
     for (let i: number = 0; i < ele.length; i++) {
-        ele[i].classList.remove(value);
+        ele[i as number].classList.remove(value);
     }
 }
 
@@ -1256,8 +1256,8 @@ export function objectToString(data: Object): string {
     let str: string = '';
     const keys: string[] = Object.keys(data);
     for (let i: number = 0; i < keys.length; i++) {
-        if (keys[i] !== 'message') {
-            str += (i === 0 ? '' : ', ') + keys[i] + ': ' + getValue(keys[i], data);
+        if (keys[i as number] !== 'message') {
+            str += (i === 0 ? '' : ', ') + keys[i as number] + ': ' + getValue(keys[i as number], data);
         }
     }
     return str;
@@ -1322,8 +1322,8 @@ export function doDownload(parent: IFileManager): void {
     // eslint-disable-next-line
     const items: Object[] = parent.itemData;
     for (let i: number = 0; i < items.length; i++) {
-        if (!hasDownloadAccess(items[i])) {
-            createDeniedDialog(parent, items[i], events.permissionDownload);
+        if (!hasDownloadAccess(items[i as number])) {
+            createDeniedDialog(parent, items[i as number], events.permissionDownload);
             return;
         }
     }
@@ -1344,8 +1344,8 @@ export function doDownload(parent: IFileManager): void {
 // eslint-disable-next-line
 export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
     for (let i: number = 0; i < data.length; i++) {
-        if (!hasEditAccess(data[i])) {
-            createDeniedDialog(parent, data[i], events.permissionEdit);
+        if (!hasEditAccess(data[i as number])) {
+            createDeniedDialog(parent, data[i as number], events.permissionEdit);
             return;
         }
     }
@@ -1365,8 +1365,8 @@ export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: stri
 // eslint-disable-next-line
 export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
     for (let i: number = 0; i < data.length; i++) {
-        if (!hasDownloadAccess(data[i])) {
-            createDeniedDialog(parent, data[i], events.permissionDownload);
+        if (!hasDownloadAccess(data[i as number])) {
+            createDeniedDialog(parent, data[i as number], events.permissionDownload);
             return;
         }
     }

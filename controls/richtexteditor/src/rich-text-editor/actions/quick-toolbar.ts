@@ -475,7 +475,7 @@ export class QuickToolbar {
             this.inlineQTBar, this.imageQTBar, this.linkQTBar, this.textQTBar, this.tableQTBar
         ];
         for (let i: number = 0; i < baseQuickToolbarObj.length; i++) {
-            this.updateCss(baseQuickToolbarObj[i], e);
+            this.updateCss(baseQuickToolbarObj[i as number], e);
         }
     }
     private setRtl(args: { [key: string]: Object }): void {

@@ -156,7 +156,40 @@ export class WBorders implements IWidget {
         }
         return value;
     }
+    /**
+     * @private
+     */
+    public clearFormat(): void {
+        if (!isNullOrUndefined(this.leftIn)) {
+            this.leftIn.clearFormat();
+        }
+        if (!isNullOrUndefined(this.topIn)) {
+            this.topIn.clearFormat();
+        }
+        if (!isNullOrUndefined(this.bottomIn)) {
+            this.bottomIn.clearFormat();
+        }
+        if (!isNullOrUndefined(this.rightIn)) {
+            this.rightIn.clearFormat();
+        }
+        if (!isNullOrUndefined(this.horizontalIn)) {
+            this.horizontalIn.clearFormat();
+        }
+        if (!isNullOrUndefined(this.verticalIn)) {
+            this.verticalIn.clearFormat();
+        }
+        if (!isNullOrUndefined(this.diagonalDown)) {
+            this.diagonalDown.clearFormat();
+        }
+        if (!isNullOrUndefined(this.diagonalUp)) {
+            this.diagonalUp.clearFormat();
+        }
+    }
     /* eslint-enable */
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
     public destroy(): void {
         if (!isNullOrUndefined(this.leftIn)) {
             this.leftIn.destroy();
@@ -190,6 +223,7 @@ export class WBorders implements IWidget {
         this.verticalIn = undefined;
         this.diagonalDownIn = undefined;
         this.diagonalUpIn = undefined;
+        this.ownerBase = undefined;
     }
     public cloneFormat(): WBorders {
         const borders: WBorders = new WBorders(undefined);

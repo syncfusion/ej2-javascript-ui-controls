@@ -142,23 +142,23 @@ export class WorkbookFormula {
         case 'getFormulaCategory':
             collection = ['All'];
             for (let i: number = 1; i < Array.from(formulas.values()).length; i++) {
-                if (collection.indexOf(formulaInfo[i].category) < 0) {
-                    collection.push(formulaInfo[i].category);
+                if (collection.indexOf(formulaInfo[i as number].category) < 0) {
+                    collection.push(formulaInfo[i as number].category);
                 }
             }
             args.categoryCollection = collection; break;
         case 'dropDownSelectFormulas':
             for (let i: number = 0; i < Array.from(formulas.values()).length; i++) {
-                if (args.selectCategory === formulaInfo[i].category) {
-                    args.formulaCollection[i] = Array.from(formulas.keys())[i];
+                if (args.selectCategory === formulaInfo[i as number].category) {
+                    args.formulaCollection[i as number] = Array.from(formulas.keys())[i as number];
                 }
             }
             break;
         case 'getFormulaDescription':
             for (let i: number = 0; i < Array.from(formulas.values()).length; i++) {
-                if (args.selectedList === Array.from(formulas.keys())[i]) {
-                    args.description = formulaInfo[i].description;
-                    args.isCustom = formulaInfo[i].isCustom;
+                if (args.selectedList === Array.from(formulas.keys())[i as number]) {
+                    args.description = formulaInfo[i as number].description;
+                    args.isCustom = formulaInfo[i as number].isCustom;
                 }
             }
             break;
@@ -182,7 +182,7 @@ export class WorkbookFormula {
             }
             args.isFormulaDependent = this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value, <boolean>args.isFormula, <number>args.sheetIndex,
-                <boolean>args.isRefreshing);
+                <boolean>args.isRefreshing, <boolean>args.isDependentRefresh);
             args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
                 join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
             break;
@@ -209,8 +209,8 @@ export class WorkbookFormula {
             break;
         case 'deleteSheetTab':
             for (let i: number = 0; i < this.sheetInfo.length; i++) {
-                if (this.sheetInfo[i].index === <number>args.sheetId) {
-                    const sheetName: string = this.sheetInfo[i].sheet; this.sheetInfo.splice(i, 1);
+                if (this.sheetInfo[i as number].index === <number>args.sheetId) {
+                    const sheetName: string = this.sheetInfo[i as number].sheet; this.sheetInfo.splice(i, 1);
                     const id: string = args.sheetId.toString();
                     this.sheetDeletion(sheetName, id);
                     this.calculateInstance.unregisterGridAsSheet(id, id);
@@ -240,7 +240,7 @@ export class WorkbookFormula {
                 args.address = family.parentObjectToToken.get(args.sheetId) + args.address;
             }
             if (action === 'checkFormulaAdded') {
-                args.added = this.calculateInstance.getFormulaInfoTable().has(<string>args.address);                
+                args.added = this.calculateInstance.getFormulaInfoTable().has(<string>args.address);
             } else {
                 args.isAvailable = this.calculateInstance.getDependentCells().has(<string>args.address);
             }
@@ -254,7 +254,7 @@ export class WorkbookFormula {
         return this.sheetInfo;
     }
     private addCustomFunction(functionHandler: string | Function, functionName: string, formulaDescription: string): void {
-        this.calculateInstance.defineFunction(functionName, functionHandler,formulaDescription);
+        this.calculateInstance.defineFunction(functionName, functionHandler, formulaDescription);
     }
     private updateSheetInfo(): void {
         this.sheetInfo = [];
@@ -305,9 +305,10 @@ export class WorkbookFormula {
         let sheet: SheetModel; let cell: CellModel; const uPName: string = pName.toUpperCase();
         const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\\":<>~_-]', 'g');
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
-        const regx: RegExp = new RegExp(pName.replace(escapeRegx, '\\$&') + exp, 'gi');
+        const regExp: RegExpConstructor = RegExp;
+        const regx: RegExp = new regExp(pName.replace(escapeRegx, '\\$&') + exp, 'gi');
         this.sheetInfo.forEach((info: { visibleName: string }, index: number): void => {
-            sheet = this.parent.sheets[index];
+            sheet = getSheet(this.parent, index);
             for (let i: number = 0, rowLen: number = sheet.usedRange.rowIndex; i <= rowLen; i++) {
                 for (let j: number = 0, colLen: number = sheet.usedRange.colIndex; j <= colLen; j++) {
                     cell = getCell(i, j, sheet, false, true);
@@ -324,8 +325,8 @@ export class WorkbookFormula {
     private updateDataContainer(indexes: number[], data: { value: string, sheetId: number, visible?: boolean }): void {
         let sheet: SheetModel; let rowData: RowModel; let colObj: CellModel;
         for (let i: number = 0, len: number = this.parent.sheets.length; i < len; i++) {
-            if (this.parent.sheets[i].id === data.sheetId) {
-                sheet = this.parent.sheets[i];
+            sheet = getSheet(this.parent, i);
+            if (sheet.id === data.sheetId) {
                 if (indexes[0] in sheet.rows) {
                     rowData = sheet.rows[indexes[0]];
                     if (indexes[1] in rowData.cells) {
@@ -350,7 +351,7 @@ export class WorkbookFormula {
         }
     }
 
-    private parseSheetRef(value: string): string {
+    private parseSheetRef(value: string, addSheetQuotes?: boolean): string {
         let regx: RegExp;
         // eslint-disable-next-line no-useless-escape
         const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
@@ -361,19 +362,20 @@ export class WorkbookFormula {
         temp.length = 0;
         let regxTemp: RegExp; let searchIdx: number; let idx: number; let valSearchIdx: number; let regxVisible: RegExp;
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
+        const regExp: RegExpConstructor = RegExp;
         for (i = 0; i < sheetCount; i++) {
-            if (sheetInfo[i].sheet !== sheetInfo[i].visibleName) {
-                regx = new RegExp(sheetInfo[i].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+            if (sheetInfo[i as number].sheet !== sheetInfo[i as number].visibleName) {
+                regx = new regExp(sheetInfo[i as number].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
                 idx = i;
                 if (value.match(regx)) {
                     for (let j: number = i + 1; j < sheetCount; j++) {
-                        if (sheetInfo[j].visibleName.includes(sheetInfo[i].visibleName)) {
-                            regxTemp = new RegExp(sheetInfo[j].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                        if (sheetInfo[j as number].visibleName.includes(sheetInfo[i as number].visibleName)) {
+                            regxTemp = new regExp(sheetInfo[j as number].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
                             searchIdx = value.search(regxTemp); valSearchIdx = value.search(regx);
                             if (searchIdx > -1 && (searchIdx < valSearchIdx || (searchIdx === valSearchIdx &&
-                                sheetInfo[j].visibleName.length > sheetInfo[i].visibleName.length))) {
+                                sheetInfo[j as number].visibleName.length > sheetInfo[i as number].visibleName.length))) {
                                 regxVisible = new RegExp('Sheet', 'gi');
-                                if (sheetInfo[j].visibleName.search(regxVisible) !== 0) {
+                                if (sheetInfo[j as number].visibleName.search(regxVisible) !== 0) {
                                     regx = regxTemp; idx = j;
                                 }
                             }
@@ -385,9 +387,11 @@ export class WorkbookFormula {
             }
         }
         i = 0;
+        let sheetRef: string;
         while (i < temp.length) {
-            regx = new RegExp(temp[i] + '/' + exp, 'gi');
-            value = value.replace(regx, sheetInfo[temp[i]].sheet);
+            regx = new regExp(temp[i as number] + '/' + exp, 'gi');
+            sheetRef = addSheetQuotes ? '`' + sheetInfo[temp[i as number]].sheet + '`' : sheetInfo[temp[i as number]].sheet;
+            value = value.replace(regx, sheetRef);
             i++;
         }
         return value;
@@ -428,9 +432,9 @@ export class WorkbookFormula {
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = 0; i < this.calculateInstance.uniqueRange.length; i++) {
-            const uniqRngAddress: string[] = this.calculateInstance.uniqueRange[i].split(':')[0].split('!');
+            const uniqRngAddress: string[] = this.calculateInstance.uniqueRange[i as number].split(':')[0].split('!');
             if (uniqRngAddress[0] === sheet.name && uniqRngAddress[1] === sheet.activeCell ) {
-                const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i]);
+                const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i as number]);
                 this.calculateInstance.uniqueRange.splice(i, 1);
                 for (let j: number = range[0]; j <= range[2]; j++) {
                     for (let k: number = range[1]; k <= range[3]; k++) {
@@ -443,7 +447,7 @@ export class WorkbookFormula {
         }
     }
     private refreshCalculate(
-        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): boolean {
+        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean, isDependentRefresh?: boolean): boolean {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         let sheetId: string = sheet.id + '';
         const sheetName: string = sheet.name;
@@ -465,11 +469,11 @@ export class WorkbookFormula {
                 if (this.calculateInstance.randomValues.size > 1 && this.calculateInstance.randomValues.size ===
                     referenceCollection.length) {
                     for (let i: number = 0; i < this.calculateInstance.randomValues.size; i++) {
-                        rowId = this.calculateInstance.rowIndex(referenceCollection[i]);
-                        colId = this.calculateInstance.colIndex(referenceCollection[i]);
-                        refValue = this.calculateInstance.randomValues.get(referenceCollection[i]);
+                        rowId = this.calculateInstance.rowIndex(referenceCollection[i as number]);
+                        colId = this.calculateInstance.colIndex(referenceCollection[i as number]);
+                        refValue = this.calculateInstance.randomValues.get(referenceCollection[i as number]);
                         sheetId = (parseFloat(this.calculateInstance.getSheetToken(
-                            referenceCollection[i]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
+                            referenceCollection[i as number]).split(this.calculateInstance.sheetToken).join('')) + 1).toString();
                         const tempArgs: ValueChangedArgs = new ValueChangedArgs(rowId, colId, refValue);
                         this.calculateInstance.valueChanged(sheetId, tempArgs, true);
                     }
@@ -489,7 +493,7 @@ export class WorkbookFormula {
             updatedCell && updatedCell.value && updatedCell.value.startsWith('$')) {
             this.dollarFormulaDecimalHandler(updatedCell);
         }
-        if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0) {
+        if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0 && !isDependentRefresh) {
             const errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
             const val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
             if (isCellReference(val)) {
@@ -506,9 +510,9 @@ export class WorkbookFormula {
 
     private dollarFormulaDecimalHandler(updatedCell: CellModel) {
         const decimalCount: number = updatedCell.value.split('.')[1].length;
-        let decimalValue: string = "";
+        let decimalValue: string = '';
         for (let decimalIdx: number = 1; decimalIdx <= decimalCount; decimalIdx++) {
-            decimalValue += "0";
+            decimalValue += '0';
         }
         updatedCell.format = '$#,##.' + decimalValue;
     }
@@ -529,21 +533,21 @@ export class WorkbookFormula {
             if (lessEq) {
                 let lessOp: string = '';
                 for (let i: number = 0; i < lessEq.length; i++) {
-                    lessOp = lessOp + lessEq[i];
+                    lessOp = lessOp + lessEq[i as number];
                 }
                 formula = formula.replace(lessOp, '<');
             }
             if (greaterEq) {
                 let greaterOp: string = '';
                 for (let j: number = 0; j < greaterEq.length; j++) {
-                    greaterOp = greaterOp + greaterEq[j];
+                    greaterOp = greaterOp + greaterEq[j as number];
                 }
                 formula = formula.replace(greaterOp, '>');
             }
             if (equal) {
                 let equalOp: string = '';
                 for (let c: number = 0; c < equal.length; c++) {
-                    equalOp = equalOp + equal[c];
+                    equalOp = equalOp + equal[c as number];
                 }
                 formula = formula.split(equalOp).join('=');
             }
@@ -562,7 +566,7 @@ export class WorkbookFormula {
         let i: number = 0;
 
         while (i < definedNames.length) {
-            const definedname: DefineNameModel = definedNames[i];
+            const definedname: DefineNameModel = definedNames[i as number];
             const refersTo: string = this.parseSheetRef(definedname.refersTo);
             let range: string = getRangeFromAddress(refersTo);
             let cellRef: boolean = false;
@@ -708,7 +712,7 @@ export class WorkbookFormula {
         let calcValue: string; let i: number;
         const cellCol: string | string[] = this.calculateInstance.getCellCollection(range);
         for (i = 0; i < cellCol.length; i++) {
-            calcValue = this.calculateInstance.getValueFromArg(cellCol[i]);
+            calcValue = this.calculateInstance.getValueFromArg(cellCol[i as number]);
             if (isNumber(calcValue)) {
                 args.countOnly = false;
                 break;
@@ -723,7 +727,7 @@ export class WorkbookFormula {
         const index: number[] = getRangeIndexes(sheet.activeCell);
         const cell: CellModel = getCell(index[0], index[1], sheet, false, true);
         for (i = 0; i < 4; i++) {
-            calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i])(range));
+            calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i as number])(range));
             if (cell.format) {
                 const eventArgs: { [key: string]: string | number | boolean | CellModel } = { formattedText: calcValue, value: calcValue,
                     format: cell.format, cell: { value: calcValue, format: cell.format }, onLoad: true, skipRowFill: true };
@@ -748,10 +752,10 @@ export class WorkbookFormula {
                         if (index === sheetIndex) {
                             if (args.isInsert || !(args.modelType === 'Row' ? i >= args.startIndex && i <= args.endIndex :
                                 j >= args.startIndex && j <= args.endIndex)) {
-                                this.updateFormula(args, cell, i, j);
+                                this.updateFormula(args, cell, i, j, sheetIndex);
                             }
                         } else if (cell.formula.includes(args.sheet.name)) {
-                            this.updateFormula(args, cell, i, j, true, sheet);
+                            this.updateFormula(args, cell, i, j, sheetIndex, true, sheet);
                         }
                     }
                 }
@@ -763,11 +767,13 @@ export class WorkbookFormula {
         this.refreshNamedRange(args);
     }
 
-    private getUpdatedFormulaOnInsertDelete(args: { insertDeleteArgs: InsertDeleteEventArgs, cell: CellModel, row: number, col: number }): void {
-        this.updateFormula(args.insertDeleteArgs, args.cell, args.row, args.col);
+    private getUpdatedFormulaOnInsertDelete(
+        args: { insertDeleteArgs: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, sheetIdx: number }): void {
+        this.updateFormula(args.insertDeleteArgs, args.cell, args.row, args.col, args.sheetIdx);
     }
 
-    private updateFormula(args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, otherSheet?: boolean,
+    private updateFormula(
+        args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, sheetIdx: number, otherSheet?: boolean,
         formulaSheet?: SheetModel): void {
         let ref: string; let pVal: string; let index: number[]; let updated: boolean; let range: number[]; let isRangeFormula: boolean;
         if (cell.formula && cell.formula.includes('UNIQUE')) {
@@ -776,15 +782,19 @@ export class WorkbookFormula {
         const getAddress: () => string = (): string => {
             return index[0] === index[2] && index[1] === index[3] ? getCellAddress(index[0], index[1]) : getRangeAddress(index);
         };
-        const formulaArr: string[] = this.parseFormula(cell.formula, true);
+        const formulaArr: string[] = this.parseFormula(this.parseSheetRef(cell.formula, true), true);
+        const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
+        let sheetName: string; let refChanged: boolean;
         for (let i: number = 0; i < formulaArr.length; i++) {
-            ref = formulaArr[i].trim().replace(/[$]/g, '');
+            ref = formulaArr[i as number].trim().replace(/[$]/g, '');
             if (this.calculateInstance.isCellReference(ref)) {
                 isRangeFormula = ref.includes(':');
                 pVal = i && formulaArr[i - 1].trim();
                 if (pVal && pVal[pVal.length - 1] === '!') {
                     pVal = pVal.replace(/['!]/g, '');
-                    if (pVal !== args.sheet.name) {
+                    sheetName = sheetInfo[sheetIdx as number].sheet === sheetInfo[sheetIdx as number].visibleName ? args.sheet.name :
+                        '`' + sheetInfo[sheetIdx as number].sheet + '`';
+                    if (pVal !== sheetName) {
                         continue;
                     }
                 } else if (otherSheet) {
@@ -794,15 +804,25 @@ export class WorkbookFormula {
                 updated = this.parent.updateRangeOnInsertDelete(args, index, isRangeFormula);
                 range = getSwapRange(index);
                 if (updated) {
-                    formulaArr[i] = range[2] < range[0] || range[3] < range[1] ? this.calculateInstance.getErrorStrings()[CommonErrors.ref]
-                        : getAddress();
+                    formulaArr[i as number] = range[2] < range[0] || range[3] < range[1] ?
+                        this.calculateInstance.getErrorStrings()[CommonErrors.ref] : getAddress();
+                    refChanged = true;
                 }
             }
         }
-        const newFormula: string = '=' + formulaArr.join('');
-        if (cell.formula !== newFormula) {
-            cell.formula = newFormula;
-            cell.value = null;
+        let newFormula: string = '=' + formulaArr.join('');
+        if (refChanged) {
+            let regx: RegExp; const regExp: RegExpConstructor = RegExp;
+            sheetInfo.forEach((info: { visibleName: string, sheet: string }): void => {
+                if (newFormula.includes('`' + info.sheet + '`')) {
+                    regx = new regExp('`' + info.sheet + '`', 'gi');
+                    newFormula = newFormula.replace(regx, info.visibleName);
+                }
+            });
+            if (cell.formula !== newFormula) {
+                cell.formula = newFormula;
+                cell.value = null;
+            }
         }
     }
 
@@ -822,7 +842,7 @@ export class WorkbookFormula {
         const ranges: string[] = this.calculateInstance.uniqueRange;
         let uniqueAddr: string[]; let cell: CellModel; let sheet: SheetModel; let range: number[];
         for (let i: number = 0; i < ranges.length; i++) {
-            uniqueAddr = ranges[i].split('!');
+            uniqueAddr = ranges[i as number].split('!');
             sheet = getSheet(this.parent, getSheetIndex(this.parent, uniqueAddr[0]));
             range = getRangeIndexes(uniqueAddr[1]);
             cell = getCell(range[0], range[1], sheet);
@@ -851,7 +871,7 @@ export class WorkbookFormula {
             formulaVal.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
         const len: number = formulaVal.length;
         while (i < len) {
-            temp = formulaVal[i];
+            temp = formulaVal[i as number];
             if (!temp) {
                 i++;
                 continue;
@@ -948,7 +968,7 @@ export class WorkbookFormula {
         const definedNames: DefineNameModel[] = Object.assign({}, this.parent.definedNames);
         let range: number[]; let sheetName: string; let splitedRef: string[]; let definedName: DefineNameModel; let updated: boolean;
         for (let i: number = 0; i < len; i++) {
-            definedName = definedNames[i]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
+            definedName = definedNames[i as number]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
             if (sheetName !== args.sheet.name) { continue; }
             range = getRangeIndexes(splitedRef[1]);
             updated = this.parent.updateRangeOnInsertDelete(args, range);

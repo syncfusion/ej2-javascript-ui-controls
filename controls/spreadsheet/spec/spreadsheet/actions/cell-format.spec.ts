@@ -135,6 +135,19 @@ describe('Cell Format ->', () => {
             expect(helper.getInstance().sheets[0].rows[2].height).toBe(40);
             done();
         });
+
+        it('Apply Redo after applying Horizontal Border->', (done: Function) => {
+            helper.invoke('selectRange', ['D7']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Horizontal Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[6].cells[3].style.borderTop).toBe('1px solid #000000');
+            expect(helper.getInstance().sheets[0].rows[6].cells[3].style.borderBottom).toBe('1px solid #000000');
+            helper.click('#spreadsheet_undo');
+            helper.click('#spreadsheet_redo');
+            expect(helper.getInstance().sheets[0].rows[6].cells[3].style.borderTop).toBe('1px solid #000000');
+            expect(helper.getInstance().sheets[0].rows[6].cells[3].style.borderBottom).toBe('1px solid #000000');
+            done();
+        });
     });
 
     describe('Clear Method->', () => {

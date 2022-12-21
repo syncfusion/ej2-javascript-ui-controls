@@ -296,13 +296,13 @@ export class ContextMenu implements IAction {
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {
         const parent: string = 'parentObj';
-        if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
+        if (args.items.length > 0 && args.items[0][`${parent}`] instanceof Menu) {
             this.updateItemStatus();
         }
         this.parent.notify(events.selectRowOnContextOpen, { isOpen: false });
     }
     private getLocaleText(item: string): string {
-        return this.l10n.getConstant(this.localeText[item]);
+        return this.l10n.getConstant(this.localeText[`${item}`]);
     }
 
     private updateItemStatus(): void {
@@ -339,7 +339,7 @@ export class ContextMenu implements IAction {
             const showSepItems: string[] = [];
             for (const item of args.items) {
                 const key: string = this.getKeyFromId(item.id);
-                const dItem: ContextMenuItemModel = this.defaultItems[key];
+                const dItem: ContextMenuItemModel = this.defaultItems[`${key}`];
                 if (this.getDefaultItems().indexOf(key) !== -1) {
                     if (this.ensureDisabledStatus(key)) {
                         this.disableItems.push(item.text);
@@ -464,8 +464,8 @@ export class ContextMenu implements IAction {
             } else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
                 const sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
                 for (let i: number = 0; i < sortColumns.length; i++) {
-                    if (sortColumns[i].field === this.targetColumn.field
-                        && sortColumns[i].direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
+                    if (sortColumns[parseInt(i.toString(), 10)].field === this.targetColumn.field
+                        && sortColumns[parseInt(i.toString(), 10)].direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
                         status = true;
                     }
                 }
@@ -590,11 +590,11 @@ export class ContextMenu implements IAction {
             menuItem = { target: menuClass.pager, iconCss: menuClass.nPage };
             break;
         }
-        this.defaultItems[item] = {
+        this.defaultItems[`${item}`] = {
             text: this.getLocaleText(item), id: this.generateID(item),
             target: menuItem.target, iconCss: menuItem.iconCss ? 'e-icons ' + menuItem.iconCss : ''
         };
-        return this.defaultItems[item];
+        return this.defaultItems[`${item}`];
     }
 
     private getDefaultItems(): string[] {

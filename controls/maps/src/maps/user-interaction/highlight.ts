@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable max-len */
 import { Maps } from '../../index';
 import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight, shapeHighlight, IShapeSelectedEventArgs } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -75,31 +72,31 @@ export class Highlight {
             let dataIndex: number;
             if (targetEle.id.indexOf('shapeIndex') > -1) {
                 shapeIn = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                shapeData = this.maps.layers[layerIndex].shapeData['features'] &&
-                !isNullOrUndefined(this.maps.layersCollection[layerIndex].layerData[shapeIn]) ?
-                this.maps.layersCollection[layerIndex].layerData[shapeIn]['property'] : null;
+                shapeData = this.maps.layers[layerIndex as number].shapeData['features'] &&
+                !isNullOrUndefined(this.maps.layersCollection[layerIndex as number].layerData[shapeIn as number]) ?
+                    this.maps.layersCollection[layerIndex as number].layerData[shapeIn as number]['property'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
-                this.highlightSettings = this.maps.layers[layerIndex].highlightSettings;
+                data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex as number].dataSource[dataIndex as number];
+                this.highlightSettings = this.maps.layers[layerIndex as number].highlightSettings;
             } else if (targetEle.id.indexOf('BubbleIndex') > -1) {
                 const bubble: number = parseInt(targetEle.id.split('_BubbleIndex_')[1].split('_')[0], 10);
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                data = this.maps.layers[layerIndex].bubbleSettings[bubble].dataSource[dataIndex];
-                this.highlightSettings = this.maps.layers[layerIndex].bubbleSettings[bubble].highlightSettings;
+                data = this.maps.layers[layerIndex as number].bubbleSettings[bubble as number].dataSource[dataIndex as number];
+                this.highlightSettings = this.maps.layers[layerIndex as number].bubbleSettings[bubble as number].highlightSettings;
             } else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 const marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                data = this.maps.layers[layerIndex].markerSettings[marker].dataSource[dataIndex];
-                this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings;
+                data = this.maps.layers[layerIndex as number].markerSettings[marker as number].dataSource[dataIndex as number];
+                this.highlightSettings = this.maps.layers[layerIndex as number].markerSettings[marker as number].highlightSettings;
             } else {
                 const index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 shapeData = null;
                 data = {
-                    latitude: this.maps.layers[layerIndex].navigationLineSettings[index].latitude,
-                    longitude: this.maps.layers[layerIndex].navigationLineSettings[index].longitude
+                    latitude: this.maps.layers[layerIndex as number].navigationLineSettings[index as number].latitude,
+                    longitude: this.maps.layers[layerIndex as number].navigationLineSettings[index as number].longitude
                 };
-                this.highlightSettings = this.maps.layers[layerIndex].navigationLineSettings[index].highlightSettings;
+                this.highlightSettings = this.maps.layers[layerIndex as number].navigationLineSettings[index as number].highlightSettings;
             }
             if (this.highlightSettings.enable) {
                 this.handleHighlight(targetEle, layerIndex, data, shapeData);
@@ -111,8 +108,8 @@ export class Highlight {
                         const index: number = parseInt(element.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                         const layerIndex: number = parseInt(element.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         element.setAttribute(
-                            'stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                        element.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                            'stroke-width', this.maps.layers[layerIndex as number].navigationLineSettings[index as number].width.toString());
+                        element.setAttribute('stroke', this.maps.layers[layerIndex as number].navigationLineSettings[index as number].color);
                     }
                 }
             }
@@ -121,8 +118,8 @@ export class Highlight {
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
                 const index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex as number].navigationLineSettings[index as number].width.toString());
+                targetEle.setAttribute('stroke', this.maps.layers[layerIndex as number].navigationLineSettings[index as number].color);
             }
             removeClass(targetEle);
             if (this.maps.legendSettings.visible && this.maps.legendModule) {
@@ -162,11 +159,13 @@ export class Highlight {
         let isMarkerSelect: boolean = false;
         if (targetEle.id.indexOf('MarkerIndex') > -1) {
             const marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-            isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
+            isMarkerSelect = this.maps.layers[layerIndex as number].markerSettings[marker as number].highlightSettings.enable;
         }
         const borderColor: string = (targetEle.parentElement.id.indexOf('LineString') === -1) ? this.highlightSettings.border.color : (this.highlightSettings.fill || this.highlightSettings.border.color);
         const borderWidth: number = (targetEle.parentElement.id.indexOf('LineString') === -1) ? (this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)) : (this.highlightSettings.border.width / this.maps.scale);
-        const borderOpacity: number = isNullOrUndefined(this.highlightSettings.border.opacity) ? this.highlightSettings.opacity : this.highlightSettings.border.opacity;
+        const borderOpacity: number = isNullOrUndefined(this.highlightSettings.border.opacity) ? this.highlightSettings.opacity :
+            this.highlightSettings.border.opacity;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const eventArgs: any = {
             opacity: this.highlightSettings.opacity,
             fill: (targetEle.parentElement.id.indexOf('LineString') === -1) ? (targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
@@ -186,6 +185,7 @@ export class Highlight {
             maps: this.maps
         };
         if (targetEle.id.indexOf('shapeIndex') > -1) {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             this.maps.trigger(shapeHighlight, shapeEventArgs, () => { });
         }
         const itemEventArgs: ISelectionEventArgs = {
@@ -210,8 +210,6 @@ export class Highlight {
         });
     }
     private highlightMap(targetEle: Element, eventArgs: ISelectionEventArgs): void {
-        let parentElement: Element;
-        let children: HTMLCollection;
         if (targetEle.getAttribute('class') === 'highlightMapStyle' || eventArgs.cancel) {
             return;
         } else {
@@ -221,8 +219,8 @@ export class Highlight {
                 if (elem.id.indexOf('NavigationIndex') > -1) {
                     const index: number = parseInt(elem.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                     const layerIndex: number = parseInt(elem.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    elem.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    elem.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                    elem.setAttribute('stroke-width', this.maps.layers[layerIndex as number].navigationLineSettings[index as number].width.toString());
+                    elem.setAttribute('stroke', this.maps.layers[layerIndex as number].navigationLineSettings[index as number].color);
                 }
             }
             if (!getElement('highlightMap')) {

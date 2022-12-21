@@ -1,3 +1,5 @@
+/* eslint-disable curly */
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable jsdoc/require-param */
@@ -38,26 +40,26 @@ export class AccumulationLegend extends BaseLegend {
         this.addEventListener();
     }
     /**
-    * Binding events for legend module.
-    */
-     private addEventListener(): void {
+     * Binding events for legend module.
+     */
+    private addEventListener(): void {
         if (this.chart.isDestroyed) { return; }
         this.chart.on(Browser.touchMoveEvent, this.mouseMove, this);
         this.chart.on(Browser.touchEndEvent, this.mouseEnd, this);
         this.chart.on('click', this.click, this);
     }
     /**
-    * UnBinding events for legend module.
-    */
-     private removeEventListener(): void {
+     * UnBinding events for legend module.
+     */
+    private removeEventListener(): void {
         if (this.chart.isDestroyed) { return; }
         this.chart.off(Browser.touchMoveEvent, this.mouseMove);
         this.chart.off('click', this.click);
         this.chart.off(Browser.touchEndEvent, this.mouseEnd);
     }
     /**
-    * To handle mosue move for legend module
-    */
+     * To handle mosue move for legend module
+     */
     private mouseMove(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && !this.chart.isTouch) {
             if ((<AccumulationChart>this.chart).accumulationHighlightModule && (<AccumulationChart>this.chart).highlightMode !== 'None') {
@@ -66,8 +68,8 @@ export class AccumulationLegend extends BaseLegend {
         }
     }
     /**
-    * To handle mosue end for legend module
-    */
+     * To handle mosue end for legend module
+     */
     private mouseEnd(e: MouseEvent): void {
         if (this.chart.legendSettings.visible && this.chart.isTouch) {
             this.move(e);
@@ -84,16 +86,17 @@ export class AccumulationLegend extends BaseLegend {
         this.isRtlEnable = chart.enableRtl;
         this.isReverse = !this.isRtlEnable && chart.legendSettings.reverse;
         for (let i: number = 0; i < 1; i++) {
-            let seriesType: AccumulationType = series[i].type;
+            let seriesType: AccumulationType = series[i as number].type;
             if (seriesType === 'Pie' || seriesType === <AccumulationType>'Doughnut') {
-                seriesType = (series[i].innerRadius !== '0' && series[i].innerRadius !== '0%') ?
+                seriesType = (series[i as number].innerRadius !== '0' && series[i as number].innerRadius !== '0%') ?
                     <AccumulationType>'Doughnut' : 'Pie';
             }
-            for (const point of series[i].points) {
+            for (const point of series[i as number].points) {
                 if (!isNullOrUndefined(point.x) && !isNullOrUndefined(point.y)) {
                     this.legendCollections.push(new LegendOptions(
-                        point.x.toString(), point.color, series[i].legendShape, point.visible, seriesType, point.legendImageUrl, null, null,
-                        point.index, series[i].index
+                        point.x.toString(), point.color, series[i as number].legendShape, point.visible,
+                        seriesType, point.legendImageUrl, null, null,
+                        point.index, series[i as number].index
                     ));
                 }
             }
@@ -136,7 +139,7 @@ export class AccumulationLegend extends BaseLegend {
         let columnCount : number = 0;
         let rowCount: number = 0;
         const columnWidth: number[] = [];
-        let pageWidth : number[] = [];
+        const pageWidth : number[] = [];
         let pageRowWidth : number = 0;
         let previousRowCount : number = 0;
         let columnHeight: number = 0;
@@ -146,7 +149,7 @@ export class AccumulationLegend extends BaseLegend {
         let legendEventArgs: IAccLegendRenderEventArgs;
         let render: boolean = false;
         for (let i: number = 0; i < this.legendCollections.length; i++) {
-            legendOption = this.legendCollections[i];
+            legendOption = this.legendCollections[i as number];
             legendEventArgs = { fill: legendOption.fill, text : legendOption.text, shape : legendOption.shape,
                 name: 'legendRender', cancel: false };
             this.chart.trigger('legendRender', legendEventArgs);
@@ -158,37 +161,40 @@ export class AccumulationLegend extends BaseLegend {
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
             if (legendOption.render && legendOption.text !== '') {
                 render = true;
-                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth : legendOption.textSize.width) + (!this.isVertical ? (i==0) ? padding : this.itemPadding : padding);
+                legendWidth = shapeWidth + shapePadding + (legend.maximumLabelWidth ? legend.maximumLabelWidth :
+                    legendOption.textSize.width) + (!this.isVertical ? (i === 0) ? padding : this.itemPadding : padding);
                 this.getLegendHeight(legendOption, legend, legendBounds, rowWidth, this.maxItemHeight, padding);
-                if (this.isVertical) {                
-                    columnHeight += legendOption.textSize.height + ((i==0) ? padding : this.itemPadding);
+                if (this.isVertical) {
+                    columnHeight += legendOption.textSize.height + ((i === 0) ? padding : this.itemPadding);
                     if (columnHeight + this.itemPadding + arrowHeight > (legendBounds.height)) {
                         //columnHeight = Math.max(columnHeight, (rowCount * (this.maxItemHeight + padding)) + padding + arrowHeight);
                         rowWidth = rowWidth + maximumWidth;
                         pageRowWidth = this.getPageWidth(pageWidth);
-						this.totalPages = Math.max(rowCount, this.totalPages || 1);
-                        if  ((rowWidth - pageRowWidth + legendWidth) > legendBounds.width) {    
+                        this.totalPages = Math.max(rowCount, this.totalPages || 1);
+                        if  ((rowWidth - pageRowWidth + legendWidth) > legendBounds.width) {
                             pageWidth.push(rowWidth - pageRowWidth);
-                            rowCount =  this.rowHeights.length; 
+                            rowCount =  this.rowHeights.length;
                             previousRowCount = rowCount;
                         }
                         else {
                             rowCount = previousRowCount;
                         }
-                        columnWidth.push(maximumWidth);                        
-                        maximumWidth = 0; 
-                        columnHeight = legendOption.textSize.height + padding;legendOption.textSize.height + padding;        
-                        columnCount++;                                                
+                        columnWidth.push(maximumWidth);
+                        maximumWidth = 0;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                        columnHeight = legendOption.textSize.height + padding; legendOption.textSize.height + padding;
+                        columnCount++;
                     }
-                    this.columnHeights[columnCount] = (this.columnHeights[columnCount] ? this.columnHeights[columnCount] : 0) + legendOption.textSize.height + ((i==0) ? padding : this.itemPadding);
+                    this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ?
+                        this.columnHeights[columnCount as number] : 0) + legendOption.textSize.height + ((i === 0) ? padding : this.itemPadding);
                     maximumWidth = Math.max(legendWidth, maximumWidth);
-                    this.rowHeights[rowCount]= Math.max((this.rowHeights[rowCount] ? this.rowHeights[rowCount] :0), legendOption.textSize.height);
+                    this.rowHeights[rowCount as number] = Math.max((this.rowHeights[rowCount as number] ? this.rowHeights[rowCount as number] : 0), legendOption.textSize.height);
                     rowCount++;
                 } else {
                     if (!legend.enablePages) { // For new legend navigation support
                         titlePlusArrowSpace = this.isTitle && titlePosition !== 'Top' ? this.legendTitleSize.width + this.fivePixel : 0;
                         titlePlusArrowSpace += arrowWidth;
-                    }                    
+                    }
                     rowWidth = rowWidth + legendWidth;
                     if (legendBounds.width < (padding + rowWidth + titlePlusArrowSpace)) {
                         maximumWidth = Math.max(maximumWidth, (rowWidth + padding + titlePlusArrowSpace - legendWidth));
@@ -197,14 +203,16 @@ export class AccumulationLegend extends BaseLegend {
                         }
                         rowWidth = legendWidth;
                         rowCount++;
-                        columnCount  = 0;                      
-                      //  columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + this.legendTitleSize.height;
+                        columnCount  = 0;
+                    //  columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding + this.legendTitleSize.height;
                     }
-                    const len = rowCount ? (rowCount -1) : rowCount;
-                    this.rowHeights[len]= Math.max((this.rowHeights[len] ? this.rowHeights[len] :0), legendOption.textSize.height);
-                    this.columnHeights[columnCount] = (this.columnHeights[columnCount] ? this.columnHeights[columnCount] : 0) + legendOption.textSize.height + padding;
-                    columnCount++;   
-                }  
+                    const len: number = rowCount ? (rowCount - 1) : rowCount;
+                    this.rowHeights[len as number] = Math.max((this.rowHeights[len as number] ? this.rowHeights[len as number] : 0),
+                                                              legendOption.textSize.height);
+                    this.columnHeights[columnCount as number] = (this.columnHeights[columnCount as number] ? this.columnHeights[columnCount as number] : 0) +
+                        legendOption.textSize.height + padding;
+                    columnCount++;
+                }
             }
         }
         titleHeight = titlePosition === 'Top' ? this.legendTitleSize.height : 0;
@@ -215,11 +223,10 @@ export class AccumulationLegend extends BaseLegend {
             columnHeight = Math.max(columnHeight, ((this.totalPages || 1) * (this.maxItemHeight + padding)) + padding + arrowHeight);
             this.isPaging = this.isPaging && (this.totalPages > 1);
             columnWidth.push(maximumWidth);
-            
-        } else {          
+        } else {
             this.totalPages = this.totalRowCount = rowCount;
             columnHeight = Math.max.apply(null, this.columnHeights) +  padding + arrowHeight + titleHeight;
-            this.isPaging = legendBounds.height < columnHeight;           
+            this.isPaging = legendBounds.height < columnHeight;
             columnHeight = !legend.enablePages && this.isPaging ? (this.maxItemHeight + padding) + padding + titleHeight : columnHeight;
             columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding + titleHeight);
             if (!this.isPaging) { // For title left and right position
@@ -237,32 +244,33 @@ export class AccumulationLegend extends BaseLegend {
     }
 
     private getPageWidth(pageWidth : number[]) : number {
-        let sum : number =0;
+        let sum : number = 0;
         for (let i: number = 0; i < pageWidth.length; i++) {
-            sum += pageWidth[i];
+            sum += pageWidth[i as number];
         }
         return sum;
     }
 
-     /** @private */
-     public getLegendHeight(option: LegendOptions, legend: LegendSettingsModel, bounds: Rect, rowWidth: number, legendHeight : number, padding : number)  {
-      
-        let legendWidth: number = option.textSize.width; 
-        const textPadding: number = legend.shapePadding + (padding * 2) + legend.shapeWidth;      
-        switch(legend.textWrap) {
-            case 'Wrap':
-            case 'AnyWhere':
-                if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > bounds.width) {
-                    option.textCollection = textWrap(
-                        option.text,
-                        (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (bounds.width - textPadding)) : (bounds.width - textPadding)), legend.textStyle
-                );                
-               } else {
+    /** @private */
+    public getLegendHeight(option: LegendOptions, legend: LegendSettingsModel, bounds: Rect, rowWidth: number,
+                           legendHeight: number, padding: number): void {
+        const legendWidth: number = option.textSize.width;
+        const textPadding: number = legend.shapePadding + (padding * 2) + legend.shapeWidth;
+        switch (legend.textWrap) {
+        case 'Wrap':
+        case 'AnyWhere':
+            if (legendWidth > legend.maximumLabelWidth || legendWidth + rowWidth > bounds.width) {
+                option.textCollection = textWrap(
+                    option.text,
+                    (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (bounds.width - textPadding)) :
+                        (bounds.width - textPadding)), legend.textStyle
+                );
+            } else {
                 option.textCollection.push(option.text);
-               }
-               option.textSize.height = (legendHeight * option.textCollection.length);              
-              break;
-            }            
+            }
+            option.textSize.height = (legendHeight * option.textCollection.length);
+            break;
+        }
     }
     /**
      * To find html entities value for legend
@@ -299,20 +307,21 @@ export class AccumulationLegend extends BaseLegend {
         this.maxColumns = Math.max(1, this.maxColumns);
         this.maxWidth = maxPageColumn;
         let columnWidth : number = this.maxColumnWidth + padding;
-        let prevPage :number = 0;
-        let columnCount : number = this.columnHeights.length
+        let prevPage : number = 0;
+        const columnCount: number = this.columnHeights.length;
         if (this.isPaging && this.isVertical) {
-        for (let i: number = 1; i < columnCount; i++) {
-            columnWidth += (this.maxColumnWidth + padding);
-            if (columnWidth > width) {
-                this.pageHeights.push(((prevPage != i - 1) ? Math.max.apply(null, this.columnHeights.slice(prevPage, i - 1)) : this.columnHeights[prevPage]));
-                columnWidth = this.maxColumnWidth + padding;
-                prevPage = i;
+            for (let i: number = 1; i < columnCount; i++) {
+                columnWidth += (this.maxColumnWidth + padding);
+                if (columnWidth > width) {
+                    this.pageHeights.push(((prevPage !== i - 1) ? Math.max.apply(null, this.columnHeights.slice(prevPage, i - 1)) :
+                        this.columnHeights[prevPage as number]));
+                    columnWidth = this.maxColumnWidth + padding;
+                    prevPage = i;
+                }
             }
+            this.pageHeights.push(((prevPage !== columnCount - 1) ? Math.max.apply(null, this.columnHeights.slice(prevPage, columnCount - 1)) : this.columnHeights[prevPage as number]));
+            this.totalPages = this.pageHeights.length;
         }
-        this.pageHeights.push(((prevPage != columnCount - 1) ? Math.max.apply(null, this.columnHeights.slice(prevPage, columnCount - 1)) : this.columnHeights[prevPage]));
-        this.totalPages = this.pageHeights.length;
-    }
         return maxPageColumn;
     }
     /**
@@ -334,10 +343,12 @@ export class AccumulationLegend extends BaseLegend {
     public getRenderPoint(legendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
                           rect: Rect, count: number, firstLegend: number): void {
         const padding: number = this.legend.padding;
-        const previousLocation = prevLegend.location.y + this.maxItemHeight / 4 + (prevLegend.textCollection.length > 0 ? ((prevLegend.textCollection.length - 1) * this.maxItemHeight) : 0);
+        const previousLocation: number = prevLegend.location.y + this.maxItemHeight / 4 + (prevLegend.textCollection.length > 0 ?
+            ((prevLegend.textCollection.length - 1) * this.maxItemHeight) : 0);
         if (this.isVertical) {
             if (count === firstLegend || (previousLocation + legendOption.textSize.height + padding > (rect.y + rect.height))) {
-                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : (!this.isRtlEnable) ? this.maxColumnWidth : -this.maxColumnWidth);
+                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : (!this.isRtlEnable) ?
+                    this.maxColumnWidth : -this.maxColumnWidth);
                 legendOption.location.y = start.y;
                 const textStartLoc: number = (this.legend.shapeWidth / 2) + padding;
                 this.pageXCollections.push(legendOption.location.x + ((!this.isRtlEnable) ? -textStartLoc : textStartLoc));
@@ -346,11 +357,13 @@ export class AccumulationLegend extends BaseLegend {
                 legendOption.location.y = prevLegend.location.y +  prevLegend.textSize.height + this.itemPadding;
             }
         } else {
-            const textWidth = textPadding + (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : prevLegend.textSize.width);
+            const textWidth: number = textPadding + (this.legend.maximumLabelWidth ?
+                this.legend.maximumLabelWidth : prevLegend.textSize.width);
             const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
-            if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : legendOption.textSize.width) + textPadding - this.itemPadding, rect, this.legend.shapeWidth / 2)) {
+            if (this.isWithinBounds(previousBound, (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth :
+                legendOption.textSize.width) + textPadding - this.itemPadding, rect, this.legend.shapeWidth / 2)) {
                 if (count !== firstLegend)
-                  this.chartRowCount++;
+                    this.chartRowCount++;
                 legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
                     prevLegend.location.y + this.rowHeights[(this.chartRowCount - 2)] + padding;
                 legendOption.location.x = start.x;
@@ -359,15 +372,15 @@ export class AccumulationLegend extends BaseLegend {
                 legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             }
         }
-         
         let availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
-        availablewidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availablewidth) :availablewidth;
-        if (this.legend.textOverflow == "Ellipsis" && this.legend.textWrap == "Normal") {           
+        availablewidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availablewidth) : availablewidth;
+        if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
             legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
-         }       
+        }
     }
 
-     /**
+    // eslint-disable-next-line jsdoc/require-returns
+    /**
      * check whether legend group within legend bounds or not.
      *
      */
@@ -444,7 +457,7 @@ export class AccumulationLegend extends BaseLegend {
      * @returns {void}
      */
     public click(event: Event): void {
-        const targetId: string = (<HTMLElement>event.target).id.indexOf("_chart_legend_g_") > -1 ?
+        const targetId: string = (<HTMLElement>event.target).id.indexOf('_chart_legend_g_') > -1 ?
             (event.target as HTMLElement).firstChild['id'] : (<HTMLElement>event.target).id;
         const chart: AccumulationChart = this.chart as AccumulationChart;
         const legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_', this.legendID + '_shape_marker_'];
@@ -459,23 +472,24 @@ export class AccumulationLegend extends BaseLegend {
                     const currentSeries: AccumulationSeries = (<AccumulationChart>this.chart).visibleSeries[0];
                     const point: AccPoints = pointByIndex(pointIndex, currentSeries.points);
                     const legendOption: LegendOptions = this.legendByIndex(pointIndex, this.legendCollections);
-                        const legendClickArgs: IAccLegendClickEventArgs = {
-                            legendText: legendOption.text, legendShape: legendOption.shape,
-                            chart: chart.isBlazor ? {} as AccumulationChart : chart , series: currentSeries, point: point, name: legendClick, cancel: false
-                        };
-                        this.chart.trigger(legendClick, legendClickArgs);
-                        if (!legendClickArgs.cancel) {
-                            point.visible = !point.visible;
-                            legendOption.visible = point.visible;
-                            currentSeries.sumOfPoints += point.visible ? point.y : -point.y;
-                            chart.redraw = chart.enableAnimation;
-                            this.sliceVisibility(pointIndex, point.visible);
-                            chart.removeSvg();
-                            //To remove the blazor templates
-                            blazorTemplatesReset(chart);
-                            (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
-                            (<AccumulationChart>this.chart).renderElements();
-                        }
+                    const legendClickArgs: IAccLegendClickEventArgs = {
+                        legendText: legendOption.text, legendShape: legendOption.shape,
+                        chart: chart.isBlazor ? {} as AccumulationChart : chart, series: currentSeries, point: point,
+                        name: legendClick, cancel: false
+                    };
+                    this.chart.trigger(legendClick, legendClickArgs);
+                    if (!legendClickArgs.cancel) {
+                        point.visible = !point.visible;
+                        legendOption.visible = point.visible;
+                        currentSeries.sumOfPoints += point.visible ? point.y : -point.y;
+                        chart.redraw = chart.enableAnimation;
+                        this.sliceVisibility(pointIndex, point.visible);
+                        chart.removeSvg();
+                        //To remove the blazor templates
+                        blazorTemplatesReset(chart);
+                        (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
+                        (<AccumulationChart>this.chart).renderElements();
+                    }
                 } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {
                     (<AccumulationChart>this.chart).accumulationSelectionModule.legendSelection(
                         <AccumulationChart>this.chart, 0, pointIndex, event.target as Element, event.type);

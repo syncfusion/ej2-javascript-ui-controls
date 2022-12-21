@@ -1,6 +1,6 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction } from '../index';
 import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
-import { editHyperlink, openHyperlink, editAlert, removeHyperlink, } from '../common/index';
+import { editHyperlink, openHyperlink, editAlert, removeHyperlink, isImported } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
@@ -156,8 +156,8 @@ export class SpreadsheetHyperlink {
     private dlgClickHandler(displayText: string): void {
         let value: string;
         let address: string;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let cellAddress: string = sheet.name + '!' + sheet.selectedRange;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const cellAddress: string = sheet.name + '!' + sheet.selectedRange;
         const item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
             getElementsByClassName('e-content')[0].querySelector('.e-item.e-active') as HTMLElement;
         if (item) {
@@ -186,9 +186,9 @@ export class SpreadsheetHyperlink {
                 } else if (dlgContent.querySelector('.e-active')) {
                     const definedName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
                     for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
-                        if (this.parent.definedNames[idx].name === definedName) {
+                        if (this.parent.definedNames[idx as number].name === definedName) {
                             const args: HyperlinkModel = {
-                                address: this.parent.definedNames[idx].name
+                                address: this.parent.definedNames[idx as number].name
                             };
                             this.parent.insertHyperlink(
                                 args, cellAddress, value, false);
@@ -264,10 +264,9 @@ export class SpreadsheetHyperlink {
 
     private hlOpenHandler(trgt: HTMLElement): void {
         if (trgt.classList.contains('e-hyperlink')) {
-            let cellEle: HTMLElement = closest(trgt, '.e-cell') as HTMLElement;
+            const cellEle: HTMLElement = closest(trgt, '.e-cell') as HTMLElement;
             if (!cellEle) {
                 return;
-                
             }
             let range: string[] = ['', ''];
             let rangeIndexes: number[];
@@ -294,8 +293,8 @@ export class SpreadsheetHyperlink {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
                         for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
-                            if (this.parent.definedNames[idx].name === address) {
-                                address = this.parent.definedNames[idx].refersTo;
+                            if (this.parent.definedNames[idx as number].name === address) {
+                                address = this.parent.definedNames[idx as number].refersTo;
                                 address = address.slice(1);
                                 break;
                             }
@@ -313,11 +312,11 @@ export class SpreadsheetHyperlink {
                     // selRange = range[1];
                     let sheetIdx: number;
                     for (let idx: number = 0; idx < this.parent.sheets.length; idx++) {
-                        if (this.parent.sheets[idx].name === range[0]) {
+                        if (this.parent.sheets[idx as number].name === range[0]) {
                             sheetIdx = idx;
                         }
                     }
-                    sheet = this.parent.sheets[sheetIdx];
+                    sheet = this.parent.sheets[sheetIdx as number];
                     if (range[1].indexOf(':') !== -1) {
                         const colIndex: number = range[1].indexOf(':');
                         let left: string = range[1].substr(0, colIndex);
@@ -340,7 +339,7 @@ export class SpreadsheetHyperlink {
                     const definedname: DefineNameModel[] = this.parent.definedNames;
                     if (!isNullOrUndefined(definedname)) {
                         for (let idx: number = 0; idx < definedname.length; idx++) {
-                            if (definedname[idx].name === definedNameCheck) {
+                            if (definedname[idx as number].name === definedNameCheck) {
                                 isDefinedNamed = true;
                                 break;
                             }
@@ -363,7 +362,8 @@ export class SpreadsheetHyperlink {
                                     const addArr: string[] = rangeAddr.split(':');
                                     rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
                                 }
-                                getUpdateUsingRaf((): void => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
+                                getUpdateUsingRaf(
+                                    (): void => { this.parent.goTo(this.parent.sheets[sheetIdx as number].name + '!' + rangeAddr); });
                             }
                         }
                     } else {
@@ -372,6 +372,7 @@ export class SpreadsheetHyperlink {
                 }
             } else {
                 if (this.isValidUrl(address)) {
+                    // eslint-disable-next-line security/detect-non-literal-fs-filename
                     window.open(address, befArgs.target);
                 } else {
                     this.showInvalidHyperlinkDialog();
@@ -382,7 +383,7 @@ export class SpreadsheetHyperlink {
     }
 
     private isValidUrl(url: string): boolean {
-        // eslint-disable-next-line no-useless-escape
+        // eslint-disable-next-line no-useless-escape, security/detect-unsafe-regex
         return /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(url);
     }
 
@@ -547,12 +548,12 @@ export class SpreadsheetHyperlink {
         const definedNames: DefineNameModel[] = this.parent.definedNames;
         const sheets: SheetModel[] = this.parent.sheets;
         for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
-            if (definedNames[idx].name === address) {
+            if (definedNames[idx as number].name === address) {
                 definedNamesCount++;
             }
         }
         for (let idx: number = 0, len: number = sheets.length; idx < len; idx++) {
-            if (address.includes(sheets[idx].name)) {
+            if (address.includes(sheets[idx as number].name)) {
                 rangeCount++;
             }
         }
@@ -578,7 +579,7 @@ export class SpreadsheetHyperlink {
             // let sheetIdx: number;
             if (this.parent.definedNames) {
                 for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
-                    if (this.parent.definedNames[idx].name === address) {
+                    if (this.parent.definedNames[idx as number].name === address) {
                         isDefinedNamed = true;
                         break;
                     }
@@ -592,8 +593,8 @@ export class SpreadsheetHyperlink {
                 const treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
                 const listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[1] as HTMLElement;
                 for (let idx: number = 0; idx < listEle.getElementsByTagName('li').length; idx++) {
-                    if ((listEle.getElementsByTagName('li')[idx] as HTMLElement).innerText === address) {
-                        listEle.getElementsByTagName('li')[idx].classList.add('e-active');
+                    if ((listEle.getElementsByTagName('li')[idx as number] as HTMLElement).innerText === address) {
+                        listEle.getElementsByTagName('li')[idx as number].classList.add('e-active');
                     }
                 }
             } else {
@@ -607,16 +608,16 @@ export class SpreadsheetHyperlink {
                 const treeCont: HTMLElement = docContElem.getElementsByClassName('e-cont')[2] as HTMLElement;
                 const listEle: HTMLElement = treeCont.querySelectorAll('.e-list-item.e-level-1')[0] as HTMLElement;
                 for (let idx: number = 0; idx < listEle.getElementsByTagName('li').length; idx++) {
-                    if ((listEle.getElementsByTagName('li')[idx] as HTMLElement).innerText === sheetName) {
-                        if (listEle.getElementsByTagName('li')[idx].classList.contains('e-active')) {
+                    if ((listEle.getElementsByTagName('li')[idx as number] as HTMLElement).innerText === sheetName) {
+                        if (listEle.getElementsByTagName('li')[idx as number].classList.contains('e-active')) {
                             break;
                         } else {
-                            listEle.getElementsByTagName('li')[idx].classList.add('e-active');
+                            listEle.getElementsByTagName('li')[idx as number].classList.add('e-active');
                         }
 
                     } else {
-                        if (listEle.getElementsByTagName('li')[idx].classList.contains('e-active')) {
-                            listEle.getElementsByTagName('li')[idx].classList.remove('e-active');
+                        if (listEle.getElementsByTagName('li')[idx as number].classList.contains('e-active')) {
+                            listEle.getElementsByTagName('li')[idx as number].classList.remove('e-active');
                         }
                     }
                 }
@@ -664,12 +665,12 @@ export class SpreadsheetHyperlink {
                 const definedNames: DefineNameModel[] = this.parent.definedNames;
                 const sheets: SheetModel[] = this.parent.sheets;
                 for (let idx: number = 0, len: number = sheets.length; idx < len; idx++) {
-                    if (address.includes(sheets[idx].name)) {
+                    if (address.includes(sheets[idx as number].name)) {
                         rangeCnt++;
                     }
                 }
                 for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
-                    if (definedNames[idx].name === address) {
+                    if (definedNames[idx as number].name === address) {
                         defNamesCnt++;
                     }
                 }
@@ -685,7 +686,7 @@ export class SpreadsheetHyperlink {
 
             if (this.parent.definedNames) {
                 for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
-                    if (this.parent.definedNames[idx].name === address) {
+                    if (this.parent.definedNames[idx as number].name === address) {
                         isDefinedName = true;
                         isCellRef = false;
                         break;
@@ -741,9 +742,9 @@ export class SpreadsheetHyperlink {
         const definedName: object[] = [];
         const sheets: SheetModel[] = this.parent.sheets;
         for (idx; idx < this.parent.sheets.length; idx++) {
-            const sheetName: string = this.parent.sheets[idx].name;
-            if (this.parent.sheets[idx].state === 'Visible') {
-                if (sheets[idx] === this.parent.getActiveSheet()) {
+            const sheetName: string = this.parent.sheets[idx as number].name;
+            if (this.parent.sheets[idx as number].state === 'Visible') {
+                if (sheets[idx as number] === this.parent.getActiveSheet()) {
                     cellRef.push({
                         nodeId: 'sheet',
                         nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName,
@@ -760,7 +761,7 @@ export class SpreadsheetHyperlink {
         for (idx = 0; idx < this.parent.definedNames.length; idx++) {
             definedName.push({
                 nodeId: 'defName',
-                nodeText: this.parent.definedNames[idx].name
+                nodeText: this.parent.definedNames[idx as number].name
             });
         }
         const data: { [key: string]: Object }[] = [
@@ -833,7 +834,8 @@ export class SpreadsheetHyperlink {
                 if (cell.style) { this.parent.notify(refreshRibbonIcons, null); }
                 if (!args.preventRefresh) {
                     this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                        [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]);
+                        [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], false, false, false, false,
+                        isImported(this.parent));
                 }
             }
         }
@@ -855,28 +857,29 @@ export class SpreadsheetHyperlink {
             rangeArr = range.split('!');
             const sheets: SheetModel[] = this.parent.sheets;
             for (let idx: number = 0; idx < sheets.length; idx++) {
-                if (sheets[idx].name === rangeArr[0]) {
+                if (sheets[idx as number].name === rangeArr[0]) {
                     sheetIdx = idx;
                 }
             }
-            sheet = this.parent.sheets[sheetIdx];
+            sheet = this.parent.sheets[sheetIdx as number];
             range = rangeArr[1];
         }
         const rangeIndexes: number[] = range ? getRangeIndexes(range) : getRangeIndexes(sheet.activeCell);
         let cellEle: HTMLElement; let classList: string[];
         for (let rowIdx: number = rangeIndexes[0]; rowIdx <= rangeIndexes[2]; rowIdx++) {
             for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
-                if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
+                if (sheet && sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].cells[colIdx as number]) {
                     classList = [];
-                    if (cellEle = this.parent.getCell(rowIdx, colIdx)) {
+                    cellEle = this.parent.getCell(rowIdx, colIdx);
+                    if (cellEle) {
                         for (let i: number = 0; i < cellEle.classList.length; i++) {
-                            classList.push(cellEle.classList[i]);
+                            classList.push(cellEle.classList[i as number]);
                         }
                     }
                     this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: rowIdx, colIdx: colIdx });
                     for (let i: number = 0; i < classList.length; i++) {
-                        if (!cellEle.classList.contains(classList[i])) {
-                            cellEle.classList.add(classList[i]);
+                        if (!cellEle.classList.contains(classList[i as number])) {
+                            cellEle.classList.add(classList[i as number]);
                         }
                     }
                 }

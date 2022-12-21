@@ -50,31 +50,31 @@ export class Logger extends GridLogger {
         if (!(types instanceof Array)) { types = [types]; }
         const type: string[] = (<string[]>types);
         for (let i: number = 0; i < type.length; i++) {
-            const item: ItemDetails = detailLists[type[i]];
+            const item: ItemDetails = detailLists[type[parseInt(i.toString(), 10)]];
             const cOp: CheckOptions = item.check(args, this.parent);
             if (cOp.success) {
                 let message: string = item.generateMessage(args, this.parent, cOp.options);
                 message =  message.replace('EJ2Grid', 'EJ2TreeGrid').replace('* Hierarchy Grid', '').replace('* Grouping', '');
-                if (IsRowDDEnabled && type[i] === 'primary_column_missing') {
+                if (IsRowDDEnabled && type[parseInt(i.toString(), 10)] === 'primary_column_missing') {
                     message = message.replace('Editing', 'Row DragAndDrop');
                     IsRowDDEnabled = false;
                 }
                 const index: number = message.indexOf('https');
                 const gridurl: string = message.substring(index);
-                if (type[i] === 'module_missing') {
+                if (type[parseInt(i.toString(), 10)] === 'module_missing') {
                     message = message.replace(gridurl, DOC_URL + '/modules');
-                } else if (type[i] === 'primary_column_missing' || type[i] === 'selection_key_missing') {
+                } else if (type[parseInt(i.toString(), 10)] === 'primary_column_missing' || type[parseInt(i.toString(), 10)] === 'selection_key_missing') {
                     message = message.replace(gridurl, BASE_DOC_URL + '/api/treegrid/column/#isprimarykey');
-                } else if (type[i] === 'grid_remote_edit') {
+                } else if (type[parseInt(i.toString(), 10)] === 'grid_remote_edit') {
                     message = message.replace(gridurl, DOC_URL + '/edit');
-                } else if (type[i] === 'virtual_height') {
+                } else if (type[parseInt(i.toString(), 10)] === 'virtual_height') {
                     message = message.replace(gridurl, DOC_URL + '/virtual');
-                } else if (type[i] === 'check_datasource_columns') {
+                } else if (type[parseInt(i.toString(), 10)] === 'check_datasource_columns') {
                     message = message.replace(gridurl, DOC_URL + '/columns');
-                } else if (type[i] === 'locale_missing') {
+                } else if (type[parseInt(i.toString(), 10)] === 'locale_missing') {
                     message = message.replace(gridurl, DOC_URL + '/global-local/#localization');
                 }
-                if (type[i] === 'datasource_syntax_mismatch') {
+                if (type[parseInt(i.toString(), 10)] === 'datasource_syntax_mismatch') {
                     if (!isNullOrUndefined(this.treeGridObj) && !isNullOrUndefined(this.treeGridObj.dataStateChange)) {
                         // eslint-disable-next-line no-console
                         console[item.logType](message);
@@ -96,7 +96,7 @@ export class Logger extends GridLogger {
             this.log('primary_column_missing', args);
         }
         for (let i: number = 0; i < type.length; i++) {
-            const item: TreeItemDetails = treeGridDetails[type[i]];
+            const item: TreeItemDetails = treeGridDetails[type[parseInt(i.toString(), 10)]];
             const cOp: CheckOptions = item.check(args, treeGrid);
             if (cOp.success) {
                 const message: string = item.generateMessage(args, treeGrid, cOp.options);

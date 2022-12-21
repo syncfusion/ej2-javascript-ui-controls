@@ -1,6 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Maps, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
@@ -122,7 +120,7 @@ export class Zoom {
                 }
                 newZoomFactor = parseFloat(Math.min(availSize.width / mapTotalWidth, availSize.height / mapTotalHeight).toFixed(2));
                 newZoomFactor = newZoomFactor > 1.05 ? 1 : newZoomFactor;
-                map.translatePoint = this.calculateInitalZoomTranslatePoint(newZoomFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);                
+                map.translatePoint = this.calculateInitalZoomTranslatePoint(newZoomFactor, mapTotalWidth, mapTotalHeight, availSize, minBounds, map);
             } else {
                 const point: Point = map.translatePoint;
                 translatePointX = point.x - (((availSize.width / scale) - (availSize.width / newZoomFactor)) / (availSize.width / position.x));
@@ -188,13 +186,13 @@ export class Zoom {
         }
         this.maps.zoomNotApplied = false;
     }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private calculateInitalZoomTranslatePoint(newZoomFactor: number, mapTotalWidth: number, mapTotalHeight: number, availSize: Rect, minBounds: any, map: Maps): Point {
         mapTotalWidth *= newZoomFactor;
         mapTotalHeight *= newZoomFactor;
-        let widthDiff: number = minBounds['x'] !== 0 && map.translateType === 'layers' ? map.availableSize.width - availSize.width : 0;
-        var translatePointX = availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2))) - widthDiff;
-        var translatePointY = availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)));
+        const widthDiff: number = minBounds['x'] !== 0 && map.translateType === 'layers' ? map.availableSize.width - availSize.width : 0;
+        const translatePointX: number = availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2))) - widthDiff;
+        const translatePointY: number = availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)));
         return new Point(translatePointX, translatePointY);
     }
 
@@ -343,7 +341,7 @@ export class Zoom {
                 translatePointX = (currentHeight < map.mapAreaRect.height) ? (availSize.x + ((-(minBounds['x'])) + ((availSize.width / 2) - (mapTotalWidth / 2)))) : translatePointX;
                 translatePointY = (currentHeight < map.mapAreaRect.height) ? (availSize.y + ((-(minBounds['y'])) + ((availSize.height / 2) - (mapTotalHeight / 2)))) : translatePointY;
                 map.translatePoint = new Point(translatePointX, translatePointY);
-            } 
+            }
             map.scale = zoomCalculationFactor;
             isZoomCancelled = this.triggerZoomEvent(prevTilePoint, prevLevel, '');
             if (isZoomCancelled) {
@@ -438,14 +436,14 @@ export class Zoom {
         }
         if (this.layerCollectionEle) {
             for (let i: number = 0; i < this.layerCollectionEle.childElementCount; i++) {
-                const layerElement: Element = this.layerCollectionEle.childNodes[i] as Element;
+                const layerElement: Element = this.layerCollectionEle.childNodes[i as number] as Element;
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
                     this.index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
                     this.currentLayer = <LayerSettings>maps.layersCollection[this.index];
                     const factor: number = maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (let j: number = 0; j < layerElement.childElementCount; j++) {
-                        let currentEle: Element = layerElement.childNodes[j] as Element;
+                        let currentEle: Element = layerElement.childNodes[j as number] as Element;
                         if (!(currentEle.id.indexOf('_Markers_Group') > -1) && (!(currentEle.id.indexOf('_bubble_Group') > -1))
                             && (!(currentEle.id.indexOf('_dataLableIndex_Group') > -1))
                         ) {
@@ -461,7 +459,7 @@ export class Zoom {
                                 } else {
                                     layerElement.appendChild(maps.navigationLineModule.renderNavigation(this.currentLayer, maps.tileZoomLevel, this.index));
                                 }
-                            } else if (currentEle.id.indexOf('Legend') == -1) {
+                            } else if (currentEle.id.indexOf('Legend') === -1) {
                                 changeBorderWidth(currentEle, this.index, scale, maps);
                                 maps.zoomTranslatePoint = maps.translatePoint;
                                 this.animateTransform(currentEle, animate, x, y, scale);
@@ -471,25 +469,25 @@ export class Zoom {
                             if (!this.isPanning && !isNullOrUndefined(currentEle.childNodes[0])) {
                                 this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
                             }
-                            currentEle = layerElement.childNodes[j] as Element;
+                            currentEle = layerElement.childNodes[j as number] as Element;
                             let markerAnimation: boolean;
                             if (!isNullOrUndefined(currentEle) && currentEle.id.indexOf('Markers') !== -1) {
                                 for (let k: number = 0; k < currentEle.childElementCount; k++) {
-                                    this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
-                                    const layerIndex : number = parseInt(currentEle.childNodes[k]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
-                                    const dataIndex : number = parseInt(currentEle.childNodes[k]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                                    const markerIndex  : number = parseInt(currentEle.childNodes[k]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
-                                    markerAnimation = this.currentLayer.markerSettings[markerIndex].animationDuration > 0;
+                                    this.markerTranslate(<Element>currentEle.childNodes[k as number], factor, x, y, scale, 'Marker', animate);
+                                    const layerIndex : number = parseInt(currentEle.childNodes[k as number]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
+                                    const dataIndex : number = parseInt(currentEle.childNodes[k as number]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                                    const markerIndex  : number = parseInt(currentEle.childNodes[k as number]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                                    markerAnimation = this.currentLayer.markerSettings[markerIndex as number].animationDuration > 0;
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const markerSelectionValues : any = this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex];
-                                    for (let x : number = 0; x < this.currentLayer.markerSettings[markerIndex].initialMarkerSelection.length; x++) {
-                                        if (this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['latitude'] ===
+                                    const markerSelectionValues : any = this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number];
+                                    for (let x : number = 0; x < this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection.length; x++) {
+                                        if (this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['latitude'] ===
                                             markerSelectionValues['latitude'] ||
-                                            this.currentLayer.markerSettings[markerIndex].initialMarkerSelection[x]['longitude'] ===
+                                            this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['longitude'] ===
                                             markerSelectionValues['longitude']) {
-                                            maps.markerSelection(this.currentLayer.markerSettings[markerIndex].selectionSettings,
-                                                                      maps, currentEle.children[k],
-                                                                      this.currentLayer.markerSettings[markerIndex].dataSource[dataIndex]
+                                            maps.markerSelection(this.currentLayer.markerSettings[markerIndex as number].selectionSettings,
+                                                                 maps, currentEle.children[k as number],
+                                                                 this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number]
                                             );
                                         }
                                     }
@@ -537,14 +535,13 @@ export class Zoom {
                         } else if (currentEle.id.indexOf('_bubble_Group') > -1) {
                             let childElement: HTMLElement;
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
-                                childElement = currentEle.childNodes[k] as HTMLElement;
-                                const bubbleTransform: string = childElement.getAttribute('transform');
+                                childElement = currentEle.childNodes[k as number] as HTMLElement;
                                 layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                                 const bubleIndex: number = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[0]);
                                 const dataIndex: number = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[2]);
                                 for (let l: number = 0; l < maps.bubbleModule.bubbleCollection.length; l++) {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const bubbleCollection: any = maps.bubbleModule.bubbleCollection[l];
+                                    const bubbleCollection: any = maps.bubbleModule.bubbleCollection[l as number];
                                     if (bubbleCollection['LayerIndex'] === layerIndex && bubbleCollection['BubbleIndex'] === bubleIndex &&
                                         bubbleCollection['DataIndex'] === dataIndex) {
                                         const centerX: number = bubbleCollection['center']['x'];
@@ -564,20 +561,20 @@ export class Zoom {
                         } else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1 && !isNullOrUndefined(maps.layers[this.index])) {
                             this.intersect = []; maps.zoomLabelPositions = [];
                             maps.zoomLabelPositions = maps.dataLabelModule.dataLabelCollections;
-                            let labelAnimate: boolean = !maps.isTileMap && animate;
+                            const labelAnimate: boolean = !maps.isTileMap && animate;
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
-                                if (currentEle.childNodes[k]['id'].indexOf('_LabelIndex_') > -1) {
-                                    const labelIndex: number = parseFloat(currentEle.childNodes[k]['id'].split('_LabelIndex_')[1].split('_')[0]);
-                                    this.zoomshapewidth = (currentEle.childNodes[k] as Element).getBoundingClientRect();
+                                if (currentEle.childNodes[k as number]['id'].indexOf('_LabelIndex_') > -1) {
+                                    const labelIndex: number = parseFloat(currentEle.childNodes[k as number]['id'].split('_LabelIndex_')[1].split('_')[0]);
+                                    this.zoomshapewidth = (currentEle.childNodes[k as number] as Element).getBoundingClientRect();
                                     maps.zoomShapeCollection.push(this.zoomshapewidth);
-                                    this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', labelAnimate);
+                                    this.dataLabelTranslate(<Element>currentEle.childNodes[k as number], factor, x, y, scale, 'DataLabel', labelAnimate);
                                     const dataLabel: DataLabelSettingsModel = maps.layers[this.index].dataLabelSettings;
                                     const border: BorderModel = dataLabel.border;
                                     if (k > 0 && border['width'] > 1) {
-                                        if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1 && !isNullOrUndefined(maps.zoomLabelPositions[labelIndex])) {
-                                            const labelX: number = ((maps.zoomLabelPositions[labelIndex]['location']['x'] + x) * scale);
-                                            const labelY: number = ((maps.zoomLabelPositions[labelIndex]['location']['y'] + y) * scale);
-                                            const zoomtext: string = currentEle.childNodes[k]['innerHTML'];
+                                        if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1 && !isNullOrUndefined(maps.zoomLabelPositions[labelIndex as number])) {
+                                            const labelX: number = ((maps.zoomLabelPositions[labelIndex as number]['location']['x'] + x) * scale);
+                                            const labelY: number = ((maps.zoomLabelPositions[labelIndex as number]['location']['y'] + y) * scale);
+                                            const zoomtext: string = currentEle.childNodes[k as number]['innerHTML'];
                                             const style: FontModel = maps.layers[this.index].dataLabelSettings.textStyle;
                                             const zoomtextSize: Size = measureText(zoomtext, style);
                                             const padding: number = 5;
@@ -633,7 +630,7 @@ export class Zoom {
         if (document.getElementById(markerTemplateElements.id)) {
             removeElement(markerTemplateElements.id);
         }
-        const currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
+        const currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex as number];
         currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerDatas: any[] = <any[]>markerSettings.dataSource;
@@ -669,7 +666,6 @@ export class Zoom {
                         const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                             new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
                         ) : convertGeoToPoint(lati, long, factor, currentLayers, this.maps);
-                        const animate: boolean = currentLayers.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
                         const transPoint: Point = {x: x, y: y};
                         if (eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCounts++;
@@ -726,12 +722,12 @@ export class Zoom {
                 + i + '_Label_Template_Group');
             if ((!isNullOrUndefined(markerTemplateElement)) && markerTemplateElement.childElementCount > 0) {
                 for (let k: number = 0; k < markerTemplateElement.childElementCount; k++) {
-                    this.markerTranslate(<HTMLElement>markerTemplateElement.childNodes[k], factor, x, y, scale, 'Template');
+                    this.markerTranslate(<HTMLElement>markerTemplateElement.childNodes[k as number], factor, x, y, scale, 'Template');
                 }
             }
             if ((!isNullOrUndefined(datalabelTemplateElemement)) && datalabelTemplateElemement.childElementCount > 0) {
                 for (let k: number = 0; k < datalabelTemplateElemement.childElementCount; k++) {
-                    this.dataLabelTranslate(<HTMLElement>datalabelTemplateElemement.childNodes[k], factor, x, y, scale, 'Template');
+                    this.dataLabelTranslate(<HTMLElement>datalabelTemplateElemement.childNodes[k as number], factor, x, y, scale, 'Template');
                 }
             }
         }
@@ -740,12 +736,9 @@ export class Zoom {
     private dataLabelTranslate(element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, animate: boolean = false): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const labelCollection: any[] = this.maps.dataLabelModule.dataLabelCollections;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const zoomelement: any = element.getBoundingClientRect();
         let text: string; let trimmedLable: string;
         const style: FontModel = this.maps.layers[this.index].dataLabelSettings.textStyle;
         let zoomtext: string; let zoomtextSize: Size; let zoomtrimLabel: string;
-        const labelPath: string = this.maps.layers[this.index].dataLabelSettings.labelPath;
         const layerIndex: number = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
         const shapeIndex: number = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
         let labelIndex: number;
@@ -755,7 +748,7 @@ export class Zoom {
         const duration: number = this.currentLayer.animationDuration;
         for (let l: number = 0; l < labelCollection.length; l++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const label: any = labelCollection[l];
+            const label: any = labelCollection[l as number];
             if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
                 && label['labelIndex'] === labelIndex) {
                 let labelX: number = label['location']['x'];
@@ -767,12 +760,11 @@ export class Zoom {
                         zoomtext = label['dataLabelText'];
                         zoomtextSize = measureText(zoomtext, style);
                         locationX = ((labelX + x) * scale) - (zoomtextSize['width'] / 2);
-                        locationY = ((labelY + y) * scale) - (zoomtextSize['height']); 
+                        locationY = ((labelY + y) * scale) - (zoomtextSize['height']);
                     } else {
                         const layerEle: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
                         labelX = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - labelX)) * scale);
                         labelY = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - labelY)) * scale);
-                        const templateOffset: ClientRect = element.getBoundingClientRect();
                         const layerOffset: ClientRect = layerEle.getBoundingClientRect();
                         const elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
                         locationX = ((labelX) + (layerOffset.left - elementOffset.left));
@@ -795,29 +787,29 @@ export class Zoom {
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Hide') {
                         if (scale > 1) {
-                            text = ((this.maps.dataLabelShape[l] * scale) >= zoomtextSize['width']) ? zoomtext : '';
+                            text = ((this.maps.dataLabelShape[l as number] * scale) >= zoomtextSize['width']) ? zoomtext : '';
                             element.innerHTML = text;
                         } else {
-                            text = (this.maps.dataLabelShape[l] >= zoomtextSize['width']) ? zoomtext : '';
+                            text = (this.maps.dataLabelShape[l as number] >= zoomtextSize['width']) ? zoomtext : '';
                             element.innerHTML = text;
                         }
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
                         if (scale > 1) {
-                            zoomtrimLabel = textTrim((this.maps.dataLabelShape[l] * scale), zoomtext, style);
+                            zoomtrimLabel = textTrim((this.maps.dataLabelShape[l as number] * scale), zoomtext, style);
                             text = zoomtrimLabel; element.innerHTML = text;
                         } else {
-                            zoomtrimLabel = textTrim(this.maps.dataLabelShape[l], zoomtext, style);
+                            zoomtrimLabel = textTrim(this.maps.dataLabelShape[l as number], zoomtext, style);
                             text = zoomtrimLabel; element.innerHTML = text;
                         }
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
                         for (let m: number = 0; m < this.intersect.length; m++) {
-                            if (!isNullOrUndefined(this.intersect[m])) {
-                                if (textLocations['leftWidth'] > this.intersect[m]['rightWidth']
-                                    || textLocations['rightWidth'] < this.intersect[m]['leftWidth']
-                                    || textLocations['heightTop'] > this.intersect[m]['heightBottom']
-                                    || textLocations['heightBottom'] < this.intersect[m]['heightTop']) {
+                            if (!isNullOrUndefined(this.intersect[m as number])) {
+                                if (textLocations['leftWidth'] > this.intersect[m as number]['rightWidth']
+                                    || textLocations['rightWidth'] < this.intersect[m as number]['leftWidth']
+                                    || textLocations['heightTop'] > this.intersect[m as number]['heightBottom']
+                                    || textLocations['heightBottom'] < this.intersect[m as number]['heightTop']) {
                                     text = !isNullOrUndefined(text) ? text : zoomtext;
                                     element.innerHTML = text;
                                 } else {
@@ -830,27 +822,27 @@ export class Zoom {
                     }
                     if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Trim') {
                         for (let j: number = 0; j < this.intersect.length; j++) {
-                            if (!isNullOrUndefined(this.intersect[j])) {
-                                if (textLocations['rightWidth'] < this.intersect[j]['leftWidth']
-                                    || textLocations['leftWidth'] > this.intersect[j]['rightWidth']
-                                    || textLocations['heightBottom'] < this.intersect[j]['heightTop']
-                                    || textLocations['heightTop'] > this.intersect[j]['heightBottom']) {
+                            if (!isNullOrUndefined(this.intersect[j as number])) {
+                                if (textLocations['rightWidth'] < this.intersect[j as number]['leftWidth']
+                                    || textLocations['leftWidth'] > this.intersect[j as number]['rightWidth']
+                                    || textLocations['heightBottom'] < this.intersect[j as number]['heightTop']
+                                    || textLocations['heightTop'] > this.intersect[j as number]['heightBottom']) {
                                     trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
                                     if (scale > 1) {
-                                        trimmedLable = textTrim((this.maps.dataLabelShape[l] * scale), trimmedLable, style);
+                                        trimmedLable = textTrim((this.maps.dataLabelShape[l as number] * scale), trimmedLable, style);
                                     }
                                     element.innerHTML = trimmedLable;
                                 } else {
-                                    if (textLocations['leftWidth'] > this.intersect[j]['leftWidth']) {
-                                        const width: number = this.intersect[j]['rightWidth'] - textLocations['leftWidth'];
+                                    if (textLocations['leftWidth'] > this.intersect[j as number]['leftWidth']) {
+                                        const width: number = this.intersect[j as number]['rightWidth'] - textLocations['leftWidth'];
                                         const difference: number = width - (textLocations['rightWidth'] - textLocations['leftWidth']);
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
                                         trimmedLable = textTrim(difference, text, style);
                                         element.innerHTML = trimmedLable;
                                         break;
                                     }
-                                    if (textLocations['leftWidth'] < this.intersect[j]['leftWidth']) {
-                                        const width: number = textLocations['rightWidth'] - this.intersect[j]['leftWidth'];
+                                    if (textLocations['leftWidth'] < this.intersect[j as number]['leftWidth']) {
+                                        const width: number = textLocations['rightWidth'] - this.intersect[j as number]['leftWidth'];
                                         const difference: number = Math.abs(width - (textLocations['rightWidth'] - textLocations['leftWidth']));
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
                                         trimmedLable = textTrim(difference, text, style);
@@ -862,7 +854,7 @@ export class Zoom {
                         }
                         this.intersect.push(textLocations);
                         if (isNullOrUndefined(trimmedLable)) {
-                            trimmedLable = textTrim((this.maps.dataLabelShape[l] * scale), zoomtext, style);
+                            trimmedLable = textTrim((this.maps.dataLabelShape[l as number] * scale), zoomtext, style);
                             element.innerHTML = trimmedLable;
                         }
                     }
@@ -880,17 +872,17 @@ export class Zoom {
         const layerIndex: number = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);
         const markerIndex: number = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
         const dataIndex: number = parseInt(element.id.split('_dataIndex_')[1].split('_')[0], 10);
-        const layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
-        const marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
-        if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
+        const layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex as number];
+        const marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex as number];
+        if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex as number])) {
             const lng: number = (!isNullOrUndefined(marker.longitudeValuePath)) ?
-                Number(getValueFromObject(marker.dataSource[dataIndex], marker.longitudeValuePath)) :
-                !isNullOrUndefined(marker.dataSource[dataIndex]['longitude']) ? parseFloat(marker.dataSource[dataIndex]['longitude']) :
-                    !isNullOrUndefined(marker.dataSource[dataIndex]['Latitude']) ? parseFloat(marker.dataSource[dataIndex]['Latitude']) : 0;
+                Number(getValueFromObject(marker.dataSource[dataIndex as number], marker.longitudeValuePath)) :
+                !isNullOrUndefined(marker.dataSource[dataIndex as number]['longitude']) ? parseFloat(marker.dataSource[dataIndex as number]['longitude']) :
+                    !isNullOrUndefined(marker.dataSource[dataIndex as number]['Latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['Latitude']) : 0;
             const lat: number = (!isNullOrUndefined(marker.latitudeValuePath)) ?
-                Number(getValueFromObject(marker.dataSource[dataIndex], marker.latitudeValuePath)) :
-                !isNullOrUndefined(marker.dataSource[dataIndex]['latitude']) ? parseFloat(marker.dataSource[dataIndex]['latitude']) :
-                    !isNullOrUndefined(marker.dataSource[dataIndex]['Latitude']) ? parseFloat(marker.dataSource[dataIndex]['Latitude']) : 0;
+                Number(getValueFromObject(marker.dataSource[dataIndex as number], marker.latitudeValuePath)) :
+                !isNullOrUndefined(marker.dataSource[dataIndex as number]['latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['latitude']) :
+                    !isNullOrUndefined(marker.dataSource[dataIndex as number]['Latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['Latitude']) : 0;
             const duration: number = this.currentLayer.animationDuration;
             const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
@@ -961,6 +953,11 @@ export class Zoom {
         }
     }
     /**
+     * @param {PanDirection} direction - Specifies the direction of the panning.
+     * @param {number} xDifference - Specifies the distance moved in the horizontal direction.
+     * @param {number} yDifference - Specifies the distance moved in the vertical direction.
+     * @param {PointerEvent | TouchEvent | KeyboardEvent} mouseLocation - Specifies the pointer event argument.
+     * @returns {void}
      * @private
      */
     public panning(direction: PanDirection, xDifference: number, yDifference: number, mouseLocation?: PointerEvent | TouchEvent | KeyboardEvent): void {
@@ -1185,7 +1182,7 @@ export class Zoom {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let performFunction: any;
         for (let i: number = 0; i < toolbarsCollection.length; i++) {
-            const toolbar: string = toolbarsCollection[i];
+            const toolbar: string = toolbarsCollection[i as number];
             let pathOptions: PathOption; let polyOptions: PolygonOption;
             this.currentToolbarEle = map.renderer.createGroup({
                 id: map.element.id + '_Zooming_ToolBar_' + toolbar + '_Group',
@@ -1370,7 +1367,7 @@ export class Zoom {
         }
         let childElement: HTMLElement;
         for (let i: number = 0; i < elements.childElementCount; i++) {
-            childElement = elements.childNodes[i] as HTMLElement;
+            childElement = elements.childNodes[i as number] as HTMLElement;
             if (childElement.tagName !== 'circle') {
                 childElement.setAttribute('fill', color);
                 childElement.setAttribute('stroke', color);
@@ -1434,7 +1431,7 @@ export class Zoom {
             }
             break;
         }
-        let extraPosition: Point = map.getExtraPosition();
+        const extraPosition: Point = map.getExtraPosition();
         element.style.left = x + extraPosition.x + 'px';
         element.style.top = y + extraPosition.y + 'px';
         const color: string = this.maps.zoomSettings.highlightColor || this.maps.themeStyle.zoomSelectionColor;

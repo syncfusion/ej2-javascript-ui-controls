@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, compile, isNullOrUndefined} from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { select, selectAll } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, EventHandler, L10n, compile, isNullOrUndefined, SanitizeHtmlHelper} from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { select, selectAll } from '@syncfusion/ej2-base';
 import {DropEffect,ActionCompleteEventArgs,RenderingEventArgs,BeforeUploadEventArgs,FileListRenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,BeforeRemoveEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -180,6 +180,14 @@ export interface UploaderModel extends ComponentModel{
      * @default true
      */
     autoUpload?: boolean;
+
+    /**
+     * Specifies Boolean value that indicates whether to prevent the cross site scripting code in filename or not.
+     * The uploader component removes the cross-site scripting code or functions from the filename and shows the validation error message to the user when enableHtmlSanitizer is true.
+     *
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * You can customize the default text of “browse, clear, and upload” buttons with plain text or HTML elements.

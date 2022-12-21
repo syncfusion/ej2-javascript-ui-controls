@@ -55,12 +55,12 @@ export class ConnectorEditing extends ToolBase {
             super.mouseDown(args);
             // Sets the selected segment
             for (let i: number = 0; i < connectors.segments.length; i++) {
-                const segment: BezierSegment = connectors.segments[i] as BezierSegment;
+                const segment: BezierSegment = connectors.segments[parseInt(i.toString(), 10)] as BezierSegment;
                 if (this.endPoint === 'OrthoThumb') {
                     for (let j: number = 0; j < segment.points.length - 1; j++) {
                         const segPoint: PointModel = { x: 0, y: 0 };
-                        segPoint.x = ((segment.points[j].x + segment.points[j + 1].x) / 2);
-                        segPoint.y = ((segment.points[j].y + segment.points[j + 1].y) / 2);
+                        segPoint.x = ((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2);
+                        segPoint.y = ((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2);
                         if (contains(this.currentPosition, segPoint, 30)) {
                             this.selectedSegment = segment;
                             this.segmentIndex = j;
@@ -277,15 +277,15 @@ export class ConnectorEditing extends ToolBase {
         let updateSeg: boolean; let segmentIndex: number;
         const oldValues: Connector = { segments: connector.segments } as Connector;
         for (let i: number = 0; i < connector.segments.length; i++) {
-            const segment: StraightSegment = (connector.segments)[i] as StraightSegment;
+            const segment: StraightSegment = (connector.segments)[parseInt(i.toString(), 10)] as StraightSegment;
             if (contains(point, segment.point, connector.hitPadding)) {
                 segmentIndex = i;
                 updateSeg = true;
             }
         }
         if (updateSeg && segmentIndex !== undefined) {
-            if (connector.segments && connector.segments[segmentIndex] && connector.segments[segmentIndex].type === 'Straight') {
-                const segment: StraightSegment = connector.segments[segmentIndex] as StraightSegment;
+            if (connector.segments && connector.segments[parseInt(segmentIndex.toString(), 10)] && connector.segments[parseInt(segmentIndex.toString(), 10)].type === 'Straight') {
+                const segment: StraightSegment = connector.segments[parseInt(segmentIndex.toString(), 10)] as StraightSegment;
                 const previous: StraightSegment = connector.segments[segmentIndex + 1] as StraightSegment;
                 if (previous) {
                     connector.segments.splice(segmentIndex, 1);
@@ -295,8 +295,8 @@ export class ConnectorEditing extends ToolBase {
         } else {
             this.commandHandler.enableServerDataBinding(false);
             const index: number = this.findIndex(connector as Connector, point);
-            if (connector.segments && connector.segments[index] && connector.segments[index].type === 'Straight') {
-                const segment: StraightSegment = connector.segments[index] as StraightSegment;
+            if (connector.segments && connector.segments[parseInt(index.toString(), 10)] && connector.segments[parseInt(index.toString(), 10)].type === 'Straight') {
+                const segment: StraightSegment = connector.segments[parseInt(index.toString(), 10)] as StraightSegment;
                 const newseg: StraightSegment =
                     new StraightSegment(connector, 'segments', { type: 'Straight', point: point }, true);
                 newseg.points[0] = segment.points[0];
@@ -314,7 +314,7 @@ export class ConnectorEditing extends ToolBase {
     private findIndex(connector: Connector, point: PointModel): number {
         const intersectingSegs: StraightSegment[] = [];
         for (let i: number = 0; i < connector.segments.length; i++) {
-            const segment: StraightSegment = connector.segments[i] as StraightSegment;
+            const segment: StraightSegment = connector.segments[parseInt(i.toString(), 10)] as StraightSegment;
             const rect: Rect = Rect.toBounds([segment.points[0], segment.points[1]]);
             rect.Inflate(connector.hitPadding);
 
@@ -328,14 +328,14 @@ export class ConnectorEditing extends ToolBase {
             let ratio: number; let min: number; let index: number;
             let seg: StraightSegment; let v: number; let h: number;
             for (let i: number = 0; i < intersectingSegs.length; i++) {
-                seg = intersectingSegs[i] as StraightSegment;
+                seg = intersectingSegs[parseInt(i.toString(), 10)] as StraightSegment;
                 v = (point.y - seg.points[0].y) / (seg.points[1].y - point.y);
                 h = (point.x - seg.points[0].x) / (seg.points[1].x - point.x);
                 ratio = Math.abs(v - h);
                 if (i === 0) { min = ratio; index = 0; }
                 if (ratio < min) { min = ratio; index = i; }
             }
-            return connector.segments.indexOf(intersectingSegs[index]);
+            return connector.segments.indexOf(intersectingSegs[parseInt(index.toString(), 10)]);
         }
     }
     private dragOrthogonalSegment(
@@ -343,8 +343,8 @@ export class ConnectorEditing extends ToolBase {
         boolean {
         const segmentPoint: PointModel = { x: 0, y: 0 };
         const oldValues: Connector = { segments: obj.segments } as Connector;
-        segmentPoint.x = ((segment.points[segmentIndex].x + segment.points[segmentIndex + 1].x) / 2);
-        segmentPoint.y = ((segment.points[segmentIndex].y + segment.points[segmentIndex + 1].y) / 2);
+        segmentPoint.x = ((segment.points[parseInt(segmentIndex.toString(), 10)].x + segment.points[segmentIndex + 1].x) / 2);
+        segmentPoint.y = ((segment.points[parseInt(segmentIndex.toString(), 10)].y + segment.points[segmentIndex + 1].y) / 2);
         const ty: number = point.y - segmentPoint.y;
         const tx: number = point.x - segmentPoint.x;
         let index: number = obj.segments.indexOf(segment); let update: boolean = false;
@@ -367,7 +367,7 @@ export class ConnectorEditing extends ToolBase {
             }
             if (index) {
                 if (update) {
-                    this.selectedSegment = segment = obj.segments[index] as OrthogonalSegment;
+                    this.selectedSegment = segment = obj.segments[parseInt(index.toString(), 10)] as OrthogonalSegment;
                     this.segmentIndex = 0;
                 }
                 this.updateAdjacentSegments(obj as Connector, index, tx, ty);
@@ -414,8 +414,8 @@ export class ConnectorEditing extends ToolBase {
         if (obj.sourcePortID && segment.length && (obj.segments[0] as OrthogonalSegment).points.length > 2) {
             let prev: OrthogonalSegment;
             for (let i: number = 0; i < segment.points.length - 1; i++) {
-                const len: number = Point.distancePoints(segment.points[i], segment.points[i + 1]);
-                const dir: Direction = Point.direction(segment.points[i], segment.points[i + 1]) as Direction;
+                const len: number = Point.distancePoints(segment.points[parseInt(i.toString(), 10)], segment.points[i + 1]);
+                const dir: Direction = Point.direction(segment.points[parseInt(i.toString(), 10)], segment.points[i + 1]) as Direction;
                 insertseg = new OrthogonalSegment(
                     obj, 'segments', { type: 'Orthogonal', direction: dir, length: len }, true);
                 if (insertseg.length === 0) {
@@ -470,7 +470,7 @@ export class ConnectorEditing extends ToolBase {
     }
 
     private updateAdjacentSegments(obj: Connector, index: number, tx: number, ty: number): void {
-        const current: OrthogonalSegment = obj.segments[index] as OrthogonalSegment;
+        const current: OrthogonalSegment = obj.segments[parseInt(index.toString(), 10)] as OrthogonalSegment;
         const endPoint: PointModel = current.points[current.points.length - 1];
         const startPoint: PointModel = current.points[0];
         let isNextUpdate: boolean = true;
@@ -498,8 +498,8 @@ export class ConnectorEditing extends ToolBase {
         const last: OrthogonalSegment = connector.segments[connector.segments.length - 1] as OrthogonalSegment;
         first = (last && last.type === 'Orthogonal') ? last : null;
         for (let i: number = 0; i < segment.points.length - 2; i++) {
-            len = Point.distancePoints(segment.points[i], segment.points[i + 1]);
-            dir = Point.direction(segment.points[i], segment.points[i + 1]) as Direction;
+            len = Point.distancePoints(segment.points[parseInt(i.toString(), 10)], segment.points[i + 1]);
+            dir = Point.direction(segment.points[parseInt(i.toString(), 10)], segment.points[i + 1]) as Direction;
             insertseg = new OrthogonalSegment(
                 connector, 'segments', { type: 'Orthogonal', length: len, direction: dir }, true);
             segments.push(insertseg); first = insertseg;
@@ -551,7 +551,7 @@ export class ConnectorEditing extends ToolBase {
     private updatePortSegment(prev: OrthogonalSegment, connector: ConnectorModel, index: number, tx: number, ty: number): void {
         if (index === 1 && prev.points.length === 2 && prev.length < 0) {
             const source: Corners = (connector as Connector).sourceWrapper.corners;
-            const current: OrthogonalSegment = connector.segments[index] as OrthogonalSegment;
+            const current: OrthogonalSegment = connector.segments[parseInt(index.toString(), 10)] as OrthogonalSegment;
             const next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
             let newseg: OrthogonalSegmentModel;
             const segment: OrthogonalSegmentModel[] = [];
@@ -585,7 +585,7 @@ export class ConnectorEditing extends ToolBase {
     }
 
     private updatePreviousSegment(tx: number, ty: number, connector: ConnectorModel, index: number): boolean {
-        const current: OrthogonalSegment = connector.segments[index] as OrthogonalSegment;
+        const current: OrthogonalSegment = connector.segments[parseInt(index.toString(), 10)] as OrthogonalSegment;
         const prev: OrthogonalSegment = connector.segments[index - 1] as OrthogonalSegment;
         //const firstSegment: boolean = (index === 1) ? true : false;
         prev.points[prev.points.length - 1] = current.points[0];
@@ -649,7 +649,7 @@ export class ConnectorEditing extends ToolBase {
 
     private updateFirstSegment(connector: ConnectorModel, selectedSegment: OrthogonalSegment): void {
         const index: number = connector.segments.indexOf(selectedSegment); let insertfirst: boolean = false;
-        const current: OrthogonalSegment = connector.segments[index] as OrthogonalSegment;
+        const current: OrthogonalSegment = connector.segments[parseInt(index.toString(), 10)] as OrthogonalSegment;
         const prev: OrthogonalSegment = connector.segments[index - 1] as OrthogonalSegment;
         const con: Connector = connector as Connector; let sourcePoint: PointModel;
         const oldValues: Connector = { segments: connector.segments } as Connector;

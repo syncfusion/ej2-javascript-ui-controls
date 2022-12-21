@@ -21,7 +21,7 @@ export class EventMarker {
                 this.eventMarkersContainer = createElement('div', {
                     className: cls.eventMarkersContainer
                 });
-                this.eventMarkersContainer.setAttribute("role", "term");
+                this.eventMarkersContainer.setAttribute('role', 'term');
                 this.parent.ganttChartModule.chartBodyContent.appendChild(this.eventMarkersContainer);
             }
             this.eventMarkersContainer.innerHTML = '';
@@ -54,32 +54,45 @@ export class EventMarker {
 
         for (let i: number = 0; i < this.parent.eventMarkers.length; i++) {
             left = this.parent.dataOperation.getTaskLeft(
-                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i].day, true), false);
+                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true), false);
+            let align: string;
+            if(this.parent.enableRtl) {
+                align = `right:${left}px;`;
+            }
+            else {
+                align = `left:${left}px;`;
+            }
             eventMarkerElement = createElement('div', {
-                className: cls.eventMarkersChild, styles: `left:${left}px;  height:100%;`,
+                className: cls.eventMarkersChild, styles: `${align}  height:100%;`,
                 id: 'stripline' + i
             });
-            if (this.parent.eventMarkers[i].label) {
+            if (this.parent.eventMarkers[i as number].label) {
                 spanElement = createElement('div', {
                     className: cls.eventMarkersSpan
                 });
                 const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
-                spanElement[property] = this.parent.eventMarkers[i].label;
+                spanElement[property as string] = this.parent.eventMarkers[i as number].label;
+                if (this.parent.enableRtl) {
+                   spanElement.style.right = '5px';
+                }
+                else {
+                    spanElement.style.left = '5px';
+                }
                 eventMarkerElement.appendChild(spanElement);
                 rightArrow = createElement('div', {
                     className: 'e-gantt-right-arrow'
                 });
                 eventMarkerElement.appendChild(rightArrow);
             }
-            if (this.parent.eventMarkers[i].cssClass) {
-                eventMarkerElement.classList.add(this.parent.eventMarkers[i].cssClass);
+            if (this.parent.eventMarkers[i as number].cssClass) {
+                eventMarkerElement.classList.add(this.parent.eventMarkers[i as number].cssClass);
             }
             eventMarkerElement.setAttribute('tabindex', '-1');
-            if (!isNullOrUndefined(this.parent.eventMarkers[i].day)) {
+            if (!isNullOrUndefined(this.parent.eventMarkers[i as number].day)) {
                 eventMarkerElement.setAttribute('aria-label', this.parent.localeObj.getConstant('eventMarkers') + ' '
-                    + (typeof this.parent.eventMarkers[i].day === 'string' ?
-                        this.parent.eventMarkers[i].day : this.parent.getFormatedDate(this.parent.eventMarkers[i].day as Date))
-                    + ' ' + this.parent.eventMarkers[i].label);
+                    + (typeof this.parent.eventMarkers[i as number].day === 'string' ?
+                        this.parent.eventMarkers[i as number].day : this.parent.getFormatedDate(this.parent.eventMarkers[i as number].day as Date))
+                    + ' ' + this.parent.eventMarkers[i as number].label);
             }
             container.appendChild(eventMarkerElement);
         }

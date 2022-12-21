@@ -67,7 +67,7 @@ export class DataBinding {
         const dataProp: string = 'data';
         const jsonProp: string = 'json';
         const dataManager: DataManager = data.dataManager || data.dataSource || {} as DataManager;
-        dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
+        dataSource = dataManager[`${dataProp}`] || dataManager[`${jsonProp}`] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
         if (dataSource && (dataSource as Object[]).length === 0 && dataManager.dataSource.data) {
             dataSource = dataManager.dataSource.data;
@@ -95,7 +95,7 @@ export class DataBinding {
             const dataManager: DataManager = data.dataManager || data.dataSource;
             dataManager.executeQuery(query).then((e: Object) => {
                 const prop: string = 'result';
-                result = e[prop];
+                result = e[`${prop}`];
                 if (!diagram.isDestroyed) {
                     diagram.protectPropertyChange(true);
                     this.applyDataSource(data, result, diagram);
@@ -115,7 +115,7 @@ export class DataBinding {
         let nextLevel: Object;
         if (data !== undefined) {
             for (let r: number = 0; r < data.length; r++) {
-                obj = data[r];
+                obj = data[parseInt(r.toString(), 10)];
                 if (obj[mapper.parentId] === undefined || obj[mapper.parentId] === null ||
                     typeof obj[mapper.parentId] !== 'object') {
                     if (rootNodes[obj[mapper.parentId]] !== undefined) {
@@ -136,13 +136,13 @@ export class DataBinding {
             } else {
                 for (const n of Object.keys(rootNodes)) {
                     if (!n || n === 'undefined' || n === '\'\'' || n === 'null') {
-                        firstLevel.push(rootNodes[n]);
+                        firstLevel.push(rootNodes[`${n}`]);
                     }
                 }
             }
             for (let i: number = 0; i < firstLevel.length; i++) {
-                for (let j: number = 0; j < (firstLevel[i] as DataItems).items.length; j++) {
-                    item = (firstLevel[i] as DataItems).items[j];
+                for (let j: number = 0; j < (firstLevel[parseInt(i.toString(), 10)] as DataItems).items.length; j++) {
+                    item = (firstLevel[parseInt(i.toString(), 10)] as DataItems).items[parseInt(j.toString(), 10)];
                     node = this.applyNodeTemplate(mapper, item, diagram);
                     (diagram.nodes as Node[]).push(node);
                     this.dataTable[item[mapper.id]] = node;
@@ -168,11 +168,11 @@ export class DataBinding {
     private updateMultipleRootNodes(obj: Object, rootNodes: Object[], mapper: DataSourceModel, data: Object[]): Object[] {
         const parents: string[] = obj[mapper.parentId]; let parent: string;
         for (let i: number = 0; i < parents.length; i++) {
-            parent = parents[i];
-            if (rootNodes[parent]) {
-                rootNodes[parent].items.push(obj);
+            parent = parents[parseInt(i.toString(), 10)];
+            if (rootNodes[`${parent}`]) {
+                rootNodes[`${parent}`].items.push(obj);
             } else {
-                rootNodes[parent] = { items: [obj] };
+                rootNodes[`${parent}`] = { items: [obj] };
             }
         }
         return rootNodes;
@@ -206,33 +206,33 @@ export class DataBinding {
             let arrayProperty: string[] = [];
             let innerProperty: string[] = [];
             for (let i: number = 0; i < mapper.dataMapSettings.length; i++) {
-                if (mapper.dataMapSettings[i].property.indexOf('.') !== -1) {
-                    innerProperty = this.splitString(mapper.dataMapSettings[i].property);
+                if (mapper.dataMapSettings[parseInt(i.toString(), 10)].property.indexOf('.') !== -1) {
+                    innerProperty = this.splitString(mapper.dataMapSettings[parseInt(i.toString(), 10)].property);
                     for (let p: number = 0; p < innerProperty.length; p++) {
-                        if (innerProperty[p].indexOf('[') !== -1) {
-                            index = innerProperty[p].indexOf('[');
-                            arrayProperty = innerProperty[p].split('[');
+                        if (innerProperty[parseInt(p.toString(), 10)].indexOf('[') !== -1) {
+                            index = innerProperty[parseInt(p.toString(), 10)].indexOf('[');
+                            arrayProperty = innerProperty[parseInt(p.toString(), 10)].split('[');
                         }
                     }
                     if (index) {
                         if (innerProperty[2]) {
                             obj[arrayProperty[0]][innerProperty[0].charAt(index + 1)][innerProperty[1]][innerProperty[2]] =
-                                item[mapper.dataMapSettings[i].field];
+                                item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                         } else {
-                            const value: string = item[mapper.dataMapSettings[i].field];
+                            const value: string = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                             obj[arrayProperty[0]][innerProperty[0].charAt(index + 1)][innerProperty[1]] = value;
                         }
                     } else {
                         if (innerProperty[2]) {
-                            obj[innerProperty[0]][innerProperty[1]][innerProperty[2]] = item[mapper.dataMapSettings[i].field];
+                            obj[innerProperty[0]][innerProperty[1]][innerProperty[2]] = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                         } else {
-                            obj[innerProperty[0]][innerProperty[1]] = item[mapper.dataMapSettings[i].field];
+                            obj[innerProperty[0]][innerProperty[1]] = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                         }
                     }
                 } else {
-                    let property: string = mapper.dataMapSettings[i].property;
+                    let property: string = mapper.dataMapSettings[parseInt(i.toString(), 10)].property;
                     property = property.charAt(0).toLowerCase() + property.slice(1);
-                    obj[property] = item[mapper.dataMapSettings[i].field];
+                    obj[`${property}`] = item[mapper.dataMapSettings[parseInt(i.toString(), 10)].field];
                 }
                 index = 0;
                 arrayProperty = [];
@@ -250,7 +250,7 @@ export class DataBinding {
         let temp: string[] = [];
         temp = property.split('.');
         for (let i: number = 0; i < temp.length; i++) {
-            temp[i] = temp[i].charAt(0).toLowerCase() + temp[i].slice(1);
+            temp[parseInt(i.toString(), 10)] = temp[parseInt(i.toString(), 10)].charAt(0).toLowerCase() + temp[parseInt(i.toString(), 10)].slice(1);
         }
         return temp;
     }
@@ -259,7 +259,7 @@ export class DataBinding {
         mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram): void {
         let child: Object; let nextLevel: Object; let node: Node;
         for (let j: number = 0; j < (parent as DataItems).items.length; j++) {
-            child = (parent as DataItems).items[j];
+            child = (parent as DataItems).items[parseInt(j.toString(), 10)];
             node = this.applyNodeTemplate(mapper, child, diagram);
             let canBreak: boolean = false;
             if (!this.collectionContains(node, diagram, mapper.id, mapper.parentId)) {
@@ -283,7 +283,7 @@ export class DataBinding {
     private containsConnector(diagram: Diagram, sourceNode: string, targetNode: string): boolean {
         if (sourceNode !== '' && targetNode !== '') {
             for (let i: number = 0; i < diagram.connectors.length; i++) {
-                const connector: Connector = diagram.connectors[i] as Connector;
+                const connector: Connector = diagram.connectors[parseInt(i.toString(), 10)] as Connector;
                 if (connector !== undefined && (connector.sourceID === sourceNode && connector.targetID === targetNode)) {
                     return true;
                 }
@@ -302,8 +302,8 @@ export class DataBinding {
      */
 
     private collectionContains(node: Node, diagram: Diagram, id: string, parentId: string): boolean {
-        const obj: Node = this.dataTable[node.data[id]] as Node;
-        if (obj !== undefined && obj.data[id] === node.data[id] && obj.data[parentId] === node.data[parentId]) {
+        const obj: Node = this.dataTable[node.data[`${id}`]] as Node;
+        if (obj !== undefined && obj.data[`${id}`] === node.data[`${id}`] && obj.data[`${parentId}`] === node.data[`${parentId}`]) {
             return true;
         } else {
             return false;

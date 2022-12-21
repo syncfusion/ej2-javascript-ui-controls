@@ -1,4 +1,5 @@
 @include export-module('v-scroll-theme') {
+
   /*! v-scroll theme */
   #{&}.e-vscroll {
 
@@ -54,13 +55,6 @@
           border: $vscroll-hover-border;
           border-color: $vscroll-hover-border-color;
           color: $vscroll-hover-font;
-
-          @if $vscroll-skin == 'highcontrast' {
-
-            &:active {
-              background: $vscroll-press-bg;
-            }
-          }
         }
       }
     }
@@ -73,14 +67,6 @@
           background: $vscroll-hover-bg;
           border: $vscroll-hover-border;
           color: $vscroll-hover-font;
-
-          @if $vscroll-skin == 'highcontrast' {
-            border: 1px solid $hover-border;
-
-            &:active {
-              border: 0;
-            }
-          }
         }
 
         &:focus {
@@ -88,11 +74,6 @@
           border: $vscroll-focus-border;
           border-color: $vscroll-hover-border-color;
           color: $vscroll-hover-font;
-
-          @if $vscroll-skin == 'highcontrast' {
-            background: inherit;
-            border: $vscroll-dash-border;
-          }
         }
 
         &:active {
@@ -100,12 +81,6 @@
           border: $vscroll-active-border;
           box-shadow: $vscroll-active-box-shadow;
           color: $vscroll-active-font-color;
-
-          @if $vscroll-skin == 'highcontrast' {
-            .e-icons {
-              color: $selection-font;
-            }
-          }
         }
       }
     }

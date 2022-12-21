@@ -94,7 +94,7 @@ export class WrapText {
                                 if (displayText.indexOf('\n') > -1) {
                                     const splitVal: string[] = displayText.split('\n'); const valLength: number = splitVal.length;
                                     for (p = 0; p < valLength; p++) {
-                                        lines = getLines(splitVal[p], colwidth, cell.style, this.parent.cellStyle);
+                                        lines = getLines(splitVal[p as number], colwidth, cell.style, this.parent.cellStyle);
                                         if (lines === 0) {
                                             lines = 1; // for empty new line
                                         }
@@ -235,7 +235,7 @@ export class WrapText {
     }
 
     /**
-     * Removes the added event handlers and clears the internal properties of WrapText module. 
+     * Removes the added event handlers and clears the internal properties of WrapText module.
      *
      * @returns {void}
      */

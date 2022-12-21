@@ -2,13 +2,7 @@
 
 ## [Unreleased]
 
-## 20.3.50 (2022-10-18)
-
-### Image Editor
-
-#### Bug Fixes
-
-- Issue with "Image Position while rotating canvas directly more than 90 degree" has been resolved.
+## 20.4.38 (2022-12-21)
 
 ### Image Editor
 

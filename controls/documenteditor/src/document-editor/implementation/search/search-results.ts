@@ -52,7 +52,7 @@ export class SearchResults {
         const index: TextSearchResultInfo[] = [];
         let searchIndex: TextSearchResultInfo;
         for (let i: number = 0; i < this.searchModule.textSearchResults.innerList.length; i++) {
-            searchIndex = this.getOffset(this.searchModule.textSearchResults.innerList[i]);
+            searchIndex = this.getOffset(this.searchModule.textSearchResults.innerList[parseInt(i.toString(), 10)]);
             index.push(searchIndex);
         }
         return index;

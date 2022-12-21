@@ -54,19 +54,16 @@ export class SaveWorker {
         const formData: FormData = new FormData();
         let i: number;
         let keys: string[] = Object.keys(saveSettings);
-
         formData.append('JSONData', JSON.stringify(saveJSON));
         for (i = 0; i < keys.length; i++) {
-            formData.append(keys[i], (<{ [key: string]: string }>saveSettings)[keys[i]]);
+            formData.append(keys[i as number], (<{ [key: string]: string }>saveSettings)[keys[i as number]]);
         }
 
         keys = Object.keys(customParams);
         for (i = 0; i < keys.length; i++) {
-            formData.append(keys[i], customParams[keys[i]]);
+            formData.append(keys[i as number], customParams[keys[i as number]]);
         }
-
         formData.append('pdfLayoutSettings', JSON.stringify(pdfLayoutSettings));
-
         fetch(saveSettings.url, { method: 'POST', body: formData })
             .then((response: Response) => {
                 if (response.ok) {

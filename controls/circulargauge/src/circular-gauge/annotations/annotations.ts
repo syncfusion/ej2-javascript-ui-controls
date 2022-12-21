@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { CircularGauge } from '../circular-gauge';
 import { Axis, Annotation } from '../axes/axis';
 import { getTemplateFunction, getElement, stringToNumber, getFontStyle, getLocationFromAngle, GaugeLocation, removeElement } from '../utils/helper-common';
@@ -17,14 +16,15 @@ export class Annotations {
      * @param {CircularGauge} gauge - Specifies the instance of the gauge.
      * @private.
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+
+    // eslint-disable-next-line
     constructor(gauge: CircularGauge) {
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Method to render the annotation for circular gauge.
      */
+
     public renderAnnotation(axis: Axis, index: number, gauge: CircularGauge): void {
         const width: number = gauge.availableSize.width;
         const element: HTMLElement = createElement('div', {
@@ -46,22 +46,23 @@ export class Annotations {
         (gauge as any).renderReactTemplates();
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Method to create annotation template for circular gauge.
      */
+
     public createTemplate(element: HTMLElement, annotationIndex: number, axisIndex: number, gauge: CircularGauge): void {
-        const axis: Axis = <Axis>gauge.axes[axisIndex];
-        const annotation: Annotation = <Annotation>axis.annotations[annotationIndex];
+        const axis: Axis = <Axis>gauge.axes[axisIndex as number];
+        const annotation: Annotation = <Annotation>axis.annotations[annotationIndex as number];
         const childElement: HTMLElement = createElement('div', {
-            id: gauge.element.id + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex,
-            styles: 'position: absolute; z-index:' + annotation.zIndex + ';transform:' +
-                    (annotation.autoAngle ? 'rotate(' + (annotation.angle - 90) + 'deg)' : 'rotate(0deg)') + ';'
+            id: gauge.element.id + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex
         });
-        let argsData: IAnnotationRenderEventArgs = {
+        childElement.style.cssText = 'position: absolute; z-index:' + annotation.zIndex + ';transform:' +
+                                        (annotation.autoAngle ? 'rotate(' + (annotation.angle - 90) + 'deg)' : 'rotate(0deg)') + ';';
+        const argsData: IAnnotationRenderEventArgs = {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         gauge.trigger('annotationRender', argsData, (observedArgs: IAnnotationRenderEventArgs) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let templateFn: any;
@@ -72,18 +73,18 @@ export class Annotations {
                     templateElement = Array.prototype.slice.call(templateFn(axis, gauge, argsData.content, gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     const length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
-                        childElement.appendChild(templateElement[i]);
+                        childElement.appendChild(templateElement[i as number]);
                     }
                 } else {
-                    childElement.appendChild(createElement('div', {
+                    const annotationElement: HTMLElement = createElement('div', {
                         innerHTML: argsData.content,
-                        id: 'StringTemplate',
-                        styles: getFontStyle(argsData.textStyle)
-                    }));
+                        id: 'StringTemplate'
+                    }) as HTMLElement;
+                    annotationElement.style.cssText = getFontStyle(argsData.textStyle);
+                    childElement.appendChild(annotationElement);
                 }
                 this.updateLocation(childElement, axis, <Annotation>annotation, gauge);
                 element.appendChild(childElement);
-                const parentElement: Element = document.getElementById(gauge.element.id + '_Secondary_Element');
             }
         });
     }
@@ -96,6 +97,7 @@ export class Annotations {
      * @param {Annotation} annotation - Specifies the annotation.
      * @returns {void}
      */
+
     private updateLocation(element: HTMLElement, axis: Axis, annotation: Annotation, gauge: CircularGauge): void {
         const location: GaugeLocation = getLocationFromAngle(
             annotation.angle - 90,
@@ -119,19 +121,21 @@ export class Annotations {
     }
     /**
      * To destroy the annotation.
-     * 
+     *
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 
     /**
-    * Function to measure the element rect.
-    *
-    * @param {HTMLElement} element - Specifies the html element.
-    * @returns {ClientRect} - Returns the client rect.
-    * @private
-    */
+     * Function to measure the element rect.
+     *
+     * @param {HTMLElement} element - Specifies the html element.
+     * @returns {ClientRect} - Returns the client rect.
+     * @private
+     */
+
     private measureElementRect(element: HTMLElement): ClientRect {
         document.body.appendChild(element);
         const bounds: ClientRect = element.getBoundingClientRect();

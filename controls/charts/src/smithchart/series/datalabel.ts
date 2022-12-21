@@ -25,7 +25,7 @@ export class DataLabel {
         this.allPoints = [];
         const margin: SmithchartMarginModel = smithchart.margin;
         let pointIndex: number;
-        const marker: SeriesMarkerModel = smithchart.series[seriesindex].marker;
+        const marker: SeriesMarkerModel = smithchart.series[seriesindex as number].marker;
         let region: Point;
         let labelPosition: SmithchartLabelPosition;
         let labelText: string;
@@ -35,9 +35,9 @@ export class DataLabel {
         const count: number = pointsRegion.length;
         for (let i: number = 0; i < count; i++) {
 
-            labelText = smithchart.series[seriesindex].points[i].reactance.toString();
+            labelText = smithchart.series[seriesindex as number].points[i as number].reactance.toString();
             textSize = measureText(labelText, font);
-            region = pointsRegion[i]['point'];
+            region = pointsRegion[i as number]['point'];
             const xPos: number = region.x - textSize.width / 2;
             const yPos: number = region.y - (textSize.height + marker['height'] + (margin.top));
             const width: number = textSize.width + (margin.left / 2) + (margin.right / 2);
@@ -45,7 +45,7 @@ export class DataLabel {
             pointIndex = i;
             labelPosition = new SmithchartLabelPosition();
             labelPosition = { textX: xPos + (margin.left / 2), textY: yPos + (height / 2) + margin.top / 2, x: xPos, y: yPos };
-            this.textOptions[i] = {
+            this.textOptions[i as number] = {
                 id: smithchart.element.id + '_Series' + seriesindex + '_Points' + pointIndex + '_dataLabel' + '_displayText' + i,
                 x: labelPosition['textX'],
                 y: labelPosition['textY'],
@@ -73,11 +73,11 @@ export class DataLabel {
         const count: number = 0;
 
         for (let k: number = 0; k < length; k++) {
-            this.allPoints[this.allPoints.length] = points['textOptions'][k];
+            this.allPoints[this.allPoints.length] = points['textOptions'][k as number];
             this.connectorFlag = false;
             this.compareDataLabels(k, points, count, seriesIndex);
-            this.labelOptions[seriesIndex]['textOptions'][k] = points['textOptions'][k];
-            this.labelOptions[seriesIndex]['textOptions'][k].connectorFlag = this.connectorFlag;
+            this.labelOptions[seriesIndex as number]['textOptions'][k as number] = points['textOptions'][k as number];
+            this.labelOptions[seriesIndex as number]['textOptions'][k as number].connectorFlag = this.connectorFlag;
         }
 
     }
@@ -88,7 +88,7 @@ export class DataLabel {
         let currentLabel: DataLabelTextOptions;
         let prevLabel: DataLabelTextOptions;
         for (let j: number = 0; j < length; j++) {
-            prevLabel = this.allPoints[j];
+            prevLabel = this.allPoints[j as number];
             currentLabel = this.allPoints[length - 1];
             collide = this.isCollide(prevLabel, currentLabel);
             if (collide) {
@@ -213,9 +213,10 @@ export class DataLabel {
         }
         const connectorDirection: string = 'M' + ' ' + (location.x) + ' ' + (location.y) + ' ' + 'L' + ' ' +
                                              (currentPoint['x']) + ' ' + (endY);
-        const connectorLineValues: SeriesMarkerDataLabelConnectorLineModel = smithchart.series[seriesIndex].marker.dataLabel.connectorLine;
+        const connectorLineValues: SeriesMarkerDataLabelConnectorLineModel = smithchart.series[seriesIndex as number].
+            marker.dataLabel.connectorLine;
         const stroke : string = connectorLineValues.color ? connectorLineValues.color :
-            (smithchart.series[seriesIndex].fill ||
+            (smithchart.series[seriesIndex as number].fill ||
                                                       smithchart.seriesColors[seriesIndex % smithchart.seriesColors.length]);
         const options: PathOption = new PathOption(
             smithchart.element.id + '_dataLabelConnectorLine' + '_series' + seriesIndex + '_point' + index,
@@ -233,7 +234,7 @@ export class DataLabel {
     private drawDatalabelSymbol(smithchart: Smithchart, seriesindex : number, dataLabel: SeriesMarkerDataLabelModel,
                                 groupElement: Element, bounds: SmithchartRect, pointsRegion: PointRegion[]): void {
 
-        for (let i: number = 0; i < smithchart.series[seriesindex].points.length; i++) {
+        for (let i: number = 0; i < smithchart.series[seriesindex as number].points.length; i++) {
             if (dataLabel.template) {
                 const labelTemplateElement: HTMLElement = createElement('div', {
                     id: smithchart.element.id + '_seriesIndex_' + seriesindex + '_Label_Template_Group',
@@ -246,23 +247,23 @@ export class DataLabel {
                 });
                 document.getElementById(smithchart.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
                 const id: string = dataLabel.template + '_seriesIndex' + seriesindex + '_pointIndex' + i + smithchart.element.id;
-                const data: object = {point: smithchart.series[seriesindex].points[i].reactance};
+                const data: object = {point: smithchart.series[seriesindex as number].points[i as number].reactance};
                 const templateFn: Function = getTemplateFunction(dataLabel.template);
                 const templateElement: Element = templateFn(smithchart);
                 const labelElement: HTMLElement = <HTMLElement>convertElementFromLabel(
                     templateElement, id, data);
                 labelTemplateElement.appendChild(labelElement);
-                labelElement.style.left = pointsRegion[i].point.x - labelElement.offsetWidth / 2 + 'px';
-                labelElement.style.top =  pointsRegion[i].point.y - labelElement.offsetHeight -
-                                          smithchart.series[seriesindex].marker.height / 2 + 'px';
+                labelElement.style.left = pointsRegion[i as number].point.x - labelElement.offsetWidth / 2 + 'px';
+                labelElement.style.top =  pointsRegion[i as number].point.y - labelElement.offsetHeight -
+                                          smithchart.series[seriesindex as number].marker.height / 2 + 'px';
                 const left: number = parseInt(labelElement.style.left, 10);
                 const top: number = parseInt(labelElement.style.top, 10);
                 const width: number = labelElement.offsetWidth;
                 const height: number = labelElement.offsetHeight;
-                const region: Point = pointsRegion[i]['point'];
+                const region: Point = pointsRegion[i as number]['point'];
                 const labelPosition: SmithchartLabelPosition = { textX: left, textY: top,
                     x: left, y: top};
-                this.labelOptions[seriesindex]['textOptions'][i] = {
+                this.labelOptions[seriesindex as number]['textOptions'][i as number] = {
                     id: id,
                     x: left,
                     y: top,

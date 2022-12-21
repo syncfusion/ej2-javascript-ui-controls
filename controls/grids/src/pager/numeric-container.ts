@@ -123,8 +123,8 @@ export class NumericContainer implements IRender {
         const numericContainer: Element = pagerObj.element.querySelector('.e-numericcontainer');
         const links: NodeList = numericContainer.querySelectorAll('a');
         for (let i: number = 0; i < links.length; i++) {
-            if ((<Element>links[i]).hasAttribute('aria-label') && (<Element>links[i]).hasAttribute('index')) {
-                (<Element>links[i]).setAttribute('aria-label', pagerObj.getLocalizedLabel('Page') + (<Element>links[i]).getAttribute('index')
+            if ((<Element>links[parseInt(i.toString(), 10)]).hasAttribute('aria-label') && (<Element>links[parseInt(i.toString(), 10)]).hasAttribute('index')) {
+                (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-label', pagerObj.getLocalizedLabel('Page') + (<Element>links[parseInt(i.toString(), 10)]).getAttribute('index')
                     + pagerObj.getLocalizedLabel('Of') + pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'));
             }
         }
@@ -246,22 +246,22 @@ export class NumericContainer implements IRender {
         for (let i: number = 0; i < pagerObj.pageCount; i++) {
             pageNo = (currentPageSet * pagerObj.pageCount) + 1 + i;
             if (pageNo <= pagerObj.totalPages) {
-                this.links[i].style.display = '';
-                this.links[i].setAttribute('index', pageNo.toString());
-                this.links[i].innerHTML = !pagerObj.customText ? pageNo.toString() : pagerObj.customText + pageNo;
+                this.links[parseInt(i.toString(), 10)].style.display = '';
+                this.links[parseInt(i.toString(), 10)].setAttribute('index', pageNo.toString());
+                this.links[parseInt(i.toString(), 10)].innerHTML = !pagerObj.customText ? pageNo.toString() : pagerObj.customText + pageNo;
                 if (pagerObj.currentPage !== pageNo) {
-                    this.links[i].classList.add('e-pager-default');
+                    this.links[parseInt(i.toString(), 10)].classList.add('e-pager-default');
                 } else {
-                    this.links[i].classList.remove('e-pager-default');
+                    this.links[parseInt(i.toString(), 10)].classList.remove('e-pager-default');
                 }
             } else {
-                this.links[i].innerHTML = !pagerObj.customText ? pageNo.toString() : pagerObj.customText + pageNo;
-                this.links[i].style.display = 'none';
+                this.links[parseInt(i.toString(), 10)].innerHTML = !pagerObj.customText ? pageNo.toString() : pagerObj.customText + pageNo;
+                this.links[parseInt(i.toString(), 10)].style.display = 'none';
             }
-            classList(this.links[i], [], ['e-currentitem', 'e-active']);
-            this.links[i].removeAttribute('aria-selected');
-            this.links[i].removeAttribute('aria-current');
-            this.links[i].setAttribute('role', 'link');
+            classList(this.links[parseInt(i.toString(), 10)], [], ['e-currentitem', 'e-active']);
+            this.links[parseInt(i.toString(), 10)].removeAttribute('aria-selected');
+            this.links[parseInt(i.toString(), 10)].removeAttribute('aria-current');
+            this.links[parseInt(i.toString(), 10)].setAttribute('role', 'link');
         }
         this.first.setAttribute('index', '1');
         this.last.setAttribute('index', pagerObj.totalPages.toString());

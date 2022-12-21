@@ -50,7 +50,6 @@ export class TableDialog {
 
         parentDiv.appendChild(columnValue);
         parentDiv.appendChild(rowValue);
-
         this.target.appendChild(parentDiv);
 
         this.rowValueTextBox = new NumericTextBox({
@@ -175,7 +174,7 @@ export class TableDialog {
                 this.target.parentElement.removeChild(this.target);
             }
             for (let i: number = 0; i < this.target.childNodes.length; i++) {
-                this.target.removeChild(this.target.childNodes[i]);
+                this.target.removeChild(this.target.childNodes[parseInt(i.toString(), 10)]);
                 i--;
             }
             this.target = undefined;

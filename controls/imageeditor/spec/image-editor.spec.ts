@@ -204,9 +204,6 @@
                  imageEditor.clearSelection();
                  imageEditor.reset();
                  expect(imageEditor.objColl.length).toEqual(0);
-                 imageEditor.freeHandDraw(true);
-                 expect(imageEditor.togglePen).toEqual(true);
-                 imageEditor.applyPenDraw();
                  done();
              }, 100);
          });

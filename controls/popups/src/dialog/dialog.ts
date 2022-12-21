@@ -36,7 +36,6 @@ export interface BeforeSanitizeHtmlArgs {
      * @param {string} value - Returns the value.
      * @returns {string}
      */
-    // eslint-disable-next-line
     helper?: Function
     /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
      *Also possible to modify the block list in this event.
@@ -85,7 +84,6 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
      * @event 'object'
      * @blazorProperty 'OnClick'
      */
-    /* eslint-disable */
     @Event()
     public click: EmitType<Object>;
     /* eslint-enable */
@@ -401,7 +399,6 @@ export interface DragEventArgs {
 @NotifyPropertyChanges
 export class Dialog extends Component<HTMLElement> implements INotifyPropertyChanged {
     // Internal variables
-    /* eslint-disable */
     private closeIconClickEventHandler: Function;
     private dlgOverlayClickEventHandler: Function;
     private createEventHandler: Function;
@@ -429,7 +426,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private focusIndex: number;
     private l10n: L10n;
     private clonedEle: HTMLElement;
-    // eslint-disable-next-line
     private closeArgs: Object;
     private calculatezIndex: boolean;
     private allowMaxHeight: boolean;
@@ -639,7 +635,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @event 'object'
      * @blazorProperty 'Created'
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
     /* eslint-enable */
@@ -650,7 +645,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @blazorProperty 'Opened'
      * @blazorType OpenEventArgs
      */
-    /* eslint-disable */
     @Event()
     public open: EmitType<Object>;
     /* eslint-enable */
@@ -679,7 +673,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @blazorProperty 'Closed'
      * @blazorType CloseEventArgs
      */
-    /* eslint-disable */
     @Event()
     public close: EmitType<Object>;
     /* eslint-enable */
@@ -700,7 +693,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @blazorProperty 'OnDragStart'
      * @blazorType DragStartEventArgs
      */
-    /* eslint-disable */
     @Event()
     public dragStart: EmitType<Object>;
     /* eslint-enable */
@@ -711,7 +703,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @blazorProperty 'OnDragStop'
      * @blazorType DragStopEventArgs
      */
-    /* eslint-disable */
     @Event()
     public dragStop: EmitType<Object>;
     /* eslint-enable */
@@ -722,7 +713,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @blazorProperty 'OnDrag'
      * @blazorType DragEventArgs
      */
-    /* eslint-disable */
     @Event()
     public drag: EmitType<Object>;
     /* eslint-enable */
@@ -732,7 +722,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @event 'object'
      * @blazorProperty 'OnOverlayClick'
      */
-    /* eslint-disable */
     @Event()
     public overlayClick: EmitType<Object>;
     /* eslint-enable */
@@ -742,7 +731,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @event 'object'
      * @blazorProperty 'OnResizeStart'
      */
-    /* eslint-disable */
     @Event()
     public resizeStart: EmitType<Object>;
     /* eslint-enable */
@@ -752,7 +740,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @event 'object'
      * @blazorProperty 'Resizing'
      */
-    /* eslint-disable */
     @Event()
     public resizing: EmitType<Object>;
     /* eslint-enable */
@@ -762,7 +749,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @event 'object'
      * @blazorProperty 'OnResizeStop'
      */
-    /* eslint-disable */
     @Event()
     public resizeStop: EmitType<Object>;
     /* eslint-enable */
@@ -830,7 +816,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.dlgClosedBy = DLG_CLOSE_ICON_CLOSED;
             this.hide(event);
         };
-        // eslint-disable-next-line
         this.dlgOverlayClickEventHandler = (event: Object): void => {
             this.dlgClosedBy = DLG_OVERLAYCLICK_CLOSED;
             (event as {[key: string]: boolean}).preventFocus = false;
@@ -841,7 +826,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.dlgClosedBy = DLG_USER_ACTION_CLOSED;
             });
         };
-        // eslint-disable-next-line
         const localeText: object = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
         this.checkPositionData();
@@ -885,8 +869,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private getEle(list: HTMLCollection, selector: string): Element {
         let element: Element = undefined;
         for (let i: number = 0; i < list.length; i++) {
-            if ((list[i] as Element).classList.contains(selector)) {
-                element = list[i] as Element;
+            if ((list[i as number] as Element).classList.contains(selector)) {
+                element = list[i as number] as Element;
                 break;
             }
         }
@@ -933,12 +917,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             const computedWidth: string = getComputedStyle(this.element).minWidth;
             let direction: string = '';
             for (let i: number = 0; i < this.resizeHandles.length; i++) {
-                if (this.resizeHandles[i] === 'All') {
+                if (this.resizeHandles[i as number] === 'All') {
                     direction = 'south north east west north-east north-west south-east south-west';
                     break;
                 } else {
                     let directionValue: string = '';
-                    switch (this.resizeHandles[i].toString()) {
+                    switch (this.resizeHandles[i as number].toString()) {
                     case 'SouthEast':
                         directionValue = 'south-east';
                         break;
@@ -952,7 +936,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         directionValue = 'north-west';
                         break;
                     default:
-                        directionValue = this.resizeHandles[i].toString();
+                        directionValue = this.resizeHandles[i as number].toString();
                         break;
                     }
                     direction += directionValue.toLocaleLowerCase() + ' ';
@@ -1042,16 +1026,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             (event.keyCode === 13 && event.ctrlKey && (element.tagName.toLowerCase() === 'textarea' ||
                 isContentEdit)) && !isNullOrUndefined(this.primaryButtonEle)) {
             let buttonIndex: number;
-            // eslint-disable-next-line
             const firstPrimary: boolean = this.buttons.some((data: { [key: string]: Object }, index: number) => {
                 buttonIndex = index;
                 // eslint-disable-next-line
                     let buttonModel: { [key: string]: Object } = (data.buttonModel as { [key: string]: Object });
                 return !isNullOrUndefined(buttonModel) && buttonModel.isPrimary === true;
             });
-            if (firstPrimary && typeof (this.buttons[buttonIndex].click) === 'function') {
+            if (firstPrimary && typeof (this.buttons[buttonIndex as number].click) === 'function') {
                 setTimeout(() => {
-                    this.buttons[buttonIndex].click.call(this, event);
+                    this.buttons[buttonIndex as number].click.call(this, event);
                 });
             }
         }
@@ -1131,8 +1114,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
             for (let i: number = 0, childNodes: HTMLCollection = this.dlgContainer.children; i < childNodes.length; i++) {
-                if (childNodes[i].classList.contains('e-dlg-overlay')) {
-                    this.dlgOverlay = childNodes[i] as HTMLElement;
+                if (childNodes[i as number].classList.contains('e-dlg-overlay')) {
+                    this.dlgOverlay = childNodes[i as number] as HTMLElement;
                 }
             }
         }
@@ -1155,7 +1138,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             enableRtl: this.enableRtl,
             // eslint-disable-next-line
             open: (event: Event) => {
-                // eslint-disable-next-line
                 const eventArgs: object = {
                     container: this.isModal ? this.dlgContainer : this.element,
                     element: this.element,
@@ -1165,7 +1147,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (this.enableResize) {
                     this.resetResizeIcon();
                 }
-                // eslint-disable-next-line
                 this.trigger('open', eventArgs, (openEventArgs: {[key: string]: object} ) => {
                     if (!openEventArgs.preventFocus) {
                         this.focusContent();
@@ -1264,16 +1245,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 isDragScroll: true,
                 abort: '.e-dlg-closeicon-btn',
                 handle: handleContent,
-                // eslint-disable-next-line
                 dragStart: (event: Object & BlazorDragEventArgs) => {
-                    // eslint-disable-next-line
                     this.trigger('dragStart', event, (dragEventArgs: Object & BlazorDragEventArgs) => {
                         if (isBlazor()) {
                             dragEventArgs.bindEvents(event.dragElement);
                         }
                     });
                 },
-                // eslint-disable-next-line
                 dragStop: (event: Object) => {
                     if (this.isModal) {
                         if (!isNullOrUndefined(this.position)) {
@@ -1285,7 +1263,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.trigger('dragStop', event);
                     this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
                 },
-                // eslint-disable-next-line
                 drag: (event: Object) => {
                     this.trigger('drag', event);
                 }
@@ -1303,7 +1280,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             // eslint-disable-next-line
             const primaryBtnFlag: boolean = true;
             for (let i: number = 0; i < this.buttons.length; i++) {
-                const buttonType: string = !isNullOrUndefined(this.buttons[i].type) ? this.buttons[i].type.toLowerCase() : 'button';
+                const buttonType: string = !isNullOrUndefined(this.buttons[i as number].type) ? this.buttons[i as number].type.toLowerCase() : 'button';
                 const btn: HTMLElement = this.createElement('button', { className: this.cssClass, attrs: {type: buttonType }});
                 this.buttonContent.push(btn.outerHTML);
             }
@@ -1311,29 +1288,29 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         let footerBtn: NodeListOf<Element>;
         for (let i: number = 0, childNodes: HTMLCollection = this.element.children; i < childNodes.length; i++) {
-            if (childNodes[i].classList.contains(DLG_FOOTER_CONTENT)) {
-                footerBtn = <NodeListOf<Element>>(childNodes[i] as HTMLElement).querySelectorAll('button');
+            if (childNodes[i as number].classList.contains(DLG_FOOTER_CONTENT)) {
+                footerBtn = <NodeListOf<Element>>(childNodes[i as number] as HTMLElement).querySelectorAll('button');
             }
         }
 
         for (let i: number = 0; i < this.buttons.length; i++) {
             if (!this.isBlazorServerRender()) {
-                this.btnObj[i] = new Button(this.buttons[i].buttonModel);
+                this.btnObj[i as number] = new Button(this.buttons[i as number].buttonModel);
             }
             if (this.isBlazorServerRender()) {
                 this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
             }
             if (!isNullOrUndefined(this.ftrTemplateContent) && footerBtn.length > 0) {
-                if (typeof (this.buttons[i].click) === 'function') {
-                    EventHandler.add(footerBtn[i], 'click', this.buttons[i].click, this);
+                if (typeof (this.buttons[i as number].click) === 'function') {
+                    EventHandler.add(footerBtn[i as number], 'click', this.buttons[i as number].click, this);
                 }
-                if (typeof (this.buttons[i].click) === 'object') {
-                    EventHandler.add(footerBtn[i], 'click', this.buttonClickHandler.bind(this, i), this);
+                if (typeof (this.buttons[i as number].click) === 'object') {
+                    EventHandler.add(footerBtn[i as number], 'click', this.buttonClickHandler.bind(this, i), this);
                 }
             }
             if (!this.isBlazorServerRender() && !isNullOrUndefined(this.ftrTemplateContent)) {
-                this.btnObj[i].appendTo(this.ftrTemplateContent.children[i] as HTMLElement);
-                if (this.buttons[i].isFlat){ this.btnObj[i].element.classList.add('e-flat'); }
+                this.btnObj[i as number].appendTo(this.ftrTemplateContent.children[i as number] as HTMLElement);
+                if (this.buttons[i as number].isFlat){ this.btnObj[i as number].element.classList.add('e-flat'); }
                 this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0] as HTMLElement;
             }
         }
@@ -1373,7 +1350,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setTemplate(template: string | HTMLElement, toElement: HTMLElement, prop: string): void {
-        // eslint-disable-next-line
         let templateFn: Function;
         let templateProps: string;
         // eslint-disable-next-line
@@ -1565,7 +1541,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private getValidFocusNode(items: HTMLElement[]): HTMLElement {
         let node: HTMLElement;
         for (let u: number = 0; u < items.length; u++) {
-            node = <HTMLElement>items[u];
+            node = <HTMLElement>items[u as number];
             if ((node.clientHeight > 0 || (node.tagName.toLowerCase() === 'a' && node.hasAttribute('href'))) && node.tabIndex > -1 &&
                 !(node as HTMLInputElement).disabled && !this.disableElement(node, '[disabled],[aria-disabled="true"],[type="hidden"]')) {
                 return node;
@@ -1607,7 +1583,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private disableElement(element: HTMLElement, t: string): HTMLElement {
-        // eslint-disable-next-line
         const elementMatch: Function = element ? element.matches || element.webkitMatchesSelector || element.msGetRegionContent : null;
         if (elementMatch) {
             for (; element; element = <HTMLElement>element.parentNode) {
@@ -1681,10 +1656,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         if (!this.isBlazorServerRender()) {
                             this.contentEle.innerHTML = '';
                         }
-                        // eslint-disable-next-line
                         if (typeof (this.content) === 'function') {
                             this.clearTemplate(['content']); detach(this.contentEle); this.contentEle = null; this.setContent();
                         } else {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                             typeof (this.content) === 'string' ? (this.isBlazorServerRender() && (this.contentEle.innerText === '')) ?
                                 this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
                                 this.updateSanitizeContent() : this.contentEle.appendChild(this.content);
@@ -1773,7 +1748,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.ftrTemplateContent = null;
                 }
                 for (let i : number = 0; i < buttonCount; i++) {
-                    if (!isNullOrUndefined(this.buttons[i].buttonModel)) {
+                    if (!isNullOrUndefined(this.buttons[i as number].buttonModel)) {
                         this.footerTemplate = '';
                         this.setButton();
                     }
@@ -1900,7 +1875,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.unWireEvents();
         if (!isNullOrUndefined(this.btnObj)) {
             for (let i: number = 0; i < this.btnObj.length; i++) {
-                this.btnObj[i].destroy();
+                this.btnObj[i as number].destroy();
             }
         }
         if (!isNullOrUndefined(this.closeIconBtnObj)) {
@@ -1933,12 +1908,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if (!isNullOrUndefined(this.element.children)) {
                 for (let i: number = 0; i <= this.element.children.length; i++) {
                     i = i - i;
-                    detach(this.element.children[i]);
+                    detach(this.element.children[i as number]);
                 }
             }
         }
         for (let i: number = 0; i < attrs.length; i++) {
-            this.element.removeAttribute(attrs[i]);
+            this.element.removeAttribute(attrs[i as number]);
         }
         if (!this.isBlazorServerRender()) {
             super.destroy();
@@ -1989,8 +1964,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.buttons.length > 0 && !isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
             for (let i: number = 0; i < this.buttons.length; i++) {
-                if (typeof (this.buttons[i].click) === 'function') {
-                    EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+                if (typeof (this.buttons[i as number].click) === 'function') {
+                    EventHandler.remove(this.ftrTemplateContent.children[i as number], 'click', this.buttons[i as number].click);
                 }
             }
         }
@@ -2006,12 +1981,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Returns the current width and height of the Dialog
      *
-     * @returns {DialogDimension}
+     * @returns {DialogDimension}- returns the dialog element Dimension.
      * @public
      */
     public getDimension(): DialogDimension {
-        const dialogWidth = this.element.offsetWidth;
-        const dialogHeight = this.element.offsetHeight;
+        const dialogWidth : number = this.element.offsetWidth;
+        const dialogHeight : number = this.element.offsetHeight;
         return {width: dialogWidth, height: dialogHeight};
     }
     /**
@@ -2065,7 +2040,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
                         }
                     }
-                    // eslint-disable-next-line
                     const openAnimation: Object = {
                         name: this.animationSettings.effect + 'In',
                         duration: this.animationSettings.duration,
@@ -2133,7 +2107,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         document.body.classList.contains(SCROLL_DISABLED)) {
                         removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
                     }
-                    // eslint-disable-next-line
                     const closeAnimation: Object = {
                         name: this.animationSettings.effect + 'Out',
                         duration: this.animationSettings.duration,
@@ -2195,7 +2168,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     public getButtons(index?: number): Button[] | Button {
         if (!isNullOrUndefined(index)) {
-            return this.btnObj[index];
+            return this.btnObj[index as number];
         }
         return this.btnObj;
     }
@@ -2347,6 +2320,7 @@ export namespace DialogUtility {
             { effect: 'Fade', duration: 400, delay: 0 };
         options.cssClass = !isNullOrUndefined(option.cssClass) ? option.cssClass : '';
         options.zIndex = !isNullOrUndefined(option.zIndex) ? option.zIndex : 1000;
+        // eslint-disable-next-line
         options.open = !isNullOrUndefined(option.open) ? option.open : null;
         options.width = !isNullOrUndefined(option.width) ? option.width : 'auto';
         options.height = !isNullOrUndefined(option.height) ? option.height : 'auto';
@@ -2423,7 +2397,6 @@ export namespace DialogUtility {
 export interface ButtonArgs {
     icon?: string
     cssClass?: string
-    // eslint-disable-next-line
     click?: EmitType<Object>
     text?: string
 }
@@ -2443,9 +2416,7 @@ export interface AlertDialogArgs {
     animationSettings ?: AnimationSettingsModel
     cssClass?: string
     zIndex?: number
-    // eslint-disable-next-line
     open?: EmitType<Object>
-    // eslint-disable-next-line
     close?: EmitType<Object>
     width?: string | number
     height?: string | number
@@ -2467,9 +2438,7 @@ export interface ConfirmDialogArgs {
     animationSettings ?: AnimationSettingsModel
     cssClass?: string
     zIndex?: number
-    // eslint-disable-next-line
     open?: EmitType<Object>
-    // eslint-disable-next-line
     close?: EmitType<Object>
     width?: string | number
     height?: string | number

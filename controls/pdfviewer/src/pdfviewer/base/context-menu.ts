@@ -234,7 +234,7 @@ export class ContextMenu implements IContextMenu {
             const ul: HTMLElement = this.contextMenuObj.getRootElement();
             for (let j: number = 0; j < this.pdfViewer.contextMenuSettings.contextMenuItems.length; j++) {
                 for (let i: number = 0; i < this.contextMenuList.length; i++) {
-                    let menuItem: string = this.contextMenuList[i].text;
+                    let menuItem: string = this.contextMenuList[parseInt(i.toString(), 10)].text;
                     switch (menuItem) {
                     case 'Highlight':
                         menuItem = 'Highlight context';
@@ -258,17 +258,17 @@ export class ContextMenu implements IContextMenu {
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         break;
                     }
-                    let menuName: string = this.contextMenuList[i].text;
-                    if (j === 0 && menuName !== ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
+                    let menuName: string = this.contextMenuList[parseInt(i.toString(), 10)].text;
+                    if (j === 0 && menuName !== ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[parseInt(j.toString(), 10)]]) {
                         hideMenuItems.push(menuName);
                     }
-                    if (j > 0 && menuName === ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
+                    if (j > 0 && menuName === ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[parseInt(j.toString(), 10)]]) {
                         for (let k: number = 0; k < hideMenuItems.length; k++) {
-                            if (hideMenuItems[k] === menuName) {
+                            if (hideMenuItems[parseInt(k.toString(), 10)] === menuName) {
                                 if (this.pdfViewer.disableContextMenuItems && this.pdfViewer.disableContextMenuItems.length > 0) {
                                     let isDisabled: boolean = false;
                                     for (let l: number = 0; l < this.pdfViewer.disableContextMenuItems.length; l++) {
-                                        if (hideMenuItems[k] === ContextMenuItem[this.pdfViewer.disableContextMenuItems[l]]) {
+                                        if (hideMenuItems[parseInt(k.toString(), 10)] === ContextMenuItem[this.pdfViewer.disableContextMenuItems[parseInt(l.toString(), 10)]]) {
                                             isDisabled = true;
                                         }
                                     }
@@ -295,7 +295,7 @@ export class ContextMenu implements IContextMenu {
         let contextMenuLocaleContent: string[] = [];
         if (hideMenuItems.length > 0) {
             for (let i: number = 0; i < hideMenuItems.length; i++) {
-                let menuItem: string = hideMenuItems[i];
+                let menuItem: string = hideMenuItems[parseInt(i.toString(), 10)];
                 switch (menuItem) {
                     case 'Highlight':
                         menuItem = 'Highlight context';
@@ -424,6 +424,7 @@ export class ContextMenu implements IContextMenu {
      * @returns {void}
      */
     public open(top: number, left: number, target: HTMLElement): void {
+        /* eslint-disable-next-line security/detect-non-literal-fs-filename */
         this.contextMenuObj.open(top, left, target);
     }
 }

@@ -2,23 +2,13 @@
 
 ## [Unreleased]
 
-## 20.3.59 (2022-11-29)
+## 20.4.38 (2022-12-21)
 
 ### Kanban
 
 #### Bug Fixes
 
-- `#FB37730` - Now, dragging and dropping cards quickly onto empty columns works properly.
-
-- `#F178105` - Now, dragging and dropping cards between the columns for the first time will trigger the `dataSourceChanged` event properly.
-
-## 20.3.49 (2022-10-11)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#I407975` - Now, the column clones are created properly when dragging the card when the horizontal page scroll appears and it is scrolled.
+- `#FB37690` - Now, the dragged card is positioned properly when the swimlane is frozen with a fixed height for kanban.
 
 ## 20.2.44 (2022-08-16)
 

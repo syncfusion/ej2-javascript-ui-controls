@@ -1,5 +1,6 @@
 @import 'layout-mixin.scss';
 @include export-module('contextmenu-layout') {
+
   /*! contextmenu layout */
   .e-contextmenu-wrapper,
   .e-contextmenu-container {
@@ -130,9 +131,6 @@
 
     & .e-menu-item  {
       @include bigger-li-size;
-      @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
-        padding: $cmenu-bigger-li-padding;
-      }
 
       & .e-caret {
         font-size: $cmenu-bigger-caret-font-size;

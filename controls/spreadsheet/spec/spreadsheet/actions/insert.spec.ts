@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, InventoryList } from '../util/datasource.spec';
 import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell } from "../../../src/index";
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, EventHandler } from '@syncfusion/ej2-base';
 
 describe('Insert & Delete ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -326,6 +326,348 @@ describe('Insert & Delete ->', () => {
         });
     });
 
+    describe('UI_Interaction for Delete/Insert Row/Column with Freeze Pane', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], frozenRows:5, frozenColumns: 4 }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Delete Row above Freeze pane applied row->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(1, 0, [7], true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Sports Shoes');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Sports Shoes');
+                done();
+            });
+        });
+
+        it('Delete Row below Freeze pane applied row->', (done: Function) => {
+            helper.invoke('selectRange', ['A6']);
+            expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('Running Shoes');
+            expect(helper.invoke('getCell', [6, 0]).textContent).toBe('Running Shoes');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(5, 0, [7], true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe('Running Shoes');
+                expect(helper.invoke('getCell', [5, 0]).textContent).toBe('Running Shoes');
+                done();
+            });
+        });
+
+        it('Delete Column before Freeze pane applied Column->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('Time');
+            expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Time');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 1, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('Time');
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Time');
+                done();
+            });
+        });
+
+        it('Delete Column after Freeze pane applied Column->', (done: Function) => {
+            helper.invoke('selectRange', ['E1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toBe('Discount');
+            expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Discount');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 4, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[4].value).toBe('Discount');
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('Discount');
+                done();
+            });
+        });
+
+        it('Insert Row above Freeze pane applied row->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Sports Shoes');
+            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Sports Shoes');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(1, 0, [6, 1], true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+                done();
+            });
+        });
+
+        it('Insert Column before Freeze pane applied Column->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('Time');
+            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Time');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 1, [6, 1], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('Time');
+                expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Time');
+                done();
+            });
+        });
+
+        it('Insert Row before Freeze Column applied Cell->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unfreezePanes(0);
+            setTimeout(() => {
+                spreadsheet.freezePanes(0,3,0);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['A5']);
+                    expect(helper.getInstance().sheets[0].rows[4].cells[0].value).toBe('Sandals & Floaters');
+                    expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Sandals & Floaters');
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(4, 0, [6, 1], true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe('Sandals & Floaters');
+                        expect(helper.invoke('getCell', [5, 0]).textContent).toBe('Sandals & Floaters');
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('Insert Column before Freeze Row applied Cell->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.unfreezePanes(0);
+            setTimeout(() => {
+                spreadsheet.freezePanes(7,0,0);
+                setTimeout(() => {
+                    helper.invoke('selectRange', ['E1']);
+                    expect(helper.getInstance().sheets[0].rows[0].cells[4].value).toBe('Price');
+                    expect(helper.invoke('getCell', [0, 4]).textContent).toBe('Price');
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(0, 4, [6, 1], false, true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toBe('Price');
+                    expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Price');
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('Insert Row before Freeze Row applied Cell->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.sheets[0].paneTopLeftCell = 'A38'
+            spreadsheet.dataBind();
+            setTimeout(() => {
+                helper.invoke('selectRange', ['A7']);
+                expect(helper.getInstance().sheets[0].rows[7].cells[0].value).toBe('Running Shoes');
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(6, 0, [6, 2], true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[8].cells[0].value).toBe('Running Shoes');
+                    expect(helper.invoke('getCell', [8, 0]).textContent).toBe('Running Shoes');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('UI_Interaction for Delete with Enable Virtualization - false', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rowCount: 20, colCount: 100, ranges: [{ dataSource: defaultData }] }], scrollSettings: { enableVirtualization: false } }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Delete Row with enable virtualization False->', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            expect(helper.getInstance().sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(1, 0, [7], true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Sports Shoes');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Sports Shoes');
+                done();
+            });
+        });
+
+        it('Delete Column with enable virtualization False->', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('Time');
+            expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Time');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 1, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('Time');
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Time');
+                done();
+            });
+        });
+    });
+    
+    describe('UI_Interaction for Delete with Image', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Delete Column with enable virtualization False->', (done: Function) => {
+            helper.invoke('insertImage', [[{src:"https://www.w3schools.com/images/w3schools_green.jpg", height: 400, width: 400}], 'D3']);
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":400,"width":400,"top":40,"left":192}]');
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            helper.invoke('selectRange', ['B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 1, [7], false, true);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[2].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":400,"width":400,"top":40,"left":128}]');
+                done();
+            });
+        });
+    });
+
+    describe('UI_Interaction', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete Column with Reverse Selection->', (done: Function) => {
+            helper.invoke('selectRange', ['H1:G1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 8, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6]).toBeUndefined();
+                expect(helper.getInstance().sheets[0].rows[0].cells[7]).toBeUndefined();
+                done();
+            });
+        });
+        it('Delete Column after Used Range->', (done: Function) => {
+            helper.invoke('selectRange', ['G1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 6, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[6]).toBeUndefined();
+                done();
+            });
+        });
+        it('Delete Column with Used Range and Empty Column->', (done: Function) => {
+            helper.invoke('selectRange', ['F1:G1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 5, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[5]).toBeUndefined();
+                done();
+            });
+        });
+        it('Delete 2nd Column in Merged Cell->', (done: Function) => {
+            helper.invoke('merge', ['B1:C1']);
+            helper.invoke('selectRange', ['C2']);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 2, [7], false, true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('Date');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('Quantity');
+                    done();
+                });
+            });
+        });
+        it('Delete 1st Column in Merged Cell->', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            helper.invoke('merge', ['B1:C1']);
+            helper.invoke('selectRange', ['B2']);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 1, [7], false, true);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBeUndefined();
+                    expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toBe('Quantity');
+                    done();
+                });
+            });
+        });
+        it('Delete Row after Used Range->', (done: Function) => {
+            helper.invoke('selectRange', ['A12']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(11, 0, [7], true, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [11, 0]).textContent).toBe('');
+                done();
+            });
+        });
+        it('Delete Row with Used Range and Empty Row->', (done: Function) => {
+            helper.invoke('selectRange', ['A11:A12']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(11, 0, [7], true, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('');
+                done();
+            });
+        });
+        it('Delete 2nd Row in Merged Cell->', (done: Function) => {
+            helper.invoke('merge', ['A6:A7']);
+            helper.invoke('selectRange', ['B7']);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(6, 0, [7], true, false);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[5].cells[0].value).toBe('Flip- Flops & Slippers');
+                    expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('Running Shoes');
+                    done();
+                });
+            });
+        });
+        it('Delete 1st Row in Merged Cell->', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            helper.invoke('merge', ['A6:A7']);
+            helper.invoke('selectRange', ['B6']);
+            setTimeout(() => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(5, 0, [7], true, false);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [5, 0]).textContent).toBe('');
+                    expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('Running Shoes');
+                    done();
+                });
+            });
+        });
+        it('Delete all Used Range Rows->', (done: Function) => {
+            helper.invoke('selectRange', ['A1:A9']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [7], true, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
+                done();
+            });
+        });
+        it('Delete Column with Unique Formula applied Column->', (done: Function) => {
+            helper.click('#spreadsheet_undo');
+            helper.invoke('selectRange', ['I1']);
+            helper.invoke('updateCell', [{ formula: '=UNIQUE(D2:D11)' }]);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 9, [7], false, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBe('=UNIQUE(D2:D11)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('20');
+                done();
+            });
+        });
+        it('Delete Row with Unique Formula applied Row->', (done: Function) => {
+            helper.invoke('selectRange', ['A12']);
+            helper.invoke('updateCell', [{ formula: '=UNIQUE(A2:H2)' }]);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(11, 0, [7], true, false);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[11].cells[0].formula).toBe('=UNIQUE(A2:H2)');
+                expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBe('Casual Shoes');
+                done();
+            });
+        });
+    });
+    
     describe('CR-Issues ->', () => {
         describe('I289560 ->', () => {
             beforeEach((done: Function) => {
@@ -1977,10 +2319,10 @@ describe('Insert & Delete ->', () => {
         describe('EJ2-54284, EJ2-52375->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
-                    sheets: [{ rowCount: 11, colCount: 8, rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] },
+                    sheets: [{ name: 'Reserves & Resources', rowCount: 11, colCount: 8, rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] },
                     { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ value: '6' }] },
                     { cells: [{ value: '7' }] },  { cells: [{ value: '8' }] },  { cells: [{ value: '9' }] }, { cells: [{ value: '10' }] }, { cells: [{ value: '11' }] }] }],
-                    scrollSettings: { isFinite: true}
+                    scrollSettings: { isFinite: true }
                 }, done);
             });
             afterAll(() => {
@@ -2024,14 +2366,19 @@ describe('Insert & Delete ->', () => {
                 });
             });
 
-            it('EJ2-52375 - Update row height based on cell template and update range on insert row->', (done: Function) => {
+            it('EJ2-52375 - Update row height based on cell template and update range and formula cell reference on insert row->', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: `=${'Reserves & Resources'}!A5+${'Reserves & Resources'}!A6` }, 'B2']);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].formula).toBe(`=${'Reserves & Resources'}!A5+${'Reserves & Resources'}!A6`);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe('11');
                 helper.invoke('selectRange', ['A2']);
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                 helper.openAndClickCMenuItem(1, 0, [6, 2], true);
                 setTimeout(() => {
-                    const spreadsheet: Spreadsheet = helper.getInstance();
                     expect(spreadsheet.sheets[0].rows[10].cells[0].value.toString()).toBe('10');
                     expect(spreadsheet.sheets[0].rowCount).toBe(12);
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].formula).toBe(`=${'Reserves & Resources'}!A6+${'Reserves & Resources'}!A7`);
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe('11');
                     done();
                 });
             });
@@ -2040,6 +2387,22 @@ describe('Insert & Delete ->', () => {
                 helper.invoke('insertRow', [12, 12]);
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rowCount).toBe(13);
+                    done();
+                });
+            });
+            it('Formula cell reference on insert column and delete row/column->', (done: Function) => {
+                helper.invoke('insertColumn');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[2].formula).toBe(`=${'Reserves & Resources'}!B6+${'Reserves & Resources'}!B7`);
+                expect(spreadsheet.sheets[0].rows[1].cells[2].value).toBeNull();
+                helper.invoke('delete', [0, 0, 'Column']);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].formula).toBe(`=${'Reserves & Resources'}!A6+${'Reserves & Resources'}!A7`);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBeNull('11');
+                helper.invoke('delete', [2, 2, 'Row']);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].formula).toBe(`=${'Reserves & Resources'}!A5+${'Reserves & Resources'}!A6`);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBeNull();
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe('11');
                     done();
                 });
             });

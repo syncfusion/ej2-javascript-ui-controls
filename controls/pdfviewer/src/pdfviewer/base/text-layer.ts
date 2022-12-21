@@ -84,28 +84,28 @@ export class TextLayer {
             for (let i: number = 0; i < textContents.length; i++) {
                 // eslint-disable-next-line
                 if ((!(textContents[i].includes("\r\n")) && !(textContents[i].includes("\u0002"))) && i != textBounds.length - 1 && rotation ===0 && !rtldoc) {
-                    linebounds.push(textBounds[i]);
-                    lineContent.push(textContents[i]);
-                    if (yValue > textBounds[i].Y && textBounds[i].Width !== 0) {
-                        yValue = textBounds[i].Y;
+                    linebounds.push(textBounds[parseInt(i.toString(), 10)]);
+                    lineContent.push(textContents[parseInt(i.toString(), 10)]);
+                    if (yValue > textBounds[parseInt(i.toString(), 10)].Y && textBounds[parseInt(i.toString(), 10)].Width !== 0) {
+                        yValue = textBounds[parseInt(i.toString(), 10)].Y;
                     }
-                    if (heightValue < textBounds[i].Height && textBounds[i].Width !== 0) {
-                        heightValue = textBounds[i].Height;
+                    if (heightValue < textBounds[parseInt(i.toString(), 10)].Height && textBounds[parseInt(i.toString(), 10)].Width !== 0) {
+                        heightValue = textBounds[parseInt(i.toString(), 10)].Height;
                     }
                 } else {
-                    linebounds.push(textBounds[i]);
-                    lineContent.push(textContents[i]);
-                    if (yValue > textBounds[i].Y && textBounds[i].Width !== 0) {
-                        yValue = textBounds[i].Y;
+                    linebounds.push(textBounds[parseInt(i.toString(), 10)]);
+                    lineContent.push(textContents[parseInt(i.toString(), 10)]);
+                    if (yValue > textBounds[parseInt(i.toString(), 10)].Y && textBounds[parseInt(i.toString(), 10)].Width !== 0) {
+                        yValue = textBounds[parseInt(i.toString(), 10)].Y;
                     }
-                    if (heightValue < textBounds[i].Height && textBounds[i].Width !== 0) {
-                        heightValue = textBounds[i].Height;
+                    if (heightValue < textBounds[parseInt(i.toString(), 10)].Height && textBounds[parseInt(i.toString(), 10)].Width !== 0) {
+                        heightValue = textBounds[parseInt(i.toString(), 10)].Height;
                     }
                     for (let j: number = 0; j < linebounds.length; j++) {
-                        let bounds: any = linebounds[j];
+                        let bounds: any = linebounds[parseInt(j.toString(), 10)];
                         // eslint-disable-next-line max-len
                         const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + idNumber, className: 'e-pv-text', attrs: { 'tabindex': '-1' } });
-                        const textContent: string = lineContent[j];
+                        const textContent: string = lineContent[parseInt(j.toString(), 10)];
                         if (textContent === " " && j != linebounds.length - 1 && j != 0) {
                             bounds.Height = linebounds[j - 1].Height;
                             bounds.Y = linebounds[j - 1].Y;
@@ -117,7 +117,7 @@ export class TextLayer {
                             textDiv.style.whiteSpace = 'pre';
                         }
                         if (bounds.Width === 0 && j != linebounds.length - 1 && j != 0) {
-                            if (linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width) < 30 && (!lineContent[j - 1].includes("\r\n") && !(textContents[j].includes("\u0002")))) {
+                            if (linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width) < 30 && (!lineContent[j - 1].includes("\r\n") && !(textContents[parseInt(j.toString(), 10)].includes("\u0002")))) {
                                 bounds.Width = linebounds[j + 1].X - (linebounds[j - 1].X + linebounds[j - 1].Width);
                                 bounds.X = linebounds[j - 1].X + linebounds[j - 1].Width;
                                 if (bounds.Width < 0) {
@@ -127,9 +127,9 @@ export class TextLayer {
                                 }
                             }
                         }
-                        if ((j != 0 || linebounds.length - 1 === 0 || (bounds.Y - yValue) > 20 && bounds.Width != 0) && idNumber != 0 && ((textBounds[idNumber - 1].Y - textBounds[idNumber].Y) > 11 || ((textBounds[idNumber].Y - textBounds[idNumber - 1].Y) > 11)) && lineContent[j] != " ") {
-                            yValue = linebounds[j].Y;
-                            heightValue = linebounds[j].Height;
+                        if ((j != 0 || linebounds.length - 1 === 0 || (bounds.Y - yValue) > 20 && bounds.Width != 0) && idNumber != 0 && ((textBounds[idNumber - 1].Y - textBounds[parseInt(idNumber.toString(), 10)].Y) > 11 || ((textBounds[parseInt(idNumber.toString(), 10)].Y - textBounds[idNumber - 1].Y) > 11)) && lineContent[parseInt(j.toString(), 10)] != " ") {
+                            yValue = linebounds[parseInt(j.toString(), 10)].Y;
+                            heightValue = linebounds[parseInt(j.toString(), 10)].Height;
                         }
                         if (bounds) {
                             bounds.Y = yValue;
@@ -139,7 +139,7 @@ export class TextLayer {
                         this.setTextElementProperties(textDiv);
                         const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                         context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
-                        const contextWidth: number = context.measureText(lineContent[j].replace(/(\r\n|\n|\r)/gm, '')).width;
+                        const contextWidth: number = context.measureText(lineContent[parseInt(j.toString(), 10)].replace(/(\r\n|\n|\r)/gm, '')).width;
                         if (bounds) {
                             const scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
                             this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
@@ -194,7 +194,7 @@ export class TextLayer {
                     break;
                 }
                 if (textBounds) {
-                    bounds = textBounds[i];
+                    bounds = textBounds[parseInt(i.toString(), 10)];
                     if (bounds) {
                         this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
                     }
@@ -204,7 +204,7 @@ export class TextLayer {
                 context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
                 let contextWidth: number;
                 if (textContents) {
-                    const textContent: string = textContents[i];
+                    const textContent: string = textContents[parseInt(i.toString(), 10)];
                     if (textContent) {
                         contextWidth = context.measureText(textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
                     }
@@ -330,17 +330,17 @@ export class TextLayer {
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         const textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayers.length; i++) {
-            (textLayers[i] as HTMLElement).style.display = 'block';
+            (textLayers[parseInt(i.toString(), 10)] as HTMLElement).style.display = 'block';
             if (this.pdfViewerBase.getMagnified() && (this.getTextSelectionStatus() || this.getTextSearchStatus())) {
                 // eslint-disable-next-line radix
-                const pageNumber: number = parseInt((textLayers[i] as HTMLElement).id.split('_textLayer_')[1]);
+                const pageNumber: number = parseInt((textLayers[parseInt(i.toString(), 10)] as HTMLElement).id.split('_textLayer_')[1]);
                 if (!(((lowerPageValue + 1) <= pageNumber) && (pageNumber <= (higherPageValue - 1)))) {
-                    this.removeElement(textLayers[i] as HTMLElement, isPinchZoomed);
+                    this.removeElement(textLayers[parseInt(i.toString(), 10)] as HTMLElement, isPinchZoomed);
                 }
             } else if (this.pdfViewerBase.getPinchZoomed()) {
-                this.removeElement(textLayers[i] as HTMLElement, isPinchZoomed);
+                this.removeElement(textLayers[parseInt(i.toString(), 10)] as HTMLElement, isPinchZoomed);
             } else {
-                this.removeElement(textLayers[i] as HTMLElement, isPinchZoomed);
+                this.removeElement(textLayers[parseInt(i.toString(), 10)] as HTMLElement, isPinchZoomed);
             }
         }
     }
@@ -367,16 +367,16 @@ export class TextLayer {
             for (let i: number = 0; i < childElement.length; i++) {
                 if (Browser.isDevice) {
                     //Remove the outer div element of checkbox and other formfields in pichzoom
-                    if (childElement[i].parentElement.className === 'e-pv-text-layer' && childElement[0].parentElement.className !== 'e-pv-checkbox-outer-div') {
+                    if (childElement[parseInt(i.toString(), 10)].parentElement.className === 'e-pv-text-layer' && childElement[0].parentElement.className !== 'e-pv-checkbox-outer-div') {
                         element.removeChild(childElement[0]);
-                    } else if (childElement[i].parentElement.className === 'e-pv-checkbox-outer-div') {
+                    } else if (childElement[parseInt(i.toString(), 10)].parentElement.className === 'e-pv-checkbox-outer-div') {
                         let outerDivParent: Element = document.getElementById(childElement[0].parentElement.id);
                         if (outerDivParent) {
                             outerDivParent.parentElement.remove();
                         }
                     }
                 } else {
-                    if (childElement[i].parentElement.className === 'e-pv-text-layer') {
+                    if (childElement[parseInt(i.toString(), 10)].parentElement.className === 'e-pv-text-layer') {
                         element.removeChild(childElement[0]);
                     }
                 }
@@ -481,9 +481,9 @@ export class TextLayer {
     public clearDivSelection(): void {
         const textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayers.length; i++) {
-            const childNodes: NodeList = textLayers[i].childNodes;
+            const childNodes: NodeList = textLayers[parseInt(i.toString(), 10)].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
-                const textDiv: HTMLElement = (childNodes[j] as HTMLElement);
+                const textDiv: HTMLElement = (childNodes[parseInt(j.toString(), 10)] as HTMLElement);
                 // eslint-disable-next-line max-len
                 if (textDiv.className !== 'e-pdfviewer-formFields' && textDiv.className !== 'e-pdfviewer-signatureformfields' && textDiv.className !== 'e-pdfviewer-signatureformfields-signature') {
                     const textContent: string = textDiv.textContent;
@@ -521,9 +521,9 @@ export class TextLayer {
     public modifyTextCursor(isAdd: boolean): void {
         const textLayerList: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayerList.length; i++) {
-            const childNodes: NodeList = textLayerList[i].childNodes;
+            const childNodes: NodeList = textLayerList[parseInt(i.toString(), 10)].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
-                const textElement: HTMLElement = (childNodes[j] as HTMLElement);
+                const textElement: HTMLElement = (childNodes[parseInt(j.toString(), 10)] as HTMLElement);
                 // eslint-disable-next-line max-len
                 if (isAdd && textElement.className !== 'e-pdfviewer-formFields' && textElement.className !== 'e-pdfviewer-signatureformfields' && textElement.className !== 'e-pdfviewer-signatureformfields-signature') {
                     textElement.classList.add('e-pv-cursor');

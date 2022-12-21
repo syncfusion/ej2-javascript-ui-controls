@@ -1,4 +1,4 @@
-import { Workbook, SheetModel, setColumn, ColumnModel, getSheet, CellModel, setCell } from '../base/index';
+import { Workbook, SheetModel, setColumn, ColumnModel, getSheet, setCell } from '../base/index';
 import { ProtectSettings, UnprotectArgs } from '../common/index';
 import { protectsheetHandler, protectSheetWorkBook, updateToggle, setLockCells } from '../common/index';
 import { unprotectsheetHandler } from '../common/index';
@@ -20,7 +20,8 @@ export class WorkbookProtectSheet {
         this.parent = workbook;
         this.addEventListener();
     }
-    private protectsheetHandler(args: {protectSettings: ProtectSettings, password?: string, sheetIndex: number, triggerEvent: boolean}): void {
+    private protectsheetHandler(
+        args: { protectSettings: ProtectSettings, password?: string, sheetIndex: number, triggerEvent: boolean}): void {
         const sheetIndex: number = isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         this.parent.setSheetPropertyOnMute(sheet, 'isProtected', true);
@@ -77,8 +78,8 @@ export class WorkbookProtectSheet {
         }
     }
 
-    private lockCells(args: {range: string, isLocked?: boolean, triggerEvent?:boolean }): void {
-        const addressInfo = this.parent.getAddressInfo(args.range);
+    private lockCells(args: {range: string, isLocked?: boolean, triggerEvent?: boolean }): void {
+        const addressInfo: { sheetIndex: number,  indices: number[] } = this.parent.getAddressInfo(args.range);
         const indexes: number[] = getSwapRange(addressInfo.indices);
         const sheet: SheetModel = getSheet(this.parent, addressInfo.sheetIndex);
         const isLocked: boolean = args.isLocked ? args.isLocked : false;

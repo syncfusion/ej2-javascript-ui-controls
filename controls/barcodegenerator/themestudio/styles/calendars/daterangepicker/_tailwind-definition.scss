@@ -109,6 +109,7 @@ $range-small-header-label-size: $text-base !default;
 $range-bigger-indicator-label-size: $text-sm !default;
 $range-bigger-change-icon-size: 20px !default;
 $range-control-bigger-header-margin: 12px 0 !default;
+$range-calendar-landscape-height: 130px !default;
 
 // new variable
 $range-icon: '\e245' !default;
@@ -120,6 +121,7 @@ $range-change-icon: '\e85f' !default;
 $range-rtl-icon-next: '\e921' !default;
 $range-rtl-icon-prev: '\e913' !default;
 $range-rtl-icon-change: '\e85b' !default;
+
 // Mouse small size
 $range-small-font-size: 12px !default;
 $range-start-end-container-small-height: 32px !default;
@@ -160,10 +162,13 @@ $range-text-nowrap: nowrap !default;
 $range-direction-left: ltr !default;
 $range-text-overflow: ellipsis !default;
 $range-calendar-other-normal-border: none !default;
+
 // mouse small icon
 $range-small-icon-font-size: 14px !default;
+
 // touch small icon
 $range-bigger-small-icon-font-size: 18px !default;
+
 // color variables
 $range-bg-color: $content-bg-color !default;
 $range-primary-color: $primary !default;
@@ -210,6 +215,7 @@ $range-cancel-flat-btn-bgcolor: $secondary-bg-color !default;
 $range-cancel-flat-btn-border-color: $secondary-border-color !default;
 $range-cancel-flat-btn-box-shadow: $shadow-sm !default;
 $range-cancel-flat-btn-color: $secondary-text-color !default;
+
 // Apply primary button custom styling
 $range-apply-btn-primary-bgcolor: $primary-bg-color !default;
 $range-apply-btn-primary-border-color: $primary-border-color !default;

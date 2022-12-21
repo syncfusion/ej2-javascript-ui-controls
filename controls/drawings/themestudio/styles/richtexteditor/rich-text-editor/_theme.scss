@@ -470,15 +470,15 @@
     width: $rte-drop-text-width;
   }
 
-  .e-dialog .e-vid-uploadwrap .e-droptext {
-    height: 108px;
-  }
-
-  .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap .e-droptext {
+  .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap .e-droptext,
+  .e-dialog.e-device.e-dlg-modal .e-vid-uploadwrap .e-droptext,
+  .e-dialog.e-device.e-dlg-modal .e-aud-uploadwrap .e-droptext {
     margin: 0 auto;
     width: $rte-drop-text-mobile-width;
   }
-
+  .e-dialog.e-device .e-video-url-wrap .e-radio-wrapper {
+    padding: 8px 4px;
+  }
   .e-linkheader {
     color: $rte-img-header-clr;
   }
@@ -563,6 +563,11 @@
   .e-rte-table-popup.e-popup.e-popup-open {
     background-color: $rte-content-bg;
     color: $rte-item-color;
+  }
+
+  .e-richtexteditor .e-rte-toolbar .e-hor-nav:hover{
+    border: solid rgba(0, 0, 0, .12);
+    border-width: $rte-toolbar-hor-nav-border-width;
   }
 
   @if $skin-name == 'bootstrap5' {

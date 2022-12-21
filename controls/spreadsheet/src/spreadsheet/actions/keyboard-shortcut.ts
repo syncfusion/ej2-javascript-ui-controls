@@ -46,7 +46,7 @@ export class KeyboardShortcut {
     private ribbonShortCuts(e: KeyboardEvent): void {//switch between ribbon tabs
         if (this.parent.showRibbon && e.altKey && !e.ctrlKey && !e.shiftKey) {
             const tabObj: Tab = this.parent.ribbonModule.ribbon.tabObj;
-            if (e.keyCode == 72) { /*alt + H =home*/
+            if (e.keyCode === 72) { /*alt + H =home*/
                 e.preventDefault();
                 tabObj.select(1);
             }
@@ -92,9 +92,10 @@ export class KeyboardShortcut {
         // tab and shift + tab
         if ((e.keyCode === 9 || (e.shiftKey && e.keyCode === 9)) && closest(document.activeElement, '.e-ribbon') || closest(document.activeElement, '.e-chart')) {
             let id: string;
-            let selectedTab: number = this.parent.ribbonModule.ribbon.selectedTab;
+            const selectedTab: number = this.parent.ribbonModule.ribbon.selectedTab;
             const items: RibbonItem[] = this.parent.ribbonModule.ribbon.items;
-            const tabItems: ItemModel[] = e.shiftKey ? items[selectedTab].content.slice().reverse() : items[selectedTab].content;
+            const tabItems: ItemModel[] = e.shiftKey ? items[selectedTab as number].content.slice().reverse() :
+                items[selectedTab as number].content;
             let selectedItem: number;
             if (closest(document.activeElement, '.e-tab-header')) {
                 selectedItem = 0;
@@ -102,14 +103,15 @@ export class KeyboardShortcut {
                 const toolbarItem: Element = closest(document.activeElement, '.e-toolbar-item');
                 if (toolbarItem) {
                     const toolbarSibilings: Element[] = [].slice.call(toolbarItem.parentElement.children);
-                    selectedItem = (e.shiftKey ? toolbarSibilings.reverse().indexOf(toolbarItem) : toolbarSibilings.indexOf(toolbarItem)) + 1;
+                    selectedItem = (e.shiftKey ? toolbarSibilings.reverse().indexOf(toolbarItem) :
+                        toolbarSibilings.indexOf(toolbarItem)) + 1;
                 }
             }
             for (let i: number = selectedItem; i <= tabItems.length; i++) {
                 if (i === tabItems.length) {
                     i = -1; continue;
                 }
-                id = (selectedTab === 5 && tabItems[i].id === '') ? tabItems[i].type.toLowerCase() : tabItems[i].id;
+                id = (selectedTab === 5 && tabItems[i as number].id === '') ? tabItems[i as number].type.toLowerCase() : tabItems[i as number].id;
                 if (id.indexOf('separator') < 0) {
                     if (id.includes('find')) {
                         id = id.replace('find', 'findbtn');
@@ -118,14 +120,14 @@ export class KeyboardShortcut {
                     }
                     if (selectedTab === 5) {
                         if (id.includes('chart_type')) {
-                            id = id.replace('chart_type', 'chart-type-btn')
+                            id = id.replace('chart_type', 'chart-type-btn');
                         }
                         else if (id.includes('add_chart_ element_chart')) {
                             id = id.replace('add_chart_ element_chart', '_addchart');
                         }
                     }
                     let element: HTMLElement = this.parent.element.querySelector('#' + id);
-                    if (!tabItems[i].disabled) {
+                    if (!tabItems[i as number].disabled) {
                         if (element.classList.contains('e-colorpicker-wrapper')) {
                             element = element.querySelector('.e-split-btn');
                         }
@@ -240,7 +242,7 @@ export class KeyboardShortcut {
         }
         //general key actions
         if ((e.ctrlKey || e.metaKey) && !isSelectionNone) {
-            let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            const indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
             if (e.keyCode === 57) {   /*ctrl + 9(row-hide)*/
                 e.preventDefault();
                 this.parent.notify(hideShow, <HideShowEventArgs>{
@@ -307,7 +309,7 @@ export class KeyboardShortcut {
             }
         }
 
-        if (e.shiftKey && e.keyCode == 122) { // shift+f11
+        if (e.shiftKey && e.keyCode === 122) { // shift+f11
             this.parent.notify(insertModel, <InsertDeleteModelArgs>{
                 model: this.parent, start: this.parent.activeSheetIndex + 1, end:
                     this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1

@@ -13,7 +13,7 @@ import { intToDate } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
 import { workbookFormulaOperation, selectionComplete } from '../../workbook/common/event';
-import { isFormulaBarEdit } from '../common/event';
+import { isFormulaBarEdit, removeAllChildren } from '../common/index';
 
 /**
  * Represents Formula bar for Spreadsheet.
@@ -83,7 +83,7 @@ export class FormulaBar {
             const text: string = l10n.getConstant('ExpandFormulaBar');
             fBarWrapper.appendChild(
                 this.parent.createElement('span', { className: 'e-drop-icon e-icons', attrs: { 'title': text, 'role': 'button',
-                'tabindex': '-1', 'aria-label': text } }));
+                    'tabindex': '-1', 'aria-label': text } }));
         }
         if (args && args.uiUpdate) {
             this.parent.element.insertBefore(fBarWrapper, document.getElementById(id + '_sheet_panel'));
@@ -375,7 +375,7 @@ export class FormulaBar {
         }
     }
 
-    private  renderInsertDlg():void{
+    private  renderInsertDlg(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let isOpen: boolean = !this.parent.isEdit;
         const args: { [key: string]: Object } = { action: 'getCurrentEditValue', editedValue: '' };
@@ -401,26 +401,21 @@ export class FormulaBar {
                 'div', { className: 'e-description-content', innerHTML: l10n.getConstant('Description') });
             const headerContent: HTMLElement = this.parent.createElement(
                 'div', { className: 'e-header-content', innerHTML: l10n.getConstant('InsertFunction') });
-                const categoryArgs: { action: string, categoryCollection: string[] } = {
-                    action: 'getFormulaCategory', categoryCollection: []
-                };
-                this.parent.notify(workbookFormulaOperation, categoryArgs);
-                this.categoryCollection = categoryArgs.categoryCollection;
-                this.categoryList = new DropDownList({
-                    dataSource: this.categoryCollection, index: 0, width: '285px', popupHeight: '210px',
-                    select: this.dropDownSelect.bind(this)
-                });
-                const listArgs: { action: string, formulaCollection: string[] } = {
-                    action: 'getLibraryFormulas', formulaCollection: []
-                };
-                this.parent.notify(workbookFormulaOperation, listArgs);
-                this.formulaCollection = listArgs.formulaCollection;
-                this.formulaList = new ListView({
-                    dataSource: this.formulaCollection.sort(),
-                    actionComplete: this.updateFormulaList.bind(this),
-                    select: this.listSelected.bind(this), width: '285px', height: '200px'
-                });
-            this.dialog =  (this.parent.serviceLocator.getService(dialog) as Dialog);
+            const categoryArgs: { action: string, categoryCollection: string[] } = { action: 'getFormulaCategory', categoryCollection: [] };
+            this.parent.notify(workbookFormulaOperation, categoryArgs);
+            this.categoryCollection = categoryArgs.categoryCollection;
+            this.categoryList = new DropDownList({
+                dataSource: this.categoryCollection, index: 0, width: '285px', popupHeight: '210px', select: this.dropDownSelect.bind(this)
+            });
+            const listArgs: { action: string, formulaCollection: string[] } = { action: 'getLibraryFormulas', formulaCollection: [] };
+            this.parent.notify(workbookFormulaOperation, listArgs);
+            this.formulaCollection = listArgs.formulaCollection;
+            this.formulaList = new ListView({
+                dataSource: this.formulaCollection.sort(),
+                actionComplete: this.updateFormulaList.bind(this),
+                select: this.listSelected.bind(this), width: '285px', height: '200px'
+            });
+            this.dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
             if (!this.parent.element.querySelector('.e-spreadsheet-function-dlg')) {
                 this.dialog.show({
                     header: headerContent.outerHTML,
@@ -464,7 +459,7 @@ export class FormulaBar {
         this.parent.setPanelSize();
     }
 
-    private toggleFormulaBarBtn(){
+    private toggleFormulaBarBtn(): void {
         const formulaExpand : HTMLElement = this.parent.element.querySelector('.e-formula-bar-panel .e-drop-icon');
         this.toggleFormulaBar(formulaExpand);
     }
@@ -493,6 +488,10 @@ export class FormulaBar {
         dialogContentEle.parentNode.removeChild(dialogContentEle);
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (this.dialog.dialogInstance as any).storeActiveElement = document.getElementById(this.parent.element.id + '_edit');
+        this.categoryList.destroy();
+        this.categoryList = null;
+        this.formulaList.destroy();
+        this.formulaList = null;
     }
 
     private selectFormula(dialog: Dialog, formulaBarObj: FormulaBar): void {
@@ -544,7 +543,7 @@ export class FormulaBar {
     }
     private updateFormulaDescription(): void {
         let selectedFormula: string | string[] | number | number[] = this.formulaList.getSelectedItems().text;
-        const descriptionArgs: { action: string, description: string, selectedList: string | string[] | number | number[] , isCustom:boolean } = {
+        const descriptionArgs: { action: string, description: string, selectedList: string | string[] | number | number[], isCustom:boolean } = {
             action: 'getFormulaDescription',
             description: '',
             selectedList: selectedFormula,
@@ -558,7 +557,7 @@ export class FormulaBar {
         focus(okBtn);
         const descriptionArea: Element = document.getElementById(this.parent.element.id + '_description_content');
         selectedFormula = (selectedFormula === 'AND') ? 'CalculateAND' : (selectedFormula === 'OR') ? 'CalculateOR' : selectedFormula;
-        descriptionArea.textContent =  descriptionArgs.isCustom?descriptionArgs.description:(this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
+        descriptionArea.textContent = descriptionArgs.isCustom?descriptionArgs.description:(this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
     }
     private formulaClickHandler(args: MouseEvent & TouchEvent): void {
         const trgtElem: HTMLElement = <HTMLElement>args.target;
@@ -583,7 +582,7 @@ export class FormulaBar {
         this.parent.on(click, this.formulaBarClickHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(renderInsertDlg, this.renderInsertDlg, this);
-        this.parent.on(toggleFormulaBar,this.toggleFormulaBarBtn,this);
+        this.parent.on(toggleFormulaBar, this.toggleFormulaBarBtn,this);
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(selectionComplete, this.formulaBarUpdateHandler, this);
         this.parent.on(mouseUpAfterSelection, this.UpdateValueAfterMouseUp, this);
@@ -595,10 +594,17 @@ export class FormulaBar {
         this.removeEventListener();
         this.comboBoxInstance.destroy();
         this.comboBoxInstance = null;
+        this.categoryCollection = null;
+        this.formulaCollection = null;
+        this.dialog = null;
+        this.isGoto = null;
         this.insertFnRipple();
         this.insertFnRipple = null;
         const formulaPanel: Element = this.parent.element.querySelector('.e-formula-bar-panel');
-        if (formulaPanel) { detach(formulaPanel); }
+        if (formulaPanel) {
+            removeAllChildren(formulaPanel);
+            detach(formulaPanel);
+        }
     }
 
     private removeEventListener(): void {

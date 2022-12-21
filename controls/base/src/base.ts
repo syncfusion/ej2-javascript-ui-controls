@@ -85,14 +85,14 @@ export abstract class Base<ElementType extends HTMLElement> {
     private static callChildDataBind(obj: Object, parent: { [key: string]: any }): void {
         const keys: string[] = Object.keys(obj);
         for (const key of keys) {
-            if (parent[key] instanceof Array) {
-                for (const obj of parent[key]) {
+            if (parent[`${key}`] instanceof Array) {
+                for (const obj of parent[`${key}`]) {
                     if (obj.dataBind !== undefined) {
                         obj.dataBind();
                     }
                 }
             } else {
-                parent[key].dataBind();
+                parent[`${key}`].dataBind();
             }
         }
     }
@@ -130,8 +130,8 @@ export abstract class Base<ElementType extends HTMLElement> {
         newChanges = newChanges ? newChanges : {};
         extend(this.bulkChanges, {}, newChanges, true);
         const sfBlazor: string = 'sfBlazor';
-        if (this.allowServerDataBinding && (window as any)[sfBlazor].updateModel) {
-            (window as any)[sfBlazor].updateModel(this);
+        if (this.allowServerDataBinding && (window as any)[`${sfBlazor}`].updateModel) {
+            (window as any)[`${sfBlazor}`].updateModel(this);
             this.bulkChanges = {};
         }
     }
@@ -141,14 +141,14 @@ export abstract class Base<ElementType extends HTMLElement> {
         if (isBlazor()) {
             // tslint:disable-next-line:no-any
             const newChanges: any = {};
-            newChanges[key] = newValue;
+            newChanges[`${key}`] = newValue;
             this.serverDataBind(newChanges);
         }
         if (this.isProtectedOnChange) {
             return;
         }
-        this.oldProperties[key] = oldValue;
-        this.changedProperties[key] = newValue;
+        this.oldProperties[`${key}`] = oldValue;
+        this.changedProperties[`${key}`] = newValue;
         this.finalUpdate();
         this.finalUpdate = setImmediate(this.dataBind.bind(this));
     }
@@ -199,7 +199,7 @@ export abstract class Base<ElementType extends HTMLElement> {
                 const handler: Function = getValue(eventName, this);
                 if (handler) {
                     const blazor: string = 'Blazor';
-                    if (window[blazor]) {
+                    if (window[`${blazor}`]) {
                         const promise: Promise<object> = handler.call(this, eventProp);
                         if (promise && typeof promise.then === 'function') {
                             if (!successHandler) {
@@ -309,7 +309,7 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
     let i: number;
     const ele: HTMLElement = typeof elem === 'string' ? document.getElementById(elem) : elem;
     for (i = 0; i < (<DomElements>(ele as HTMLElement)).ej2_instances.length; i++) {
-        instance = <T>(ele as DomElements).ej2_instances[i];
+        instance = <T>(ele as DomElements).ej2_instances[parseInt(i.toString(), 10)];
         if (typeof comp === 'string') {
             const compName: string = (instance as { getModuleName: () => string } & T).getModuleName();
             if (comp === compName) {
@@ -337,9 +337,9 @@ export function removeChildInstance(element: HTMLElement): void {
     // tslint:disable-next-line:no-any
     const childEle: any = [].slice.call(element.getElementsByClassName('e-control'));
     for (let i: number = 0; i < childEle.length; i++) {
-        const compName: string = childEle[i].classList[1].split('e-')[1];
+        const compName: string = childEle[parseInt(i.toString(), 10)].classList[1].split('e-')[1];
         // tslint:disable-next-line:no-any
-        const compInstance: any = getComponent(childEle[i], compName);
+        const compInstance: any = getComponent(childEle[parseInt(i.toString(), 10)], compName);
         if (!isUndefined(compInstance)) {
             compInstance.destroy();
         }

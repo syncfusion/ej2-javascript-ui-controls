@@ -55,200 +55,198 @@ export class PdfGanttPredecessor {
         let childPageData: PageDetail;
         let parentY: number = 0;
         let childY: number = 0;
-        if (childTask && parentTask) {
-            switch (this.type) {
-                case 'FS':
-                    if (childTask.startPage > -1 && parentTask.endPage > -1) {
-                        startPage = pages[parentTask.endPage];
-                        endPage = pages[childTask.startPage];
-                        parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
-                        childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
-                        if (this.parentIndex < this.childIndex) {
-                            if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
-                                predecessorType = 'FSType1';
-                            } else {
-                                predecessorType = 'FSType2';
-                            }
-                        } else {
-                            if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
-                                predecessorType = 'FSType3';
-                            } else {
-                                predecessorType = 'FSType4';
-                            }
-                        }
+        switch (this.type) {
+        case 'FS':
+            if (childTask.startPage > -1 && parentTask.endPage > -1) {
+                startPage = pages[parentTask.endPage];
+                endPage = pages[childTask.startPage];
+                parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                if (this.parentIndex < this.childIndex) {
+                    if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                        predecessorType = 'FSType1';
                     } else {
-                        return;
+                        predecessorType = 'FSType2';
                     }
-                    break;
-                case 'SF':
-                    if (childTask.endPage > -1 && parentTask.startPage > -1) {
-                        startPage = pages[parentTask.startPage];
-                        endPage = pages[childTask.endPage];
-                        parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
-                        childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
-                        if (this.parentIndex < this.childIndex) {
-                            if (this.parentLeft > this.childLeft + this.childWidth) {
-                                predecessorType = 'SFType1';
-                            } else {
-                                predecessorType = 'SFType2';
-                            }
-                        } else {
-                            if (this.parentLeft > this.childLeft + this.childWidth) {
-                                predecessorType = 'SFType3';
-                            } else {
-                                predecessorType = 'SFType4';
-                            }
-                        }
+                } else {
+                    if (this.parentLeft < this.childLeft && this.childLeft > (this.parentLeft + this.parentWidth + 25)) {
+                        predecessorType = 'FSType3';
                     } else {
-                        return;
+                        predecessorType = 'FSType4';
                     }
-                    break;
-                case 'FF':
-                    if (childTask.endPage > -1 && parentTask.endPage > -1) {
-                        startPage = pages[parentTask.endPage];
-                        endPage = pages[childTask.endPage];
-                        parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
-                        childPageData = pdfGantt.pdfPageDetail[childTask.endPage - pdfGantt.chartPageIndex];
-                        if (this.parentIndex < this.childIndex) {
-                            if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
-                                predecessorType = 'FFType1';
-                            } else {
-                                predecessorType = 'FFType2';
-                            }
-                        } else {
-                            if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
-                                predecessorType = 'FFType3';
-                            } else {
-                                predecessorType = 'FFType4';
-                            }
-                        }
-                    } else {
-                        return;
-                    }
-                    break;
-                case 'SS':
-                    if (childTask.startPage > -1 && parentTask.startPage > -1) {
-                        startPage = pages[parentTask.startPage];
-                        endPage = pages[childTask.startPage];
-                        parentPageData = pdfGantt.pdfPageDetail[parentTask.startPage - pdfGantt.chartPageIndex];
-                        childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
-                        if (this.parentIndex < this.childIndex) {
-                            if (this.parentLeft >= this.childLeft) {
-                                predecessorType = 'SSType1';
-                            } else {
-                                predecessorType = 'SSType2';
-                            }
-                        } else {
-                            if (this.parentLeft >= this.childLeft) {
-                                predecessorType = 'SSType3';
-                            } else {
-                                predecessorType = 'SSType4';
-                            }
-                        }
-                    } else {
-                        return;
-                    }
-                    break;
+                }
+            } else {
+                return;
             }
-            let midPoint: number = Math.round((this.parent.rowHeight - 1) / 2.0);
-            midPoint = pixelToPoint(midPoint);
-            /* eslint-disable-next-line */
-            let point1, point2, point3, point4, point5, point6: PointF;
-            point1 = point2 = point3 = point4 = point5 = point6 = new PointF();
-            const parentTaskpoint: PointF = { ...parentTask.taskStartPoint };
-            const childTaskpoint: PointF = { ...childTask.taskStartPoint };
-            parentY = parentTaskpoint.y + parentPageData.startPoint.y;
-            childY = childTaskpoint.y + childPageData.startPoint.y;
-            const ffpoint1: PointF = new PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
-            const sspoint1: PointF = new PointF(pixelToPoint(this.parentLeft) - 1, parentY + midPoint);
-            const ffpoint3: PointF = new PointF(pixelToPoint(this.childLeft - 20), childY + midPoint);
-            const ffpoint4: PointF = new PointF(pixelToPoint(this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
-            const sspoint4: PointF = new PointF(pixelToPoint(this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
-            switch (predecessorType) {
-                case 'FSType1':
-                case 'FSType3':
-                    point1 = ffpoint1;
-                    point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
-                    point3 = ffpoint3;
-                    point4 = ffpoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint); break;
-                case 'FSType2':
-                    point1 = ffpoint1;
-                    point2 = new PointF(point1.x + 10, parentY + midPoint);
-                    point3 = new PointF(point1.x + 10, childY + 2);
-                    point4 = new PointF(pixelToPoint(this.childLeft - 20), childY + 2);
-                    point5 = ffpoint3;
-                    point6 = ffpoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
-                    break;
-                case 'FSType4':
-                    point1 = ffpoint1;
-                    point2 = new PointF(point1.x + 10, parentY + midPoint);
-                    point3 = new PointF(point1.x + 10, parentY + 2);
-                    point4 = new PointF(pixelToPoint(this.childLeft - 20), parentY + 2);
-                    point5 = ffpoint3;
-                    point6 = ffpoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
-                    break;
-                case 'FFType1':
-                case 'FFType3':
-                    point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
-                    point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, childY + midPoint);
-                    point4 = sspoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
-                    break;
-                case 'FFType2':
-                case 'FFType4':
-                    point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
-                    point2 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth + 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, childY + midPoint);
-                    point4 = sspoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
-                    break;
-                case 'SSType1':
-                case 'SSType3':
-                    point1 = sspoint1;
-                    point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, childY + midPoint);
-                    point4 = ffpoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
-                    break;
-                case 'SSType2':
-                case 'SSType4':
-                    point1 = sspoint1;
-                    point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, childY + midPoint);
-                    point4 = ffpoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
-                    break;
-                case 'SFType1':
-                case 'SFType3':
-                    point1 = sspoint1;
-                    point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, childY + midPoint);
-                    point4 = sspoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
-                    break;
-                case 'SFType2':
-                    point1 = sspoint1;
-                    point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, childY + 2);
-                    point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), childY + 2);
-                    point5 = new PointF(point4.x, childY + midPoint);
-                    point6 = sspoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
-                    break;
-                case 'SFType4':
-                    point1 = sspoint1;
-                    point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
-                    point3 = new PointF(point2.x, parentY + 2);
-                    point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + 2);
-                    point5 = new PointF(point4.x, childY + midPoint);
-                    point6 = sspoint4;
-                    this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
-                    break;
+            break;
+        case 'SF':
+            if (childTask.endPage > -1 && parentTask.startPage > -1) {
+                startPage = pages[parentTask.startPage];
+                endPage = pages[childTask.endPage];
+                parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                if (this.parentIndex < this.childIndex) {
+                    if (this.parentLeft > this.childLeft + this.childWidth) {
+                        predecessorType = 'SFType1';
+                    } else {
+                        predecessorType = 'SFType2';
+                    }
+                } else {
+                    if (this.parentLeft > this.childLeft + this.childWidth) {
+                        predecessorType = 'SFType3';
+                    } else {
+                        predecessorType = 'SFType4';
+                    }
+                }
+            } else {
+                return;
             }
+            break;
+        case 'FF':
+            if (childTask.endPage > -1 && parentTask.endPage > -1) {
+                startPage = pages[parentTask.endPage];
+                endPage = pages[childTask.endPage];
+                parentPageData = pdfGantt.pdfPageDetail[parentTask.endPage - pdfGantt.chartPageIndex];
+                childPageData = pdfGantt.pdfPageDetail[childTask.endPage - pdfGantt.chartPageIndex];
+                if (this.parentIndex < this.childIndex) {
+                    if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                        predecessorType = 'FFType1';
+                    } else {
+                        predecessorType = 'FFType2';
+                    }
+                } else {
+                    if ((this.childLeft + this.childWidth) >= (this.parentLeft + this.parentWidth)) {
+                        predecessorType = 'FFType3';
+                    } else {
+                        predecessorType = 'FFType4';
+                    }
+                }
+            } else {
+                return;
+            }
+            break;
+        case 'SS':
+            if (childTask.startPage > -1 && parentTask.startPage > -1) {
+                startPage = pages[parentTask.startPage];
+                endPage = pages[childTask.startPage];
+                parentPageData = pdfGantt.pdfPageDetail[parentTask.startPage - pdfGantt.chartPageIndex];
+                childPageData = pdfGantt.pdfPageDetail[childTask.startPage - pdfGantt.chartPageIndex];
+                if (this.parentIndex < this.childIndex) {
+                    if (this.parentLeft >= this.childLeft) {
+                        predecessorType = 'SSType1';
+                    } else {
+                        predecessorType = 'SSType2';
+                    }
+                } else {
+                    if (this.parentLeft >= this.childLeft) {
+                        predecessorType = 'SSType3';
+                    } else {
+                        predecessorType = 'SSType4';
+                    }
+                }
+            } else {
+                return;
+            }
+            break;
+        }
+        let midPoint: number = Math.round((this.parent.rowHeight - 1) / 2.0);
+        midPoint = pixelToPoint(midPoint);
+        /* eslint-disable-next-line */
+        let point1, point2, point3, point4, point5, point6: PointF;
+        point1 = point2 = point3 = point4 = point5 = point6 = new PointF();
+        const parentTaskpoint: PointF = { ...parentTask.taskStartPoint };
+        const childTaskpoint: PointF = { ...childTask.taskStartPoint };
+        parentY = parentTaskpoint.y + parentPageData.startPoint.y;
+        childY = childTaskpoint.y + childPageData.startPoint.y;
+        const ffpoint1: PointF = new PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
+        const sspoint1: PointF = new PointF(pixelToPoint(this.parentLeft) - 1, parentY + midPoint);
+        const ffpoint3: PointF = new PointF(pixelToPoint(this.childLeft - 20), childY + midPoint);
+        const ffpoint4: PointF = new PointF(pixelToPoint(this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
+        const sspoint4: PointF = new PointF(pixelToPoint(this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
+        switch (predecessorType) {
+        case 'FSType1':
+        case 'FSType3':
+            point1 = ffpoint1;
+            point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+            point3 = ffpoint3;
+            point4 = ffpoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);               break;
+        case 'FSType2':
+            point1 = ffpoint1;
+            point2 = new PointF(point1.x + 10, parentY + midPoint);
+            point3 = new PointF(point1.x + 10, childY + 2);
+            point4 = new PointF(pixelToPoint(this.childLeft - 20), childY + 2);
+            point5 = ffpoint3;
+            point6 = ffpoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+            break;
+        case 'FSType4':
+            point1 = ffpoint1;
+            point2 = new PointF(point1.x + 10, parentY + midPoint);
+            point3 = new PointF(point1.x + 10, parentY + 2);
+            point4 = new PointF(pixelToPoint(this.childLeft - 20), parentY + 2);
+            point5 = ffpoint3;
+            point6 = ffpoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+            break;
+        case 'FFType1':
+        case 'FFType3':
+            point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+            point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+            point3 = new PointF(point2.x, childY + midPoint);
+            point4 = sspoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+            break;
+        case 'FFType2':
+        case 'FFType4':
+            point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+            point2 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth + 20), parentY + midPoint);
+            point3 = new PointF(point2.x, childY + midPoint);
+            point4 = sspoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+            break;
+        case 'SSType1':
+        case 'SSType3':
+            point1 = sspoint1;
+            point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+            point3 = new PointF(point2.x, childY + midPoint);
+            point4 = ffpoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+            break;
+        case 'SSType2':
+        case 'SSType4':
+            point1 = sspoint1;
+            point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            point3 = new PointF(point2.x, childY + midPoint);
+            point4 = ffpoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+            break;
+        case 'SFType1':
+        case 'SFType3':
+            point1 = sspoint1;
+            point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+            point3 = new PointF(point2.x, childY + midPoint);
+            point4 = sspoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
+            break;
+        case 'SFType2':
+            point1 = sspoint1;
+            point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            point3 = new PointF(point2.x, childY + 2);
+            point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), childY + 2);
+            point5 = new PointF(point4.x, childY + midPoint);
+            point6 = sspoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+            break;
+        case 'SFType4':
+            point1 = sspoint1;
+            point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            point3 = new PointF(point2.x, parentY + 2);
+            point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + 2);
+            point5 = new PointF(point4.x, childY + midPoint);
+            point6 = sspoint4;
+            this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
+            break;
         }
     }
     /**
@@ -292,7 +290,7 @@ export class PdfGanttPredecessor {
     private findPageIndex(point: PointF): number {
         let pageIndex: number = -1;
         for (let index: number = 0; index < this.pdfGantt.pdfPageDetail.length; index++) {
-            const pageData: PageDetail = this.pdfGantt.pdfPageDetail[index];
+            const pageData: PageDetail = this.pdfGantt.pdfPageDetail[index as number];
             const pageRect: RectangleF = new RectangleF(pageData.startPoint.x, pageData.startPoint.y, pageData.width, pageData.height);
             if (this.contains(pageRect, point.x, point.y)) {
                 pageIndex = index;
@@ -326,7 +324,7 @@ export class PdfGanttPredecessor {
         if (!startPointCheck && !endPointCheck || endPointCheck && !startPointCheck) {
             pageIndex = this.findPageIndex(startPoint);
             if (pageIndex > -1) {
-                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex as number];
                 newStartPoint = startPoint;
                 newEndPoint = endPoint;
                 this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
@@ -401,7 +399,7 @@ export class PdfGanttPredecessor {
         if (!startPointCheck) {
             const pageIndex: number = this.findPageIndex(startPoint);
             if (pageIndex > -1) {
-                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
+                pageData = this.pdfGantt.pdfPageDetail[pageIndex as number];
                 page = pdfPages[pageIndex + this.pdfGantt.chartPageIndex];
             }
         }

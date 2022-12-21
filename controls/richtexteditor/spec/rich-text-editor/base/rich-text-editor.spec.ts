@@ -2,7 +2,7 @@
  * Base RTE spec
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs } from '../../../src/rich-text-editor/index';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs,DialogType } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
@@ -5966,6 +5966,38 @@ describe('Initial audio and video loading', () => {
         expect(rteObj.inputElement.querySelector('.e-audio-wrap').nextElementSibling.outerHTML === '<br>').toBe(true);
         expect(rteObj.inputElement.querySelector('.e-video-wrap') !== null).toBe(true);
         expect(rteObj.inputElement.querySelector('.e-video-wrap').nextElementSibling.outerHTML === '<br>').toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('Dialog textbox aria-lable checking', () => {
+    let rteObj: RichTextEditor;
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: '<p>Sample</p>',
+            toolbarSettings: {
+                items: ['Image', 'CreateLink', 'Audio', 'Video']
+            }
+        });
+     });
+    it('Dialog textbox aria-lable checking for image, link, audio, video', (done: Function) => {
+        (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-img-url').getAttribute('aria-label')).toBe('You can also provide a link from the web');
+        rteObj.closeDialog(DialogType.InsertImage);
+        (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkurl').getAttribute('aria-label')).toBe('Web Address');
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkText').getAttribute('aria-label')).toBe('Display Text');
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkTitle').getAttribute('aria-label')).toBe('Enter a title');
+        rteObj.closeDialog(DialogType.InsertLink);
+        (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).click();
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-audio-url').getAttribute('aria-label')).toBe('You can also provide a link from the web');
+        rteObj.closeDialog(DialogType.InsertAudio);
+        (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).click();
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-embed-video-url').getAttribute('aria-label')).toBe('Media Embed URL');
+        rteObj.closeDialog(DialogType.InsertVideo);
         done();
     });
     afterAll(() => {

@@ -74,12 +74,12 @@ export class DateTimeCategory extends Category {
         });
         for (let i: number = 0; i < axis.labels.length; i++) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
-            if (!this.sameInterval(axis.labels.map(Number)[i], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
+            if (!this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
                 || axis.isIndexed) {
                 if (withIn(i - padding, axis.visibleRange)) {
                     triggerLabelRender(
-                        this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i], axis.format) :
-                            <string>axis.format(new Date(axis.labels.map(Number)[i]))),
+                        this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i as number], axis.format) :
+                            <string>axis.format(new Date(axis.labels.map(Number)[i as number]))),
                         labelStyle, axis
                     );
                 }
@@ -108,7 +108,7 @@ export class DateTimeCategory extends Category {
     public getIndexedAxisLabel(value: string, format: Function): string {
         const texts: string[] = value.split(',');
         for (let i: number = 0; i < texts.length; i++) {
-            texts[i] = <string>format(new Date(parseInt(texts[i], 10)));
+            texts[i as number] = <string>format(new Date(parseInt(texts[i as number], 10)));
         }
         return texts.join(', ');
     }

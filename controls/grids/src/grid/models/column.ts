@@ -495,13 +495,14 @@ export class Column {
                 'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
             const keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {
-                if (keys[i] === 'columns') {
-                    col[keys[i]] = [];
-                    for (let j: number = 0; j < this[keys[i]].length; j++) {
-                        col[keys[i]].push(this[keys[i]][j].toJSON());
+                if (keys[parseInt(i.toString(), 10)] === 'columns') {
+                    col[keys[parseInt(i.toString(), 10)]] = [];
+                    for (let j: number = 0; j < this[keys[parseInt(i.toString(), 10)]].length; j++) {
+                        col[keys[parseInt(i.toString(), 10)]].push(
+                            this[keys[parseInt(i.toString(), 10)]][parseInt(j.toString(), 10)].toJSON());
                     }
-                } else if (skip.indexOf(keys[i]) < 0) {
-                    col[keys[i]] = this[keys[i]];
+                } else if (skip.indexOf(keys[parseInt(i.toString(), 10)]) < 0) {
+                    col[keys[parseInt(i.toString(), 10)]] = this[keys[parseInt(i.toString(), 10)]];
                 }
             }
             return col;
@@ -627,16 +628,16 @@ export class Column {
         //Angular two way binding
         const keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {
-            this[keys[i]] = column[keys[i]];
+            this[keys[parseInt(i.toString(), 10)]] = column[keys[parseInt(i.toString(), 10)]];
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact) {
-                if (keys[i] === 'template') {
+                if (keys[parseInt(i.toString(), 10)] === 'template') {
                     this.parent.refreshReactColumnTemplateByUid(this.uid);
-                } else if (keys[i] === 'headerTemplate') {
-                    this.headerTemplateFn = templateCompiler(column[keys[i]]);
+                } else if (keys[parseInt(i.toString(), 10)] === 'headerTemplate') {
+                    this.headerTemplateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
                     this.parent.refreshReactHeaderTemplateByUid(this.uid);
-                } else if (keys[i] === 'editTemplate') {
-                    this.editTemplateFn = templateCompiler(column[keys[i]]);
+                } else if (keys[parseInt(i.toString(), 10)] === 'editTemplate') {
+                    this.editTemplateFn = templateCompiler(column[keys[parseInt(i.toString(), 10)]]);
                 }
             }
         }
@@ -1110,7 +1111,7 @@ export interface ColumnModel {
     editType?: string;
 
     /**
-     * `editType`(../../grid/editing/edit-types/#customize-editors-using-params) Defines rules to validate data before creating and updating.
+     * `editType`(../../grid/edit/#cell-edit-type-and-its-params) Defines rules to validate data before creating and updating.
      *
      * @default null
      */
@@ -1125,7 +1126,7 @@ export interface ColumnModel {
     defaultValue?: string;
 
     /**
-     * Defines the `IEditCell`(../../grid/editing/edit-types/#custom-editors-using-template) object to customize default edit cell.
+     * Defines the `IEditCell`(../../grid/edit/#cell-edit-template) object to customize default edit cell.
      *
      * @default {}
      */

@@ -267,6 +267,18 @@ describe('Schedule Week view', () => {
                 toEqual('<span>10/1/17, 12:00 AM</span>');
         });
 
+        it('dateRange template', () => {
+            const model: ScheduleModel = {
+                currentView: 'Week', selectedDate: new Date(2017, 9, 5),
+                dateRangeTemplate: '<div class="date-text">${(data.startDate).getMonth()}-${(data.endDate).getMonth()}</div>'
+            };
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div class="date-text">9-9</div>');
+            schObj.dateRangeTemplate = '<div>${getShortDateTime(data.startDate)}-${getShortDateTime(data.endDate)}</div>';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toEqual('<div>10/1/17, 12:00 AM-10/7/17, 12:00 AM</div>');
+        });
+
         it('cell template', () => {
             const templateEle: HTMLElement = createElement('div', { innerHTML: '<span class="custom-element"></span>' });
             const model: ScheduleModel = { currentView: 'Week', selectedDate: new Date(2017, 9, 5), cellTemplate: templateEle.innerHTML };
@@ -387,6 +399,14 @@ describe('Schedule Week view', () => {
             schObj.maxDate = new Date(2017, 9, 7, 23, 30, 0);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            schObj.currentView = 'Day';
+            schObj.minDate = new Date(2017, 9, 4);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 4, 23, 59, 0);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
             expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
             expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
         });

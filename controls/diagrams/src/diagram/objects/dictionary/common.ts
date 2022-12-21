@@ -29,16 +29,16 @@ export function getDecoratorShape(shape: DecoratorShapes, decorator: DecoratorMo
     if (shape === 'Custom') {
         return decorator.pathData;
     }
-    return decoratorShapes[shape];
+    return decoratorShapes[`${shape}`];
 }
 
 export function getSegmentThumbShapeHorizontal(shapes : SegmentThumbShapes)
     {
-    return segmentThumbShapeHorizontal[shapes];
+    return segmentThumbShapeHorizontal[`${shapes}`];
     }
 export function getSegmentThumbShapeVertical(shapes :SegmentThumbShapes)
     {
-    return segmentThumbShapeVertical[shapes];
+    return segmentThumbShapeVertical[`${shapes}`];
     }
 
 /**

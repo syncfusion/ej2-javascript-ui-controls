@@ -201,6 +201,42 @@ describe('Mention', () => {
             mentionObj.hidePopup();
         });
     });
+    describe('Check the cursor focus', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('div', { id: 'divMention' } );
+        const arrowKeyMentionEventArgs: any = {
+            code: 'ArrowLeft',
+            keyCode: 37,
+            key: 'ArrowLeft'
+        };
+        beforeAll(() => {
+            element.innerHTML ="<p>testing @P</p>";
+            document.body.appendChild(element);
+            mentionObj = new Mention({ dataSource: datasource2 });
+            mentionObj.appendTo(element);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('to hide popup with arrowKey navigation', (done) => {
+            setCursorPoint(mentionObj.inputElement.firstChild.firstChild, 9);
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            mentionObj.showPopup();
+            setTimeout(() => {
+                setCursorPoint(mentionObj.inputElement.firstChild.firstChild, 8);
+                mentionObj.onKeyUp(arrowKeyMentionEventArgs);
+                setTimeout(() => {
+                    expect(isNullOrUndefined(mentionObj.isPopupOpen)).toBe(false);
+                    done();
+                }, 500);
+            }, 500);
+        });
+    });
     // collision
     describe('mention collision checking', () => {
         let mentionObj: any;
@@ -460,7 +496,6 @@ describe('Mention', () => {
             setTimeout(function () {
                 expect(mentionObj.isPopupOpen).toEqual(true);
                 expect(mentionObj.element.classList.contains('e-mention')).toEqual(true);
-                expect(mentionObj.element.getAttribute('aria-disabled')).toBe('false');
                 mentionObj.showPopup();
                 expect(mentionObj.isPopupOpen).toEqual(true);
                 done();
@@ -956,13 +991,14 @@ describe('Mention', () => {
         it('using filter method', (done) => {
             setTimeout(() => {
                 element.value = element.value + "p";
+                mentionObj.queryString = 'p';
                 mentionObj.searchLists(keyEventArgs);
                 mentionObj.keyActionHandler(keyEvent);
                 mouseEventArgs.target = mentionObj.list;
                 mentionObj.onMouseClick(mouseEventArgs);
                 mentionObj.hidePopup();
                 setTimeout(() => {
-                    expect(mentionObj.element.value === '@PHP').toBe(true);
+                    expect(mentionObj.element.value === '@PERL').toBe(true);
                     done();
                 }, 250)
             }, 500)

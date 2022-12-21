@@ -107,9 +107,9 @@ export class Print {
         document.body.appendChild(element);
         const printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
         for (let i: number = 0; i < printGrid.columns.length; i++) {
-            (printGrid.columns[i] as Column) = extend({}, printGrid.columns[i]) as Column;
+            (printGrid.columns[parseInt(i.toString(), 10)] as Column) = extend({}, printGrid.columns[parseInt(i.toString(), 10)]) as Column;
             if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
-                (printGrid.columns[i] as Column).freeze = undefined;
+                (printGrid.columns[parseInt(i.toString(), 10)] as Column).freeze = undefined;
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -226,7 +226,7 @@ export class Print {
         const groupCaption: HTMLElement[] = selectAll('.e-groupcaption', element);
         const colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
         for (let i: number = 0; i < groupCaption.length; i++) {
-            (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);
+            (<HTMLElement>groupCaption[parseInt(i.toString(), 10)]).setAttribute('colspan', colSpan);
         }
         const colGroups: HTMLElement[] = selectAll(`colgroup${id}colgroup`, element);
         const contentColGroups: HTMLElement[] = selectAll('.e-content colgroup', element);
@@ -237,7 +237,7 @@ export class Print {
     private hideColGroup(colGroups: HTMLElement[], depth: number): void {
         for (let i: number = 0; i < colGroups.length; i++) {
             for (let j: number = 0; j < depth; j++) {
-                (<HTMLElement>(<HTMLElement>colGroups[i]).children[j]).style.display = 'none';
+                (<HTMLElement>(<HTMLElement>colGroups[parseInt(i.toString(), 10)]).children[parseInt(j.toString(), 10)]).style.display = 'none';
             }
         }
     }

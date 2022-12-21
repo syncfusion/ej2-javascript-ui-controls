@@ -14,7 +14,7 @@ export class ImageExport {
      *
      *  @param {CircularGauge} control - Specfies the instance of the gauge
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line
     constructor(control: CircularGauge) {
     }
 
@@ -29,7 +29,7 @@ export class ImageExport {
      * @private
      */
     public export(gauge: CircularGauge, type: ExportType, fileName: string, allowDownload?: boolean): Promise<string> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
@@ -92,21 +92,22 @@ export class ImageExport {
 
     /**
      * To destroy the ImageExport.
-     * 
+     *
      * @returns {void}
      * @private
      */
+    /* eslint-disable-next-line @typescript-eslint/no-empty-function */
     public destroy(): void {}
 
     /**
-    * To trigger the download element
-    *
-    * @param {string} fileName - Specifies the file name.
-    * @param {ExportType} type - Specifies the export type.
-    * @param {string} url - Specifies the url.
-    * @param {boolean} isDownload - Specifies the boolean value.
-    * @returns {void}
-    */
+     * To trigger the download element
+     *
+     * @param {string} fileName - Specifies the file name.
+     * @param {ExportType} type - Specifies the export type.
+     * @param {string} url - Specifies the url.
+     * @param {boolean} isDownload - Specifies the boolean value.
+     * @returns {void}
+     */
     private triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
         createElement('a', {
             attrs: {

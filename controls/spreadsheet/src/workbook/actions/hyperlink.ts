@@ -64,7 +64,7 @@ export class WorkbookHyperlink {
             }
         }
         let cellModel: CellModel;
-        let activeCell: number[] = getRangeIndexes(sheet.activeCell);
+        const activeCell: number[] = getRangeIndexes(sheet.activeCell);
         for (let rIdx: number = cellIdx[0]; rIdx <= cellIdx[2]; rIdx++) {
             for (let cIdx: number = cellIdx[1]; cIdx <= cellIdx[3]; cIdx++) {
                 cellModel = { hyperlink: hyperlink };

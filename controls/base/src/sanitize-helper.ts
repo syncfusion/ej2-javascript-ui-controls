@@ -176,9 +176,9 @@ export class SanitizeHtmlHelper {
         // Removes an element's attibute to avoid html tag validation
         const nodes: HTMLCollection = this.wrapElement.children;
         for (let j: number = 0; j < nodes.length; j++) {
-            const attribute: NamedNodeMap = nodes[j].attributes;
+            const attribute: NamedNodeMap = nodes[parseInt(j.toString(), 10)].attributes;
             for (let i: number = 0; i < attribute.length; i++) {
-                this.wrapElement.children[j].removeAttribute(attribute[i].localName);
+                this.wrapElement.children[parseInt(j.toString(), 10)].removeAttribute(attribute[parseInt(i.toString(), 10)].localName);
             }
         }
     }

@@ -64,6 +64,7 @@ export class GroupingBar implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
      * @returns {string} - Module name.
      * @private
      */
@@ -77,14 +78,14 @@ export class GroupingBar implements IAction {
         this.groupingTable = createElement('div', { className: cls.GROUPING_BAR_CLASS });
         this.leftAxisPanel = createElement('div', { className: cls.LEFT_AXIS_PANEL_CLASS });
         this.rightAxisPanel = createElement('div', { className: cls.RIGHT_AXIS_PANEL_CLASS });
-        let rowAxisPanel: HTMLElement = createElement('div', { className: cls.AXIS_ROW_CLASS + ' ' + cls.AXIS_ICON_CLASS + 'container' });
-        let columnAxisPanel: HTMLElement = createElement('div', {
+        const rowAxisPanel: HTMLElement = createElement('div', { className: cls.AXIS_ROW_CLASS + ' ' + cls.AXIS_ICON_CLASS + 'container' });
+        const columnAxisPanel: HTMLElement = createElement('div', {
             className: cls.AXIS_COLUMN_CLASS + ' ' + cls.AXIS_ICON_CLASS + 'container'
         });
-        let valueAxisPanel: HTMLElement = createElement('div', {
+        const valueAxisPanel: HTMLElement = createElement('div', {
             className: cls.AXIS_VALUE_CLASS + ' ' + cls.AXIS_ICON_CLASS + 'container'
         });
-        let filterAxisPanel: HTMLElement = createElement('div', {
+        const filterAxisPanel: HTMLElement = createElement('div', {
             className: cls.AXIS_FILTER_CLASS + ' ' + cls.AXIS_ICON_CLASS + 'container'
         });
         this.rowPanel = createElement('div', { className: cls.GROUP_ROW_CLASS + ' ' + cls.ROW_AXIS_CLASS });
@@ -111,9 +112,8 @@ export class GroupingBar implements IAction {
         }
         this.groupingTable.classList.add(cls.GRID_GROUPING_BAR_CLASS);
         this.groupingTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.add(cls.GROUP_PIVOT_ROW);
-        let axisPanels: HTMLElement[] = [this.rowPanel, this.columnPanel, this.valuePanel, this.filterPanel];
-
-        for (let element of axisPanels) {
+        const axisPanels: HTMLElement[] = [this.rowPanel, this.columnPanel, this.valuePanel, this.filterPanel];
+        for (const element of axisPanels) {
             if (this.parent.groupingBarSettings.allowDragAndDrop) {
                 new Droppable(element, {});
             }
@@ -418,8 +418,8 @@ export class GroupingBar implements IAction {
                 let rowContent: HTMLElement =
                     this.parent.element.querySelector('.e-frozencontent').querySelector('colgroup').children[0] as HTMLElement;
                 let colwidth: number = parseInt(buttonWidth, 10);
-                let gridColumn: Column[] = this.parent.grid.columns as Column[];
                 let hasPivotColumns: boolean = this.parent.pivotColumns.length > 0;
+                let gridColumn: Column[] = this.parent.grid.columns as Column[];
                 if (gridColumn && gridColumn.length > 0) {
                     gridColumn[0].width = gridColumn[0].autoFit ? gridColumn[0].width : (gridColumn[0].width >= this.resColWidth ?
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth) :
@@ -492,7 +492,7 @@ export class GroupingBar implements IAction {
             }
             else {
                 if (!columns[cCnt].autoFit) {
-                    if (columns[cCnt].width != "auto") {
+                    if (columns[cCnt].width !== "auto") {
                         columns[cCnt].width = width;
                     } else {
                         columns[cCnt].minWidth = width;

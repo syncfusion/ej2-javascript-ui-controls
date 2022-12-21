@@ -185,12 +185,12 @@ export class ToolbarRenderer implements IRenderer {
                     const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
                     divNode.innerHTML = dropDown.content.trim();
                     if ( divNode.textContent .trim() !== ''
-                && args.element.childNodes[index].textContent.trim() === divNode.textContent .trim()) {
-                        if (!(args.element.childNodes[index] as HTMLElement).classList.contains('e-active')) {
-                            addClass([args.element.childNodes[index]] as Element[], 'e-active');
+                && args.element.childNodes[index as number].textContent.trim() === divNode.textContent .trim()) {
+                        if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
+                            addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
                         }
                     } else {
-                        removeClass([args.element.childNodes[index]] as Element[], 'e-active');
+                        removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
                     }
                 }
                 proxy.parent.notify(events.beforeDropDownOpen, args);
@@ -312,6 +312,7 @@ export class ToolbarRenderer implements IRenderer {
      * @param {IColorPickerModel} args - specifies the arguments.
      * @param {string} item - specifies the item.
      * @param {ColorPicker} colorPicker - specifies the colorpicker.
+     * @param {string} defaultColor -specifies the defaultColor.
      * @returns {void}
      * @hidden
      * @deprecated
@@ -326,7 +327,7 @@ export class ToolbarRenderer implements IRenderer {
         const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
         const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
         let range: Range;
-        const initialBackgroundColor = (isNullOrUndefined(defaultColor)) ? proxy.parent.backgroundColor.default : defaultColor;
+        const initialBackgroundColor : string = (isNullOrUndefined(defaultColor)) ? proxy.parent.backgroundColor.default : defaultColor;
         inlineEle.style.borderBottomColor = (item === 'backgroundcolor') ?
             initialBackgroundColor  : proxy.parent.fontColor.default;
         content.appendChild(inlineEle);
@@ -500,8 +501,8 @@ export class ToolbarRenderer implements IRenderer {
                 if (!isNullOrUndefined(this.parent.cssClass)) {
                     const allClassName: string[] = this.parent.cssClass.split(' ');
                     for (let i: number = 0; i < allClassName.length; i++) {
-                        if (allClassName[i].trim() !== '') {
-                            args.element.classList.add(allClassName[i]);
+                        if (allClassName[i as number].trim() !== '') {
+                            args.element.classList.add(allClassName[i as number]);
                         }
                     }
                 }

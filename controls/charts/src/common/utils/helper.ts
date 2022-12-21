@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable valid-jsdoc */
-import { Animation, AnimationOptions, compile as templateComplier, Browser, enableRtl } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
 import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
@@ -11,7 +12,7 @@ import { TextAttributes } from '@syncfusion/ej2-svg-base';
 import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
 import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
-import { Series, Points, DataLabelSettings, MarkerSettings } from '../../chart/series/chart-series';
+import { Series, Points } from '../../chart/series/chart-series';
 import { Axis } from '../../chart/axis/axis';
 import { Chart } from '../../chart/chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
@@ -26,7 +27,6 @@ import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { RangeColorSettingModel } from '../../chart/chart-model';
 import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
 import {Alignment} from './enum';
-import { DataLabel } from '../../stock-chart';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -42,8 +42,8 @@ export function sort(data: Object[], fields: string[], isDescending?: boolean): 
         let first: number = 0;
         let second: number = 0;
         for (let i: number = 0; i < fields.length; i++) {
-            first += a[fields[i]];
-            second += b[fields[i]];
+            first += a[fields[i as number]];
+            second += b[fields[i as number]];
         }
         if ((!isDescending && first < second) || (isDescending && first > second)) {
             return -1;
@@ -67,7 +67,7 @@ export function getVisiblePoints(series: Series): Points[] {
     let tempPoint: Points;
     let pointIndex: number = 0;
     for (let i: number = 0; i < points.length; i++) {
-        tempPoint = points[i];
+        tempPoint = points[i as number];
         if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
             continue;
         } else {
@@ -108,9 +108,9 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     // for line break label
     if (typeof textCollection !== 'string' && textCollection.length > 1) {
         for (let i: number = 1, len: number = textCollection.length; i < len; i++) {
-            height = (measureText(textCollection[i], font).height);
+            height = (measureText(textCollection[i as number], font).height);
             dy = (options.y) + ((i * height));
-            label = textCollection[i];
+            label = textCollection[i as number];
             tspanElement = (renderer as SvgRenderer).createTSpan(
                 {
                     'x': options.x, 'id': options.id,
@@ -217,14 +217,14 @@ export function subArraySum(values: Object[], first: number, last: number, index
     if (index !== null) {
         for (let i: number = (first + 1); i < last; i++) {
             if (index.indexOf(i) === -1) {
-                sum += values[i][series.yName] as number;
+                sum += values[i as number][series.yName] as number;
             }
         }
     } else {
 
         for (let i: number = (first + 1); i < last; i++) {
-            if (!isNullOrUndefined(values[i][series.yName])) {
-                sum += values[i][series.yName] as number;
+            if (!isNullOrUndefined(values[i as number][series.yName])) {
+                sum += values[i as number][series.yName] as number;
             }
         }
     }
@@ -262,7 +262,7 @@ export function getRotatedRectangleCoordinates(
 ): ChartLocation[] {
     const coordinatesAfterRotation: ChartLocation[] = [];
     for (let i: number = 0; i < 4; i++) {
-        const point: ChartLocation = actualPoints[i];
+        const point: ChartLocation = actualPoints[i as number];
         // translate point to origin
         const tempX: number = point.x - centerX;
         const tempY: number = point.y - centerY;
@@ -294,13 +294,13 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
 
         // for each polygon, look at each edge of the polygon, and determine if it separates
         // the two shapes
-        const polygon: ChartLocation[] = polygons[i];
+        const polygon: ChartLocation[] = polygons[i as number];
         for (i1 = 0; i1 < polygon.length; i1++) {
 
             // grab 2 vertices to create an edge
             const i2: number = (i1 + 1) % polygon.length;
-            const p1: ChartLocation = polygon[i1];
-            const p2: ChartLocation = polygon[i2];
+            const p1: ChartLocation = polygon[i1 as number];
+            const p2: ChartLocation = polygon[i2 as number];
 
             // find the line perpendicular to this edge
             const normal: ChartLocation = new ChartLocation(p2.y - p1.y, p1.x - p2.x);
@@ -309,7 +309,7 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
             // for each vertex in the first shape, project it onto the line perpendicular to the edge
             // and keep track of the min and max of these values
             for (j = 0; j < a.length; j++) {
-                projected = normal.x * a[j].x + normal.y * a[j].y;
+                projected = normal.x * a[j as number].x + normal.y * a[j as number].y;
                 if (isNullOrUndefined(minA) || projected < minA) {
                     minA = projected;
                 }
@@ -322,7 +322,7 @@ export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): 
             // and keep track of the min and max of these values
             minB = maxB = undefined;
             for (j = 0; j < b.length; j++) {
-                projected = normal.x * b[j].x + normal.y * b[j].y;
+                projected = normal.x * b[j as number].x + normal.y * b[j as number].y;
                 if (isNullOrUndefined(minB) || projected < minB) {
                     minB = projected;
                 }
@@ -360,7 +360,7 @@ export function getAngle(center: ChartLocation, point: ChartLocation): number {
 export function subArray(values: number[], index: number): number[] {
     const subArray: number[] = [];
     for (let i: number = 0; i <= index - 1; i++) {
-        subArray.push(values[i]);
+        subArray.push(values[i as number]);
     }
     return subArray;
 }
@@ -532,8 +532,7 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
                 'opacity': 1, 'stroke-dasharray': null, 'd': direction },
             null);
         parent.appendChild(pathElement);
-        if (chart.theme === 'Fluent' || chart.theme === "FluentDark") {
-                        
+        if (chart.theme === 'Fluent' || chart.theme === 'FluentDark') {
             const shadowId: string = chart.element.id + '_shadow';
             pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
 
@@ -580,7 +579,7 @@ export function findCrosshairDirection(
             + (height) + ' ' + (width - rX) + ' ' + (height));
         if (arrowPadding !== 0) {
             direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (height));
-			direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (height + arrowPadding) 
+            direction = direction.concat(' L' + ' ' + (tipX) + ' ' + (height + arrowPadding)
                 + ' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + height);
         }
         if ((arrowLocation.x - arrowPadding / 2) > startX) {
@@ -608,12 +607,12 @@ export function findCrosshairDirection(
             + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
     } else if (left) {
         direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + (startY) + ' ' + (startX + rX) + ' ' + (startY));        
+            + (startY) + ' ' + (startX + rX) + ' ' + (startY));
         direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
-            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding / 2));        
-        direction = direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));        
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding / 2));        
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));        
+            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding / 2));
+        direction = direction.concat(' L' + ' ' + (width + arrowPadding) + ' ' + (tipY));
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding / 2));
+        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
         direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
             + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
     } else {
@@ -654,7 +653,7 @@ export function findClipRect(series: Series, isCanvas: boolean = false): void {
     const rect: Rect = series.clipRect;
     if (isCanvas && (series.type === 'Polar' || series.type === 'Radar'))
     {
-        if (series.drawType === "Scatter") {
+        if (series.drawType === 'Scatter') {
             rect.x = series.xAxis.rect.x;
             rect.y = series.yAxis.rect.y;
             rect.width = series.xAxis.rect.width;
@@ -665,7 +664,6 @@ export function findClipRect(series: Series, isCanvas: boolean = false): void {
             rect.width = series.xAxis.rect.width;
             rect.height = series.yAxis.rect.height;
         }
-        
     } else {
         if (series.chart.requireInvertedAxis) {
             rect.x = series.yAxis.rect.x;
@@ -707,7 +705,7 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
     let minVal: number;
     let seriesMin: number;
     for (let index: number = 0; index < seriesCollection.length; index++) {
-        const series: Series = seriesCollection[index];
+        const series: Series = seriesCollection[index as number];
         xValues = [];
         if (series.visible &&
             (axis.name === series.xAxisName || (axis.name === 'primaryXAxis' && series.xAxisName === null)
@@ -725,7 +723,7 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
                 }
             } else {
                 for (let index: number = 0; index < xValues.length; index++) {
-                    const value: Object = xValues[index];
+                    const value: Object = xValues[index as number];
                     if (index > 0 && value) {
                         minVal = <number>value - <number>xValues[index - 1];
                         if (minVal !== 0) {
@@ -867,7 +865,7 @@ export function pathAnimation(
             currentDireciton = '';
             splitDirections.map((directions: string, index: number) => {
                 startPath = directions.split(' ');
-                endPath = endDirections[index] ? endDirections[index].split(' ') : startPath;
+                endPath = endDirections[index as number] ? endDirections[index as number].split(' ') : startPath;
                 if (startPath[0] === 'Z') {
                     currentDireciton += 'Z' + ' ';
                 } else {
@@ -879,8 +877,8 @@ export function pathAnimation(
                     c = 3;
                     end = startPath[0] === 'Q' ? 4 : 6;
                     while (c < end) {
-                        currentDireciton += linear(args.timeStamp, +startPath[c], (+endPath[c] - +startPath[c]), args.duration) + ' ' +
-                            linear(args.timeStamp, +startPath[++c], (+endPath[c] - +startPath[c]), args.duration) + ' ';
+                        currentDireciton += linear(args.timeStamp, +startPath[c as number], (+endPath[c as number] - +startPath[c as number]), args.duration) + ' ' +
+                            linear(args.timeStamp, +startPath[++c], (+endPath[c as number] - +startPath[c as number]), args.duration) + ' ';
                         ++c;
                     }
                 }
@@ -917,7 +915,7 @@ export function appendClipElement(
         def.appendChild(clipElement);
         return def;
     } else {
-        return renderer[clipPath](options);
+        return renderer[clipPath as string](options);
     }
 }
 
@@ -1177,8 +1175,8 @@ export function accReactTemplate(
     childElement: HTMLElement, chart: AccumulationChart, isTemplate: boolean, points: AccPoints[],
     argsData: IAccTextRenderEventArgs, point?: AccPoints, datalabelGroup?: Element, id?: string,
     dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
-    ): void {
-    let clientRect: ClientRect = childElement.getBoundingClientRect();
+): void {
+    const clientRect: ClientRect = childElement.getBoundingClientRect();
     chart.accumulationDataLabelModule.calculateLabelSize(
         isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw, clientRect, true
     );
@@ -1187,10 +1185,10 @@ export function accReactTemplate(
 export function chartReactTemplate(
     childElement: HTMLElement, chart: Chart, point: Points, series: Series,
     labelIndex: number, redraw?: boolean
-    ): void {
-    let parentElement: HTMLElement = document.getElementById(
+): void {
+    const parentElement: HTMLElement = document.getElementById(
         chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) + '_DataLabelCollections'
-        );
+    );
     if (parentElement) {
         if (point.index === 0) {
             chart.dataLabelCollections = []; // clear old datalabel bounds for react callback
@@ -1212,7 +1210,7 @@ export function createTemplate(
     let templateElement: HTMLCollection;
     try {
         const blazor: string = 'Blazor';
-        const tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point }) :
+        const tempObject: Object = window[blazor as string] ? (dataLabelId ? point : { point: point }) :
             { chart: chart, series: series, point: point };
         const templateId: string = dataLabelId ? dataLabelId + '_template' : 'template';
         const elementData: Element[] = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
@@ -1221,21 +1219,21 @@ export function createTemplate(
             templateElement = Array.prototype.slice.call(elementData);
             const len: number = templateElement.length;
             for (let i: number = 0; i < len; i++) {
-                childElement.appendChild(templateElement[i]);
+                childElement.appendChild(templateElement[i as number]);
             }
         }
         let reactCallback: Function;
         if (chart.getModuleName() === 'accumulationchart') {
             reactCallback = accReactTemplate.bind(
-                this, childElement, chart, isTemplate, points, argsData, points[pointIndex],
+                this, childElement, chart, isTemplate, points, argsData, points[pointIndex as number],
                 datalabelGroup, id, dataLabel, redraw
-                );
+            );
             // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         } else if (chart.getModuleName() === 'chart') {
             reactCallback = (point && series) ? chartReactTemplate.bind(
                 this, childElement, chart, point, series, labelIndex, redraw
-                ) : reactCallback;
+            ) : reactCallback;
             // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         }
@@ -1270,8 +1268,8 @@ export function measureElementRect(element: HTMLElement, redraw: boolean = false
 export function findlElement(elements: NodeList, id: string): Element {
     let element: Element;
     for (let i: number = 0, length: number = elements.length; i < length; i++) {
-        if ((<Element>elements[i]).id.indexOf(id) > -1) {
-            element = <Element>elements[i];
+        if ((<Element>elements[i as number]).id.indexOf(id) > -1) {
+            element = <Element>elements[i as number];
             continue;
         }
     }
@@ -1338,7 +1336,7 @@ export function appendChildElement(
     const duration: number = animateDuration ? animateDuration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
-            new ChartLocation(+(element.style[x].split('px')[0]), +(element.style[y].split('px')[0])) :
+            new ChartLocation(+(element.style[x as string].split('px')[0]), +(element.style[y as string].split('px')[0])) :
             new ChartLocation(+element.getAttribute(x), +element.getAttribute(y)));
         if (direction && direction !== 'undefined') {
             pathAnimation(childElement, childElement.getAttribute('d'), redraw, direction, duration);
@@ -1352,7 +1350,7 @@ export function appendChildElement(
             );
         } else {
             const end: ChartLocation = child.tagName === 'DIV' ?
-                new ChartLocation(+(child.style[x].split('px')[0]), +(child.style[y].split('px')[0])) :
+                new ChartLocation(+(child.style[x as string].split('px')[0]), +(child.style[y as string].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
             animateRedrawElement(child, duration, start, end, x, y);
         }
@@ -1384,7 +1382,7 @@ export function checkBounds(start: number, size: number, min: number, max: numbe
 }
 /** @private */
 export function getLabelText(currentPoint: Points, series: Series, chart: Chart): string[] {
-    let labelFormat: string = series.marker.dataLabel.format ? series.marker.dataLabel.format : series.yAxis.labelFormat;
+    const labelFormat: string = series.marker.dataLabel.format ? series.marker.dataLabel.format : series.yAxis.labelFormat;
     const text: string[] = [];
     const customLabelFormat: boolean = labelFormat.match('{value}') !== null;
     switch (series.seriesType) {
@@ -1440,8 +1438,8 @@ export function getLabelText(currentPoint: Points, series: Series, chart: Chart)
             useGrouping: chart.useGroupingSeparator
         });
         for (let i: number = 0; i < text.length; i++) {
-            text[i] = customLabelFormat ? labelFormat.replace('{value}', series.yAxis.format(parseFloat(text[i]))) :
-                series.yAxis.format(parseFloat(text[i]));
+            text[i as number] = customLabelFormat ? labelFormat.replace('{value}', series.yAxis.format(parseFloat(text[i as number]))) :
+                series.yAxis.format(parseFloat(text[i as number]));
         }
     }
     return text;
@@ -1504,6 +1502,7 @@ export function colorNameToHex(color: string): string {
     element.style.color = color;
     color = window.getComputedStyle(element).color;
     remove(element);
+    // eslint-disable-next-line security/detect-unsafe-regex
     const exp: RegExp = /^(rgb|hsl)(a?)[(]\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*,\s*([\d.]+\s*%?)\s*(?:,\s*([\d.]+)\s*)?[)]$/;
     const isRGBValue: RegExpExecArray = exp.exec(color);
     return convertToHexCode(
@@ -1531,7 +1530,7 @@ export function getSaturationColor(color: string, factor: number): string {
 /** @private */
 export function getMedian(values: number[]): number {
     const half: number = Math.floor(values.length / 2);
-    return values.length % 2 ? values[half] : ((values[half - 1] + values[half]) / 2.0);
+    return values.length % 2 ? values[half as number] : ((values[half - 1] + values[half as number]) / 2.0);
 }
 /** @private */
 export function calculateLegendShapes(location: ChartLocation, size: Size, shape: string, options: PathOption): IShapes {
@@ -1547,8 +1546,8 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
     case 'Line':
     case 'StackingLine':
     case 'StackingLine100':
-        dir = 'M' + ' ' + (lx + (-width * (3/4))) + ' ' + (ly) + ' ' +
-                'L' + ' ' + (lx + (width * (3/4))) + ' ' + (ly);
+        dir = 'M' + ' ' + (lx + (-width * (3 / 4))) + ' ' + (ly) + ' ' +
+                'L' + ' ' + (lx + (width * (3 / 4))) + ' ' + (ly);
         merge(options, { 'd': dir });
         break;
     case 'StepLine':
@@ -1701,7 +1700,7 @@ export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontMod
     const labelCollection: string[] = [];
     const breakLabels: string[] = text.split('<br>');
     for (let i: number = 0; i < breakLabels.length; i++) {
-        text = breakLabels[i];
+        text = breakLabels[i as number];
         let size: number = measureText(text, font).width;
         if (size > maxWidth) {
             const textLength: number = text.length;
@@ -1751,8 +1750,8 @@ export function animateRedrawElement(
     const isDiv: boolean = element.tagName === 'DIV';
     const setStyle: Function = (xValue: number, yValue: number): void => {
         if (isDiv) {
-            (element as HTMLElement).style[x] = xValue + 'px';
-            (element as HTMLElement).style[y] = yValue + 'px';
+            (element as HTMLElement).style[x as string] = xValue + 'px';
+            (element as HTMLElement).style[y as string] = yValue + 'px';
         } else {
             element.setAttribute(x, xValue + '');
             element.setAttribute(y, yValue + '');
@@ -1812,9 +1811,9 @@ export function textElement(
     htmlObject.style.textAnchor = option.anchor;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
-            height = (measureText(option.text[i], font).height);
+            height = (measureText(option.text[i as number], font).height);
             dy = (option.y) + ((isMinus) ? -(i * height) : (i * height));
-            label = isMinus ? option.text[option.text.length - (i + 1)] : option.text[i];
+            label = isMinus ? option.text[option.text.length - (i + 1)] : option.text[i as number];
             if (isCanvas) {
                 tspanElement = renderer.createText(renderOptions, label, null, null, dy, true);
             } else {
@@ -1871,7 +1870,7 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
     );
     if (chart.getModuleName() === 'chart') {
         let scaleX: number = 1; let scaleY: number = 1;
-        if (chart.width === "" || chart.width === null || chart.width === "100%") {
+        if (chart.width === '' || chart.width === null || chart.width === '100%') {
             scaleX = chart.element.getBoundingClientRect().width > 0 ?
                 chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
             scaleY = chart.element.getBoundingClientRect().height > 0 ?
@@ -1957,27 +1956,70 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
 /**
  * Method to find new text and element size based on textOverflow
  */
-export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel): string[] {
-    const textCollection: string[] = currentLabel.split(' ');
-    let label: string = '';
-    const labelCollection: string[] = [];
-    let text: string;
-    for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
-        text = textCollection[i];
-        if (measureText(label.concat(label === '' ? '' : ' ' + text), font).width < maximumWidth) {
-            label = label.concat((label === '' ? '' : ' ') + text);
-        } else {
-            if (label !== '') {
-                labelCollection.push(textTrim(maximumWidth, label, font));
-                label = text;
+export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, wrapAnyWhere ?: boolean, clip ?: boolean): string[] {
+    if (wrapAnyWhere) {
+        return (textWrapAnyWhere(currentLabel, maximumWidth, font));
+    }
+    else {
+        const textCollection: string[] = currentLabel.split(' ');
+        let label: string = '';
+        const labelCollection: string[] = [];
+        let text: string;
+        for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
+            text = textCollection[i as number];
+            if (measureText(label.concat(label === '' ? '' : ' ' + text), font).width < maximumWidth) {
+                label = label.concat((label === '' ? '' : ' ') + text);
             } else {
-                labelCollection.push(textTrim(maximumWidth, text, font));
-                text = '';
+                if (label !== '') {
+                    labelCollection.push(clip ? label : textTrim(maximumWidth, label, font));
+                    label = text;
+                } else {
+                    labelCollection.push(clip ? text : textTrim(maximumWidth, text, font));
+                    text = '';
+                }
+            }
+            if (label && i === len - 1) {
+                labelCollection.push(clip ? label : textTrim(maximumWidth, label, font));
             }
         }
-        if (label && i === len - 1) {
-            labelCollection.push(textTrim(maximumWidth, label, font));
+        return labelCollection;
+    }
+}
+/**
+ * Method to find new text and element size based on textWrap
+ */
+export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, font: FontModel) : string[] {
+    let size : number = measureText(currentLabel, font).width;
+    const labelCollection: string[] = [];
+    if (size > maximumWidth) {
+        let label : string = '';
+        let startIndex : number = 0;
+        let labelIndex : number = 1;
+        while (labelIndex < currentLabel.length) {
+            label = currentLabel.substring(startIndex, labelIndex);
+            size = measureText(label, font).width;
+            if (size < maximumWidth) {
+                labelIndex ++;
+            }
+            else if (size === maximumWidth) {
+                startIndex = labelIndex;
+                labelCollection.push(label);
+                labelIndex ++;
+                label = '';
+            }
+            else if (size > maximumWidth) {
+                label = label.slice(0, -1);
+                startIndex = labelIndex - 1;
+                labelCollection.push(label);
+                label = '';
+            }
         }
+        if (label.length > 0) {
+            labelCollection.push(label);
+        }
+    }
+    else {
+        labelCollection.push(currentLabel);
     }
     return labelCollection;
 }
@@ -2000,14 +2042,14 @@ export function getUnicodeText(text: string, regexp: RegExp): string {
         '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079'
     };
     for (let i: number = 0; i <= title.length - 1; i++) {
-        if (title[i] === ' ') {
-            digitSpecific = (regexp === regSub) ? digit[k].replace(/~/g, '') : digit[k].replace(/\^/g, '');
+        if (title[i as number] === ' ') {
+            digitSpecific = (regexp === regSub) ? digit[k as number].replace(/~/g, '') : digit[k as number].replace(/\^/g, '');
             for (let j: number = 0; j < digitSpecific.length; j++) {
-                convertedText += (regexp === regSub) ? unicodeSub[digitSpecific[j]] : unicodeSup[digitSpecific[j]];
+                convertedText += (regexp === regSub) ? unicodeSub[digitSpecific[j as number]] : unicodeSup[digitSpecific[j as number]];
             }
             k++;
         } else {
-            convertedText += title[i];
+            convertedText += title[i as number];
         }
     }
     return convertedText.trim();
@@ -2249,27 +2291,27 @@ export function getGradientColor(value: number, colorMap: RangeColorSettingModel
         for (let j: number = 1; j < length; j++) {
             c = j * a;
             b = previousOffset + c;
-            splitColor = { b: b, color: colorMap.colors[j] };
+            splitColor = { b: b, color: colorMap.colors[j as number] };
             splitColorValueOffset.push(splitColor);
         }
         for (let i: number = 0; i < splitColorValueOffset.length; i++) {
-            if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
-                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+            if (previousOffset <= value && value <= splitColorValueOffset[i as number]['b'] && i === 0) {
+                midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i as number]['color'] : colorNameToHex(splitColorValueOffset[i as number]['color']);
                 nextColor = midColor;
-                percent = value <= splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
-                    : (value - splitColorValueOffset[i]['b']) / a;
-            } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
-                midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                    splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                percent = value <= splitColorValueOffset[i as number]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i as number]['b']) / a)
+                    : (value - splitColorValueOffset[i as number]['b']) / a;
+            } else if (splitColorValueOffset[i as number]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
+                midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                    splitColorValueOffset[i as number]['color'] : colorNameToHex(splitColorValueOffset[i as number]['color']);
                 previousColor = midColor;
-                percent = value < splitColorValueOffset[i]['b'] ?
-                    1 - Math.abs((value - splitColorValueOffset[i]['b']) / a) : (value - splitColorValueOffset[i]['b']) / a;
+                percent = value < splitColorValueOffset[i as number]['b'] ?
+                    1 - Math.abs((value - splitColorValueOffset[i as number]['b']) / a) : (value - splitColorValueOffset[i as number]['b']) / a;
             }
             if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
-                if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
-                    midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                        splitColorValueOffset[i]['color'] : colorNameToHex(splitColorValueOffset[i]['color']);
+                if (splitColorValueOffset[i as number]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
+                    midColor = splitColorValueOffset[i as number]['color'].charAt(0) === '#' ?
+                        splitColorValueOffset[i as number]['color'] : colorNameToHex(splitColorValueOffset[i as number]['color']);
                     previousColor = midColor;
                     nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
                         splitColorValueOffset[i + 1]['color'] : colorNameToHex(splitColorValueOffset[i + 1]['color']);
@@ -2299,12 +2341,12 @@ export function getPercentage(percent: number, previous: number, next: number): 
 
 /** @private */
 export function getTextAnchor(alignment: Alignment, enableRTL : boolean) : string {
-    switch(alignment) {
+    switch (alignment) {
     case 'Near':
-       return enableRTL ? 'end' : 'start';
+        return enableRTL ? 'end' : 'start';
     case 'Far':
-       return enableRTL ? 'start' : 'end';
+        return enableRTL ? 'start' : 'end';
     default:
-        return 'middle'
+        return 'middle';
     }
 }

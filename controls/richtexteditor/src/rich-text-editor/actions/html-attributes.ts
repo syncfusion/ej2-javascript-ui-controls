@@ -22,26 +22,26 @@ export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IR
     if (Object.keys(htmlAttributes).length) {
         for (const htmlAttr of Object.keys(htmlAttributes)) {
             if (htmlAttr === 'class') {
-                target.classList.add(htmlAttributes[htmlAttr]);
-            } else if (htmlAttr === 'disabled' && htmlAttributes[htmlAttr] === 'disabled') {
+                target.classList.add(htmlAttributes[`${htmlAttr}`]);
+            } else if (htmlAttr === 'disabled' && htmlAttributes[`${htmlAttr}`] === 'disabled') {
                 rte.enabled = false;
                 rte.setEnable();
-            } else if (htmlAttr === 'readonly' && htmlAttributes[htmlAttr] === 'readonly') {
+            } else if (htmlAttr === 'readonly' && htmlAttributes[`${htmlAttr}`] === 'readonly') {
                 rte.readonly = true;
                 rte.setReadOnly(initial);
             } else if (htmlAttr === 'style') {
-                target.setAttribute('style', htmlAttributes[htmlAttr]);
+                target.setAttribute('style', htmlAttributes[`${htmlAttr}`]);
             } else if (htmlAttr === 'tabindex') {
-                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
+                rte.inputElement.setAttribute('tabindex', htmlAttributes[`${htmlAttr}`]);
             } else if (htmlAttr === 'placeholder') {
-                rte.placeholder = htmlAttributes[htmlAttr];
+                rte.placeholder = htmlAttributes[`${htmlAttr}`];
                 rte.setPlaceHolder();
             } else {
                 const validateAttr: string[] = ['name', 'required'];
                 if (validateAttr.indexOf(htmlAttr) > -1) {
-                    rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
+                    rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[`${htmlAttr}`]);
                 } else {
-                    target.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
+                    target.setAttribute(htmlAttr, htmlAttributes[`${htmlAttr}`]);
                 }
             }
         }

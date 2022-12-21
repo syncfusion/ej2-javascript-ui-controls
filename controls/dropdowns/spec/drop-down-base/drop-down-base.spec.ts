@@ -57,7 +57,6 @@ describe('DropDownBase', () => {
             expect(next.classList.contains('e-rtl')).toBe(false);
             expect(listObj.itemTemplate).toBe(null);
             expect(listObj.groupTemplate).toBe(null);
-            expect(listObj.enabled).toBe(true);
             expect(listObj.dataSource).toEqual(datasource);
             expect(listObj.query).toBe(null);
         });
@@ -87,14 +86,6 @@ describe('DropDownBase', () => {
             listObj.enableRtl = true;
             listObj.dataBind();
             expect(listObj.element.nextElementSibling.classList.contains('e-rtl')).toEqual(true);
-        });
-        /**
-         * enabled
-         */
-        it('enabled behavior testing', () => {
-            listObj.enabled = false;
-            listObj.dataBind();
-            expect(listObj.element.getAttribute('aria-disabled')).toBe('true');
         });
         /**
          * dataSource

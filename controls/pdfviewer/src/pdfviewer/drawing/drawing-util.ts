@@ -55,7 +55,7 @@ export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseMo
 export function findPointsLength(points: PointModel[]): number {
     let length: number = 0;
     for (let i: number = 0; i < points.length - 1; i++) {
-        length += Point.findLength(points[i], points[i + 1]);
+        length += Point.findLength(points[parseInt(i.toString(), 10)], points[i + 1]);
     }
     return length;
 }
@@ -123,8 +123,8 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
     const keys: string = 'properties';
     const prop: string = 'propName';
     if (obj) {
-        key = obj[prop];
-        const sourceObject: Object = obj[keys] || obj;
+        key = obj[`${prop}`];
+        const sourceObject: Object = obj[`${keys}`] || obj;
         let properties: string[] = [];
         properties = properties.concat(Object.keys(sourceObject));
         let customProperties: string[] = [];
@@ -146,25 +146,25 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
                     // eslint-disable-next-line
                     const isEventEmmitter: boolean = obj[property] && (obj as any).hasOwnProperty('observers') ? true : false;
                     if (!isEventEmmitter) {
-                        if (obj[property] instanceof Array) {
-                            newObject[property] = cloneArray(
-                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
+                        if (obj[`${property}`] instanceof Array) {
+                            newObject[`${property}`] = cloneArray(
+                                (internalProp.indexOf(property) === -1 && obj[`${key}`]) ? obj[`${key}`][`${property}`] : obj[`${property}`],
                                 additionalProp, property);
-                        } else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
-                            newObject[property] = obj[property].cloneNode(true).innerHtml;
-                        } else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
-                            newObject[property] = cloneObject(
-                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
+                        } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof HTMLElement) {
+                            newObject[`${property}`] = obj[`${property}`].cloneNode(true).innerHtml;
+                        } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof Object) {
+                            newObject[`${property}`] = cloneObject(
+                                (internalProp.indexOf(property) === -1 && obj[`${key}`]) ? obj[`${key}`][`${property}`] : obj[`${property}`]);
                         } else {
-                            newObject[property] = obj[property];
+                            newObject[`${property}`] = obj[`${property}`];
                         }
                     }
                 } else {
-                    if (obj[property]) {
-                        newObject[property] = {
+                    if (obj[`${property}`]) {
+                        newObject[`${property}`] = {
                             actualSize: {
-                                width: obj[property].actualSize.width, height: obj[property].actualSize.height
-                            }, offsetX: obj[property].offsetX, offsetY: obj[property].offsetY
+                                width: obj[`${property}`].actualSize.width, height: obj[`${property}`].actualSize.height
+                            }, offsetX: obj[`${property}`].offsetX, offsetY: obj[`${property}`].offsetY
                         };
                     }
                 }
@@ -186,12 +186,12 @@ export function cloneArray(sourceArray: Object[], additionalProp?: Function | st
     if (sourceArray) {
         clonedArray = [];
         for (let i: number = 0; i < sourceArray.length; i++) {
-            if (sourceArray[i] instanceof Array) {
-                clonedArray.push(sourceArray[i]);
-            } else if (sourceArray[i] instanceof Object) {
-                clonedArray.push(cloneObject(sourceArray[i], additionalProp, key));
+            if (sourceArray[parseInt(i.toString(), 10)] instanceof Array) {
+                clonedArray.push(sourceArray[parseInt(i.toString(), 10)]);
+            } else if (sourceArray[parseInt(i.toString(), 10)] instanceof Object) {
+                clonedArray.push(cloneObject(sourceArray[parseInt(i.toString(), 10)], additionalProp, key));
             } else {
-                clonedArray.push(sourceArray[i]);
+                clonedArray.push(sourceArray[parseInt(i.toString(), 10)]);
             }
         }
     }

@@ -21,12 +21,14 @@ export interface BackgroundModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     *
      * @default ''
      */
     source?: string;
 
     /**
      * Defines the background color of diagram
+     *
      * @default 'transparent'
      */
     color?: string;
@@ -36,6 +38,7 @@ export interface BackgroundModel {
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
+     *
      * @default 'None'
      */
     scale?: Scale;
@@ -52,6 +55,7 @@ export interface BackgroundModel {
      * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
      * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
      * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
+     *
      * @default 'None'
      */
     align?: ImageAlignment;
@@ -65,18 +69,21 @@ export interface FitOptionsModel {
 
     /**
      * Defines whether the diagram has to be horizontally/vertically fit into the viewport
+     *
      * @default 'Page'
      */
     mode?: FitModes;
 
     /**
      * Defines the region that has to be fit into the viewport
+     *
      * @default 'PageSettings'
      */
     region?: DiagramRegions;
 
     /**
      * Defines the space to be left between the viewport and the content
+     *
      *  @default { left: 25, right: 25, top: 25, bottom: 25 }
      */
     margin?: MarginModel;
@@ -89,12 +96,14 @@ export interface FitOptionsModel {
 
     /**
      * Defines the custom region that has to be fit into the viewport
+     *
      * @default undefined
      */
     customBounds?: Rect;
 
     /**
      * Enables/Disables  fit while render
+     *
      * @default false
      */
     canFit?: boolean;
@@ -284,6 +293,7 @@ export interface ScrollSettingsModel {
 
     /**
      * Specifies the percentage of scale value for each ZoomIn or ZoomOut functionality.
+     *
      * @default 0.2
      */
     zoomFactor?: number;

@@ -79,13 +79,13 @@ export class WorkbookDataValidation {
             for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
                 column = getColumn(sheet, colIdx);
                 if (args.isRemoveValidation && column && column.validation) {
-                    delete (sheet.columns[colIdx].validation);
+                    delete (sheet.columns[colIdx as number].validation);
                 } else {
                     if (!args.isRemoveValidation) {
                         if (isNullOrUndefined(column)) {
-                            sheet.columns[colIdx] = getColumn(sheet, colIdx);
+                            sheet.columns[colIdx as number] = getColumn(sheet, colIdx);
                         }
-                        sheet.columns[colIdx].validation = {
+                        sheet.columns[colIdx as number].validation = {
                             operator: args.rules.operator as ValidationOperator,
                             type: args.rules.type as ValidationType,
                             value1: args.rules.value1 as string,
@@ -104,8 +104,8 @@ export class WorkbookDataValidation {
                         if (rowIdx === indexes[2]) {
                             column = getColumn(sheet, colIdx);
                             if (column && column.validation) {
-                                column.validation.address = getSplittedAddressForColumn(column.validation.address,
-                                    [indexes[0], colIdx, indexes[2], colIdx], colIdx);
+                                column.validation.address = getSplittedAddressForColumn(
+                                    column.validation.address, [indexes[0], colIdx, indexes[2], colIdx], colIdx);
                             }
                         }
                         cell = getCell(rowIdx, colIdx, sheet);
@@ -153,23 +153,23 @@ export class WorkbookDataValidation {
         const sheetIdx: number = range ? getSheetIndexFromAddress(this.parent, range) : this.parent.activeSheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
         range = range || sheet.selectedRange;
-        const sheetName: string = range.includes('!') ? getSheetNameFromAddress(range): sheet.name;
+        const sheetName: string = range.includes('!') ? getSheetNameFromAddress(range) : sheet.name;
         const rangeInfo: { range: string, isFullCol: boolean } = this.getRangeWhenColumnSelected(getRangeFromAddress(range), sheet);
-        let isFullCol: boolean = rangeInfo.isFullCol;
+        const isFullCol: boolean = rangeInfo.isFullCol;
         range = sheetName + '!' + rangeInfo.range;
         const indexes: number[] = range ? getSwapRange(getRangeIndexes(range)) : [];
         range = this.getRange(range);
         let rowIdx: number = range ? indexes[0] : 0;
         const lastRowIdx: number = range ? indexes[2] : sheet.rows.length;
         for (rowIdx; rowIdx <= lastRowIdx; rowIdx++) {
-            if (sheet.rows[rowIdx]) {
+            if (sheet.rows[rowIdx as number]) {
                 let colIdx: number = range ? indexes[1] : 0;
-                const lastColIdx: number = range ? indexes[3] : sheet.rows[rowIdx].cells.length;
+                const lastColIdx: number = range ? indexes[3] : sheet.rows[rowIdx as number].cells.length;
                 for (colIdx; colIdx <= lastColIdx; colIdx++) {
                     let validation: ValidationModel;
-                    if (sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[colIdx]) {
+                    if (sheet.rows[rowIdx as number].cells && sheet.rows[rowIdx as number].cells[colIdx as number]) {
                         const column: ColumnModel = getColumn(sheet, colIdx);
-                        cell = sheet.rows[rowIdx].cells[colIdx];
+                        cell = sheet.rows[rowIdx as number].cells[colIdx as number];
                         if (cell && cell.validation) {
                             validation = cell.validation;
                             if (isclearFormat && !validation.isHighlighted) {
@@ -198,7 +198,7 @@ export class WorkbookDataValidation {
                         value = cell.value ? cell.value : '';
                         const range: number[] = [rowIdx, colIdx];
                         if (validation && this.parent.allowDataValidation) {
-                            let validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: td, isValid: true };
+                            const validEventArgs: checkCellValid = { value, range, sheetIdx, isCell, td: td, isValid: true };
                             this.parent.notify(isValidation, validEventArgs);
                             const isValid: boolean = validEventArgs.isValid;
                             if (!isValid) {
@@ -220,22 +220,30 @@ export class WorkbookDataValidation {
             return;
         }
         let cell: CellModel;
-        let sheet: SheetModel
-        for (let i: number = 0, sheetLen = this.parent.sheets.length; i < sheetLen; i++) {
-            sheet = this.parent.sheets[i];
-            for (let j: number = 0, rowLen = sheet.rows.length; j < rowLen; j++) {
-                if (sheet.rows[j] && sheet.rows[j].cells) {
-                    for (let k: number = 0, cellLen = sheet.rows[j].cells.length; k < cellLen; k++) {
-                        cell = sheet.rows[j].cells[k];
+        let sheet: SheetModel;
+        for (let i: number = 0, sheetLen: number = this.parent.sheets.length; i < sheetLen; i++) {
+            sheet = this.parent.sheets[i as number];
+            for (let j: number = 0, rowLen: number = sheet.rows.length; j < rowLen; j++) {
+                if (sheet.rows[j as number] && sheet.rows[j as number].cells) {
+                    for (let k: number = 0, cellLen: number = sheet.rows[j as number].cells.length; k < cellLen; k++) {
+                        cell = sheet.rows[j as number].cells[k as number];
                         if (cell && cell.validation) {
                             const isInsert: boolean = (args as { name: string }).name === 'beforeInsert';
                             const endIndex: number = args.index + (args.model.length - 1);
                             const isNewlyInsertedModel: boolean = args.modelType === 'Row' ? (j >= args.index && j <= endIndex) : (k >= args.index && k <= endIndex);
-                            let eventArgs: { insertDeleteArgs: InsertDeleteEventArgs, cell?: CellModel, row: number, col: number };
+                            let eventArgs: { insertDeleteArgs: InsertDeleteEventArgs, cell?: CellModel, row: number, col: number,
+                                sheetIdx: number };
                             if (isInsert) {
-                                eventArgs = { insertDeleteArgs: { startIndex: args.index, endIndex: args.index + args.model.length - 1, modelType: args.modelType, isInsert: true, sheet: getSheet(this.parent, args.activeSheetIndex) }, row: j, col: k };
+                                eventArgs = {
+                                    insertDeleteArgs: {
+                                        startIndex: args.index, endIndex: args.index + args.model.length - 1, modelType: args.modelType,
+                                        isInsert: true, sheet: getSheet(this.parent, args.activeSheetIndex)
+                                    }, row: j, col: k, sheetIdx: i };
                             } else {
-                                eventArgs = { insertDeleteArgs: { startIndex: (args as InsertDeleteModelArgs).start as number, endIndex: (args as InsertDeleteModelArgs).end, modelType: args.modelType, sheet: args.model as SheetModel }, row: j, col: k };
+                                eventArgs = { insertDeleteArgs: {
+                                    startIndex: (args as InsertDeleteModelArgs).start as number, modelType: args.modelType,
+                                    endIndex: (args as InsertDeleteModelArgs).end, sheet: args.model as SheetModel
+                                }, row: j, col: k, sheetIdx: i };
                             }
                             if (checkIsFormula(cell.validation.value1) && !isNewlyInsertedModel) {
                                 eventArgs.cell = { formula: cell.validation.value1 };
@@ -273,7 +281,8 @@ export class WorkbookDataValidation {
         return { range: range, isFullCol: isFullCol };
     }
 
-    private updateValidationForInsertedModel(args: InsertDeleteEventArgs, sheet: SheetModel, rowIndex: number, colIndex: number, validation: ValidationModel): void {
+    private updateValidationForInsertedModel(
+        args: InsertDeleteEventArgs, sheet: SheetModel, rowIndex: number, colIndex: number, validation: ValidationModel): void {
         const endIndex: number = args.index + (args.model.length - 1);
         if (args.modelType === 'Column') {
             if ((args.insertType === 'before' && endIndex === colIndex - 1) || (args.insertType === 'after' && args.index - 1 === colIndex)) {

@@ -324,6 +324,231 @@ describe('Editing ->', () => {
         });
     });
 
+    describe('Editing after applying Freeze Panes->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], frozenRows: 2, frozenColumns: 2, selectedRange: 'C2'  }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Edit above Frozen Row->', (done: Function) => {
+            helper.invoke('startEdit');
+            const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
+            helper.triggerKeyNativeEvent(13);
+            done();
+        });
+
+        it('Edit below Frozen Column->', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            helper.invoke('startEdit');
+            const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
+            helper.triggerKeyNativeEvent(13);
+            done();
+        });
+
+        it('Edit before Frozen Column->', (done: Function) => {
+            helper.invoke('selectRange', ['B3']);
+            helper.invoke('startEdit');
+            const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
+            helper.triggerKeyNativeEvent(13);
+            done();
+        });
+    });
+
+    describe('UI - Interaction->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'I1' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('Edit Formula by adding "-"->', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
+            helper.invoke('updateCell', [{ formula: '=SUM(F2:F6)' }, 'I1']);
+            let td: HTMLElement = helper.invoke('getCell', [0, 8]);
+            const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+            setTimeout(() => {   
+                helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(F2:F6-)';
+                helper.triggerKeyEvent('keyup', 189);
+                helper.triggerKeyNativeEvent(13);
+                setTimeout((): void => {
+                    expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe(1700);
+                    done();
+                }, 10);
+            });
+        });
+
+        it('Opening Hyperlink Dialog by Keyboard Shortcuts with Protect Sheet->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.protectSheet('Price Details', { insertLink: true,  });
+            helper.triggerKeyNativeEvent(75, true);
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-hyperlink-dlg.e-dialog');
+                expect(!!dialog).toBeTruthy();
+                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
+                spreadsheet.unprotectSheet();
+                done();
+            });
+        });
+
+        it('Delete Image->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertImage([{src:"https://www.w3schools.com/images/w3schools_green.jpg"}],"D3");
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[{"src":"https://www.w3schools.com/images/w3schools_green.jpg","id":"spreadsheet_overlay_picture_1","height":300,"width":400,"top":40,"left":192}]');
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            setTimeout(() => {
+                const Image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay');
+                helper.triggerMouseAction( 'mousedown', { x: Image.getBoundingClientRect().left, y: Image.getBoundingClientRect().top }, Image, Image);
+                helper.triggerMouseAction( 'mouseup', { x: Image.getBoundingClientRect().left, y: Image.getBoundingClientRect().top }, document, Image);
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('#' + helper.id + '_overlay_picture_1')).toBeNull();
+                    done();
+                });
+            });
+        });
+
+        it('Delete Chart->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
+            EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
+            setTimeout(() => {
+                const Chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                helper.triggerMouseAction( 'mousedown', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, Chart, Chart);
+                helper.triggerMouseAction( 'mouseup', { x: Chart.getBoundingClientRect().left, y: Chart.getBoundingClientRect().top }, document, Chart);
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.getElementFromSpreadsheet('#' + helper.id + '_spreadsheet_chart_1_overlay')).toBeNull();
+                    done();
+                });
+            });
+        });
+
+        it('Delete Unique Formula->', (done: Function) => {
+            helper.invoke('selectRange', ['J1']);
+            helper.invoke('updateCell', [{ formula: '=UNIQUE(E2:E10)' }, 'J1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E10)');
+            expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBe('20');
+            expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('30');
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBeUndefined;
+                done();
+            });
+        });
+
+        it('Delete #SPILL Occurred Unique Formula->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            helper.edit('J4', '1');
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E10)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBe('#SPILL!');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBeUndefined;
+                helper.invoke('selectRange', ['J4']);
+                setTimeout(() => {
+                    helper.triggerKeyNativeEvent(46);
+                    expect(helper.getInstance().sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E10)');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBe('20');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('30');
+                    done();
+                });
+            });
+        });
+
+        it('Update Unique Formula Range->', (done: Function) => {
+            helper.invoke('selectRange', ['J1']);
+            helper.invoke('startEdit');
+            helper.getElement('.e-spreadsheet-edit').textContent = '=UNIQUE(E2:E5)';
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].formula).toBe('=UNIQUE(E2:E5)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBe('20');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('30');
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('15');
+                expect(helper.getInstance().sheets[0].rows[3].cells[9].value).toBeUndefined;
+                done();
+            });
+        });
+
+        it('Remove Unique Formula with Empty value->', (done: Function) => {
+            helper.invoke('selectRange', ['J1']);
+            helper.triggerKeyNativeEvent(32);
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(8);
+                helper.triggerKeyNativeEvent(13);
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].value).toBeUndefined;
+                done();
+           });
+        });
+
+        it('Edit the Hyperlink applied cell->', (done: Function) => {
+            helper.invoke('selectRange', ['H11']);
+            helper.invoke('addHyperlink', ['www.google.com', 'H11', '55']);
+            expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBe(55);
+            expect(helper.getInstance().sheets[0].rows[10].cells[7].hyperlink).toBe('http://www.google.com');
+            helper.triggerKeyNativeEvent(32);
+            setTimeout(() => {
+                helper.triggerKeyNativeEvent(13);
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].hyperlink).toBe('http://www.google.com');
+                done();
+           });
+        });
+        
+        it('Delete Formula applied cell->', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBeUndefined;
+                done();
+            });
+        });
+
+        it('Delete Formula applied cell->', (done: Function) => {
+            helper.invoke('selectRange', ['H11']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].hyperlink).toBeUndefined;
+                done();
+            });
+        });
+
+        it('Delete Databar applied cell->', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H2' }]);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toBeUndefined;
+                expect(helper.invoke('getCell', [2, 7]).querySelector('.e-databar')).toBeNull();
+                done();
+            });
+        });
+
+        it('Delete iconset applied cell->', (done: Function) => {
+            helper.invoke('selectRange', ['H3']);
+            helper.invoke('conditionalFormat', [{ type: 'ThreeArrows', range: 'H3' }]);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[3].cells[7].value).toBeUndefined;
+                expect(helper.invoke('getCell', [3, 7]).querySelector('e-3arrows-3')).toBeNull();
+                done();
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I309407, EJ2-60617, EJ2-6280, EJ2-628859 ->', () => {
             beforeAll((done: Function) => {

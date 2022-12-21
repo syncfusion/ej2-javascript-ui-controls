@@ -178,15 +178,15 @@ export class NavigationPane {
                 folders[length]._fm_icon = 'e-fe-folder';
                 // eslint-disable-next-line
                 const attr: Object = {};
-                const id: string = getValue('id', folders[length]);
+                const id: string = getValue('id', folders[length as number]);
                 if (!isNOU(id)) {
                     setValue('data-id', id, attr);
                 }
-                if (!hasEditAccess(folders[length])) {
-                    setValue('class', getAccessClass(folders[length]), attr);
+                if (!hasEditAccess(folders[length as number])) {
+                    setValue('class', getAccessClass(folders[length as number]), attr);
                 }
                 if (!isNOU(attr)) {
-                    setValue('_fm_htmlAttr', attr, folders[length]);
+                    setValue('_fm_htmlAttr', attr, folders[length as number]);
                 }
                 length++;
             }
@@ -525,11 +525,11 @@ export class NavigationPane {
     private getMoveNames(files: { [key: string]: Object; }[], flag: boolean, path: string): string[] {
         const moveNames: string[] = [];
         for (let i: number = 0; i < files.length; i++) {
-            if (!files[i].isFile) {
+            if (!files[i as number].isFile) {
                 if (!this.parent.hasId) {
-                    let name: string = <string>(files[i].previousName);
+                    let name: string = <string>(files[i as number].previousName);
                     if (flag) {
-                        path = path + files[i].previousName;
+                        path = path + files[i as number].previousName;
                         const index: number = path.lastIndexOf('/');
                         name = path.substring(index + 1);
                         path = path.substring(0, index + 1);
@@ -538,10 +538,10 @@ export class NavigationPane {
                     const resultData: Object[] = new DataManager(this.treeObj.getTreeData()).
                         executeLocal(new Query().where(this.treeObj.fields.text, 'equal', name, false));
                     for (let j: number = 0; j < resultData.length; j++) {
-                        let fPath: string = getValue('filterPath', resultData[j]);
+                        let fPath: string = getValue('filterPath', resultData[j as number]);
                         fPath = fPath.replace(/\\/g, '/');
                         if (fPath === path) {
-                            moveNames.push(getValue(this.treeObj.fields.id, resultData[j]));
+                            moveNames.push(getValue(this.treeObj.fields.id, resultData[j as number]));
                             break;
                         }
                     }
@@ -638,8 +638,8 @@ export class NavigationPane {
         // eslint-disable-next-line
         const obj: object[] = this.parent.isDragDrop ? this.parent.dragData : this.parent.actionRecords;
         for (let i: number = 0; i < obj.length; i++) {
-            if (getValue('isFile', obj[i]) === false) {
-                this.moveNames.push(getValue('_fm_id', obj[i]));
+            if (getValue('isFile', obj[i as number]) === false) {
+                this.moveNames.push(getValue('_fm_id', obj[i as number]));
             }
         }
     }
@@ -847,7 +847,7 @@ export class NavigationPane {
         // eslint-disable-next-line
         const data: object[] = this.treeObj.getTreeData(args);
         for (let i: number = 0; i < data.length; i++) {
-            if (isNOU(getValue('hasChild', data[i]))) { setValue('hasChild', false, data[i]); }
+            if (isNOU(getValue('hasChild', data[i as number]))) { setValue('hasChild', false, data[i as number]); }
         }
         return data;
     }

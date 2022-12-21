@@ -52,10 +52,10 @@ export class PieBase extends AccumulationBase {
             const radiusCollection: number[] = [];
             this.isRadiusMapped = true;
             for (let i: number = 0; i < Object.keys(series.points).length; i++) {
-                if (series.points[i].sliceRadius.indexOf('%') !== -1) {
-                    radiusCollection[i] = stringToNumber(series.points[i].sliceRadius, this.size / 2);
+                if (series.points[i as number].sliceRadius.indexOf('%') !== -1) {
+                    radiusCollection[i as number] = stringToNumber(series.points[i as number].sliceRadius, this.size / 2);
                 } else {
-                    radiusCollection[i] = parseInt(series.points[i].sliceRadius, 10);
+                    radiusCollection[i as number] = parseInt(series.points[i as number].sliceRadius, 10);
                 }
             }
             const minRadius: number = Math.min.apply(null, radiusCollection);

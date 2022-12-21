@@ -19,7 +19,7 @@ import { Revision } from '../track-changes/index';
 import { WCharacterFormat, WRowFormat } from '../format/index';
 
 /**
- * Collaborative editing module
+ * Represents the collaborative editing module
  */
 export class CollaborativeEditing {
     private owner: DocumentEditor;
@@ -47,7 +47,7 @@ export class CollaborativeEditing {
     /**
      * To update the action which need to perform.
      *
-     * @param {CollaborativeEditingEventArgs} data - Specifies the data.
+     * @param {CollaborativeEditingEventArgs} data Specifies the data.
      * @returns {void}
      */
     public updateAction(data: CollaborativeEditingEventArgs | CollaborativeEditingEventArgs[]): void {
@@ -55,7 +55,7 @@ export class CollaborativeEditing {
             data = [data];
         }
         for (let i: number = 0; i < data.length; i++) {
-            const documentData: CollaborativeEditingEventArgs = data[i];
+            const documentData: CollaborativeEditingEventArgs = data[parseInt(i.toString(), 10)];
             switch (documentData.action) {
             case 'LockContent':
                 // Transform position
@@ -105,7 +105,7 @@ export class CollaborativeEditing {
     /**
      * Lock selected region from editing by other users.
      *
-     * @param {string} user - Specifies the user.
+     * @param {string} user Specifies the user.
      * @returns {void}
      */
     public lockContent(user: string): void {
@@ -166,7 +166,7 @@ export class CollaborativeEditing {
         }
         const userNames: string[] = editRanges.keys;
         for (let i: number = 0; i < userNames.length; i++) {
-            const range: EditRangeStartElementBox[] = editRanges.get(userNames[i]);
+            const range: EditRangeStartElementBox[] = editRanges.get(userNames[parseInt(i.toString(), 10)]);
             if (!isNullOrUndefined(range) && range.length > 0) {
                 if (this.isSelectionInEditableRange(range[0])) {
                     return false;
@@ -184,7 +184,7 @@ export class CollaborativeEditing {
         let previous: EditRangeStartElementBox;
         const userNames: string[] = editRanges.keys;
         for (let i: number = 0; i < userNames.length; i++) {
-            const range: EditRangeStartElementBox = editRanges.get(userNames[i])[0];
+            const range: EditRangeStartElementBox = editRanges.get(userNames[parseInt(i.toString(), 10)])[0];
             const startPosition: TextPosition = this.selection.getPosition(range).startPosition;
             if (startPosition.isExistBefore(this.selection.start)) {
                 if (isNullOrUndefined(previous)) {
@@ -387,7 +387,7 @@ export class CollaborativeEditing {
             const index: number = firstElement.indexInOwner;
             let lastElement: ElementBox = firstElement;
             for (let i: number = 1; i < elements.length; i++) {
-                lastElement = elements[i];
+                lastElement = elements[parseInt(i.toString(), 10)];
                 firstElement.line.children.splice(index + i, 0, lastElement);
             }
         }

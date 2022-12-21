@@ -139,6 +139,15 @@ export interface TabItemModel {
      */
     id?: string;
 
+    /**
+     * Specifies the tab order of the Tabs items. When positive values assigned, it allows to switch focus to the next/previous tabs items with Tab/ShiftTab keys.
+     * By default, user can able to switch between items only via arrow keys.
+     * If the value is set to 0 for all tabs items, then tab switches based on element order.
+     *
+     * @default -1
+     */
+    tabIndex?: number
+
 }
 
 /**

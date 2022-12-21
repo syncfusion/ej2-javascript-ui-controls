@@ -196,7 +196,7 @@ export class PdfGantt extends PdfTreeGrid {
     private drawPageBorder(): void {
         const pages: PdfPage[] = this.result.page.section.getPages() as PdfPage[];
         for (let index: number = 0; index < pages.length; index++) {
-            const page: PdfPage = pages[index];
+            const page: PdfPage = pages[index as number];
             const graphics: PdfGraphics = page.graphics;
             const pageSize: SizeF = page.getClientSize();
             const pen: PdfPen = new PdfPen(new PdfColor(206, 206, 206));
@@ -221,7 +221,7 @@ export class PdfGantt extends PdfTreeGrid {
             this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
             this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
-                const task: PdfGanttTaskbarCollection = this.taskbarCollection[i];
+                const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
                 const rowHeight: number = this.rows.getRow(i + 1).height;
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
                 /* eslint-disable-next-line */
@@ -252,7 +252,7 @@ export class PdfGantt extends PdfTreeGrid {
                 // eslint-disable-next-line
                 totalHeight += rowHeight;
             }
-            this.headerDetails[index].endIndex = this.startPageIndex;
+            this.headerDetails[index as number].endIndex = this.startPageIndex;
             cumulativeWidth += detail.totalWidth;
             pageData = {};
             pageData.height = cumulativeHeight;
@@ -275,7 +275,7 @@ export class PdfGantt extends PdfTreeGrid {
         });
         // Draw predecessor line.
         for (let i: number = 0; i < this.predecessorCollection.length; i++) {
-            const predecessor: PdfGanttPredecessor = this.predecessorCollection[i];
+            const predecessor: PdfGanttPredecessor = this.predecessorCollection[i as number];
             predecessor.drawPredecessor(this);
         }
     }

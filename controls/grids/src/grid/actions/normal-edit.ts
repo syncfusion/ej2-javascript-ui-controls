@@ -14,6 +14,7 @@ import { DataUtil } from '@syncfusion/ej2-data';
 import { freezeTable } from '../base/enum';
 import { addRemoveEventListener } from '../base/util';
 import * as literals from '../base/string-literals';
+import { Grid } from '../base/grid';
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
@@ -79,7 +80,7 @@ export class NormalEdit {
         case 'save':
             if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                 || (!this.parent.isPersistSelection)) {
-                if (e[action] !== 'edit') {
+                if (e[`${action}`] !== 'edit') {
                     this.parent.selectRow(0);
                 }
             }
@@ -104,7 +105,7 @@ export class NormalEdit {
         const primaryKeys: string[] = this.parent.getPrimaryKeyFieldNames();
         const primaryKeyValues: string[] = [];
         for (let i: number = 0; i < primaryKeys.length; i++) {
-            primaryKeyValues.push(getObject(primaryKeys[i], editedData));
+            primaryKeyValues.push(getObject(primaryKeys[parseInt(i.toString(), 10)], editedData));
         }
         const args: CustomEditEventArgs = {
             primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
@@ -170,9 +171,14 @@ export class NormalEdit {
         }
         this.renderer.update(editargs);
         this.uid = tr.getAttribute('data-uid');
-        gObj.editModule.applyFormValidation();
+        if (!gObj.editSettings.template) {
+            gObj.editModule.applyFormValidation();
+        }
         editargs.type = 'actionComplete';
         gObj.trigger(events.actionComplete, editargs);
+        if (gObj.editSettings.template) {
+            gObj.editModule.applyFormValidation();
+        }
         this.args = editargs;
         if (this.parent.allowTextWrap) {
             this.parent.notify(events.freezeRender, { case: 'textwrap' });
@@ -184,7 +190,7 @@ export class NormalEdit {
         this.editRowIndex = index;
         const args: SaveEventArgs = {
             requestType: 'save', action: 'edit', type: events.actionBegin, data: data, cancel: false,
-            previousData: gObj.getCurrentViewRecords()[index],
+            previousData: gObj.getCurrentViewRecords()[parseInt(index.toString(), 10)],
             row: gObj.getRowByIndex(index)
         };
         gObj.showSpinner();
@@ -226,7 +232,7 @@ export class NormalEdit {
         const index: number = gObj.getFrozenMode() === 'Right' ? 1 : 0;
         const isDlg: boolean = gObj.editSettings.mode === 'Dialog';
         const dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
-        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[index];
+        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[parseInt(index.toString(), 10)];
         const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
@@ -335,7 +341,7 @@ export class NormalEdit {
     private editSuccess(e: Object, args: EditArgs): void {
         if (!isNullOrUndefined(e) && !(e instanceof Array)) {
             const rowData: string = 'rowData';
-            args.data = extend({}, extend({}, args[rowData], args.data), e);
+            args.data = extend({}, extend({}, args[`${rowData}`], args.data), e);
         }
         this.requestSuccess(args);
         this.parent.trigger(events.beforeDataBound, args);
@@ -348,12 +354,20 @@ export class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         this.editRowIndex = null;
+        if (this.parent.aggregates.length) {
+            this.parent.aggregateModule.refresh(args.data, this.parent.groupSettings.enableLazyLoading ? args.row : undefined);
+        }
         this.parent.trigger(events.actionComplete, args);
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection) && !this.parent.selectionSettings.checkboxOnly) {
             if (this.parent.editSettings.mode !== 'Dialog') {
                 this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
             }
+        }
+        if (this.parent.aggregates.length && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
+            && ((this.parent as Grid).groupModule.getGroupAggregateTemplates(true).length
+            || (this.parent as Grid).groupModule.getGroupAggregateTemplates(false).length)) {
+            return;
         }
         this.parent.removeMaskRow();
         this.parent.hideSpinner();
@@ -380,7 +394,7 @@ export class NormalEdit {
             updateBlazorTemplate(this.parent.element.id + 'editSettingsTemplate', 'Template', this.parent.editSettings);
         }
         for (let i: number = 0; i < cols.length; i++) {
-            const col: Column = cols[i];
+            const col: Column = cols[parseInt(i.toString(), 10)];
             if (col.template) {
                 updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
             }
@@ -421,12 +435,12 @@ export class NormalEdit {
             const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[data-rowindex="' + rowObj.index + '"]'));
             if (frzCols && tr.length) {
                 for (let i: number = 0; i < tr.length; i++) {
-                    const rowUid: string = tr[i].getAttribute('data-uid');
+                    const rowUid: string = tr[parseInt(i.toString(), 10)].getAttribute('data-uid');
                     if (rowUid !== this.uid) {
                         rowObj = this.parent.getRowObjectFromUID(rowUid);
                         rowObj.changes = data;
                         row.refresh(rowObj, this.parent.getColumns(), true);
-                        this.parent.editModule.checkLastRow(tr[i]);
+                        this.parent.editModule.checkLastRow(tr[parseInt(i.toString(), 10)]);
                     }
                 }
             }
@@ -487,11 +501,11 @@ export class NormalEdit {
         const rowData: { virtualData: Object, isScroll: boolean } = { virtualData: {}, isScroll: false };
         this.parent.notify(events.getVirtualData, rowData);
         for (let i: number = 0; i < cols.length; i++) {
-            if (rowData.isScroll && cols[i].getFreezeTableName() !== 'movable') {
+            if (rowData.isScroll && cols[parseInt(i.toString(), 10)].getFreezeTableName() !== 'movable') {
                 continue;
             }
-            if (cols[i].field) {
-                DataUtil.setValue(cols[i].field, cols[i].defaultValue, this.previousData);
+            if (cols[parseInt(i.toString(), 10)].field) {
+                DataUtil.setValue(cols[parseInt(i.toString(), 10)].field, cols[parseInt(i.toString(), 10)].defaultValue, this.previousData);
             }
         }
         const args: CustomAddEventArgs = {
@@ -526,10 +540,15 @@ export class NormalEdit {
             gObj.clearSelection();
         }
         this.renderer.addNew(addArgs);
-        gObj.editModule.applyFormValidation();
+        if (!gObj.editSettings.template) {
+            gObj.editModule.applyFormValidation();
+        }
         addArgs.type = events.actionComplete;
         addArgs.row = gObj.element.querySelector('.' + literals.addedRow);
         gObj.trigger(events.actionComplete, addArgs);
+        if (gObj.editSettings.template) {
+            gObj.editModule.applyFormValidation();
+        }
         this.args = addArgs as EditArgs;
     }
 
@@ -544,9 +563,10 @@ export class NormalEdit {
                 let tmpRecord: Object;
                 const contained: boolean = gObj.currentViewData.some((record: Object) => {
                     tmpRecord = record;
-                    return data[i] === getObject(fieldname, record) || data[i] === record;
+                    return data[parseInt(i.toString(), 10)] === getObject(fieldname, record) || data[parseInt(i.toString(), 10)] === record;
                 });
-                data[i] = contained ? tmpRecord : data[i][fieldname] ? data[i] : { [fieldname]: data[i] };
+                data[parseInt(i.toString(), 10)] = contained ? tmpRecord : data[parseInt(i.toString(), 10)][`${fieldname}`] ?
+                    data[parseInt(i.toString(), 10)] : { [fieldname]: data[parseInt(i.toString(), 10)] };
             }
         }
         const args: object = {
@@ -569,10 +589,10 @@ export class NormalEdit {
         const addElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.addedRow));
         const editElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.editedRow));
         for (let i: number = 0; i < addElements.length; i++) {
-            remove(addElements[i]);
+            remove(addElements[parseInt(i.toString(), 10)]);
         }
         for (let i: number = 0; i < editElements.length; i++) {
-            editElements[i].classList.remove(literals.editedRow);
+            editElements[parseInt(i.toString(), 10)].classList.remove(literals.editedRow);
         }
     }
 

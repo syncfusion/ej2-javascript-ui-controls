@@ -102,12 +102,13 @@ export function updateColumnTypeForExportColumns(exportProperties: PdfExportProp
     const gridColumns: Column[] = gObj.columns as Column[];
     for (let i: number = 0; i < exportColumns.length; i++) {
         if (gridColumns.length - 1 >= i) {
-            if (gridColumns[i].columns) {
-                for (let j: number = 0; j < gridColumns[i].columns.length; j++) {
-                    (exportColumns[i].columns[j] as Column).type = (gridColumns[i].columns[j] as Column).type;
+            if (gridColumns[parseInt(i.toString(), 10)].columns) {
+                for (let j: number = 0; j < gridColumns[parseInt(i.toString(), 10)].columns.length; j++) {
+                    (exportColumns[parseInt(i.toString(), 10)].columns[parseInt(j.toString(), 10)] as Column)
+                        .type = (gridColumns[parseInt(i.toString(), 10)].columns[parseInt(j.toString(), 10)] as Column).type;
                 }
             } else {
-                exportColumns[i].type = gridColumns[i].type;
+                exportColumns[parseInt(i.toString(), 10)].type = gridColumns[parseInt(i.toString(), 10)].type;
             }
         }
     }
@@ -121,12 +122,12 @@ export function updateColumnTypeForExportColumns(exportProperties: PdfExportProp
 export function updatecloneRow(grid: IGrid): void {
     const nRows: Row<Column>[] = []; const actualRows: Row<Column>[] = grid.vRows;
     for (let i: number = 0; i < actualRows.length; i++) {
-        if (actualRows[i].isDataRow) {
-            nRows.push(actualRows[i]);
-        } else if (!actualRows[i].isDataRow) {
-            nRows.push(actualRows[i]);
-            if (!actualRows[i].isExpand && actualRows[i].isCaptionRow) {
-                i += getCollapsedRowsCount(actualRows[i], grid);
+        if (actualRows[parseInt(i.toString(), 10)].isDataRow) {
+            nRows.push(actualRows[parseInt(i.toString(), 10)]);
+        } else if (!actualRows[parseInt(i.toString(), 10)].isDataRow) {
+            nRows.push(actualRows[parseInt(i.toString(), 10)]);
+            if (!actualRows[parseInt(i.toString(), 10)].isExpand && actualRows[parseInt(i.toString(), 10)].isCaptionRow) {
+                i += getCollapsedRowsCount(actualRows[parseInt(i.toString(), 10)], grid);
             }
         }
     }
@@ -147,40 +148,40 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
     const gLen: number = grid.groupSettings.columns.length;
     const records: string = 'records';
     const items: string = 'items';
-    const value: number = val[gSummary];
+    const value: number = val[`${gSummary}`];
     let dataRowCnt: number = 0;
     const agrCnt: string = 'aggregatesCount';
-    if (value === val.data[total]) {
-        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt]) && val[agrCnt]) {
+    if (value === val.data[`${total}`]) {
+        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[`${agrCnt}`]) && val[`${agrCnt}`]) {
             if (grid.groupSettings.columns.length !== 1) {
-                count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
-                    (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
+                count += (val.indent !== 0 && (value) < 2) ? (val[`${gSummary}`] * ((gLen - val.indent) + (gLen - val.indent) * val[`${agrCnt}`])) :
+                    (val[`${gSummary}`] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[`${agrCnt}`])) + val[`${agrCnt}`];
             } else if (grid.groupSettings.columns.length === 1) {
-                count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
+                count += (val[`${gSummary}`] * (gLen - val.indent)) + val[`${agrCnt}`];
             }
         } else if (grid.groupSettings.columns.length) {
             if (grid.groupSettings.columns.length !== 1) {
-                count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+                count += val[`${gSummary}`] * (grid.groupSettings.columns.length - val.indent);
             } else {
-                count += val[gSummary];
+                count += val[`${gSummary}`];
             }
         }
         return count;
     } else {
-        for (let i: number = 0, len: number = val.data[items].length; i < len; i++) {
-            const gLevel: Object[] = val.data[items][i];
-            count += gLevel[items].length + ((gLen !== grid.columns.length) &&
-                !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
-            dataRowCnt += (!isNullOrUndefined(gLevel[items][records]) && !isNullOrUndefined(val[agrCnt])) ? gLevel[items][records].length :
-                gLevel[items].length;
-            if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
+        for (let i: number = 0, len: number = val.data[`${items}`].length; i < len; i++) {
+            const gLevel: Object[] = val.data[`${items}`][parseInt(i.toString(), 10)];
+            count += gLevel[`${items}`].length + ((gLen !== grid.columns.length) &&
+                !isNullOrUndefined(gLevel[`${items}`][`${records}`]) ? gLevel[`${items}`][`${records}`].length : 0);
+            dataRowCnt += (!isNullOrUndefined(gLevel[`${items}`][`${records}`]) && !isNullOrUndefined(val[`${agrCnt}`])) ? gLevel[`${items}`][`${records}`].length :
+                gLevel[`${items}`].length;
+            if (gLevel[`${items}`].GroupGuid && gLevel[`${items}`].childLevels !== 0) {
                 recursive(gLevel);
             }
         }
-        count += val.data[items].length;
-        if (!isNullOrUndefined(val[agrCnt])) {
-            if (val[agrCnt] && count && dataRowCnt !== 0) {
-                count += ((count - dataRowCnt) * val[agrCnt]) + val[agrCnt];
+        count += val.data[`${items}`].length;
+        if (!isNullOrUndefined(val[`${agrCnt}`])) {
+            if (val[`${agrCnt}`] && count && dataRowCnt !== 0) {
+                count += ((count - dataRowCnt) * val[`${agrCnt}`]) + val[`${agrCnt}`];
             }
         }
     }
@@ -195,10 +196,10 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
 export function recursive(row: Object[]): void {
     const items: string = 'items';
     const rCount: string = 'count';
-    for (let j: number = 0, length: number = row[items].length; j < length; j++) {
-        const nLevel: Object[] = row[items][j];
-        count += nLevel[rCount];
-        if (nLevel[items].childLevels !== 0) {
+    for (let j: number = 0, length: number = row[`${items}`].length; j < length; j++) {
+        const nLevel: Object[] = row[`${items}`][parseInt(j.toString(), 10)];
+        count += nLevel[`${rCount}`];
+        if (nLevel[`${items}`].childLevels !== 0) {
             recursive(nLevel);
         }
     }
@@ -214,7 +215,7 @@ export function recursive(row: Object[]): void {
 export function iterateArrayOrObject<T, U>(collection: U[], predicate: (item: Object, index: number) => T): T[] {
     const result: T[] = [];
     for (let i: number = 0, len: number = collection.length; i < len; i++) {
-        const pred: T = predicate(collection[i], i);
+        const pred: T = predicate(collection[parseInt(i.toString(), 10)], i);
         if (!isNullOrUndefined(pred)) {
             result.push(<T>pred);
         }
@@ -230,7 +231,7 @@ export function iterateArrayOrObject<T, U>(collection: U[], predicate: (item: Ob
 export function iterateExtend(array: Object[]): Object[] {
     const obj: Object[] = [];
     for (let i: number = 0; i < array.length; i++) {
-        obj.push(baseExtend({}, getActualProperties(array[i]), {}, true));
+        obj.push(baseExtend({}, getActualProperties(array[parseInt(i.toString(), 10)]), {}, true));
     }
     return obj;
 }
@@ -292,8 +293,8 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
     const moved: Object = baseExtend(copied, first, second);
     const values: string[] = Object.keys(moved);
     for (let i: number = 0; i < values.length; i++) {
-        if (exclude && exclude.indexOf(values[i]) !== -1) {
-            delete moved[values[i]];
+        if (exclude && exclude.indexOf(values[parseInt(i.toString(), 10)]) !== -1) {
+            delete moved[values[parseInt(i.toString(), 10)]];
         }
     }
 
@@ -308,14 +309,17 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
  */
 export function setColumnIndex(columnModel: Column[], ind: number = 0): number {
     for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
-        if ((columnModel[i] as Column).columns) {
-            (columnModel[i] as Column).index = isNullOrUndefined((columnModel[i] as Column).index) ? ind : (columnModel[i] as Column).index;
+        if ((columnModel[parseInt(i.toString(), 10)] as Column).columns) {
+            (columnModel[parseInt(i.toString(), 10)] as Column).index = isNullOrUndefined(
+                (columnModel[parseInt(i.toString(), 10)] as Column).index) ? ind
+                : (columnModel[parseInt(i.toString(), 10)] as Column).index;
             ind++;
-            ind = setColumnIndex(<Column[]>(columnModel[i] as Column).columns, ind);
+            ind = setColumnIndex(<Column[]>(columnModel[parseInt(i.toString(), 10)] as Column).columns, ind);
         } else {
-            (columnModel[i] as Column).index = isNullOrUndefined((columnModel[i] as Column).index) ? ind : (columnModel[i] as Column).index;
+            (columnModel[parseInt(i.toString(), 10)] as Column).index = isNullOrUndefined(
+                (columnModel[parseInt(i.toString(), 10)] as Column).index) ? ind
+                : (columnModel[parseInt(i.toString(), 10)] as Column).index;
             ind++;
-
         }
     }
     return ind;
@@ -333,17 +337,18 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
 
         let column: Column;
 
-        if (typeof columns[c] === 'string') {
-            column = new Column({ field: <string>columns[c] }, gObj);
-        } else if (!(columns[c] instanceof Column) || (columns[c] as Column).columns) {
-            if (!(columns[c] as Column).columns) {
-                column = new Column(columns[c] as Column, gObj);
+        if (typeof columns[parseInt(c.toString(), 10)] === 'string') {
+            column = new Column({ field: <string>columns[parseInt(c.toString(), 10)] }, gObj);
+        } else if (!(columns[parseInt(c.toString(), 10)] instanceof Column) || (columns[parseInt(c.toString(), 10)] as Column).columns) {
+            if (!(columns[parseInt(c.toString(), 10)] as Column).columns) {
+                column = new Column(columns[parseInt(c.toString(), 10)] as Column, gObj);
             } else {
-                (columns[c] as Column).columns = prepareColumns((columns[c] as Column).columns, null, gObj);
-                column = new Column(columns[c] as Column, gObj);
+                (columns[parseInt(c.toString(), 10)] as Column).columns = prepareColumns(
+                    (columns[parseInt(c.toString(), 10)] as Column).columns, null, gObj);
+                column = new Column(columns[parseInt(c.toString(), 10)] as Column, gObj);
             }
         } else {
-            column = <Column>columns[c];
+            column = <Column>columns[parseInt(c.toString(), 10)];
         }
 
         if (column.type && column.type.toLowerCase() === 'checkbox') {
@@ -363,7 +368,7 @@ export function prepareColumns(columns: Column[] | string[] | ColumnModel[], aut
             column.visible = true;
         }
 
-        columns[c] = column;
+        columns[parseInt(c.toString(), 10)] = column;
 
     }
     return columns as Column[];
@@ -460,7 +465,7 @@ export function parentsUntil(elem: Element, selector: string, isID?: boolean): E
 export function getElementIndex(element: Element, elements: Element[]): number {
     let index: number = -1;
     for (let i: number = 0, len: number = elements.length; i < len; i++) {
-        if (elements[i].isEqualNode(element)) {
+        if (elements[parseInt(i.toString(), 10)].isEqualNode(element)) {
             index = i;
             break;
         }
@@ -476,7 +481,7 @@ export function getElementIndex(element: Element, elements: Element[]): number {
  */
 export function inArray(value: Object, collection: Object[]): number {
     for (let i: number = 0, len: number = collection.length; i < len; i++) {
-        if (collection[i] === value) {
+        if (collection[parseInt(i.toString(), 10)] === value) {
             return i;
         }
     }
@@ -492,10 +497,10 @@ export function getActualPropFromColl(collection: Object[]): Object[] {
     const coll: Object[] = [];
     for (let i: number = 0, len: number = collection.length; i < len; i++) {
         // eslint-disable-next-line no-prototype-builtins
-        if (collection[i].hasOwnProperty('properties')) {
-            coll.push((collection[i] as { properties: Object }).properties);
+        if (collection[parseInt(i.toString(), 10)].hasOwnProperty('properties')) {
+            coll.push((collection[parseInt(i.toString(), 10)] as { properties: Object }).properties);
         } else {
-            coll.push(collection[i]);
+            coll.push(collection[parseInt(i.toString(), 10)]);
         }
     }
     return coll;
@@ -510,7 +515,7 @@ export function getActualPropFromColl(collection: Object[]): Object[] {
 export function removeElement(target: Element, selector: string): void {
     const elements: HTMLElement[] = [].slice.call(target.querySelectorAll(selector));
     for (let i: number = 0; i < elements.length; i++) {
-        remove(elements[i]);
+        remove(elements[parseInt(i.toString(), 10)]);
     }
 }
 
@@ -548,7 +553,7 @@ export function getUid(prefix: string): string {
 export function appendChildren(elem: Element | DocumentFragment, children: Element[] | NodeList): Element {
     for (let i: number = 0, len: number = children.length; i < len; i++) {
         if (len === children.length) {
-            elem.appendChild(children[i]);
+            elem.appendChild(children[parseInt(i.toString(), 10)]);
         } else {
             elem.appendChild(children[0]);
         }
@@ -725,9 +730,9 @@ export function wrap(elem: any, action: boolean): void {
     elem = elem instanceof Array ? elem : [elem];
     for (let i: number = 0; i < elem.length; i++) {
         if (action) {
-            elem[i].classList.add(clName);
+            elem[parseInt(i.toString(), 10)].classList.add(clName);
         } else {
-            elem[i].classList.remove(clName);
+            elem[parseInt(i.toString(), 10)].classList.remove(clName);
         }
     }
 }
@@ -745,7 +750,7 @@ export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): 
     if (column.type === 'date' || column.type === 'datetime') {
         args = { type: column.type, skeleton: column.format };
         if ((typeof (column.format) === 'string') && column.format !== 'yMd') {
-            args[format] = column.format;
+            args[`${format}`] = column.format;
         }
     }
     switch (column.type) {
@@ -780,11 +785,11 @@ export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): 
 export function addRemoveActiveClasses(cells: Element[], add: boolean, ...args: string[]): void {
     for (let i: number = 0, len: number = cells.length; i < len; i++) {
         if (add) {
-            classList(cells[i], [...args], []);
-            cells[i].setAttribute('aria-selected', 'true');
+            classList(cells[parseInt(i.toString(), 10)], [...args], []);
+            cells[parseInt(i.toString(), 10)].setAttribute('aria-selected', 'true');
         } else {
-            classList(cells[i], [], [...args]);
-            cells[i].removeAttribute('aria-selected');
+            classList(cells[parseInt(i.toString(), 10)], [], [...args]);
+            cells[parseInt(i.toString(), 10)].removeAttribute('aria-selected');
         }
     }
 }
@@ -798,9 +803,9 @@ export function distinctStringValues(result: string[]): string[] {
     const temp: Object = {};
     const res: string[] = [];
     for (let i: number = 0; i < result.length; i++) {
-        if (!(result[i] in temp)) {
-            res.push(result[i].toString());
-            temp[result[i]] = 1;
+        if (!(result[parseInt(i.toString(), 10)] in temp)) {
+            res.push(result[parseInt(i.toString(), 10)].toString());
+            temp[result[parseInt(i.toString(), 10)]] = 1;
         }
     }
     return res;
@@ -905,13 +910,15 @@ export function removeAddCboxClasses(elem: Element, checked: boolean): void {
  */
 export function refreshForeignData(row: IRow<Column>, columns: Column[], data: Object): void {
     for (let i: number = 0; i < columns.length; i++) {
-        setValue(columns[i].field, getForeignData(columns[i], data), row.foreignKeyData);
+        setValue(columns[parseInt(i.toString(), 10)].field, getForeignData(columns[parseInt(i.toString(), 10)], data), row.foreignKeyData);
     }
 
     const cells: ICell<Column>[] = row.cells;
     for (let i: number = 0; i < cells.length; i++) {
-        if (cells[i].isForeignKey) {
-            setValue('foreignKeyData', getValue(cells[i].column.field, row.foreignKeyData), cells[i]);
+        if (cells[parseInt(i.toString(), 10)].isForeignKey) {
+            setValue(
+                'foreignKeyData',
+                getValue(cells[parseInt(i.toString(), 10)].column.field, row.foreignKeyData), cells[parseInt(i.toString(), 10)]);
         }
     }
 }
@@ -1039,7 +1046,8 @@ export function renderMovable(ele: Element, frzCols: number, gObj?: IGrid): Elem
  */
 export function isGroupAdaptive(grid: IGrid): boolean {
 
-    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
+    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive &&
+        !grid.groupSettings.enableLazyLoading;
 }
 
 /**
@@ -1054,7 +1062,7 @@ export function getObject(field: string = '', object?: Object): any {
         let value: Object = object;
         const splits: string[] = field.split('.');
         for (let i: number = 0; i < splits.length && !isNullOrUndefined(value); i++) {
-            value = value[splits[i]];
+            value = value[splits[parseInt(i.toString(), 10)]];
         }
         return value as string;
     }
@@ -1073,11 +1081,11 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
     const type: string = 'type';
     if (colType === 'date') {
         formatvalue = typeof (format) === 'object' ?
-            intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
+            intl.getDatePattern({ type: format[`${type}`] ? format[`${type}`] : 'date', format: format[`${formatter}`] }, false) :
             intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
     } else {
         formatvalue = typeof (format) === 'object' ?
-            intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
+            intl.getDatePattern({ type: format[`${type}`] ? format[`${type}`] : 'dateTime', format: format[`${formatter}`] }, false) :
             intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
     }
     return formatvalue;
@@ -1096,10 +1104,10 @@ export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridP
         if (row.isExpand && !row.isDetailRow) {
             const index: number = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
                 (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
-            obj[index] = {};
-            obj[index].isExpand = true;
-            obj[index].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
-            (<{ query: Query }>obj[index].gridModel).query = gObj.childGrid.query;
+            obj[parseInt(index.toString(), 10)] = {};
+            obj[parseInt(index.toString(), 10)].isExpand = true;
+            obj[parseInt(index.toString(), 10)].gridModel = getPrintGridModel(row.childGrid, hierarchyPrintMode);
+            (<{ query: Query }>obj[parseInt(index.toString(), 10)].gridModel).query = gObj.childGrid.query;
         }
     }
     return obj;
@@ -1119,11 +1127,11 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
     const isFrozen: boolean = gObj.isFrozenGrid() && !gObj.getFrozenColumns();
     for (const key of Print.printGridProp) {
         if (key === 'columns') {
-            printGridModel[key] = getActualPropFromColl(isFrozen ? gObj.getColumns() : gObj[key]);
+            printGridModel[`${key}`] = getActualPropFromColl(isFrozen ? gObj.getColumns() : gObj[`${key}`]);
         } else if (key === 'allowPaging') {
-            printGridModel[key] = gObj.printMode === 'CurrentPage';
+            printGridModel[`${key}`] = gObj.printMode === 'CurrentPage';
         } else {
-            printGridModel[key] = getActualProperties(gObj[key]);
+            printGridModel[`${key}`] = getActualProperties(gObj[`${key}`]);
         }
     }
     printGridModel['enableHover'] = false;
@@ -1149,27 +1157,27 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
     }
     for (let i: number = 1; i < len; i++) {
         // eslint-disable-next-line prefer-rest-params
-        if (!arguments[i]) {
+        if (!arguments[parseInt(i.toString(), 10)]) {
             continue;
         }
         // eslint-disable-next-line prefer-rest-params
-        const obj1: { [key: string]: Object } = arguments[i];
+        const obj1: { [key: string]: Object } = arguments[parseInt(i.toString(), 10)];
         const keys: string[] = Object.keys(Object.getPrototypeOf(obj1)).length ?
             Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
         for (let i: number = 0; i < keys.length; i++) {
-            const source: Object = res[keys[i]];
-            const cpy: Object = obj1[keys[i]];
+            const source: Object = res[keys[parseInt(i.toString(), 10)]];
+            const cpy: Object = obj1[keys[parseInt(i.toString(), 10)]];
             let cln: Object;
             if (deep && (isObject(cpy) || Array.isArray(cpy))) {
                 if (isObject(cpy)) {
                     cln = source ? source : {};
-                    res[keys[i]] = baseExtend({}, cln, cpy, deep);
+                    res[keys[parseInt(i.toString(), 10)]] = baseExtend({}, cln, cpy, deep);
                 } else {
                     cln = source ? source : [];
-                    res[keys[i]] = baseExtend([], cln, cpy, deep);
+                    res[keys[parseInt(i.toString(), 10)]] = baseExtend([], cln, cpy, deep);
                 }
             } else {
-                res[keys[i]] = cpy;
+                res[keys[parseInt(i.toString(), 10)]] = cpy;
             }
         }
     }
@@ -1198,7 +1206,7 @@ function getPrototypesOfObj(obj: Object): string[] {
 export function measureColumnDepth(column: Column[]): number {
     let max: number = 0;
     for (let i: number = 0; i < column.length; i++) {
-        const depth: number = checkDepth(column[i], 0);
+        const depth: number = checkDepth(column[parseInt(i.toString(), 10)], 0);
         if (max < depth) {
             max = depth;
         }
@@ -1218,11 +1226,11 @@ export function checkDepth(col: Column, index: number): number {
     if (col.columns) {
         index++;
         for (let i: number = 0; i < col.columns.length; i++) {
-            indices[i] = checkDepth((<Column>col.columns[i]), index);
+            indices[parseInt(i.toString(), 10)] = checkDepth((<Column>col.columns[parseInt(i.toString(), 10)]), index);
         }
         for (let j: number = 0; j < indices.length; j++) {
-            if (max < indices[j]) {
-                max = indices[j];
+            if (max < indices[parseInt(j.toString(), 10)]) {
+                max = indices[parseInt(j.toString(), 10)];
             }
         }
         index = max;
@@ -1238,10 +1246,10 @@ export function checkDepth(col: Column, index: number): number {
  */
 export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel[]): void {
     for (let i: number = 0; i < filteredCols.length; i++) {
-        filteredCols[i].uid = filteredCols[i].isForeignKey ?
-            getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
-            : gObj.enableColumnVirtualization ? getColumnModelByFieldName(gObj, filteredCols[i].field).uid
-                : gObj.getColumnByField(filteredCols[i].field).uid;
+        filteredCols[parseInt(i.toString(), 10)].uid = filteredCols[parseInt(i.toString(), 10)].isForeignKey ?
+            getColumnByForeignKeyValue(filteredCols[parseInt(i.toString(), 10)].field, gObj.getForeignKeyColumns()).uid
+            : gObj.enableColumnVirtualization ? getColumnModelByFieldName(gObj, filteredCols[parseInt(i.toString(), 10)].field).uid
+                : gObj.getColumnByField(filteredCols[parseInt(i.toString(), 10)].field).uid;
     }
 }
 
@@ -1340,7 +1348,7 @@ export function getEditedDataIndex(gObj: IGrid, data: Object): number {
     const keyField: string = gObj.getPrimaryKeyFieldNames()[0];
     let dataIndex: number;
     gObj.getCurrentViewRecords().filter((e: Object, index: number) => {
-        if (e[keyField] === data[keyField]) {
+        if (e[`${keyField}`] === data[`${keyField}`]) {
             dataIndex = index;
         }
     });
@@ -1384,9 +1392,9 @@ export function ispercentageWidth(gObj: IGrid): boolean {
     let percentageCol: number = 0;
     let undefinedWidthCol: number = 0;
     for (let i: number = 0; i < columns.length; i++) {
-        if (isUndefined(columns[i].width)) {
+        if (isUndefined(columns[parseInt(i.toString(), 10)].width)) {
             undefinedWidthCol++;
-        } else if (columns[i].width.toString().indexOf('%') !== -1) {
+        } else if (columns[parseInt(i.toString(), 10)].width.toString().indexOf('%') !== -1) {
             percentageCol++;
         }
     }
@@ -1408,18 +1416,18 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
                               startRowIndex?: number): void {
     let startIndex: number = index ? index : 0;
     for (let i: number = startRowIndex ? startRowIndex : 0; i < rows.length; i++) {
-        if (rows[i].isDataRow) {
-            rows[i].index = startIndex;
-            rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
-            rowElms[i].setAttribute(literals.dataRowIndex, startIndex.toString());
-            rowElms[i].setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
-            if (rows[i].isAltRow) {
-                rowElms[i].classList.add('e-altrow');
+        if (rows[parseInt(i.toString(), 10)].isDataRow) {
+            rows[parseInt(i.toString(), 10)].index = startIndex;
+            rows[parseInt(i.toString(), 10)].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
+            rowElms[parseInt(i.toString(), 10)].setAttribute(literals.dataRowIndex, startIndex.toString());
+            rowElms[parseInt(i.toString(), 10)].setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
+            if (rows[parseInt(i.toString(), 10)].isAltRow) {
+                rowElms[parseInt(i.toString(), 10)].classList.add('e-altrow');
             } else {
-                rowElms[i].classList.remove('e-altrow');
+                rowElms[parseInt(i.toString(), 10)].classList.remove('e-altrow');
             }
-            for (let j: number = 0; j < rowElms[i].cells.length; j++) {
-                rowElms[i].cells[j].setAttribute('index', startIndex.toString());
+            for (let j: number = 0; j < rowElms[parseInt(i.toString(), 10)].cells.length; j++) {
+                rowElms[parseInt(i.toString(), 10)].cells[parseInt(j.toString(), 10)].setAttribute('index', startIndex.toString());
             }
             startIndex++;
         }
@@ -1438,13 +1446,13 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
  * @hidden
  */
 export function compareChanges(gObj: IGrid, changes: Object, type: string, keyField: string): void {
-    const newArray: Object[] = (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[type].concat(changes[type]).reduce(
+    const newArray: Object[] = (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[`${type}`].concat(changes[`${type}`]).reduce(
         (r: Object, o: Object) => {
-            r[o[keyField]] = r[o[keyField]] === undefined ? o : Object.assign(r[o[keyField]], o);
+            r[o[`${keyField}`]] = r[o[`${keyField}`]] === undefined ? o : Object.assign(r[o[`${keyField}`]], o);
             return r;
         },
         {});
-    (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[type] = Object.keys(newArray).map((k: string) => newArray[k]);
+    (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[`${type}`] = Object.keys(newArray).map((k: string) => newArray[`${k}`]);
 }
 
 /**
@@ -1560,7 +1568,7 @@ export function sliceElements(row: Element, start: number, end: number): void {
         if (i >= start && i < end) {
             continue;
         }
-        row.removeChild(row.children[k]);
+        row.removeChild(row.children[parseInt(k.toString(), 10)]);
         k--;
     }
 }
@@ -1574,11 +1582,11 @@ export function sliceElements(row: Element, start: number, end: number): void {
  */
 export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number): Element[] {
     if (col.getFreezeTableName() === 'movable') {
-        return [].slice.call(gObj.getMovableDataRows()[rowIndex].getElementsByClassName(literals.rowCell));
+        return [].slice.call(gObj.getMovableDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
     } else if (col.getFreezeTableName() === literals.frozenRight) {
-        return [].slice.call(gObj.getFrozenRightDataRows()[rowIndex].getElementsByClassName(literals.rowCell));
+        return [].slice.call(gObj.getFrozenRightDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
     } else {
-        return [].slice.call(gObj.getDataRows()[rowIndex].getElementsByClassName(literals.rowCell));
+        return [].slice.call(gObj.getDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
     }
 }
 
@@ -1595,7 +1603,7 @@ export function getCellByColAndRowIndex(gObj: IGrid, col: Column, rowIndex: numb
     const movable: number = gObj.getMovableColumnsCount();
     index = col.getFreezeTableName() === 'movable' ? index - left : col.getFreezeTableName() === literals.frozenRight
         ? index - (left + movable) : index;
-    return getCellsByTableName(gObj, col, rowIndex)[index];
+    return getCellsByTableName(gObj, col, rowIndex)[parseInt(index.toString(), 10)];
 }
 
 /**
@@ -1718,7 +1726,7 @@ export function getNumberFormat(numberFormat: string, type: string, isExcel: boo
         const mtch: Object = { 'G': '', 'H': 'h', 'c': 'd', '\'': '"', ' a': ' AM/PM', 'yy': 'yy', 'y': 'yyyy', 'EEEE': 'dddd', 'E': 'ddd' };
         format = format.replace(patternRegex, (pattern: string): string => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return (<any>mtch)[pattern];
+            return (<any>mtch)[`${pattern}`];
         });
     }
     return format;
@@ -1733,7 +1741,7 @@ export function addBiggerDialog(gObj: IGrid): void {
     if (gObj.enableAdaptiveUI) {
         const dialogs: HTMLCollectionOf<Element> = document.getElementsByClassName('e-responsive-dialog');
         for (let i: number = 0; i < dialogs.length; i++) {
-            dialogs[i].classList.add('e-bigger');
+            dialogs[parseInt(i.toString(), 10)].classList.add('e-bigger');
         }
     }
 }
@@ -1750,7 +1758,7 @@ export function performComplexDataOperation(value: string, mapObject: Object): O
     const splits: string[] = value.split('.');
     let duplicateMap: Object | string = mapObject;
     for (let i: number = 0; i < length; i++) {
-        returnObj = duplicateMap[splits[i]];
+        returnObj = duplicateMap[splits[parseInt(i.toString(), 10)]];
         duplicateMap = returnObj;
     }
     return returnObj;
@@ -1770,17 +1778,17 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
                                 isContent?: boolean): void {
     const trs: string[] = Object.keys(tr);
     for (let i: number = 0; i < trs.length; i++) {
-        const td: HTMLElement = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
-        if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
-            setStyleAttribute(<HTMLElement>tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
-            if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
-                removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+        const td: HTMLElement = tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)];
+        if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell').length && td) {
+            setStyleAttribute(<HTMLElement>tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)], { 'display': displayVal });
+            if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.contains('e-hide')) {
+                removeClass([tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)]], ['e-hide']);
             }
             if (isContent && parent.isRowDragable()) {
                 const index: number = parent.getFrozenColumns() ? idx : idx + 1;
-                rows[trs[i]].cells[index].visible = displayVal === '' ? true : false;
+                rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(index.toString(), 10)].visible = displayVal === '' ? true : false;
             } else {
-                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+                rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible = displayVal === '' ? true : false;
             }
         }
     }
@@ -1856,9 +1864,9 @@ export function getColumnModelByFieldName(gObj: IGrid, field: string): Column {
  */
 // eslint-disable-next-line
 export function registerEventHandlers(id: string, evts: string[], handlers: object, instance: any): void {
-    instance.eventHandlers[id] = {};
+    instance.eventHandlers[`${id}`] = {};
     for (let i: number = 0; i < evts.length; i++) {
-        instance.eventHandlers[id][evts[i]] = handlers[evts[i]];
+        instance.eventHandlers[`${id}`][evts[parseInt(i.toString(), 10)]] = handlers[evts[parseInt(i.toString(), 10)]];
     }
 }
 
@@ -1873,7 +1881,9 @@ export function registerEventHandlers(id: string, evts: string[], handlers: obje
 export function removeEventHandlers(component: any, evts: string[], instance: any): void {
     for (let i: number = 0; i < evts.length; i++) {
         if (component.isDestroyed) { break; }
-        component.removeEventListener(evts[i], instance.eventHandlers[component.element.id][evts[i]]);
+        component.removeEventListener(
+            evts[parseInt(i.toString(), 10)],
+            instance.eventHandlers[component.element.id][evts[parseInt(i.toString(), 10)]]);
     }
 }
 
@@ -1910,13 +1920,13 @@ export function getRowIndexFromElement(row: Element): number {
 export function generateExpandPredicates(fields: string[], values: string[], instance: any): Predicate {
     let filterCols: PredicateModel[] = [];
     for (let i: number = 0; i < fields.length; i++) {
-        const column: Column = instance.parent.getColumnByField(fields[i]);
-        const value: string = values[i] === 'null' ? null : values[i];
+        const column: Column = instance.parent.getColumnByField(fields[parseInt(i.toString(), 10)]);
+        const value: string = values[parseInt(i.toString(), 10)] === 'null' ? null : values[parseInt(i.toString(), 10)];
         const pred: {
             predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         } = {
-            field: fields[i], predicate: 'or', uid: column.uid, operator: 'equal', type: column.type,
+            field: fields[parseInt(i.toString(), 10)], predicate: 'or', uid: column.uid, operator: 'equal', type: column.type,
             matchCase: instance.allowCaseSensitive, ignoreAccent: instance.parent.filterSettings.ignoreAccent
         };
         if (value === '' || isNullOrUndefined(value)) {
@@ -1936,7 +1946,7 @@ export function generateExpandPredicates(fields: string[], values: string[], ins
 export function getPredicates(pred: Predicate): Predicate[] {
     const predicateList: Predicate[] = [];
     for (const prop of Object.keys(pred)) {
-        predicateList.push(<Predicate>pred[prop]);
+        predicateList.push(<Predicate>pred[`${prop}`]);
     }
     return predicateList;
 }
@@ -1951,11 +1961,12 @@ export function getGroupKeysAndFields(index: number, rowsObject: Row<Column>[]):
     const fields: string[] = [];
     const keys: string[] = [];
     for (let i: number = index; i >= 0; i--) {
-        if (rowsObject[i].isCaptionRow && fields.indexOf((rowsObject[i].data as GroupedData).field) === -1
-            && (rowsObject[i].indent < rowsObject[index].indent || i === index)) {
-            fields.push((rowsObject[i].data as GroupedData).field);
-            keys.push((rowsObject[i].data as GroupedData).key);
-            if (rowsObject[i].indent === 0) {
+        if (rowsObject[parseInt(i.toString(), 10)].isCaptionRow
+            && fields.indexOf((rowsObject[parseInt(i.toString(), 10)].data as GroupedData).field) === -1
+            && (rowsObject[parseInt(i.toString(), 10)].indent < rowsObject[parseInt(index.toString(), 10)].indent || i === index)) {
+            fields.push((rowsObject[parseInt(i.toString(), 10)].data as GroupedData).field);
+            keys.push((rowsObject[parseInt(i.toString(), 10)].data as GroupedData).key);
+            if (rowsObject[parseInt(i.toString(), 10)].indent === 0) {
                 break;
             }
         }
@@ -1977,9 +1988,9 @@ export function findCellIndex(checkActiveMatrix: number[][], checkCellIndex: num
     let currentCellIndexPass: boolean = false;
     if (next) {
         for (let i: number = cellIndex[0]; i < activeMatrix.length; i++) {
-            const rowCell: number[] = activeMatrix[i];
+            const rowCell: number[] = activeMatrix[parseInt(i.toString(), 10)];
             for (let j: number = 0; j < rowCell.length; j++) {
-                if (currentCellIndexPass && activeMatrix[i][j] === 1) {
+                if (currentCellIndexPass && activeMatrix[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] === 1) {
                     cellIndex = [i, j];
                     return cellIndex;
                 }
@@ -1990,9 +2001,9 @@ export function findCellIndex(checkActiveMatrix: number[][], checkCellIndex: num
         }
     } else {
         for (let i: number = cellIndex[0]; i >= 0; i--) {
-            const rowCell: number[] = activeMatrix[i];
+            const rowCell: number[] = activeMatrix[parseInt(i.toString(), 10)];
             for (let j: number = rowCell.length - 1; j >= 0; j--) {
-                if (currentCellIndexPass && activeMatrix[i][j] === 1) {
+                if (currentCellIndexPass && activeMatrix[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)] === 1) {
                     cellIndex = [i, j];
                     return cellIndex;
                 }
@@ -2003,4 +2014,13 @@ export function findCellIndex(checkActiveMatrix: number[][], checkCellIndex: num
         }
     }
     return cellIndex;
+}
+
+/**
+ *
+ * @param { string } string - Defines string need to capitalized first letter
+ * @returns { string } - Returns capitalized first letter string
+ */
+export function capitalizeFirstLetter(string: string): string {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

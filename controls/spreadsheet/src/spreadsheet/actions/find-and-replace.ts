@@ -420,7 +420,7 @@ export class FindAndReplace {
         const gotoTextE: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         const gotoTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header', innerHTML: l10n.getConstant('Reference') });
         const gotoTextBox: TextBox = new TextBox({
-            placeholder: l10n.getConstant('EntercellAddress')
+            placeholder: l10n.getConstant('EnterCellAddress')
         });
         const gotoTextIp: HTMLElement = this.parent.createElement('input', { className: 'e-text-goto', attrs: { 'type': 'Text' } });
         gotoTextE.appendChild(gotoTextIp);

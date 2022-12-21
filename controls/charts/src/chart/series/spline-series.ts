@@ -35,10 +35,10 @@ export class SplineSeries extends SplineBase {
             previous = this.getPreviousIndex(points, point.index - 1, series);
             point.symbolLocations = []; point.regions = [];
             if (point.visible) {
-                if (withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
+                if (withInRange(points[previous as number], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
                     if (firstPoint !== null) {
                         direction = this.getSplineDirection(
-                            series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint,
+                            series.drawPoints[previous as number], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint,
                             getCoordinate, direction);
                         startPoint = 'L';
                     }

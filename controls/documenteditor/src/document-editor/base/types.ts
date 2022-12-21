@@ -1118,6 +1118,10 @@ export type DialogType =
      */
     'PageSetup' |
     /**
+     * Specifies Columns dialog.
+     */
+    'Columns' |
+    /**
      * Specifies list dialog.
      */
     'List' |
@@ -1202,7 +1206,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'CellTopMargin' | 'CellBottomMargin' | 'RowHeight' | 'RowHeightType' | 'RowHeader' | 'AllowBreakAcrossPages' | 'PageHeight' |
 'PageWidth' | 'LeftMargin' | 'RightMargin' | 'TopMargin' | 'BottomMargin' | 'DefaultCellSpacing'
 | 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
-| 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
+| 'ApplyStyle' | 'SectionBreak' | 'SectionBreakContinuous' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
 | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
 | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
@@ -1213,7 +1217,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'RightBorder'
 |'BottomBorder'
 |'HorizontalBorder'
-|'VerticalBorder';
+|'VerticalBorder'|'ColumnBreak';
 /**
  * Enum for direction
  */
@@ -1569,6 +1573,9 @@ export enum CharacterRangeType {
     Tab = 6
 }
 
+/**
+ * @private
+ */
 export enum FontScriptType {
     English = 0, // Consider as Default.
     Hindi = 1,
@@ -2581,4 +2588,25 @@ export enum LocaleId {
      * Japanese.
      */
     ja_JP = 1041
+}
+/**
+* Specifies the type of the Section break.
+*/
+export enum SectionBreakType {
+    /**
+     * Section break with the new section beginning on the next even-numbered page.
+     */
+    EvenPage = 'EvenPage',
+    /**
+     * Section break with the new section beginning on the next page.
+     */
+    NewPage = 'NewPage',
+    /**
+     * Section break with the new section beginning on the next line of the same page.
+     */
+    Continuous = 'NoBreak',
+    /**
+     * Section break with the new section beginning on the next odd-numbered page.
+     */
+    OddPage = 'OddPage'
 }

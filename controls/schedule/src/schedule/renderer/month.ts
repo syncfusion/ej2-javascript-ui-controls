@@ -129,7 +129,9 @@ export class Month extends ViewBase implements IRenderer {
         }
         if (leftPanelElement) {
             if (this.parent.currentView === 'MonthAgenda') {
-                height = (<HTMLElement>this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS)).offsetHeight;
+                height = (this.parent.activeViewOptions.interval > 1) ?
+                    (<HTMLElement>this.getContentAreaElement().firstElementChild).offsetHeight :
+                    (<HTMLElement>this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS)).offsetHeight;
             }
             leftPanelElement.style.height = 'auto';
             leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(content));
@@ -146,7 +148,13 @@ export class Month extends ViewBase implements IRenderer {
             }
             if (this.parent.uiStateValues.isGroupAdaptive && this.parent.resourceBase.lastResourceLevel.length > 0) {
                 const resourceLevel: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
-                colLevels = [this.getDateSlots(resourceLevel.renderDates, resourceLevel.workDays)];
+                let levels: TdData[] = this.getDateSlots(resourceLevel.renderDates, resourceLevel.workDays);
+                if (this.parent.activeViewOptions.group.byDate && this.parent.activeViewOptions.group.hideNonWorkingDays) {
+                    const index: number = levels.findIndex((x: TdData, index: number) =>
+                        index !== 0 && x.date.getDay() === levels[0].date.getDay());
+                    levels = index > -1 ? levels.slice(0, index) : levels;
+                }
+                colLevels = [levels];
             }
         } else {
             colLevels.push(level);
@@ -165,7 +173,7 @@ export class Month extends ViewBase implements IRenderer {
             if (isCurrentMonth && currentDateIndex.indexOf(this.parent.getCurrentTime().getDay()) === col) {
                 classList.push(cls.CURRENT_DAY_CLASS);
             }
-            dateSlots.push({ date: renderDates[col], type: 'monthDay', className: classList, colSpan: 1, workDays: workDays });
+            dateSlots.push({ date: renderDates[parseInt(col.toString(), 10)], type: 'monthDay', className: classList, colSpan: 1, workDays: workDays });
         }
         return dateSlots;
     }
@@ -184,6 +192,9 @@ export class Month extends ViewBase implements IRenderer {
         clsList.push(type);
         if (this.parent.activeViewOptions.group.byDate) {
             clsList.push('e-by-date');
+            if (this.parent.currentView !== 'Month') {
+                this.parent.activeViewOptions.group.hideNonWorkingDays = false;
+            }
         }
         if (this.parent.activeViewOptions.allowVirtualScrolling && !this.parent.uiStateValues.isGroupAdaptive) {
             clsList.push(cls.VIRTUAL_SCROLL_CLASS);
@@ -303,10 +314,10 @@ export class Month extends ViewBase implements IRenderer {
         this.createColGroup(table, this.colLevels[this.colLevels.length - 1]);
         const trEle: Element = createElement('tr');
         for (let i: number = 0; i < this.colLevels.length; i++) {
-            const level: TdData[] = this.colLevels[i];
+            const level: TdData[] = this.colLevels[parseInt(i.toString(), 10)];
             const ntr: Element = trEle.cloneNode() as Element;
             for (let j: number = 0; j < level.length; j++) {
-                const td: TdData = level[j];
+                const td: TdData = level[parseInt(j.toString(), 10)];
                 ntr.appendChild(this.createHeaderCell(td));
             }
             table.querySelector('tbody').appendChild(ntr);
@@ -369,10 +380,10 @@ export class Month extends ViewBase implements IRenderer {
                 date: new Date(+renderDate), groupIndex: resData.groupIndex, workDays: resData.workDays,
                 type: 'monthCells', className: classList || [cls.WORK_CELLS_CLASS]
             };
-            if (!slotDatas[rowIndex]) {
-                slotDatas[rowIndex] = [];
+            if (!slotDatas[parseInt(rowIndex.toString(), 10)]) {
+                slotDatas[parseInt(rowIndex.toString(), 10)] = [];
             }
-            slotDatas[rowIndex].push(data);
+            slotDatas[parseInt(rowIndex.toString(), 10)].push(data);
         };
         const includeResource: boolean = this.parent.currentView !== 'MonthAgenda' &&
             this.parent.activeViewOptions.group.resources.length > 0;
@@ -395,17 +406,27 @@ export class Month extends ViewBase implements IRenderer {
             const startIndex: number = this.renderDates.map(Number).indexOf(+level[0].date);
             for (let i: number = 0; i < (this.renderDates.length / count); i++) {
                 const colDates: Date[] = dates.splice(0, count);
+                let k: number = startIndex;
                 for (let j: number = startIndex; j < (this.colLevels[0].length + startIndex) && j < colDates.length; j++) {
-                    const colDate: Date = colDates[j];
+                    const colDate: Date = colDates[parseInt(k.toString(), 10)];
+                    k++;
                     if (includeResource) {
                         const lastRow: TdData[] = this.colLevels[(this.colLevels.length - 1)];
-                        const resourcesTd: TdData[] = lastRow.slice(0, lastRow.length / count);
+                        const rowCount: number = lastRow.length / count;
+                        let resourcesTd: TdData[] = lastRow.slice(0, rowCount);
+                        if (this.parent.activeViewOptions.group.hideNonWorkingDays) {
+                            resourcesTd = lastRow.filter((x: TdData) => x.date.getDay() === colDate.getDay());
+                            if (resourcesTd.length === 0) {
+                                j = j - 1;
+                                continue;
+                            }
+                        }
                         for (let resIndex: number = 0; resIndex < resourcesTd.length; resIndex++) {
                             let clsList: string[];
                             if (resIndex !== 0) {
                                 clsList = [cls.WORK_CELLS_CLASS, cls.DISABLE_DATE];
                             }
-                            prepareSlots(i, colDate, resourcesTd[resIndex], clsList);
+                            prepareSlots(i, colDate, resourcesTd[parseInt(resIndex.toString(), 10)], clsList);
                         }
                     } else {
                         prepareSlots(i, colDate, this.colLevels[this.colLevels.length - 1][0]);
@@ -457,8 +478,8 @@ export class Month extends ViewBase implements IRenderer {
         const slotDatas: TdData[][] = this.getContentSlots();
         for (let row: number = 0; row < slotDatas.length; row++) {
             const ntr: Element = tr.cloneNode() as Element;
-            for (let col: number = 0; col < slotDatas[row].length; col++) {
-                const ntd: Element = this.createContentTd(slotDatas[row][col], td);
+            for (let col: number = 0; col < slotDatas[parseInt(row.toString(), 10)].length; col++) {
+                const ntd: Element = this.createContentTd(slotDatas[parseInt(row.toString(), 10)][parseInt(col.toString(), 10)], td);
                 ntr.appendChild(ntd);
             }
             trows.push(ntr);

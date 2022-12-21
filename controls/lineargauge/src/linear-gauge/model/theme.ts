@@ -1,11 +1,15 @@
-/* eslint-disable valid-jsdoc */
 /**
  * Gauge Themes doc
  */
 import { IThemeStyle } from './interface';
 import { LinearGaugeTheme } from '../utils/enum';
 
-/** @private */
+/**
+ *
+ * @param {LinearGaugeTheme} theme - Specifies the gauge instance.
+ * @returns {IThemeStyle} - Return the theme style argument.
+ * @private
+ */
 export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
     let style: IThemeStyle;
     switch (theme.toLowerCase()) {

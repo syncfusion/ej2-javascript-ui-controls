@@ -930,7 +930,7 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar.show();
         expect((<HTMLElement>document.getElementById('sidebar').nextElementSibling).style.transform).toBe('translateX(0px)');
         expect((<HTMLElement>document.getElementById('sidebar').nextElementSibling).style.marginRight).toBe((<HTMLElement>document.getElementById('sidebar').nextElementSibling).style.marginRight);
-        expect((document.getElementById('sidebar').nextElementSibling.classList.contains('e-backdrop'))).toBe(true);
+        expect((document.getElementById('sidebar').nextElementSibling.classList.contains('e-backdrop'))).toBe(false);
         sidebar.hide();
         expect((<HTMLElement>document.getElementById('sidebar').nextElementSibling).style.transform).toBe('translateX(0px)');
         expect((<HTMLElement>document.getElementById('sidebar').nextElementSibling).style.marginRight).toBe('0px');

@@ -265,8 +265,8 @@ export class BulletChartAxis {
         // (bullet.initialClipRect.y + bullet.initialClipRect.height);
         for (let k: number = 0; k <= bullet.rangeCollection.length - 1; k++) {
             previous += (!k) ? 0 : bullet.rangeCollection[k - 1];
-            if (position >= previous && position < previous + bullet.rangeCollection[k]) {
-                return bullet.ranges[k].color;
+            if (position >= previous && position < previous + bullet.rangeCollection[k as number]) {
+                return bullet.ranges[k as number].color;
             }
         }
         return null;
@@ -277,8 +277,8 @@ export class BulletChartAxis {
         let previous: number = size;
         for (let k: number = 0; k <= bullet.rangeCollection.length - 1; k++) {
             previous -= (!k) ? 0 : bullet.rangeCollection[k - 1];
-            if (Math.round(position) >= Math.round(previous - bullet.rangeCollection[k]) && position <= previous) {
-                return bullet.ranges[k].color;
+            if (Math.round(position) >= Math.round(previous - bullet.rangeCollection[k as number]) && position <= previous) {
+                return bullet.ranges[k as number].color;
             }
         }
         return null;

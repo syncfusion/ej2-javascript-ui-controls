@@ -2,63 +2,14 @@
 
 ## [Unreleased]
 
-## 20.3.61 (2022-12-13)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I420756` - Now, the z-index value calculation will function properly when you have multiple dialog elements on the same page.
-
-## 20.3.59 (2022-11-29)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I415699` - Now, the `DialogUtility` position property works properly when X coordinates are passed as strings and Y coordinates are passed as numbers.
-
-- `#I420058` - Now, the  Dialog Close icon Button top and left position values are equal.
-
-## 20.3.58 (2022-11-22)
+## 20.4.38 (2022-12-21)
 
 ### Tooltip
 
 #### Bug Fixes
 
-- `#I415386` - The Tooltip not shown for dynamically added target while pressing Tab key has been resolved.
-
-## 20.3.56 (2022-11-08)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#F177524` - The script error "When setting `opensOn` as `Click` with a dynamic content in the React Tooltip component" has been resolved.
-
-## 20.3.50 (2022-10-18)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I400881` - Now, When you set a secondary font color in the bootstrap 5 theme using the theme studio, the changes will be reflected for the Dialog Cancel button.
-
-## 20.3.49 (2022-10-11)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I397894` - The issue with "when using custom template variant the anchor that triggers the tooltip when hover is unable to receive keyboard focus" has been resolved.
-
-## 20.3.48 (2022-10-05)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I387601` - Now, when you call the destroy method to destroy the Dialog control, it properly destroys the close icons instance.
+- `#I415013` - Resolved detached elements memory leak issue in the Tooltip component.
+- `#I415386` - The issue "Tooltip did not appear for the second time when using the tab key to focus on the remove icon of the uploader component" has been resolved.
 
 ## 20.2.49 (2022-09-13)
 
@@ -67,6 +18,8 @@
 #### Bug Fixes
 
 - `#I401514` - Now, when we begin to drag the Utility Dialog, it does not move to the left side.
+
+- `#I400881` - Now, When you set a secondary font color in the bootstrap 5 theme using the theme studio, the changes will be reflected for the Dialog Cancel button.
 
 ## 20.2.45 (2022-08-23)
 

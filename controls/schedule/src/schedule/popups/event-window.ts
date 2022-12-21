@@ -530,16 +530,16 @@ export class EventWindow {
         const resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
         const fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
         for (let i: number = 0; i < resourceCollection.length; i++) {
-            if (resourceCollection[i].field === fieldName && i < resourceCollection.length - 1) {
+            if (resourceCollection[parseInt(i.toString(), 10)].field === fieldName && i < resourceCollection.length - 1) {
                 const resObject: MultiSelect | DropDownList = this.createInstance(i);
                 let datasource: Record<string, any>[] = [];
                 for (let j: number = 0; j < args.value.length; j++) {
                     const resourceModel: ResourcesModel = resourceCollection[i + 1];
                     // eslint-disable-next-line max-len
                     const filter: Record<string, any> = (resourceModel.dataSource as Record<string, any>[]).filter((data: Record<string, any>) =>
-                        data[resourceModel.groupIDField] === args.value[j])[0];
+                        data[resourceModel.groupIDField] === args.value[parseInt(j.toString(), 10)])[0];
                     const groupId: number = (!isNullOrUndefined(filter)) ?
-                        filter[resourceCollection[i + 1].groupIDField] as number : null
+                        filter[resourceCollection[i + 1].groupIDField] as number : null;
                     const filterRes: Record<string, any>[] = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
                 }
@@ -564,9 +564,10 @@ export class EventWindow {
         const fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
         const resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
         for (let i: number = 0; i < resourceCollection.length; i++) {
-            if ((i < resourceCollection.length - 1) && resourceCollection[i].field === fieldName) {
+            if ((i < resourceCollection.length - 1) && resourceCollection[parseInt(i.toString(), 10)].field === fieldName) {
                 const resObj: MultiSelect | DropDownList = this.createInstance(i);
-                const groupId: number = (args.itemData as Record<string, any>)[resourceCollection[i].idField] as number;
+                const groupId: number =
+                    (args.itemData as Record<string, any>)[resourceCollection[parseInt(i.toString(), 10)].idField] as number;
                 resObj.dataSource = this.filterDatasource(i, groupId);
                 resObj.dataBind();
                 const resValue: string = (resObj.dataSource.length > 0) ?
@@ -901,7 +902,7 @@ export class EventWindow {
             const columnName: string = curElement.name || this.getColumnName(curElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 if (keyNames.indexOf(columnName) !== -1) {
-                    this.setValueToElement(curElement as HTMLElement, eventObj[columnName] as string);
+                    this.setValueToElement(curElement as HTMLElement, eventObj[`${columnName}`] as string);
                 } else {
                     this.setDefaultValueToElement(curElement as HTMLElement);
                 }
@@ -1340,7 +1341,7 @@ export class EventWindow {
         for (const currentElement of formElement) {
             const columnName: string = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
-                eventObj[columnName] = this.getValueFromElement(currentElement as HTMLElement);
+                eventObj[`${columnName}`] = this.getValueFromElement(currentElement as HTMLElement);
             }
         }
         return eventObj;
@@ -1404,11 +1405,13 @@ export class EventWindow {
                 case 'WEEKLY':
                     types = recEditor.value.split(';')[1].split('=')[1].split(',');
                     for (let index: number = 0; index < types.length * (interval + 1); index++) {
-                        temp[index] = (types.length > index) ? <number>obj[types[index]] : temp[index - types.length] + (7 * interval);
+                        temp[parseInt(index.toString(), 10)] =
+                            (types.length > index) ? <number>obj[types[parseInt(index.toString(), 10)]] :
+                                temp[index - types.length] + (7 * interval);
                     }
                     tempValue = temp.sort((a: number, b: number) => a - b);
                     for (let index: number = 1; index < tempValue.length; index++) {
-                        tempDiff.push(tempValue[index] - tempValue[index - 1]);
+                        tempDiff.push(tempValue[parseInt(index.toString(), 10)] - tempValue[index - 1]);
                     }
                     if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) >= Math.min(...tempDiff) * 24)
                         || isNullOrUndefined(interval)) {
@@ -1444,7 +1447,7 @@ export class EventWindow {
     private getRecurrenceIndex(recColl: Record<string, any>[], event: Record<string, any>): number {
         let recIndex: number;
         for (let index: number = 0; index < recColl.length; index++) {
-            if (event[this.fields.startTime].valueOf() === recColl[index][this.fields.startTime].valueOf()) {
+            if (event[this.fields.startTime].valueOf() === recColl[parseInt(index.toString(), 10)][this.fields.startTime].valueOf()) {
                 recIndex = index;
                 break;
             }
@@ -1545,8 +1548,8 @@ export class EventWindow {
                     if (temp.length > 0) {
                         temp[0][this.fields.id] = eventObj[this.fields.id];
                         for (let k: number = 1; k < temp.length; k++) {
-                            temp[k][this.fields.id] = this.parent.eventBase.getEventMaxID(i);
-                            eventList.push(temp[k]);
+                            temp[parseInt(k.toString(), 10)][this.fields.id] = this.parent.eventBase.getEventMaxID(i);
+                            eventList.push(temp[parseInt(k.toString(), 10)]);
                             this.parent.saveEvent(temp[0], currentAction);
                         }
                     } else {
@@ -1556,8 +1559,8 @@ export class EventWindow {
                 } else {
                     if (temp.length > 0) {
                         for (let j: number = 0; j < temp.length; j++) {
-                            temp[j][this.fields.id] = this.parent.eventBase.getEventMaxID(j);
-                            eventList.push(temp[j]);
+                            temp[parseInt(j.toString(), 10)][this.fields.id] = this.parent.eventBase.getEventMaxID(j);
+                            eventList.push(temp[parseInt(j.toString(), 10)]);
                         }
                     } else {
                         events[this.fields.id] = this.parent.eventBase.getEventMaxID(i);
@@ -1570,46 +1573,52 @@ export class EventWindow {
                 const resCol: Record<string, any>[] = this.parent.resourceCollection as Record<string, any>[];
                 let index: number;
                 if (resCol.length > 1) {
-                    index = util.findIndexInData(lastResource, lastResourceData.idField, resourceData[i] as string, events, resCol);
+                    index =
+                    util.findIndexInData(lastResource, lastResourceData.idField, resourceData[parseInt(i.toString(), 10)] as string,
+                                         events, resCol);
                 } else {
-                    index = util.findIndexInData(lastResource, lastResourceData.idField, resourceData[i] as string);
+                    index =
+                        util.findIndexInData(lastResource, lastResourceData.idField, resourceData[parseInt(i.toString(), 10)] as string);
                 }
                 if (index < 0) {
                     return;
                 }
-                const groupId: Record<string, any> = lastResource[index][lastResourceData.groupIDField] as Record<string, any>;
-                const filter: TdData = lastLevel.filter((obj: TdData) => obj.resourceData[lastResourceData.idField] === resourceData[i]).
+                const groupId: Record<string, any> =
+                    lastResource[parseInt(index.toString(), 10)][lastResourceData.groupIDField] as Record<string, any>;
+                const filter: TdData = lastLevel.filter((obj: TdData) => obj.resourceData[lastResourceData.idField] ===
+                    resourceData[parseInt(i.toString(), 10)]).
                     filter((obj: TdData) => obj.resourceData[lastResourceData.groupIDField] === groupId)[0];
                 const groupOrder: number[] | string[] = filter.groupOrder;
                 for (let index: number = 0; index < this.parent.resourceBase.resourceCollection.length; index++) {
-                    const field: string = this.parent.resourceBase.resourceCollection[index].field;
-                    events[field] = ((groupOrder[index] as any) instanceof Array) ? groupOrder[index][0] : groupOrder[index];
+                    const field: string = this.parent.resourceBase.resourceCollection[parseInt(index.toString(), 10)].field;
+                    events[`${field}`] = ((groupOrder[parseInt(index.toString(), 10)] as any) instanceof Array) ? groupOrder[parseInt(index.toString(), 10)][0] :
+                        groupOrder[parseInt(index.toString(), 10)];
                 }
                 addValues();
             } else {
                 for (let index: number = 0; index < this.parent.resourceBase.resourceCollection.length - 1; index++) {
-                    const field: string = this.parent.resourceBase.resourceCollection[index].field;
-                    if (events[field] instanceof Array && (events[field] as Record<string, any>[]).length > 1) {
-                        for (let k: number = 0; k < (events[field] as Record<string, any>[]).length; k++) {
+                    const field: string = this.parent.resourceBase.resourceCollection[parseInt(index.toString(), 10)].field;
+                    if (events[`${field}`] instanceof Array && (events[`${field}`] as Record<string, any>[]).length > 1) {
+                        for (let k: number = 0; k < (events[`${field}`] as Record<string, any>[]).length; k++) {
                             const event: Record<string, any> = <Record<string, any>>extend({}, events, null, true);
-                            event[field] = (eventObj[field] as Record<string, any>)[k];
-                            event[lastResourceData.field] = resourceData[i];
+                            event[`${field}`] = (eventObj[`${field}`] as Record<string, any>)[parseInt(k.toString(), 10)];
+                            event[lastResourceData.field] = resourceData[parseInt(i.toString(), 10)];
                             temp.push(event);
                         }
                     } else {
                         if (temp.length === 0) {
-                            events[field] = (eventObj[field] instanceof Array) ?
-                                (eventObj[field] as Record<string, any>)[0] : eventObj[field];
-                            events[lastResourceData.field] = resourceData[i];
+                            events[`${field}`] = (eventObj[`${field}`] instanceof Array) ?
+                                (eventObj[`${field}`] as Record<string, any>)[0] : eventObj[`${field}`];
+                            events[lastResourceData.field] = resourceData[parseInt(i.toString(), 10)];
                         } else {
                             for (let l: number = 0; l < temp.length; l++) {
-                                temp[l][field] = (eventObj[field] instanceof Array) ?
-                                    (eventObj[field] as Record<string, any>)[0] : eventObj[field];
+                                temp[parseInt(l.toString(), 10)][`${field}`] = (eventObj[`${field}`] instanceof Array) ?
+                                    (eventObj[`${field}`] as Record<string, any>)[0] : eventObj[`${field}`];
                             }
                         }
                     }
                 }
-                events[lastResourceData.field] = resourceData[i];
+                events[lastResourceData.field] = resourceData[parseInt(i.toString(), 10)];
                 addValues();
             }
         }

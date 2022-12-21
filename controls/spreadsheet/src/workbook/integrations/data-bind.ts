@@ -62,7 +62,7 @@ export class DataBind {
         if (args.sheet && args.sheet.ranges.length) {
             for (let k: number = args.sheet.ranges.length - 1; k >= 0; k--) {
                 let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
-                const range: ExtendedRange = args.sheet.ranges[k];
+                const range: ExtendedRange = args.sheet.ranges[k as number];
                 sRowIdx = getRangeIndexes(range.startCell)[0];
                 dataManager = range.dataSource instanceof DataManager ? range.dataSource as DataManager
                     : range.dataSource ? new DataManager(range.dataSource) : new DataManager();
@@ -95,7 +95,7 @@ export class DataBind {
                 }
                 this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
-                    sRanges[k] = sRange; requestedRange[k] = false;
+                    sRanges[k as number] = sRange; requestedRange[k as number] = false;
                     const query: Query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then((e: ReturnOption) => {
@@ -121,12 +121,12 @@ export class DataBind {
                                     }
                                 });
                             }
-                            if (sRanges[k] === 0 && range.showFieldAsHeader) {
-                                rowIdx = sRowIdx + sRanges[k] + insertRowCount;
+                            if (sRanges[k as number] === 0 && range.showFieldAsHeader) {
+                                rowIdx = sRowIdx + sRanges[k as number] + insertRowCount;
                                 flds.forEach((field: string, i: number) => {
                                     cell = getCell(rowIdx, sColIdx + i, args.sheet, true);
                                     if (!cell) {
-                                        args.sheet.rows[sRowIdx + sRanges[k]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
+                                        args.sheet.rows[sRowIdx + sRanges[k as number]].cells[sColIdx + i] = field.includes('emptyCell') ? {}
                                             : { value: field };
                                     } else if (!field.includes('emptyCell')) {
                                         cell.value = field;
@@ -135,16 +135,17 @@ export class DataBind {
                             }
                             const curSheetIdx: number = args.formulaCellRef ? getSheetIndexFromId(this.parent, args.sheet.id) : undefined;
                             result.forEach((item: { [key: string]: string }, i: number) => {
-                                rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
+                                rowIdx = sRowIdx + sRanges[k as number] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
                                 for (let j: number = 0; j < flds.length; j++) {
                                     cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
                                     if (cell) {
-                                        if (!flds[j].includes('emptyCell')) {
-                                            setCell(rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j]]), true);
+                                        if (!flds[j as number].includes('emptyCell')) {
+                                            setCell(
+                                                rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j as number]]), true);
                                         }
                                     } else {
-                                        args.sheet.rows[rowIdx].cells[sColIdx + j] =
-                                            flds[j].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j]]);
+                                        args.sheet.rows[rowIdx as number].cells[sColIdx + j] =
+                                            flds[j as number].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j as number]]);
                                     }
                                     // this.checkDataForFormat({
                                     //     args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k, range: range,
@@ -182,7 +183,7 @@ export class DataBind {
                         } else {
                             range.info.loadedRange.push([sRange, eRange]);
                         }
-                        requestedRange[k] = true;
+                        requestedRange[k as number] = true;
                         if (requestedRange.indexOf(false) === -1) {
                             let dataLoading: boolean;
                             if (eRange + sRowIdx < sRowIdx + range.info.count) {
@@ -354,8 +355,8 @@ export class DataBind {
         if (range.query) {
             const query: QueryOptions[] = range.query.queries;
             for (let i: number = 0; i < query.length; i++) {
-                if (query[i].fn === 'onTake') {
-                    return Math.min(query[i].e.nos, range.info.count || query[i].e.nos);
+                if (query[i as number].fn === 'onTake') {
+                    return Math.min(query[i as number].e.nos, range.info.count || query[i as number].e.nos);
                 }
             }
         }
@@ -393,8 +394,8 @@ export class DataBind {
                         row = sheet.rows[i + indexes[0]];
                         if (row) {
                             for (let j: number = indexes[1]; j < indexes[1] + range.info.fldLen; j++) {
-                                if (row.cells && row.cells[j]) {
-                                    delete row.cells[j];
+                                if (row.cells && row.cells[j as number]) {
+                                    delete row.cells[j as number];
                                 }
                             }
                         }
@@ -423,9 +424,8 @@ export class DataBind {
 
     private checkRangeHasChanges(sheet: SheetModel, rangeIdx: string): boolean {
         if ((this.parent as unknown as { isAngular: boolean }).isAngular) {
-            const changedRangeIdx: string = 'changedRangeIdx';
-            if (sheet[changedRangeIdx] === parseInt(rangeIdx, 10)) {
-                delete sheet[changedRangeIdx];
+            if (sheet['changedRangeIdx'] === parseInt(rangeIdx, 10)) {
+                delete sheet['changedRangeIdx'];
                 return true;
             }
             return false;
@@ -472,7 +472,7 @@ export class DataBind {
         let inRangeCut: boolean;
         let deleteRowDetails: { count: number, index: number };
         const sheetIdx: number = args.sheetIdx === undefined ? this.parent.activeSheetIndex : args.sheetIdx;
-        const sheet: SheetModel = this.parent.sheets[sheetIdx];
+        const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
         let cellIndices: number[];
         let cutIndices: number[];
         sheet.ranges.forEach((range: ExtendedRange, idx: number) => {
@@ -569,13 +569,13 @@ export class DataBind {
                 if (inRange || isNewRow || inRangeCut) {
                     if (args.modelType === 'Row' && !args.insertType && !args.isDataRequest) {
                         args.deletedModel.forEach((row: RowModel, rowIdx: number) => {
-                            changedData[rowIdx] = {};
+                            changedData[rowIdx as number] = {};
                             range.info.flds.forEach((fld: string, idx: number) => {
                                 if (row.cells) {
                                     cell = row.cells[startCell[1] + idx];
-                                    changedData[rowIdx][fld] = this.getFormattedValue(cell);
+                                    changedData[rowIdx as number][`${fld}`] = this.getFormattedValue(cell);
                                 } else {
-                                    changedData[rowIdx][fld] = null;
+                                    changedData[rowIdx as number][`${fld}`] = null;
                                 }
                             });
                             range.info.count -= 1;
@@ -588,11 +588,11 @@ export class DataBind {
                         if (inRangeCut) {
                             addedCutData = cutIndices[2] - cutIndices[0] + 1;
                             for (let i: number = 0; i < addedCutData; i++) {
-                                changedData[i] = {};
+                                changedData[i as number] = {};
                                 range.info.flds.forEach((fld: string, idx: number) => {
                                     if (fld) {
                                         cell = getCell(cutIndices[0] + i, startCell[1] + idx, sheet);
-                                        changedData[i][fld] = this.getFormattedValue(cell);
+                                        changedData[i as number][`${fld}`] = this.getFormattedValue(cell);
                                     }
                                 });
                             }
@@ -606,7 +606,7 @@ export class DataBind {
                                 range.info.flds.forEach((fld: string, idx: number) => {
                                     if (fld) {
                                         cell = getCell(cellIndices[0] + i, startCell[1] + idx, sheet);
-                                        changedData[count + addedCutData][fld] = this.getFormattedValue(cell);
+                                        changedData[count + addedCutData][`${fld}`] = this.getFormattedValue(cell);
                                     }
                                 });
                                 count++;

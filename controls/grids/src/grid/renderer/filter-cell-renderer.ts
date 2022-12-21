@@ -48,7 +48,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
             const fltrData: Object = {};
             if (data) { fltrData[column.field] = data[column.field]; }
             const col: string = 'column';
-            fltrData[col] = column;
+            fltrData[`${col}`] = column;
             if (column.visible) {
                 const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
                 const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
@@ -168,7 +168,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
         else if (gObj.filterSettings.columns.length) {
             for (let i: number = 0, a: PredicateModel[] = gObj.filterSettings.columns; i < a.length; i++) {
-                const col: PredicateModel = a[i];
+                const col: PredicateModel = a[parseInt(i.toString(), 10)];
                 if (col.field === column.field){
                     operators = col.operator;
                 }
@@ -197,7 +197,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                 this.dataSource = operator[gObj.getColumnByUid(this.element.id).type + 'Operator'];
                 for (let i: number = 0; i < this.dataSource.length; i++) {
                     if (column.filter && column.filter.operator && isNullOrUndefined(gObj.filterModule.operators[column.field]) &&
-                        this.dataSource[i].value === column.filter.operator) {
+                        this.dataSource[parseInt(i.toString(), 10)].value === column.filter.operator) {
                         this.value = column.filter.operator;
                     }
                 }

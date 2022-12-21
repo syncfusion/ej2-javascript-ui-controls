@@ -2,7 +2,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Label, Tick, Pointer, Range } from './axis';
-import { PointerModel } from './axis-model';
 import { Orientation, Position } from '../utils/enum';
 import { axisLabelRender } from '../model/constant';
 import { AxisRenderer } from './axis-renderer';
@@ -11,13 +10,13 @@ import { VisibleLabels, Size, Align, measureText, Rect, textFormatter, formatVal
 import { valueToCoefficient, getRangePalette, VisibleRange, withInRange, calculateNiceInterval } from '../utils/helper';
 
 /**
- * @private
  * To calculate the overall axis bounds for gauge.
+ *
+ * @private
  */
 export class AxisLayoutPanel {
     private gauge: LinearGauge;
     private axisRenderer: AxisRenderer;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(gauge: LinearGauge) {
         this.gauge = gauge;
         this.axisRenderer = new AxisRenderer(gauge);
@@ -29,34 +28,33 @@ export class AxisLayoutPanel {
 
     public calculateAxesBounds(): void {
         let axis: Axis; let bounds: Rect;
-        let pointer: PointerModel;
         this.gauge.nearSizes = [];
         this.gauge.farSizes = [];
         let x: number; let y: number; let width: number; let height: number;
         const axisPadding: number = 8;
-        const containerRect: Rect = this.gauge.containerBounds;
         this.checkThermometer();
         for (let i: number = 0; i < this.gauge.axes.length; i++) {
-            axis = <Axis>this.gauge.axes[i];
+            axis = <Axis>this.gauge.axes[i as number];
             axis.checkAlign = new Align(i, ((!axis.opposedPosition) ? 'Near' : 'Far'));
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             (!axis.opposedPosition) ? this.gauge.nearSizes.push(1) : this.gauge.farSizes.push(1);
             this.calculateLineBounds(axis, i);
-            this.calculateTickBounds(axis, i);
-            this.calculateLabelBounds(axis, i);
+            this.calculateTickBounds(axis);
+            this.calculateLabelBounds(axis);
             if (axis.pointers.length > 0) {
-                this.calculatePointerBounds(axis, i);
+                this.calculatePointerBounds(axis);
             }
             if (axis.ranges.length > 0) {
-                this.calculateRangesBounds(axis, i);
+                this.calculateRangesBounds(axis);
             }
             bounds = axis.labelBounds;
-            const offset: number = this.gauge.axes[i].labelStyle.offset;
+            const offset: number = this.gauge.axes[i as number].labelStyle.offset;
             if (this.gauge.orientation === 'Vertical') {
                 x = (!axis.opposedPosition) ? bounds.x - offset - axisPadding : axis.lineBounds.x;
                 y = axis.lineBounds.y;
                 height = axis.lineBounds.height;
-                width = Math.abs((!axis.opposedPosition) ? (axis.lineBounds.x - x) : ((bounds.x + bounds.width + axisPadding) - x - offset));
+                width = Math.abs((!axis.opposedPosition) ? (axis.lineBounds.x - x) :
+                    ((bounds.x + bounds.width + axisPadding) - x - offset));
             } else {
                 y = (!axis.opposedPosition) ? bounds.y - bounds.height - offset - axisPadding : axis.lineBounds.y;
                 x = axis.lineBounds.x;
@@ -95,8 +93,8 @@ export class AxisLayoutPanel {
         let index: number = this.checkPreviousAxes(axis, axisIndex);
         let count: number = 0;
         if (!isNullOrUndefined(index)) {
-            for (let i = index; i >= 0; i--) {
-                if (this.gauge.axes[i].minimum !== this.gauge.axes[i].maximum) {
+            for (let i: number = index; i >= 0; i--) {
+                if (this.gauge.axes[i as number].minimum !== this.gauge.axes[i as number].maximum) {
                     index = i;
                     count++;
                     break;
@@ -113,7 +111,7 @@ export class AxisLayoutPanel {
                 y = (!axis.opposedPosition ? containerRect.y : containerRect.y + containerRect.height) + axis.line.offset;
             }
         } else {
-            prevAxis = <Axis>this.gauge.axes[index];
+            prevAxis = <Axis>this.gauge.axes[index as number];
             if (orientation === 'Vertical') {
                 x = ((!axis.opposedPosition) ? prevAxis.bounds.x : (prevAxis.bounds.x + prevAxis.bounds.width)) + axis.line.offset;
             } else {
@@ -130,14 +128,13 @@ export class AxisLayoutPanel {
      * Calculate axis tick bounds
      *
      * @param axis
-     * @param axisIndex
      */
-    public calculateTickBounds(axis: Axis, axisIndex: number): void {
-        let x: number; let y: number; let width: number; let height: number;
+
+    public calculateTickBounds(axis: Axis): void {
+        let x: number; let y: number;
         let min: number = Math.min(axis.minimum, axis.maximum);
         const max: number = Math.max(axis.minimum, axis.maximum);
         min = (min === max) ? max - 1 : min;
-        const interval: number = axis.majorTicks.interval;
         const bounds: Rect = axis.lineBounds;
         const major: Tick = <Tick>axis.majorTicks;
         const minor: Tick = <Tick>axis.minorTicks;
@@ -198,9 +195,9 @@ export class AxisLayoutPanel {
      * To Calculate axis label bounds
      *
      * @param axis
-     * @param axisIndex
      */
-    public calculateLabelBounds(axis: Axis, axisIndex: number): void {
+
+    public calculateLabelBounds(axis: Axis): void {
         let x: number; let y: number;
         const padding: number = 5;
         const applyPositionBounds: boolean = (axis.labelStyle.position !== 'Auto' && axis.majorTicks.position !== 'Auto' &&
@@ -226,8 +223,8 @@ export class AxisLayoutPanel {
                     (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ? (axis.labelStyle.position === 'Inside' ?
                         bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
                             bounds.x + axis.lineBounds.width : bounds.x) : (axis.labelStyle.position === 'Inside' ?
-                                axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
-                                    axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
+                        axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                            axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
                 x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
                     axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
                         (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
@@ -244,8 +241,8 @@ export class AxisLayoutPanel {
                     (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ?
                         (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
                             bounds.y + axis.lineBounds.height : bounds.y) : (axis.labelStyle.position === 'Inside' ?
-                                axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
-                                    axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
+                            axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                                axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
                 y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
                     axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
                         (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
@@ -259,25 +256,16 @@ export class AxisLayoutPanel {
     /**
      * Calculate pointer bounds
      *
-     * @param axis
-     * @param axisIndex
+     * @param {Axis} axis - Specifies the axis.
+     * @returns {void}
      */
-    public calculatePointerBounds(axis: Axis, axisIndex: number): void {
-        let pointer: Pointer; let actualValue: number; let length: number;
-        const val: number[] = [];
+    public calculatePointerBounds(axis: Axis): void {
+        let pointer: Pointer;
         const range: VisibleRange = axis.visibleRange;
-        const orientation: Orientation = this.gauge.orientation;
-        let bounds: Rect;
-        const line: Rect = axis.lineBounds;
-        const label: Rect = axis.labelBounds;
-        let currentVal: number;
-        let type: string; let markerType: string;
-        let nearX: number; let farX: number;
-        let nearY: number; let farY: number;
         const minimumValue: number = Math.min(range.min, range.max);
         const maximumValue: number = Math.max(range.min, range.max);
         for (let i: number = 0; i < axis.pointers.length; i++) {
-            pointer = <Pointer>axis.pointers[i];
+            pointer = <Pointer>axis.pointers[i as number];
             if ((<string>pointer.offset).length > 0) {
                 pointer.currentOffset = stringToNumber(<string>pointer.offset, (this.gauge.orientation === 'Horizontal' ?
                     this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
@@ -288,7 +276,7 @@ export class AxisLayoutPanel {
                 pointer.value < minimumValue ? minimumValue : pointer.value > maximumValue ? maximumValue : pointer.value
                 : minimumValue;
             if (pointer.width > 0 && withInRange(pointer.currentValue, null, null, range.max, range.min, 'pointer')) {
-                this['calculate' + pointer.type + 'Bounds'](axisIndex, axis, i, pointer);
+                this['calculate' + pointer.type + 'Bounds'](axis, pointer);
             }
         }
     }
@@ -296,12 +284,11 @@ export class AxisLayoutPanel {
     /**
      * Calculate marker pointer bounds
      *
-     * @param axisIndex
      * @param axis
-     * @param pointerIndex
      * @param pointer
      */
-    public calculateMarkerBounds(axisIndex: number, axis: Axis, pointerIndex: number, pointer: Pointer): void {
+
+    public calculateMarkerBounds(axis: Axis, pointer: Pointer): void {
         let x: number; let y: number;
         const line: Rect = axis.lineBounds;
         const offset: number = pointer.currentOffset;
@@ -355,7 +342,8 @@ export class AxisLayoutPanel {
      * @param pointerIndex
      * @param pointer
      */
-    public calculateBarBounds(axisIndex: number, axis: Axis, pointerIndex: number, pointer: Pointer): void {
+
+    public calculateBarBounds(axis: Axis, pointer: Pointer): void {
         let x1: number; let x2: number; let y1: number;
         let y2: number; let height: number; let width: number;
         const line: Rect = axis.lineBounds;
@@ -411,7 +399,8 @@ export class AxisLayoutPanel {
      * @param axis
      * @param axisIndex
      */
-    public calculateRangesBounds(axis: Axis, axisIndex: number): void {
+
+    public calculateRangesBounds(axis: Axis): void {
         let range: Range;
         let start: number; let end: number;
         const line: Rect = axis.lineBounds;
@@ -425,7 +414,7 @@ export class AxisLayoutPanel {
         let startWidth: number; let endWidth: number;
         let colors: string[];
         for (let i: number = 0; i < axis.ranges.length; i++) {
-            range = <Range>axis.ranges[i];
+            range = <Range>axis.ranges[i as number];
             if (this.gauge.gradientModule) {
                 gradientRangeColor = this.gauge.gradientModule.getGradientColorString(range);
             }
@@ -487,7 +476,7 @@ export class AxisLayoutPanel {
         let prevAxis: Axis;
         const isPositive: boolean = (index >= 0) ? true : false;
         if (isPositive) {
-            prevAxis = <Axis>this.gauge.axes[index];
+            prevAxis = <Axis>this.gauge.axes[index as number];
             index = (prevAxis.checkAlign.align === currentAxis.checkAlign.align) ? index : this.checkPreviousAxes(currentAxis, index);
         } else {
             index = null;
@@ -497,7 +486,8 @@ export class AxisLayoutPanel {
 
     /**
      *
-     * @param axis To calculate the visible labels
+     * @param {Axis} axis - Specifies the axis to which labels are to be rendered.
+     * @returns {void}
      */
     public calculateVisibleLabels(axis: Axis): void {
         axis.visibleLabels = [];
@@ -506,15 +496,14 @@ export class AxisLayoutPanel {
             const max: number = axis.visibleRange.max;
             const interval: number = axis.visibleRange.interval;
             let argsData: IAxisLabelRenderEventArgs;
-            const style: Label = <Label>axis.labelStyle;
-            let text: string; let labelSize: Size;
+            const style: Label = <Label>axis.labelStyle; let labelSize: Size;
             const customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
             for (let i: number = min; (i <= max && interval > 0); i += interval) {
-                let currentAxisValue = i;
+                let currentAxisValue: number = i;
                 if (currentAxisValue.toString().indexOf('e') !== -1 && isNullOrUndefined(this.gauge.format)) {
                     const exponent: number = parseInt(currentAxisValue.toString().split('-')[1], 10);
-                    currentAxisValue = parseInt(currentAxisValue.toFixed(exponent), 10);
-                } 
+                    currentAxisValue = parseInt(currentAxisValue.toFixed(exponent as number), 10);
+                }
                 argsData = {
                     cancel: false, name: axisLabelRender, axis: axis,
                     text: customLabelFormat ? textFormatter(style.format, { value: currentAxisValue }, this.gauge) :
@@ -554,21 +543,23 @@ export class AxisLayoutPanel {
                 axisLabelRenderSuccess.bind(this);
                 this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
             }
-            this.getMaxLabelWidth(this.gauge, axis);
+            this.getMaxLabelWidth(axis);
         }
     }
 
     /**
      * Calculate maximum label width for the axis.
      *
+     * @param {Axis} axis - Specifies the axis to which the labels are to be rendered.
      * @return {void}
      * @private
      */
-    private getMaxLabelWidth(gauge: LinearGauge, axis: Axis): void {
+
+    private getMaxLabelWidth(axis: Axis): void {
         axis.maxLabelSize = new Size(0, 0);
         let label: VisibleLabels;
         for (let i: number = 0; i < axis.visibleLabels.length; i++) {
-            label = axis.visibleLabels[i];
+            label = axis.visibleLabels[i as number];
             label.size = measureText(label.text, axis.labelStyle.font);
             if (label.size.width > axis.maxLabelSize.width) {
                 axis.maxLabelSize.width = label.size.width;
@@ -581,9 +572,9 @@ export class AxisLayoutPanel {
 
     private checkThermometer(): void {
         if (this.gauge.container.type === 'Thermometer') {
-            this.gauge.axes.map((axis: Axis, index: number) => {
+            this.gauge.axes.map((axis: Axis) => {
                 if (axis.isInversed) {
-                    axis.pointers.map((pointer: Pointer, index: number) => {
+                    axis.pointers.map((pointer: Pointer) => {
                         if (pointer.type === 'Bar') {
                             axis.isInversed = false;
                         }

@@ -2,11 +2,12 @@
  * Gantt taskbaredit spec
  */
  import { getValue, L10n } from '@syncfusion/ej2-base';
- import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
+ import { Gantt, Edit, Toolbar, IGanttData, ContextMenu, ContextMenuClickEventArgs,Sort } from '../../src/index';
  import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData} from '../base/data-source.spec';
  import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
  import { DropDownList } from '@syncfusion/ej2-dropdowns';
  import { DataManager } from '@syncfusion/ej2-data';
+ import { actionComplete } from '@syncfusion/ej2-treegrid';
  interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
  }
@@ -103,7 +104,7 @@
      toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
      allowUnscheduledTasks: true,
  };
- Gantt.Inject(Edit, Toolbar);
+ Gantt.Inject(Edit, Toolbar,ContextMenu,Sort);
  describe('Gantt dialog module', () => {
  
      describe('Dialog editing - General Tab', () => {
@@ -1312,8 +1313,18 @@
             triggerMouseEvent(saveRecord, 'click');
             expect(ganttObj.element.getElementsByClassName('e-row')[2].children[3].innerHTML).toBe('2/8/2019')
         });
+        it('Editing duration column with 0 days in segmented task', () => {
+            ganttObj.dataBind();
+            let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(duration, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+            input.value = '0';
+            let update: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(update, 'click');
+            expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(0);
+        });
     });
-    describe('Split task segment edit', function () {
+    describe('Split task custom', function () {
         let ganttObj: Gantt;
         beforeAll(function (done) {
             ganttObj = createGantt({
@@ -1325,11 +1336,19 @@
                     endDate: 'EndDate',
                     duration: 'Duration',
                     progress: 'Progress',
-                    dependency: 'Predecessor',
                     child: 'subtasks',
                     durationUnit: 'DurationUnit',
                     segments: 'Segments',
                 },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
                 durationUnit: 'Hour',
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
                 editSettings: {
@@ -1355,23 +1374,16 @@
             setTimeout(done, 1000);
         });
         it('selecting segment', () => {
-            ganttObj.openEditDialog(5);
+            ganttObj.openEditDialog(3);
             let selectSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(4)') as HTMLElement;
             triggerMouseEvent(selectSegment, 'click');
-        });
-        it('end date validation when remove all segments', () => {
             let selectRow: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_content_table > tbody > tr:nth-child(3)') as HTMLElement;
-            triggerMouseEvent(selectRow, 'dblclick');
-            ganttObj.dataBind();
-            let duration = document.querySelector('#Gantt_506SegmentsTabContainer_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
-            if (duration) {
-                triggerMouseEvent(duration, 'dblclick');
-                let input: any = document.getElementById('Gantt_506SegmentsTabContainerduration')
-                input.value = 10
-            }
+            triggerMouseEvent(selectRow, 'click');
+            let deleteSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_delete > span.e-tbar-btn-text') as HTMLElement;
+            triggerMouseEvent(deleteSegment, 'click');
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
-            expect(ganttObj.element.getElementsByClassName('e-row')[4].children[3].innerHTML).toBe('2/8/2019')
+            expect(ganttObj.element.getElementsByClassName('e-row')[2].children[3].innerHTML).toBe('2/5/2019');
         });
     });
  	describe('DataManager data ', () => {
@@ -1567,7 +1579,7 @@
                     expect(taskname.getAttribute('value')).toBe("Yeni görev 8");
                 });
         });
-        describe('Render only segments tab', function () {
+       /* describe('Render only segments tab', function () {
             let ganttObj: Gantt;
             beforeAll(function (done) {
                 ganttObj = createGantt({
@@ -1623,7 +1635,7 @@
                     let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
                     triggerMouseEvent(saveRecord, 'click');
                 });
-            });
+            });*/
 	    describe('Add Dialog for Bottom position', () => {
                 let ganttObj: Gantt;
                 beforeAll((done: Function) => {
@@ -2174,39 +2186,41 @@
             expect(getValue('taskType', ganttObj.flatData[1])).toBe('task');
         });
     });
-    describe('Cr Data source error', function () {
+    describe('Dialogue edit with Shimmer effect', function () {
         let ganttObj: Gantt;
+        let elem: HTMLElement;
+        let dropdownlistObj: DropDownList;
         beforeAll(function (done) {
             ganttObj = createGantt({
-                dataSource: crData,
+                dataSource: projectData1,
                 editSettings: {
                     allowAdding: true,
                     allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true,
+                    allowDeleting: true
                 },
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress'}, 
+                ],
                 taskFields: {
-                    id: 'runningId',
-                    name: 'name',
-                    dependency: 'dependency',
-                    baselineStartDate: 'actualStartDate',
-                    baselineEndDate: 'actualCompletionDate',
-                    startDate: 'startDate',
-                    endDate: 'estimatedCompletionDate',
-                    duration: 'duration',
-                    expandState: 'expandState',
-                    progress: 'progress',
-                    child: 'child',
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
                 },
-                queryCellInfo :(args)  => {
-                    if (args.column.field == 'progress' && args.data.hasChildRecords) {
-                         args.cell.innerText = args.data.taskData.progress.toString();
-                       }
-                  },
-                projectStartDate: new Date('08/01/2022'),
-                projectEndDate: new Date('10/28/2022'),
+                enableContextMenu: true,
+                allowSorting: true,
+                loadingIndicator: { indicatorType: 'Shimmer' },
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
                 rowHeight: 40,
                 taskbarHeight: 30,
                 allowSelection: true
@@ -2219,9 +2233,111 @@
         });
         beforeEach((done: Function) => {
             setTimeout(done, 1000);
+
         });
-        it('changing inner html value', () => {
-            expect(document.getElementsByClassName('e-rowcell e-ellipsistooltip')[5].innerHTML).toBe('2')
+        it('edit dialogue shimmer effect', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "openEditDialog") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(2);
+                }
+            }
+            ganttObj.openEditDialog(2);
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+        it('add dialogue shimmer effect', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.action === "OpenDialog") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(2);
+                }
+            };
+            let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+            triggerMouseEvent(add, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+        it('context menu outdent shimmer effect', () => {
+            ganttObj.selectionModule.selectRow(8);
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "outdented") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(3);
+                }
+            };
+            let indent: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Outdent' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+        });
+        it('Selection scroll shimmer', () => {
+            ganttObj.selectionModule.selectRow(22);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "scroll") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(0);
+                }
+            };
+        });
+        it('convert to milestone shimmer effect', () => {
+            ganttObj.selectionModule.selectRow(8);
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "save") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(2);
+                }
+            };
+            let e: ContextMenuClickEventArgs = {
+                    item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+                    element: null,
+                };
+                (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        });
+        it('Task information shimmer effect', () => {
+            ganttObj.selectionModule.selectRow(8);
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "openEditDialog") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(2);
+                    let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+                    triggerMouseEvent(cancelRecord, 'click');
+                }
+            };
+            let taskInfo: HTMLElement = document.getElementById(ganttObj.element.id + '_contextMenu_TaskInformation');
+            triggerMouseEvent(taskInfo, 'click');
+        });
+        it('Below shimmer effect', () => {
+            ganttObj.selectionModule.selectRow(8);
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "add") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(3);
+                }
+            };
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Below' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            ganttObj.selectionModule.selectRow(8);
+        });
+        it('Cell edit shimmer effect', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "save") {
+                    expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(2);
+                }
+            };
+            ganttObj.dataBind();
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+
         });
     });
     describe('Cr string convert to integer issue', function () {
@@ -2281,6 +2397,56 @@
             expect(document.getElementsByClassName('e-gantt')[0]['ej2_instances'][0].columnByField['secondaryId'].editType).toBe('stringedit')
         });
     });
+    describe('Cr Data source error', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: crData,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                taskFields: {
+                    id: 'runningId',
+                    name: 'name',
+                    dependency: 'dependency',
+                    baselineStartDate: 'actualStartDate',
+                    baselineEndDate: 'actualCompletionDate',
+                    startDate: 'startDate',
+                    endDate: 'estimatedCompletionDate',
+                    duration: 'duration',
+                    expandState: 'expandState',
+                    progress: 'progress',
+                    child: 'child',
+                },
+                queryCellInfo :(args)  => {
+                    if (args.column.field == 'progress' && args.data.hasChildRecords) {
+                         args.cell.innerText = args.data.taskData.progress.toString();
+                       }
+                  },
+                projectStartDate: new Date('08/01/2022'),
+                projectEndDate: new Date('10/28/2022'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                allowSelection: true
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('changing inner html value', () => {
+            expect(document.getElementsByClassName('e-rowcell e-ellipsistooltip')[5].innerHTML).toBe('2')
+        });
+    });
     describe('CR-issues', function () {
         let ganttObj: Gantt;
         beforeAll(function (done) {
@@ -2305,6 +2471,11 @@
                         args.General.Duration.enabled = false;
                     }
                 },
+                actionComplete(args) {
+                    if (args.requestType == 'openEditDialog') {
+                        expect(document.getElementsByClassName('e-disabled').length).toBe(8);
+                    }
+                },
                 editSettings: {
                     allowAdding: true,
                     allowEditing: true,
@@ -2320,14 +2491,11 @@
                 destroyGantt(ganttObj);
             }
         });
+        beforeEach(function (done) {
+            setTimeout(done, 1000);
+        });
 	it('EJ2-48816 - Adding new task with empty string', () => {
-	ganttObj.actionComplete = (args: any): void => {
-              if (args.requestType == 'openEditDialog') {
-                  expect(document.getElementsByClassName('e-disabled').length).toBe(8);
-              }
-        };
-	ganttObj.dataBind();
-        ganttObj.openEditDialog(3);
+            ganttObj.openEditDialog(3);
         });
     }); 
  });

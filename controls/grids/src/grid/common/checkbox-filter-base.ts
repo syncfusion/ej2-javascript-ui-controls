@@ -134,12 +134,12 @@ export class CheckBoxFilterBase {
             const fpred: Predicate[] = fPredicate.predicate.predicates;
             for (let i: number = 0; i < fpred.length; i++) {
                 filterCollection.push({
-                    field: fpred[i].field,
+                    field: fpred[parseInt(i.toString(), 10)].field,
                     predicate: 'or',
-                    matchCase: fpred[i].ignoreCase,
-                    ignoreAccent: fpred[i].ignoreAccent,
-                    operator: fpred[i].operator,
-                    value: <string>fpred[i].value,
+                    matchCase: fpred[parseInt(i.toString(), 10)].ignoreCase,
+                    ignoreAccent: fpred[parseInt(i.toString(), 10)].ignoreAccent,
+                    operator: fpred[parseInt(i.toString(), 10)].operator,
+                    value: <string>fpred[parseInt(i.toString(), 10)].value,
                     type: this.options.type
                 });
             }
@@ -209,8 +209,8 @@ export class CheckBoxFilterBase {
                 // eslint-disable-next-line valid-typeof
                 if (typeof dataSource !== str) {
                     const obj: Object = {};
-                    obj[this.options.field] = dataSource[i];
-                    dataSource[i] = obj;
+                    obj[this.options.field] = dataSource[parseInt(i.toString(), 10)];
+                    dataSource[parseInt(i.toString(), 10)] = obj;
                 }
             }
         }
@@ -288,7 +288,7 @@ export class CheckBoxFilterBase {
             columnName: this.options.field, columnType: this.options.type, cancel: false
         };
         const filterModel: string = 'filterModel';
-        args[filterModel] = this;
+        args[`${filterModel}`] = this;
         this.parent.notify(events.cBoxFltrBegin, args);
         if (args.cancel) {
             options.cancel = args.cancel;
@@ -320,7 +320,7 @@ export class CheckBoxFilterBase {
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
         const isStringTemplate: string = 'isStringTemplate';
-        this.dialogObj[isStringTemplate] = true;
+        this.dialogObj[`${isStringTemplate}`] = true;
         this.renderResponsiveFilter(options);
         this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
         if (options.isResponsiveFilter) {
@@ -443,7 +443,7 @@ export class CheckBoxFilterBase {
      * @hidden
      */
     public fltrBtnHandler(): void {
-        let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
+        let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)'));
         const check: Element[] = checked;
         let optr: string = 'equal';
         const ddlValue: EJ2Intance = (this.dialogObj.element.querySelector('.e-dropdownlist') as EJ2Intance);
@@ -477,7 +477,7 @@ export class CheckBoxFilterBase {
         let coll: PredicateModel[] = [];
         if (checked.length !== this.itemsCnt || (searchInput && searchInput.value && searchInput.value !== '')) {
             for (let i: number = 0; i < checked.length; i++) {
-                value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
+                value = this.values[parentsUntil(checked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
                 fObj = extend({}, { value: value }, defaults) as {
                     field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
                 };
@@ -501,14 +501,27 @@ export class CheckBoxFilterBase {
                     return;
                 }
             }
-            if (this.options.type === 'date' || this.options.type === 'datetime') {
+            if ((this.options.type === 'date' || this.options.type === 'datetime') && check.length) {
                 length = check.length - 1;
-                val = this.values[parentsUntil(check[length], 'e-ftrchk').getAttribute('uid')];
+                val = this.values[parentsUntil(check[parseInt(length.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
                 if (isNullOrUndefined(val) && isNotEqual) {
                     coll.push({
                         field: defaults.field, matchCase: defaults.matchCase, operator: 'equal',
                         predicate: 'and', value: null
                     });
+                }
+            }
+            if (this.cBox.querySelector('.e-add-current') && this.cBox.querySelector('.e-add-current').classList.contains('e-check')) {
+                const existingPredicate: PredicateModel[] = this.existingPredicate[this.options.field];
+                if (existingPredicate) {
+                    for (let j: number = 0; j < existingPredicate.length; j++) {
+                        if (!coll.some(function (data: PredicateModel): boolean { return data
+                            .value === existingPredicate[parseInt(j.toString(), 10)].value; })) {
+                            coll.push(existingPredicate[parseInt(j.toString(), 10)]);
+                        }
+                    }
+                } else {
+                    return;
                 }
             }
             this.initiateFilter(coll);
@@ -560,10 +573,12 @@ export class CheckBoxFilterBase {
             predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
                 new Predicate(firstVal.field, firstVal.operator, firstVal.value, !firstVal.matchCase, firstVal.ignoreAccent);
             for (let j: number = 1; j < fColl.length; j++) {
-                predicate = fColl[j].ejpredicate !== undefined ?
-                    predicate[fColl[j].predicate](fColl[j].ejpredicate) :
-                    predicate[fColl[j].predicate](
-                        fColl[j].field, fColl[j].operator, fColl[j].value, !fColl[j].matchCase, fColl[j].ignoreAccent
+                predicate = fColl[parseInt(j.toString(), 10)].ejpredicate !== undefined ?
+                    predicate[fColl[parseInt(j.toString(), 10)].predicate](fColl[parseInt(j.toString(), 10)].ejpredicate) :
+                    predicate[fColl[parseInt(j.toString(), 10)].predicate](
+                        fColl[parseInt(j.toString(), 10)].field, fColl[parseInt(j.toString(), 10)].operator,
+                        fColl[parseInt(j.toString(), 10)].value, !fColl[parseInt(j.toString(), 10)].matchCase,
+                        fColl[parseInt(j.toString(), 10)].ignoreAccent
                     );
             }
             const args: Object = {
@@ -718,7 +733,7 @@ export class CheckBoxFilterBase {
                     predicateList.push(Predicate.or(fPredicate.predicate.predicates));
                 }
             } else {
-                predicateList.push(<Predicate>predicates[prop]);
+                predicateList.push(<Predicate>predicates[`${prop}`]);
             }
         }
         return predicateList.length && Predicate.and(predicateList);
@@ -737,7 +752,7 @@ export class CheckBoxFilterBase {
             requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null
         };
         const filterModel: string = 'filterModel';
-        args[filterModel] = this;
+        args[`${filterModel}`] = this;
         this.parent.trigger(events.actionBegin, args, (args: FilterSearchBeginEventArgs) => {
             args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
             query.take(args.filterChoiceCount);
@@ -792,7 +807,7 @@ export class CheckBoxFilterBase {
         let i: number = 0;
         Promise.all(allPromise).then((e: ReturnType[]) => {
             for (let j: number = 0; j < e.length; j++) {
-                runArray[i++](e[j].result);
+                runArray[i++](e[parseInt(j.toString(), 10)].result);
             }
         });
     }
@@ -821,7 +836,7 @@ export class CheckBoxFilterBase {
             columnName: this.options.field, columnType: this.options.type
         };
         const filterModel: string = 'filterModel';
-        args[filterModel] = this;
+        args[`${filterModel}`] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
         if (this.isCheckboxFilterTemplate) {
             hideSpinner(this.spinner);
@@ -837,16 +852,16 @@ export class CheckBoxFilterBase {
         if ((this.options.filteredColumns.length)) {
             const cols: Object[] = [];
             for (let i: number = 0; i < this.options.filteredColumns.length; i++) {
-                const filterColumn: { uid: string, field: string } = this.options.filteredColumns[i] as {
+                const filterColumn: { uid: string, field: string } = this.options.filteredColumns[parseInt(i.toString(), 10)] as {
                     uid: string, field: string };
                 if (this.options.uid) {
                     filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
                     if (filterColumn.uid !== this.options.uid) {
-                        cols.push(this.options.filteredColumns[i]);
+                        cols.push(this.options.filteredColumns[parseInt(i.toString(), 10)]);
                     }
                 } else {
                     if (filterColumn.field !== this.options.field) {
-                        cols.push(this.options.filteredColumns[i]);
+                        cols.push(this.options.filteredColumns[parseInt(i.toString(), 10)]);
                     }
                 }
             }
@@ -928,7 +943,7 @@ export class CheckBoxFilterBase {
     }
 
     private updateAllCBoxes(checked: boolean): void {
-        const cBoxes: Element[] = [].slice.call(this.cBox.getElementsByClassName('e-frame'));
+        const cBoxes: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-frame:not(.e-add-current)'));
         for (const cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
             setChecked(cBox.previousSibling as HTMLInputElement, checked);
@@ -950,8 +965,8 @@ export class CheckBoxFilterBase {
         setChecked(elem.querySelector('input'), checked);
         const label: Element = elem.querySelector('.e-label');
         const dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
-        let innerText: string = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
-        label[innerText] = !isNullOrUndefined(value) && value.toString().length ? value :
+        const innerText: string = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
+        label[`${innerText}`] = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         if (label.innerHTML === this.getLocalizedLabel('Blanks')) {
             this.isBlanks = true;
@@ -960,12 +975,14 @@ export class CheckBoxFilterBase {
             label.innerHTML = value === true ? this.getLocalizedLabel('FilterTrue') : this.getLocalizedLabel('FilterFalse');
         }
         addClass([label], ['e-checkboxfiltertext']);
-        if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
+        if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')
+            && data[this.options.column.field] !== this.getLocalizedLabel('AddCurrentSelection')) {
             label.innerHTML = '';
             const isReactCompiler: boolean = this.parent.isReact && this.options.column.filter
                 && typeof (this.options.column.filter.itemTemplate) !== 'string';
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.parent as any).parentDetails.parentInstObj.isReact;
             if (isReactCompiler || isReactChild) {
                 this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
@@ -978,11 +995,14 @@ export class CheckBoxFilterBase {
     }
 
     private updateIndeterminatenBtn(): void {
-        const cnt: number = this.cBox.children.length - 1;
+        let cnt: number = this.cBox.children.length - 1;
         let className: string[] = [];
         let disabled: boolean = false;
         const elem: Element = this.cBox.querySelector('.e-selectall');
-        const selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
+        const selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)').length;
+        if (this.cBox.querySelector('.e-add-current')) {
+            cnt -= 1;
+        }
         let btn: Button;
         if (!this.options.isResponsiveFilter) {
             btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
@@ -1023,7 +1043,7 @@ export class CheckBoxFilterBase {
             key = args1.field ;
         }
         for (let i: number = 0; i < data.length; i++) {
-            const val: string = getValue(key, data[i]);
+            const val: string = getValue(key, data[parseInt(i.toString(), 10)]);
             if (val === '' || isNullOrUndefined(val)) {
                 nullCounter = nullCounter + 1;
             }
@@ -1048,16 +1068,26 @@ export class CheckBoxFilterBase {
             }
             const isColFiltered: number = new DataManager(this.options.filteredColumns as JSON[]).executeLocal(
                 new Query().where(predicate)).length;
+            if (this.sInput.value) {
+                const predicateCheckBox: Element = this.createCheckbox(this.getLocalizedLabel('AddCurrentSelection'), false, {
+                    [this.options.field]: this.getLocalizedLabel('AddCurrentSelection') });
+                if (this.parent.cssClass) {
+                    addClass([predicateCheckBox], [this.parent.cssClass]);
+                }
+                const predicateElement: Element = createCboxWithWrap(getUid('cbox'), predicateCheckBox, 'e-ftrchk');
+                predicateElement.querySelector('.e-frame').classList.add('e-add-current');
+                cBoxes.appendChild(predicateElement);
+            }
             let isRndere: boolean;
             for (let i: number = 0; i < data.length; i++) {
                 const uid: string = getUid('cbox');
-                this.values[uid] = getValue(key, data[i]);
-                let value: string | number = getValue(this.options.field, data[i]);
+                this.values[`${uid}`] = getValue(key, data[parseInt(i.toString(), 10)]);
+                let value: string | number = getValue(this.options.field, data[parseInt(i.toString(), 10)]);
                 if (this.options.formatFn) {
                     value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;
                 }
                 const args: { value: string | number, column: ColumnModel, data: Object }
-                            = { value: value, column: this.options.column, data: data[i] };
+                            = { value: value, column: this.options.column, data: data[parseInt(i.toString(), 10)] };
                 this.parent.notify(events.filterCboxValue, args);
                 value = args.value;
                 if ((value === '' || isNullOrUndefined(value))) {
@@ -1066,7 +1096,8 @@ export class CheckBoxFilterBase {
                 }
                 const checkbox: Element =
                     this.createCheckbox(
-                        value as string, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
+                        value as string, this.getCheckedState(isColFiltered, this.values[`${uid}`]),
+                        getValue('dataObj', data[parseInt(i.toString(), 10)]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
             }
             this.cBox.innerHTML = '';
@@ -1091,7 +1122,7 @@ export class CheckBoxFilterBase {
             filterModel?: CheckBoxFilterBase
         } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
         const filterModel: string = 'filterModel';
-        args[filterModel] = this;
+        args[`${filterModel}`] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
         this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
         hideSpinner(this.spinner);
@@ -1101,7 +1132,7 @@ export class CheckBoxFilterBase {
         if (!this.isFiltered || !isColFiltered) {
             return true;
         } else {
-            const checkState: boolean = this.result[value];
+            const checkState: boolean = this.sInput.value ? true : this.result[`${value}`];
             return this.options.operator === 'notequal' ? !checkState : checkState;
         }
     }
@@ -1115,19 +1146,19 @@ export class CheckBoxFilterBase {
         const isForeignKey: boolean = column && column.isForeignColumn ? column.isForeignColumn() : false;
 
         while (len--) {
-            value = json[len] as string;
+            value = json[parseInt(len.toString(), 10)] as string;
             value = getObject(field, value); //local remote diff, check with mdu
             if (!(value in lookup)) {
                 const obj: Object = {};
-                obj[ejValue] = value;
-                lookup[value] = true;
+                obj[`${ejValue}`] = value;
+                lookup[`${value}`] = true;
                 if (isForeignKey) {
                     const foreignDataObj: Object = getForeignData(column, {}, value, foreignKeyData)[0];
-                    setValue(events.foreignKeyData, foreignDataObj, json[len]);
+                    setValue(events.foreignKeyData, foreignDataObj, json[parseInt(len.toString(), 10)]);
                     value = getValue(column.foreignKeyValue, foreignDataObj);
                 }
                 setValue(field, isNullOrUndefined(value) ? null : value, obj);
-                setValue('dataObj', json[len], obj);
+                setValue('dataObj', json[parseInt(len.toString(), 10)], obj);
                 result.push(obj);
             }
         }
@@ -1140,9 +1171,9 @@ export class CheckBoxFilterBase {
         const pred: Predicate = {} as Predicate;
         for (let i: number = 0; i < cols.length; i++) {
             collection = new DataManager(columns as JSON[]).executeLocal(
-                new Query().where('field', 'equal', cols[i].field));
+                new Query().where('field', 'equal', cols[parseInt(i.toString(), 10)].field));
             if (collection.length !== 0) {
-                pred[cols[i].field] = CheckBoxFilterBase.generatePredicate(collection);
+                pred[cols[parseInt(i.toString(), 10)].field] = CheckBoxFilterBase.generatePredicate(collection);
             }
         }
         return pred;
@@ -1163,30 +1194,35 @@ export class CheckBoxFilterBase {
                     first.ignoreAccent) as Predicate;
         }
         for (let p: number = 1; p < len; p++) {
-            cols[p] = CheckBoxFilterBase.updateDateFilter(cols[p]);
-            if (len > 2 && p > 1 && cols[p].predicate === 'or') {
-                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    predicate.predicates.push(getDatePredicate(cols[p], cols[p].type));
+            cols[parseInt(p.toString(), 10)] = CheckBoxFilterBase.updateDateFilter(cols[parseInt(p.toString(), 10)]);
+            if (len > 2 && p > 1 && cols[parseInt(p.toString(), 10)].predicate === 'or') {
+                if (cols[parseInt(p.toString(), 10)].type === 'date' || cols[parseInt(p.toString(), 10)].type === 'datetime') {
+                    predicate.predicates.push(getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type));
                 } else {
                     predicate.predicates.push(new Predicate(
-                        cols[p].field, cols[p].operator, cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]),
-                        cols[p].ignoreAccent));
+                        cols[parseInt(p.toString(), 10)].field, cols[parseInt(p.toString(), 10)].operator,
+                        cols[parseInt(p.toString(), 10)].value, !CheckBoxFilterBase.getCaseValue(cols[parseInt(p.toString(), 10)]),
+                        cols[parseInt(p.toString(), 10)].ignoreAccent));
                 }
             } else {
-                if (cols[p].type === 'date' || cols[p].type === 'datetime') {
-                    if (cols[p].predicate === 'and' && cols[p].operator === 'equal') {
-                        predicate = (predicate[operate] as Function)(
-                            getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                if (cols[parseInt(p.toString(), 10)].type === 'date' || cols[parseInt(p.toString(), 10)].type === 'datetime') {
+                    if (cols[parseInt(p.toString(), 10)].predicate === 'and' && cols[parseInt(p.toString(), 10)].operator === 'equal') {
+                        predicate = (predicate[`${operate}`] as Function)(
+                            getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type),
+                            cols[parseInt(p.toString(), 10)].type, cols[parseInt(p.toString(), 10)].ignoreAccent);
                     } else {
-                        predicate = (predicate[((cols[p] as Predicate).predicate) as string] as Function)(
-                            getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
+                        predicate = (predicate[((cols[parseInt(p.toString(), 10)] as Predicate).predicate) as string] as Function)(
+                            getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type),
+                            cols[parseInt(p.toString(), 10)].type, cols[parseInt(p.toString(), 10)].ignoreAccent);
                     }
                 } else {
-                    predicate = cols[p].ejpredicate ?
-                        (predicate[(cols[p] as Predicate).predicate as string] as Function)(cols[p].ejpredicate) :
-                        (predicate[(cols[p].predicate) as string] as Function)(
-                            cols[p].field, cols[p].operator,
-                            cols[p].value, !CheckBoxFilterBase.getCaseValue(cols[p]), cols[p].ignoreAccent);
+                    predicate = cols[parseInt(p.toString(), 10)].ejpredicate ?
+                        (predicate[(cols[parseInt(p.toString(), 10)] as Predicate)
+                            .predicate as string] as Function)(cols[parseInt(p.toString(), 10)].ejpredicate) :
+                        (predicate[(cols[parseInt(p.toString(), 10)].predicate) as string] as Function)(
+                            cols[parseInt(p.toString(), 10)].field, cols[parseInt(p.toString(), 10)].operator,
+                            cols[parseInt(p.toString(), 10)].value, !CheckBoxFilterBase.getCaseValue(cols[parseInt(p.toString(), 10)]),
+                            cols[parseInt(p.toString(), 10)].ignoreAccent);
                 }
             }
         }

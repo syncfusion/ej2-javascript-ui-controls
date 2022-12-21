@@ -249,20 +249,24 @@ export class VirtualScroll {
         let resCollection: TdData[] = [];
         const index: Record<string, number> = { startIndex: 0, endIndex: 0 };
         if (this.parent.activeViewOptions.group.byDate) {
-            if (lastLevel[startIndex].date.getTime() === this.parent.resourceBase.expandedResources[0].date.getTime() &&
-                lastLevel[endIndex].date.getTime() ===
+            if (lastLevel[parseInt(startIndex.toString(), 10)].date.getTime() ===
+              this.parent.resourceBase.expandedResources[0].date.getTime() &&
+                lastLevel[parseInt(endIndex.toString(), 10)].date.getTime() ===
                 this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].date.getTime()) {
                 return this.parent.resourceBase.expandedResources;
             }
-            resCollection = this.getByDateCollection(lastLevel[startIndex], lastLevel[endIndex], index);
+            resCollection =
+                this.getByDateCollection(lastLevel[parseInt(startIndex.toString(), 10)],
+                                         lastLevel[parseInt(endIndex.toString(), 10)], index);
             this.setRenderedDates(resCollection);
         } else {
-            if (lastLevel[startIndex].groupIndex === this.parent.resourceBase.expandedResources[0].groupIndex &&
-                lastLevel[endIndex].groupIndex ===
+            if (lastLevel[parseInt(startIndex.toString(), 10)].groupIndex === this.parent.resourceBase.expandedResources[0].groupIndex &&
+                lastLevel[parseInt(endIndex.toString(), 10)].groupIndex ===
                     this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex) {
                 return this.parent.resourceBase.expandedResources;
             }
-            resCollection = this.getByIdCollection(lastLevel[startIndex], lastLevel[endIndex], index);
+            resCollection =
+            this.getByIdCollection(lastLevel[parseInt(startIndex.toString(), 10)], lastLevel[parseInt(endIndex.toString(), 10)], index);
         }
         if (this.parent.currentView !== 'Month') {
             this.startIndex = index.startIndex;
@@ -342,7 +346,7 @@ export class VirtualScroll {
         } else {
             const col: Element[] = [].slice.call(conWrap.querySelector('colgroup').children);
             for (let i: number = 0; i < col.length; i++) {
-                remove(col[i]);
+                remove(col[parseInt(i.toString(), 10)]);
             }
             this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 1] = resCollection;
             const contentRows: Element[] = this.parent.activeView.getContentRows();

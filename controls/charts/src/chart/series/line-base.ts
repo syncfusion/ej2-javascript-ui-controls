@@ -11,7 +11,7 @@ import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { SeriesRender } from '../../smithchart/series/seriesrender';
+
 
 
 /**
@@ -56,7 +56,7 @@ export class LineBase {
         }
         let tempPoint: Points;
         for (let i: number = 0; i < tempPoints.length; i++) {
-            tempPoint = tempPoints[i];
+            tempPoint = tempPoints[i as number];
             if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '' || (series.category === 'Indicator' && (isNaN(tempPoint.xValue) || isNaN(tempPoint.yValue)))) {
                 continue;
             } else {
@@ -211,16 +211,16 @@ export class LineBase {
         return { first: first ? first : points[0], last: last ? last : points[points.length - 1] };
     }
 
-     /**
+    /**
      * To Generate the area series border path direction from area series main direction path.
      * 
      *  @param {string} direction direction
      *
      * */
     public getBorderDirection(
-       direction: string
+        direction: string
     ): string{
-        let coordinates = direction.split(" ");
+        const coordinates: string [] = direction.split(' ');
         if (coordinates.length > 3 && !(this.chart.stackingAreaSeriesModule) && !(this.chart.stackingStepAreaSeriesModule)) {
             coordinates.splice(coordinates.length - 4, 3);
         }
@@ -230,7 +230,7 @@ export class LineBase {
                 coordinates.splice(coordinates.length - 1, 1);
             }
         }
-        return coordinates.join(" ");
+        return coordinates.join(' ');
     } 
 
     /**
@@ -242,11 +242,12 @@ export class LineBase {
     public removeEmptyPointsBorder(
         borderDirection: string
     ): string {
-        let startIndex = 0;
-        let coordinates = borderDirection.split(" ");
+        let startIndex: number = 0;
+        const coordinates: string [] = borderDirection.split(' ');
+        // eslint-disable-next-line @typescript-eslint/tslint/config
         let point;
         do {
-            point = coordinates.indexOf("M", startIndex);
+            point = coordinates.indexOf('M', startIndex);
             if (point > -1) {
                 coordinates.splice(point + 1, 3);
                 startIndex = point + 1;
@@ -255,9 +256,9 @@ export class LineBase {
                     startIndex -= 6;
                 }
             }
-        } while (point != -1);
+        } while (point !== -1);
 
-        return coordinates.join(" ");
+        return coordinates.join(' ');
     } 
 
     /**

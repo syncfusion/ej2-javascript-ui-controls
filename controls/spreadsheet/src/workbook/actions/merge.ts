@@ -58,8 +58,8 @@ export class WorkbookMerge {
                     args.model[i - args.range[0]].cells[j - args.range[1]] = {};
                     extend(args.model[i - args.range[0]].cells[j - args.range[1]], cell, null, true);
                 }
-                if (sheet.rows[i] && sheet.rows[i].cells && sheet.rows[i].cells[j]) {
-                    delete sheet.rows[i].cells[j].rowSpan; delete sheet.rows[i].cells[j].colSpan;
+                if (sheet.rows[i as number] && sheet.rows[i as number].cells && sheet.rows[i as number].cells[j as number]) {
+                    delete sheet.rows[i as number].cells[j as number].rowSpan; delete sheet.rows[i as number].cells[j as number].colSpan;
                     if (!args.merge && !args.isAction && args.model && args.model[i - args.range[0]] && args.model[i - args.range[0]].
                         cells[j - args.range[1]] && args.model[i - args.range[0]].cells[j - args.range[1]] !== {}) {
                         setCell(i, j, sheet, args.model[i - args.range[0]].cells[j - args.range[1]]);
@@ -75,8 +75,9 @@ export class WorkbookMerge {
                     } else {
                         if (i !== args.range[0]) { cell.rowSpan = -rowSpan; }
                         if (j !== args.range[1]) { colSpan++; cell.colSpan = -colSpan; }
-                        if (sheet.rows[i] && sheet.rows[i].cells && sheet.rows[i].cells[j]) {
-                            delete sheet.rows[i].cells[j].value; delete sheet.rows[i].cells[j].formula;
+                        if (sheet.rows[i as number] && sheet.rows[i as number].cells && sheet.rows[i as number].cells[j as number]) {
+                            delete sheet.rows[i as number].cells[j as number].value;
+                            delete sheet.rows[i as number].cells[j as number].formula;
                         }
                         curCell = getCell(i, j, sheet) || {};
                         setCell(i, j, sheet, Object.assign(cell, curCell));
@@ -100,7 +101,7 @@ export class WorkbookMerge {
     }
     private isFormulaDependent(sheet: SheetModel, rowIdx: number, colIdx: number, refreshAll: boolean): boolean {
         if (!refreshAll) {
-            let eventArgs: { [key: string]: string | number | boolean } = { action: 'dependentCellsAvailable', sheetId: sheet.id.toString(),
+            const eventArgs: { [key: string]: string | number | boolean } = { action: 'dependentCellsAvailable', sheetId: sheet.id.toString(),
                 address: getCellAddress(rowIdx, colIdx) };
             this.parent.notify(workbookFormulaOperation, eventArgs);
             return <boolean>eventArgs.isAvailable;
@@ -129,8 +130,9 @@ export class WorkbookMerge {
                 if (j === args.range[1]) {
                     if (i === args.range[0]) { continue; }
                     rowIdx = i - 1;
-                    if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[j]) {
-                        delete sheet.rows[rowIdx].cells[j].rowSpan;
+                    if (sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].cells &&
+                        sheet.rows[rowIdx as number].cells[j as number]) {
+                        delete sheet.rows[rowIdx as number].cells[j as number].rowSpan;
                     }
                     cell = this.getCellValue(rowIdx, j, newValue, sheet);
                     if (args.range[3] - args.range[1] > 0) { cell.colSpan = (args.range[3] - args.range[1]) + 1; }
@@ -139,9 +141,11 @@ export class WorkbookMerge {
                 } else {
                     if (curCell && (curCell.value || curCell.formula) && !newValue) { newValue = curCell.formula || curCell.value; }
                     rowIdx = i;
-                    if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[j]) {
-                        delete sheet.rows[rowIdx].cells[j].rowSpan;
-                        delete sheet.rows[rowIdx].cells[j].value; delete sheet.rows[rowIdx].cells[j].formula;
+                    if (sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].cells &&
+                        sheet.rows[rowIdx as number].cells[j as number]) {
+                        delete sheet.rows[rowIdx as number].cells[j as number].rowSpan;
+                        delete sheet.rows[rowIdx as number].cells[j as number].value;
+                        delete sheet.rows[rowIdx as number].cells[j as number].formula;
                     }
                     mergeCount++; cell.colSpan = -mergeCount;
                     setCell(rowIdx, j, sheet, cell, true);
@@ -185,7 +189,9 @@ export class WorkbookMerge {
                 if (j === args.range[0]) {
                     rowSpan = 0;
                     if (i === args.range[1]) { continue; } colIdx = i - 1;
-                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[colIdx]) { delete sheet.rows[j].cells[colIdx].colSpan; }
+                    if (sheet.rows[j as number] && sheet.rows[j as number].cells && sheet.rows[j as number].cells[colIdx as number]) {
+                        delete sheet.rows[j as number].cells[colIdx as number].colSpan;
+                    }
                     cell = this.getCellValue(j, colIdx, newValue, sheet);
                     if (args.range[2] - args.range[0] > 0) { cell.rowSpan = (args.range[2] - args.range[0]) + 1; }
                     newValue = null;
@@ -194,9 +200,10 @@ export class WorkbookMerge {
                     cell = new Object();
                     if (curCell && (curCell.value || curCell.formula) && !newValue) { newValue = curCell.formula || curCell.value; }
                     rowSpan++; colIdx = i;
-                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[colIdx]) {
-                        delete sheet.rows[j].cells[colIdx].colSpan;
-                        delete sheet.rows[j].cells[colIdx].value; delete sheet.rows[j].cells[colIdx].formula;
+                    if (sheet.rows[j as number] && sheet.rows[j as number].cells && sheet.rows[j as number].cells[colIdx as number]) {
+                        delete sheet.rows[j as number].cells[colIdx as number].colSpan;
+                        delete sheet.rows[j as number].cells[colIdx as number].value;
+                        delete sheet.rows[j as number].cells[colIdx as number].formula;
                     }
                     cell.rowSpan = -rowSpan;
                     setCell(j, colIdx, sheet, cell, true);

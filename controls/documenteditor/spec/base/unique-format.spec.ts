@@ -6,7 +6,7 @@ describe('Unique Format validation', () => {
 
     it('Constructor validation', () => {
 console.log('Constructor validation');
-        let unique: WUniqueFormat = new WUniqueFormat(11);
+        let unique: WUniqueFormat = new WUniqueFormat(20);
         let isEqual: boolean = unique.isEqual(new Dictionary<number, Object>(), 'color', 9 as Object);
         expect(isEqual).toBe(false);
     });

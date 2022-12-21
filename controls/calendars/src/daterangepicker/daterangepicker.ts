@@ -253,7 +253,6 @@ export class DateRangePicker extends CalendarBase {
     private mobileRangePopupWrap: HTMLElement;
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
-    protected isPropChanged: boolean = false;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -930,15 +929,15 @@ export class DateRangePicker extends CalendarBase {
         let attributes: { [key: string]: string } = {};
         if (!isDynamic) {
             for (let i: number = 0; i < this.element.attributes.length; i++) {
-                attributes[this.element.attributes[i].name] = this.element.getAttribute(this.element.attributes[i].name);
+                attributes[this.element.attributes[i as number].name] = this.element.getAttribute(this.element.attributes[i as number].name);
             }
         } else {
             attributes = this.htmlAttributes;
         }
         for (const pro of Object.keys(attributes)) {
             if (pro.indexOf('data') === 0 ) {
-                this.firstHiddenChild.setAttribute(pro, attributes[pro]);
-                this.secondHiddenChild.setAttribute(pro, attributes[pro]);
+                this.firstHiddenChild.setAttribute(pro, attributes[`${pro}`]);
+                this.secondHiddenChild.setAttribute(pro, attributes[`${pro}`]);
             }
         }
     }
@@ -969,12 +968,12 @@ export class DateRangePicker extends CalendarBase {
         element.removeAttribute('name');
         const attributes: string[] = ['required', 'aria-required', 'form'];
         for (let i: number = 0; i < attributes.length; i++) {
-            if (isNullOrUndefined(element.getAttribute(attributes[i]))) {
+            if (isNullOrUndefined(element.getAttribute(attributes[i as number]))) {
                 continue;
             }
-            const attr: string = element.getAttribute(attributes[i]);
-            input.setAttribute(attributes[i], attr);
-            element.removeAttribute(attributes[i]);
+            const attr: string = element.getAttribute(attributes[i as number]);
+            input.setAttribute(attributes[i as number], attr);
+            element.removeAttribute(attributes[i as number]);
         }
     }
     private updateHtmlAttributeToWrapper(): void {
@@ -982,17 +981,17 @@ export class DateRangePicker extends CalendarBase {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        const updatedClassValue: string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        const updatedClassValue: string = (this.htmlAttributes[`${key}`].replace(/\s+/g, ' ')).trim();
                         if (updatedClassValue !== '') {
                             addClass([this.inputWrapper.container], updatedClassValue.split(' '));
                         }
                     } else if (key === 'style') {
                         let dateRangeStyle: string = this.inputWrapper.container.getAttribute(key);
-                        dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
+                        dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[`${key}`]) :
+                            this.htmlAttributes[`${key}`];
                         this.inputWrapper.container.setAttribute(key, dateRangeStyle);
                     } else {
-                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }
             }
@@ -1003,7 +1002,7 @@ export class DateRangePicker extends CalendarBase {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) < 0 ) {
-                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                    this.inputElement.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }
@@ -1322,15 +1321,15 @@ export class DateRangePicker extends CalendarBase {
 
     private createPopup(): void {
         for (let i: number = 0; i < this.presetsItem.length; i++) {
-            if ((i !== (this.presetsItem.length - 1)) && this.presetsItem[i].id === 'custom_range') {
+            if ((i !== (this.presetsItem.length - 1)) && this.presetsItem[i as number].id === 'custom_range') {
                 this.presetsItem.splice(i, 1);
             }
         }
         this.activeIndex = this.presetsItem.length - 1;
         this.isCustomRange = true;
         for (let i: number = 0; i <= this.presetsItem.length - 2; i++) {
-            const startDate: Date = this.presetsItem[i].start as Date;
-            const endDate: Date = this.presetsItem[i].end as Date;
+            const startDate: Date = this.presetsItem[i as number].start as Date;
+            const endDate: Date = this.presetsItem[i as number].end as Date;
             if (this.startValue && this.endValue) {
                 if ((+new Date(startDate.setHours(0, 0, 0, 0)) === +new Date(this.startValue.setHours(0, 0, 0, 0))) &&
                     (+new Date(endDate.setHours(0, 0, 0, 0)) === +new Date(this.endValue.setHours(0, 0, 0, 0)))) {
@@ -1636,7 +1635,7 @@ export class DateRangePicker extends CalendarBase {
         return ele;
     }
     private navInCalendar(e: KeyboardEventArgs, isLeftCalendar: boolean, leftLimit: Date, rightLimit: Date, ele: HTMLElement): void {
-        const view: number = this.getViewNumber(this.currentView());
+        let view: number = this.getViewNumber(this.currentView());
         let date: Date;
         const min: Date = this.min;
         let max: Date;
@@ -1719,10 +1718,8 @@ export class DateRangePicker extends CalendarBase {
         case 'tab':
             if (this.tabKeyValidation(ele, LEFTCALENDER)) {
                 ele = this.keyCalendarUpdate(false, ele, false);
-                const focusedCell: HTMLElement = ele.querySelector('.e-focused-date');
-                if (isNullOrUndefined(focusedCell)) {
-                    this.currentDate = this.firstCellToFocus(this.rightCalendar);
-                }
+                this.currentDate = this.firstCellToFocus(this.rightCalendar);
+                view = this.getViewNumber(this.currentView())
                 this.keyboardNavigate(0, view, e, max, min);
                 this.keyNavigation(ele, e);
             }
@@ -1730,10 +1727,7 @@ export class DateRangePicker extends CalendarBase {
         case 'shiftTab':
             if (this.tabKeyValidation(ele, RIGHTCALENDER)) {
                 ele = this.keyCalendarUpdate(true, ele, false);
-                const focusedCell: HTMLElement = ele.querySelector('.e-focused-date');
-                if (isNullOrUndefined(focusedCell)) {
-                    this.currentDate = this.firstCellToFocus(this.leftCalendar);
-                }
+                this.currentDate = this.firstCellToFocus(this.leftCalendar);
                 this.keyboardNavigate(0, view, e, max, min);
                 this.keyNavigation(ele, e);
             }
@@ -1741,7 +1735,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private firstCellToFocus(calendar: HTMLElement): Date {
-        const focusAbleEle: HTMLElement = calendar.children[1].firstElementChild.querySelector('td.e-cell:not(.e-week-number):not(.e-disabled):not(.e-other-month)');
+        const focusAbleEle: HTMLElement = this.getViewNumber(this.currentView()) === 2 ? calendar.children[1].firstElementChild.querySelector('td.e-cell:not(.e-week-number):not(.e-disabled):not(.e-other-year)') : calendar.children[1].firstElementChild.querySelector('td.e-cell:not(.e-week-number):not(.e-disabled):not(.e-other-month)');
         const focusEleID: string = focusAbleEle && focusAbleEle.id ? focusAbleEle.id.split('_')[0] : null;
         const currentFirstDay: Date = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
         const focusDate: Date = focusEleID ? new Date(+focusEleID) : currentFirstDay;
@@ -1954,7 +1948,11 @@ export class DateRangePicker extends CalendarBase {
         const leftHeader: HTMLElement = this.leftCalendar.querySelector('.e-header');
         const isRightMonth: boolean = rightHeader ? rightHeader.classList.contains('e-month') : false;
         const isLeftMonth: boolean = leftHeader ? leftHeader.classList.contains('e-month') : false;
-        return isLeftCalendar && isLeftMonth && isRightMonth && !this.isMobile;
+        const isRightYear: boolean = rightHeader ? rightHeader.classList.contains('e-year') : false;
+        const isLeftYear: boolean = leftHeader ? leftHeader.classList.contains('e-year') : false;
+        const isRightDecade: boolean = rightHeader ? rightHeader.classList.contains('e-decade') : false;
+        const isLeftDecade: boolean = leftHeader ? leftHeader.classList.contains('e-decade') : false;
+        return isLeftCalendar && (isLeftMonth || isLeftYear || isLeftDecade) && (isRightMonth || isRightYear || isRightDecade) && !this.isMobile;
     }
     private keyNavigation(calendar: HTMLElement, e: KeyboardEventArgs): void {
         this.bindCalendarCellEvents(calendar);
@@ -4258,23 +4256,47 @@ export class DateRangePicker extends CalendarBase {
             this.inputElement.setAttribute('name', this.element.getAttribute('data-name'));
             this.inputElement.removeAttribute('data-name');
         }
+        this.closeEventArgs = null;
+        this.leftCalendar = null;
+        this.rightTitle = null;
+        this.leftTitle = null;
+        this.openEventArgs = null;
+        this.leftCalNextIcon = null;
+        this.rightCalendar = null;
+        this.closeEventArgs = null;
+        this.rightCalPrevIcon = null;
+        this.leftCalPrevIcon = null;
+        this.popupKeyboardModule = null;
+        this.cancelButton = null;
+        this.applyButton = null;
+        this.calendarElement = null;
+        this.leftKeyboardModule = null;
+        this.rightCalNextIcon = null;
+        this.leftCalNextIcon = null;
+        this.btnKeyboardModule = null;
+        this.rightKeyboardModule = null;
+        this.leftKeyboardModule = null;
+        this.presetKeyboardModule = null;
+        this.liCollections = null;
+        this.popupObj = null;
+        this.popupWrapper = null;
     }
     protected ensureInputAttribute(): void {
         const attr: string[] = [];
         for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
-            attr[i] = this.inputElement.attributes[i].name;
+            attr[i as number] = this.inputElement.attributes[i as number].name;
         }
         for (let i: number = 0; i < attr.length; i++) {
-            if (isNullOrUndefined(this.cloneElement.getAttribute(attr[i]))) {
-                if (attr[i].toLowerCase() === 'value') {
+            if (isNullOrUndefined(this.cloneElement.getAttribute(attr[i as number]))) {
+                if (attr[i as number].toLowerCase() === 'value') {
                     this.inputElement.value = '';
                 }
-                this.inputElement.removeAttribute(attr[i]);
+                this.inputElement.removeAttribute(attr[i as number]);
             } else {
-                if (attr[i].toLowerCase() === 'value') {
-                    this.inputElement.value = this.cloneElement.getAttribute(attr[i]);
+                if (attr[i as number].toLowerCase() === 'value') {
+                    this.inputElement.value = this.cloneElement.getAttribute(attr[i as number]);
                 }
-                this.inputElement.setAttribute(attr[i], this.cloneElement.getAttribute(attr[i]));
+                this.inputElement.setAttribute(attr[i as number], this.cloneElement.getAttribute(attr[i as number]));
             }
         }
     }
@@ -4563,6 +4585,9 @@ export class DateRangePicker extends CalendarBase {
         const format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (const prop of Object.keys(newProp)) {
             const openPopup: string[] = ['maxDays', 'minDays', 'value'];
+            if (openPopup.indexOf(prop) < 0) {
+                this.hide(null);
+            }
             switch (prop) {
             case 'width':
                 this.setEleWidth(this.width);
@@ -4764,13 +4789,7 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ depth: newProp.depth }, true);
                 this.refreshChange();
                 break;
-            default:
-                this.isPropChanged = true;
             }
-            if (openPopup.indexOf(prop) < 0 && !this.isPropChanged) {
-                this.hide(null);
-            }
-        this.isPropChanged = false;
         }
     }
 }

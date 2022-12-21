@@ -2074,7 +2074,7 @@ describe('navigate to next editable region', () => {
             done();
         }, 1000);
     });
-    fit('navigate to next editable region validation',() =>{
+    it('navigate to next editable region validation',() =>{
         console.log('navigate to next editable region validation');
         expect(() => {editor.selection.navigateToNextEditingRegion()}).not.toThrowError();
     });

@@ -6,7 +6,7 @@
 import { Sparkline } from '../sparkline';
 import { IThemes } from '../model/interface';
 import { SparklineTheme } from '../model/enum';
-import { Browser, createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 
 import { SparklineBorderModel, SparklineFontModel } from '../model/base-model';
@@ -196,7 +196,7 @@ export function calculateSize(sparkline: Sparkline): void {
         sparkline.element.parentElement.clientHeight) : sparkline.element.clientHeight;
     sparkline.availableSize = new Size(
         stringToNumber(sparkline.width, containerWidth) || containerWidth,
-        stringToNumber(sparkline.height, containerHeight) || containerHeight || (Browser.isDevice ?
+        stringToNumber(sparkline.height, containerHeight) || containerHeight || (sparkline.isDevice ?
             Math.min(window.innerWidth, window.innerHeight) : containerHeight)
     );
 }

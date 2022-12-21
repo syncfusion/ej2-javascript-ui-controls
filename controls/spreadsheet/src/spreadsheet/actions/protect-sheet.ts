@@ -5,7 +5,7 @@ import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCe
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { L10n, EventHandler, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { locale, updateToggleItem, dialog } from '../common/index';
+import { locale, updateToggleItem, dialog, isImported } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { SheetModel } from '../../workbook';
 import { CellModel, getSheet, protectsheetHandler, getRangeIndexes } from '../../workbook/index';
@@ -90,7 +90,7 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const listData: { [key: string]: Object }[] = [
             { text: l10n.getConstant('SelectCells'), id: '1' },
-            { text: l10n.getConstant('SelectUnLockedCells'), id: '6' },
+            { text: l10n.getConstant('SelectUnlockedCells'), id: '6' },
             { text: l10n.getConstant('FormatCells'), id: '2' },
             { text: l10n.getConstant('FormatRows'), id: '3' },
             { text: l10n.getConstant('FormatColumns'), id: '4' },
@@ -186,7 +186,7 @@ export class ProtectSheet {
         if (args.text === l10n.getConstant('SelectCells') && args.isChecked && args.isInteracted) {
             this.optionList.checkItem( { id: '6' } );
         }
-        if (args.text === l10n.getConstant('SelectUnLockedCells') && !args.isChecked && args.isInteracted) {
+        if (args.text === l10n.getConstant('SelectUnlockedCells') && !args.isChecked && args.isInteracted) {
             this.optionList.uncheckItem( { id: '1' } );
         }
         this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').focus();
@@ -255,7 +255,7 @@ export class ProtectSheet {
             formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
             formatColumns: selectedItems.text.indexOf(l10n.getConstant('FormatColumns')) > -1,
             insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1,
-            selectUnLockedCells: selectedItems.text.indexOf(l10n.getConstant('SelectUnLockedCells')) > -1
+            selectUnLockedCells: selectedItems.text.indexOf(l10n.getConstant('SelectUnlockedCells')) > -1
         };
         this.parent.notify(protectsheetHandler, { protectSettings: protectSettings, password: password, triggerEvent: true });
         this.parent.notify(protectSelection, null);
@@ -510,7 +510,7 @@ export class ProtectSheet {
         }
         if (dialogInst.dialogInstance) {
             (this.parent.element.querySelector('.e-protectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
-        }   
+        }
     }
 
     private protectWorkbookHandler(args: { password: string }): void {
@@ -528,10 +528,10 @@ export class ProtectSheet {
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-unprotectworkbook-dlg',
-            header: l10n.getConstant('UnProtectWorkbook'),
+            header: l10n.getConstant('UnprotectWorkbook'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
-                    dialogName: 'UnProtectWorkbook',
+                    dialogName: 'UnprotectWorkbook',
                     element: args.element, target: args.target, cancel: args.cancel
                 };
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
@@ -558,7 +558,7 @@ export class ProtectSheet {
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-unprotectworksheet-dlg',
-            header: l10n.getConstant('UnProtectWorksheet'),
+            header: l10n.getConstant('UnprotectWorksheet'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'UnProtectSheet',
@@ -660,7 +660,7 @@ export class ProtectSheet {
         } else {
             const pwdSpan: Element = this.parent.createElement('span', {
                 className: 'e-unprotectpwd-alert-span',
-                innerHTML: l10n.getConstant('UnProtectPasswordAlert')
+                innerHTML: l10n.getConstant('UnprotectPasswordAlert')
             });
             (this.parent.element.querySelector('.e-unprotectworkbook-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
         }
@@ -690,6 +690,7 @@ export class ProtectSheet {
                 sheetPassword: (pwd as CellModel).value,
                 sheetIndex: this.parent.activeSheetIndex
             };
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             this.parent.open(impArgs);
         }
         else {
@@ -699,7 +700,7 @@ export class ProtectSheet {
             } else {
                 const pwdSpan: Element = this.parent.createElement('span', {
                     className: 'e-unprotectsheetpwd-alert-span',
-                    innerHTML: l10n.getConstant('UnProtectPasswordAlert')
+                    innerHTML: l10n.getConstant('UnprotectPasswordAlert')
                 });
                 (this.parent.element.querySelector('.e-unprotectworksheet-dlg').querySelector('.e-dlg-content')).appendChild(pwdSpan);
             }
@@ -726,7 +727,7 @@ export class ProtectSheet {
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-importprotectworkbook-dlg',
-            header: l10n.getConstant('UnProtectWorkbook'),
+            header: l10n.getConstant('UnprotectWorkbook'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'ImportProtectWorkbook',
@@ -775,13 +776,14 @@ export class ProtectSheet {
             file: args.file,
             password: (pwd as CellModel).value
         };
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         this.parent.open(impArgs);
     }
 
     private toggleProtect(args: OpenOptions): void {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (this.parent.openModule.isImportedFile &&
             this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
             this.unProtectsheet(true);

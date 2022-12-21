@@ -82,9 +82,11 @@ export class ModifiedParagraphFormat {
         this.modifiedFormat = modifiedFormat;
     }
     public destroy(): void {
-        this.ownerFormat = undefined;
-        this.modifiedFormat.destroy();
+        if (this.modifiedFormat) {
+            this.modifiedFormat.destroy();
+        }
         this.modifiedFormat = undefined;
+        this.ownerFormat = undefined;
     }
 }
 /**
@@ -143,7 +145,7 @@ export class TableHistoryInfo {
             this.tableFormat.allowAutoFit = table.tableFormat.allowAutoFit;
         }
         for (let i: number = 0; i < table.childWidgets.length; i++) {
-            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
             const rowFormat: RowFormatHistoryInfo = new RowFormatHistoryInfo();
             rowFormat.gridBefore = row.rowFormat.gridBefore;
             rowFormat.gridBeforeWidth = row.rowFormat.gridBeforeWidth;
@@ -152,7 +154,7 @@ export class TableHistoryInfo {
             rowFormat.gridAfterWidth = row.rowFormat.gridAfterWidth;
             rowFormat.gridAfterWidthType = row.rowFormat.gridAfterWidthType;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                const cell: TableCellWidget = row.childWidgets[parseInt(j.toString(), 10)] as TableCellWidget;
                 const cellFormat: CellFormatHistoryInfo = new CellFormatHistoryInfo();
                 cellFormat.columnIndex = cell.columnIndex;
                 cellFormat.columnSpan = cell.cellFormat.columnSpan;

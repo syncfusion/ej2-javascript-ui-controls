@@ -128,8 +128,9 @@ export function toDate(
             }
         }
         if (text.indexOf(':') < 0) {
-            for (const key of Object.keys((defaultDateFormats as any).dateFormats)) {
-                dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).dateFormats[key], skeleton: key });
+            for (const key of Object.keys((defaultDateFormats as { dateFormats?: object }).dateFormats)) {
+                dObj.dateObj = intl.parseDate(
+                    text, { format: (defaultDateFormats as { dateFormats?: object }).dateFormats[`${key}`], skeleton: key });
                 if (dObj.dateObj) {
                     dObj.type = 'date';
                     dObj.isCustom = false;
@@ -138,10 +139,12 @@ export function toDate(
             }
         }
         if (isNullOrUndefined(dObj.dateObj)) {
+            let dateTimeFormat: string;
             for (const key of Object.keys(availabelDateTimeFormat)) {
-                dObj.dateObj = intl.parseDate(text as string, { format: availabelDateTimeFormat[key], skeleton: key });
-                if (!dObj.dateObj && text.indexOf(':') > -1 && availabelDateTimeFormat[key].indexOf(':') > -1) { // parsing time format without am or pm
-                    dObj.dateObj = intl.parseDate(text, { format: availabelDateTimeFormat[key].split(' ')[0] });
+                dateTimeFormat = availabelDateTimeFormat[`${key}`];
+                dObj.dateObj = intl.parseDate(text as string, { format: dateTimeFormat, skeleton: key });
+                if (!dObj.dateObj && text.indexOf(':') > -1 && dateTimeFormat.indexOf(':') > -1) { // parsing time format without am or pm
+                    dObj.dateObj = intl.parseDate(text, { format: dateTimeFormat.split(' ')[0] });
                 }
                 if (dObj.dateObj) {
                     dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
@@ -155,8 +158,9 @@ export function toDate(
             }
         }
         if (isNullOrUndefined(dObj.dateObj)) {
-            for (const key of Object.keys((defaultDateFormats as any).timeFormats)) {
-                dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).timeFormats[key], skeleton: key });
+            for (const key of Object.keys((defaultDateFormats as { timeFormats?: object }).timeFormats)) {
+                dObj.dateObj = intl.parseDate(
+                    text, { format: (defaultDateFormats as { timeFormats?: object }).timeFormats[`${key}`], skeleton: key });
                 if (dObj.dateObj) {
                     const time: string = dObj.dateObj.toLocaleTimeString();
                     dObj.dateObj = new Date('01/01/1900 ' + time);

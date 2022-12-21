@@ -52,8 +52,8 @@ export class FlMenuOptrUI {
         this.dialogObj = dlgObj;
         const optr: string = column.type + 'Operator';
         this.optrData = this.customOptr = !isNullOrUndefined(operator) ? operator :
-            (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[optr])) ?
-                this.parent.filterSettings.operators[optr] : this.customFilterOperators[optr];
+            (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[`${optr}`])) ?
+                this.parent.filterSettings.operators[`${optr}`] : this.customFilterOperators[`${optr}`];
         const dropDatasource: { [key: string]: Object }[] = this.customOptr;
         const selectedValue: string = this.dropSelectedVal(column, optr);
         const optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flm_optrdiv' });
@@ -67,7 +67,7 @@ export class FlMenuOptrUI {
             enableRtl: this.parent.enableRtl,
             text: selectedValue
         });
-        this.dropOptr.addEventListener(literals.open, this.ddOpen);
+        this.dropOptr.addEventListener(literals['open'], this.ddOpen);
         this.dropOptr.appendTo('#' + column.uid + '-floptr');
     }
 
@@ -97,8 +97,8 @@ export class FlMenuOptrUI {
             if (col.filter.operator) {
                 const optrLen: number = Object.keys(this.optrData).length;
                 for (let i: number = 0; i < optrLen; i++) {
-                    if (this.optrData[i].value === col.filter.operator) {
-                        selValue = this.optrData[i].text;
+                    if (this.optrData[parseInt(i.toString(), 10)].value === col.filter.operator) {
+                        selValue = this.optrData[parseInt(i.toString(), 10)].text;
                     }
                 }
             } else {
@@ -120,7 +120,7 @@ export class FlMenuOptrUI {
 
     private destroyDropDownList(): void {
         if (this.dropOptr.isDestroyed) { return; }
-        this.dropOptr.removeEventListener(literals.open, this.ddOpen);
+        this.dropOptr.removeEventListener(literals['open'], this.ddOpen);
         this.dropOptr.destroy();
         this.parent.off(events.filterMenuClose, this.destroyDropDownList);
         this.parent.off(events.destroy, this.destroyDropDownList);

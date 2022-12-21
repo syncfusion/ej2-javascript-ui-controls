@@ -36,14 +36,16 @@ export class TreeViewRenderer implements IAction {
     private parentIDs: string[] = [];
 
     /** Constructor for render module
+     *
      * @param {PivotFieldList} parent - Instance of field list.
      */
-    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
+    constructor(parent: PivotFieldList) {
         this.parent = parent;
         this.addEventListener();
     }
     /**
      * Initialize the field list tree rendering
+     *
      * @param {number} axis - Axis position.
      * @returns {void}
      * @private
@@ -52,18 +54,18 @@ export class TreeViewRenderer implements IAction {
         this.parentElement = this.parent.dialogRenderer.parentElement;
         this.fieldListSort = 'None';
         if (!this.parent.isAdaptive) {
-            let fieldTable: Element = createElement('div', {
+            const fieldTable: Element = createElement('div', {
                 className: cls.FIELD_TABLE_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_FIELD_TABLE_CLASS : '')
             });
-            let treeHeader: Element = createElement('div', {
+            const treeHeader: Element = createElement('div', {
                 className: cls.FIELD_HEADER_CLASS,
                 innerHTML: this.parent.localeObj.getConstant('allFields')
             });
-            let searchWrapper: HTMLElement = createElement('div', {
+            const searchWrapper: HTMLElement = createElement('div', {
                 id: this.parent.element.id + '_SearchDiv', attrs: { 'tabindex': '-1' },
                 className: cls.FIELD_LIST_SEARCH_CLASS
             });
-            let searchInput: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+            const searchInput: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
             searchWrapper.appendChild(searchInput);
             this.fieldSearch = new TextBox({
                 placeholder: this.parent.localeObj.getConstant('search'),
@@ -76,18 +78,18 @@ export class TreeViewRenderer implements IAction {
             this.fieldSearch.isStringTemplate = true;
             this.fieldSearch.appendTo(searchInput);
             this.fieldSearch.addIcon('append', cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
-            let promptDiv: HTMLElement = createElement('div', {
+            const promptDiv: HTMLElement = createElement('div', {
                 className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
                 innerHTML: this.parent.localeObj.getConstant('noMatches')
             });
-            let treeOuterDiv: HTMLElement = createElement('div', {
+            const treeOuterDiv: HTMLElement = createElement('div', {
                 className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS + ' ' + cls.TREE_CONTAINER
             });
             this.treeViewElement = createElement('div', {
                 id: this.parent.element.id + '_TreeView',
                 className: cls.FIELD_LIST_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_FIELD_LIST_CLASS : '')
             });
-            let fieldHeaderWrappper: Element = createElement('div', { className: cls.FIELD_HEADER_CONTAINER_CLASS });
+            const fieldHeaderWrappper: Element = createElement('div', { className: cls.FIELD_HEADER_CONTAINER_CLASS });
             fieldHeaderWrappper.appendChild(treeHeader);
             fieldTable.appendChild(fieldHeaderWrappper);
             this.updateSortElements(fieldHeaderWrappper);
@@ -99,8 +101,8 @@ export class TreeViewRenderer implements IAction {
             fieldTable.appendChild(treeOuterDiv);
             this.parentElement.appendChild(fieldTable);
             if (this.parent.renderMode === 'Fixed') {
-                let centerDiv: Element = createElement('div', { className: cls.STATIC_CENTER_DIV_CLASS });
-                let axisHeader: Element = createElement('div', {
+                const centerDiv: Element = createElement('div', { className: cls.STATIC_CENTER_DIV_CLASS });
+                const axisHeader: Element = createElement('div', {
                     className: cls.STATIC_CENTER_HEADER_CLASS,
                     innerHTML: this.parent.localeObj.getConstant('centerHeader')
                 });
@@ -113,16 +115,16 @@ export class TreeViewRenderer implements IAction {
         }
     }
     private updateSortElements(headerWrapper: Element): void {
-        let options: { [key: string]: string } = { 'None': 'sortNone', 'Ascend': 'sortAscending', 'Descend': 'sortDescending' };    /* eslint-disable-line */
-        let keys: string[] = Object.keys(options);
-        for (let option of keys) {
-            let spanElement: Element = createElement('span', {
+        const options: { [key: string]: string } = { 'None': 'sortNone', 'Ascend': 'sortAscending', 'Descend': 'sortDescending' };
+        const keys: string[] = Object.keys(options);
+        for (const option of keys) {
+            const spanElement: Element = createElement('span', {
                 attrs: {
                     'tabindex': '0',
                     'aria-disabled': 'false',
                     'aria-label': 'Sort ' + option,
                     'data-sort': option,
-                    'title': this.parent.localeObj.getConstant(options[option]),
+                    'title': this.parent.localeObj.getConstant(options[option as string]),
                     'role': 'button'
                 },
                 className: cls.ICON + ' ' + 'e-sort-' + option.toLowerCase() + ' ' +
@@ -158,23 +160,22 @@ export class TreeViewRenderer implements IAction {
         this.treeViewElement.innerHTML = '';
         this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(this.treeViewElement);
-        /* eslint-disable */
-        let dragEle: HTMLElement = this.parent.renderMode === "Fixed" ? this.parent.element : this.parentElement;
+        const dragEle: HTMLElement = this.parent.renderMode === 'Fixed' ? this.parent.element : this.parentElement;
         if (!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (dragEle.querySelector('.' + cls.FIELD_LIST_CLASS) as any).ej2_instances[0].dragObj.enableAutoScroll = false;
         }
-        /* eslint-enable */
     }
     private updateNodeIcon(args: NodeExpandEventArgs): void {
         if (this.parent.dataType === 'olap') {
             if (args.node && args.node.querySelector('.e-list-icon') &&
                 (args.node.querySelector('.e-list-icon').className.indexOf('e-folderCDB-icon') > -1)) {
-                let node: HTMLElement = args.node.querySelector('.e-list-icon');
+                const node: HTMLElement = args.node.querySelector('.e-list-icon');
                 removeClass([node], 'e-folderCDB-icon');
                 addClass([node], 'e-folderCDB-open-icon');
             } else if (args.node && args.node.querySelector('.e-list-icon') &&
                 (args.node.querySelector('.e-list-icon').className.indexOf('e-folderCDB-open-icon') > -1)) {
-                let node: HTMLElement = args.node.querySelector('.e-list-icon');
+                const node: HTMLElement = args.node.querySelector('.e-list-icon');
                 removeClass([node], 'e-folderCDB-open-icon');
                 addClass([node], 'e-folderCDB-icon');
             }
@@ -197,17 +198,16 @@ export class TreeViewRenderer implements IAction {
         if (!isNullOrUndefined(args.nodeData.pid)) {
             addClass([args.node], cls.FIELD_TREE_CHILD);
         }
-        let liTextElement: HTMLElement = args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS);
+        const liTextElement: HTMLElement = args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS);
         if (args.node.querySelector('.e-list-icon') && liTextElement) {
-            let liIconElement: HTMLElement = args.node.querySelector('.e-list-icon');
+            const liIconElement: HTMLElement = args.node.querySelector('.e-list-icon');
             liTextElement.insertBefore(liIconElement, args.node.querySelector('.e-list-text'));
         }
         if (allowDrag && !this.parent.isAdaptive) {
-            /* eslint-disable */
-            let field: FieldItemInfo = PivotUtil.getFieldInfo((args.nodeData as any).id, this.parent);
-            /* eslint-enable */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const field: FieldItemInfo = PivotUtil.getFieldInfo((args.nodeData as any).id, this.parent);
             allowDrag = false;
-            let dragElement: Element = createElement('span', {
+            const dragElement: Element = createElement('span', {
                 attrs: {
                     'tabindex': '-1',
                     title: (field.fieldItem ? field.fieldItem.allowDragAndDrop ?
@@ -226,16 +226,16 @@ export class TreeViewRenderer implements IAction {
             addClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
         }
         if (this.parent.enableFieldSearching && this.isSearching) {
-            let liElement: HTMLElement = args.node;
+            const liElement: HTMLElement = args.node;
             if (this.parent.dataType === 'olap') {
-                let id: string = liElement.getAttribute('data-uid');
-                let searchItem: HTMLElement[] = this.parent.pivotCommon.eventBase.searchListItem;
-                for (let i = 0; i < this.parentIDs.length; i++) {
-                    if (id === this.parentIDs[i]) {
+                const id: string = liElement.getAttribute('data-uid');
+                const searchItem: HTMLElement[] = this.parent.pivotCommon.eventBase.searchListItem;
+                for (let i: number = 0; i < this.parentIDs.length; i++) {
+                    if (id === this.parentIDs[i as number]) {
                         addClass([liElement], cls.ICON_DISABLE);
                     }
-                    for (let li2 of searchItem) {
-                        let parentID: string[] = this.parent.pivotCommon.eventBase.getParentIDs(this.fieldTable, li2.getAttribute('data-uid'), []);
+                    for (const li2 of searchItem) {
+                        const parentID: string[] = this.parent.pivotCommon.eventBase.getParentIDs(this.fieldTable, li2.getAttribute('data-uid'), []);
                         if (PivotUtil.inArray(id, parentID) > -1) {
                             removeClass([liElement], cls.ICON_DISABLE);
                             break;
@@ -244,13 +244,13 @@ export class TreeViewRenderer implements IAction {
                 }
             }
             else {
-                for (let i = 0; i < this.nonSearchList.length; i++) {
-                    if (liElement.textContent === this.nonSearchList[i].textContent) {
+                for (let i: number = 0; i < this.nonSearchList.length; i++) {
+                    if (liElement.textContent === this.nonSearchList[i as number].textContent) {
                         addClass([liElement], cls.ICON_DISABLE);
                         break;
                     }
                     else {
-                        if (liElement.innerText === this.nonSearchList[i].textContent) {
+                        if (liElement.innerText === this.nonSearchList[i as number].textContent) {
                             addClass([liElement], cls.ICON_DISABLE);
                             break;
                         }
@@ -289,7 +289,7 @@ export class TreeViewRenderer implements IAction {
         return allowDrag;
     }
     private renderTreeDialog(axis?: number): void {
-        let fieldListDialog: HTMLElement = createElement('div', {
+        const fieldListDialog: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_FieldListTreeView',
             className: cls.ADAPTIVE_FIELD_LIST_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : '')
         });
@@ -306,7 +306,7 @@ export class TreeViewRenderer implements IAction {
             locale: this.parent.locale,
             width: 'auto',
             height: '350px',
-            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
+            position: { X: 'center', Y: 'center' },
             buttons: [{
                 click: this.closeTreeDialog.bind(this),
                 buttonModel: {
@@ -335,19 +335,19 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {    /* eslint-disable-line */
-        let editorTreeWrapper: HTMLElement = createElement('div', {
+    private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {
+        const editorTreeWrapper: HTMLElement = createElement('div', {
             id: this.parent.element.id + 'EditorDiv',
             className: cls.EDITOR_TREE_WRAPPER_CLASS
         });
-        let searchWrapper: HTMLElement = createElement('div', {
+        const searchWrapper: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_SearchDiv', attrs: { 'tabindex': '-1' },
             className: cls.EDITOR_SEARCH_WRAPPER_CLASS
         });
-        let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+        const editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
         searchWrapper.appendChild(editorSearch);
-        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS });
-        let treeViewContainer: HTMLElement = createElement('div', {
+        const treeOuterDiv: HTMLElement = createElement('div', { className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS });
+        const treeViewContainer: HTMLElement = createElement('div', {
             className: cls.EDITOR_TREE_CONTAINER_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-field-list-tree' : '')
         });
         editorTreeWrapper.appendChild(searchWrapper);
@@ -361,7 +361,7 @@ export class TreeViewRenderer implements IAction {
         });
         this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
-        let promptDiv: HTMLElement = createElement('div', {
+        const promptDiv: HTMLElement = createElement('div', {
             className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
             innerHTML: this.parent.localeObj.getConstant('noMatches')
         });
@@ -392,7 +392,7 @@ export class TreeViewRenderer implements IAction {
     }
 
     private textChange(e: MaskChangeEventArgs): void {
-        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true)
+        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
         let promptDiv: HTMLElement;
         let treeOuterDiv: HTMLElement;
         if (this.parent.isAdaptive) {
@@ -402,8 +402,8 @@ export class TreeViewRenderer implements IAction {
             promptDiv = this.parentElement.querySelector('.' + cls.EMPTY_MEMBER_CLASS);
             treeOuterDiv = this.parentElement.querySelector('.' + cls.TREE_CONTAINER);
         }
-        let liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
-        let disabledList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li.' + cls.ICON_DISABLE)) as HTMLElement[];
+        const liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
+        const disabledList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li.' + cls.ICON_DISABLE)) as HTMLElement[];
         if (liList.length === disabledList.length) {
             removeClass([promptDiv], cls.ICON_DISABLE);
             if (!this.parent.isAdaptive) {
@@ -421,9 +421,9 @@ export class TreeViewRenderer implements IAction {
         this.nonSearchList = disabledList;
         if (this.parent.dataType === 'olap') {
             this.parentIDs = [];
-            for (let i = 0; i < liList.length; i++) {
-                if (liList[i].classList.contains("e-level-1")) {
-                    let id: string = liList[i].getAttribute('data-uid');
+            for (let i: number = 0; i < liList.length; i++) {
+                if (liList[i as number].classList.contains('e-level-1')) {
+                    const id: string = liList[i as number].getAttribute('data-uid');
                     this.parentIDs.push(id);
                 }
             }
@@ -433,12 +433,12 @@ export class TreeViewRenderer implements IAction {
     private dragStart(args: DragAndDropEventArgs): void {
         if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS) &&
             !(args.event.target as HTMLElement).classList.contains(cls.DRAG_DISABLE_CLASS)) {
-            let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(args.draggedNode.getAttribute('data-uid'), this.parent);
-            let dragEventArgs: FieldDragStartEventArgs = {
+            const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(args.draggedNode.getAttribute('data-uid'), this.parent);
+            const dragEventArgs: FieldDragStartEventArgs = {
                 fieldName: fieldInfo.fieldName, fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis,
                 dataSourceSettings: this.parent.dataSourceSettings, cancel: false
             };
-            let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+            const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
             control.trigger(events.fieldDragStart, dragEventArgs, (observedArgs: FieldDragStartEventArgs) => {
                 if (!observedArgs.cancel) {
                     this.parent.isDragging = true;
@@ -449,13 +449,13 @@ export class TreeViewRenderer implements IAction {
                     } else {
                         data = this.parent.engineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
                     }
-                    let axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
+                    const axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
                     if (data && data.aggregateType === 'CalculatedField') {
-                        for (let axisContent of axis) {
+                        for (const axisContent of axis) {
                             addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
                         }
                     }
-                    let dragItem: HTMLElement = args.clonedNode;
+                    const dragItem: HTMLElement = args.clonedNode;
                     if (dragItem && (this.parent.getModuleName() === 'pivotfieldlist' &&
                         this.parent.renderMode) === 'Popup') {
                         dragItem.style.zIndex = (this.parent.dialogRenderer.fieldListDialog.zIndex + 1).toString();
@@ -495,20 +495,18 @@ export class TreeViewRenderer implements IAction {
     private dragStop(args: DragAndDropEventArgs): void {
         args.cancel = true;
         this.parent.isDragging = false;
-        let axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
-        for (let axisElement of axis) {
+        const axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
+        for (const axisElement of axis) {
             removeClass([this.parentElement.querySelector('.' + axisElement)], cls.NO_DRAG_CLASS);
         }
         removeClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
         if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
             this.parent.pivotCommon.filterDialog.dialogPopUp.close();
         }
-        let fieldName: string = args.draggedNodeData.id.toString();
-        /* eslint-disable */
+        const fieldName: string = args.draggedNodeData.id.toString();
         if (!this.isNodeDropped(args, fieldName)) { return; }
-        let list: { [key: string]: Object } = this.parent.pivotFieldList;
-        let selectedNode: { [key: string]: Object } = list[fieldName] as { [key: string]: Object };
-        /* eslint-enable */
+        const list: { [key: string]: Object } = this.parent.pivotFieldList;
+        const selectedNode: { [key: string]: Object } = list[fieldName as string] as { [key: string]: Object };
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
             ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
@@ -518,7 +516,7 @@ export class TreeViewRenderer implements IAction {
             } else {
                 this.parent.updateDataSource();
             }
-            let parent: PivotFieldList = this.parent;
+            const parent: PivotFieldList = this.parent;
             //setTimeout(() => {
             parent.axisFieldModule.render();
             //});
@@ -527,27 +525,27 @@ export class TreeViewRenderer implements IAction {
     private isNodeDropped(args: DragAndDropEventArgs, targetID: string): boolean {
         let isDropped: boolean = true;
         if (args.draggedNodeData.isChecked === 'true') {
-            let target: HTMLElement = this.getButton(targetID);
-            let axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
-            let droppableElement: HTMLElement = closest(args.target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
+            const target: HTMLElement = this.getButton(targetID);
+            const axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
+            const droppableElement: HTMLElement = closest(args.target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
             if (target && axisPanel === droppableElement) {
-                let pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
-                let dropTarget: HTMLElement = closest(args.target, '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
+                const pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+                const dropTarget: HTMLElement = closest(args.target, '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
                 let sourcePosition: number;
                 let dropPosition: number = -1;
                 for (let i: number = 0, n: number = pivotButtons.length; i < n; i++) {
-                    if (pivotButtons[i].id === target.id) {
+                    if (pivotButtons[i as number].id === target.id) {
                         sourcePosition = i;
                     }
                     if (dropTarget) {
-                        let droppableButton: HTMLElement = dropTarget.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
-                        if (pivotButtons[i].id === droppableButton.id) {
+                        const droppableButton: HTMLElement = dropTarget.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
+                        if (pivotButtons[i as number].id === droppableButton.id) {
                             dropPosition = i;
                         }
                     }
                 }
                 if (sourcePosition === dropPosition || (sourcePosition === (pivotButtons.length - 1) && dropPosition === -1)) {
-                    let parentElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
+                    const parentElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
                     removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
                     isDropped = false;
                 }
@@ -556,12 +554,12 @@ export class TreeViewRenderer implements IAction {
         return isDropped;
     }
     private getButton(fieldName: string): HTMLElement {
-        let wrapperElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
-        let pivotButtons: HTMLElement[] = [].slice.call(wrapperElement.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+        const wrapperElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
+        const pivotButtons: HTMLElement[] = [].slice.call(wrapperElement.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
         let buttonElement: HTMLElement;
         for (let i: number = 0, n: number = pivotButtons.length; i < n; i++) {
-            if (pivotButtons[i].id === fieldName) {
-                buttonElement = pivotButtons[i];
+            if (pivotButtons[i as number].getAttribute('data-uid') === fieldName) {
+                buttonElement = pivotButtons[i as number];
                 break;
             }
         }
@@ -571,22 +569,20 @@ export class TreeViewRenderer implements IAction {
         if (!args.isInteracted) {
             return;
         }
-        let node: HTMLElement = closest(args.node, '.' + cls.TEXT_CONTENT_CLASS) as HTMLElement;
+        const node: HTMLElement = closest(args.node, '.' + cls.TEXT_CONTENT_CLASS) as HTMLElement;
         if (!isNullOrUndefined(node)) {
-            let li: HTMLElement = closest(node, 'li') as HTMLElement;
-            let id: string = li.getAttribute('data-uid');
+            const li: HTMLElement = closest(node, 'li') as HTMLElement;
+            const id: string = li.getAttribute('data-uid');
             if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
                 this.parent.pivotCommon.filterDialog.dialogPopUp.close();
             }
-            /* eslint-disable */
-            let list: { [key: string]: Object } = this.parent.pivotFieldList;
-            let selectedNode: { [key: string]: Object } = list[id] as { [key: string]: Object };
-            /* eslint-enable */
-            let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
-            let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
-            let parentNode: Element = node.closest('.' + cls.FIELD_TREE_PARENT);
+            const list: { [key: string]: Object } = this.parent.pivotFieldList;
+            const selectedNode: { [key: string]: Object } = list[id as string] as { [key: string]: Object };
+            const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
+            const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+            const parentNode: Element = node.closest('.' + cls.FIELD_TREE_PARENT);
             if (args.action === 'check') {
-                let eventdrop: FieldDropEventArgs = {
+                const eventdrop: FieldDropEventArgs = {
                     fieldName: id, dropField: fieldInfo.fieldItem,
                     dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
                     dropAxis: (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
@@ -601,7 +597,7 @@ export class TreeViewRenderer implements IAction {
                             addClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                         }
                         this.updateSelectedNodes(li, args.action);
-                        let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
+                        const addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
                         this.updateReportSettings(addNode, observedArgs);
                         this.updateNodeStateChange(id, args, selectedNode);
                     } else {
@@ -609,7 +605,7 @@ export class TreeViewRenderer implements IAction {
                     }
                 });
             } else {
-                let removeFieldArgs: FieldRemoveEventArgs = {
+                const removeFieldArgs: FieldRemoveEventArgs = {
                     cancel: false, fieldName: id,
                     dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
                     fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
@@ -626,7 +622,8 @@ export class TreeViewRenderer implements IAction {
                             fieldInfo && fieldInfo.position < this.parent.dataSourceSettings.valueIndex &&
                             ((this.parent.dataSourceSettings.valueAxis === 'row' && fieldInfo.axis === 'rows') ||
                                 (this.parent.dataSourceSettings.valueAxis === 'column' && fieldInfo.axis === 'columns'))) {
-                            control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }, true);
+                            control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }
+                                , true);
                         }
                         if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
                             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
@@ -642,11 +639,11 @@ export class TreeViewRenderer implements IAction {
 
     private updateReportSettings(newField: IFieldOptions, dropArgs: FieldDropEventArgs): void {
         let dropPosition: number = dropArgs.dropPosition;
-        let dropClass: string = dropArgs.dropAxis;
+        const dropClass: string = dropArgs.dropAxis;
         if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
-            let dropAxisFields: IFieldOptions[] = (this.parent.dataSourceSettings.valueAxis === 'row' &&
+            const dropAxisFields: IFieldOptions[] = (this.parent.dataSourceSettings.valueAxis === 'row' &&
                 dropClass === 'rows') ? this.parent.dataSourceSettings.rows : (this.parent.dataSourceSettings.valueAxis === 'column' && dropClass === 'columns') ?
-                this.parent.dataSourceSettings.columns : undefined;
+                    this.parent.dataSourceSettings.columns : undefined;
             if (!isNullOrUndefined(dropAxisFields)) {
                 if (dropPosition === -1 && this.parent.dataSourceSettings.valueIndex === -1) {
                     this.parent.setProperties({ dataSourceSettings: { valueIndex: dropAxisFields.length } }, true);
@@ -658,44 +655,51 @@ export class TreeViewRenderer implements IAction {
             }
         }
         switch (dropClass) {
-            case 'filters':
-                dropPosition !== -1 ?   /* eslint-disable-line */
-                    this.parent.dataSourceSettings.filters.splice(dropPosition, 0, newField) :
-                    this.parent.dataSourceSettings.filters.push(newField);
-                break;
-            case 'rows':
-                dropPosition !== -1 ?   /* eslint-disable-line */
-                    this.parent.dataSourceSettings.rows.splice(dropPosition, 0, newField) :
-                    this.parent.dataSourceSettings.rows.push(newField);
-                break;
-            case 'columns':
-                dropPosition !== -1 ?   /* eslint-disable-line */
-                    this.parent.dataSourceSettings.columns.splice(dropPosition, 0, newField) :
-                    this.parent.dataSourceSettings.columns.push(newField);
-                break;
-            case 'values':
-                dropPosition !== -1 ?   /* eslint-disable-line */
-                    this.parent.dataSourceSettings.values.splice(dropPosition, 0, newField) :
-                    this.parent.dataSourceSettings.values.push(newField);
-                if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
-                    !(this.parent.olapEngineModule).isMeasureAvail && !(this.parent.dataSourceSettings.values.length > 1)) {
-                    let measureField: IFieldOptions = {
-                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                    };
-                    let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                        this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                    fieldAxis.push(measureField);
-                }
-                break;
+        case 'filters':
+            if (dropPosition !== -1) {
+                this.parent.dataSourceSettings.filters.splice(dropPosition, 0, newField);
+            } else{
+                this.parent.dataSourceSettings.filters.push(newField);
+            }
+            break;
+        case 'rows':
+            if (dropPosition !== -1) {
+                this.parent.dataSourceSettings.rows.splice(dropPosition, 0, newField);
+            } else{
+                this.parent.dataSourceSettings.rows.push(newField);
+            }
+            break;
+        case 'columns':
+            if (dropPosition !== -1) {
+                this.parent.dataSourceSettings.columns.splice(dropPosition, 0, newField);
+            } else {
+                this.parent.dataSourceSettings.columns.push(newField);
+            }
+            break;
+        case 'values':
+            if (dropPosition !== -1) {
+                this.parent.dataSourceSettings.values.splice(dropPosition, 0, newField);
+            } else {
+                this.parent.dataSourceSettings.values.push(newField);
+            }
+            if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
+                !(this.parent.olapEngineModule).isMeasureAvail && !(this.parent.dataSourceSettings.values.length > 1)) {
+                const measureField: IFieldOptions = {
+                    name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                };
+                const fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                    this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                fieldAxis.push(measureField);
+            }
+            break;
         }
     }
 
-    private updateCheckState(selectedNode: { [key: string]: Object }, action: string): void {   /* eslint-disable-line */
-        let chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-checkbox-wrapper');
-        let innerText: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-list-text');
-        let checkClass: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-frame');
+    private updateCheckState(selectedNode: { [key: string]: Object }, action: string): void {
+        const chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-checkbox-wrapper');
+        const innerText: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-list-text');
         for (let i: number = 0; i < chkState.length; i++) {
-            if (selectedNode.caption === innerText[i].textContent) {
+            if (selectedNode.caption === innerText[i as number].textContent) {
                 if (action === 'check') {
                     this.fieldTable.uncheckAll([selectedNode['id'] as string]);
                 } else {
@@ -705,7 +709,7 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private updateNodeStateChange(id: string, args: NodeCheckEventArgs, selectedNode: { [key: string]: Object }): void {    /* eslint-disable-line */
+    private updateNodeStateChange(id: string, args: NodeCheckEventArgs, selectedNode: { [key: string]: Object }): void {
         if (!this.parent.allowDeferLayoutUpdate) {
             this.parent.updateDataSource(true);
         } else {
@@ -715,7 +719,7 @@ export class TreeViewRenderer implements IAction {
             }
             this.updateDataSource();
         }
-        let parent: PivotFieldList = this.parent;
+        const parent: PivotFieldList = this.parent;
         setTimeout(() => {
             parent.axisFieldModule.render();
         });
@@ -723,7 +727,7 @@ export class TreeViewRenderer implements IAction {
 
     private updateSelectedNodes(li: HTMLElement, state: string): void {
         if (li && li.querySelector('ul')) {
-            for (let element of [].slice.call(li.querySelectorAll('li'))) {
+            for (const element of [].slice.call(li.querySelectorAll('li'))) {
                 if (state === 'check') {
                     addClass([element.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                 } else {
@@ -751,15 +755,13 @@ export class TreeViewRenderer implements IAction {
         if (!args.isInteracted) {
             return;
         }
-        /* eslint-disable */
-        let fieldList: { [key: string]: Object } = this.parent.pivotFieldList;
-        let selectedNode: { [key: string]: Object } = fieldList[args.data[0].id.toString()] as { [key: string]: Object };
-        /* eslint-enable */
-        let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
-        let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+        const fieldList: { [key: string]: Object } = this.parent.pivotFieldList;
+        const selectedNode: { [key: string]: Object } = fieldList[args.data[0].id.toString()] as { [key: string]: Object };
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
+        const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
         if (args.action === 'check') {
-            let axis: string[] = ['filters', 'columns', 'rows', 'values'];
-            let eventdrop: FieldDropEventArgs = {
+            const axis: string[] = ['filters', 'columns', 'rows', 'values'];
+            const eventdrop: FieldDropEventArgs = {
                 fieldName: fieldInfo.fieldName, dropField: fieldInfo.fieldItem,
                 dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
                 dropAxis: axis[this.parent.dialogRenderer.adaptiveElement.selectedItem], draggedAxis: 'fieldlist', cancel: false
@@ -772,7 +774,7 @@ export class TreeViewRenderer implements IAction {
                 }
             });
         } else {
-            let removeFieldArgs: FieldRemoveEventArgs = {
+            const removeFieldArgs: FieldRemoveEventArgs = {
                 cancel: false, fieldName: fieldInfo.fieldName,
                 dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
                 fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
@@ -781,7 +783,7 @@ export class TreeViewRenderer implements IAction {
                 if (!observedArgs.cancel) {
                     let count: number = this.selectedNodes.length;
                     while (count--) {
-                        if (this.selectedNodes[count] === selectedNode.id.toString()) {
+                        if (this.selectedNodes[count as number] === selectedNode.id.toString()) {
                             this.selectedNodes.splice(count, 1);
                             break;
                         }
@@ -803,76 +805,69 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    /* eslint-disable */
     private getUpdatedData(): { [key: string]: Object }[] {
-        let treeData: { [key: string]: Object }[] = this.getTreeData();
-        /* eslint-enable */
-        let expandedNodes: string[] = this.fieldTable.expandedNodes;
+        const treeData: { [key: string]: Object }[] = this.getTreeData();
+        const expandedNodes: string[] = this.fieldTable.expandedNodes;
         this.updateExpandedNodes(treeData, expandedNodes);
         return this.applySorting(treeData, this.fieldListSort);
     }
-    /* eslint-disable */
     private getTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
-        /* eslint-enable */
         if (this.parent.dataType === 'olap') {
             data = this.getOlapTreeData(axis);
         } else {
-            let keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
-            let treeDataInfo: { [key: string]: { id?: string; pid?: string; caption?: string; isSelected?: boolean; hasChildren?: boolean } } = {};
-            for (let key of keys) {
-                let member: IField = this.parent.pivotFieldList[key];
-                treeDataInfo[key] = { id: member.id, pid: member.pid, caption: member.caption, isSelected: member.isSelected };
-                if (!isNullOrUndefined(member.pid) && !treeDataInfo[key].hasChildren) {
-                    let parentId: string = member.pid + '_group_name';
-                    treeDataInfo[key].pid = parentId;
-                    treeDataInfo[parentId] = {
+            const keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
+            const treeDataInfo: { [key: string]: { id?: string; pid?: string; caption?: string; isSelected?: boolean;
+                hasChildren?: boolean } } = {};
+            for (const key of keys) {
+                const member: IField = this.parent.pivotFieldList[key as string];
+                treeDataInfo[key as string] = { id: member.id, pid: member.pid, caption: member.caption, isSelected: member.isSelected };
+                if (!isNullOrUndefined(member.pid) && !treeDataInfo[key as string].hasChildren) {
+                    const parentId: string = member.pid + '_group_name';
+                    treeDataInfo[key as string].pid = parentId;
+                    treeDataInfo[parentId as string] = {
                         id: parentId, caption: member.pid,
-                        isSelected: treeDataInfo[parentId] && treeDataInfo[parentId].isSelected ? treeDataInfo[parentId].isSelected : member.isSelected, hasChildren: true
+                        isSelected: treeDataInfo[parentId as string] && treeDataInfo[parentId as string].isSelected
+                            ? treeDataInfo[parentId as string].isSelected : member.isSelected, hasChildren: true
                     };
                 }
             }
             if (this.parent.isAdaptive) {
-                let fields: IFieldOptions[][] =
+                const fields: IFieldOptions[][] =
                     [this.parent.dataSourceSettings.filters, this.parent.dataSourceSettings.columns,
-                    this.parent.dataSourceSettings.rows,
-                    this.parent.dataSourceSettings.values];
-                let currentFieldSet: IFieldOptions[] = fields[axis];
+                        this.parent.dataSourceSettings.rows,
+                        this.parent.dataSourceSettings.values];
+                const currentFieldSet: IFieldOptions[] = fields[axis as number];
                 let len: number = keys.length;
                 while (len--) {
-                    treeDataInfo[keys[len]].isSelected = false;
+                    treeDataInfo[keys[len as number]].isSelected = false;
                 }
-                for (let item of currentFieldSet) {
+                for (const item of currentFieldSet) {
                     treeDataInfo[item.name].isSelected = true;
                 }
             }
-            /* eslint-disable */
-            let members = Object.keys(treeDataInfo);
-            for (let member of members) {
-                let obj: { [key: string]: Object } = treeDataInfo[member] as { [key: string]: Object };
-                /* eslint-enable */
+            const members: string[] = Object.keys(treeDataInfo);
+            for (const member of members) {
+                const obj: { [key: string]: Object } = treeDataInfo[member as string] as { [key: string]: Object };
                 data.push(obj);
             }
         }
         return data;
     }
-    /* eslint-disable */
     private getOlapTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
-        /* eslint-enable */
-        let fieldListData: IOlapField[] =
+        const fieldListData: IOlapField[] =
             this.parent.olapEngineModule.fieldListData ? this.parent.olapEngineModule.fieldListData : [];
         if (this.parent.isAdaptive) {
-            let fields: IFieldOptions[][] = [
+            const fields: IFieldOptions[][] = [
                 this.parent.dataSourceSettings.filters, this.parent.dataSourceSettings.columns,
                 this.parent.dataSourceSettings.rows, this.parent.dataSourceSettings.values];
-            let currentFieldSet: IFieldOptions[] = fields[axis];
+            const currentFieldSet: IFieldOptions[] = fields[axis as number];
             let i: number = 0;
             while (i < fieldListData.length) {
-                let item: IOlapField = fieldListData[i];
-                /* eslint-disable */
+                const item: IOlapField = fieldListData[i as number];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let framedSet: { [key: string]: any };
-                /* eslint-enable */
                 if (axis === 3) {
                     if ((item.id as string).toLowerCase() !== '[measures]' &&
                         ((item.id as string).toLowerCase().indexOf('[measures]') === 0 ||
@@ -889,7 +884,7 @@ export class TreeViewRenderer implements IAction {
                             framedSet.spriteCssClass = framedSet.spriteCssClass.replace('e-folderCDB-icon', 'e-measureGroupCDB-icon');
                             framedSet.pid = undefined;
                         }
-                        for (let field of currentFieldSet) {
+                        for (const field of currentFieldSet) {
                             if (framedSet.id === field.name) {
                                 framedSet.isSelected = true;
                                 break;
@@ -907,7 +902,7 @@ export class TreeViewRenderer implements IAction {
                             isSelected: item.isSelected, pid: item.pid, spriteCssClass: item.spriteCssClass
                         };
                         framedSet.isSelected = false;
-                        for (let item of currentFieldSet) {
+                        for (const item of currentFieldSet) {
                             if (framedSet.id === item.name) {
                                 framedSet.isSelected = true;
                                 break;
@@ -919,14 +914,14 @@ export class TreeViewRenderer implements IAction {
                 i++;
             }
         } else {
-            data = PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);  /* eslint-disable-line */
+            data = PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
         }
         return data;
     }
-    private updateExpandedNodes(data: { [key: string]: Object }[], expandedNodes: string[]): void { /* eslint-disable-line */
+    private updateExpandedNodes(data: { [key: string]: Object }[], expandedNodes: string[]): void {
         if (expandedNodes.length > 0) {
             let i: number = 0;
-            for (let field of data) {
+            for (const field of data) {
                 if (expandedNodes.indexOf((field as IOlapField).id) > -1) {
                     i++;
                     (field as IOlapField).expanded = true;
@@ -942,8 +937,8 @@ export class TreeViewRenderer implements IAction {
         }
     }
     private updateSorting(args: Event): void {
-        let target: HTMLElement = (args.target as HTMLElement);
-        let option: string = target.getAttribute('data-sort');
+        const target: HTMLElement = (args.target as HTMLElement);
+        const option: string = target.getAttribute('data-sort');
         this.parent.actionObj.actionName = events.sortFieldTree;
         if (this.parent.actionBeginMethod()) {
             return;
@@ -951,24 +946,24 @@ export class TreeViewRenderer implements IAction {
         try {
             if (target.className.indexOf('e-selected') === -1) {
                 switch (option) {
-                    case 'None':
-                        this.fieldListSort = 'None';
-                        addClass([target], 'e-selected');
-                        removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
-                        removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
-                        break;
-                    case 'Ascend':
-                        this.fieldListSort = 'Ascend';
-                        addClass([target], 'e-selected');
-                        removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
-                        removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
-                        break;
-                    case 'Descend':
-                        this.fieldListSort = 'Descend';
-                        addClass([target], 'e-selected');
-                        removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
-                        removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
-                        break;
+                case 'None':
+                    this.fieldListSort = 'None';
+                    addClass([target], 'e-selected');
+                    removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
+                    removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
+                    break;
+                case 'Ascend':
+                    this.fieldListSort = 'Ascend';
+                    addClass([target], 'e-selected');
+                    removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
+                    removeClass([this.parentElement.querySelector('.e-sort-descend')], 'e-selected');
+                    break;
+                case 'Descend':
+                    this.fieldListSort = 'Descend';
+                    addClass([target], 'e-selected');
+                    removeClass([this.parentElement.querySelector('.e-sort-ascend')], 'e-selected');
+                    removeClass([this.parentElement.querySelector('.e-sort-none')], 'e-selected');
+                    break;
                 }
                 this.refreshTreeView();
             }
@@ -980,12 +975,10 @@ export class TreeViewRenderer implements IAction {
             this.parent.actionCompleteMethod();
         }
     }
-    /* eslint-disable */
     private applySorting(treeData: { [key: string]: Object }[], sortOrder: string): { [key: string]: Object }[] {
         if (this.parent.dataType === 'olap') {
             let measure: { [key: string]: Object };
             let calcMember: { [key: string]: Object };
-            /* eslint-enable */
             if (this.parent.dataSourceSettings.calculatedFieldSettings.length > 0 &&
                 (treeData[0].id as string).toLowerCase() === '[calculated members].[_0]') {
                 calcMember = treeData[0];
@@ -1039,18 +1032,18 @@ export class TreeViewRenderer implements IAction {
         EventHandler.remove(element, 'click', this.updateSorting);
     }
 
-    /* eslint-disable-next-line */
     /**
      * @hidden
      */
+
     public addEventListener(): void {
         this.parent.on(events.treeViewUpdate, this.refreshTreeView, this);
     }
 
-    /* eslint-disable-next-line */
     /**
      * @hidden
      */
+
     public removeEventListener(): void {
         if (this.parent.isDestroyed) {
             return;
@@ -1060,6 +1053,7 @@ export class TreeViewRenderer implements IAction {
 
     /**
      * To destroy the tree view event listener
+     *
      * @returns {void}
      * @hidden
      */

@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeMap} from '../../index';
 import { ExportType } from '../utils/enum';
 import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-export';
@@ -15,13 +15,14 @@ export class PdfExport {
      *
      * @param {TreeMap} control - Specifies the treemap instance
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     constructor(control: TreeMap) {
     }
 
     /**
      * This method is used to perform the export functionality for the rendered treemap.
      *
+     * @param {TreeMap} treeMap - Specifies the treemap instance.
      * @param {ExportType} type - Specifies the type of the document.
      * @param {string} fileName - Specifies the name of the document.
      * @param {PdfPageOrientation} orientation - Specifies the orientation of the PDF document to export the component.
@@ -29,9 +30,10 @@ export class PdfExport {
      * @returns {Promise} - Returns the string.
      * @private
      */
-    public export(treeMap: TreeMap, type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload ?: boolean): Promise<string> {
+    public export(treeMap: TreeMap, type: ExportType, fileName: string, orientation?: PdfPageOrientation,
+                  allowDownload ?: boolean): Promise<string> {
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
         const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
             const element: HTMLCanvasElement = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -40,7 +42,6 @@ export class PdfExport {
                     'height': treeMap.availableSize.height.toString()
                 }
             });
-            const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
             const exportElement: HTMLElement = treeMap.svgObject.cloneNode(true) as HTMLElement;
             const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
@@ -90,9 +91,10 @@ export class PdfExport {
 
     /**
      * To destroy the PdfExport.
-     * 
+     *
      * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

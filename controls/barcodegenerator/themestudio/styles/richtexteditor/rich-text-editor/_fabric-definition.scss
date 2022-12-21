@@ -144,6 +144,7 @@ $rte-table-alternate-color: #f5f5f5 !default;
 $rte-table-header-bg: #e0e0e0 !default;
 $rte-toolbar-icon-size: 16px !default;
 $rte-toolbar-big-icon-size: 18px !default;
+$rte-toolbar-hor-nav-border-width: 0 0 0 1px !default;
 
 $rte-insert-dialog-label-padding-top: 20px !default;
 $rte-insert-dialog-label-padding-bottom: 20px !default;
@@ -185,3 +186,5 @@ $rte-big-link-dlg-max-height: 430px !default;
 $rte-big-file-browser-dlg-max-height: 557px !default;
 $rte-big-table-dlg-max-height: 335px !default;
 $rte-big-edit-table-dlg-max-height: 427px !default;
+$rte-drop-text-width: 290px !default;
+$rte-drop-text-mobile-width: 240px !default;

@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable jsdoc/require-param */
-/* eslint-disable jsdoc/require-returns */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps } from '../../index';
 import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRendering } from '../index';
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
@@ -40,10 +36,11 @@ export class Bubble {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const layerData: any[] = layer.layerData; const colorValuePath: string = bubbleSettings.colorValuePath;
         const equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
-            (getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : shapeData[colorValuePath]) : shapeData[colorValuePath];
+            (getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : shapeData[colorValuePath as string]) :
+            shapeData[colorValuePath as string];
         const colorValue: number = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
-            Number(getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : Number(shapeData[colorValuePath])) :
-            Number(shapeData[colorValuePath]);
+            Number(getValueFromObject(shapeData, bubbleSettings.colorValuePath)) : Number(shapeData[colorValuePath as string])) :
+            Number(shapeData[colorValuePath as string]);
         const bubbleValue: number = (!isNullOrUndefined(bubbleSettings.valuePath)) ? ((bubbleSettings.valuePath.indexOf('.') > -1) ?
             Number(getValueFromObject(shapeData, bubbleSettings.valuePath)) : Number(shapeData[bubbleSettings.valuePath])) :
             Number(shapeData[bubbleSettings.valuePath]);
@@ -65,17 +62,17 @@ export class Bubble {
         let midIndex: number = 0; let pointsLength: number = 0; let currentLength: number = 0;
         for (let i: number = 0, len: number = layerData.length; i < len; i++) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let shape: any = layerData[i];
+            let shape: any = layerData[i as number];
             shape = shape['property'];
             const shapePath: string = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
             const shapeDataLayerPathValue: string = !isNullOrUndefined(shapeData[layer.shapeDataPath]) &&
                 isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
-            const shapePathValue: string = !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
-                ? shape[shapePath].toLowerCase() : shape[shapePath];
-            if (shapeDataLayerPathValue === shapePathValue && (layerData[i].type !== 'LineString' && layerData[i].type !== 'MultiLineString' && layerData[i]['type'] !== 'Point' && layerData[i]['type'] !== 'MultiPoint')) {
-                if (!layerData[i]['_isMultiPolygon']) {
+            const shapePathValue: string = !isNullOrUndefined(shape[shapePath as string]) && isNaN(shape[shapePath as string])
+                ? shape[shapePath as string].toLowerCase() : shape[shapePath as string];
+            if (shapeDataLayerPathValue === shapePathValue && (layerData[i as number].type !== 'LineString' && layerData[i as number].type !== 'MultiLineString' && layerData[i as number]['type'] !== 'Point' && layerData[i as number]['type'] !== 'MultiPoint')) {
+                if (!layerData[i as number]['_isMultiPolygon']) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    shapePoints.push(this.getPoints(layerData[i] as any[], []));
+                    shapePoints.push(this.getPoints(layerData[i as number] as any[], []));
                     currentLength = shapePoints[shapePoints.length - 1].length;
                     if (pointsLength < currentLength) {
                         pointsLength = currentLength;
@@ -84,10 +81,10 @@ export class Bubble {
 
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const layer: any[] = <any[]>layerData[i];
+                    const layer: any[] = <any[]>layerData[i as number];
                     for (let j: number = 0; j < layer.length; j++) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        shapePoints.push(this.getPoints(layer[j] as any[], []));
+                        shapePoints.push(this.getPoints(layer[j as number] as any[], []));
                         currentLength = shapePoints[shapePoints.length - 1].length;
                         if (pointsLength < currentLength) {
                             pointsLength = currentLength;
@@ -104,7 +101,7 @@ export class Bubble {
             width: bubbleSettings.border.width
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const center: any = findMidPointOfPolygon(shapePoints[midIndex], projectionType, layer.geometryType);
+        const center: any = findMidPointOfPolygon(shapePoints[midIndex as number], projectionType, layer.geometryType);
         if (bubbleSettings.visible) {
             if (!isNullOrUndefined(center)) {
                 centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
@@ -115,10 +112,10 @@ export class Bubble {
                 };
             } else {
                 const shapePointsLength: number = shapePoints.length - 1;
-                if (shapePoints[shapePointsLength]['x'] && shapePoints[shapePointsLength]['y']) {
+                if (shapePoints[shapePointsLength as number]['x'] && shapePoints[shapePointsLength as number]['y']) {
                     eventArgs = {
                         cancel: false, name: bubbleRendering, border: bubbleBorder,
-                        cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
+                        cx: shapePoints[shapePointsLength as number]['x'], cy: shapePoints[shapePointsLength as number]['y'],
                         data: shapeData, fill: bubbleColor, maps: this.maps,
                         radius: radius
                     };
@@ -192,18 +189,18 @@ export class Bubble {
             points = shape['point'];
         } else {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            shape.map((current: any, index: number) => {
+            shape.map((current: any) => {
                 points.push(new Point(current['point']['x'], current['point']['y']));
             });
         }
         return points;
     }
 
-
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger bubble click event
      *
+     * @param {PointerEvent} e - Specifies the pointer event argument.
+     * @returns {void}
      * @private
      */
     public bubbleClick(e: PointerEvent): void {
@@ -232,14 +229,14 @@ export class Bubble {
     private getbubble(target: string): any {
         const id: string[] = target.split('_LayerIndex_');
         const index: number = parseInt(id[1].split('_')[0], 10);
-        const layer: LayerSettings = <LayerSettings>this.maps.layers[index];
+        const layer: LayerSettings = <LayerSettings>this.maps.layers[index as number];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let data: any;
         if (target.indexOf('_BubbleIndex_') > -1) {
             const bubbleIndex: number = parseInt(id[1].split('_BubbleIndex_')[1], 10);
             const dataIndex: number = parseInt(id[1].split('_BubbleIndex_')[1].split('_dataIndex_')[1], 10);
-            if (!isNaN(bubbleIndex)) {
-                data = layer.bubbleSettings[bubbleIndex].dataSource[dataIndex];
+            if (!isNaN(bubbleIndex as number)) {
+                data = layer.bubbleSettings[bubbleIndex as number].dataSource[dataIndex as number];
                 return data;
             }
         }
@@ -249,6 +246,8 @@ export class Bubble {
     /**
      * To check and trigger bubble move event
      *
+     * @param {PointerEvent} e - Specifies the pointer event argument.
+     * @retruns {void}
      * @private
      */
     public bubbleMove(e: PointerEvent): void {

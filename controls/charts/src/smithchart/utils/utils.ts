@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Browser } from '@syncfusion/ej2-base';
 import { SmithchartFontModel } from './utils-model';
 
 export class SmithchartFont extends ChildProperty<SmithchartFont> {
@@ -56,7 +56,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
      *
      * @default 10
      */
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public top: number;
 
     /**
@@ -64,7 +64,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
      *
      * @default 10
      */
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public bottom: number;
 
     /**
@@ -73,7 +73,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
      * @default 10
      */
 
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public right: number;
 
     /**
@@ -82,7 +82,7 @@ export class SmithchartMargin extends ChildProperty<SmithchartMargin> {
      * @default 10
      */
 
-    @Property(10)
+    @Property(Browser.isDevice ? 5 : 10)
     public left: number;
 
 }
