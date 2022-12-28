@@ -175,15 +175,15 @@ export class ListBox extends DropDownBase {
      */
     @Property(true)
     public enabled: boolean;
- 
-       /**
-        * Enable or disable persisting component's state between page reloads.
-        * If enabled, following list of states will be persisted.
-        * 1. value
-        *
-        * @default false
-        * @deprecated
-        */
+
+    /**
+     * Enable or disable persisting component's state between page reloads.
+     * If enabled, following list of states will be persisted.
+     * 1. value
+     *
+     * @default false
+     * @deprecated
+     */
     @Property(false)
     public enablePersistence: boolean;
 
@@ -875,10 +875,11 @@ export class ListBox extends DropDownBase {
             dragArgs = extend(dragArgs, { destination: dragArgs1 });
         }
         this.trigger('drop', dragArgs);
-        let liCollElem: NodeListOf<Element> = (dragArgs as any).elements;
-        if(liCollElem.length) {
-            for (let i: number= 0; i < liCollElem.length; i++) {
-                liCollElem[i].classList.remove('e-grabbed');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const liCollElem: NodeListOf<Element> = (dragArgs as any).elements;
+        if (liCollElem.length) {
+            for (let i: number = 0; i < liCollElem.length; i++) {
+                liCollElem[i as number].classList.remove('e-grabbed');
             }
         }
     }
@@ -1396,7 +1397,8 @@ export class ListBox extends DropDownBase {
         EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
     }
 
-    private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean, metaKey?: boolean}, isKey?: boolean): void {
+    private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean,
+        metaKey?: boolean}, isKey?: boolean): void {
         let isSelect: boolean = true;
         let currSelIdx: number;
         const li: Element = closest(e.target as Element, '.' + 'e-list-item');
@@ -1750,7 +1752,7 @@ export class ListBox extends DropDownBase {
         const isRefresh: boolean | string = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
             fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
-        const tempItems: Object[] = [].slice.call(fListBox.jsonData);
+        const tempItems: Object[] = [].slice.call(fListBox.listData);
         const localDataArgs: { [key: string]: Object } = { cancel: false, items: tempItems, eventName: this.toolbarAction };
         fListBox.trigger('actionBegin', localDataArgs);
         if (localDataArgs.cancel) {
@@ -1793,10 +1795,17 @@ export class ListBox extends DropDownBase {
         fListBox.value = [];
         (listData as sortedType[]) = (listData as sortedType[])
             .filter((data: sortedType) => (data as { isHeader: boolean }).isHeader !== true);
-        (tListBox.listData as dataType[]) = (tListBox.jsonData as dataType[]) = listData;
+        const sortedData: dataType[] = listData.filter(function(val: dataType): dataType {
+            return (tListBox.jsonData as dataType[]).indexOf(val) === -1;
+        });
+        for (let i: number = 0; i < sortedData.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tListBox.jsonData.splice(index + i, 0, sortedData[i as number] as any);
+        }
+        (tListBox.listData as dataType[]) = listData;
         if (fListBox.listData.length === fListBox.jsonData.length) {
             fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
-        } else if (this.allowFiltering) {
+        } else if (fListBox.allowFiltering) {
             for (let i: number = 0; i < fListBox.listData.length; i++) {
                 for (let j: number = 0; j < fListBox.jsonData.length; j++) {
                     if (fListBox.listData[i as number] === fListBox.jsonData[j as number]) {
@@ -1872,10 +1881,10 @@ export class ListBox extends DropDownBase {
             for (let i: number = 0; i < this.value.length; i++) {
                 const liColl: NodeListOf<Element> = this.list.querySelectorAll('[aria-selected="true"]');
                 for (let j: number = 0; j < liColl.length; j++) {
-                    if(this.value[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
+                    if (this.value[i as number] === this.getFormattedValue(liColl[j as number].getAttribute('data-value')) as string) {
                         liColl[j as number].classList.add('e-grabbed');
                     }
-                }   
+                }
             }
         }
         let elems: Element[];

@@ -728,6 +728,35 @@ describe('Resize module', () => {
                 gridObj = null;
             });
         });
+        describe('EJ2-66907 - autoFitColumns does not work with Frozen Grid', () => {
+            let gridObj: any;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        frozenColumns: 1,
+                        dataSource: data.slice(0, 15),
+                        columns: [{ field: 'OrderID', headerText: 'OrderID', width: 150 },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, minWidth: 100, maxWidth: 200 },
+                        { field: 'Freight', headerText: 'Freight', format: 'C2', width: 200 },
+                        { field: 'ShipCity', headerText: 'ShipCity', width: 180 }],
+                    }, done);
+            });
+            it('autofit all columns action', () => {
+                gridObj.autoFitColumns('');
+            });
+            it('check frozen autofit table width', () => {
+                let tables: NodeListOf<HTMLElement> = gridObj.element.querySelectorAll('table');
+                for (let i: number = 0; i < tables.length; i++) {
+                    expect(tables[i].style.width).not.toBe("");
+                }
+            });    
+
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = null;
+            });
+        });
         describe('Events', () => {
             let resizeStartevent: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartevent');
             let resizeStop: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartStop');

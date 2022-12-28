@@ -1,5 +1,5 @@
-import { NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';import { SignatureBase, Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner, OpenEventArgs } from '@syncfusion/ej2-popups';import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
-import {ImageFinetuneValue,Theme,ImageEditorCommands,SaveEventArgs,BeforeSaveEventArgs,ZoomEventArgs,PanEventArgs,CropEventArgs,RotateEventArgs,FlipEventArgs,ShapeChangeEventArgs,ToolbarEventArgs,ImageFilterEventArgs,FinetuneEventArgs} from "./image-editor";
+import { NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';import { SignatureBase, Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
+import {ImageFinetuneValue,Theme,ImageEditorCommands,SaveEventArgs,BeforeSaveEventArgs,ZoomEventArgs,PanEventArgs,CropEventArgs,RotateEventArgs,FlipEventArgs,ShapeChangeEventArgs,FileOpenEventArgs,ToolbarEventArgs,ImageFilterEventArgs,FinetuneEventArgs} from "./image-editor";
 
 /**
  * Interface for a class FinetuneSettings
@@ -8,42 +8,49 @@ export interface FinetuneSettingsModel {
 
     /**
      * Specifies the brightness level of image.
+     *
      * @default null
      */
     brightness?: ImageFinetuneValue;
 
     /**
      * Specifies the contrast level image.
+     *
      * @default null
      */
     contrast?: ImageFinetuneValue;
 
     /**
      * Specifies the hue level image.
+     *
      * @default null
      */
     hue?: ImageFinetuneValue;
 
     /**
      * Specifies the saturation level image.
+     *
      * @default null
      */
     saturation?: ImageFinetuneValue;
 
     /**
      * Specifies the exposure level image.
+     *
      * @default null
      */
     exposure?: ImageFinetuneValue;
 
     /**
      * Specifies the opacity level image.
+     *
      * @default null
      */
     opacity?: ImageFinetuneValue;
 
     /**
      * Specifies the blur level image.
+     *
      * @default null
      */
     blur?: ImageFinetuneValue;
@@ -57,6 +64,7 @@ export interface ImageEditorModel {
 
     /**
      * Defines class/multiple classes separated by a space for customizing Image Editor UI.
+     *
      * @default ''
      ```html
      * <div id='imageeditor'></div>
@@ -72,12 +80,14 @@ export interface ImageEditorModel {
 
     /**
      * Specifies whether the Image Editor is disabled.
+     *
      * @default false
      */
     disabled?: boolean;
 
     /**
      * Specifies the height of the Image Editor.
+     *
      * @default '100%'
      */
     height?: string;
@@ -150,6 +160,7 @@ export interface ImageEditorModel {
 
     /**
      * Specifies the width of the Image Editor.
+     *
      * @default '100%'
      */
     width?: string;
@@ -335,7 +346,7 @@ export interface ImageEditorModel {
      *
      * @event fileOpened
      */
-    fileOpened?: EmitType<OpenEventArgs>
+    fileOpened?: EmitType<FileOpenEventArgs>
 
     /**
      * Triggers once an image is saved.

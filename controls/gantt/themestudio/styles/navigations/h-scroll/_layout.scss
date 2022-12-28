@@ -181,7 +181,10 @@
       text-align: center;
       vertical-align: middle;
       width: 100%;
-      font-size: $hscroll-device-arrow-icon-size;
+
+      @if $hscroll-skin == 'tailwind' or $hscroll-skin == 'bootstrap5' {
+        font-size: $hscroll-device-arrow-size;
+      }
     }
 
     .e-hscroll-bar {

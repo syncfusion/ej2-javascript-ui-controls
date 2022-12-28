@@ -9,7 +9,7 @@ export enum Severity {
     /**
      * The message is displayed with icons and colors to denote it as a normal message.
      */
-    Normal = "Normal",
+    Normal = 'Normal',
     /**
      * The message is displayed with icons and colors to denote it as a success message.
      */
@@ -31,7 +31,7 @@ export enum Severity {
 /**
  * Specifies the predefined appearance variants for the component to display.
  */
- export enum Variant {
+export enum Variant {
     /**
      * Denotes the severity is differentiated using text color and light background color.
      */
@@ -102,7 +102,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the content to be displayed in the Message component. It can be a paragraph, a list, or any other HTML element.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -110,7 +110,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the CSS class or multiple classes separated by space that can be appended to the root element of the Message component to customize the message.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -119,7 +119,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Shows or hides the severity icon in the Message component. When set to true, the severity icon is displayed at the left edge of the Message component.
      * This icon will be distinctive based on the severity property.
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -127,7 +127,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Shows or hides the close icon in the Message component. An end user can click the close icon to hide the message. The closed event is triggered when the message is closed.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -135,7 +135,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the severity of the message, which is used to define the appearance (icons and colors) of the message. The available severity messages are Normal, Success, Info, Warning, and Error.
-     * 
+     *
      * @isenumeration true
      * @default Severity.Normal
      * @asptype Severity
@@ -145,7 +145,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the variant from predefined appearance variants to display the content of the Message component. The available variants are Text, Outlined, and Filled.
-     * 
+     *
      * @isenumeration true
      * @default Variant.Text
      * @asptype Variant
@@ -155,7 +155,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Shows or hides the visibility of the Message component. When set to false, the Message component will be hidden.
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -163,24 +163,24 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Triggers when the Message component is created successfully.
-     * 
-     * @event
+     *
+     * @event created
      */
     @Event()
     public created: EmitType<Object>;
 
     /**
      * Triggers when the Message component is destroyed successfully.
-     * 
-     * @event
+     *
+     * @event destroyed
      */
     @Event()
     public destroyed: EmitType<Event>;
 
     /**
      * Triggers when the Message component is closed successfully.
-     * 
-     * @event
+     *
+     * @event closed
      */
     @Event()
     public closed: EmitType<MessageCloseEventArgs>
@@ -242,7 +242,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private initialize(): void {
-        this.element.setAttribute("role", "alert");
+        this.element.setAttribute('role', 'alert');
         this.setIcon();
         this.setContent();
         this.setCloseIcon();
@@ -264,7 +264,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
 
     private setCloseIcon(): void {
         if (this.showCloseIcon) {
-            this.closeIcon = this.createElement('button', { attrs: { type: "button", class: MSG_CLOSE_ICON }});
+            this.closeIcon = this.createElement('button', { attrs: { type: 'button', class: MSG_CLOSE_ICON }});
             this.element.appendChild(this.closeIcon);
             this.setTitle();
         }
@@ -289,6 +289,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
             this.txtElement.innerHTML = this.innerContent as string;
         } else if (!isNOU(this.content) && this.content !== '') {
             if ((typeof this.content === 'string') || (typeof this.content !== 'string')) {
+                // eslint-disable-next-line
                 if ((this as any).isVue || typeof this.content !== 'string') {
                     templateFn = compile(this.content as string);
                     if (!isNOU(templateFn)) {
@@ -307,21 +308,21 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private setSeverity(): void {
-        let classList: string[] = [SUCCESS, WARNING, INFO, ERROR];
+        const classList: string[] = [SUCCESS, WARNING, INFO, ERROR];
         removeClass([this.element], classList);
-        if (this.severity === "Success") {
+        if (this.severity === 'Success') {
             addClass([this.element], SUCCESS);
-        } else if (this.severity === "Warning") {
+        } else if (this.severity === 'Warning') {
             addClass([this.element], WARNING);
-        } else if (this.severity === "Error") {
+        } else if (this.severity === 'Error') {
             addClass([this.element], ERROR);
-        } else if (this.severity === "Info") {
+        } else if (this.severity === 'Info') {
             addClass([this.element], INFO);
         }
     }
 
     private setVariant(): void {
-        let classList: string[] = [FILLED, OUTLINED];
+        const classList: string[] = [FILLED, OUTLINED];
         removeClass([this.element], classList);
         if (this.variant === 'Outlined') {
             addClass([this.element], OUTLINED);
@@ -360,7 +361,7 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private closeMessage(event: Event | KeyboardEventArgs) {
+    private closeMessage(event: Event | KeyboardEventArgs): void {
         addClass([this.element], HIDE);
         this.setProperties({ visible: false }, true);
         const eventArgs: MessageCloseEventArgs = { event: event, isInteracted: true, element: this.element };
@@ -392,65 +393,65 @@ export class Message extends Component<HTMLElement> implements INotifyPropertyCh
     public onPropertyChanged(newProp?: MessageModel, oldProp?: MessageModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    this.setCssClass(oldProp.cssClass);
-                    break;
-                case 'content':
-                    this.txtElement.innerHTML = '';
-                    this.setTemplate();
-                    break;
-                case 'enableRtl':
-                    if (!this.enableRtl) {
-                        this.element.classList.remove(RTL);
-                    } else {
-                        this.element.classList.add(RTL);
-                    }
-                    break;
-                case 'locale':
-                    if (this.showCloseIcon) {
-                        this.setTitle();
-                    }
-                    break;
-                case 'showIcon':
-                    if (!this.showIcon && this.element.getElementsByClassName(MSG_ICON).length > 0) {
-                        detach(this.iconElement);
-                    }
-                    if (this.showIcon) {
-                        this.iconElement = this.createElement('span', { className: MSG_ICON });
-                        this.element.insertBefore(this.iconElement, this.txtElement);
-                    }
-                    break;
-                case 'showCloseIcon':
-                    if (!this.showCloseIcon && !isNOU(this.closeIcon)) {
-                        this.unWireEvents();
-                        detach(this.closeIcon);
-                    } else {
-                        this.setCloseIcon();
-                        this.wireEvents();
-                    }
-                    break;
-                case 'severity':
-                    this.setSeverity();
-                    break;
-                case 'variant':
-                    this.setVariant();
-                    break;
-                case 'visible':
-                    this.setVisible();
-                    break;
+            case 'cssClass':
+                this.setCssClass(oldProp.cssClass);
+                break;
+            case 'content':
+                this.txtElement.innerHTML = '';
+                this.setTemplate();
+                break;
+            case 'enableRtl':
+                if (!this.enableRtl) {
+                    this.element.classList.remove(RTL);
+                } else {
+                    this.element.classList.add(RTL);
+                }
+                break;
+            case 'locale':
+                if (this.showCloseIcon) {
+                    this.setTitle();
+                }
+                break;
+            case 'showIcon':
+                if (!this.showIcon && this.element.getElementsByClassName(MSG_ICON).length > 0) {
+                    detach(this.iconElement);
+                }
+                if (this.showIcon) {
+                    this.iconElement = this.createElement('span', { className: MSG_ICON });
+                    this.element.insertBefore(this.iconElement, this.txtElement);
+                }
+                break;
+            case 'showCloseIcon':
+                if (!this.showCloseIcon && !isNOU(this.closeIcon)) {
+                    this.unWireEvents();
+                    detach(this.closeIcon);
+                } else {
+                    this.setCloseIcon();
+                    this.wireEvents();
+                }
+                break;
+            case 'severity':
+                this.setSeverity();
+                break;
+            case 'variant':
+                this.setVariant();
+                break;
+            case 'visible':
+                this.setVisible();
+                break;
             }
         }
     }
 
     /**
      * Method to destroy the Message component. It removes the component from the DOM and detaches all its bound events. It also removes the attributes and classes of the component.
-     * 
+     *
      * @returns {void}
      */
     public destroy(): void {
-        let cssClass: string[] | string = isNOU(this.cssClass) ? [''] : this.cssClass.split(' ');
-        let className: string[] = [SUCCESS, WARNING, INFO, ERROR, RTL, HIDE, OUTLINED, FILLED];
-        let classList: string[] = (cssClass.length === 1 && cssClass[0] === '') ? className : className.concat(cssClass);
+        const cssClass: string[] | string = isNOU(this.cssClass) ? [''] : this.cssClass.split(' ');
+        const className: string[] = [SUCCESS, WARNING, INFO, ERROR, RTL, HIDE, OUTLINED, FILLED];
+        const classList: string[] = (cssClass.length === 1 && cssClass[0] === '') ? className : className.concat(cssClass);
         removeClass([this.element], classList);
         this.element.removeAttribute('role');
         this.unWireEvents();

@@ -3,19 +3,6 @@
     .e-de-background {
         background-color: $de-background;
     }
-    .e-de-column-label {
-        font-size: $de-border-dlg-settinglabels-fontsize;
-        font-weight: $de-border-dlg-border-label-fontweight;
-        padding-left: 20px;
-        padding-right: 20px;
-    }
-    
-    .e-de-column-label.e-de-rtl {
-        font-size: $de-border-dlg-settinglabels-fontsize;
-        font-weight: $de-border-dlg-border-label-fontweight;
-        padding-left: 50px;
-        padding-right: 50px;
-    }
     .e-de-ff-sub-header {
         display: block;
         font-size: 12px;

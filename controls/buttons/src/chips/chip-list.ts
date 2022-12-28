@@ -451,7 +451,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private setAttributes(): void {
         if (this.type === 'chip') {
-            if(this.enabled) this.element.tabIndex = 0;
+            this.enabled ? this.element.tabIndex = 0 : this.element.setAttribute('aria-disabled', 'true');
             this.element.setAttribute('role', 'option');
         } else {
             this.element.classList.add(classNames.chipSet);

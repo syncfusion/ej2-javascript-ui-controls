@@ -53,6 +53,7 @@ export class InkAnnotation {
     public drawInkAnnotation(pageNumber?: number): void {
         if (this.pdfViewerBase.isToolbarInkClicked) {
             this.pdfViewerBase.isInkAdded = true;
+            this.pdfViewer.annotationModule.isFormFieldShape = false;
             const pageIndex: number = !isNaN(pageNumber) ? pageNumber : this.pdfViewerBase.currentPageNumber - 1;
             if (this.outputString && this.outputString !== '') {
                 const currentAnnot: PdfAnnotationBaseModel = this.addInk(pageIndex);
@@ -575,6 +576,12 @@ export class InkAnnotation {
      */
     // eslint-disable-next-line
     public modifySignatureInkCollection(property: string, pageNumber: number, annotationBase: any): any {
+        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== ""){
+            this.pdfViewer.annotationModule.isFormFieldShape = true;
+        }
+        else{
+        this.pdfViewer.annotationModule.isFormFieldShape = false;
+        }
         this.pdfViewerBase.updateDocumentEditedProperty(true);
         // eslint-disable-next-line
         let currentAnnotObject: any = null;

@@ -730,7 +730,7 @@ export class FilterDialog {
             }
         }
         const mainDiv: HTMLElement = createElement('div', {
-            className: cls.FILTER_DIV_CONTENT_CLASS + ' e-' + ((['date', 'number']).indexOf(type) >= 0 ? 'label' : type) + '-filter' + this.parent.isDataOverflow ? ' ' + cls.PIVOT_FILTER_MEMBER_LIMIT : '',
+            className: cls.FILTER_DIV_CONTENT_CLASS + ' e-' + ((['date', 'number']).indexOf(type) >= 0 ? 'label' : type) + '-filter' + (this.parent.isDataOverflow ? ' ' + cls.PIVOT_FILTER_MEMBER_LIMIT : ''),
             id: this.parent.parentID + '_' + type + '_filter_div_content',
             attrs: {
                 'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,

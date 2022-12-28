@@ -43,7 +43,7 @@ Barcode control is also offered in the following list of frameworks.
 
 ## Key features
 
-* Barcode Symbologies - Supports a wide range of barcode symbologies, including:
+* [**Barcode Symbologies**] - Supports a wide range of barcode symbologies, including:
 	* [QR Code](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm#/material/barcode/qrcode.html)
 	* [Data Matrix](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm#/material/barcode/datamatrix.html)
 	* [Code 39](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm#/material/barcode/code39.html)
@@ -59,8 +59,8 @@ Barcode control is also offered in the following list of frameworks.
 	* [EAN-13](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm#/material/barcode/ean13.html)
 	* [UPC-A](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm#/material/barcode/upca.html)
 	* [UPC-E](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm#/material/barcode/upce.html)
-* Text Customization - Allows you to customize the text displayed.
-* Exporting - Barcode can be exported as .png or .jpeg fromat image and can also be exported as base64 string.
+* [**Text Customization**] - Allows you to customize the text displayed.
+* [**Exporting**] - Barcode can be exported as .png or .jpeg fromat image and can also be exported as base64 string.
 
 ## Support
 

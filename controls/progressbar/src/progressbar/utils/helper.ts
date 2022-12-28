@@ -185,7 +185,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 export function setAttributes(options: any, element: Element): Element {
     const keys: string[] = Object.keys(options);
     for (let i: number = 0; i < keys.length; i++) {
-        element.setAttribute(keys[i], options[keys[i]]);
+        element.setAttribute(keys[i as number], options[keys[i as number]]);
     }
     return element;
 }

@@ -3397,3 +3397,54 @@ describe('Resize handle not rendered properly issue', () => {
     });
 
 });
+
+describe('Bezier connector not rendered properly after save and load', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let zIndex: number = 0;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 350
+        };
+        let connector1: ConnectorModel = {
+            id: "connector1",
+            type: 'Bezier',
+            sourceID: 'node1', targetID: 'node2',
+          };
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: [node1, node2],
+            connectors: [connector1]
+
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Check whether connector path is same after save and load the diagram', (done: Function) => {
+        var path = (diagram.connectors[0].wrapper.children[0] as any).pathData;
+        var data = diagram.saveDiagram();
+        diagram.loadDiagram(data);
+        var path2 = (diagram.connectors[0].wrapper.children[0] as any).pathData;
+        expect(path === path2).toBe(true);
+        done();
+    });
+});

@@ -55,8 +55,6 @@
     }
 
     & .e-unprotectworksheet-dlg.e-dialog {
-      left: 0 !important; /* stylelint-disable-line declaration-no-important */
-
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
         line-height: 21px;
@@ -83,8 +81,6 @@
     }
 
     & .e-reenterpwd-dlg.e-dialog {
-      left: 0 !important; /* stylelint-disable-line declaration-no-important */
-
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
         line-height: 21px;
@@ -1420,6 +1416,31 @@
       & .e-frozen-row {
         right: 0;
       }
+
+      & .e-column-header {
+
+        & .e-table th {
+
+          &.e-header-cell.e-hide-start {
+            border-left-color: transparent;
+
+            &::after {
+              border-left: $spreadsheet-border;
+              border-right: none;
+              left: .5px;
+            }
+          }
+
+          &.e-hide-end.e-header-cell {
+
+            &::before {
+              border-left: none;
+              border-right: $spreadsheet-border;
+              right: .5px;
+            }
+          }
+        }
+      }
     }
 
     .e-sheet-panel {
@@ -1888,8 +1909,6 @@
     }
 
     & .e-protectworkbook-dlg.e-dialog {
-      left: 0 !important; /* stylelint-disable-line declaration-no-important */
-
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
         line-height: 31px;
@@ -1915,8 +1934,6 @@
     }
 
     & .e-unprotectworkbook-dlg.e-dialog {
-      left: 0 !important; /* stylelint-disable-line declaration-no-important */
-
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
         line-height: 21px;
@@ -1943,8 +1960,6 @@
     }
 
     & .e-importprotectworkbook-dlg.e-dialog {
-      left: 0 !important; /* stylelint-disable-line declaration-no-important */
-
       & .e-dlg-header-content .e-dlg-header {
         font-size: 18px;
         line-height: 21px;

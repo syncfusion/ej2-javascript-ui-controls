@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-data",
-	"version": "20.3.60",
+	"version": "0.15.5",
 	"description": "Essential JS 2 DataManager",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-data.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-data.es2015.js",
+	"es2015": "./dist/es6/ej2-data.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*"
 	},

@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { Selection, DocumentHelper, ShapeElementBox, ImageResizer, SfdtExport } from '../../src/index';
+import { Selection, DocumentHelper, ShapeElementBox, ImageResizer, SfdtExport, CommentElementBox } from '../../src/index';
 import {
     SelectionWidgetInfo, TextPosition
 } from '../../src/index';
@@ -7917,5 +7917,35 @@ describe('Select consecutive symbols till space character', () => {
         let event: any = { offsetX: 227, offsetY: 151 };
         editor.documentHelper.onDoubleTap(event);
         expect(editor.selection.getText(true)).toBe('_______ ');
+    });
+});
+describe('Select comment validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, ImageResizer, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableImageResizer: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Select comment validation', () => {
+        editor.openBlank();
+        editor.editor.insertComment();
+        let comment: CommentElementBox = editor.documentHelper.currentSelectedComment;
+        expect(() => { editor.selection.selectComment(comment) }).not.toThrowError();
     });
 });

@@ -1024,6 +1024,12 @@ export class InfiniteScroll implements IAction {
             const rowData: Object = editForm ? extend({}, this.getEditedRowObject().data)
                 : extend({}, this.emptyRowData);
             this.virtualInfiniteData = this.parent.editModule.getCurrentEditedData(gridForm, rowData);
+            const hiddenColumn: Column[] = (this.parent as Grid).getHiddenColumns();
+            for (let i: number = 0; i < hiddenColumn.length; i++) {
+                if (hiddenColumn[i].defaultValue) {
+                    this.virtualInfiniteData[hiddenColumn[i].field] = hiddenColumn[i].defaultValue;
+                }
+            }
             if (this.parent.isFrozenGrid()) {
                 this.virtualInfiniteData = this.parent.editModule
                     .getCurrentEditedData(this.parent.getMovableVirtualContent().querySelector('.e-gridform'), rowData);

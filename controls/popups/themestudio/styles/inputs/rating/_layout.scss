@@ -15,7 +15,7 @@
       padding: 0;
       margin: 4px;
 
-      &:focus .e-rating-focus {
+      &:focus-visible:not(:hover) .e-rating-focus {
         outline: 1px solid;
       }
 
@@ -37,12 +37,17 @@
       display: block;
       //For Blazor Tooltip
       position: relative;
+
+      .e-rating-item {
+        display: block;
+      }
     }
 
     &.e-rating-animation:not(.e-disabled) {
-      .e-rating-item-container:hover {
+      .e-rating-item-container:hover .e-rating-item {
         transition: transform 150ms cubic-bezier(.4, 0, .2, 1) 0ms;
         transform: scale(1.4);
+        pointer-events: none;
       }
     }
 
@@ -112,7 +117,7 @@
         }
       }
     }
-    //Blazor rating tooltip
+    //Blazor Rating Tooltip
     .e-tooltip-wrap.e-rating-tooltip {
       display: none;
       justify-content: center;
@@ -129,7 +134,9 @@
       }
 
       .e-arrow-tip.e-tip-bottom {
-        left: calc(50% - 8px);
+        left: 50%;
+        top: 100%;
+        transform: translate(-50%, 0);
       }
 
       .e-arrow-tip-inner.e-tip-bottom {

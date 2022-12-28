@@ -2112,6 +2112,7 @@ export class StickyNotesAnnotation {
             const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
             const pageCurrentRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex).getBoundingClientRect();
             const zoomValue: number = this.pdfViewerBase.getZoomFactor();
+            this.pdfViewer.annotationModule.isFormFieldShape = false;
             // eslint-disable-next-line max-len
             this.pdfViewer.annotation.stickyNotesAnnotationModule.drawStickyNotes((event.clientX - pageCurrentRect.left) / zoomValue, (event.clientY - pageCurrentRect.top) / zoomValue, 30, 30, pageIndex, null);
             this.pdfViewerBase.isCommentIconAdded = false;
@@ -2721,6 +2722,7 @@ export class StickyNotesAnnotation {
     public updateOpacityValue(annotation: any): void {
         // eslint-disable-next-line
         let pageAnnotations: any = this.getAnnotations(annotation.pageIndex, null, annotation.shapeAnnotationType);
+        this.pdfViewer.annotationModule.isFormFieldShape = false;
         if (pageAnnotations !== null) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (pageAnnotations[i].annotName === annotation.annotName) {

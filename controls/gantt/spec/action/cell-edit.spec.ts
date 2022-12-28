@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, unscheduledData3, customProgressData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -726,6 +726,119 @@ describe('Gantt Edit module', () => {
             triggerMouseEvent(element, 'click');
             expect(document.querySelector('.e-spinner-pane').classList.contains("e-spin-hide")).toBe(true)
         });
+    });
+    describe('Unschedule task left value', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: unscheduledData3,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        progress: 'Progress',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        child: 'Children'
+                    },
+                    projectStartDate: new Date('02/20/2017'),
+                    projectEndDate: new Date('02/30/2017'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel']
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Shimmer expand collapse', () => {
+            expect(ganttObj.currentViewData[3].ganttProperties.left).toBe(261.25)
+        });
+    });
+    describe('Gantt progress value', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: customProgressData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Checking progress value', () => {
+            expect(ganttObj.currentViewData[0].ganttProperties.progress).toBe(100);
+         });
     });
 });
 describe('Resource with unit', () => {

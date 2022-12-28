@@ -844,6 +844,9 @@
               &.e-descend {
                 margin-top: 3px;
                 transform: rotateX(180deg);
+                @if ($skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'fabric') {
+                  margin-top: 4px !important;
+                }
               }
             }
     
@@ -927,7 +930,7 @@
     .e-expand,
     .e-collapse {
       cursor: pointer;
-      display: inline;
+      display: inline-block;
       height: 18px;
       margin-top: 5px;
       text-align: center;

@@ -5,7 +5,7 @@ import { Toolbar as tool, OverflowMode, ClickEventArgs } from '@syncfusion/ej2-n
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
-import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice } from '../base/util';
+import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice, getTooltipText } from '../base/util';
 import { updateDropDownFontFormatLocale } from '../base/util';
 import * as model from '../models/items';
 import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs, ICssClassArgs } from '../base/interface';
@@ -329,7 +329,10 @@ export class Toolbar {
      * @deprecated
      */
     public updateItem(args: IUpdateItemsModel): void {
-        const item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
+        let item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
+        if(this.parent.locale !== 'en-US'){
+            item.tooltip = getTooltipText(args.updateItem.toLocaleLowerCase(),this.locator);
+        }
         const trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
         const index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {

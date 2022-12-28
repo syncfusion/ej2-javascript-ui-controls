@@ -320,6 +320,11 @@ export class DataValidation {
             this.parent.notify(editAlert, null);
         } else {
             if (this.parent.isEdit) { this.parent.closeEdit(); }
+            const args: { value: string, oldValue: string, address: string, cancel: boolean } = { value: value, oldValue: cellObj.value, address: sheet.name + '!' + sheet.activeCell, cancel: false };
+            this.parent.notify(beginAction, { action: 'cellSave', eventArgs: args });
+            if (args.cancel) {
+                return;
+            }
             updateCell(
                 this.parent, sheet, { cell: { value: value }, rowIdx: cellIdx[0], colIdx: cellIdx[1], valChange: true, lastCell: true,
                     uiRefresh: true, checkCF: true });

@@ -663,6 +663,7 @@ export class TextMarkupAnnotation {
      */
     public drawTextMarkupAnnotations(type: string): void {
         this.isTextMarkupAnnotationMode = true;
+        this.pdfViewer.annotationModule.isFormFieldShape = false;
         this.currentTextMarkupAddMode = type;
         let isCleared: boolean = true;
         this.multiPageCollection = [];
@@ -1599,6 +1600,7 @@ export class TextMarkupAnnotation {
     public modifyAnnotationProperty(property: string, value: any, status: string, annotName?: string): ITextMarkupAnnotation[] {
         // eslint-disable-next-line
         let annotation: any = this.currentTextMarkupAnnotation;
+        this.pdfViewer.annotationModule.isFormFieldShape = false;
         if (annotation.isMultiSelect && annotation.annotNameCollection) {
             this.modifyMultiPageAnnotations(annotation, property, value);
         }

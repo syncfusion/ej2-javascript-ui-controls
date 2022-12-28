@@ -13,50 +13,52 @@ The [JavaScript Charts](https://www.syncfusion.com/javascript-ui-controls/js-cha
 The [JavaScript Chart Component](https://www.syncfusion.com/javascript-ui-controls/javascript-charts) is a feature-rich chart control with built-in support for over 50 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball. 
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/chart/line.html">Online demos</a> .
-   <a href="https://www.syncfusion.com/javascript-ui-controls/js-charts">Learn more</a>
+   <a href="https://www.syncfusion.com/javascript-ui-controls/js-charts?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Learn more</a>
 </p>
 
 <p align="center">
 <img alt="JavaScript Chart Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-chart.png">
 </p>
 
-#### Key Features
+#### Key features
 
-* [Chart types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/line) - Supports 50+ interactive chart types starting from line to financial chart. Few chart types include:
-   * [JavaScript Area Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/area-chart)
-   * [JavaScript Bar Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/bar-chart)
-   * [JavaScript Line Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/line-chart)
-   * [JavaScript Spline Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/spline-chart)
-   * [JavaScript Bubble Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/bubble-chart)
-   * [JavaScript Scatter Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/scatter-chart)
-   * [JavaScript Step Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/stepline-chart)
-   * [JavaScript Polar Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/polar-chart)
-   * [JavaScript Radar Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/radar-chart)
-   * [JavaScript Range Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/range-area-chart)
-   * [JavaScript Stacked Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/range-area-chart)
-   * [JavaScript Box Plot Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/box-and-whisker-chart)
-   * [JavaScript Histogram Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/histogram-chart)
-   * [JavaScript Financial Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/stock-chart)
-* [Data binding](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/local-data.html) - Bind the Chart component with an array of JSON objects or DataManager. Other than chart series, data label and tooltip can also bound to your data.
-* [Axis types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/numeric.html) - Supports multiple axes, and able to plot different data such as numbers, datetime, logarithmic and string.
-* [Rendering modes](https://ej2.syncfusion.com/documentation/chart/render-methods/) - Supports two type of rendering - SVG and Canvas. By default chart rendered in SVG, You can easily switch between the two simple configuration.
-* [Data label](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/data-label-template.html) -  Supports data label to annotate points with label to improve the readability of data.
-* [Annotation](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/pie-annotation.html) - Provides support to mark any specific area of interest by adding custom element.
-* [Zooming and panning](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/zooming.html) - Provides options to visualize the data points under any region using rectangular selection, pinch, or mouse wheel zooming.
-* [Crosshair & Trackball](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/cross-hair.html) - Provides options to track data points closer to the mouse position or touch action.
-* [Selection](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/selection.html) - Allows you to select any data point or subset of points using selection feature.
-* [Export](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/export.html) - Provides the options to Export the chart to  PDF, SVG and CSV formats.
-* [RTL support](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/right-to-left.html) - Provides a full-fledged right-to-left mode which aligns axis, tooltip, legend and data in the chart component from right to left.
-* [Appearance](https://ej2.syncfusion.com/documentation/chart/chart-appearance/) - Colors for the charts are picked by the built-in theme, but each element of the chart can be customized by simple configuration options.
+* Chart types: Supports 50+ interactive chart types starting from line to financial chart. Few chart types include:
+   * [JavaScript Area Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/area-chart??utm_source=npm&utm_medium=listing&utm_campaign=javascript-area-chart-npm)
+   * [JavaScript Bar Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/bar-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-bar-chart-npm)
+   * [JavaScript Line Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/line-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-line-chart-npm)
+   * [JavaScript Spline Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/spline-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-spline-chart-npm)
+   * [JavaScript Bubble Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/bubble-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-bubble-chart-npm)
+   * [JavaScript Scatter Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/scatter-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-scatter-chart-npm)
+   * [JavaScript Step Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/stepline-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-step-chart-npm)
+   * [JavaScript Polar Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/polar-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-polar-chart-npm)
+   * [JavaScript Radar Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/radar-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-radar-chart-npm)
+   * [JavaScript Range Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/range-area-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-range-chart-npm)
+   * [JavaScript Stacked Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/range-area-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-stacked-chart-npm)
+   * [JavaScript Box Plot Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/box-and-whisker-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm)
+   * [JavaScript Histogram Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/histogram-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm)
+   * [JavaScript Financial Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/stock-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-stock-chart-npm)
+* [Data binding](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/local-data.html): Bind the Chart component with an array of JSON objects or DataManager. Other than chart series, data label and tooltip can also bound to your data.
+* [Axis types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/numeric.html): Supports multiple axes, and able to plot different data such as numbers, datetime, logarithmic and string.
+* [Rendering modes](https://ej2.syncfusion.com/documentation/chart/render-methods/): Supports two type of rendering - SVG and Canvas. By default chart rendered in SVG, You can easily switch between the two simple configuration.
+* [Data label](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/data-label-template.html):  Supports data label to annotate points with label to improve the readability of data.
+* [Annotation](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/pie-annotation.html): Provides support to mark any specific area of interest by adding custom element.
+* [Zooming and panning](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/zooming.html): Provides options to visualize the data points under any region using rectangular selection, pinch, or mouse wheel zooming.
+* [Crosshair & trackball](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/cross-hair.html): Provides options to track data points closer to the mouse position or touch action.
+* [Selection](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/selection.html): Allows you to select any data point or subset of points using selection feature.
+* [Export](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/export.html): Provides the options to Export the chart to  PDF, SVG and CSV formats.
+* [RTL support](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/right-to-left.html): Provides a full-fledged right-to-left mode which aligns axis, tooltip, legend and data in the chart component from right to left.
+* [Appearance](https://ej2.syncfusion.com/documentation/chart/chart-appearance/): Colors for the charts are picked by the built-in theme, but each element of the chart can be customized by simple configuration options.
+* [Accessibility](https://ej2.syncfusion.com/documentation/chart/accessibility/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#wai-aria): Designed to be accessible to users with disabilities, with features such as WAI-ARIA standard compliance and keyboard navigation to ensure that the chart can be effectively used with assistive technologies such as screen readers.
+* [Localization](https://ej2.syncfusion.com/documentation/chart/localization/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#localization): The Localization library enables you to adapt the default text content of the chart to fit the language and cultural preferences of your target audience.
 
 ### JavaScript Accumulation Chart
 
 Built-in support for pie, doughnut, pyramid and funnel series type, to show the proportions and percentages between the categories.
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/accumulation-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/accumulation-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/chart/default-pie.html">Online demos</a> .
    <a href="https://www.syncfusion.com/products/javascript/chart">Learn more</a>
 </p>
@@ -65,25 +67,26 @@ Built-in support for pie, doughnut, pyramid and funnel series type, to show the 
 <img alt="JavaScript Accumulation Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-accumulation-chart.png">
 </p>
 
-#### Key Features
+#### Key features
 
-* Chart types : Supports Pie, Doughnut, Pyramid and Funnel charts.
-   * [JavaScript Pie Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/pie-chart)
-   * [JavaScript Doughnut Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/donut-chart)
-   * [JavaScript Pyramid Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/pyramid-chart)
-   * [JavaScript Funnel Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/funnel-chart)
-* [Smart labels](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/smart-labels) - Supports arrangement of data labels smartly to avoid overlapping when the data point value falls in close range.
-* [Grouping](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/grouping) - Supports grouping of data points based on value and point count.
-* [Semi-pie](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/semi-pie) - Provides options to customize the start and end angle of the pie chart.
-* [Legend](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/pie-legend) - Provides options to display additional information about the points with the help of legend.
-* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/pie-radius) - Provides great user experiance by including a set of interactive features such as tooltip, drill-down, events, and selection.
+* Chart types: Supports Pie, Doughnut, Pyramid and Funnel charts.
+   * [JavaScript Pie Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/pie-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pie-chart-npm)
+   * [JavaScript Doughnut Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/donut-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-doughnut-chart-npm)
+   * [JavaScript Pyramid Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/pyramid-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-pyramid-chart-npm)
+   * [JavaScript Funnel Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts/chart-types/funnel-chart?utm_source=npm&utm_medium=listing&utm_campaign=javascript-funnel-chart-npm)
+* [Smart labels](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/smart-labels): Supports arrangement of data labels smartly to avoid overlapping when the data point value falls in close range.
+* [Grouping](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/grouping): Supports grouping of data points based on value and point count.
+* [Semi-pie](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/semi-pie): Provides options to customize the start and end angle of the pie chart.
+* [Legend](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/pie-legend): Provides options to display additional information about the points with the help of legend.
+* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=chart#/material/chart/pie-radius): Provides great user experiance by including a set of interactive features such as tooltip, drill-down, events, and selection.
+
 
 ### JavaScript Stock Chart
 
 The [JavaScript Stock Chart](https://www.syncfusion.com/javascript-ui-controls/js-stock-chart) is a well-crafted, easy-to-use financial charting package to track and visualize stock price of any company over a specific period using charting and range tools.
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/stock-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/stock-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/stock-chart/default.html">Online demos</a> .
    <a href="https://www.syncfusion.com/javascript-ui-controls/js-stock-chart">Learn more</a>
 </p>
@@ -92,24 +95,24 @@ The [JavaScript Stock Chart](https://www.syncfusion.com/javascript-ui-controls/j
 <img alt="JavaScript Stock Chart Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-stock-chart.png">
 </p>
 
-#### Key Features
+#### Key features
 
-* [Data binding](https://ej2.syncfusion.com/documentation/stock-chart/working-with-data/) - Bind the stock chart control with an array of JSON objects or DataManager. Other than chart series, data label and tooltip can also bound to your data.
-* [Range Selector](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/disabled-period) - Supports range selector to filter a date range for data that needs to be visualized.
-* [Period Selector](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/disabled-navigator) - Supports period selector to select predefined periods just by a single click.
-* [Technical indicators](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default) - Incidators allows to analyze the past and predict the future market trends based on historic price, volume, or open interest.
-* [Trendlines](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default) - Predicts the future trends with predetermined data for any measurements.
-* [Stock events](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/stock-events) - Supports stock events to show different kinds of market events on the chart.
-* [Export](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default) - Provides the options to Export the stock chart to  PDF, SVG and CSV formats.
-* [Appearance](https://ej2.syncfusion.com/documentation/stock-chart/appearance/) - Colors for the stock chart are picked by the built-in theme, but each element of the stock chart can be customized by simple configuration options.
-* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default) - Provides great user experiance by including a set of interactive features such as tooltip, events, and trackball.
+* [Data binding](https://ej2.syncfusion.com/documentation/stock-chart/working-with-data/): Bind the stock chart control with an array of JSON objects or DataManager. Other than chart series, data label and tooltip can also bound to your data.
+* [Range selector](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/disabled-period): Supports range selector to filter a date range for data that needs to be visualized.
+* [Period selector](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/disabled-navigator): Supports period selector to select predefined periods just by a single click.
+* [Technical indicators](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default): Incidators allows to analyze the past and predict the future market trends based on historic price, volume, or open interest.
+* [Trendlines](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default): Predicts the future trends with predetermined data for any measurements.
+* [Stock events](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/stock-events): Supports stock events to show different kinds of market events on the chart.
+* [Export](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default): Provides the options to Export the stock chart to  PDF, SVG and CSV formats.
+* [Appearance](https://ej2.syncfusion.com/documentation/stock-chart/appearance/): Colors for the stock chart are picked by the built-in theme, but each element of the stock chart can be customized by simple configuration options.
+* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangeselector#/material/stock-chart/default): Provides great user experiance by including a set of interactive features such as tooltip, events, and trackball.
 
 ### JavaScript Range Navigator
 
 The [JavaScript Range Navigator](https://www.syncfusion.com/javascript-ui-controls/js-range-seletor) control is an interface for selecting a small range from a large collection. It is commonly used in financial dashboards to filter a date range for data that needs to be visualized.
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/range-navigator/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/range-navigator/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/range-navigator/default.html">Online demos</a> .
    <a href="https://www.syncfusion.com/javascript-ui-controls/js-range-selector">Learn more</a>
 </p>
@@ -118,20 +121,20 @@ The [JavaScript Range Navigator](https://www.syncfusion.com/javascript-ui-contro
 <img alt="JavaScript Range Navigator Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-range-navigator.png">
 </p>
 
-#### Key Features
+#### Key features
  
-* Data sources - Bind the range navigator control with an array of JSON objects or DataManager.
-* [Tooltip](https://ej2.syncfusion.com/vue/demos/?utm_source=npm&utm_campaign=rangenavigator#/material/range-navigator/default) - Provides great user experiance by including a set of interactive features such as tooltip, events, and animaiton.
-* [Lightweight](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangenavigtor#/material/range-navigator/light-weight) - Supports light-weight range navigator to load in mobile device.
-* [Period-selector](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangenavigtor#/material/range-navigator/period-selector) - Provides options to select the data over the custom period.
-* [Axis types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangenavigtor#/material/range-navigator/date-time) - Supports multiple axis and able to plot different data such as numbers, datetime, logarithmic and string.
+* [Data sources](https://ej2.syncfusion.com/vue/demos/?utm_source=npm&utm_campaign=rangenavigator#/material/range-navigator/default): Bind the range navigator control with an array of JSON objects or DataManager.
+* [Tooltip](https://ej2.syncfusion.com/vue/demos/?utm_source=npm&utm_campaign=rangenavigator#/material/range-navigator/default): Provides great user experiance by including a set of interactive features such as tooltip, events, and animaiton.
+* [Lightweight](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangenavigtor#/material/range-navigator/light-weight): Supports light-weight range navigator to load in mobile device.
+* [Period-selector](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangenavigtor#/material/range-navigator/period-selector): Provides options to select the data over the custom period.
+* [Axis types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=rangenavigtor#/material/range-navigator/date-time): Supports multiple axis and able to plot different data such as numbers, datetime, logarithmic and string.
 
 ### JavaScript  Sparkline
 
 The [JavaScript Sparkline](https://www.syncfusion.com/javascript-ui-controls/js-sparkline) is a very small chart control drawn without axes or coordinates. The sparklines are easy to interpret and convey more information to users by visualizing data in a small amount of space.
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/sparkline/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/sparkline/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/sparkline/default.html">Online demos</a> .
    <a href="https://www.syncfusion.com/javascript-ui-controls/js-sparkline">Learn more</a>
 </p>
@@ -140,20 +143,20 @@ The [JavaScript Sparkline](https://www.syncfusion.com/javascript-ui-controls/js-
 <img alt="JavaScript Sparkline Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-sparkline.png">
 </p>
 
-#### Key Features
+#### Key features
 
-* [Series types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/series-types) - Supports five types of sparklines : line, area, column, win loss, and pie to show data trends.
-* [Axis types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/axis-types) - Supports multiple axis and able to plot different data such as numbers, datetime, logarithmic and string.
-* [Data label](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/customization) -  Supports data label to annotate points with label to improve the readability of data.
-* [Range band](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/range-band) - Provides options to highlight specific range of values.
-* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/default) - Provides great user experiance by including a set of interactive features such as tooltip, events, and trackball.
+* [Series types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/series-types): Supports five types of sparklines : line, area, column, win loss, and pie to show data trends.
+* [Axis types](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/axis-types): Supports multiple axis and able to plot different data such as numbers, datetime, logarithmic and string.
+* [Data label](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/customization):  Supports data label to annotate points with label to improve the readability of data.
+* [Range band](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/range-band): Provides options to highlight specific range of values.
+* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=sparkline#/material/sparkline/default): Provides great user experiance by including a set of interactive features such as tooltip, events, and trackball.
 
 ### JavaScript  Bullet Chart
 
 The [JavaScript Bullet Chart](https://www.syncfusion.com/javascript-ui-controls/js-bullet-chart) is an interface  to visually compare measures, similar to the commonly used bar chart. A bullet chart displays one or more measures and compares them with a target value.
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/bullet-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/bullet-chart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/bullet-chart/default.html">Online demos</a> .
    <a href="https://www.syncfusion.com/javascript-ui-controls/js-bullet-chart">Learn more</a>
 </p>
@@ -162,19 +165,19 @@ The [JavaScript Bullet Chart](https://www.syncfusion.com/javascript-ui-controls/
 <img alt="JavaScript Bullet Chart Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-bullet-chart.png">
 </p>
 
-#### Key Features
+#### Key features
 
-* [Multiple measures](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/multiple-data) - Provides options to render multiple measure bars as well as multiple target bars to allow comparison of several measures at once.
-* [Legend](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/bullet-legend) - Provides options to display additional information about the target and actual bar.
-* [RTL support](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/right-to-left) - Provides a full-fledged right-to-left mode which aligns axis, tooltip, legend and data in the chart component from right to left.
-* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/tooltip) - Provides options to display additional information about target and actual on mouse hover.
+* [Multiple measures](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/multiple-data): Provides options to render multiple measure bars as well as multiple target bars to allow comparison of several measures at once.
+* [Legend](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/bullet-legend): Provides options to display additional information about the target and actual bar.
+* [RTL support](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/right-to-left): Provides a full-fledged right-to-left mode which aligns axis, tooltip, legend and data in the chart component from right to left.
+* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=bulletchart#/material/bullet-chart/tooltip): Provides options to display additional information about target and actual on mouse hover.
 
 ### JavaScript Smith Chart
 
 The [JavaScript Smith Chart](https://www.syncfusion.com/javascript-ui-controls/js-smith-chart)  visualize data of high frequency circuit applications. It contains two sets of circles to plot parameters of transmission lines.
 
 <p align="center">
-   <a href="https://ej2.syncfusion.com/documentation/smithchart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting Started</a> .
+   <a href="https://ej2.syncfusion.com/documentation/smithchart/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm">Getting started</a> .
    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm#/material/smith-chart/default.html">Online demos</a> .
    <a href="https://www.syncfusion.com/javascript-ui-controls/js-smith-chart">Learn more</a>
 </p>
@@ -183,12 +186,12 @@ The [JavaScript Smith Chart](https://www.syncfusion.com/javascript-ui-controls/j
 <img alt="JavaScript Smith Chart Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-smith-chart.png">
 </p>
 
-#### Key Features
+#### Key features
 
-* [Legend](https://ej2.syncfusion.com/vue/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/default) - Provides options to display additional information about the series.
-* [Data label](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/custom) - Supports data label to annotate points with label to improve the readability of data.
-* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/custom) - Provides options to display additional information about data points on mouse hover.
-* [Print and Export](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/print-export) - Provides support to print and export the rendered smith chart for future use.
+* [Legend](https://ej2.syncfusion.com/vue/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/default): Provides options to display additional information about the series.
+* [Data label](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/custom): Supports data label to annotate points with label to improve the readability of data.
+* [Tooltip](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/custom): Provides options to display additional information about data points on mouse hover.
+* [Print and Export](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=smithchart#/material/smith-chart/print-export): Provides support to print and export the rendered smith chart for future use.
 
 
 ## Supported frameworks

@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-## 20.4.38 (2022-12-21)
+## 20.4.40 (2022-12-28)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I421800` - Now, bezier connector rendered properly while save and load the diagram.
+- `#I417240` - Now, dropping bpmn text annotation node inside the swimlane is working properly.
 
 ### Diagram
 

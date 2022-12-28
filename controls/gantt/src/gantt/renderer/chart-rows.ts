@@ -1349,6 +1349,7 @@ export class ChartRows extends DateProcessor {
             }
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
+        this.parent.ganttChartModule.updateLastRowBottomWidth();
     }
 
     /**
@@ -1456,11 +1457,12 @@ export class ChartRows extends DateProcessor {
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
-                    taskBaselineTemplateNode =(
-                        (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
-                    && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
-                    this.templateData.ganttProperties.isMilestone)
-                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;            }
+                taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
+                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
+                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+                    this.templateData.ganttProperties.isMilestone))
+                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
+            }
         } else if (this.templateData.ganttProperties.isMilestone) {
             const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
             if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
@@ -1468,11 +1470,12 @@ export class ChartRows extends DateProcessor {
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
-                    taskBaselineTemplateNode =(
-                        (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
-                    && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
-                    this.templateData.ganttProperties.isMilestone)
-                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;            }
+                taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
+                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
+                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+                    this.templateData.ganttProperties.isMilestone))
+                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
+            }
         } else {
             const scheduledTask: Boolean = isScheduledTask(this.templateData.ganttProperties);// eslint-disable-line
             let childTaskbarProgressResizeNode: NodeList = null; let childTaskbarRightResizeNode: NodeList = null;
@@ -1513,11 +1516,12 @@ export class ChartRows extends DateProcessor {
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
-                    taskBaselineTemplateNode =(
-                        (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined( this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() ===  this.templateData.ganttProperties.startDate.getTime())) 
-                    && (!isNullOrUndefined( this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined( this.templateData.ganttProperties.endDate) && ( this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
-                    this.templateData.ganttProperties.isMilestone)
-                                ?this.getMilestoneBaselineNode():this.getTaskBaselineNode() ;            }
+                taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
+                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
+                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.toLocaleDateString() === this.templateData.ganttProperties.endDate.toLocaleDateString())) &&
+                    this.templateData.ganttProperties.isMilestone))
+                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
+            }
         }
         if ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType === 'ProjectView') || !this.templateData.hasChildRecords) {
             const connectorLineRightNode: NodeList = this.getRightPointNode();
@@ -1615,6 +1619,10 @@ export class ChartRows extends DateProcessor {
         const taskbarElement: Element = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ? trElement :
             trElement.querySelector('.' + cls.taskBarMainContainer);
         let rowElement: Element;
+        let segmentRowElement: Element;
+        if (data.ganttProperties.segments && data.ganttProperties.segments.length > 0) {
+            segmentRowElement = trElement.parentElement.parentElement.parentElement;
+        }
         let triggerTaskbarElement: Element;
         const args: IQueryTaskbarInfoEventArgs = {
             data: data,
@@ -1627,7 +1635,8 @@ export class ChartRows extends DateProcessor {
             args.milestoneColor = taskbarElement.querySelector(classCollections[0]) ?
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor : null;
             args.baselineColor = trElement.querySelector(classCollections[1]) ?
-                getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor : null;
+                getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor :
+                (trElement.querySelector('.' + cls.baselineBar) ? getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor : null);
         } else {
             const childTask: HTMLElement = taskbarElement.querySelector(classCollections[0]);
             const progressTask: HTMLElement = taskbarElement.querySelector(classCollections[1]);
@@ -1643,17 +1652,33 @@ export class ChartRows extends DateProcessor {
                     getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor;
             // args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
-            args.baselineColor = trElement.querySelector('.' + cls.baselineBar) ?
-                getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor : null;
+            if (segmentRowElement) {
+                args.baselineColor = segmentRowElement.querySelector('.' + cls.baselineBar) ?
+                    getComputedStyle(segmentRowElement.querySelector('.' + cls.baselineBar)).backgroundColor : null;
+            }
+            else {
+                args.baselineColor = trElement.querySelector('.' + cls.baselineBar) ?
+                    getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor : null;
+            }
             args.taskLabelColor = taskbarElement.querySelector('.' + cls.taskLabel) ?
                 getComputedStyle(taskbarElement.querySelector('.' + cls.taskLabel)).color : null;
         }
-        args.rightLabelColor = trElement.querySelector('.' + cls.rightLabelContainer) &&
-            (trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label) ?
-            getComputedStyle((trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label)).color : null;
-        args.leftLabelColor = trElement.querySelector('.' + cls.leftLabelContainer) &&
-            (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) ?
-            getComputedStyle((trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color : null;
+        if (segmentRowElement) {
+            args.rightLabelColor = segmentRowElement.querySelector('.' + cls.rightLabelContainer) &&
+                (segmentRowElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label) ?
+                getComputedStyle((segmentRowElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label)).color : null;
+            args.leftLabelColor = segmentRowElement.querySelector('.' + cls.leftLabelContainer) &&
+                (segmentRowElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) ?
+                getComputedStyle((segmentRowElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color : null;
+        }
+        else {
+            args.rightLabelColor = trElement.querySelector('.' + cls.rightLabelContainer) &&
+                (trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label) ?
+                getComputedStyle((trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label)).color : null;
+            args.leftLabelColor = trElement.querySelector('.' + cls.leftLabelContainer) &&
+                (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) ?
+                getComputedStyle((trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color : null;
+        }
         this.parent.trigger('queryTaskbarInfo', args, (taskbarArgs: IQueryTaskbarInfoEventArgs) => {
             this.updateQueryTaskbarInfoArgs(taskbarArgs, rowElement, triggerTaskbarElement);
         });
@@ -1672,6 +1697,10 @@ export class ChartRows extends DateProcessor {
         const trElement: Element = args.rowElement;
         const taskbarElement: Element = args.taskbarElement;
         const classCollections: string[] = this.getClassName(args);
+        let segmentRowElement: Element;
+        if (args.data.ganttProperties.segments && args.data.ganttProperties.segments.length > 0) {
+            segmentRowElement = trElement.parentElement.parentElement.parentElement;
+        }
         if (args.taskbarType === 'Milestone') {
             if (taskbarElement.querySelector(classCollections[0]) &&
                 getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor !== args.milestoneColor) {
@@ -1682,6 +1711,10 @@ export class ChartRows extends DateProcessor {
                 getComputedStyle(trElement.querySelector(classCollections[1])).borderTopColor !== args.baselineColor) {
                 (trElement.querySelector(classCollections[1]) as HTMLElement).style.borderBottomColor = args.baselineColor;
                 (trElement.querySelector('.' + cls.baselineMilestoneBottom) as HTMLElement).style.borderTopColor = args.baselineColor;
+            }
+            if (trElement.querySelector('.' + cls.baselineBar) &&
+                getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).borderTopColor !== args.baselineColor) {
+                (trElement.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor = args.baselineColor;
             }
         } else {
             if (taskbarElement.querySelector(classCollections[0]) &&
@@ -1719,24 +1752,50 @@ export class ChartRows extends DateProcessor {
                 getComputedStyle(taskbarElement.querySelector('.' + cls.taskLabel)).color !== args.taskLabelColor) {
                 (taskbarElement.querySelector('.' + cls.taskLabel) as HTMLElement).style.color = args.taskLabelColor;
             }
-            if (trElement.querySelector('.' + cls.baselineBar) &&
-                getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor !== args.baselineColor) {
-                (trElement.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor = args.baselineColor;
+            if (segmentRowElement) {
+                if (segmentRowElement.querySelector('.' + cls.baselineBar) &&
+                    getComputedStyle(segmentRowElement.querySelector('.' + cls.baselineBar)).backgroundColor !== args.baselineColor) {
+                    (segmentRowElement.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor = args.baselineColor;
+                }
+            }
+            else {
+                if (trElement.querySelector('.' + cls.baselineBar) &&
+                    getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor !== args.baselineColor) {
+                    (trElement.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor = args.baselineColor;
+                }
             }
         }
-        if (trElement.querySelector('.' + cls.leftLabelContainer) &&
-            (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) &&
-            getComputedStyle(
-                (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color !== args.leftLabelColor) {
-            ((trElement.querySelector(
-                '.' + cls.leftLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.leftLabelColor;
+        if (segmentRowElement) {
+            if (segmentRowElement.querySelector('.' + cls.leftLabelContainer) &&
+                (segmentRowElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) &&
+                getComputedStyle(
+                    (segmentRowElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color !== args.leftLabelColor) {
+                ((segmentRowElement.querySelector(
+                    '.' + cls.leftLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.leftLabelColor;
+            }
+            if (segmentRowElement.querySelector('.' + cls.rightLabelContainer) &&
+                (segmentRowElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label) &&
+                getComputedStyle(
+                    (segmentRowElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label)).color !== args.rightLabelColor) {
+                ((segmentRowElement.querySelector(
+                    '.' + cls.rightLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.rightLabelColor;
+            }
         }
-        if (trElement.querySelector('.' + cls.rightLabelContainer) &&
-            (trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label) &&
-            getComputedStyle(
-                (trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label)).color !== args.rightLabelColor) {
-            ((trElement.querySelector(
-                '.' + cls.rightLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.rightLabelColor;
+        else {
+            if (trElement.querySelector('.' + cls.leftLabelContainer) &&
+                (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) &&
+                getComputedStyle(
+                    (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color !== args.leftLabelColor) {
+                ((trElement.querySelector(
+                    '.' + cls.leftLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.leftLabelColor;
+            }
+            if (trElement.querySelector('.' + cls.rightLabelContainer) &&
+                (trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label) &&
+                getComputedStyle(
+                    (trElement.querySelector('.' + cls.rightLabelContainer)).querySelector('.' + cls.label)).color !== args.rightLabelColor) {
+                ((trElement.querySelector(
+                    '.' + cls.rightLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.rightLabelColor;
+            }
         }
     }
     private getClassName(args: IQueryTaskbarInfoEventArgs): string[] {

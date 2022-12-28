@@ -1038,7 +1038,7 @@ export class TaskProcessor extends DateProcessor {
             sDate = new Date(startDate.getTime());
         } else if (endDate) {
             sDate = new Date(endDate.getTime());
-            milestone = true;
+            milestone = isNullOrUndefined(startDate) && this.parent.allowUnscheduledTasks? false : true;
         } else {
             sDate = this.getValidStartDate(ganttProp);
         }
@@ -1156,6 +1156,8 @@ export class TaskProcessor extends DateProcessor {
                 date.setHours(0, 0, 0, 0);
             } else if (isMilestone && this.getSecondsInDecimal(date) === this.parent.defaultEndTime) {
                 date.setHours(24);
+            } else if (this.getSecondsInDecimal(date) === this.parent.defaultEndTime && this.parent.allowUnscheduledTasks) {
+                date.setHours(22);
             }
         }
         const timelineStartDate: Date = this.parent.timelineModule.timelineStartDate;
@@ -2111,7 +2113,11 @@ export class TaskProcessor extends DateProcessor {
             durationInDay = (childGanttRecord.ganttProperties.duration / (this.parent.secondsPerDay / 60));
             break;
         default:
-            durationInDay = childGanttRecord.ganttProperties.duration;
+            if (childGanttRecord.ganttProperties.duration < 1) {
+                durationInDay = (childGanttRecord.ganttProperties.duration / (this.parent.secondsPerDay / 3600));
+            } else {
+                durationInDay = childGanttRecord.ganttProperties.duration;
+            }
         }
 
         if (childGanttRecord.hasChildRecords) {
@@ -2190,7 +2196,13 @@ export class TaskProcessor extends DateProcessor {
                 if (!childData.ganttProperties.isMilestone && isScheduledTask(childData.ganttProperties)) {
                     progressValues = this.getParentProgress(childData);
                     totalProgress += getValue('totalProgress', progressValues);
-                    totalDuration += getValue('totalDuration', progressValues);
+                    if (childData[this.parent.taskFields.duration] < 1) {
+                        totalDuration += getValue('totalDuration', progressValues);
+                        totalDuration = Number(totalDuration.toFixed(4));
+                    } else {
+                        totalDuration += getValue('totalDuration', progressValues);
+                    }
+                    
                 } else {
                     milestoneCount++;
                 }

@@ -1025,6 +1025,10 @@ export class SfdtReader {
                 image.horizontalAlignment = inline.horizontalAlignment;
                 image.allowOverlap = inline.allowOverlap;
                 image.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'Inline' : inline.textWrappingStyle;
+                image.distanceBottom = HelperMethods.convertPointToPixel(inline.distanceBottom);
+                image.distanceLeft = HelperMethods.convertPointToPixel(inline.distanceLeft);
+                image.distanceRight = HelperMethods.convertPointToPixel(inline.distanceRight);
+                image.distanceTop = HelperMethods.convertPointToPixel(inline.distanceTop);
                 image.textWrappingType = inline.textWrappingType;
                 image.zOrderPosition = inline.zOrderPosition;
                 image.layoutInCell = inline.layoutInCell;
@@ -1091,7 +1095,10 @@ export class SfdtReader {
                         if (lineWidgetCount >= 2) {
                             let fieldTextElement: ElementBox = this.containsFieldBegin(lineWidget);
                             if (!isNullOrUndefined(fieldTextElement) && fieldTextElement instanceof TextElementBox && (fieldTextElement.text.match('PAGE') || fieldTextElement.text.match('page'))) {
-                                this.documentHelper.isPageField = true;
+                                const textField: any = fieldTextElement.text;
+                                if (!textField.startsWith('HYPERLINK')) {
+                                    this.documentHelper.isPageField = true;
+                                }
                             }
                         }
                     }

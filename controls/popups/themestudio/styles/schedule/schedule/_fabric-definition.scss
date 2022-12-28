@@ -117,7 +117,7 @@ $schedule-tbar-box-shadow: none !default;
 $schedule-tbar-box-shadow-bottom-margin: 0 !default;
 $schedule-tbar-min-height: 43px !default;
 $schedule-tbar-down-arrow-font-size: 12px !default;
-$schedule-tbar-down-arrow-padding-top: 4px !default;
+$schedule-tbar-down-arrow-margin-top: 4px !default;
 $schedule-tbar-default-icon-color: $default-icon-color !default;
 $schedule-tbar-separator-size: $border-size !default;
 $schedule-tbar-default-bg: $neutral-white !default;
@@ -139,7 +139,7 @@ $schedule-tbar-btn-bgr-minheight: 50px !default;
 $schedule-tbar-btn-bgr-minwidth: 34px !default;
 $schedule-tbar-btn-bgr-padding: 0 1.5px !default;
 $schedule-tbar-btn-icn-bgr-padding: 0 !default;
-$schedule-tbar-btn-icn-right-bgr-padding: 1px 12px 0 0 !default;
+$schedule-tbar-btn-icn-right-bgr-padding: 0 12px 0 0 !default;
 
 $schedule-content-nrml-font-text-transform: initial !default;
 $schedule-header-hover-border-radius: 0% !default;

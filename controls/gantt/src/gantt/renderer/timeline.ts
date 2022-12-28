@@ -46,7 +46,7 @@ export class Timeline {
         this.totalTimelineWidth = 0;
         this.customTimelineSettings = null;
         this.parent.isTimelineRoundOff = this.isZoomToFit ? false : isNullOrUndefined(this.parent.projectStartDate) ? true : false;
-        if (this.parent.enablePersistence) {
+        if (this.parent.enablePersistence && this.parent.isLoad) {
             this.parent.timelineSettings = this.parent.currentZoomingLevel;
           }
     }

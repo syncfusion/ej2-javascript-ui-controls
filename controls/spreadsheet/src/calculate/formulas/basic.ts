@@ -2589,8 +2589,30 @@ export class BasicFormulas {
      * @returns {string | number} - Compute the sum if.
      */
     public ComputeSUMIFS(...range: string[]): string | number {
-        const sum: string | number = this.parent.computeIfsFormulas(range, this.parent.falseValue);
+        const sum: string | number = this.calculateIFS(range);
         return sum;
+    }
+
+    private calculateIFS(ranges: string[], isAvgIfs?: string): string | number {
+        if (isNullOrUndefined(ranges) || ranges[0] === '' || ranges.length < 2 || ranges.length > 127) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (ranges.length === 3) { // SUMIFS and AVERAGEIFS OR operation will contains only 3 arguments.
+            if (ranges[2].includes(this.parent.tic + this.parent.tic)) {
+                let result: string = ''; let sumVal: string;
+                const criterias: string[] = ranges[2].split(this.parent.tic + this.parent.tic);
+                criterias.forEach((criteria: string) => {
+                    criteria = criteria.trim().split(this.parent.tic).join('');
+                    if (criteria) {
+                        sumVal = this.parent.computeIfsFormulas(
+                            [ranges[0], ranges[1], criteria], this.parent.falseValue, isAvgIfs).toString();
+                        result += (result ? ',' : '') + sumVal;
+                    }
+                });
+                return result;
+            }
+        }
+        return this.parent.computeIfsFormulas(ranges, this.parent.falseValue, isAvgIfs);
     }
 
     /**
@@ -2716,7 +2738,7 @@ export class BasicFormulas {
      * @returns {number | string} - Compute the Average if.
      */
     public ComputeAVERAGEIFS(...args: string[]): number | string {
-        const sum: string | number = this.parent.computeIfsFormulas(args, this.parent.falseValue, this.parent.trueValue);
+        const sum: string | number = this.calculateIFS(args, this.parent.trueValue);
         return sum;
     }
 

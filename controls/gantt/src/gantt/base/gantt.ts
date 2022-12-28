@@ -3680,18 +3680,24 @@ export class Gantt extends Component<HTMLElement>
      */
     /* eslint-disable-next-line */
     public setRecordValue(field: string, value: any, record: IGanttData | ITaskData, isTaskData?: boolean): void {
+        value = isUndefined(value) ? null : value;
         if (this.isOnEdit || this.isOnDelete) {
             this.makeCloneData(field, record, isTaskData);
-            const id: string = isTaskData ? (record as ITaskData).rowUniqueID : (record as IGanttData).ganttProperties.rowUniqueID;
+            const ganttData: ITaskData = isTaskData ? (record as ITaskData) : (record as IGanttData).ganttProperties;
+            const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
-            if (task && this.editedRecords.indexOf(task) === -1) {
+            let isValid: boolean = false;
+            if (isNullOrUndefined(value) || (!isNullOrUndefined(value) && !isNullOrUndefined(ganttData[field]) && (value instanceof Date ? value.getTime() !==
+                ganttData[field].getTime() : ganttData[field] !== value))) {
+                isValid = true;
+            }
+            if (task && ((this.editedRecords.indexOf(task) === -1 && isValid) || this.editedRecords.length === 0)) {
                 this.editedRecords.push(task);
                 if (this.enableImmutableMode) {
                     this.modifiedRecords.push(task);
                 }
             }
         }
-        value = isUndefined(value) ? null : value;
         setValue(field, value, record);
     }
     private makeCloneData(field: string, record: IGanttData | ITaskData, isTaskData?: boolean): void {

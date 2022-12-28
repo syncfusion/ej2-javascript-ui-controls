@@ -507,6 +507,7 @@ export class FreeTextAnnotation {
      */
     public setAnnotationType(type: AnnotType): void {
         this.pdfViewerBase.disableTextSelectionMode();
+        this.pdfViewer.annotationModule.isFormFieldShape = false;
         switch (type) {
         case 'FreeText':
             this.currentAnnotationMode = 'FreeText';
@@ -546,6 +547,12 @@ export class FreeTextAnnotation {
      */
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewAdded?: boolean): IFreeTextAnnotation {
+        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== ""){
+            this.pdfViewer.annotationModule.isFormFieldShape = true;
+        }
+        else{
+            this.pdfViewer.annotationModule.isFormFieldShape = false;
+        }
         if (!isNewAdded) {
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }

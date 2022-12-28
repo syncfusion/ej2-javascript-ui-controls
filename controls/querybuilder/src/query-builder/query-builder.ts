@@ -565,7 +565,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let bodyElem: Element = this.element.querySelector('.e-group-body');
         const inputElement: NodeListOf<HTMLElement> = this.element.querySelectorAll('input.e-control') as NodeListOf<HTMLElement>;
         for (let i: number = 0, len: number = inputElement.length; i < len; i++) {
-            if (inputElement[i as number].parentElement.className.indexOf('e-tooltip') > -1) {
+            if (inputElement[i as number].className.indexOf('e-tooltip') > -1) {
+                (getComponent(inputElement[i as number], 'tooltip') as Tooltip).destroy();
+            } else if (inputElement[i as number].parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(inputElement[i as number].parentElement, 'tooltip') as Tooltip).destroy();
             }
         }
@@ -1105,20 +1107,23 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             const excludeOprs: string [] = ['isnull', 'isnotnull', 'isempty', 'isnotempty'];
             let i: number; let len: number; let fieldElem: Element; let indexElem: Element; let valArray: string[] | number[] = [];
             let groupElem: Element; let index: number; let dropDownObj: DropDownList; let tempElem: Element; let rule: RuleModel;
-            const ruleElemCln: NodeListOf<Element> = this.element.querySelectorAll('.e-rule-container'); let validateRule: Validation;
+            const ruleElemCln: NodeListOf<Element> = this.element.querySelectorAll('.e-rule-container');
             for (i = 0, len = ruleElemCln.length; i < len; i++) {
+                let validateRule: Validation;
                 groupElem = closest(ruleElemCln[i as number], '.e-group-container');
                 rule = this.getParentGroup(groupElem); index = 0; indexElem = tempElem = ruleElemCln[i as number];
                 if (this.fieldMode === 'DropdownTree') {
-                    dropDownTreeObj = getComponent(ruleElemCln[i as number].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdowntree');
-                    if (dropDownTreeObj.value && dropDownTreeObj.value.length) {
+                    dropDownTreeObj = getComponent(ruleElemCln[i as number].querySelector('.e-rule-filter input.e-dropdowntree') as HTMLElement, 'dropdowntree');
+                    if (dropDownTreeObj && dropDownTreeObj.value && dropDownTreeObj.value.length) {
                         this.selectedColumn = this.getColumn(dropDownTreeObj.value[0]) as ColumnsModel;
                         validateRule = (this.selectedColumn as ColumnsModel).validation;
                     }
                 } else {
-                    dropDownObj = getComponent(ruleElemCln[i as number].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdownlist');
-                    this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
-                    validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
+                    dropDownObj = getComponent(ruleElemCln[i as number].querySelector('.e-rule-filter input.e-dropdownlist') as HTMLElement, 'dropdownlist');
+                    if (dropDownObj && dropDownObj.value) {
+                        this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+                        validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
+                    }
                 }
                 fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
                 if (validateRule && validateRule.isRequired) {
@@ -1158,8 +1163,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else if ((dropDownObj && dropDownObj.element && isNullOrUndefined(dropDownObj.index)) ||
                 (dropDownTreeObj && dropDownTreeObj.element && (isNullOrUndefined(dropDownTreeObj.value) ||
                 dropDownTreeObj.value.length < 1))) {
-                    if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
-                        this.renderToolTip(fieldElem.parentElement);
+                    if (fieldElem.className.indexOf('e-tooltip') < 0) {
+                        this.renderToolTip(fieldElem as HTMLElement);
                     }
                     isValid = false;
                 }
@@ -1776,6 +1781,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private createSubFields(filterElem: Element, rule: RuleModel, tempRule: RuleModel, ddlArgs: DropDownChangeEventArgs) : void {
+        let subFieldValue : boolean = false;
         const fieldElem: Element = closest(filterElem, '.e-rule-field');
         const tempElem: Element = this.createElement('div', { attrs: { class: 'e-rule-sub-filter', id: 'subfilter' + this.subFilterCounter } });
         fieldElem.insertBefore(tempElem, fieldElem.querySelector('.e-rule-operator'));
@@ -1805,6 +1811,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (rule.field === subField[i as number].field || rule.field.indexOf(subField[i as number].field) > -1) {
                     dropDownList.value = subField[i as number].field;
                     this.selectedColumn = subField[i as number];
+                    subFieldValue = true
                     break;
                 }
             }
@@ -1813,7 +1820,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.subFieldElem = subFieldElem as HTMLElement;
         // eslint-disable-next-line
         ddlArgs.itemData = ddlArgs.itemData;
-        if (!this.isImportRules) {
+        if (!this.isImportRules || (!subFieldValue && this.selectedColumn.columns)) {
+            if (!subFieldValue && this.isImportRules) {
+                dropDownList.value = null;
+            }
             this.selectedColumn = this.selectedColumn.columns[0];
         }
         if (!this.selectedColumn.columns) {
@@ -2531,7 +2541,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             prevItemData = this.getColumn((prevItemData as any).value);
         }
-        if (column.template && prevItemData && Object.keys(prevItemData).length < 4) {
+        if (column && column.template && prevItemData && Object.keys(prevItemData).length < 4) {
             prevItemData.template = column.template;
         }
         return prevItemData;
@@ -2586,7 +2596,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.validateValue(rule, closest(target, '.e-rule-container'));
                 this.destroyControls(target);
             }
-            itemData.template = column.template;
+            if (column) {
+                itemData.template = column.template;
+            }
             if (itemData.template) {
                 addClass([target.nextElementSibling], 'e-template-value'); itemData.template = column.template;
                 isTempRendered = this.setColumnTemplate(itemData, parentId, column.field, itemData.value as string ||
@@ -2809,8 +2821,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!this.isImportRules) {
                 this.trigger('change', eventsArgs);
             }
-            if (this.allowValidation && rule.rules[index as number].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
-                (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
+            if (this.allowValidation && rule.rules[index as number].field && target.className.indexOf('e-tooltip') > -1) {
+                (getComponent(target as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'field');
         } else if (closest(target, '.e-rule-operator')) {

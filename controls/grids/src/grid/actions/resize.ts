@@ -187,7 +187,21 @@ export class Resize implements IAction {
         const result: boolean = gObj.getColumns().some((x: Column) => x.width === null
             || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
-            const element: Column[] = (gObj.getColumns() as Column[]);
+            let element: Column[];
+            if (this.parent.isAutoFitColumns && gObj.isFrozenGrid()) {
+                if (columnbyindex.freezeTable === 'frozen-left') {
+                    element = gObj.getFrozenLeftColumns() as Column[];
+                }
+                else if (columnbyindex.freezeTable === 'movable') {
+                    element = gObj.getMovableColumns() as Column[];
+                }
+                else {
+                    element = gObj.getFrozenRightColumns() as Column[];
+                }
+            }
+            else {
+                element = gObj.getColumns() as Column[];
+            }
             for (let i: number = 0; i < element.length; i++) {
                 if (element[parseInt(i.toString(), 10)].visible) {
                     tWidth = tWidth + parseFloat(element[parseInt(i.toString(), 10)].width as string);
@@ -209,6 +223,10 @@ export class Resize implements IAction {
             }
         }
         if (gObj.isFrozenGrid()) {
+            if (this.parent.isAutoFitColumns) {
+                (<HTMLTableElement>headerTable).style.width = formatUnit(calcTableWidth);
+                (<HTMLTableElement>contentTable).style.width = formatUnit(calcTableWidth);
+            }
             this.widthService.refreshFrozenScrollbar();
         }
         const tableWidth: number = (headerTable as HTMLElement).offsetWidth;

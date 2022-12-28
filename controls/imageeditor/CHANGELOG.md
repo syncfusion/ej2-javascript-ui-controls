@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### Image Editor
+
+#### Bug Fixes
+
+- Issue with "Toolbar Alignment" has been resolved.
+
 ## 20.4.38 (2022-12-21)
 
 ### Image Editor

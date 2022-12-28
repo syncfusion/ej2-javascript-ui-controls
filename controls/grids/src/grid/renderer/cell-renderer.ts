@@ -288,7 +288,9 @@ export class CellRenderer implements ICellRenderer<Column> {
 
         if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
             node.classList.add('e-gridclip');
-        } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')) {
+        } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')
+            && !(this.parent.allowTextWrap && (this.parent.textWrapSettings.wrapMode === 'Content'
+            || this.parent.textWrapSettings.wrapMode === 'Both'))) {
             if (column.type !== 'checkbox') {
                 node.classList.add('e-ellipsistooltip');
             }

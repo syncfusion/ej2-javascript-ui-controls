@@ -265,22 +265,6 @@ export class Selection {
                     const activeIdx: number[] = getCellIndexes(sheet.activeCell);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     let isRowSelected: boolean; let isColSelected: boolean;
-                    if (sheet.isProtected) {
-                        if (sheet.protectSettings.selectUnLockedCells && !sheet.protectSettings.selectCells) {
-                            if (!isNullOrUndefined(cell)) {
-                                if (cell.isLocked === true || isNullOrUndefined(cell.isLocked)){
-                                    return;
-                                } else {
-                                    const sheetEle: Element = this.parent.element.getElementsByClassName('e-sheet-panel')[0];
-                                    if (sheetEle && sheetEle.classList.contains('e-protected')) {
-                                        sheetEle.classList.remove('e-protected');
-                                    }
-                                }
-                            } else if (!sheet.protectSettings.selectCells) {
-                                return;
-                            }
-                        }
-                    }
                     if (sheet.showHeaders) {
                         const trgt: Element = e.target as Element;
                         if (sheet.frozenColumns || sheet.frozenRows) {
@@ -693,6 +677,23 @@ export class Selection {
         range = mergeArgs.range as number[];
         let promise: Promise<null> = new Promise((resolve: Function) => { resolve((() => { /** */ })()); });
         const args: BeforeSelectEventArgs = { range: getRangeAddress(range), cancel: false };
+        if (sheet.isProtected) {
+            const protectCell: CellModel = getCell(range[2], range[3], sheet);
+            if (sheet.protectSettings.selectUnLockedCells && !sheet.protectSettings.selectCells) {
+                if (!isNullOrUndefined(protectCell)) {
+                    if ((protectCell.isLocked === true || isNullOrUndefined(protectCell.isLocked))) {
+                        return;
+                    } else {
+                        const sheetEle: Element = this.parent.element.getElementsByClassName('e-sheet-panel')[0];
+                        if (sheetEle && sheetEle.classList.contains('e-protected')) {
+                            sheetEle.classList.remove('e-protected');
+                        }
+                    }
+                } else if (!sheet.protectSettings.selectCells) {
+                    return;
+                }
+            }
+        }
         this.parent.trigger('beforeSelect', args);
         if (args.cancel) { return; }
         if (isFormulaEdit && formulaRefIndicator) {

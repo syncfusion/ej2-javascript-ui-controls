@@ -86,7 +86,7 @@ export class Data implements IDataProcessor {
      * @returns {Query} returns the Query
      * @hidden
      */
-    public generateQuery(skipPage?: boolean): Query {
+    public generateQuery(skipPage?: boolean, isAutoCompleteCall?: boolean): Query {
         const gObj: IGrid = this.parent;
         const query: Query = gObj.getQuery().clone();
         if (this.parent.columnQueryMode === 'ExcludeHidden') {
@@ -116,7 +116,9 @@ export class Data implements IDataProcessor {
             this.pageQuery(query, skipPage);
         }
 
-        this.groupQuery(query);
+        if (isNullOrUndefined(isAutoCompleteCall) || !isAutoCompleteCall) {
+            this.groupQuery(query);
+        }
 
         return query;
     }

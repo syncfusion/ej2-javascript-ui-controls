@@ -126,8 +126,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             info: '#66b0ff'
         };
         break;
-	case 'Tailwind':
-		style = {
+    case 'Tailwind':
+        style = {
             linearTrackColor: '#E5E7EB',
             linearProgressColor: '#4F46E5',
             circularTrackColor: '#E5E7EB',
@@ -155,8 +155,8 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             info: '#0E7490'
         };
         break;
-	case 'TailwindDark':
-		style = {
+    case 'TailwindDark':
+        style = {
             linearTrackColor: '#4B5563',
             linearProgressColor: '#22D3EE',
             circularTrackColor: '#4B5563',

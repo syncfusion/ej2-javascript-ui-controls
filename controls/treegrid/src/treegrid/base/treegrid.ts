@@ -1503,17 +1503,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'ctrlShiftUpArrow':
                 target = <HTMLElement>e.target;
                 column = <HTMLElement>target.closest('.e-rowcell');
-                row = <HTMLElement>column.closest('tr');
-                if (!isNullOrUndefined(row) && !(isNullOrUndefined(row.getElementsByClassName('e-treegridexpand')[0]))) {
-                    this.expandCollapseRequest(<HTMLElement>row.querySelector('.e-treegridexpand'));
+                if (!isNullOrUndefined(column)) {
+                    row = <HTMLElement>column.closest('tr');
+                    if (!isNullOrUndefined(row) && !(isNullOrUndefined(row.getElementsByClassName('e-treegridexpand')[0]))) {
+                        this.expandCollapseRequest(<HTMLElement>row.querySelector('.e-treegridexpand'));
+                    }
                 }
                 break;
             case 'ctrlShiftDownArrow':
                 target = <HTMLElement>e.target;
                 column = <HTMLElement>target.closest('.e-rowcell');
-                row = <HTMLElement>column.closest('tr');
-                if (!isNullOrUndefined(row) && !(isNullOrUndefined(row.getElementsByClassName('e-treegridcollapse')[0]))) {
-                    this.expandCollapseRequest(<HTMLElement>row.querySelector('.e-treegridcollapse'));
+                if (!isNullOrUndefined(column)) {
+                    row = <HTMLElement>column.closest('tr');
+                    if (!isNullOrUndefined(row) && !(isNullOrUndefined(row.getElementsByClassName('e-treegridcollapse')[0]))) {
+                        this.expandCollapseRequest(<HTMLElement>row.querySelector('.e-treegridcollapse'));
+                    }
                 }
                 break;
             case 'downArrow':

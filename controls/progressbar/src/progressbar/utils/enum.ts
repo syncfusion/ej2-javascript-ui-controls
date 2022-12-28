@@ -35,7 +35,7 @@ export type ProgressTheme =
     'Bootstrap4' |
     /** HighContrast */
     'HighContrast'|
-	/** Tailwind */
+    /** Tailwind */
     'Tailwind' |
     /** TailwindDark */
     'TailwindDark' |

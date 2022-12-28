@@ -92,7 +92,7 @@ export class FormFields {
                 for (var i = 0; i < this.formFieldsData.length; i++) {
                     let formField: any = this.formFieldsData[i];
                     if (!flag && isNullOrUndefined(formField.ActualFieldName) && formField.PageIndex === pageIndex) {
-                        count = parseInt(formField.FieldName.split('_')[1]);
+                        count = parseInt(formField.FieldName.slice(formField.FieldName.lastIndexOf("_")+1));
                         flag = true;
                     }
                 }
@@ -205,7 +205,8 @@ export class FormFields {
                                               addedElement1.childNodes[0].disabled = true;
                                             }
                                 }
-                            } if (fieldType === 'SignatureField' || fieldType === 'InitialField') {
+                            } 
+                            if (fieldType === 'SignatureField' || fieldType === 'InitialField') {
                                 this.addSignaturePath(currentData, count);
                                 if (!isNullOrUndefined(currentData.Value)) {
                                     this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
@@ -1896,8 +1897,8 @@ export class FormFields {
                 if(this.pdfViewer.formDesignerModule){
                     if (currentData.Value && currentData.Value !== '' && !this.isSignatureRendered) {
                         this.renderExistingAnnnot(currentData, index, printContainer);
-                    }
-                }
+                    }  
+                }          
                 break;
             case 'SignatureText':
             case 'SignatureImage':

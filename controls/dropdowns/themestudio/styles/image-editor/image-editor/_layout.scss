@@ -4,7 +4,13 @@
     & .e-img-font-style.e-template{
       margin-left: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
+
+    & .e-slider-container {
+      margin-left: calc(50% - 50px) !important; /* stylelint-disable-line declaration-no-important */
+      height: 54px !important; /* stylelint-disable-line declaration-no-important */
+    }
   }
+
   .e-bigger .e-image-editor,
   .e-image-editor.e-bigger {
     & .e-toolbar {
@@ -202,13 +208,11 @@
     }
 
     & .e-contextual-toolbar-wrapper {
-      border-top: 1px solid;
-      border-bottom: 1px solid;
       width: 100%;
       z-index: 1;
 
       & .e-toolbar {
-        height: 126px !important; /* stylelint-disable-line declaration-no-important */
+        height: 130px !important; /* stylelint-disable-line declaration-no-important */
       }
 
       &.e-hide {

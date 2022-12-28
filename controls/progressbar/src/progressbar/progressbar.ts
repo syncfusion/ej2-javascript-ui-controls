@@ -616,13 +616,13 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             }
             if (!refresh) {
                 rect = new RectOption(
-                    this.element.id + '_clippathrect' + (isLabel ? 'label' :''), 'transparent', 1, 'transparent', 1,
+                    this.element.id + '_clippathrect' + (isLabel ? 'label' : ''), 'transparent', 1, 'transparent', 1,
                     new Rect(posx, posy, thickness, pathWidth)
                 );
                 path = this.renderer.drawRectangle(rect);
                 clipPath.appendChild(path);
             } else {
-                path = getElement(this.element.id + '_clippathrect' + (isLabel ? 'label' :''));
+                path = getElement(this.element.id + '_clippathrect' + (isLabel ? 'label' : ''));
                 path.setAttribute('width', (pathWidth).toString());
                 if (this.isActive) {
                     path.setAttribute('x', (posx).toString());
@@ -701,7 +701,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 }
                 arg.currentSize = this.progressSize;
                 this.trigger('resized', arg);
-                if ((this.width === null || this.height === null || this.width.indexOf("%") > -1 || this.height.indexOf("%") > -1)
+                if ((this.width === null || this.height === null || this.width.indexOf('%') > -1 || this.height.indexOf('%') > -1)
                     && !arg.cancel) {
                     this.secElement ? this.secElement.innerHTML = '' : this.secElement;
                     this.calculateProgressBarSize();

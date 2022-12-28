@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 20.4.38 (2022-12-21)
+## 20.4.40 (2022-12-28)
 
 ### Excel Export
 
@@ -10,7 +10,7 @@
 
 - Modified the "\n" character at end of row as "\r\n" in Grid to CSV export.
 
-## 20.3.47 (2022-09-29)
+## 20.4.38 (2022-12-21)
 
 ### Excel Export
 

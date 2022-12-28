@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 20.3.50 (2022-10-18)
-
-### ListView
-
-#### Bug Fixes
-
-- `#I395385` - The issue with "Space key is not working inside input element within ListView Template" has been resolved.
-
-## 20.3.47 (2022-09-29)
+## 20.4.38 (2022-12-21)
 
 ### ListView
 

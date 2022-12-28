@@ -2908,12 +2908,12 @@ describe('Spreadsheet formula module ->', () => {
             // });
         });
         describe('I312700 ->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ rows: [{ cells: [{ formula: '=COUNTIF(AR1:AT1,"=10")' }, { index: 4, formula: '=SUMIF(AR1:AT1,"=10")' },
-                    { index: 43, value: '10' }, { value: '5' }, { value: '10' }] }] }] }, done);
+                        { index: 43, value: '10' }, { value: '5' }, { value: '10' }] }], columns: [{ index: 1, width: 120 }] }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Improve the formulas with the range greater than AA and countif, countifs, sumif, sumifs formula with this ranges', (done: Function) => {
@@ -2924,6 +2924,106 @@ describe('Spreadsheet formula module ->', () => {
                 expect(spreadsheet.sheets[0].rows[0].cells[4].formula).toBe('=SUMIF(AR1:AT1,"=10")');
                 expect(spreadsheet.sheets[0].rows[0].cells[4].value.toString()).toBe('20');
                 expect(helper.invoke('getCell', [0, 4]).textContent).toBe('20');
+                done();
+            });
+            it('SF-422696 -> SUMIFS formula not working if the criteria contains both operator and a cell range', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('updateCell', [{ value: 'Residential' }, 'B1']);
+                helper.invoke('updateCell', [{ value: 'Residential' }, 'B2']);
+                helper.invoke('updateCell', [{ value: 'Residential' }, 'B3']);
+                helper.invoke('updateCell', [{ value: '1' }, 'C1']);
+                helper.invoke('updateCell', [{ value: '2' }, 'C2']);
+                helper.invoke('updateCell', [{ value: '3' }, 'C3']);
+                helper.invoke('updateCell', [{ formula: '=SUMIFS(C1:C3,B1:B3,"="&B1)' }, 'D1']);
+                const cell: any = spreadsheet.sheets[0].rows[0].cells[3];
+                const cellEle: HTMLElement = helper.invoke('getCell', [0, 3]);
+                expect(cell.value).toBe(6);
+                expect(cellEle.textContent).toBe('6');
+                helper.invoke('updateCell', [{ value: 'Residential 1' }, 'B2']);
+                expect(cell.value).toBe(4);
+                expect(cellEle.textContent).toBe('4');
+                helper.invoke('updateCell', [{ formula: '=SUMIFS(C1:C3,B1:B3,"<>"&Sheet1!B1)' }, 'D1']);
+                expect(cell.value).toBe(2);
+                expect(cellEle.textContent).toBe('2');
+                helper.invoke('updateCell', [{ value: 'Residential 2' }, 'B3']);
+                expect(cell.value).toBe(5);
+                expect(cellEle.textContent).toBe('5');
+                helper.invoke('updateCell', [{ value: 'Residential 1' }, 'B4']);
+                helper.invoke('updateCell', [{ value: '4' }, 'C4']);
+                helper.invoke('updateCell', [{ formula: '=SUMIFS(C1:C4,B1:B4,"<>"Sheet1!B1,B1:B4,"<>"&B3)' }, 'D1']);
+                expect(cell.value).toBe(6);
+                expect(cellEle.textContent).toBe('6');
+                helper.invoke('updateCell', [{ formula: '=SUMIFS(C1:C4, B1:B4 , "Residential")' }, 'D1']);
+                expect(cell.value).toBe(1);
+                expect(cellEle.textContent).toBe('1');
+                helper.invoke('updateCell', [{ formula: '=COUNTIFS(B1:B4,"<>"&Sheet1!B1)' }, 'D1']);
+                expect(cell.value).toBe(3);
+                expect(cellEle.textContent).toBe('3');
+                helper.invoke('updateCell', [{ formula: '=COUNTIFS(B1:B4,"="Sheet1!B2)' }, 'D1']);
+                expect(cell.value).toBe(2);
+                expect(cellEle.textContent).toBe('2');
+                helper.invoke('updateCell', [{ formula: '=AVERAGEIFS(C1:C4,B1:B4,"<>"Sheet1!B2)' }, 'D1']);
+                expect(cell.value).toBe(2);
+                expect(cellEle.textContent).toBe('2');
+                helper.invoke('updateCell', [{ formula: '=AVERAGEIFS(C1:C4,B1:B4,"="&Sheet1!B2)' }, 'D1']);
+                expect(cell.value).toBe(3);
+                expect(cellEle.textContent).toBe('3');
+                done();
+            });
+            it('SF-422232 -> OR operation in SUMIFS formula', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,B1:B4,{"Residential","Residential 1"}))' }, 'D2']);
+                const cell: any = spreadsheet.sheets[0].rows[1].cells[3];
+                const cellEle: HTMLElement = helper.invoke('getCell', [1, 3]);
+                expect(cell.value).toBe(7);
+                expect(cellEle.textContent).toBe('7');
+                helper.invoke('updateCell', [{ formula: '=SUM(AVERAGEIFS(C1:C4,B1:B4,{"Residential 2","Residential 1"}))' }, 'D2']);
+                expect(cell.value).toBe(6);
+                expect(cellEle.textContent).toBe('6');
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,B1:B4,{"Residential";"Residential 2"}))' }, 'D2']);
+                expect(cell.value).toBe(4);
+                expect(cellEle.textContent).toBe('4');
+                helper.invoke('updateCell', [{ formula: '=AVERAGE(AVERAGEIFS(C1:C4, B1:B4, {"Residential", "Residential 2"}))' }, 'D2']);
+                expect(cell.value).toBe('2');
+                expect(cellEle.textContent).toBe('2');
+                helper.invoke('updateCell', [{ value: 'Residential 3' }, 'B4']);
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,B1:B4,{"Residential 1","Residential 2","Residential 3"}))' }, 'D2']);
+                expect(cell.value).toBe(9);
+                expect(cellEle.textContent).toBe('9');
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,B1:B4,{"<>Residential 1","=Residential 2"}))' }, 'D2']);
+                expect(cell.value).toBe(11);
+                expect(cellEle.textContent).toBe('11');
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,B1:B4, {"Residential"}))' }, 'D2']);
+                expect(cell.value).toBe(1);
+                expect(cellEle.textContent).toBe('1');
+                helper.invoke('updateCell', [{ value: '33' }, 'F1']);
+                helper.invoke('updateCell', [{ value: '45' }, 'F2']);
+                helper.invoke('updateCell', [{ value: '28' }, 'F3']);
+                helper.invoke('updateCell', [{ value: '25' }, 'F4']);
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,F1:F4,{33,28}))' }, 'D2']);
+                expect(cell.value).toBe(4);
+                expect(cellEle.textContent).toBe('4');
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,F1:F4,{"25","45"}))' }, 'D2']);
+                expect(cell.value).toBe(6);
+                expect(cellEle.textContent).toBe('6');
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,F1:F4, {">20","<30"}))' }, 'D2']);
+                expect(cell.value).toBe(17);
+                expect(cellEle.textContent).toBe('17');
+                helper.invoke('updateCell', [{ formula: '=AVERAGE(AVERAGEIFS(C1:C4,F1:F4, {">30","<50"}))' }, 'D2']);
+                expect(cell.value).toBe('2');
+                expect(cellEle.textContent).toBe('2');
+                helper.invoke('updateCell', [{ value: 'TRUE' }, 'G1']);
+                helper.invoke('updateCell', [{ value: 'FALSE' }, 'G3']);
+                helper.invoke('updateCell', [{ value: 'TRUE' }, 'G4']);
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,G1:G4,{"=TRUE","<>FALSE"}))' }, 'D2']);
+                expect(cell.value).toBe(12);
+                expect(cellEle.textContent).toBe('12');
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(C1:C4,G1:G4,{TRUE,FALSE}))' }, 'D2']);
+                expect(cell.value).toBe(8);
+                expect(cellEle.textContent).toBe('8');
+                helper.invoke('updateCell', [{ formula: '=AVERAGE(SUMIFS(C1:C4, G1:G4, {"=TRUE", "<>FALSE"}))' }, 'D2']);
+                expect(cell.value).toBe('6');
+                expect(cellEle.textContent).toBe('6');
                 done();
             });
         });
@@ -3838,6 +3938,54 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
+        describe('EJ2-67308 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ 
+                        rows: [
+                            { cells: [{ value: 'q1' }, { formula: '=IF(1<2, "QqqQ")' }] },
+                            { cells: [{ value: 'q2' }, { formula: '=IF(SUM(1,1)<3, "Trueq", "Falseq")' }] },
+                            { cells: [{ value: 'q1' }, { formula: '=IF(SUM(SUM(2,2),1)<3, "(Trueq)", "(Falseq)")' }] },
+                            { cells: [{ value: 'q2' }, { formula: '=COUNTIF(A1:A4,"q1")' }] }
+                        ]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Parsing error occurs when the custom function argument contains "q" alphabet', (done: Function) => {
+                (window as any).CustomFuntion = (str: string) => {
+                    return str;
+                };
+                helper.invoke('addCustomFunction', ["CustomFuntion", "myfunq"]);
+                let formula: string = '=myfunq("SUCCESSq")';
+                helper.edit('C1', '=IF(1<2, "QqqQ")');
+                helper.edit('C2', '=IF(SUM(1,1)<3, "Trueq", "Falseq")');
+                helper.edit('C3', '=IF(SUM(SUM(2,2),1)<3, "(Trueq)", "(Falseq)")');
+                helper.edit('C4', '=COUNTIF(A1:A4,"q1")');
+                helper.edit('C5', formula);
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('QqqQ');
+                expect(helper.invoke('getCell', [0, 1]).innerText).toBe('QqqQ');
+                expect(helper.invoke('getCell', [0, 2]).textContent).toBe('QqqQ');
+                expect(helper.invoke('getCell', [0, 2]).innerText).toBe('QqqQ');
+                expect(helper.invoke('getCell', [1, 1]).textContent).toBe('Trueq');
+                expect(helper.invoke('getCell', [1, 1]).innerText).toBe('Trueq');
+                expect(helper.invoke('getCell', [1, 2]).textContent).toBe('Trueq');
+                expect(helper.invoke('getCell', [1, 2]).innerText).toBe('Trueq');
+                expect(helper.invoke('getCell', [2, 1]).textContent).toBe('(Falseq)');
+                expect(helper.invoke('getCell', [2, 1]).innerText).toBe('(Falseq)');
+                expect(helper.invoke('getCell', [2, 2]).textContent).toBe('(Falseq)');
+                expect(helper.invoke('getCell', [2, 2]).innerText).toBe('(Falseq)');
+                expect(helper.invoke('getCell', [3, 1]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [3, 1]).innerText).toBe('2');
+                expect(helper.invoke('getCell', [3, 2]).textContent).toBe('2');
+                expect(helper.invoke('getCell', [3, 2]).innerText).toBe('2');
+                expect(helper.invoke('getCell', [4, 2]).textContent).toBe('"SUCCESSq"');
+                expect(helper.invoke('getCell', [4, 2]).innerText).toBe('"SUCCESSq"');
+                done();
+            });
+        });
     });
     describe('Stability ->', () => {
         describe('SUM Formula', () => {
@@ -4474,9 +4622,13 @@ describe('Spreadsheet formula module ->', () => {
             })
         });
     });
-    describe('EJ2-66087,EJ2-66341 -> ', () => {
+    describe('EJ2-66087,EJ2-66341,EJ2-66984 -> ', () => {
         beforeEach((done: Function) => {
             const addSum = (sourceValue: any, destinationValue: any) => {
+                let data = sourceValue + destinationValue;
+                return data;
+            };
+            const cusFunc = (sourceValue: any, destinationValue: any) => {
                 let data = sourceValue + destinationValue;
                 return data;
             };
@@ -4484,11 +4636,11 @@ describe('Spreadsheet formula module ->', () => {
                 sheets: [
                     {
                         name: 'Monthly Budget',
-                        rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '', formula: '=ADDSUM(A1,B1)' }] },
-                        { cells: [{ value: '2' }, { value: '3' }, { value: '', formula: '=ADDSUM(A2,B2)' },] },
-                        { cells: [{ value: '4' }, { value: '5' }, { value: '', formula: '=ADDSUM(A3,B3)' }] },
-                        { cells: [{ value: '5' }, { value: '5' }, { value: '', formula: '=ADDSUM(A4,B4)' }] },
-                        { cells: [{ value: '5' }, { value: '6' }, { value: '', formula: '=ADDSUM(A5,B5)' }] }
+                        rows: [{ cells: [{ value: '1' }, { value: '2' }, { value: '', formula: '=ADDSUM(A1,B1)' }, { value: '', formula: '=CUSFUNC(B1,A1)' }] },
+                        { cells: [{ value: '2' }, { value: '3' }, { value: '', formula: '=ADDSUM(A2,B2)' }, { value: '', formula: '=CUSFUNC(B2,A2)' }] },
+                        { cells: [{ value: '4' }, { value: '5' }, { value: '', formula: '=ADDSUM(A3,B3)' }, { value: '', formula: '=CUSFUNC(B3,A3)' }] },
+                        { cells: [{ value: '5' }, { value: '5' }, { value: '', formula: '=ADDSUM(A4,B4)' }, { value: '', formula: '=CUSFUNC(B4,A4)' }] },
+                        { cells: [{ value: '5' }, { value: '6' }, { value: '', formula: '=ADDSUM(A5,B5)' }, { value: '', formula: '=CUSFUNC(B5,A5)' }] }
                         ],
                         columns: [
                             { width: 110 }, { width: 115 }, { width: 110 }, { width: 100 }
@@ -4498,6 +4650,7 @@ describe('Spreadsheet formula module ->', () => {
                 beforeDataBound: (): void => {
                     const spreadsheet: Spreadsheet = helper.getInstance();
                     spreadsheet.addCustomFunction(addSum, 'ADDSUM');
+                    spreadsheet.addCustomFunction(cusFunc, 'CUSFUNC');
                 }
             },
                 done);
@@ -4542,6 +4695,33 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[3].cells[1].formula).toEqual('=IF(IF(A4="test","test","set")="test",TRUE,FALSE)');
             expect(helper.getInstance().sheets[0].rows[3].cells[1].value).toEqual("FALSE");
             done();
+        });
+        it('Calling refresh() removes custom functions reference from spreadsheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.refresh();
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].formula).toEqual('=ADDSUM(A1,B1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].value).toEqual("12");
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].formula).toEqual('=CUSFUNC(B1,A1)');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toEqual("21");
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].formula).toEqual('=ADDSUM(A2,B2)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].value).toEqual("23");
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].formula).toEqual('=CUSFUNC(B2,A2)');
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toEqual("32");
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].formula).toEqual('=ADDSUM(A3,B3)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toEqual("45");
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].formula).toEqual('=CUSFUNC(B3,A3)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toEqual("54");
+                expect(helper.getInstance().sheets[0].rows[3].cells[2].formula).toEqual('=ADDSUM(A4,B4)');
+                expect(helper.getInstance().sheets[0].rows[3].cells[2].value).toEqual("55");
+                expect(helper.getInstance().sheets[0].rows[3].cells[3].formula).toEqual('=CUSFUNC(B4,A4)');
+                expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toEqual("55");
+                expect(helper.getInstance().sheets[0].rows[4].cells[2].formula).toEqual('=ADDSUM(A5,B5)');
+                expect(helper.getInstance().sheets[0].rows[4].cells[2].value).toEqual("56");
+                expect(helper.getInstance().sheets[0].rows[4].cells[3].formula).toEqual('=CUSFUNC(B5,A5)');
+                expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toEqual("65");
+                done();
+            });
         });
     });
 });

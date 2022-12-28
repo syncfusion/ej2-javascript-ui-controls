@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-gantt",
-	"version": "20.15.5",
+	"version": "20.4.38",
 	"description": "Essential JS 2 Gantt Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -52,14 +52,11 @@
 	"keywords": [
 		"ej2",
 		"syncfusion",
-		"ej2-gantt",
-		"web-components",
 		"JavaScript",
 		"TypeScript",
 		"gantt",
-		"ganttChart",
 		"gantt-chart",
-		"taskbar"
+		"project-management"
 	],
 	"repository": {
 		"type": "git",

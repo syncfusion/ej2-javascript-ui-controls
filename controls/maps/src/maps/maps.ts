@@ -1803,7 +1803,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private removeTileMap(): void {
         const animateElement: HTMLElement = document.getElementById(this.element.id + '_animated_tiles');
-        if (!isNullOrUndefined(this.currentTiles) && animateElement.childElementCount !== this.currentTiles.childElementCount) {
+        if (!isNullOrUndefined(this.currentTiles) && animateElement.childElementCount < this.currentTiles.childElementCount) {
             for (let l: number = animateElement.childElementCount - 1; l >= this.currentTiles.childElementCount; l--) {
                 animateElement.removeChild(animateElement.children[l as number]);
             }

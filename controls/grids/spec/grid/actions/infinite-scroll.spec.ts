@@ -1191,6 +1191,54 @@ describe('Infinite scroll cache mode with edit feature teating => ', () => {
     });
 });
 
+describe('EJ2-66529 - New record ID undefined on Infinite Scroll Grid => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { initialBlocks: 1, enableCache: true },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100, defaultValue: "9999", visible: false },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('start add action and check add action complete default value', (done: Function) => {
+        function actionComplete(args: any) {
+            if(args.requestType === 'add') {
+                expect(args.data['FIELD1']).toBe("9999");
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('start save action and check save action begin default value', function (done: Function) {
+        function actionBegin(args: any) {
+            if(args.requestType === 'save') {
+                expect(args.data['FIELD1']).toBe("9999");
+                done();
+            }
+        }
+        gridObj.actionBegin = actionBegin;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('Infinite scroll cache mode with edit feature teating => ', () => {
     let gridObj: Grid;
     let dataLength = virtualData.length; let data1: number;

@@ -2,15 +2,22 @@
 
 ## [Unreleased]
 
-## 20.3.52 (2022-10-26)
+## 20.4.40 (2022-12-28)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#F31632` - Accessibility issue in DropDownButton has been resolved.
+- `#I422250` - Keyboard navigation not working properly when we set arguments cancel property as true in `beforeClose` event of DropDownButton has been resolved.
+
+## 20.4.38 (2022-12-21)
 
 ### DropDownButton
 
 #### Bug Fixes
 
 - `#I412776` - Select event is not triggered while using `closeActionEvents` in DropDownButton has been resolved.
-
-## 20.3.47 (2022-09-29)
 
 ### DropDownButton
 

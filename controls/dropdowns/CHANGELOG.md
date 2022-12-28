@@ -2,7 +2,30 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#F178650` - Resolved the error after perform filtering in Dropdown Tree while updating data dynamically
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F424252` - Issue with "Data source not update properly when we filtering and clicking move All button in listbox toolbar sample" has been resolved.
+- `#I423072` - Issue with "`actionBegin` event argument not passes the filtered item properly while filtering and clicking move All button in listbox toolbar sample" has been resolved.
+
 ## 20.4.38 (2022-12-21)
+
+### Dropdown Tree
+
+#### New Features
+
+- `#I395558` - Provided enableHtmlSanitizer support for Dropdown Tree component.
+
+- `#F169154`, `#I424048` - Provided an option to prevent the parent node selection in the Dropdown Tree component.
 
 ### ListBox
 

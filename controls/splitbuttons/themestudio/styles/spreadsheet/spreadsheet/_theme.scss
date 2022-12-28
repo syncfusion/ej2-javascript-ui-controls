@@ -489,6 +489,22 @@
         & .e-select-all-cell.e-prev-highlight-right {
           border-left-color: $hdr-selection-border-color;
         }
+
+        & .e-column-header .e-header-cell.e-hide-start.e-prev-highlight,
+        & .e-column-header .e-header-cell.e-hide-start.e-highlight {
+          border-left-color: transparent;
+
+          &::after {
+            border-left-color: $hdr-selection-border-color;
+          }
+        }
+
+        & .e-column-header .e-header-cell.e-hide-end.e-highlight,
+        & .e-column-header .e-header-cell.e-highlight + th.e-header-cell.e-hide-end {
+          &::before {
+            border-right-color: $hdr-selection-border-color;
+          }
+        }
       }
     }
 

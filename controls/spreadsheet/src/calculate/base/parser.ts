@@ -920,12 +920,18 @@ export class Parser {
                 const len: number = leftParens - i - 1;
                 const libFormula: string = this.parent.substring(formula, i + 1, len);
                 if (len > 0 && !isNullOrUndefined(this.parent.getFunction(libFormula))) {
-                    if (this.parent.substring(formula, i + 1, len) === 'AREAS') {
+                    let substr: string = this.parent.substring(formula, leftParens, rightParens - leftParens + 1);
+                    const argsSep: string = this.parent.getParseArgumentSeparator();
+                    if (libFormula === 'AREAS') {
                         this.ignoreBracet = true;
                     } else {
                         this.ignoreBracet = false;
+                        if (libFormula.includes('IFS') && libFormula !== 'COUNTIFS' && substr.includes('{')) {
+                            const leftBraceIdx: number = substr.indexOf('{');
+                            const criteriaStr: string = this.parent.substring(substr, leftBraceIdx, substr.indexOf('}') - leftBraceIdx + 1);
+                            substr = substr.split(criteriaStr).join(criteriaStr.split(argsSep).join(this.parent.tic + this.parent.tic));
+                        }
                     }
-                    let substr: string = this.parent.substring(formula, leftParens, rightParens - leftParens + 1);
                     try {
                         let args: FailureEventArgs;
                         substr = substr.split('(').join('').split(')').join('');
@@ -958,7 +964,7 @@ export class Parser {
                     substr = this.markNamedRanges(substr);
                     substr = this.swapInnerParens(substr);
                     substr = this.addParensToArgs(substr);
-                    const id: number = substr.lastIndexOf(this.parent.getParseArgumentSeparator());
+                    const id: number = substr.lastIndexOf(argsSep);
                     if (id === -1) {
                         if (substr.length > 2 && substr[0] === '(' && substr[substr.length - 1] === ')') {
                             if (substr[1] !== '{' && substr[1] !== '(') {

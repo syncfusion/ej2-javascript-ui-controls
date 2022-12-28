@@ -4,8 +4,8 @@
 
     & .e-contextual-toolbar-wrapper {
       background: $image-editor-contextual-toolbar;
-      border-top-color: $image-editor-border;
-      border-bottom-color: $image-editor-border;
+      border-top: $image-editor-border;
+      border-bottom: $image-editor-border;
 
       & .e-toolbar-item:hover .filterwrapper,
       & .e-toolbar-item.e-selected .filterwrapper{

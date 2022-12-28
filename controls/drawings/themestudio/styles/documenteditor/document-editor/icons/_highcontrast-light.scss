@@ -648,4 +648,12 @@
   .e-icon-btn .e-de-paste::before {
     content: '\e68a';
   }
+
+  .e-de-preset-container {
+    width: 95px;
+  }
+
+  .e-de-preset-container.e-de-rtl {
+    width: 85px;
+  }
 }

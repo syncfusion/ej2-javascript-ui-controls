@@ -256,7 +256,8 @@ export class Circular {
             if (progress.animation.enable && !progress.isIndeterminate) {
                 end = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
                 end = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : end;
-                this.animation.doLabelAnimation(circularLabel, isProgressRefresh ? progress.previousWidth : progress.startAngle, end, progress, this.delay);
+                this.animation.doLabelAnimation(circularLabel, isProgressRefresh ? progress.previousWidth :
+                    progress.startAngle, end, progress, this.delay);
             }
             progress.svgObject.appendChild(circularLabelGroup);
             progress.previousWidth = end;

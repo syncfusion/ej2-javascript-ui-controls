@@ -628,4 +628,12 @@
   .e-item .e-de-paste-merge-table::before {
     content: '\e91f';
   }
+
+  .e-de-preset-container {
+    width: 95px;
+  }
+
+  .e-de-preset-container.e-de-rtl {
+    width: 85px;
+  }
 }

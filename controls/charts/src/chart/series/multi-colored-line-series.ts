@@ -25,10 +25,12 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
         const visiblePoints: Points[] = this.enableComplexProperty(series);
         const options: PathOption[] = [];
         let direction: string = '';
+        let lastPoint: Points;
         const segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);
         for (const point of visiblePoints) {
             point.regions = [];
-            if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
+            if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) { 
+                lastPoint = point;
                 direction += this.getLineDirection(previous, point, series, isInverted, getPoint, startPoint);
                 if (previous != null) {
                     if (this.setPointColor(point, previous, series, series.segmentAxis === 'X', segments)) {
@@ -56,7 +58,7 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
         if (direction !== '') {
             options.push(new PathOption(
                 series.chart.element.id + '_Series_' + series.index,
-                'none', series.width, series.setPointColor(visiblePoints[visiblePoints.length - 1], series.interior),
+                'none', series.width, series.setPointColor(lastPoint, series.interior),
                 series.opacity, series.dashArray, direction
             ));
         }

@@ -984,8 +984,15 @@ describe('ListBox', () => {
             expect(listObj2.ulElement.childElementCount).toEqual(1);
             expect(listObj2.ulElement.innerText).toEqual('No records found');
             expect(listObj1.ulElement.childElementCount).toEqual(7);
+            toolChild[4].click();
+            toolChild[5].click();
+            expect(listObj2.ulElement.innerText).toEqual('No records found');
+            expect(listObj1.ulElement.childElementCount).toEqual(7);
+            toolChild[4].click();
+            toolChild[5].click();
             var ele1 =  listObj2.list.getElementsByClassName('e-input-group-icon e-clear-icon e-icons')[0];
             ele1.click();
+            expect(listObj1.ulElement.childElementCount).toEqual(8);
             expect(listObj2.ulElement.childElementCount).toEqual(9);
         });
 

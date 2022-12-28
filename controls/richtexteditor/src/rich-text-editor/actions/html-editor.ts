@@ -148,24 +148,33 @@ export class HtmlEditor {
             }
             const previousLength: number = this.parent.inputElement.innerHTML.length;
             const currentLength: number = this.parent.inputElement.innerHTML.replace(regEx, '').length;
+            let focusNode: Element = range.startContainer as Element;
             if (previousLength > currentLength) {
                 let currentChild: Element = this.parent.inputElement.firstChild as Element;
                 while (!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
                     currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
                     currentChild = currentChild.nextElementSibling;
                 }
-                if (this.parent.inputElement.querySelector('.currentStartMark').childNodes.length > 1) {
-                    const currentChild : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
-                    for (let i: number = 0; i < currentChild.length; i++) {
-                        if (currentChild[i as number].nodeName === '#text' && currentChild[i as number].textContent.length === 0) {
-                            detach(currentChild[i as number]);
+                const currentChildNode : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
+                if (currentChildNode.length > 1) {
+                    for (let i: number = 0; i < currentChildNode.length; i++) {
+                        if (currentChildNode[i as number].nodeName === '#text' && currentChildNode[i as number].textContent.length === 0) {
+                            detach(currentChildNode[i as number]);
                             i--;
                         }
+                        if (focusNode.textContent.replace(regEx, '') === currentChildNode[i].textContent) {
+                            pointer = focusNode.textContent.length > 1 ? focusNode.textContent.length - 1 : focusNode.textContent.length;
+                            focusNode = currentChildNode[i] as Element;
+                        }
+                    }
+                } else if (currentChildNode.length === 1) {
+                    if (focusNode.textContent.replace(regEx, '') === currentChildNode[0].textContent) {
+                        focusNode = currentChildNode[0] as Element;
                     }
                 }
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                     this.parent.contentModule.getDocument(),
-                    this.parent.inputElement.querySelector('.currentStartMark').childNodes[0] as Element,
+                    focusNode,
                     pointer);
             }
             const currentElem: Element = this.parent.inputElement.querySelector('.currentStartMark');

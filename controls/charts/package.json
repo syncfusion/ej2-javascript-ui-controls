@@ -43,12 +43,15 @@
 		"ej2",
 		"syncfusion",
 		"ej2-charts",
-		"datavisualization-components",
 		"TypeScript",
 		"chart",
 		"graph",
 		"financial-chart",
-		"stock-chart"
+		"stock-chart",
+		"bullet-chart",
+		"sparkline",
+		"smith-chart",
+		"range-navigator"
 	],
 	"repository": {
 		"type": "git",

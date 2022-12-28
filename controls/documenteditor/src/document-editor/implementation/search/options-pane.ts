@@ -347,6 +347,8 @@ export class OptionsPane {
         } else {
             this.findOption = 'None';
         }
+        let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
+        this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.searchOptionChange();
     }
     // /**

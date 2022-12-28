@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- Advanced filtering now works properly in a pivot table.
+
 ## 20.4.38 (2022-12-21)
 
 ### Pivot Table

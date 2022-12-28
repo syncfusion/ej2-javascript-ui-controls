@@ -34,7 +34,6 @@ export class BatchEditRender {
         }
         args.cell.innerHTML = '';
         args.cell.appendChild(this.getEditElement(elements, args));
-        args.cell.classList.remove('e-ellipsistooltip');
         args.cell.classList.add('e-editedbatchcell');
         classList(args.row, [literals.editedRow, 'e-batchrow'], []);
     }

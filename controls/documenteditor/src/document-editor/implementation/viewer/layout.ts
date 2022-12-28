@@ -1262,7 +1262,7 @@ export class Layout {
                     prevPara = element.line.paragraph.bodyWidget.previousRenderedWidget.lastChild as ParagraphWidget;
                     let prevLastChild = element.line.paragraph.bodyWidget.previousRenderedWidget.lastChild as ParagraphWidget;
                     this.viewer.updateClientArea(element.line.paragraph.bodyWidget, (prevPara.bodyWidget as BodyWidget).page);
-                    if (prevLastChild.y + prevLastChild.height >= this.viewer.clientArea.height + this.viewer.clientArea.y) {
+                    if (this.isInitialLoad && prevLastChild.y + prevLastChild.height >= this.viewer.clientArea.height + this.viewer.clientArea.y) {
                         ismove = true;
                     } else {
                         this.viewer.clientActiveArea = clientActiveArea;
@@ -1463,7 +1463,7 @@ export class Layout {
         // if (element.indexInOwner === 0 && element.line.isFirstLine()) {
         //     wrapDiff -= HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         // }
-        element.padding.left = wrapDiff;
+        element.padding.left = wrapDiff > 0 ? wrapDiff : 0;
         if (previousWidth !== this.viewer.clientActiveArea.width) {
             let wrapPos: WrapPosition = new WrapPosition(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.width);
             this.updateWrapPosition(wrapPos);
@@ -1476,7 +1476,7 @@ export class Layout {
         if (this.isYPositionUpdated) {
             if (element.line.isFirstLine()) {
                 element.line.paragraph.y = this.viewer.clientActiveArea.y;
-            } else {
+            } else if (element.line.children[0] === element) {
                 element.line.marginTop += (this.viewer.clientActiveArea.y - previousTop)
             }
             if(element.line.paragraph.containerWidget instanceof HeaderFooterWidget){
@@ -1927,6 +1927,7 @@ export class Layout {
                             let remainingClientWidth: number = this.viewer.clientArea.right - textWrappingBounds.right;
                             remainingClientWidth = remainingClientWidth > 0 ? remainingClientWidth : 0;
                             this.isWrapText = true;
+                            let isUpdateClientArea: boolean = false;
                             //checks minimum width
                             let minwidth: number = 0;
                             if (!isNullOrUndefined(currTextRange)) {
@@ -1966,6 +1967,9 @@ export class Layout {
                                     // }
                                     if (rect.width > minwidth || textWrappingType === 'Right') {
                                         this.viewer.updateClientAreaForTextWrap(rect);
+                                    } else if (rect.width < minwidth && elementBox.line.children[0] !== elementBox && textWrappingType === 'Both' && floatingItem instanceof ShapeBase) {
+                                        this.viewer.updateClientAreaForTextWrap(rect);
+                                        isUpdateClientArea = true;
                                     }
                                 }
                                 if ((rect.width < minimumWidthRequired && !(minwidth < remainingClientWidth && ('Tight' === textWrappingStyle)))
@@ -1984,7 +1988,7 @@ export class Layout {
                                         this.isWrapText = false;
                                     }
                                     // Reset the rectangle position when the rectangle right position is equialent to layout area right position
-                                    else if (Math.round(rect.right) >= Math.round(this.viewer.clientArea.right) && textWrappingType === 'Both') {
+                                    else if (!isUpdateClientArea && Math.round(rect.right) >= Math.round(this.viewer.clientArea.right) && textWrappingType === 'Both') {
                                         //Updates top margin of the paragraph when paragraph mark not wrap based on the floating table.
                                         let topMarginValue = 0;
                                         // topMarginValue = GetTopMarginValueForFloatingTable(ownerPara, floatingItem, rect.y);
@@ -2007,7 +2011,7 @@ export class Layout {
                                 //available to fit this text in current line then move the text to bottom
                                 //of the floating item and this behavior is applicable only for Word 2013.
                                 //Lower versions split the text character by character.
-                                if ((elementBox.line.isFirstLine() && elementBox.indexInOwner === 0 || remainingClientWidth === 0) && textWrappingStyle === 'Square'
+                                if ((elementBox.line.isFirstLine() && elementBox.indexInOwner === 0 || remainingClientWidth === 0 && elementBox.line.children[0] === elementBox) && textWrappingStyle === 'Square'
                                     && Math.round(rect.width) <= Math.round(minwidth)
                                     && ownerPara.containerWidget === containerWidget) {
                                     rect.x = clientLayoutArea.x;
@@ -6775,7 +6779,7 @@ export class Layout {
                 //let paragraph: ParagraphWidget;
                 if (currentWidget.containerWidget !== block.containerWidget) {
                     if (!(currentWidget instanceof ParagraphWidget) ||
-                        (currentWidget instanceof ParagraphWidget) && !currentWidget.isEndsWithPageBreak && !currentWidget.isEndsWithColumnBreak && (currentWidget.containerWidget as BodyWidget).page !== (block.containerWidget as BodyWidget).page) {
+                    (currentWidget instanceof ParagraphWidget) && !currentWidget.isEndsWithPageBreak && !currentWidget.isEndsWithColumnBreak && (currentWidget.containerWidget as BodyWidget).page !== (block.containerWidget as BodyWidget).page && !(block.bodyWidget instanceof BodyWidget && block.bodyWidget.sectionFormat.breakCode === 'NoBreak')) {
                         /* eslint-disable-next-line max-len */
                         this.updateContainerWidget(block as Widget, currentWidget.containerWidget as BodyWidget, currentWidget.indexInOwner + 1, false);
                     }
@@ -7823,7 +7827,7 @@ export class Layout {
             }
             if (currentWidget.containerWidget === nextWidget.containerWidget
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(this.viewer.clientActiveArea.y, 2)) &&
-                isNullOrUndefined(nextWidget.nextWidget)) {
+                isNullOrUndefined(nextWidget.nextWidget) && (currentWidget.containerWidget as BodyWidget).sectionFormat.columns.length <= 1) {
                 break;
             }
             if (!isNullOrUndefined((currentWidget as ParagraphWidget).floatingElements)) {
@@ -8707,7 +8711,7 @@ export class Layout {
                     this.updateContainerWidget(paragraphWidget, newBodyWidget, 0, true);
                 }
                 //Updates client area based on next page.
-                viewer.updateClientArea(fromBodyWidget, fromBodyWidget.page);
+                viewer.updateClientArea(newBodyWidget, newBodyWidget.page);
                 break;
             }
         }
@@ -8804,6 +8808,15 @@ export class Layout {
         if (!isNullOrUndefined(nextColumn)) {
             nextBody = this.moveToNextColumnByBodyWidget(block, childStartIndex);
             this.viewer.updateClientArea(nextBody, nextBody.page);
+            if (block.bodyWidget.sectionFormat.columns.length > 1) {
+                let columnIndex: number = block.bodyWidget.page.bodyWidgets.indexOf(block.bodyWidget);
+                let columnWidth: number = block.bodyWidget.x + block.bodyWidget.sectionFormat.columns[columnIndex].width + block.bodyWidget.sectionFormat.columns[columnIndex].space;
+                for (let j: number = 0; j < block.bodyWidget.floatingElements.length; j++) {
+                    if (block.bodyWidget.floatingElements[j] instanceof ShapeElementBox && columnWidth < block.bodyWidget.floatingElements[j].x + block.bodyWidget.floatingElements[j].width) {
+                        nextBody.floatingElements.push(block.bodyWidget.floatingElements[j]);
+                    }
+                }
+            }
         }
         if (isNullOrUndefined(nextBody)) {
             let insertPage: boolean = false;
@@ -8828,6 +8841,8 @@ export class Layout {
                     //  this.viewer.clientActiveArea.y = block.y + block.height;
                 } else {
                     nextPage = this.viewer.createNewPage(nextBody, pageIndex);
+                    this.viewer.updateClientArea(nextBody, nextBody.page);
+                    nextBody.y = this.viewer.clientActiveArea.y;
                 }
                 if (insertPage) {
                     this.documentHelper.insertPage(pageIndex, nextPage);

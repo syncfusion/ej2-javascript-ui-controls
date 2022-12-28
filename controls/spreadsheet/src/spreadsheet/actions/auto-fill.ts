@@ -476,7 +476,9 @@ export class AutoFill {
         }
         args.direction = options.verticalFill ? 'Down' : 'Right';
         args.fillType = 'CopyCells';
-        if (sheet.isProtected) {
+        const isLockedCell: boolean = isLockedCells(this.parent, getRangeIndexes(args.fillRange));
+        if (sheet.isProtected && isLockedCell) {
+            this.parent.notify(editAlert, null);
             return;
         }
         this.performAutoFillAction(args);

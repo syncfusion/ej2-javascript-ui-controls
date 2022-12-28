@@ -974,6 +974,19 @@
         }
       }
 
+      @if ($skin-name == 'FluentUI') or ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') {
+        &.e-node-limit {
+          .e-excelfilter {
+            .e-member-editor-container-outer-div {
+              height: 82px !important;
+              @if ($skin-name == 'fabric') or ($skin-name == 'fabric-dark') {
+                height: 96px !important;
+              }
+            }
+          }
+        }
+      }
+
       .e-excelfilter {
         .e-member-editor-container-outer-div {
           height: $pivotgrid-excel-member-filter-bigger-height !important;
@@ -1007,6 +1020,10 @@
         
         @if ($skin-name =='FluentUI') or ($skin-name =='fabric') {
           height: 427px !important;
+
+          &.e-node-limit {
+            height: 440px !important;
+          }
         }
       }
     }

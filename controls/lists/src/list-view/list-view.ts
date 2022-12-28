@@ -1264,7 +1264,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             case 32:
                 if (isNullOrUndefined(this.targetElement) || !(this.targetElement.classList.contains('e-focused'))) {
                     this.spaceKeyHandler(e);
-                }
+               }
                 break;
         }
     }

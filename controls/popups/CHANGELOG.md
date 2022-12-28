@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### Popup
+
+#### Bug Fixes
+
+- `#I423129` - Now, when Rich Text Editor is placed inside the modal dialog the hyperlink quickToolbar popup is visible.
+
 ## 20.4.38 (2022-12-21)
 
 ### Tooltip

@@ -190,7 +190,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             const btn: Element = this.createElement('button', { attrs: { 'type': 'button' } });
             const wrapper: HTMLElement = this.createElement(TAGNAME, { className: 'e-' + this.getModuleName() + '-wrapper' });
             for (let idx: number = 0, len: number = ele.attributes.length; idx < len; idx++) {
-                btn.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
+                btn.setAttribute(ele.attributes[idx as number].nodeName, ele.attributes[idx as number].nodeValue);
             }
             ele.parentNode.insertBefore(wrapper, ele);
             detach(ele);

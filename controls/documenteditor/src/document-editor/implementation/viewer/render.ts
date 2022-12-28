@@ -314,15 +314,24 @@ export class Renderer {
                 this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'Behind');
             }
         }
-        // let isClipped: boolean = false;
-        // if (bodyWidget.sectionFormat.columns.length > 1) {
-        //     let colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
-        //     if (colIndex !== bodyWidget.sectionFormat.columns.length - 1) {
-        //         let width: number = (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space / 2);
-        //         isClipped = true;
-        //         this.clipRect(page.bodyWidgets[colIndex].x, page.bodyWidgets[colIndex].y, this.getScaledValue(width), this.getScaledValue(page.boundingRectangle.height));
-        //     }
-        // }
+        let isClipped: boolean = false;
+        if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1) {
+            let colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
+            let xPos: number;
+            let width: number;
+            if (colIndex === 0) {
+                xPos = page.bodyWidgets[colIndex].x - HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.leftMargin);
+                width = HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.leftMargin) + (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space / 2);
+            } else if (colIndex === bodyWidget.sectionFormat.columns.length - 1) {
+                xPos = page.bodyWidgets[colIndex].x - ((bodyWidget.sectionFormat.columns[colIndex - 1] as WColumnFormat).space / 2);
+                width = HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.rightMargin) + (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + ((bodyWidget.sectionFormat.columns[colIndex - 1] as WColumnFormat).space / 2);
+            } else {
+                xPos = page.bodyWidgets[colIndex].x - ((bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space / 2);
+                width = (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).width + (bodyWidget.sectionFormat.columns[colIndex] as WColumnFormat).space;
+            }
+            this.clipRect(xPos, page.bodyWidgets[colIndex].y, this.getScaledValue(width), this.getScaledValue(page.boundingRectangle.height));
+            isClipped = true;
+        }
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
             const widget: Widget = bodyWidget.childWidgets[parseInt(i.toString(), 10)] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
@@ -334,9 +343,9 @@ export class Renderer {
 
             this.renderWidget(page, widget);
         }
-        // if (isClipped) {
-        //     this.pageContext.restore();
-        // }
+        if (isClipped) {
+            this.pageContext.restore();
+        }
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
                 this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'InFrontOfText');
@@ -517,7 +526,24 @@ export class Renderer {
     private renderParagraphWidget(page: Page, paraWidget: ParagraphWidget): void {
         let top: number = paraWidget.y;
         let left: number = paraWidget.x;
+        let isClipped: boolean = false;
+        let firstLine: LineWidget = paraWidget.firstChild as LineWidget;
+        let paddingLeft: number = 0;
+        for (let i: number = 0; i < firstLine.children.length; i++) {
+            const element: ElementBox = firstLine.children[i] as ElementBox;
+            if (element instanceof TextElementBox) {
+                paddingLeft = element.padding.left;
+                break;
+            }
+        }
+        if (paddingLeft > 0) {
+            this.clipRect(paraWidget.x + paddingLeft, this.getScaledValue(page.boundingRectangle.y), this.getScaledValue(page.boundingRectangle.width), this.getScaledValue(page.boundingRectangle.height));
+            isClipped = true;
+        }
         this.renderParagraphBorder(page, paraWidget);
+        if (isClipped) {
+            this.pageContext.restore();
+        }
         for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
             let widget: LineWidget = paraWidget.childWidgets[i] as LineWidget;
             top += widget.marginTop;

@@ -707,7 +707,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             fli.classList.remove(FOCUSED);
             if (e.action !== END && e.action !== HOME) {
-                if (e.action === DOWNARROW){
+                if (e.action === DOWNARROW) {
                     fliIdx++;
                 } else {
                     fliIdx--;
@@ -715,6 +715,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (fliIdx === (e.action === DOWNARROW ? cul.childElementCount : -1)) {
                     fliIdx = defaultIdx;
                 }
+                if (cul.children[fliIdx as number].classList.contains(HIDE)) {
+                    if (e.action === DOWNARROW && fliIdx === cul.childElementCount - 1) {
+                        fliIdx = defaultIdx;
+                    } else if (e.action === UPARROW && fliIdx === 0) {
+                        fliIdx = defaultIdx;
+                    }
+                }
+              
             }
         }
         const cli: Element = cul.children[fliIdx as number];
@@ -1367,7 +1375,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             itemCreated: (args: { curData: MenuItemModel | obj, item: Element, fields: obj }): void => {
                 if ((<obj>args.curData)[this.getField('separator', level)]) {
                     args.item.classList.add(SEPARATOR);
-                    args.item.removeAttribute('role');
+                    args.item.setAttribute('role', 'separator');
                 }
                 if (showIcon && !(<obj>args.curData)[args.fields.iconCss as string]
                     && !(<obj>args.curData)[this.getField('separator', level)]) {
@@ -1379,9 +1387,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     args.item.appendChild(span);
                     args.item.setAttribute('aria-haspopup', 'true');
                     args.item.setAttribute('aria-expanded', 'false');
-                    if (!this.isMenu) {
-                        args.item.removeAttribute('role');
-                    }
                     (args.item as HTMLElement).classList.add('e-menu-caret-icon');
                 }
                 if (this.isMenu && this.template) {
@@ -1403,9 +1408,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         const ul: HTMLElement = ListBase.createList(
             this.createElement, items as objColl, listBaseOptions, !this.template, this);
         ul.setAttribute('tabindex', '0');
-        if (this.isMenu) {
-            ul.setAttribute('role', 'menu');
-        }
+        this.isMenu ? ul.setAttribute('role', 'menu') : ul.setAttribute('role', 'menubar');
         return ul;
     }
 

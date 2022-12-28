@@ -1,12 +1,12 @@
 {
 	"name": "@syncfusion/ej2-lists",
-	"version": "20.3.56",
+	"version": "20.4.38",
 	"description": "The listview control allows you to select an item or multiple items from a list-like interface and represents the data in interactive hierarchical structure across different layouts or views.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-lists.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-lists.es2015.js",
+	"es2015": "./dist/es6/ej2-lists.es5.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-buttons": "*",

@@ -1461,6 +1461,14 @@ export function deserialize(model: string, diagram: Diagram): Object {
     }
     diagram.backgroundColor = dataObj.backgroundColor || 'transparent';
     diagram.basicElements = dataObj.basicElements || [];
+    // EJ2-66465 - Added below code to empty the segment collection if connector type is bezier
+    if (dataObj.connectors) {
+        for (let i: number = 0; i < dataObj.connectors.length; i++) {
+            if (dataObj.connectors[i].type === 'Bezier' && dataObj.connectors[i].segments.length > 0) {
+                dataObj.connectors[i].segments = [];
+            }
+        }
+    }
     diagram.connectors = dataObj.connectors || [];
     diagram.dataSourceSettings = dataObj.dataSourceSettings || {};
     diagram.dataSourceSettings.doBinding = map;

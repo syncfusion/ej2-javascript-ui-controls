@@ -47,6 +47,9 @@ export class WorkbookFormula {
         this.addEventListener();
         this.initCalculate();
         this.registerSheet();
+        this.parent.customFormulaCollection.forEach((value: IFormulaColl, key: string) => {
+            this.addCustomFunction(value.handler, key, value.description);
+        });
     }
 
     /**
@@ -60,6 +63,12 @@ export class WorkbookFormula {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.parent as any).refreshing) {
             this.clearAllUniqueFormulaValue();
+            let formulaCollect: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
+            formulaCollect.forEach((value: IFormulaColl, key: string) => {
+                if (value.isCustom) {
+                    this.parent.customFormulaCollection.set(key, { handler: value.handler, description: value.description });
+                }
+            });
         }
         this.calculateInstance.dispose();
         this.calculateInstance = null;

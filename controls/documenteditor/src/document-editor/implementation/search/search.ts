@@ -592,9 +592,9 @@ export class Search {
             let listElement: string = '';
             let containerWidget: BodyWidget = result.start.paragraph.containerWidget as BodyWidget;
             let type: string = containerWidget instanceof HeaderFooterWidget ? containerWidget.headerFooterType : '';
-            if (type.indexOf('Header')) {
+            if (type.indexOf('Header') != -1) {
                 headerFooterString = '<span class="e-de-header-footer-list">' + 'Header' + ': ' + '</span>';
-            } else if (type.indexOf('Footer')) {
+            } else if (type.indexOf('Footer') != -1) {
             listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
             headerFooterString = '<span class="e-de-header-footer-list">' + 'Footer' + ': ' + '</span>';
             }

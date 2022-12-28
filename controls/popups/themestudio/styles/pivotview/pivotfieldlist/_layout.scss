@@ -1000,7 +1000,7 @@
       max-width: 400px !important;
       min-width: 320px !important;
       @if ($skin-name == 'FluentUI') {
-        min-height: 370px;
+        min-height: 350px;
       }
 
       .e-member-prompt {
@@ -1857,6 +1857,21 @@
       }
 
       /* stylelint-disable */
+      &.e-node-limit.e-excel-filter {
+        .e-excelfilter {
+          .e-member-editor-container-outer-div {
+
+            @if ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+                height: 75px !important;
+              }
+            
+            @if ($skin-name =='material') or ($skin-name =='material-dark') {
+              height: 65px !important;
+            }
+          }
+        }
+      }
+
       .e-excelfilter {
 
         @if ($skin-name == 'tailwind') {
@@ -1892,6 +1907,10 @@
         
         @if ($skin-name =='fluent') or ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
           height: 427px !important;
+
+          &.e-node-limit {
+            height: 440px !important;
+          }
         }
       }
     }

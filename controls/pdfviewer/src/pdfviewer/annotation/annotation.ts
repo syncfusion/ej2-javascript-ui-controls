@@ -2584,7 +2584,7 @@ export class Annotation {
                             freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
                         }
                         else{
-                            freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height;
+                            freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height + 'px';
                         }
                     }
                 }
@@ -5526,7 +5526,7 @@ export class Annotation {
         } else if (fontStyle === 8) {
             return { isStrikeout: true };
         } else {
-            return { isBold: fontStyle.isBold, isItalic: fontStyle.isItalic, isUnderline: fontStyle.isUnderline, isStrikeout: fontStyle.isUnderline};
+            return { isBold: fontStyle.isBold, isItalic: fontStyle.isItalic, isUnderline: fontStyle.isUnderline, isStrikeout: fontStyle.isStrikeout};
         }
     }
 

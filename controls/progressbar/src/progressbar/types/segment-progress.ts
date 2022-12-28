@@ -39,11 +39,11 @@ export class Segment {
         for (let i: number = 0; i < count; i++) {
             segWidth = (tolWidth < avlSegWidth) ? tolWidth : avlSegWidth;
             if (j < progress.segmentColor.length) {
-                color = progress.segmentColor[j];
+                color = progress.segmentColor[j as number];
                 j++;
             } else {
                 j = 0;
-                color = progress.segmentColor[j];
+                color = progress.segmentColor[j as number];
                 j++;
             }
             option = new PathOption(
@@ -108,11 +108,11 @@ export class Segment {
                 );
             segmentPath = getPathArc(x, y, r, start, segmentEnd, progress.enableRtl);
             if (j < progress.segmentColor.length) {
-                color = progress.segmentColor[j];
+                color = progress.segmentColor[j as number];
                 j++;
             } else {
                 j = 0;
-                color = progress.segmentColor[j];
+                color = progress.segmentColor[j as number];
                 j++;
             }
             option = new PathOption(
@@ -156,15 +156,15 @@ export class Segment {
         let color: string;
         let endColor: string;
         for (let i: number = 0; i < range.length; i++) {
-            validRange = (range[i].start >= rangeMin && range[i].start <= rangeMax &&
-                range[i].end >= rangeMin && range[i].end <= rangeMax);
-            startPos = totalWidth * progress.calculateProgressRange(range[i].start, rangeMin, rangeMax);
-            endPos = totalWidth * progress.calculateProgressRange(range[i].end, rangeMin, rangeMax);
+            validRange = (range[i as number].start >= rangeMin && range[i as number].start <= rangeMax &&
+                range[i as number].end >= rangeMin && range[i as number].end <= rangeMax);
+            startPos = totalWidth * progress.calculateProgressRange(range[i as number].start, rangeMin, rangeMax);
+            endPos = totalWidth * progress.calculateProgressRange(range[i as number].end, rangeMin, rangeMax);
             startX = posX + ((progress.enableRtl) ? -startPos : startPos);
             endX = posX + ((progress.enableRtl) ? -endPos : endPos);
             startX = (validRange) ? ((progress.isGradient && i > 0) ? startX + gradX : startX) : posX;
             endX = (validRange) ? endX : posX;
-            color = (progress.isGradient) ? 'url(#lineRangeGrad_' + i + ')' : range[i].color;
+            color = (progress.isGradient) ? 'url(#lineRangeGrad_' + i + ')' : range[i as number].color;
             option = new PathOption(
                 progress.element.id + '_LinearRange_' + i, 'none', thickness, color, opacity,
                 '0', 'M' + ' ' + startX + ' ' + startY + ' ' + 'L' + endX + ' ' + startY
@@ -176,11 +176,11 @@ export class Segment {
             rangeGroup.appendChild(rangePath);
             if (progress.isGradient) {
                 if (range.length - 1 === i) {
-                    endColor = range[i].color;
+                    endColor = range[i as number].color;
                 } else {
                     endColor = range[i + 1].color;
                 }
-                gradient = this.setLinearGradientColor(i, range[i].color, endColor, startX, endX, progress);
+                gradient = this.setLinearGradientColor(i, range[i as number].color, endColor, startX, endX, progress);
                 rangeGroup.appendChild(gradient);
             }
         }
@@ -205,13 +205,13 @@ export class Segment {
         let color: string;
         let endColor: string;
         for (let i: number = 0; i < range.length; i++) {
-            isValidRange = (range[i].start >= rangeMin && range[i].start <= rangeMax &&
-                range[i].end >= rangeMin && range[i].end <= rangeMax);
-            startAngle = this.widthToAngle(rangeMin, rangeMax, range[i].start, tolAngle);
-            endAngle = this.widthToAngle(rangeMin, rangeMax, range[i].end, tolAngle);
+            isValidRange = (range[i as number].start >= rangeMin && range[i as number].start <= rangeMax &&
+                range[i as number].end >= rangeMin && range[i as number].end <= rangeMax);
+            startAngle = this.widthToAngle(rangeMin, rangeMax, range[i as number].start, tolAngle);
+            endAngle = this.widthToAngle(rangeMin, rangeMax, range[i as number].end, tolAngle);
             startAngle = (isValidRange) ? (start + ((progress.enableRtl) ? -startAngle : startAngle)) % 360 : start;
             endAngle = (isValidRange) ? (start + ((progress.enableRtl) ? -endAngle : endAngle)) % 360 : start;
-            color = (progress.isGradient) ? 'url(#circleRangeGrad_' + i + ')' : range[i].color;
+            color = (progress.isGradient) ? 'url(#circleRangeGrad_' + i + ')' : range[i as number].color;
             option = new PathOption(
                 progress.element.id + '_CircularRange_' + i, 'none', thickness, color, opacity,
                 '0', getPathArc(centerX, centerY, radius, startAngle, endAngle, progress.enableRtl)
@@ -223,12 +223,12 @@ export class Segment {
             rangeGroup.appendChild(rangePath);
             if (progress.isGradient) {
                 if (range.length - 1 === i) {
-                    endColor = range[i].color;
+                    endColor = range[i as number].color;
                 } else {
                     endColor = range[i + 1].color;
                 }
                 gradient = this.setCircularGradientColor(
-                    i, range[i].color, endColor, startAngle, endAngle, radius, centerX, centerY, progress
+                    i, range[i as number].color, endColor, startAngle, endAngle, radius, centerX, centerY, progress
                 );
                 rangeGroup.appendChild(gradient);
             }

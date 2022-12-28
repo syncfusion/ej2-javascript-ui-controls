@@ -16,7 +16,7 @@ $btn-active-color: $white !default;
 $btn-disabled-color: $white !default;
 $btn-disabled-bgcolor: rgba($btn-bgcolor, .65) !default;
 $btn-disabled-border-color: transparent !default;
-$btn-active-box-shadow: 0 0 0 .2rem rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, 15%), .5) !default;
+$btn-active-box-shadow: 0 0 0 .2rem rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, .15), .5) !default;
 $btn-icon-margin-top: -2px !default;
 $btn-icon-btn-width: 1em !default;
 $btn-icon-top-bottom-padding: 6px !default;

@@ -395,6 +395,14 @@ describe('Diagram Control', () => {
             expect(annotOffsetX !== (diagram.selectedItems.nodes[0].wrapper.children[0] as Canvas).children[4].offsetX).toBe(true);
             done();
         });
+        it('Checking Lane children after drag and drop text annotation node inside swimlane',(done: Function)=>{
+            diagram.select([diagram.nameTable['bpmnNode1_textannotation_newAnnotation']]);
+            diagram.drag(diagram.selectedItems.nodes[0],400,-50);
+            diagram.commandHandler.dropChildToContainer(diagram.nameTable['swimlanestackCanvas10'],diagram.nameTable['bpmnNode1_textannotation_newAnnotation']);
+            diagram.select([diagram.nameTable['swimlanestackCanvas10']]);
+            expect(diagram.selectedItems.nodes[0].children.length === 1).toBe(true);
+            done();
+        })
     });
 
 });

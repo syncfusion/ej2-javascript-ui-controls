@@ -48,7 +48,7 @@
           &.e-tbtn-txt {
             .e-icons.e-icon-right.e-btn-icon.e-icon-down-arrow {
               font-size: $schedule-tbar-down-arrow-font-size;
-              padding-top: $schedule-tbar-down-arrow-padding-top;
+              margin-top: $schedule-tbar-down-arrow-margin-top;
             }
           }
         }
@@ -163,7 +163,7 @@
           }
 
           .e-toolbar-item .e-tbar-btn.e-btn.e-tbtn-txt .e-icons.e-btn-icon {
-            padding: 0;
+            padding: $schedule-tbar-btn-icn-bgr-padding;
           }
         }
 

@@ -85,7 +85,9 @@
         display: none;
       }
     }
-
+    .e-alert-dialog .e-footer-content{
+      border-top: $dialog-alert-footer-content-border-top;
+    }
     .e-footer-content {
       text-align: right;
     }
@@ -234,10 +236,6 @@
     }
   }
 
-  .e-alert-dialog .e-footer-content{
-    border-top: $dialog-alert-footer-content-border-top;
-  }
-  
   .e-rtl .e-footer-content .e-btn {
     margin-right: $dialog-footer-button-margin-right;
   }

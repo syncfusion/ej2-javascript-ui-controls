@@ -34,8 +34,8 @@ export function upDownKeyHandler(ul: HTMLElement, keyCode: number): void {
     const selectedLi: Element = ul.querySelector('.e-selected');
     if (selectedLi) { selectedLi.classList.remove('e-selected'); }
     for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
-        if (ul.children[i].classList.contains('e-focused')) {
-            li = ul.children[i];
+        if (ul.children[i as number].classList.contains('e-focused')) {
+            li = ul.children[i as number];
             liIdx = i;
             li.classList.remove('e-focused');
             if (keyCode === 40) {
@@ -48,11 +48,11 @@ export function upDownKeyHandler(ul: HTMLElement, keyCode: number): void {
             }
         }
     }
-    li = ul.children[liIdx];
+    li = ul.children[liIdx as number];
     liIdx = isValidLI(ul, li, liIdx, keyCode);
     if (liIdx !== -1) {
-        addClass([ul.children[liIdx]], 'e-focused');
-        (ul.children[liIdx] as HTMLElement).focus();
+        addClass([ul.children[liIdx as number]], 'e-focused');
+        (ul.children[liIdx as number] as HTMLElement).focus();
     }
 }
 
@@ -78,7 +78,7 @@ function isValidLI(ul: HTMLElement, li: Element, index: number, keyCode: number,
             }
         }
     }
-    li = ul.children[index];
+    li = ul.children[index as number];
     if (li.classList.contains('e-separator') || li.classList.contains('e-disabled')) {
         count++;
         if (count === ul.childElementCount) {
@@ -97,7 +97,7 @@ export function setBlankIconStyle(popup: HTMLElement): void {
     const blankIconList: HTMLElement[] = [].slice.call(popup.getElementsByClassName('e-blank-icon'));
     if (!blankIconList.length) { return; }
     let iconLi: HTMLElement = popup.querySelector('.e-item:not(.e-blank-icon):not(.e-separator)') as HTMLElement;
-	if (isNullOrUndefined(iconLi)) {return; }
+    if (isNullOrUndefined(iconLi)) {return; }
     if (iconLi.classList.contains('e-url')) { iconLi = iconLi.querySelector('.e-menu-url'); }
     const icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
     let cssProp: { padding: string, margin: string };

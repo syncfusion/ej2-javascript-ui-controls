@@ -384,6 +384,7 @@ export class MeasureAnnotation {
                 }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 const annotationObject: IMeasureShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
+                this.pdfViewer.annotationModule.isFormFieldShape = false;
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                 this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
             }
@@ -1049,6 +1050,12 @@ export class MeasureAnnotation {
      */
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewlyAdded?: boolean): IMeasureShapeAnnotation {
+        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== ""){
+            this.pdfViewer.annotationModule.isFormFieldShape = true;
+        }
+        else{
+            this.pdfViewer.annotationModule.isFormFieldShape = false;
+        }
         if (!isNewlyAdded) {
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }

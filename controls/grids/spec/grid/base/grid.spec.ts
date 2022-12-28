@@ -9,6 +9,8 @@ import { Grid } from '../../../src/grid/base/grid';
 import { GridLine } from '../../../src/grid/base/enum';
 import { Column, ColumnModel } from '../../../src/grid/models/column';
 import { Page } from '../../../src/grid/actions/page';
+import { Edit } from '../../../src/grid/actions/edit';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
@@ -16,7 +18,7 @@ import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel, recordClick } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 import { getNumberFormat } from '../../../src/grid/base/util';
-Grid.Inject(Page);
+Grid.Inject(Page, Edit, Toolbar);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -1725,6 +1727,40 @@ describe('Grid base module', () => {
         });
         it('Create Empty Mask Table', () => {
             expect(gridObj.getContent().querySelector('.e-masked-table')).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-66841 - Script error thrown when saving the data with Shimmer effect', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 15),
+                    loadingIndicator: { indicatorType: 'Shimmer' },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 200,
+                    columns: [
+                        { field: 'OrderID'},
+                        { field: 'CustomerID'},
+                        { field: 'EmployeeID'},
+                    ]
+                }, done);
+        });
+        it('Select row', () => {
+            (gridObj.getContent().firstChild as HTMLElement).scrollTop = 200;
+            gridObj.selectRow(8);
+        });
+        it('Start Edit', () => {
+            gridObj.startEdit();
+        });
+        it('End Edit', () => {
+            gridObj.endEdit();
+            expect(1).toBe(1);
         });
         afterAll(() => {
             destroy(gridObj);

@@ -3658,7 +3658,7 @@
         margin-top: $grid-reorder-downarrow-top-margin;
       }
 
-      .e-masked-cell.e-rowcell .e-shimmer-wave {
+      .e-masked-cell.e-rowcell .e-virtualcell {
         background-color: $grid-maskedcell-virtual-background-color;
         display: inline-block;
         height: 10px;

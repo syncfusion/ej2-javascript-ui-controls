@@ -67,14 +67,14 @@ export class Linear {
     public renderLinearProgress(refresh?: boolean, previousWidth: number = 0): void {
         const progress: ProgressBar = this.progress; let option: PathOption;
         let linearProgress: Element;
-        let linearProgressWidth: number; let clipPathLinear: Element;
+        let clipPathLinear: Element;
         let clipPathIndeterminate: Element; let linearProgressGroup: Element;
         let animationdelay: number;
         let segmentWidth: number;
         let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
         const previousProgressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
         const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
-        linearProgressWidth = progress.progressRect.width *
+        const linearProgressWidth: number = progress.progressRect.width *
                               ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });
@@ -339,7 +339,9 @@ export class Linear {
                 );
                 linearLabelGroup.appendChild(clipPath);
                 linearlabel.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathLabel)');
-                this.animation.doLabelAnimation(linearlabel, (isProgressRefresh ? progress.previousLabelWidth :0), progressWidth - (isProgressRefresh ? progress.previousLabelWidth : 0), progress, this.delay, textSize.width);
+                this.animation.doLabelAnimation(linearlabel, (isProgressRefresh ? progress.previousLabelWidth : 0),
+                                                progressWidth - (isProgressRefresh ? progress.previousLabelWidth : 0),
+                                                progress, this.delay, textSize.width);
             }
             progress.svgObject.appendChild(linearLabelGroup);
             progress.previousLabelWidth = progressWidth;
@@ -413,7 +415,7 @@ export class Linear {
         linearGradient = setAttributes(gradOption, linearGradient);
         for (let i: number = 0; i < stopOption.length; i++) {
             stop = document.createElementNS(svgLink, stopElement);
-            stop = setAttributes(stopOption[i], stop);
+            stop = setAttributes(stopOption[i as number], stop);
             linearGradient.appendChild(stop);
         }
         defs.appendChild(linearGradient);

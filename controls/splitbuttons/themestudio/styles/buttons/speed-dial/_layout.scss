@@ -1,7 +1,7 @@
 @include export-module('speed-dial-layout') {
   .e-speeddial-popup {
-    pointer-events: none;
     position: absolute;
+    z-index: 99999;
 
     &.e-speeddial-top {
       top: $sd-offset;

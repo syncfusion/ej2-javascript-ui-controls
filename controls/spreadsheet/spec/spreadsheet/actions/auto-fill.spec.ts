@@ -2,7 +2,7 @@ import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { L10n } from '@syncfusion/ej2-base';
-import { getCell } from "../../../src/index";
+import { getCell, ProtectSettingsModel } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -1354,6 +1354,55 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
                 expect(getCell(1, 8, instance.sheets[0]).formula).toBe('=IF($I3="Other", $J3, CONCAT($I3: $J3))');
                 expect(getCell(0, 9, instance.sheets[0]).formula).toBe('=IF($I2="Other", $J2, CONCAT($I2: $J2))');
+                done();
+            });
+        });
+    });
+    describe('EJ2-66414', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        name: 'Price Details',
+                        rows: [{ cells: [{ value: '11' }] }],
+                    }
+                ],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    let protectSetting: ProtectSettingsModel = {
+                        selectCells: true,
+                        formatCells: false,
+                        formatRows: false,
+                        formatColumns: false,
+                        insertLink: false
+                    }
+                    spreadsheet.protectSheet("Price Details", protectSetting);
+                    spreadsheet.lockCells('A1:Z1', false);
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Autofill is not working as expected for unlocked cells while the sheet is protected on keyboard interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1:F1']);
+            helper.triggerKeyNativeEvent(82, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('11');
+                expect(helper.invoke('getCell', [0, 2]).textContent).toBe('11');
+                expect(helper.invoke('getCell', [0, 3]).textContent).toBe('11');
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('11');
+                done();
+            });
+        });
+        it('Edit alert Dialog shown while the autofill applied on locked cell and the sheet is protected on keyboard interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1:C3']);
+            helper.triggerKeyNativeEvent(82, true);
+            setTimeout(() => {
+                var dialog = helper.getElement('.e-editAlert-dlg.e-dialog');
+                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                    "The cell you're trying to change is protected. To make change, unprotect the sheet.");
                 done();
             });
         });

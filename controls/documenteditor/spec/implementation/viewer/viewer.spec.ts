@@ -727,3 +727,30 @@ console.log('WebLayout Width');
         });
     });
 });
+describe('Change WebLayout validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 100);
+    });
+    it('Change WebLayout validation', () => {
+        editor.openBlank();
+        expect(() => { editor.layoutType = 'Continuous' }).not.toThrowError();
+    });
+});

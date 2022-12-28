@@ -286,6 +286,16 @@
 
         .e-tbar-btn {
 
+          &.e-flat.e-active {
+            .e-tbar-btn-text {
+              color: $tbar-btn-pressed-text-color;
+            }
+
+            &:focus {
+              box-shadow: $tbar-btn-pressed-focus-box-shadow;
+            }
+          }
+
           &:hover {
             .e-icons {
               color: $tbar-btn-icons-focus-color;

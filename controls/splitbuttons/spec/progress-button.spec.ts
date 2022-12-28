@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement } from "@syncfusion/ej2-base";
 import { ProgressButton } from "../src/progress-button/progress-button";
+import { IconPosition } from '@syncfusion/ej2-buttons';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 describe('Progress Button', () => {
@@ -172,10 +173,10 @@ describe('Progress Button', () => {
         expect(button.content).toBe('Progress2');
         expect(ele.getElementsByClassName('e-btn-content')[0].textContent).toBe('Progress2');
         expect(ele.getElementsByClassName('e-btn-content')[0].childNodes[0].classList).toContain('e-btn-icon');
-        button.iconPosition = 'Right';
+        button.iconPosition = "Right";
         button.dataBind();
         expect(ele.getElementsByClassName('e-btn-content')[0].childNodes[1].classList).toContain('e-btn-icon');
-        button.iconPosition = 'Left';
+        button.iconPosition = "Left";
         button.dataBind();
         expect(ele.getElementsByClassName('e-btn-content')[0].childNodes[0].classList).toContain('e-btn-icon');
         button.enableProgress = false;

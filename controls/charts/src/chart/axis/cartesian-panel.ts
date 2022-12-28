@@ -873,7 +873,7 @@ export class CartesianAxisLayoutPanel {
                 : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? pointY + textPadding :  pointY));
             if (axis.labelPosition === 'Inside' && ((i === 0 && !axis.isInversed) || (i === len - 1 && axis.isInversed))) {
                 if (chart.stockChart) { pointY -= (textPadding); }
-                else { pointY -= (textPadding + labelHeight / 2); }
+                else { pointY -= (textPadding - (axis.opposedPosition ? -padding : padding)); }
             }
             if (axis.majorGridLines.width > axis.majorTickLines.width) {
                 maxLineWidth = axis.majorGridLines.width;

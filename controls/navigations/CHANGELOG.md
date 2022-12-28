@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I424794` - The issue with "Script error thrown in context menu when navigate using the keyboard" has been resolved.
+- `#I425402` -  Accessibility issue in context menu has been fixed.
+
 ## 20.4.38 (2022-12-21)
 
 ### Toolbar

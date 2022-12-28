@@ -250,7 +250,7 @@ export class ProgressAnimation {
         labelPath.setAttribute('visibility', 'Hidden');
         if (progress.type === 'Linear') {
             startPos = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width) + (textSize / 2) :
-                       start - (textSize / 2);
+                start - (textSize / 2);
             startPos = (startPos <= 0) ? 0 : startPos;
             endPos = (progress.enableRtl) ? startPos - posX : posX - startPos;
         }
@@ -259,7 +259,7 @@ export class ProgressAnimation {
             delay: delay,
             progress: (args: AnimationOptions): void => {
                 progress.cancelResize = true;
-				args.name = "SlideRight";
+                args.name = 'SlideRight';
                 if (progress.type === 'Linear') {
                     if (args.timeStamp >= args.delay) {
                         if (labelText === '') {

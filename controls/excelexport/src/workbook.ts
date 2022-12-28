@@ -1563,15 +1563,30 @@ export class Workbook {
             this.addToArchive(sstStart + si, 'xl/sharedStrings.xml');
         }
     }
-    private processString(value: string): string {
-        if (value.indexOf('&') !== -1) {
-            value = value.replace(/&/g, '&amp;');
+    private processString(value: string|string[]): string|string[] {
+        if (typeof value == "string") {
+            if (value.indexOf('&') !== -1) {
+                value = value.replace(/&/g, '&amp;');
+            }
+            if (value.indexOf('<') !== -1) {
+                value = value.replace(/</g, '&lt;');
+            }
+            if (value.indexOf('>') !== -1) {
+                value = value.replace(/>/g, '&gt;');
+            }
         }
-        if (value.indexOf('<') !== -1) {
-            value = value.replace(/</g, '&lt;');
-        }
-        if (value.indexOf('>') !== -1) {
-            value = value.replace(/>/g, '&gt;');
+        else if (typeof value == "object") {
+            for (var i = 0; i < value.length; i++) {
+                if (value[i].indexOf('&') !== -1) {
+                    value[i] = value[i].replace(/&/g, '&amp;');
+                }
+                if (value[i].indexOf('<') !== -1) {
+                    value[i] = value[i].replace(/</g, '&lt;');
+                }
+                if (value[i].indexOf('>') !== -1) {
+                    value[i] = value[i].replace(/>/g, '&gt;');
+                }
+            }
         }
         return value;
     }

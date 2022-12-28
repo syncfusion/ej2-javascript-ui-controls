@@ -442,7 +442,8 @@ export class Zoom {
                     this.index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
                     this.currentLayer = <LayerSettings>maps.layersCollection[this.index];
                     const factor: number = maps.mapLayerPanel.calculateFactor(this.currentLayer);
-                    for (let j: number = 0; j < layerElement.childElementCount; j++) {
+                    const elementCount: number = layerElement.childElementCount;
+                    for (let j: number = 0; j < elementCount; j++) {
                         let currentEle: Element = layerElement.childNodes[j as number] as Element;
                         if (!(currentEle.id.indexOf('_Markers_Group') > -1) && (!(currentEle.id.indexOf('_bubble_Group') > -1))
                             && (!(currentEle.id.indexOf('_dataLableIndex_Group') > -1))

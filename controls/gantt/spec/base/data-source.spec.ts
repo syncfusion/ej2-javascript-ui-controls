@@ -1516,6 +1516,19 @@ export let cellEditData: object[] = [
     BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  },
 ];
 
+export let customProgressData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Parent Task',
+        StartDate: new Date('04/02/2019'),
+        Duration: 1,
+        subtasks: [
+            { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100}, 
+            { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 0.1, Progress: 100}
+        ]
+    },
+];
+
 export let dialogEditData: object[] = [
     {
         TaskID: 1,

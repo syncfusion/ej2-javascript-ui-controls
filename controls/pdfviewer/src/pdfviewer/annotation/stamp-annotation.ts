@@ -6,6 +6,7 @@ import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings'
 import { AnnotationSelectorSettings } from '../pdfviewer';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 import { Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 /**
@@ -1112,6 +1113,7 @@ export class StampAnnotation {
         // eslint-disable-next-line
         let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
         let currentAnnotation: any = Math.round(JSON.stringify(annotation).length / 1024);
+        this.pdfViewer.annotationModule.isFormFieldShape = false;
         if ((sessionSize + currentAnnotation) > 4500) {
             this.pdfViewerBase.isStorageExceed = true;
             this.pdfViewer.annotationModule.clearAnnotationStorage();
@@ -1441,6 +1443,12 @@ export class StampAnnotation {
      */
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IStampAnnotation {
+        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== ""){
+            this.pdfViewer.annotationModule.isFormFieldShape = true;
+        }
+        else{
+            this.pdfViewer.annotationModule.isFormFieldShape = false;
+        }
         this.pdfViewerBase.updateDocumentEditedProperty(true);
         let currentAnnotObject: IStampAnnotation = null;
         let pageAnnotations: IStampAnnotation[] = this.getAnnotations(pageNumber, null);

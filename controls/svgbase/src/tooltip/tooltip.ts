@@ -1059,6 +1059,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (tooltipRect.x + tooltipRect.width > bounds.x + bounds.width) {
             tooltipRect.x -= (tooltipRect.width + 4 * this.padding);
         }
+        if (tooltipRect.x < bounds.x) {
+            tooltipRect.x = bounds.x
+        }
         return tooltipRect;
     }
     private getCurrentPosition(

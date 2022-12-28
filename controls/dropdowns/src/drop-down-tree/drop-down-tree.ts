@@ -2372,6 +2372,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         const eventArgs: DdtDataBoundEventArgs = { data: args.data };
         this.trigger('dataBound', eventArgs);
+        if (this.filterObj === null) { this.isFilteredData = false; }
         if (this.isFilteredData) { this.treeObj.expandAll(); }
         if (this.isFilterRestore) {
             this.restoreFilterSelection();

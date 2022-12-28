@@ -1,4 +1,5 @@
 $hscroll-skin: 'highcontrast' !default;
+$hscroll-dash-border: 2px solid #fff;
 $hscroll-border-type: solid !default;
 $hscroll-hover-font: $hover-font-color !default;
 $hscroll-active-font-color: $active-font-color !default;
@@ -39,14 +40,8 @@ $hscroll-device-arrow-border-size: 1px !default;
 $hscroll-device-arrow-border-color: $border-fg !default;
 $hscroll-device-arrow-color: $selection-bg !default;
 $hscroll-device-arrow-size: 14px !default;
-$hscroll-device-arrow-icon-size: 12px !default;
 $hscroll-device-arrow-size-bigger: 18px !default;
 $hscroll-device-arrow-width: 52px !default;
-
-$hscroll-nav-hover-press-bg: $hscroll-press-bg !default;
-$hscroll-nav-hover-icons-color: $hscroll-default-icon-color !default;
-$hscroll-nav-hover-border: 2px solid $hscroll-nav-hover-border-color !default;
-$hscroll-nav-focus-border: 2px solid #fff;
 
 @mixin hscroll-btn-animation {
   content: '';

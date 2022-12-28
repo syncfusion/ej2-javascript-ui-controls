@@ -286,7 +286,7 @@
 
         .e-tbar-btn {
 
-          &.e-active {
+          &.e-flat.e-active {
             .e-tbar-btn-text {
               color: $tbar-btn-pressed-text-color;
             }

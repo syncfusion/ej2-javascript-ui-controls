@@ -1549,12 +1549,12 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
             queryBuilder.validateFields();
             let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter input.e-control').ej2_instances;
-            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeTruthy();
+            expect(filterElem[0].element.classList.contains('e-tooltip')).toBeTruthy();
             expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
             filterElem[0].showPopup();
             let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
            items[3].click();
-           expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
+           expect(filterElem[0].element.classList.contains('e-tooltip')).toBeFalsy();
            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
            queryBuilder.validateFields();
            filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;

@@ -65,8 +65,14 @@
           border: $hscroll-hover-border;
           color: $hscroll-hover-font;
 
-          &:active {
-            background: $hscroll-nav-hover-press-bg;
+          @if $hscroll-skin == 'material' {
+            border-color: $hscroll-hover-border-color;
+          }
+
+          @if $hscroll-skin == 'highcontrast' {
+            &:active {
+              background: $hscroll-press-bg;
+            }
           }
         }
       }
@@ -78,21 +84,42 @@
 
         &:hover {
           background: $hscroll-hover-bg;
-          border: $hscroll-nav-hover-border;
+          border: $hscroll-hover-border;
           color: $hscroll-hover-font;
 
-          .e-icons {
-            color: $hscroll-nav-hover-icons-color;
+          @if $hscroll-skin == 'bootstrap4' {
+            .e-icons {
+              color: inherit;
+            }
+          }
+
+          @if $hscroll-skin == 'highcontrast' {
+            border: 2px solid $hscroll-nav-hover-border-color;
+
+            &:active {
+              border: 0;
+            }
           }
         }
 
         &:focus {
-          background: $hscroll-nav-focus-bg-color;
-          border: $hscroll-nav-focus-border;
+          background: $hscroll-hover-bg;
+          border: $hscroll-focus-border;
           color: $hscroll-hover-font;
 
-          .e-icons {
-            color: $hscroll-nav-hover-icons-color;
+          @if $hscroll-skin == 'material' {
+            border-color: $hscroll-hover-border-color;
+          }
+
+          @if $hscroll-skin == 'bootstrap4' {
+            .e-icons {
+              color: inherit;
+            }
+          }
+
+          @if $hscroll-skin == 'highcontrast' {
+            background: $hscroll-nav-focus-bg-color;
+            border: $hscroll-dash-border;
           }
         }
 
@@ -101,9 +128,10 @@
           border: $hscroll-active-border;
           box-shadow: $hscroll-active-box-shadow;
           color: $hscroll-active-font-color;
-
-          .e-icons {
-            color: $hscroll-nav-active-color;
+          @if $hscroll-skin == 'highcontrast' {
+            .e-icons {
+              color: $hscroll-nav-active-color;
+            }
           }
         }
       }

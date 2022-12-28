@@ -4,7 +4,7 @@
 
 ## 20.3.47 (2022-09-29)
 
-### Message `Preview`
+### Message
 
 The Message component has an option to display the messages with severity by differentiating icons and colors to denote the importance and context of the message to the end user. The following key features are available in the Message component.
 

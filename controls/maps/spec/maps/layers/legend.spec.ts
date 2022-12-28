@@ -1496,7 +1496,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(5);
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
                 expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
@@ -1510,7 +1510,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(5);
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_1')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_1");
                 expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_1')
@@ -1524,7 +1524,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(5);
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
                 expect(spec.getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
@@ -1539,7 +1539,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(9);
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
                 expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
@@ -1555,7 +1555,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(9);
                 spec = document.getElementById(map.element.id + '_Legend_Index_1')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_1");
                 expect(spec.getAttribute('fill')).toBe("yellow");
                 spec = document.getElementById(map.element.id + '_Legend_Index_1')
@@ -1571,7 +1571,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(9);
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0");
                 expect(spec.getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
@@ -1587,7 +1587,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(9);
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0_Group");
                 expect(spec.children[0].getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + '_Legend_Index_0')
@@ -1604,7 +1604,7 @@ describe('Map marker properties tesing', () => {
                 expect(spec.childElementCount).toBe(5);
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                expect(spec.getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + "_LayerIndex_0_MarkerIndex_0_dataIndex_0_Group");
                 expect(spec.children[0].getAttribute('fill')).toBe("#C3E6ED");
                 spec = document.getElementById(map.element.id + '_Legend_Shape_Index_0')
@@ -1989,7 +1989,7 @@ describe('Map marker properties tesing', () => {
                         map.loaded = (args: ILoadedEventArgs) => {
                             spec = document.getElementById('container_Legend_Shape_Index_0')
                             trigger.clickEvent(spec);
-                            expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                            expect(spec.getAttribute('fill')).toBe("lightgreen");
                             spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
                             expect(spec.getAttribute('fill')).toBe("lightgreen");
                         }
@@ -2113,7 +2113,7 @@ describe('Map marker properties tesing', () => {
                             map.loaded = (args: ILoadedEventArgs) => {
                                 spec = document.getElementById('container_Legend_Index_0')
                                 trigger.clickEvent(spec);
-                                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                                expect(spec.getAttribute('fill')).toBe("lightgreen");
                                 spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
                                 expect(spec.getAttribute('fill')).toBe("lightgreen");
                             }

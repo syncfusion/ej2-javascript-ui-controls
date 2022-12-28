@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I423644` - Now axis label is aligned properly when minimum value is high.
+- `#I423606` - Trendline is now proper for zero values,
+- `#I424547` - Now zooming the multi colored line is working properly.
+
 ## 20.4.38 (2022-12-21)
 
 ### Chart

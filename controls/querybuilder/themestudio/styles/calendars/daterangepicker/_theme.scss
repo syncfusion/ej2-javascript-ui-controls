@@ -322,36 +322,3 @@
     }
   }
 }
-
-.e-daterangepicker.e-popup .e-calendar .e-content.e-month .e-today.e-range-hover span,
-.e-bigger.e-small .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-today-hover-line-height;
-  }
-}
-
-.e-daterangepicker.e-popup .e-calendar .e-content .e-other-month.e-today.e-range-hover span,
-.e-bigger.e-small .e-calendar .e-content.e-month td.e-today.e-other-month.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-other-hover-line-height;
-  }
-}
-
-.e-small .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day,
-.e-small .e-calendar .e-content.e-month td.e-other-month.e-today.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-small-today-hover-line-height;
-  }
-}
-
-.e-bigger .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-bigger-today-hover-line-height;
-  }
-}
-
-.e-bigger .e-calendar .e-content.e-month td.e-other-month.e-today.e-range-hover span.e-day {
-  @if $skin-name == 'FluentUI' {
-    line-height: $range-bigger-other-hover-line-height;
-  }
-}

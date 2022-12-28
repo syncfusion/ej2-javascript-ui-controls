@@ -150,4 +150,75 @@ describe('ClipMode module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-66677 - Header tooltip displays when the header text is wrapped when clipmode is set', () => {
+        let gridObj: Grid;
+        let row: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    clipMode: 'EllipsisWithTooltip',
+                    allowTextWrap: true,
+                    textWrapSettings: { wrapMode: 'Both' },
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID'},
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'OrderDate', field: 'OrderDate' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+
+        it('Check header class', () => {
+            expect((gridObj.getHeaderTable().querySelector('.e-columnheader').children[0]).classList.contains('e-ellipsistooltip')).toBeFalsy();
+        });
+
+        it('Check content class', () => {
+            row = [gridObj.contentModule.getTable().children['1'].children];
+            expect(row[0][0].cells[0].classList.contains('e-ellipsistooltip')).toBeFalsy();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-66976- Ellipsis with tooltip is not working with batch editing', () => {
+        let gridObj: Grid;
+        let row: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: "Batch" },
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID'},
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'OrderDate', field: 'OrderDate' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity', clipMode: "EllipsisWithTooltip", width: 100},
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('Editing a cell', () => {
+            gridObj.editModule.editCell(2, 'ShipCity');
+            gridObj.editModule.saveCell();
+        });
+        it('checking tooltip', () => {
+            row = [gridObj.contentModule.getTable().children['1'].children];
+            expect(row[0][2].cells[5].classList.contains('e-ellipsistooltip')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

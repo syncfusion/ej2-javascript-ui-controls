@@ -3200,7 +3200,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                             rows[parseInt(i.toString(), 10)].cloneNode(true) as Element,
                             rows[parseInt(i.toString(), 10)].getBoundingClientRect().height));
                 }
-                if (addEditRow && addEditRow.classList.contains('e-editedrow')) {
+                if (addEditRow && addEditRow.classList.contains('e-editedrow') && addEditRowIndex < rowCount) {
                     const addEditMaskRow: HTMLElement = maskTBody.childNodes[parseInt(addEditRowIndex.toString(), 10)] as HTMLElement;
                     addEditMaskRow.style.height = this.getRowHeight() + 'px';
                     addEditMaskRow.classList.add('e-row');
@@ -7612,7 +7612,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     // eslint-disable-next-line
     public renderTemplates(callBack?: any): void {
         const isReactChild: boolean = this.parentDetails && this.parentDetails.parentInstObj && this.parentDetails.parentInstObj.isReact;
-        if (isReactChild) {
+        if (isReactChild && this['portals']) {
             this.parentDetails.parentInstObj['portals'] = this.parentDetails.parentInstObj['portals']
                 .concat(this['portals']);
             this.parentDetails.parentInstObj.renderTemplates(callBack);

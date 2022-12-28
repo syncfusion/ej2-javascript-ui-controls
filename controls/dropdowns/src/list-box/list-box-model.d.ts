@@ -102,13 +102,13 @@ export interface ListBoxModel extends DropDownBaseModel{
     enabled?: boolean;
 
     /**
-        * Enable or disable persisting component's state between page reloads.
-        * If enabled, following list of states will be persisted.
-        * 1. value
-        *
-        * @default false
-        * @deprecated
-        */
+     * Enable or disable persisting component's state between page reloads.
+     * If enabled, following list of states will be persisted.
+     * 1. value
+     *
+     * @default false
+     * @deprecated
+     */
     enablePersistence?: boolean;
 
     /**

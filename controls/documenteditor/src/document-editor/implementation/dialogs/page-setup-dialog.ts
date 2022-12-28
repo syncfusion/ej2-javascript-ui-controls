@@ -4,9 +4,10 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { SelectionSectionFormat } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { WSectionFormat } from './../../implementation/format/index';
+import { WColumnFormat, WSectionFormat } from './../../implementation/format/index';
 import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
 import { DocumentHelper } from '../viewer';
+import { HelperMethods } from '../editor/editor-helper';
 
 /**
  * The Page setup dialog is used to modify formatting of selected sections.
@@ -456,6 +457,7 @@ export class PageSetupDialog {
      */
     public applyPageSetupProperties = (): void => {
         const sectionFormat: WSectionFormat = new WSectionFormat();
+        let currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         sectionFormat.bottomMargin = this.bottomMarginBox.value;
         sectionFormat.topMargin = this.topMarginBox.value;
         sectionFormat.leftMargin = this.leftMarginBox.value;
@@ -466,6 +468,25 @@ export class PageSetupDialog {
         sectionFormat.differentFirstPage = this.checkBox2.checked;
         sectionFormat.headerDistance = this.headerBox.value;
         sectionFormat.footerDistance = this.footerBox.value;
+        sectionFormat.numberOfColumns = currentSectionFormat.numberOfColumns;
+        sectionFormat.equalWidth = currentSectionFormat.equalWidth;
+        sectionFormat.lineBetweenColumns = currentSectionFormat.lineBetweenColumns;
+        let cols: WColumnFormat[] = [];
+        let pageWidth: number = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
+        for (let i: number = 0; i < currentSectionFormat.columns.length; i++) {
+            let colFormat: WColumnFormat = new WColumnFormat();
+            let width: number = HelperMethods.convertPointToPixel(currentSectionFormat.columns[parseInt(i.toString(), 10)].width);
+            let space: number = HelperMethods.convertPointToPixel(currentSectionFormat.columns[parseInt(i.toString(), 10)].space);
+            let totalSpace: number = (currentSectionFormat.numberOfColumns - 1) * space;
+            if ((currentSectionFormat.equalWidth || width === 0) && !isNullOrUndefined(pageWidth)) {
+                width = (pageWidth - totalSpace) / currentSectionFormat.numberOfColumns;
+            }
+            colFormat.width = width;
+            colFormat.space = space;
+            colFormat.index = i;
+            cols.push(colFormat);
+        }
+        sectionFormat.columns = cols;
         this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
         this.documentHelper.hideDialog();
     };

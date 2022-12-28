@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.40 (2022-12-28)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I422232` - Issue with "`SUMIFS` formula is not working properly while providing as nested formula to the `SUM` formula" has been resolved.
+- `#F179330` - Issue with "custom function reference is removed from the control instance while calling the `refresh` method" has been resolved.
+
 ## 20.3.60 (2022-12-06)
 
 ### Spreadsheet

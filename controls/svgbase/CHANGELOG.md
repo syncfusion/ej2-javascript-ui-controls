@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.2.36 (2022-06-30)
+## 20.4.38 (2022-12-21)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#F179321` - Tooltip is cropped when displayed outside chart area issue has been fixed.
+
+## 20.1.48 (2022-04-12)
 
 ### Svg Base
 

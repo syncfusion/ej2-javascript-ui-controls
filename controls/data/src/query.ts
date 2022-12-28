@@ -538,7 +538,7 @@ export class Predicate {
             this.predicates = [field];
             this.matchCase = field.matchCase;
             this.ignoreCase = field.ignoreCase;
-            this.ignoreAccent = field.ignoreAccent;
+            this.ignoreAccent = field.ignoreAccent; 
             if (value instanceof Array) {
                 [].push.apply(this.predicates, value);
             } else {

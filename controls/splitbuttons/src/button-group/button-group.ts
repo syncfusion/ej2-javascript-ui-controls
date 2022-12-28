@@ -48,8 +48,8 @@ export function createButtonGroup(selector: string, options: CreateButtonGroupMo
     const childs: HTMLCollection = wrapper.children;
     options.buttons = options.buttons || [] as ButtonModel[];
     for (let i: number = 0, j: number = 0; j < childs.length; i++, j++) {
-        child = childs[j];
-        btnModel = options.buttons[i];
+        child = childs[j as number];
+        btnModel = options.buttons[i as number];
         if (btnModel !== null) {
             if (child.tagName === 'BUTTON') {
                 btnElem = child;

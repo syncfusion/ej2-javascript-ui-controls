@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 20.3.60 (2022-12-06)
-
-### DataManager
-
-#### Bug Fixes
-
-- `#I417282` - The Milliseconds value is not parsed properly with `parseJSON` method issue has been fixed
-
-## 20.3.50 (2022-10-18)
-
-### DataManager
-
-#### Bug Fixes
-
-- `#F176305` - DataManager causes memory leak when doing multiple server side actions issue has been fixed.
-
 ## 19.4.52 (2022-02-15)
 
 ### DataManager

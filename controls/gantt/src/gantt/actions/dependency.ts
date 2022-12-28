@@ -379,9 +379,9 @@ export class Dependency {
         const flatData: IGanttData[] = this.parent.flatData;
         const totLength: number = this.parent.flatData.length;
         for (let count: number = 0; count < totLength; count++) {
-            if (flatData[count as number].ganttProperties.predecessor) {
+            if (flatData[count as number].ganttProperties.predecessorsName) {
                 this.validatePredecessorDates(flatData[count as number]);
-                if (flatData[count as number].hasChildRecords && this.parent.editModule) {
+                if (flatData[count as number].hasChildRecords && this.parent.editModule && !this.parent.allowUnscheduledTasks) {
                     this.parent.editModule['updateChildItems'](flatData[count as number]);
                 }
             }
@@ -395,6 +395,9 @@ export class Dependency {
             {
                 let item: IGanttData = this.parentPredecessors[i as number];
                 this.validatePredecessorDates(item);
+                if (item.ganttProperties.startDate) {
+                    this.parent.editModule['updateChildItems'](item);
+                }
             }
         }
     }

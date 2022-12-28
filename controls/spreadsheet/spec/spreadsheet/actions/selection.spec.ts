@@ -539,5 +539,68 @@ describe('Selection ->', () => {
                 });
             });
         });
+        describe('Range selection issue in protect sheet locked cell ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rowCount: 50, colCount: 50 }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('In protect sheet check the select range is working on locked cell', (done: Function) => {
+                helper.invoke('lockCells', ['D1:E11', false]);
+                helper.switchRibbonTab(4);
+                helper.click('#' + helper.id + '_protect');
+                setTimeout(() => {
+                    const spreadsheet: any = helper.getInstance();
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                    (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                    helper.click('.e-protect-dlg .e-primary');
+                    helper.invoke('selectRange', ['D1:D11 E1:E11 F1:F11']);
+                    expect(sheet.selectedRange).toBe('D1:D11 E1:E11');
+                    done();
+                })
+            });
+            it('In protect sheet the check select range is working contain both locked and unlocked cell', (done: Function) => {
+                helper.invoke('lockCells', ['A1:B100', false]);
+                helper.invoke('lockCells', ['C1:C100', true]);
+                helper.invoke('lockCells', ['D1:D100', false]);
+                helper.switchRibbonTab(4);
+                helper.click('#' + helper.id + '_protect');
+                setTimeout(() => {
+                    const spreadsheet: any = helper.getInstance();
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                    (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                    helper.click('.e-protect-dlg .e-primary');
+                    helper.invoke('selectRange', ['A1:D11']);
+                    expect(sheet.selectedRange).toBe('A1:D11');
+                    done();
+                })
+            });
+            it('In protect sheet check the Shift+arrowkey selection is working on locked cell', (done: Function) => {
+                helper.invoke('lockCells', ['A1:Z1', false]);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.switchRibbonTab(4);
+                helper.click('#' + helper.id + '_protect');
+                setTimeout(() => {
+                    const spreadsheet: any = helper.getInstance();
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                    (document.getElementsByClassName('e-frame e-icons')[1] as HTMLElement).click();
+                    helper.click('.e-protect-dlg .e-primary');
+                    helper.getElement().focus();
+                    helper.triggerKeyEvent('keydown', 39, null, null, true, helper.invoke('getCell', [0, 0]));
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:B1');
+                        helper.triggerKeyEvent('keydown', 40, null, null, true, helper.invoke('getCell', [0, 1]));
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].selectedRange).toBe('A1:B1');
+                            done();
+                        });
+                    })
+                })
+            });
+        });
     });
 });

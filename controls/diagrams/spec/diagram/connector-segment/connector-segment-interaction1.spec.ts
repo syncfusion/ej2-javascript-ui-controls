@@ -1725,4 +1725,80 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Check whether connector segment does not split while hover on source and target node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll(() => {
+
+            ele = createElement('div', { id: 'diagramsegment' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1',
+                    height: 50,
+                    width: 100,
+                    offsetX: 500,
+                    offsetY: 100, annotations: [{ content: 'Node1', style: { bold: true } }],
+                    constraints:
+                        NodeConstraints.Default &
+                        ~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    ports: [
+                        { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                        { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                        { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                        { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                    ]
+                },
+                {
+                    id: 'node2',
+                    height: 50,
+                    width: 100,
+                    offsetX: 300,
+                    offsetY: 400, annotations: [{ content: 'Node2' }],
+                    constraints:
+                        NodeConstraints.Default &
+                        ~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    ports: [
+                        { id: 'left', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                        { id: 'top', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                        { id: 'right', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default },
+                        { id: 'bottom', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible, constraints: PortConstraints.Default }
+                    ]
+                },
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1', sourceID: 'node1', targetID: 'node2', sourcePortID: 'bottom', targetPortID: 'top', type: 'Orthogonal',
+                    constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb, 
+                }
+            ];
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: nodes, connectors: connectors,
+            });
+            diagram.appendTo('#diagramsegment');
+
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Move connector end over the node', function (done) {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.connectors[0]]);
+            let element: HTMLElement = document.getElementById('orthoThumb_1_2');
+            let bounds: any = element.getBoundingClientRect();
+            mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 120);
+            mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 120);
+            let connector: ConnectorModel = diagram.connectors[0];
+            diagram.dragSourceEnd(connector, -10, -10)
+            expect(connector.segments.length === 3).toBe(true);
+            done();
+        });
+
+    });
+
 });

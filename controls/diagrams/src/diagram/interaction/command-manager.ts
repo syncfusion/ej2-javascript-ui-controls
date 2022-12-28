@@ -3910,7 +3910,7 @@ export class CommandHandler {
      */
     private changeSegmentLength(connector: Connector, target: NodeModel, targetPortId: string, isDragSource: boolean): void {
         // EJ2-65063 - Added below code to check condition if connector segment length can be changed or not.
-        // If node inconnect and outconnect removed from constraints
+        // If inconnect and outconnect removed from node constraints
         let canChangeSegment: boolean = target ? this.canConnect(connector, target) : true;
         if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
             && ((!target && connector.sourceID === '') || isDragSource) && canChangeSegment ) {
@@ -4007,17 +4007,12 @@ export class CommandHandler {
         }
     }
 
-    // EJ2-65063 - Added below method to check if connector does not have maxSegmentThumb means then return true, else check if target has inConnect or outConnect
-    // Added below method as a Temp fix for this issue. Need to check if connector does not have maxSegmentThumb.
+    // EJ2-65063 - Added below method to check if target has inConnect or outConnect. If it does not have inconnect and outconnect means then return false
     private canConnect(connector: ConnectorModel, target: NodeModel): boolean {
-        if (connector.maxSegmentThumb) {
-            if (canInConnect(target) && canOutConnect(target)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
+        if (canInConnect(target) && canOutConnect(target)) {
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -6187,7 +6182,10 @@ Remove terinal segment in initial
      */
     public dropChildToContainer(parent: NodeModel, node: NodeModel): void {
         if (!(this.diagram.diagramActions & DiagramAction.PreventLaneContainerUpdate)) {
-            addChildToContainer(this.diagram, parent, node);
+            //EJ2-66591 - Droping BPMN text annotation node inside the swimlane is not working properly.
+            if(!(node.shape.type === 'Bpmn' && (node.shape as BpmnShape).shape === 'TextAnnotation')){
+                addChildToContainer(this.diagram, parent, node);
+            }
         }
     }
     /**

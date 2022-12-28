@@ -8,6 +8,7 @@ import { TrendlineTypes } from '../../chart/utils/enum';
 import { findClipRect, RectOption } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `Trendline` module is used to render 6 types of trendlines in chart.
@@ -420,8 +421,8 @@ export class Trendlines {
                 }
                 y += yValues[j as number];
             }
-            y = period - nullCount <= 0 ? null : y / (period - nullCount);
-            if (y && !isNaN(y)) {
+            y = period - nullCount < 0 ? null : y ? y / (period - nullCount) : y;
+            if (!isNullOrUndefined(y) && !isNaN(y)) {
                 x = xValues[period - 1 + index];
                 pts.push(
                     this.getDataPoint(x, y, series, pts.length));

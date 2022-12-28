@@ -455,12 +455,3 @@ $appbar-hover-bg-color-alt2: rgba(transparent, .056) !default;
 //shadow
 $appbar-bottom-shadow: none !default;
 $appbar-top-shadow: none !default;
-
-//rating
-$rating-selected-color: $primary !default;
-$rating-unrated-color: $gray-500 !default;
-$rating-selected-disabled-color: $gray-600 !default;
-$rating-unrated-disabled-color: $gray-700 !default;
-$rating-selected-hover-color: $gray-500 !default;
-$rating-unrated-hover-color: $primary !default;
-$rating-pressed-color: lighten($primary, 15%) !default;

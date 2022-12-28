@@ -355,6 +355,10 @@
           border-style: $acrdn-item-border-nav-type;
           border-width: $acrdn-item-selected-hdr-border-size;
 
+          &:focus {
+            background: $acrdn-item-header-focus-bg;
+          }
+
           &:hover {
             border-color: $acrdn-item-selected-hdr-hover-border-color;
           }

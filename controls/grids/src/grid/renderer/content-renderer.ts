@@ -115,11 +115,26 @@ export class ContentRender implements IRenderer {
                 if (this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'sorting') {
                     this.parent.infiniteScrollModule['groupCaptionAction'] = undefined;
                 }
-                this.parent.trigger(events.dataBound, {}, () => {
-                    if (this.parent.allowTextWrap) {
-                        this.parent.notify(events.freezeRender, { case: 'textwrap' });
-                    }
-                });
+                const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                        this.parent.parentDetails.parentInstObj.isReact;
+                if ((this.parent.isReact || isReactChild) && this.parent.element.querySelectorAll('.e-templatecell').length) {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const thisRef: ContentRender = this;
+                    thisRef.parent.renderTemplates(function(): void {
+                        thisRef.parent.trigger(events.dataBound, {}, () => {
+                            if (thisRef.parent.allowTextWrap) {
+                                thisRef.parent.notify(events.freezeRender, { case: 'textwrap' });
+                            }
+                        });
+                    });
+                }
+                else {
+                    this.parent.trigger(events.dataBound, {}, () => {
+                        if (this.parent.allowTextWrap) {
+                            this.parent.notify(events.freezeRender, { case: 'textwrap' });
+                        }
+                    });
+                }
             }
             if (arg) {
                 const action: string = (arg.requestType || '').toLowerCase() + '-complete';

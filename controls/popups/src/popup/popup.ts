@@ -807,7 +807,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         while (parent && parent.tagName !== 'HTML') {
             const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
             if (parentStyle.position === 'fixed' && !isNullOrUndefined(this.element) && this.element.offsetParent &&
-            this.element.offsetParent.tagName === 'BODY') {
+            this.element.offsetParent.tagName === 'BODY' && getComputedStyle(this.element.offsetParent).overflow !== 'hidden') {
                 this.element.style.top = window.scrollY > parseInt(this.element.style.top, 10) ?
                     formatUnit(window.scrollY - parseInt(this.element.style.top, 10))
                     : formatUnit(parseInt(this.element.style.top, 10) - window.scrollY);

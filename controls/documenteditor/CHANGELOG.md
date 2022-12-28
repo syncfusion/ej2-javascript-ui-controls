@@ -2,7 +2,111 @@
 
 ## [Unreleased]
 
-## 20.4.38 (2022-12-21)
+## 20.4.40 (2022-12-28)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I421680` - Resolved the paragraph overlapping and border issue while opening the attached document.
+- `#I424498` - Attached document with hyperlink text is now displayed properly.
+- `#I425696` - Resolved the overlap issue in options pane.
+
+## 20.3.60 (2022-12-06)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I418719` - Resolved the issue with removing bookmark element.
+- `#I420043` - Table of content (TOC) is now updated properly.
+
+## 20.3.59 (2022-11-29)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I417535` - The page number is not updated properly while inserting TOC.
+- `#I418000` , `#F178993` - Resolved the tab character width issue.
+
+## 20.3.58 (2022-11-22)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I417708` - Comment with multiple paragraph is now exported properly.
+- `#I414849` - Textbox with no outline is now exported properly.
+- `#I419171` - Resolved the script error while discarding the unposted comment.
+- `#I417911` - Resolved the consecutive symbol selection issue while selecting text with white spaces.
+- `#I418127` - Image width and height is now resized to fit inside the page width.
+- `#I417899` - Table borders are now removed when border style set as none.
+- `#I417257` - Ordinal number format is now preserved properly in exported word document.
+- `#F178501` - Resolved document corruption issue due to insert revision not serialized properly.
+
+## 20.3.57 (2022-11-15)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I415922` - Resolved the browser hanging issue while opening the document.
+- `#I415359` - Resolved the table layouting issue while resizing the table.
+- `#I414775` - Resolved the layouting issue while inserting page break.
+- `#I414224` - Table resizing is now working properly in header/footer.
+- `#I413303`, `#I417629` - Resolved the script error while opening the word document.
+- `#I413477` - Resolved the script error while deleting text with comment.
+- `#F178063` - Scrolling on bookmark navigation is now working similar to Microsoft Word.
+
+## 20.3.56 (2022-11-08)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#FB37929` - Resolved the exception while exporting the document with duplicate character style.
+- `#I412146` - Resolved the script error while opening the document.
+- `#I408099` - Resolved the list numbering issue.
+- `#I412284` - Table border is now rendering properly.
+- `#I413316` - Resolved the script error while deleting content of few pages.
+- `#I414066` - Resolved the script error while modifying locale key.
+- `#I412817` - Formatting is now applied properly in track changes protection mode.
+- `#I413284` - Strike through is now properly skipped for trailing space characters like Microsoft Word.
+- `#I412529` - Resolved the script error while opening html document with nested list.
+
+#### New Features
+
+- `#I297837`, `#I336116`, `#I342219`, `#I346980`, `#F164814`, `#F168911` - Improved the display of the RTL text in a bi-directional layout.
+
+## 20.3.52 (2022-10-26)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I410179` - Cell background color is now rendering properly.
+- `#I411016` - List numbering is now rendered properly.
+- `#I411008` - Paragraph border is now rendering properly.
+- `#FB37770` - Resolved the script error while printing the document.
+- `#I409887` - Replacing text with bookmark is now working properly.
+
+## 20.3.50 (2022-10-18)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I410296` - Tooltip for the show/hide properties button is now updated properly.
+- `#I407021` - Table properties are now reverted properly on undo/redo.
+- `#I408686` - Comments pane is now switching properly while adding comment.
+- `#I409821` - Resolved the next paragraph deletion issue while switching paste option.
+- `#I408431` - Resolved the script error while opening the document with track changes.
+- `#I409991` - Resolved the table layouting issue.
+- `#I407092` - Resolved the paragraph border rendering issue.
+- `#I410940` - Resolved the script error while merging cells in header/footer.
+
+## 20.3.49 (2022-10-11)
 
 ### Document Editor
 

@@ -1768,10 +1768,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Used to perform logical operation between two values.
      * @hidden
-     * @param {string[]} stack - specify the stack
-     * @param {string} operator - specify the operator.
-     * @returns {string} - To process the logical.
+     * @param {string[]} stack - Specifies the values that are used to perform the logical operation.
+     * @param {string} operator - Specifies the logical operator.
+     * @returns {string} - It returns whether the logical operation is TRUE or FALSE.
      */
     public processLogical(stack: string[], operator: string): string {
         let val1: string;
@@ -1856,14 +1857,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const isCountIfs: boolean = sCell.isCountIfS === this.trueValue;
         const i: number = sCell.countVal || 0;
         const rangeLength: string[] | string = isCriteria === this.trueValue ? storeCell : cellValue;
-        let tempStoredCell: string[] = [];
+        let tempStoredCell: string[] = []; let criteria: string;
         for (let j: number = 0; j < rangeLength.length; j++) {
             const stack: string[] = [];
             let cellVal: string = this.getValueFromArg(cellValue[j as number]);
-            let criteria: string;
+            criteria = argArr[isCountIfs ? (1 + (i * 2)) : (2 + i)].trim().split(this.tic).join(this.emptyString);
             let newCell: string = '';
-            criteria = argArr[ isCountIfs ? (1 + (i * 2)) : (2 + i)].split(this.tic).join(this.emptyString);
-            criteria = this.isCellReference(criteria) ? this.getValueFromArg(criteria) : criteria;
             isCriteria = isCountIfs ? this.trueValue : isCriteria;
             if (isCriteria === this.trueValue) {
                 let cell: string = '';
@@ -1930,8 +1929,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     newCell = newCell.substring(newCell.lastIndexOf('!') + 1);
                 }
                 cellVal = this.getValueFromArg(newCell);
-                criteria = isCountIfs ? criteria : (this.isCellReference(criterias[i - 1]) ? this.getValueFromArg(criterias[i - 1]) :
-                    criterias[i - 1].split(this.tic).join(this.emptyString));
+                criteria = isCountIfs ? criteria : criterias[i - 1].split(this.tic).join(this.emptyString);
             }
             let op: string = 'equal';
             if (criteria.startsWith('<=')) {
@@ -1953,6 +1951,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 op = 'equal';
                 criteria = criteria.substring(1);
             }
+            if (this.isCellReference(criteria)) {
+                criteria = this.getValueFromArg(criteria);
+            }
             if (criteria.indexOf('*') > -1 || criteria.indexOf('?') > -1) {
                 cellVal = this.findWildCardValue(criteria, cellVal);
             }
@@ -1971,14 +1972,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return storeCell;
     }
     public computeIfsFormulas(range: string[], isCountIfs?: string, isAvgIfs?: string): string | number {
-        if (isNullOrUndefined(range) || range[0] === '' || range.length === 0) {
+        if (isCountIfs === this.trueValue && isNullOrUndefined(range) || range[0] === '' || range.length < 2 || range.length > 127) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         const argArr: string[] = range;
-        const argCount: number = argArr.length;
-        if (argCount < 2 || argCount > 127) {
-            return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
-        }
         let cellRanges: string[] | string = [];
         const criterias: string[] | string = [];
         let storedCell: string[] | string = [];
@@ -1986,9 +1983,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let sum: number = 0;
         for (let i: number = 0; i < argArr.length; i++) {
             if (argArr[i as number].indexOf(':') > -1 && this.isCellReference(argArr[i as number])) {
-                cellRanges.push(argArr[i as number]);
+                cellRanges.push(argArr[i as number].trim());
             } else {
-                criterias.push(argArr[i as number]);
+                criterias.push(argArr[i as number].trim());
             }
         }
         cellRanges = cellRanges.toString().split(',,').join(',');
@@ -2248,7 +2245,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     private findLastIndexOfq(fString: string): number {
-        return fString.lastIndexOf('q');
+        let lastIndexOfq: number = fString.lastIndexOf('q');
+        let lastIndexOflLeftBracket: number = fString.lastIndexOf(this.leftBracket);
+        while (lastIndexOflLeftBracket < lastIndexOfq) {
+            lastIndexOfq = fString.substring(0, lastIndexOfq).lastIndexOf('q');
+        }
+        return lastIndexOfq;
     }
 
     /**

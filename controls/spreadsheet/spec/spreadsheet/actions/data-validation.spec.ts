@@ -1540,6 +1540,96 @@ describe('Data validation ->', () => {
                 });
             });
         });
+        describe('EJ2-67132->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error throws while performing undo after applying the list validation->', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '1,2,3' }, 'A2:B2']);
+                helper.invoke('selectRange', ['A2']);
+                let td: HTMLElement = helper.invoke('getCell', [1, 0]).children[0];
+                expect(td.classList).toContain('e-validation-list');
+                const coords: ClientRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+                helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(1)');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(1);
+                    expect(helper.invoke('getCell', [1, 0]).innerText).toBe('1');
+                    helper.invoke('selectRange', ['B2']);
+                    td = helper.invoke('getCell', [1, 1]).children[0];
+                    expect(td.classList).toContain('e-validation-list');
+                    const coords: ClientRect = td.getBoundingClientRect();
+                    helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+                    helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+                    (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                    setTimeout(() => {
+                        helper.click('.e-ddl.e-popup li:nth-child(2)');
+                        expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe(2);
+                        expect(helper.invoke('getCell', [1, 1]).innerText).toBe('2');
+                        helper.invoke('selectRange', ['A2']);
+                        td = helper.invoke('getCell', [1, 0]).children[0];
+                        expect(td.classList).toContain('e-validation-list');
+                        const coords: ClientRect = td.getBoundingClientRect();
+                        helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+                        helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+                        (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                        setTimeout(() => {
+                            helper.click('.e-ddl.e-popup li:nth-child(3)');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(3);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('3');
+                            helper.click('#spreadsheet_undo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(1);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('1');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe(2);
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('2');
+                            helper.click('#spreadsheet_undo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(1);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('1');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBeUndefined();
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('');
+                            helper.click('#spreadsheet_undo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBeUndefined();
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBeUndefined();
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('');
+                            helper.click('#spreadsheet_redo');
+                            helper.click('#spreadsheet_redo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(1);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('1');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe(2);
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('2');
+                            helper.click('#spreadsheet_redo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(3);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('3');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe(2);
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('2');
+                            helper.click('#spreadsheet_undo');
+                            helper.click('#spreadsheet_undo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(1);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('1');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBeUndefined();
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('');
+                            helper.click('#spreadsheet_redo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(1);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('1');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe(2);
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('2');
+                            helper.click('#spreadsheet_redo');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe(3);
+                            expect(helper.invoke('getCell', [1, 0]).innerText).toBe('3');
+                            expect(helper.getInstance().sheets[0].rows[1].cells[1].value).toBe(2);
+                            expect(helper.invoke('getCell', [1, 1]).innerText).toBe('2');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 
         

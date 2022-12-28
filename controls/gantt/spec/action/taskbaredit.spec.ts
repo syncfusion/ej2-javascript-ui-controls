@@ -718,6 +718,11 @@ describe('Gantt taskbar editing', () => {
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
                 expect(args.data.taskData['Segments'].length).toBe(2);
             };
+            ganttObj.actionBegin = (args: any) => {
+                if (args['requestType'] === 'beforeSave') {
+                   expect(args.modifiedRecords.length).toBe(3);
+                }
+            };
             ganttObj.dataBind();
             expect(ganttObj.currentViewData[2].taskData['Segments'].length).toBe(3);
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-first.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-right-resizer.e-icon') as HTMLElement;

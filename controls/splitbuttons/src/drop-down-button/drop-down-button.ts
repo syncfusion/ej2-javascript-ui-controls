@@ -247,14 +247,14 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         let newItem: ItemModel;
         let idx: number = this.items.length;
         for (let j: number = 0, len: number = this.items.length; j < len; j++) {
-            if (text === this.items[j].text) {
+            if (text === this.items[j as number].text) {
                 idx = j;
                 break;
             }
         }
         for (let i: number = items.length - 1 ; i >= 0; i--) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            newItem = new Item(this as any, 'items', items[i], true);
+            newItem = new Item(this as any, 'items', items[i as number], true);
             this.items.splice(idx, 0, newItem);
         }
         if (!this.canOpen()) { this.createItems(); }
@@ -270,7 +270,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         let refresh: boolean = false;
         for (let i: number = 0, len: number = items.length; i < len; i++) {
             for (let j: number = 0, len: number = this.items.length; j < len; j++) {
-                if (items[i] === (isUniqueId ? this.items[j].id : this.items[j].text)) {
+                if (items[i as number] === (isUniqueId ? this.items[j as number].id : this.items[j as number].text)) {
                     this.items.splice(j, 1); refresh = true;
                     break;
                 }
@@ -299,8 +299,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         this.dropDown.hide();
         attributes(this.element, {
             ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
-            ['aria-owns']: this.getPopUpElement().id, ['type']: 'button',
-            ['aria-label']: this.element.textContent ? this.element.textContent : 'dropdownbutton'
+            ['type']: 'button', ['aria-label']: this.element.textContent ? this.element.textContent : 'dropdownbutton'
         });
         if (this.cssClass) { addClass([div], this.cssClass.split(' ')); }
         this.isPopupCreated = true;
@@ -323,12 +322,12 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             });
         }
         for (let i: number = 0; i < items.length; i++) {
-            item = items[i];
+            item = items[i as number];
             const tempItem: string = item.text;
             li = this.createElement('li', {
                 innerHTML: item.url ? '' : tempItem,
                 className: item.separator ? classNames.ITEM + ' ' + classNames.SEPARATOR : classNames.ITEM,
-                attrs: { 'role': 'menuItem', 'tabindex': '-1', 'aria-label': tempItem },
+                attrs: item.separator ? {'role' : 'separator', 'tabindex': '-1'} : { 'role': 'menuitem', 'tabindex': '-1', 'aria-label': tempItem },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
             });
             if (this.enableHtmlSanitizer) {
@@ -366,7 +365,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private hasIcon(items: ItemModel[], field: string): boolean {
         for (let i: number = 0, len: number = items.length; i < len; i++) {
-            if ((<{ [key: string]: object }>items[i])[field]) {
+            if ((<{ [key: string]: object }>items[i as number])[`${field}`]) {
                 return true;
             }
         }
@@ -614,17 +613,17 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private focusoutHandler(e: MouseEvent): void {
         if (this.isPopupCreated && !this.canOpen()) {
-            let liTarget : HTMLElement = e.relatedTarget as HTMLElement;
+            const liTarget : HTMLElement = e.relatedTarget as HTMLElement;
             if (liTarget && liTarget.className.indexOf('e-item') > -1) {
                 const li: Element = this.getLI(liTarget);
                 if (li) {
-                    let liIdx: number = Array.prototype.indexOf.call(this.getULElement().children, li);
-                    let item: ItemModel = this.items[liIdx];
+                    const liIdx: number = Array.prototype.indexOf.call(this.getULElement().children, li);
+                    const item: ItemModel = this.items[liIdx as number];
                     if (item) {
-                        let selectEventArgs: MenuEventArgs = { element: li as HTMLElement, item: item };
-                        this.trigger('select', selectEventArgs); 
+                        const selectEventArgs: MenuEventArgs = { element: li as HTMLElement, item: item };
+                        this.trigger('select', selectEventArgs);
                     }
-                }   
+                }
             }
             this.closePopup(e);
         }
@@ -653,7 +652,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 const li: Element = this.getLI(trgt);
                 if (li) {
                     liIdx = Array.prototype.indexOf.call(this.getULElement().children, li);
-                    item = this.items[liIdx];
+                    item = this.items[liIdx as number];
                     if (item) {
                         eventArgs = { element: li as HTMLElement, item: item };
                         this.trigger('select', eventArgs);
@@ -670,7 +669,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             this.createItems(true);
         } else {
             if (this.activeElem.length > 1) {
-                let splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
+                const splitButton: SplitButton = getComponent(this.activeElem[0], 'split-btn');
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((splitButton as any).isReact && popupElem.childNodes.length < 1) {
                     isReact = true;
@@ -697,6 +696,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 this.dropDown.show(null, this.element);
                 addClass([this.element], 'e-active');
                 this.element.setAttribute('aria-expanded', 'true');
+                this.element.setAttribute('aria-owns', this.getPopUpElement().id);
                 if (ul) {
                     ul.focus();
                 }
@@ -709,22 +709,23 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     private closePopup(e: MouseEvent | KeyboardEventArgs = null, focusEle?: HTMLElement): void {
         const ul: HTMLElement = this.getULElement();
         const beforeCloseArgs: BeforeOpenCloseMenuEventArgs = { element: ul, items: this.items, event: e, cancel: false };
-        let popupElement: HTMLElement = this.getPopUpElement();
-        if (popupElement) {
-            EventHandler.remove(popupElement, 'keydown', this.keyBoardHandler);
-        }
         this.trigger('beforeClose', beforeCloseArgs,  (observedArgs: BeforeOpenCloseMenuEventArgs) => {
             if (!observedArgs.cancel) {
+                const popupElement: HTMLElement = this.getPopUpElement();
+                if (popupElement) {
+                    EventHandler.remove(popupElement, 'keydown', this.keyBoardHandler);
+                }
                 this.popupUnWireEvents();
                 const ul: HTMLElement = this.getULElement();
                 let selectedLi: Element;
                 if (ul) {
-                     selectedLi = ul.querySelector('.e-selected');
+                    selectedLi = ul.querySelector('.e-selected');
                 }
                 if (selectedLi) { selectedLi.classList.remove('e-selected'); }
                 this.dropDown.hide();
                 removeClass(this.activeElem, 'e-active');
                 this.element.setAttribute('aria-expanded', 'false');
+                this.element.removeAttribute('aria-owns');
                 if (focusEle) {
                     focusEle.focus();
                 }
@@ -736,6 +737,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 }
                 if (this.target) {
                     this.isPopupCreated = this.createPopupOnClick ? false : true;
+                }
+            } else {
+                if (ul) {
+                    ul.focus();
                 }
             }
         });

@@ -11500,7 +11500,7 @@ export class Editor {
                     if (!isNullOrUndefined(block) && !isStartParagraph && !paraReplace) {
                         this.delBlock = block;
                         let nextSection: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
-                        if (nextSection && !section.equals(nextSection) && section.index !== nextSection.index) {
+                        if (nextSection && section.index !== nextSection.index) {
                             let bodyWidget: BodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
                             this.deleteSection(selection, nextSection, bodyWidget, editAction);
                         }
@@ -13960,9 +13960,16 @@ export class Editor {
         let initComplextHistory: boolean = false;
         let previousOffset: number = offset;
         let updateSelection: boolean = false;
+        let previousNode:ElementBox;
         while (inline instanceof CommentCharacterElementBox) {
             let commentMark: CommentCharacterElementBox = inline;
             inline = inline.previousNode;
+            if(isNullOrUndefined(inline)){
+                inline = previousNode;
+            }
+            if((inline as CommentCharacterElementBox).commentType == 0){
+                previousNode = inline.previousNode;
+            }
             if (inline) {
                 previousOffset = inline.length;
             }

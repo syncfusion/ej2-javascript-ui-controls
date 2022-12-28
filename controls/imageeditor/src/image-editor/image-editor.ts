@@ -5,7 +5,7 @@ import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations'
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
-import { createSpinner, showSpinner, hideSpinner, OpenEventArgs } from '@syncfusion/ej2-popups';
+import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
 import { ImageEditorModel, FinetuneSettingsModel } from './image-editor-model';
 
@@ -14,17 +14,20 @@ import { ImageEditorModel, FinetuneSettingsModel } from './image-editor-model';
  */
 export interface ImageFinetuneValue {
     /**
-    * Specifies the minimum value of finetune option.
-    * @default null
-    */
+     * Specifies the minimum value of finetune option.
+     *
+     * @default null
+     */
     min: number;
     /**
      * Specifies the maximum value of finetune option.
+     *
      * @default null
      */
     max: number;
     /**
      * Specifies the default value of finetune option.
+     *
      * @default null
      */
     defaultValue: number;
@@ -36,42 +39,49 @@ export interface ImageFinetuneValue {
 export class FinetuneSettings extends ChildProperty<FinetuneSettings> {
     /**
      * Specifies the brightness level of image.
+     *
      * @default null
      */
     @Property(null)
     public brightness: ImageFinetuneValue;
     /**
      * Specifies the contrast level image.
+     *
      * @default null
      */
     @Property(null)
     public contrast: ImageFinetuneValue;
     /**
      * Specifies the hue level image.
+     *
      * @default null
      */
     @Property(null)
     public hue: ImageFinetuneValue;
     /**
      * Specifies the saturation level image.
+     *
      * @default null
      */
     @Property(null)
     public saturation: ImageFinetuneValue;
-   /**
+    /**
      * Specifies the exposure level image.
+     *
      * @default null
      */
     @Property(null)
     public exposure: ImageFinetuneValue;
     /**
      * Specifies the opacity level image.
+     *
      * @default null
      */
     @Property(null)
     public opacity: ImageFinetuneValue;
     /**
      * Specifies the blur level image.
+     *
      * @default null
      */
     @Property(null)
@@ -185,9 +195,12 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     private tempBWFilter: boolean = false;
     private isBrightnessAdjusted: boolean = false;
     private isInitialLoading: boolean = false;
+    private imageFileName: string = '';
+    private imageFileType: FileType;
 
     /**
      * Defines class/multiple classes separated by a space for customizing Image Editor UI.
+     *
      * @default ''
      ```html
      * <div id='imageeditor'></div>
@@ -204,6 +217,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     /**
      * Specifies whether the Image Editor is disabled.
+     *
      * @default false
      */
     @Property(false)
@@ -211,6 +225,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     /**
      * Specifies the height of the Image Editor.
+     *
      * @default '100%'
      */
     @Property('100%')
@@ -287,6 +302,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
 
     /**
      * Specifies the width of the Image Editor.
+     *
      * @default '100%'
      */
     @Property('100%')
@@ -495,7 +511,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
      * @event fileOpened
      */
     @Event()
-    public fileOpened: EmitType<OpenEventArgs>
+    public fileOpened: EmitType<FileOpenEventArgs>
 
     /**
      * Triggers once an image is saved.
@@ -3618,6 +3634,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private updateCanvas(): void {
+        const fileOpened: FileOpenEventArgs = {fileName: this.imageFileName, fileType: this.imageFileType};
         this.lastX = this.baseImg.width / 2; this.lastY = this.baseImg.height / 2;
         let wrapperWidth: number;
         const canvasWrapper: HTMLElement = document.querySelector('#' + this.element.id + '_canvasWrapper');
@@ -3676,7 +3693,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
         }
         this.lowerContext.filter = tempFilter;
         if (this.disabled) { this.element.setAttribute('class', 'e-disabled'); }
-        this.trigger('fileOpened');
+        this.trigger('fileOpened', fileOpened);
     }
 
     private imageOnLoad(src: string): void {
@@ -3866,6 +3883,16 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
     }
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
+        this.imageFileName = inputElement.value.split('\\')[inputElement.value.split('\\').length - 1];
+        this.imageFileName = this.imageFileName.split('.')[0];
+        const fileType: string[] = inputElement.value.split('.');
+        if (fileType[fileType.length - 1].toLowerCase() === 'jpg' || fileType[fileType.length - 1].toLowerCase() === 'jpeg') {
+            this.imageFileType = 'Jpeg';
+        } else if (fileType[fileType.length - 1].toLowerCase() === 'png') {
+            this.imageFileType = 'Png';
+        } else if (fileType[fileType.length - 1].toLowerCase() === 'svg') {
+            this.imageFileType = 'Svg';
+        }
         showSpinner(this.element);
         this.element.style.opacity = '0.5';
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -4079,10 +4106,10 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                     !this.element.querySelector('#' + this.element.id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
                     (!isNullOrUndefined(this.element.querySelector('#' + this.element.id + '_headWrapper'))
                     && !this.element.querySelector('#' + this.element.id + '_headWrapper').parentElement.classList.contains('e-hide'))) {
-                    this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-                    this.okBtn();
-                    this.refreshToolbar('main');
-                }
+                this.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+                this.okBtn();
+                this.refreshToolbar('main');
+            }
             if (this.upperCanvas.style.cursor === 'crosshair' || (Browser.isDevice && this.togglePen)) {
                 if (this.togglePen) {
                     this.canvasRatio = this.calcRatio();
@@ -4415,11 +4442,11 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 proxy.lowerContext.filter = proxy.initialAdjustmentValue = proxy.adjustmentValue = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
                 'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
                 if (proxy.cssClass) {addClass([proxy.element], proxy.cssClass.split(' ')); }
-                        proxy.lowerContext.clearRect(0, 0, proxy.lowerCanvas.width, proxy.lowerCanvas.height);
-                        proxy.lowerContext.drawImage(proxy.inMemoryCanvas, 0, 0);
-                        proxy.baseImg.src = URL.createObjectURL(blob);
-                        proxy.lowerContext.filter = tempFilter;
-                    }, 'image/png');
+                proxy.lowerContext.clearRect(0, 0, proxy.lowerCanvas.width, proxy.lowerCanvas.height);
+                proxy.lowerContext.drawImage(proxy.inMemoryCanvas, 0, 0);
+                proxy.baseImg.src = URL.createObjectURL(blob);
+                proxy.lowerContext.filter = tempFilter;
+            }, 'image/png');
         } else {
             hideSpinner(this.element); this.element.style.opacity = '1';
         }
@@ -8153,7 +8180,6 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.upperCanvas.style.display = 'none';
             let widthRatio: number; let heightRatio: number;
             let imgData: ImageData; let zoomedRotate: boolean = false;
-            const factor: number = this.factor;
             if (this.factor === 1) {
                 imgData = this.lowerContext.getImageData(0, 0, this.lowerCanvas.width, this.lowerCanvas.height);
                 widthRatio = this.lowerCanvas.width / parseInt(this.lowerCanvas.style.maxWidth, 10);
@@ -8446,8 +8472,20 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.imgDataColl = [];
             const type: string = typeof(data);
             if (type === 'string') {
+                let fileName: string[] = (data as string).split('.');
+                if (fileName[fileName.length - 1].toLowerCase() === 'jpg' || fileName[fileName.length - 1].toLowerCase() === 'jpeg') {
+                    this.imageFileType = 'Jpeg';
+                } else if (fileName[fileName.length - 1].toLowerCase() === 'png') {
+                    this.imageFileType = 'Png';
+                } else if (fileName[fileName.length - 1].toLowerCase() === 'svg') {
+                    this.imageFileType = 'Svg';
+                }
+                fileName = fileName[fileName.length - 2].split('/');
+                this.imageFileName = fileName[fileName.length - 1];
                 this.imageOnLoad(data as string);
             } else {
+                this.imageFileName = 'ImageEditor';
+                this.imageFileType = 'Jpeg';
                 const tempFilter: string = this.lowerContext.filter;
                 this.lowerCanvas = document.querySelector('#' + this.element.id + '_lowerCanvas');
                 this.upperCanvas = document.querySelector('#' + this.element.id + '_upperCanvas');
@@ -8545,6 +8583,7 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
                 false, bw: false};
             this.tempAdjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0, exposure: 0, sharpen:
                 false, bw: false};
+            this.imageFileName = ''; this.imageFileType = undefined;
             this.canvasFilter = this.currentFilter = this.tempAdjustmentValue = '';
             this.lowerContext.filter = this.initialAdjustmentValue = this.adjustmentValue = 'brightness(' + 1 + ') ' + 'contrast(' + 100
                 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
@@ -8660,20 +8699,21 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             }
             type = type ? type : 'Png';
             this.redrawActObj();
-            const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: fileName ? fileName : 'ImageEditor', fileType: type as FileType};
-            const saved: SaveEventArgs = { fileName: fileName ? fileName : 'ImageEditor', fileType: type as FileType};
+            fileName = fileName ? fileName : this.imageFileName;
+            const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: fileName, fileType: type as FileType};
+            const saved: SaveEventArgs = { fileName: fileName ? fileName : this.imageFileName, fileType: type as FileType};
             this.trigger('beforeSave', beforeSave, (observableSaveArgs: BeforeSaveEventArgs) => {
                 if (!observableSaveArgs.cancel) {
                     this.currObjType.isSave = true;
                     fileName = observableSaveArgs.fileName ? observableSaveArgs.fileName : fileName;
                     if (type.toLowerCase() === 'svg') {
-                        fileName = fileName || 'ImageEditor';
+                        fileName = fileName || this.imageFileName;
                         this.toSVGImg(fileName);
                     } else if (type.toLowerCase() === 'jpeg') {
-                        fileName = fileName || 'ImageEditor';
+                        fileName = fileName || this.imageFileName;
                         this.toBlobFn(fileName, type.toLowerCase());
                     } else {
-                        fileName = fileName || 'ImageEditor';
+                        fileName = fileName || this.imageFileName;
                         this.toBlobFn(fileName, type.toLowerCase());
                     }
                     this.trigger('saved', saved);
@@ -9202,7 +9242,8 @@ export class ImageEditor extends SignatureBase implements INotifyPropertyChanged
             this.initialAdjustmentValue = 'brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)';
         }
         this.lowerContext.filter = this.initialAdjustmentValue;
-        this.setFilter(filterOption.toString());
+        const filterValue: string[] = filterOption.split(' ');
+        this.setFilter(filterValue.join('').toLowerCase());
     }
 
     /**
@@ -9532,6 +9573,20 @@ export interface ToolbarEventArgs {
      * Specifies the toolbar item collection to be rendered as contextual toolbar.
      */
     toolbarItems?: (string | ItemModel)[];
+}
+
+/**
+ * Interface for saving the canvas as image.
+ */
+export interface FileOpenEventArgs {
+    /**
+     * Specifies the file name for an image.
+     */
+    fileName: string;
+    /**
+     * Returns the file type for an image.
+     */
+    fileType: FileType;
 }
 
 /**

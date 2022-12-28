@@ -3,7 +3,7 @@
   .e-fab.e-btn {
     box-shadow: $fab-box-shadow;
 
-    &:hover:not(:focus),
+    &:hover,
     &:active,
     &.e-active,
     &:disabled {

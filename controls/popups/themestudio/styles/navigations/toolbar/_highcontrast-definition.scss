@@ -170,6 +170,8 @@ $tbar-btn-active-bg: $tbar-press-bg !default;
 $tbar-btn-active-border-size: 2px !default;
 $tbar-btn-active-icons-color: $tbar-pressed-font !default;
 $tbar-btn-active-text-color: $tbar-pressed-font !default;
+$tbar-btn-pressed-text-color: $selection-font !default;
+$tbar-btn-pressed-focus-box-shadow: none !default;
 
 $tbar-ext-btn-margin: 1px 0 !default;
 $tbar-ext-btn-focus-padding: 0 !default;

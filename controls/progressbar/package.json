@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-progressbar",
-	"version": "20.3.57",
+	"version": "20.4.38",
 	"description": "Essential JS 2 ProgressBar Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -48,6 +48,6 @@
 	},
 	"main": "./dist/ej2-progressbar.umd.min.js",
 	"module": "./index.js",
-	"es2015": "./dist/es6/ej2-progressbar.es2015.js",
+	"es2015": "./dist/es6/ej2-progressbar.es5.js",
 	"typings": "index.d.ts"
 }

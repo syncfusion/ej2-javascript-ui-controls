@@ -96,7 +96,7 @@ export interface ProgressButtonModel {
      *
      * @default "Left"
      */
-    iconPosition?: IconPosition;
+    iconPosition?: IconPosition | string;
 
     /**
      * Defines class/multiple classes separated by a space for the progress button that is used to include an icon.

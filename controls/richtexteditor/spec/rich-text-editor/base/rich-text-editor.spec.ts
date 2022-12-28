@@ -6169,3 +6169,36 @@ describe("fontfamily testing after default value set -", () => {
         done();
     });
 });
+
+describe('EJ2-67372: Toolbar overlaps the condent edit area', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+        value: '<p>testing</p>',
+        toolbarSettings: {
+                items: ['Undo', 'Redo', '|',
+                'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                'SubScript', 'SuperScript', '|',
+                'LowerCase', 'UpperCase', '|','Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                'Indent', 'Outdent', '|','CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode', '|', 'FullScreen']
+            },
+            width: '500px',
+            height: '400px'
+        });
+    });
+    it('check the toolbar height', (done: Function) => {
+        expect((document.body.querySelector(".e-toolbar-wrapper") as HTMLElement).style.height==='42px');
+        expect((document.body.querySelector(".e-rte-content") as HTMLElement).style.height ==='358px');
+        (document.body.querySelector(".e-expended-nav")as HTMLElement).click();
+        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
+        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
+        expect((document.body.querySelector(".e-toolbar-wrapper") as HTMLElement).style.height ==='144px');
+        expect((document.body.querySelector(".e-rte-content") as HTMLElement).style.height ==='256px');
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

@@ -807,6 +807,10 @@ export class SfdtExport {
             inline.allowOverlap = element.allowOverlap;
             inline.textWrappingStyle = element.textWrappingStyle;
             inline.textWrappingType = element.textWrappingType;
+            inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
+            inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
+            inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
+            inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
             inline.layoutInCell = element.layoutInCell;
             inline.zOrderPosition = element.zOrderPosition;
         } else if (element instanceof BookmarkElementBox) {

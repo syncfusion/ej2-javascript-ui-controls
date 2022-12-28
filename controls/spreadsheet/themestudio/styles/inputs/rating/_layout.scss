@@ -37,12 +37,17 @@
       display: block;
       //For Blazor Tooltip
       position: relative;
+
+      .e-rating-item {
+        display: block;
+      }
     }
 
     &.e-rating-animation:not(.e-disabled) {
-      .e-rating-item-container:hover {
+      .e-rating-item-container:hover .e-rating-item {
         transition: transform 150ms cubic-bezier(.4, 0, .2, 1) 0ms;
         transform: scale(1.4);
+        pointer-events: none;
       }
     }
 

@@ -28,6 +28,7 @@ import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOpera
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
 import { checkCellValid } from '../common/interface';
+import { IFormulaColl } from '../../calculate/common/interface';
 
 /**
  * Represents the Workbook.
@@ -558,6 +559,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public formulaRefCell: string;
+
+    /** @hidden */
+    public customFormulaCollection: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
 
     /**
      * Constructor for initializing the library.

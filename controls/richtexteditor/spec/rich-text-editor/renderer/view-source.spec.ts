@@ -1,7 +1,7 @@
 /**
  * View source spec
  */
-import { Browser } from "@syncfusion/ej2-base";
+import { Browser, L10n } from "@syncfusion/ej2-base";
 import { RichTextEditor } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy } from './../render.spec';
 
@@ -69,6 +69,48 @@ describe('Toolbar - view html', () => {
         });
 
         afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe("EJ2-67309 - Source Code and preview toolbar icon localization text are not shown properly when you hover the icons", () => {
+        let rteObj : RichTextEditor;
+        L10n.load({
+            'de-DEF': {
+                'richtexteditor': { 
+                    "sourcecode": "Ver código",
+                    "preview": "Vista previa", 
+                   }
+               }
+        });
+        beforeAll( () =>{
+            rteObj = renderRTE({
+                locale: 'de-DEF',
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                value : `<p><b>Toolbar</b></p>
+                <ol>
+                    <li> 
+                        <p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p>
+                    </li>
+                    <li> 
+                        <p>The Toolbar is fully customizable </p>
+                    </li>
+                </ol>`
+            });
+        });
+        it('check tooltiptext update with locale value', () => {
+            rteObj.focusIn();
+            let sourceCode: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
+            expect(sourceCode.title === 'Ver código').toBe(true);
+            sourceCode.click();
+            const preview: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
+            expect(preview.title === 'Vista previa').toBe(true);
+            preview.click();
+            sourceCode = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
+            expect(sourceCode.title === 'Ver código').toBe(true);
+        });
+        afterAll( () => {
             destroy(rteObj);
         });
     });
