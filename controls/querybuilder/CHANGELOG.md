@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F31632` -  Accessibility issue in Query Builder has been resolved.
+
 ## 20.4.40 (2022-12-28)
 
 ### QueryBuilder

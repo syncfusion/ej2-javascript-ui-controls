@@ -521,11 +521,14 @@ export class GaugeTooltip {
      * To unbind events for tooltip module
      */
     public removeEventListener(): void {
-        if (this.gauge.isDestroyed) {
-            return;
+        if (this.gauge) {
+            if (this.gauge.isDestroyed) {
+                return;
+            }
+            this.gauge.off(Browser.touchMoveEvent, this.renderTooltip);
+            this.gauge.off(Browser.touchEndEvent, this.mouseUpHandler);
+            this.gauge.element.removeEventListener('contextmenu', this.removeTooltip);
         }
-        this.gauge.off(Browser.touchMoveEvent, this.renderTooltip);
-        this.gauge.off(Browser.touchEndEvent, this.mouseUpHandler);
     }
 
     /**
@@ -555,7 +558,6 @@ export class GaugeTooltip {
         this.tooltipRect = null;
         this.pointerEle = null;
         this.annotationTargetElement = null;
-        this.removeEventListener();
         this.gauge = null;
     }
 }

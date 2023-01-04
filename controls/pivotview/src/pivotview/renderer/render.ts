@@ -264,12 +264,11 @@ export class Render {
     }
 
     private headerRefreshed(): void {
-        if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1) {
+        const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
+        if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1 && !isNullOrUndefined(mHdr) && mHdr.querySelector('.e-table') &&
+            this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
             this.parent.lastGridSettings = undefined;
-            if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
-                this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-                this.parent.groupingBarModule.setGridRowWidth();
-            }
+            this.parent.groupingBarModule.setGridRowWidth();
         }
     }
 

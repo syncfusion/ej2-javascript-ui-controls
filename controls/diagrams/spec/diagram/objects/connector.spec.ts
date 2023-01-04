@@ -3,12 +3,12 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
+import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints, ControlPointsVisibility } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect, cloneObject } from '../../../src/diagram/index';
 import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 import { PortModel } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -2112,5 +2112,69 @@ describe('Diagram Control', () => {
             console.log('Connector save and load');
             done();
         }); 
+    });
+
+    describe('Bezier control points are draggable in hidden condition', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramBezIssue' });
+            document.body.appendChild(ele);
+            var nodes:NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
+                    ports:[{offset:{x:0.5,y:0},id:'top',visibility:PortVisibility.Visible},
+                    {offset:{x:0.5,y:1},id:'bottom',visibility:PortVisibility.Visible},
+                    {offset:{x:0,y:0.5},id:'right',visibility:PortVisibility.Visible},
+                    {offset:{x:1,y:0.5},id:'left',visibility:PortVisibility.Visible}]
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 400,
+                    ports:[{offset:{x:0.5,y:0},id:'top',visibility:PortVisibility.Visible},
+                    {offset:{x:0.5,y:1},id:'bottom',visibility:PortVisibility.Visible},
+                    {offset:{x:0,y:0.5},id:'right',visibility:PortVisibility.Visible},
+                    {offset:{x:1,y:0.5},id:'left',visibility:PortVisibility.Visible}]
+                },
+            ]
+            var connectors: ConnectorModel[] = [{
+                id : 'connector1',sourceID : "node1",targetID :'node2',type:'Bezier',
+                sourcePortID:'right',targetPortID:'left',bezierSettings:{controlPointsVisibility:ControlPointsVisibility.None}
+            }];
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: nodes, connectors: connectors
+            });
+            diagram.appendTo('#diagramBezIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking bezier control points dragging after hiding it', function (done) {
+            diagram.select([diagram.connectors[0]]);
+            let preSegment = cloneObject(diagram.connectors[0].segments);
+            mouseEvents.mouseMoveEvent(diagramCanvas,138,200);
+            mouseEvents.mouseDownEvent(diagramCanvas,138,200);
+            mouseEvents.mouseMoveEvent(diagramCanvas,128,190);
+            mouseEvents.mouseUpEvent(diagramCanvas,128,190);
+            let curSegment = diagram.connectors[0].segments;
+            expect(preSegment === curSegment).toBe(true);
+            done();
+        });
+        it('Checking bezier control points dragging after giving visibility', function (done) {
+            diagram.connectors[0].bezierSettings.controlPointsVisibility = ControlPointsVisibility.All;
+            diagram.dataBind();
+            diagram.select([diagram.connectors[0]]);
+            let preSegment = cloneObject(diagram.connectors[0].segments);
+            mouseEvents.mouseMoveEvent(diagramCanvas,138,200);
+            mouseEvents.mouseDownEvent(diagramCanvas,138,200);
+            mouseEvents.mouseMoveEvent(diagramCanvas,128,190);
+            mouseEvents.mouseUpEvent(diagramCanvas,128,190);
+            let curSegment = diagram.connectors[0].segments;
+            expect(preSegment !== curSegment).toBe(true);
+            done();
+        });  
     });
 });

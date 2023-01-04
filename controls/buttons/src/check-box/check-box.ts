@@ -351,7 +351,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             wrapper.classList.add(RTL);
         }
         if (this.cssClass) {
-            addClass([wrapper], this.cssClass.split(' '));
+            addClass([wrapper], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         wrapper.appendChild(label);
         label.appendChild(this.element);
@@ -438,7 +438,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     removeClass([wrapper], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([wrapper], newProp.cssClass.split(' '));
+                    addClass([wrapper], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
             case 'enableRtl':

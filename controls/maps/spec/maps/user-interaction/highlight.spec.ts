@@ -413,7 +413,7 @@ describe('Highlight Settings', () => {
             spec = getElement('container_Legend_Index_0');
             trigger.clickEvent(spec);
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
-            expect(spec.getAttribute('stroke') === 'orange').toBe(true);
+            expect(spec.getAttribute('stroke') === 'orange').toBe(false);
             let shapeEle = getElement('container_LayerIndex_0_shapeIndex_4_dataIndex_4');
             trigger.mousemoveEvent(shapeEle, 0, 0, 0, 0);
             expect(shapeEle.getAttribute('stroke') === 'lime').toBe(true);

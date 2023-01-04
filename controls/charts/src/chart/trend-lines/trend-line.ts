@@ -416,9 +416,6 @@ export class Trendlines {
             y = count = nullCount = 0;
             for (let j: number = index; count < period; j++) {
                 count++;
-                if (!yValues[j as number]) {
-                    nullCount++;
-                }
                 y += yValues[j as number];
             }
             y = period - nullCount < 0 ? null : y ? y / (period - nullCount) : y;

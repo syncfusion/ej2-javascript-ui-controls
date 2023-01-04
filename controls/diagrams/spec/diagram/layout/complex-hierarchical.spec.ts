@@ -8,7 +8,7 @@ import { SpatialSearch } from '../../../src/diagram/interaction/spatial-search/s
 import {
     ConnectorModel, Node,
     DataBinding, PointModel, GraphLayoutManager, Layout, IConnector, IDataLoadedEventArgs, LineDistribution,ConnectionPointOrigin,ChildArrangement,
-    HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel, SnapSettingsModel, SnapConstraints, TextModel, ImageElement, StackPanel, TextElement
+    HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel, SnapSettingsModel, SnapConstraints, TextModel, ImageElement, StackPanel, TextElement, DiagramConstraints, Connector, ConnectorConstraints
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(ComplexHierarchicalTree, HierarchicalTree, LineDistribution,DataBinding);
@@ -2731,7 +2731,192 @@ describe('DataLoaded event do not gets trigger after data loaded', () => {
 
     });
 
+    describe('Overlapping issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            let Data: object[] = [
+                { "Name": "node1", "fillColor": "#e7704c", "border": "#c15433" },
+                {
+                "Name": "node2",
+                "ReportingPerson": ["node1"],
+                "fillColor": "#efd46e",
+                "border": "#d6b123"
+                },
+                {
+                "Name": "node3",
+                "ReportingPerson": ["node2"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node4",
+                "ReportingPerson": ["node2"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node5",
+                "ReportingPerson": ["node2"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node6",
+                "ReportingPerson": ["node2"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node7",
+                "ReportingPerson": ["node2"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node8",
+                "ReportingPerson": ["node3"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node9",
+                "ReportingPerson": ["node8"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node10",
+                "ReportingPerson": ["node9"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node11",
+                "ReportingPerson": ["node4"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node12",
+                "ReportingPerson": ["node11"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node13",
+                "ReportingPerson": ["node5"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node14",
+                "ReportingPerson": ["node13"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
 
+                {
+                "Name": "node16",
+                "ReportingPerson": ["node6"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node17",
+                "ReportingPerson": ["node16"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node18",
+                "ReportingPerson": ["node17", "node21", "node11"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node19",
+                "ReportingPerson": ["node18"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node21",
+                "ReportingPerson": ["node7"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                },
+                {
+                "Name": "node21",
+                "ReportingPerson": ["node20"],
+                "fillColor": "#58b087",
+                "border": "#16955e"
+                }
+
+            ];
+            //Sets the default values of nodes
+            function getNodeDefaults(obj: NodeModel): NodeModel {
+                obj.width = 40;
+                obj.height = 40;
+                //Initialize shape
+                obj.shape = { type: 'Basic', shape: 'Rectangle', cornerRadius: 7 };
+                return obj;
+            }
+            //Sets the default values of connectors
+            function getConnectorDefaults(connector: ConnectorModel): ConnectorModel {
+                connector.type = 'Orthogonal';
+                connector.cornerRadius = 7;
+                connector.targetDecorator.height = 7;
+                connector.targetDecorator.width = 7;
+                connector.style.strokeColor = '#6d6d6d';
+                connector.constraints =  ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                return connector;
+            }
+            let items: DataManager = new DataManager(Data as JSON[], new Query().take(25));
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '100%', height: 700,
+                layout: {
+                    type: 'ComplexHierarchicalTree',
+                    connectionPointOrigin:ConnectionPointOrigin.DifferentPoint,
+                    horizontalSpacing: 40,
+                    verticalSpacing: 40,
+                    orientation: 'LeftToRight',
+                    margin: { left: 10, right: 0, top: 50, bottom: 0 },
+                },
+                //Sets the default values of nodes
+                getNodeDefaults: getNodeDefaults,
+                //Sets the default values of connectors
+                getConnectorDefaults: getConnectorDefaults,
+                //Configures data source
+                dataSourceSettings: {
+                    id: 'Name',
+                    parentId: 'ReportingPerson', dataSource: items,
+                    doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                        nodeModel.style = {
+                            strokeColor: data['border'],
+                          };
+                    }
+                },
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+            });
+            diagram.appendTo('#diagram');
+            diagram.doLayout();
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('nodes and connectors overlap issue', function (done) {
+            expect((diagram.connectors[8] as Connector).intermediatePoints[0].x == 290 && (diagram.connectors[8] as Connector).intermediatePoints[0].y == 276.67).toBe(true);
+            expect((diagram.connectors[8] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[8] as Connector).intermediatePoints[1].y == 276.67 ).toBe(true);
+            expect((diagram.connectors[8] as Connector).intermediatePoints[2].x == 300 && (diagram.connectors[8] as Connector).intermediatePoints[2].y == 410.25 ).toBe(true);
+            expect((diagram.connectors[8] as Connector).intermediatePoints[3].x == 409.5 && (diagram.connectors[8] as Connector).intermediatePoints[3].y == 410 ).toBe(true);
+            done();
+        });
+
+    });
 
 
 

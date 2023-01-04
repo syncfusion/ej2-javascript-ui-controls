@@ -1775,6 +1775,10 @@ export class Drawing {
         options.class = 'e-diagram-rotate-handle';
         options.id = 'rotateThumb';
         this.svgRenderer.drawCircle(canvas as SVGElement, options, ThumbsConstraints.Rotate, { 'aria-label': 'Thumb to rotate the selected object' });
+        let circleHandle = canvas.querySelector('#' + options.id);
+        if(circleHandle){
+            circleHandle.setAttribute('role', 'separator');
+        }
     }
     /**
      * @private

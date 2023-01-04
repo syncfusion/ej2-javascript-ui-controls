@@ -1066,7 +1066,7 @@ export class Axis extends ChildProperty<Axis> {
         let titleSize: number = 0; const isHorizontal: boolean = this.orientation === 'Horizontal';
         if (this.title) {
             const angle: number = this.titleRotation;
-            if (!angle) {
+            if ((isNullOrUndefined(angle))) {
                 this.titleSize = measureText(this.title, this.titleStyle);
                 titleSize = this.titleSize.height + innerPadding;
             }

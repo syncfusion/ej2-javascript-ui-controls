@@ -4232,6 +4232,10 @@ export abstract class LayoutViewer {
             let isWord2013: boolean = this.documentHelper.compatibilityMode === 'Word2013';
             let paragraph = block as ParagraphWidget;
             let isEmptyPara: boolean = paragraph.isEmpty();
+            let paragraphHeight: number = paragraph.height;
+            if (paragraphHeight === 0) {
+                paragraphHeight = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat).Height;
+            }
             //Update Layout area based on text wrap
             if (((!paragraph.isInHeaderFooter || paragraph.isInsideTable)
                 || isWord2013)) {
@@ -4356,8 +4360,8 @@ export abstract class LayoutViewer {
                                 }
                             }
                         }
-                        else if ((bodyWidget.floatingElements.length > 0 && ((rect.y >= textWrappingBounds.y && rect.y < (textWrappingBounds.bottom))
-                            || ((rect.y + paragraph.height >= textWrappingBounds.y) && (rect.y + paragraph.height < (textWrappingBounds.bottom))))
+                        else if ((bodyWidget.floatingElements.length > 0 && ((rect.y >= (textWrappingBounds.y) && rect.y < (textWrappingBounds.bottom))
+                            || ((rect.y + paragraphHeight >= textWrappingBounds.y) && (rect.y + paragraphHeight < (textWrappingBounds.bottom))))
                             && textWrappingStyle === 'TopAndBottom')) {
                             //Skip to wrap the immediate paragraph of floating table based on corresponding floating table. 
                             if (isWord2013 || !((floatingItem instanceof TableWidget) && previousItem === floatingItem)) {

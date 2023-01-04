@@ -313,7 +313,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         // tslint:disable-next-line:no-function-constructor-with-string-args
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
         // Based on the considered control list we have count the instance
-        if (!validateLicense()) {
+        if (typeof window !== "undefined" && typeof document !== "undefined" && !validateLicense()) {
             if (componentList.indexOf(this.getModuleName()) !== -1) {
                 instancecount = instancecount + 1;
                 if (instancecount > 5) {

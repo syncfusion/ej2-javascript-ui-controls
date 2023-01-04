@@ -169,6 +169,7 @@ export class PeriodSelector {
                             this.control.startValue = this.changedRange(
                                 period.intervalType, this.control.endValue, period.interval
                             ).getTime();
+                            this.control.startValue = (period.text && period.text.toLowerCase() === 'all') ? this.control.seriesXMin : this.control.startValue;
                             this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
                         }
                     });

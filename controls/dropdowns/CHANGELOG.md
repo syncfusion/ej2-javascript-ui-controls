@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I422992` - Now, the `cssClass` property works fine in the Mention component.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I423751` - The issue "MultiSelect height not being set properly in the tailwind theme" has been resolved.
+
 ## 20.4.40 (2022-12-28)
 
 ### Dropdown Tree

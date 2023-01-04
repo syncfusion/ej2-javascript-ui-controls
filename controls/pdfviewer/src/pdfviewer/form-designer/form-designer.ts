@@ -402,7 +402,7 @@ export class FormDesigner {
             borderColor: this.getRgbCode(drawingObject.borderColor), thickness: drawingObject.thickness, backgroundColor: this.getRgbCode(drawingObject.backgroundColor) as unknown as string,
             textAlign: drawingObject.alignment, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected, isReadonly: drawingObject.isReadonly, font: {
                 isBold: drawingObject.font.isBold, isItalic: drawingObject.font.isItalic, isStrikeout: drawingObject.font.isStrikeout, isUnderline: drawingObject.font.isUnderline
-            }, selectedIndex: drawingObject.selectedIndex, radiobuttonItem: null, option: drawingObject.options ? drawingObject.options : [], visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip
+            }, selectedIndex: drawingObject.selectedIndex, radiobuttonItem: null, option: drawingObject.options ? drawingObject.options : [], visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip,insertSpaces: drawingObject.insertSpaces
         };
         if (formDesignObj.formFieldAnnotationType === "RadioButton") {
             formDesignObj.radiobuttonItem = [];
@@ -1919,7 +1919,54 @@ export class FormDesigner {
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
         }
     }
-    
+    private setTextBoxFontStyle(fontStyle: any): any {
+        if (fontStyle === 1) {
+            return { isBold: true };
+        }
+        else if (fontStyle === 2) {
+            return { isItalic: true };
+        }
+        else if (fontStyle === 3) {
+            return { isBold: true, isItalic: true };
+        }
+        else if (fontStyle === 4) {
+            return { isUnderline: true };
+        }
+        else if (fontStyle === 5) {
+            return { isBold: true, isUnderline: true };
+        }
+        else if (fontStyle === 6) {
+            return { isUnderline: true, isItalic: true };
+        }
+        else if (fontStyle === 7) {
+            return { isBold: true, isItalic: true, isUnderline: true };
+        }
+        else if (fontStyle === 8) {
+            return { isStrikeout: true };
+        }
+        else if (fontStyle === 9) {
+            return { isBold: true, isStrikeout: true };
+        }
+        else if(fontStyle === 10) {
+            return {isItalic: true, isStrikeout: true };
+        }
+        else if (fontStyle === 11) {
+            return { isBold: true, isItalic: true, isStrikeout: true };
+        }
+        else if (fontStyle === 12) {
+            return { isUnderline: true, isStrikeout: true };
+        }
+        else if (fontStyle === 13) {
+            return { isUnderline: true, isStrikeout: true ,isBold: true};
+        }
+        else if (fontStyle === 14) {
+            return { isItalic: true, isUnderline: true, isStrikeout: true };
+        }
+        else if (fontStyle === 15) {
+            return { isBold: true, isItalic: true, isUnderline: true, isStrikeout: true };
+        }
+        return { isBold: false, isItalic: false, isStrikeout: false, isUnderline: false };
+    }
     /**
      * Adds form field to the PDF page.
      * 
@@ -1952,9 +1999,16 @@ export class FormDesigner {
                 obj.formFieldAnnotationType = formFieldType;
                 obj.isMultiline = (options as TextFieldSettings).isMultiline;
                 obj.name = !isNullOrUndefined(options.name) ? options.name : 'Textbox' + this.formFieldIndex;
+                obj.insertSpaces = (options as any ).insertSpaces;
                 obj.maxLength = (options as any).maxLength;
                 obj.thickness = !isNullOrUndefined((options as TextFieldSettings).thickness) ? (options as TextFieldSettings).thickness : 1;
                 obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ? (options as TextFieldSettings).borderColor : '#303030';
+                if((options as any).font) {
+                    obj.font = (options as any).font;
+                }
+                else if(this.pdfViewer.textFieldSettings.fontStyle) {
+                    obj.font = this.setTextBoxFontStyle(this.pdfViewer.textFieldSettings.fontStyle);
+                }
                 break;
             case 'Password':
                 obj.formFieldAnnotationType = 'PasswordField';
@@ -2099,7 +2153,7 @@ export class FormDesigner {
             type: node.formFieldAnnotationType as FormFieldType, isReadOnly: node.isReadonly, fontFamily: node.fontFamily,
             fontSize: node.fontSize, fontStyle: node.fontStyle as unknown as FontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, isMultiline: (node as PdfFormFieldBaseModel).isMultiline,
             alignment: (node as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (node as PdfFormFieldBaseModel).visibility, maxLength: (node as PdfFormFieldBaseModel).maxLength, isRequired: (node as PdfFormFieldBaseModel).isRequired,
-            isPrint: node.isPrint, isSelected: (node as PdfFormFieldBaseModel).isSelected, isChecked: (node as PdfFormFieldBaseModel).isChecked, tooltip: (node as PdfFormFieldBaseModel).tooltip, bounds: node.bounds as IFormFieldBound, pageIndex: node.pageIndex, thickness: node.thickness, borderColor: (node as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (node as PdfFormFieldBaseModel).signatureIndicatorSettings
+            isPrint: node.isPrint, isSelected: (node as PdfFormFieldBaseModel).isSelected, isChecked: (node as PdfFormFieldBaseModel).isChecked, tooltip: (node as PdfFormFieldBaseModel).tooltip, bounds: node.bounds as IFormFieldBound, pageIndex: node.pageIndex, thickness: node.thickness, borderColor: (node as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (node as PdfFormFieldBaseModel).signatureIndicatorSettings,insertSpaces: (node as PdfFormFieldBaseModel).insertSpaces
         };
         if (index > -1) {
             this.pdfViewer.formFieldCollections[index] = formField;
@@ -3234,16 +3288,29 @@ export class FormDesigner {
     public updateTextboxProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement, isPrint?: boolean): void {
         (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Textbox' + this.setFormFieldIndex();
         (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
-        inputElement.style.fontFamily = obj.fontFamily && this.getFontFamily(obj.fontFamily) ? obj.fontFamily : 'Helvetica';
         let zoomValue: number = isPrint ? this.defaultZoomValue : this.pdfViewerBase.getZoomFactor();
+        if(obj.insertSpaces){
+            var font = ((obj.bounds.width * zoomValue / obj.maxLength) - (obj.fontSize * zoomValue / 2)) - (0.6 * zoomValue);
+            inputElement.style.letterSpacing = '' + font + 'px';
+            inputElement.style.fontFamily = 'monospace';
+            inputElement.style.paddingLeft = (font / 2) + 'px'; 
+        }else{
+            inputElement.style.fontFamily = obj.fontFamily && this.getFontFamily(obj.fontFamily) ? obj.fontFamily : 'Helvetica';
+        }
         inputElement.style.fontSize = obj.fontSize ? (obj.fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
         if (obj.font.isBold) {
             inputElement.style.fontWeight = "bold";
-        } if (obj.font.isItalic) {
+        }
+        if (obj.font.isItalic) {
             inputElement.style.fontStyle = "italic";
-        } if (obj.font.isStrikeout) {
+        }
+        if (obj.font.isUnderline && obj.font.isStrikeout) {
+            inputElement.style.textDecoration = "underline line-through";
+        }
+        else if (obj.font.isStrikeout) {
             inputElement.style.textDecoration = "line-through";
-        } if (obj.font.isUnderline) {
+        }
+        else if (obj.font.isUnderline) {
             inputElement.style.textDecoration = "underline";
         }
         inputElement.style.color = obj.color ? obj.color : 'black';
@@ -5205,7 +5272,7 @@ export class FormDesigner {
 
         let formFieldVisibilityMainDiv = createElement('div', { className: 'e-pv-properties-form-field-visibility-main-div' });
         let formFieldVisibilityDiv = createElement('div', { className: 'e-pv-properties-visibility-edit-prop' });
-        let formFieldVisibilityContainer = createElement('div', { className: 'e-pv-properties-formfield-visibility' });
+        let formFieldVisibilityContainer = createElement('input', { className: 'e-pv-properties-formfield-visibility' });
         formFieldVisibilityDiv.appendChild(formFieldVisibilityContainer);
         formFieldVisibilityMainDiv.appendChild(formFieldVisibilityDiv);
         let selectedIndex: number = selectedItem.visibility === 'visible' ? 0 : 1;
@@ -5273,13 +5340,13 @@ export class FormDesigner {
         const fontItemsContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-items-container' });
 
         const fontFamilyDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-family-container' });
-        const formatdropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-font-family-prop' });
+        const formatdropdownContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-format-font-family-prop' });
         fontFamilyDropdownContainer.appendChild(formatdropdownContainer);
         fontItemsContainer.appendChild(fontFamilyDropdownContainer);
         this.formFieldFontFamily = new DropDownList({ dataSource: fontFamilyItems, value: this.getFontFamily(selectedItem.fontFamily) ? selectedItem.fontFamily : 'Helvetica', cssClass: 'e-pv-properties-formfield-fontfamily' }, formatdropdownContainer);
         this.setToolTip(this.pdfViewer.localeObj.getConstant('Font family'), fontFamilyDropdownContainer);
         const fontSizeContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-size-container' });
-        const fontSizeDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-font-family-prop' });
+        const fontSizeDropdownContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-format-font-family-prop' });
         fontSizeContainer.appendChild(fontSizeDropdownContainer);
         fontItemsContainer.appendChild(fontSizeContainer);
         this.formFieldFontSize = new DropDownList({ dataSource: fontSizeItems, value: selectedItem.fontSize + 'px', cssClass: 'e-pv-properties-formfield-fontsize' }, fontSizeDropdownContainer);
@@ -5306,6 +5373,7 @@ export class FormDesigner {
         fontColorContainer.appendChild(fontAlignContainer);
 
         this.fontColorElement = createElement('div', { className: 'e-pv-formfield-textcolor-icon', id: this.pdfViewer.element.id + 'formField_textColor' });
+        this.fontColorElement.setAttribute('role', 'combobox');
         this.fontColorPalette = this.createColorPicker(this.fontColorElement.id, selectedItem.color);
         selectedItem.color !== 'black' ? this.fontColorValue = selectedItem.color : null;
         this.fontColorPalette.change = this.onFontColorChange.bind(this);
@@ -5333,6 +5401,7 @@ export class FormDesigner {
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('Max Length'), maxLengthContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_maxlength');
         let maxLengthDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-formfield-maxlength', id: this.pdfViewer.element.id + 'formField_maxlength_container' });
         let maxLengthItemDropdown: any = createElement('input', { className: 'e-pv-formfield-maxlength-input e-input' });
+        maxLengthItemDropdown.setAttribute('aria-label', 'Max Length');
         maxLengthDropdownContainer.appendChild(maxLengthItemDropdown);
         maxLengthGroup.appendChild(maxLengthDropdownContainer);
         // Render the Numeric Textbox
@@ -5350,6 +5419,7 @@ export class FormDesigner {
         appearancePropertiesDiv.appendChild(backgroundColorContainer);
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('Fill'), backgroundColorContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_fontcolor');
         this.colorDropDownElement = createElement('div', { className: 'e-pv-formfield-fontcolor-icon', id: this.pdfViewer.element.id + 'formField_fontColor' });
+        this.colorDropDownElement.setAttribute('role', 'combobox');
         this.colorPalette = this.createColorPicker(this.colorDropDownElement.id, selectedItem.backgroundColor);
         this.colorPalette.change = this.onColorPickerChange.bind(this);
         // eslint-disable-next-line max-len
@@ -5362,6 +5432,7 @@ export class FormDesigner {
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('Border'), strokeColorContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_strokecolor');
 
         this.strokeDropDownElement = createElement('div', { className: 'e-pv-formfield-strokecolor-icon', id: this.pdfViewer.element.id + 'formField_strokeColor' });
+        this.strokeDropDownElement.setAttribute('role', 'combobox');
         this.strokeColorPicker = this.createColorPicker(this.strokeDropDownElement.id, selectedItem.borderColor);
         this.strokeColorPicker.change = this.onStrokePickerChange.bind(this);
         // eslint-disable-next-line max-len
@@ -5372,8 +5443,8 @@ export class FormDesigner {
         this.updateColorInIcon(this.strokeDropDownElement, this.pdfViewer.selectedItems.formFields[0].borderColor);
         let strokeThicknessContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-stroke-thickness-style-prop' });
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('Thickness'), strokeThicknessContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_strokethickness');
-
-        this.thicknessElement = createElement('div', { className: 'e-pv-formfield-strokethickness-icon', id: this.pdfViewer.element.id + 'formField_strokethickness' });;
+        this.thicknessElement = createElement('div', { className: 'e-pv-formfield-strokethickness-icon', id: this.pdfViewer.element.id + 'formField_strokethickness' });
+        this.thicknessElement.setAttribute('role', 'combobox');
         const thicknessContainer: HTMLElement = this.createThicknessSlider(this.thicknessElement.id);
         // eslint-disable-next-line max-len
         this.thicknessDropDown = this.createDropDownButton(this.thicknessElement, 'e-pv-annotation-thickness-icon', thicknessContainer);
@@ -5414,6 +5485,7 @@ export class FormDesigner {
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('List Item'), formFieldListItemMainDiv, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_listitem');
         let formFieldListItemDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-list-item-edit-prop' });
         let formFieldListItemContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-list-item-input e-input' });
+        formFieldListItemContainer.setAttribute('aria-label', 'Item Name');
         formFieldListItemContainer.addEventListener('keyup', (args) => {
             this.formFieldAddButton.disabled = true;
             this.formFieldListItem.value = (args.target as any).value;
@@ -5452,6 +5524,7 @@ export class FormDesigner {
         this.createLabelElement(this.pdfViewer.localeObj.getConstant('Export Value'), formFieldexportValueMainDiv, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_exportValue');
         let formFieldExportItemDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-export-value-edit-prop' });
         let formFieldExportItemContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-export-value-input e-input' });
+        formFieldExportItemContainer.setAttribute('aria-label', 'Item Value');
         formFieldExportItemDiv.appendChild(formFieldExportItemContainer);
         formFieldexportValueMainDiv.appendChild(formFieldExportItemDiv);
         // eslint-disable-next-line max-len
@@ -5813,6 +5886,10 @@ export class FormDesigner {
     }
 
     private createDropDownButton(element: HTMLElement, iconClass: string, target: HTMLElement): DropDownButton {
+        let popup: HTMLElement = document.getElementById(target.id + "-popup");
+        if(popup){
+            popup.remove();
+        }
         // eslint-disable-next-line max-len
         const dropDownButton: DropDownButton = new DropDownButton({ iconCss: iconClass + ' e-pv-icon', target: target });
         if (this.pdfViewer.enableRtl) {
@@ -6542,13 +6619,74 @@ export class FormDesigner {
             drawingObject.font.isItalic = true;
             fontStyleName = 'Italic';
         }
-        if (fontStyle === 8) {
-            drawingObject.font.isStrikeout = true;
-            fontStyleName = 'Strikethrough';
+        if (fontStyle === 3) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isItalic = true;
+            fontStyleName = 'Bold Italic';
         }
         if (fontStyle === 4) {
             drawingObject.font.isUnderline = true;
             fontStyleName = 'Underline';
+        }
+        if (fontStyle === 5) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isUnderline = true;
+            fontStyleName = 'Bold Underline';
+        }
+        if (fontStyle === 6) {
+            drawingObject.font.isUnderline = true;
+            drawingObject.font.isItalic = true;
+            fontStyleName = 'Underline Italic';
+        }
+        if (fontStyle === 7) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isItalic = true;
+            drawingObject.font.isUnderline = true;
+            fontStyleName = 'Bold Italic Underline';
+        }
+        if (fontStyle === 8) {
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Strikethrough';
+        }
+        if (fontStyle === 9) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Bold Strikethrough';
+        }
+        if (fontStyle === 10) {
+            drawingObject.font.isItalic = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Italic Strikethrough';
+        }
+        if (fontStyle === 11) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isItalic = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Bold Italic Strikethrough';
+        }
+        if (fontStyle === 12) {
+            drawingObject.font.isUnderline = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Underline Strikethrough';
+        }
+        if (fontStyle === 13) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isUnderline = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Bold Underline Strikethrough';
+        }
+        if (fontStyle === 14) {
+            drawingObject.font.isItalic = true;
+            drawingObject.font.isUnderline = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Italic Underline Strikethrough';
+        }
+        if(fontStyle === 15) {
+            drawingObject.font.isBold = true;
+            drawingObject.font.isItalic = true;
+            drawingObject.font.isUnderline = true;
+            drawingObject.font.isStrikeout = true;
+            fontStyleName = 'Bold Italic Underline Strikethrough';
         }
         return fontStyleName
     }
@@ -6666,6 +6804,7 @@ export interface IFormField {
     type?: string;
     currentName?: string;
     previousName?: string;
+    insertSpaces?: boolean;
 }
 /**
  * Defines the FormFields Bound properties

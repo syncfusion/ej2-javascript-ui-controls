@@ -45,6 +45,7 @@ export class Group implements IAction {
     private column: Column;
     private isAppliedGroup: boolean = false;
     private isAppliedUnGroup: boolean = false;
+    private isAppliedCaptionRowBorder: boolean = false;
     private reorderingColumns: string[] = [];
     private groupGenerator: GroupModelGenerator;
     private visualElement: HTMLElement = createElement('div', {
@@ -602,10 +603,45 @@ export class Group implements IAction {
                         cacheStartIdx++;
                     }
                 }
+                this.lastCaptionRowBorder();
                 this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
             }
             if (!this.parent.enableInfiniteScrolling || !this.parent.groupSettings.enableLazyLoading) {
                 this.parent.notify(events.captionActionComplete, { isCollapse: isHide, parentUid: uid });
+            }
+        }
+    }
+
+    private lastCaptionRowBorder(): void {
+        const table: Element = this.parent.getContentTable();
+        const clientHeight: number = this.parent.getContent().clientHeight;
+        if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
+            if (table.scrollHeight < clientHeight || this.isAppliedCaptionRowBorder) {
+                if (this.isAppliedCaptionRowBorder) {
+                    const borderCells: NodeListOf<Element> = table.querySelectorAll('.e-lastrowcell');
+                    for (let i: number = 0, len: number = borderCells.length; i < len; i++) {
+                        removeClass([borderCells[i]], 'e-lastrowcell');
+                    }
+                    this.isAppliedCaptionRowBorder = false;
+                }
+                const rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
+                const lastRow: Element = rowNodes[rowNodes.length - 1];
+                if ((lastRow as HTMLTableRowElement).style.display !== 'none' && !lastRow.classList.contains('e-groupcaptionrow')) {
+                    if (table.scrollHeight < clientHeight) {
+                        addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
+                        this.isAppliedCaptionRowBorder = true;
+                    }
+                } else {
+                    for (let i: number = rowNodes.length - 1, len: number = 0; i > len; i--) {
+                        if((rowNodes[i] as HTMLTableRowElement).style.display !== 'none' && rowNodes[i].classList.contains('e-groupcaptionrow')) {
+                            if (rowNodes[i].querySelector('.e-recordpluscollapse')) {
+                                addClass(rowNodes[i].childNodes, 'e-lastrowcell');
+                                this.isAppliedCaptionRowBorder = true;
+                                break;
+                            } 
+                        }
+                    }
+                }
             }
         }
     }
@@ -664,6 +700,7 @@ export class Group implements IAction {
             }
         }
         this.parent.updateVisibleExpandCollapseRows();
+        this.lastCaptionRowBorder();
         this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
     }
 

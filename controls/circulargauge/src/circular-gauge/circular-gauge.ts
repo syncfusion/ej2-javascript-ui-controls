@@ -461,6 +461,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public allowComponentRender: boolean;
     /** @private */
     public isPropertyChange: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private resizeEvent: any;
     /**
      * Render axis panel for gauge.
      *
@@ -552,7 +554,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         );
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.gaugeResize
+            this.resizeEvent
         );
     }
 
@@ -572,9 +574,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             this.element,
             (Browser.isPointer ? 'pointerleave' : 'mouseleave'), this.mouseLeave, this
         );
+        this.resizeEvent = this.gaugeResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.gaugeResize.bind(this)
+            this.resizeEvent
         );
         /*! Apply the style for circular gauge */
         this.setGaugeStyle(<HTMLElement>this.element);
@@ -1516,6 +1519,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public destroy(): void {
         this.unWireEvents();
+        if (!isNullOrUndefined(this.tooltipModule)) {
+            this.tooltipModule.removeEventListener();
+        }
         super.destroy();
         if (!isNullOrUndefined(this.gaugeAxisLayoutPanel)) {
             this.gaugeAxisLayoutPanel.destroy();

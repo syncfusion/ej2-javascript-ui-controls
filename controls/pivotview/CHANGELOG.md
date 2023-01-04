@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### Pivot Table
+
+#### Bug Fixes
+ 
+- `#F179497` - The field list popup will now properly refresh while dynamically updating the data source in the pivot table.
+
 ## 20.4.40 (2022-12-28)
 
 ### Pivot Table

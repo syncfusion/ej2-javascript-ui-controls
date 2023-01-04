@@ -299,9 +299,9 @@ export class Data implements IDataProcessor {
             const foreignCols: PredicateModel[] = [];
             const defaultFltrCols: PredicateModel[] = [];
             for (const col of columns) {
-                const gridColumn: Column = gObj.getColumnByField(col.field);
+                const gridColumn: Column = col.isForeignKey ? gObj.getColumnByUid(col.uid) : gObj.getColumnByField(col.field);
                 if (isNullOrUndefined(col.type) && gridColumn && (gridColumn.type === 'date' || gridColumn.type === 'datetime')) {
-                    col.type = gObj.getColumnByField(col.field).type;
+                    col.type = col.isForeignKey ? gObj.getColumnByUid(col.uid).type :gObj.getColumnByField(col.field).type;
                 }
                 if (col.isForeignKey) {
                     foreignCols.push(col);

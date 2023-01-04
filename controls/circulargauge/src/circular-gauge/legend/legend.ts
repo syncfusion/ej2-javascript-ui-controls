@@ -431,7 +431,7 @@ export class Legend {
         const paginggroup: Element = this.gauge.renderer.createGroup({ id: this.legendID + '_navigation' });
         this.pagingRegions = [];
         legendGroup.appendChild(paginggroup);
-        const grayColor: string = '#545454';
+        const grayColor: string = this.gauge.themeStyle.labelColor;
         const legend: LegendSettingsModel = this.gauge.legendSettings; // to solve parameter lint error, legend declaration is here
         const padding: number = 8; // const padding for paging elements
         if (!this.isVertical) {
@@ -466,8 +466,7 @@ export class Legend {
         textOption.y = y + (size.height / 4);
         textOption.id = this.legendID + '_pagenumber';
         textOption.text = '1/' + this.totalPages;
-        const pageTextElement: Element =
-            textElement(textOption, legend.textStyle, legend.textStyle.color || this.gauge.themeStyle.labelColor, paginggroup);
+        const pageTextElement: Element = textElement(textOption, legend.textStyle, grayColor, paginggroup);
         x = (textOption.x + padding + (iconSize / 2) + size.width);
         symbolOption.id = this.legendID + '_pagedown';
         appendPath(

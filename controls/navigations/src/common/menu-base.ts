@@ -5,7 +5,7 @@ import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNu
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, fit, Popup } from '@syncfusion/ej2-popups';
-import { extend, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
 import { HScroll } from '../common/h-scroll';
@@ -227,11 +227,8 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
 export abstract class MenuBase extends Component<HTMLUListElement> implements INotifyPropertyChanged {
     private clonedElement: HTMLElement;
     private targetElement: HTMLElement;
-    // eslint-disable-next-line @typescript-eslint/ban-types
     private delegateClickHandler: Function;
-    // eslint-disable-next-line @typescript-eslint/ban-types
     private delegateMoverHandler: Function;
-    // eslint-disable-next-line @typescript-eslint/ban-types
     private delegateMouseDownHandler: Function;
     private navIdx: number[] = [];
     private animation: Animation = new Animation({});
@@ -239,7 +236,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected isMenu: boolean;
     protected hamburgerMode: boolean;
     protected title: string;
-    // eslint-disable-next-line @typescript-eslint/ban-types
     private rippleFn: Function;
     private uList: HTMLElement;
     private lItem: Element;
@@ -520,7 +516,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         if (this.cssClass) {
-            addClass([wrapper], this.cssClass.split(' '));
+            addClass([wrapper], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
@@ -722,7 +718,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         fliIdx = defaultIdx;
                     }
                 }
-              
             }
         }
         const cli: Element = cul.children[fliIdx as number];
@@ -1023,7 +1018,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (this.hamburgerMode) {
                     this.calculateIndentSize(this.uList, li);
                 } else {
-                    if (this.cssClass) { addClass([this.popupWrapper], this.cssClass.split(' ')); }
+                    if (this.cssClass) { addClass([this.popupWrapper], this.cssClass.replace(/\s+/g, ' ').trim().split(' ')); }
                     this.popupObj.hide();
                 }
                 if (!this.hamburgerMode && !this.showItemOnClick && this.hoverDelay) {
@@ -1408,7 +1403,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         const ul: HTMLElement = ListBase.createList(
             this.createElement, items as objColl, listBaseOptions, !this.template, this);
         ul.setAttribute('tabindex', '0');
-        this.isMenu ? ul.setAttribute('role', 'menu') : ul.setAttribute('role', 'menubar');
+        if (this.isMenu) {
+            ul.setAttribute('role', 'menu');
+        } else {
+            ul.setAttribute('role', 'menubar');
+        }
         return ul;
     }
 
@@ -1786,7 +1785,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     removeClass([wrapper], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([wrapper], newProp.cssClass.split(' '));
+                    addClass([wrapper], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
             case 'enableRtl':

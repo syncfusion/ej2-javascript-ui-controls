@@ -1031,8 +1031,8 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
         let segment: StraightSegmentModel | BezierSegmentModel;
         let first: StraightSegmentModel | BezierSegmentModel;
         if (ele.type === 'Bezier') {
-            if ((ele.segments.length === 0 || (ele.segments.length > 0 &&
-                (!Point.isEmptyPoint((ele.segments[ele.segments.length - 1] as BezierSegmentModel).point))))) {
+            if ((ele.bezierSettings.canResetSegments || (ele.segments.length === 0 || 
+                (!Point.isEmptyPoint((ele.segments[ele.segments.length - 1] as BezierSegmentModel).point)))))  {
                 intermeditatePoints = findOrthoSegments(ele, source, target, undefined, lineDistribution);
                 intermeditatePoints = intermeditatePointsForStraight(ele, source, target);
                 return intermeditatePoints;
@@ -3145,111 +3145,121 @@ function getBottomLength(source: End, target: End, segLength: number, prevDir: s
 }
 function convertPointToBezierSegment(element: Connector, segCount: NoOfSegments, pts: PointModel[]): void {
     if (element.type === 'Bezier') {
-        let start: PointModel = pts[0];
-        let end: PointModel = pts[pts.length - 1];
-        if (segCount === NoOfSegments.One) {
-            let distance: number = Math.min(20, Point.findLength(start, end) * 0.5);
-            let vector1: VectorModel = { angle: findAngle(start, end), distance: distance };
-            let vector2: VectorModel = { angle: findAngle(end, start), distance: distance };
-            let dir = Point.direction(start, end) as Direction;
-            let ori = dir == 'Left' || dir == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, orientation: ori }, true);
-            (element.segments).push(segment);
+        if(element.segments.length === 0){
+            let start: PointModel = pts[0];
+            let end: PointModel = pts[pts.length - 1];
+            if (segCount === NoOfSegments.One) {
+                let distance: number = Math.min(20, Point.findLength(start, end) * 0.5);
+                let vector1: VectorModel = { angle: findAngle(start, end), distance: distance };
+                let vector2: VectorModel = { angle: findAngle(end, start), distance: distance };
+                let dir = Point.direction(start, end) as Direction;
+                let ori = dir == 'Left' || dir == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, orientation: ori }, true);
+                (element.segments).push(segment);
+            }
+            else if (segCount === NoOfSegments.Two) {
+                let mid: PointModel = pts[1];
+                let vector1: VectorModel = { angle: findAngle(start, mid), distance: Point.findLength(start, mid) * 0.5 };
+                let vector2: VectorModel = { angle: findAngle(end, mid), distance: Point.findLength(end, mid) * 0.5 };
+                let dir = Point.direction(start, mid) as Direction;
+                let ori = dir == 'Left' || dir == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, orientation: ori }, true);
+                (element.segments).push(segment);
+            }
+            else if (segCount === NoOfSegments.Three) {
+                let mid1: PointModel = pts[1];
+                let mid2: PointModel = pts[pts.length - 2];
+                let mid: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+                let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
+                let vector2: VectorModel = { angle: findAngle(mid, mid1), distance: Point.findLength(mid, mid1) * 0.5 };
+                let dir1 = Point.direction(start, mid1) as Direction;
+                let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: mid, orientation: ori1 }, true);
+                (element.segments).push(segment1);
+
+                let vector3: VectorModel = { angle: findAngle(mid, mid2), distance: Point.findLength(mid, mid2) * 0.5 };
+                let vector4: VectorModel = { angle: findAngle(end, mid2), distance: Point.findLength(end, mid2) * 0.5 };
+                let dir2 = Point.direction(mid, mid2) as Direction;
+                let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, orientation: ori2 }, true);
+                (element.segments).push(segment2);
+            }
+            else if (segCount === NoOfSegments.Four) {
+                let mid1: PointModel = pts[1];
+                let mid2: PointModel = pts[2];
+                let mid3: PointModel = pts[3];
+                let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+                let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
+                let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
+                let vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
+                let dir1 = Point.direction(start, mid1) as Direction;
+                let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: center1, orientation: ori1 }, true);
+                (element.segments).push(segment1);
+
+                let vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
+                let vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
+                let dir2 = Point.direction(center1, mid2) as Direction;
+                let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, point: center2, orientation: ori2 }, true);
+                (element.segments).push(segment2);
+
+                let vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
+                let vector6: VectorModel = { angle: findAngle(end, mid3), distance: Point.findLength(end, mid3) * 0.5 };
+                let dir3 = Point.direction(center2, mid3) as Direction;
+                let ori3 = dir3 == 'Left' || dir3 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment3: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector5, vector2: vector6, orientation: ori3 }, true);
+                (element.segments).push(segment3);
+            }
+            else if (segCount === NoOfSegments.Five) {
+                let mid1: PointModel = pts[1];
+                let mid2: PointModel = pts[2];
+                let mid3: PointModel = pts[3];
+                let mid4: PointModel = pts[4];
+                let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
+                let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
+                let center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
+
+                let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
+                let vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
+                let dir1 = Point.direction(start, mid1) as Direction;
+                let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: center1, orientation: ori1 }, true);
+                (element.segments).push(segment1);
+
+                let vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
+                let vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
+                let dir2 = Point.direction(center1, mid2) as Direction;
+                let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, point: center2, orientation: ori2 }, true);
+                (element.segments).push(segment2);
+
+                let vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
+                let vector6: VectorModel = { angle: findAngle(center3, mid3), distance: Point.findLength(center3, mid3) * 0.5 };
+                let dir3 = Point.direction(center2, mid3) as Direction;
+                let ori3 = dir3 == 'Left' || dir3 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment3: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector5, vector2: vector6, point: center3, orientation: ori3 }, true);
+                (element.segments).push(segment3);
+
+                let vector7: VectorModel = { angle: findAngle(center3, mid4), distance: Point.findLength(center3, mid4) * 0.5 };
+                let vector8: VectorModel = { angle: findAngle(end, mid4), distance: Point.findLength(end, mid4) * 0.5 };
+                let dir4 = Point.direction(center3, mid4) as Direction;
+                let ori4 = dir4 == 'Left' || dir4 == 'Right' ? 'Horizontal' : 'Vertical';
+                const segment4: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector7, vector2: vector8, orientation: ori4 }, true);
+                (element.segments).push(segment4);
+            }
+            else {
+                const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier' }, true);
+                (element.segments).push(segment);
+            }
         }
-        else if (segCount === NoOfSegments.Two) {
-            let mid: PointModel = pts[1];
-            let vector1: VectorModel = { angle: findAngle(start, mid), distance: Point.findLength(start, mid) * 0.5 };
-            let vector2: VectorModel = { angle: findAngle(end, mid), distance: Point.findLength(end, mid) * 0.5 };
-            let dir = Point.direction(start, mid) as Direction;
-            let ori = dir == 'Left' || dir == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, orientation: ori }, true);
-            (element.segments).push(segment);
-        }
-        else if (segCount === NoOfSegments.Three) {
-            let mid1: PointModel = pts[1];
-            let mid2: PointModel = pts[pts.length - 2];
-            let mid: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-            let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
-            let vector2: VectorModel = { angle: findAngle(mid, mid1), distance: Point.findLength(mid, mid1) * 0.5 };
-            let dir1 = Point.direction(start, mid1) as Direction;
-            let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: mid, orientation: ori1 }, true);
-            (element.segments).push(segment1);
-
-            let vector3: VectorModel = { angle: findAngle(mid, mid2), distance: Point.findLength(mid, mid2) * 0.5 };
-            let vector4: VectorModel = { angle: findAngle(end, mid2), distance: Point.findLength(end, mid2) * 0.5 };
-            let dir2 = Point.direction(mid, mid2) as Direction;
-            let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, orientation: ori2 }, true);
-            (element.segments).push(segment2);
-        }
-        else if (segCount === NoOfSegments.Four) {
-            let mid1: PointModel = pts[1];
-            let mid2: PointModel = pts[2];
-            let mid3: PointModel = pts[3];
-            let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-            let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
-            let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
-            let vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
-            let dir1 = Point.direction(start, mid1) as Direction;
-            let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: center1, orientation: ori1 }, true);
-            (element.segments).push(segment1);
-
-            let vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
-            let vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
-            let dir2 = Point.direction(center1, mid2) as Direction;
-            let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, point: center2, orientation: ori2 }, true);
-            (element.segments).push(segment2);
-
-            let vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
-            let vector6: VectorModel = { angle: findAngle(end, mid3), distance: Point.findLength(end, mid3) * 0.5 };
-            let dir3 = Point.direction(center2, mid3) as Direction;
-            let ori3 = dir3 == 'Left' || dir3 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment3: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector5, vector2: vector6, orientation: ori3 }, true);
-            (element.segments).push(segment3);
-        }
-        else if (segCount === NoOfSegments.Five) {
-            let mid1: PointModel = pts[1];
-            let mid2: PointModel = pts[2];
-            let mid3: PointModel = pts[3];
-            let mid4: PointModel = pts[4];
-            let center1: PointModel = { x: (mid1.x + mid2.x) * 0.5, y: (mid1.y + mid2.y) * 0.5 };
-            let center2: PointModel = { x: (mid2.x + mid3.x) * 0.5, y: (mid2.y + mid3.y) * 0.5 };
-            let center3: PointModel = { x: (mid3.x + mid4.x) * 0.5, y: (mid3.y + mid4.y) * 0.5 };
-
-            let vector1: VectorModel = { angle: findAngle(start, mid1), distance: Point.findLength(start, mid1) * 0.5 };
-            let vector2: VectorModel = { angle: findAngle(center1, mid1), distance: Point.findLength(center1, mid1) * 0.5 };
-            let dir1 = Point.direction(start, mid1) as Direction;
-            let ori1 = dir1 == 'Left' || dir1 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment1: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector1, vector2: vector2, point: center1, orientation: ori1 }, true);
-            (element.segments).push(segment1);
-
-            let vector3: VectorModel = { angle: findAngle(center1, mid2), distance: Point.findLength(center1, mid2) * 0.5 };
-            let vector4: VectorModel = { angle: findAngle(center2, mid2), distance: Point.findLength(center2, mid2) * 0.5 };
-            let dir2 = Point.direction(center1, mid2) as Direction;
-            let ori2 = dir2 == 'Left' || dir2 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment2: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector3, vector2: vector4, point: center2, orientation: ori2 }, true);
-            (element.segments).push(segment2);
-
-            let vector5: VectorModel = { angle: findAngle(center2, mid3), distance: Point.findLength(center2, mid3) * 0.5 };
-            let vector6: VectorModel = { angle: findAngle(center3, mid3), distance: Point.findLength(center3, mid3) * 0.5 };
-            let dir3 = Point.direction(center2, mid3) as Direction;
-            let ori3 = dir3 == 'Left' || dir3 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment3: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector5, vector2: vector6, point: center3, orientation: ori3 }, true);
-            (element.segments).push(segment3);
-
-            let vector7: VectorModel = { angle: findAngle(center3, mid4), distance: Point.findLength(center3, mid4) * 0.5 };
-            let vector8: VectorModel = { angle: findAngle(end, mid4), distance: Point.findLength(end, mid4) * 0.5 };
-            let dir4 = Point.direction(center3, mid4) as Direction;
-            let ori4 = dir4 == 'Left' || dir4 == 'Right' ? 'Horizontal' : 'Vertical';
-            const segment4: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier', isInternalSegment: true, vector1: vector7, vector2: vector8, orientation: ori4 }, true);
-            (element.segments).push(segment4);
-        }
-        else {
-            const segment: BezierSegmentModel = new BezierSegment(element, 'segments', { type: 'Bezier' }, true);
-            (element.segments).push(segment);
+        else{
+            for(let i:number = 0; i<element.segments.length;i++)
+            {
+                if(element.bezierSettings.canResetSegments){
+                (element.segments[parseInt(i.toString(), 10)] as BezierSegment).isInternalSegment = true;
+                }
+            }
         }
     }
 }

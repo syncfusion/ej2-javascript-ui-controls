@@ -144,7 +144,7 @@ export class TextHelper {
         italic = characterFormat.italic ? 'italic' : '';
         fontFamily = this.getFontNameToRender(scriptType, characterFormat);
         fontSize = fontSize === 0 ? 0.5 : fontSize / (characterFormat.baselineAlignment === 'Normal' ? 1 : 1.5);
-        this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
+        this.context.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + '"' + fontFamily + '"';
         if (characterFormat.allCaps) {
             text = text.toUpperCase();
         }

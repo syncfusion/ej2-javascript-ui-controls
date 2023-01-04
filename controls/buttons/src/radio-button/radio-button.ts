@@ -302,7 +302,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             label.classList.add(RTL);
         }
         if (this.cssClass) {
-            addClass([wrapper], this.cssClass.split(' '));
+            addClass([wrapper], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (this.label) {
             this.setText(this.label);
@@ -360,7 +360,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                     removeClass([wrap], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([wrap], newProp.cssClass.split(' '));
+                    addClass([wrap], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
             case 'enableRtl':
@@ -462,7 +462,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 if (ATTRIBUTES.indexOf(key) > -1) {
                     const wrapper: Element = this.element.parentElement;
                     if (key === 'class') {
-                        addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
+                        addClass([wrapper], this.htmlAttributes[`${key}`].replace(/\s+/g, ' ').trim().split(' '));
                     } else if (key === 'title' || key === 'style') {
                         wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else {

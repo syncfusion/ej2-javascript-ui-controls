@@ -849,7 +849,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private checkInternally(args: ItemCreatedArgs, checkboxElement: Element): void {
         args.item.classList.add(classNames.selected);
-        args.item.setAttribute('aria-selected', 'true');
         checkboxElement.querySelector('.' + classNames.checkboxIcon).classList.add(classNames.checked);
         checkboxElement.setAttribute('aria-checked', 'true');
     }
@@ -878,7 +877,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 else {
                     liElement.classList.remove(classNames.selected);
                 }
-                liElement.setAttribute('aria-selected', checked ? 'true' : 'false');
                 if (checked === true) {
                     checkboxIcon.classList.add(classNames.checked);
                 }
@@ -1066,9 +1064,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private homeKeyHandler(e: KeyboardEventArgs, end?: boolean): void {
         e.preventDefault();
         if (Object.keys(this.dataSource).length && this.curUL) {
-            if (this.selectedItems) {
-                (this.selectedItems.item).setAttribute('aria-selected', 'false');
-            }
             const li: Element[] = <NodeListOf<Element> & Element[]>this.curUL.querySelectorAll('.' + classNames.listItem);
             const focusedElement: Element = this.curUL.querySelector('.' + classNames.focused) ||
                 this.curUL.querySelector('.' + classNames.selected);
@@ -1281,11 +1276,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private focusout(): void {
         if (Object.keys(this.dataSource).length && this.curUL) {
             const focusedElement: Element = this.curUL.querySelector('.' + classNames.focused);
-            const activeElement: Element = this.curUL.querySelector('[aria-selected = true]');
             if (focusedElement) {
                 focusedElement.classList.remove(classNames.focused);
-                if (activeElement && !this.showCheckBox) {
-                    activeElement.classList.add(classNames.selected);
+                if (!this.showCheckBox) {
+                    this.selectedLI.classList.add(classNames.selected);
                 }
             }
         }
@@ -1328,13 +1322,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.showCheckBox && ele.querySelector('.' + classNames.checked)) {
                     continue;
                 } else {
-                    ele.setAttribute('aria-selected', 'false');
                     ele.classList.remove(classNames.selected);
                 }
             }
         } else {
-            li.classList.remove(classNames.selected);
-            li.setAttribute('aria-selected', 'false');
+            li.classList.remove(classNames.selected);            
         }
     }
 
@@ -1362,11 +1354,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (!checkIcon.classList.contains(classNames.checked)) {
                 checkIcon.classList.add(classNames.checked);
                 li.classList.add(classNames.selected);
-                li.setAttribute('aria-selected', 'true');
             } else {
                 checkIcon.classList.remove(classNames.checked);
                 li.classList.remove(classNames.selected);
-                li.setAttribute('aria-selected', 'false');
             }
             checkboxElement.setAttribute('aria-checked', checkIcon.classList.contains(classNames.checked) ?
                 'true' : 'false');
@@ -1433,7 +1423,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.removeSelect();
             }
             li.classList.add(classNames.selected);
-            li.setAttribute('aria-selected', 'true');
             this.removeHover();
             this.setSelectedItemData(li);
             if (this.enableVirtualization) {
@@ -1661,7 +1650,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             const element: HTMLElement = liElements[i];
             if (element.classList.contains('e-list-item')) {
                 element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
-                element.setAttribute('aria-selected', 'false');
                 element.setAttribute('tabindex', '-1');
             }
         }
@@ -1835,11 +1823,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         const li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid=\'' + pID + '\']');
         li.classList.remove(classNames.disable);
         li.classList.add(classNames.focused);
-        if (this.showCheckBox && li.querySelector('.' + classNames.checkboxIcon).classList.contains(classNames.checked)) {
-            li.setAttribute('aria-selected', 'true');
-        } else {
+        if(!(this.showCheckBox && li.querySelector('.' + classNames.checkboxIcon).classList.contains(classNames.checked))){
             li.classList.remove(classNames.selected);
-            li.setAttribute('aria-selected', 'false');
         }
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
         if (this.enableHtmlSanitizer) {

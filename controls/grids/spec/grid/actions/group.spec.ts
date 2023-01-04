@@ -1785,3 +1785,31 @@ describe('EJ2-62134 Disabling expand and collapse support for infinite scrolling
         gridObj = null;
     });
 });
+
+describe('EJ2-67363 - Bottom borderline is not shown when collapsing the last grouped row => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 3),
+                allowGrouping: true,
+                groupSettings: { columns: ['CustomerID'] },
+                height: 300,
+                columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'Freight', headerText: 'Freight' },
+                { field: 'ShipCity', headerText: 'Ship City' }],
+            }, done);
+    });
+    it('Checking last border in collapseAll method', () => {
+        let capElem = gridObj.getContent().querySelectorAll('.e-groupcaptionrow');
+        gridObj.groupModule.collapseAll();
+        expect((capElem[2].children[0]).classList.contains('e-lastrowcell')).toBeTruthy();
+        expect((capElem[2].children[1]).classList.contains('e-lastrowcell')).toBeTruthy();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

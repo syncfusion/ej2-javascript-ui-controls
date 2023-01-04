@@ -6,7 +6,7 @@ import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { identityMatrix, transformPointByMatrix, Matrix, rotateMatrix } from '../primitives/matrix';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { getUserHandlePosition, checkPortRestriction } from '../utility/diagram-util';
+import { getUserHandlePosition, checkPortRestriction, canShowControlPoints } from '../utility/diagram-util';
 import { NodeModel } from './../objects/node-model';
 import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb } from '../utility/constraints-util';
 import { canZoomPan, defaultTool, canDrawOnce, canDrag, canDraw, canSelect, canRotate } from '../utility/constraints-util';
@@ -192,17 +192,19 @@ function checkResizeHandles(
 function checkForConnectorSegment(conn: Connector, handle: SelectorModel, position: PointModel, diagram: Diagram): Actions {
     const targetPaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
     const sourcePaddingValue: number = 10 / diagram.scrollSettings.currentZoom;
-    if (conn.type === 'Bezier') {
+    if (conn.type === 'Bezier' && diagram.connectorEditingToolModule) {
         for (let i: number = 0; i < conn.segments.length; i++) {
             const segment: BezierSegment = (conn.segments)[parseInt(i.toString(), 10)] as BezierSegment;
+            // EJ2-67447 - Bezier segment control points are clickable after hiding it with controlPointsVisibility property.
+            // The below condition is used to check the control points visibility of the connector.
             if (contains(
                 position, !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1,
-                sourcePaddingValue)) {
+                sourcePaddingValue) && ((i === 0 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Source'))|| (i !== 0 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Intermediate')))) {
                 return 'BezierSourceThumb';
             }
             if (contains(
                 position, !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2,
-                targetPaddingValue)) {
+                targetPaddingValue) && ((i === conn.segments.length-1 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Target'))|| (i !== conn.segments.length-1 && canShowControlPoints(conn.bezierSettings.controlPointsVisibility, 'Intermediate'))))  {
                 return 'BezierTargetThumb';
             }
         }

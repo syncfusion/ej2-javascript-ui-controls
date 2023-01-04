@@ -111,8 +111,16 @@ export class Resize extends ActionBase {
             return;
         }
         const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
-        this.actionObj.pageX = pages.pageX;
-        this.actionObj.pageY = pages.pageY;
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
+            const doc: HTMLElement = document.documentElement;
+            const left: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+            const top: number = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+            this.actionObj.pageX = pages.pageX - left;
+            this.actionObj.pageY = pages.pageY - top;
+        } else {
+            this.actionObj.pageX = pages.pageX;
+            this.actionObj.pageY = pages.pageY;
+        }
         this.updateScrollPosition(e);
         this.updateResizingDirection(e);
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
@@ -449,6 +457,9 @@ export class Resize extends ActionBase {
         clnTop = isTop ? Math.floor(clnTop / slotInterval) * slotInterval : clnTop;
         clnHeight = clnTop + clnHeight >= viewElement.scrollHeight ? viewElement.scrollHeight - clnTop :
             Math.ceil(clnHeight / slotInterval) * slotInterval;
+        if(!isTop && this.actionObj.clone.offsetTop + clnHeight >= this.parent.getContentTable().offsetHeight){
+            clnHeight = this.parent.getContentTable().offsetHeight - this.actionObj.clone.offsetTop;
+        }
         const styles: Record<string, any> = {
             height: formatUnit(clnHeight < this.actionObj.cellHeight ? Math.floor(clnHeight / slotInterval) * slotInterval : clnHeight),
             top: formatUnit((clnHeight < this.actionObj.cellHeight && isTop) ? Math.ceil(clnTop / slotInterval) * slotInterval : clnTop),

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#F179514` - Now the alignment of tooltip header and crosshair text is rendering properly without overlap.
+
 ## 20.4.38 (2022-12-21)
 
 ### Svg Base

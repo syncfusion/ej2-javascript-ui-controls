@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F179514` - Now the alignment of text is proper in the header of the tooltip and crosshair tooltip text.
+- `#I401851` - Axis title overlaps with axis labels issue has been fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#I413509` - Now period selectors are updating properly for the range selector changes.
+
 ## 20.4.40 (2022-12-28)
 
 ### Chart

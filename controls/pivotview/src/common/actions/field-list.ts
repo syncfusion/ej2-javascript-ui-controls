@@ -44,48 +44,50 @@ export class FieldList implements IAction {
     }
 
     private initiateModule(): void {
-        this.element = createElement('div', {
-            id: this.parent.element.id + '_PivotFieldList',
-            styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
-                ';display:none'
-        });
-        if (select('#' + this.parent.element.id + 'containerwrapper', document) === null) {
-            const containerWrapper: HTMLElement = createElement('div', {
-                id: this.parent.element.id + 'containerwrapper',
-                styles: 'height:' + (isNaN(this.parent.height as number) ? this.parent.height : (this.parent.height + 'px'))
+        if (!select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element)) {
+            this.element = createElement('div', {
+                id: this.parent.element.id + '_PivotFieldList',
+                styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
+                    ';display:none'
             });
-            this.parent.element.parentElement.appendChild(containerWrapper);
-            containerWrapper.appendChild(this.element);
-            containerWrapper.appendChild(this.parent.element);
-        } else {
-            (select('#' + this.parent.element.id + 'containerwrapper', document) as HTMLElement).appendChild(this.element);
+            if (select('#' + this.parent.element.id + 'containerwrapper', document) === null) {
+                const containerWrapper: HTMLElement = createElement('div', {
+                    id: this.parent.element.id + 'containerwrapper',
+                    styles: 'height:' + (isNaN(this.parent.height as number) ? this.parent.height : (this.parent.height + 'px'))
+                });
+                this.parent.element.parentElement.appendChild(containerWrapper);
+                containerWrapper.appendChild(this.element);
+                containerWrapper.appendChild(this.parent.element);
+            } else {
+                (select('#' + this.parent.element.id + 'containerwrapper', document) as HTMLElement).appendChild(this.element);
+            }
+            this.parent.pivotFieldListModule = new PivotFieldList({
+                dataSourceSettings: {
+                    providerType: this.parent.dataSourceSettings.providerType,
+                    rows: [],
+                    columns: [],
+                    values: [],
+                    filters: []
+                },
+                spinnerTemplate: this.parent.spinnerTemplate,
+                allowDeferLayoutUpdate: this.parent.allowDeferLayoutUpdate,
+                renderMode: 'Popup',
+                allowCalculatedField: this.parent.allowCalculatedField,
+                showValuesButton: this.parent.showValuesButton,
+                enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
+                target: this.parent.element.parentElement,
+                aggregateTypes: this.parent.aggregateTypes,
+                maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
+                aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
+                onHeadersSort: this.parent.bindTriggerEvents.bind(this.parent),
+                cssClass: this.parent.cssClass,
+                enableFieldSearching: this.parent.enableFieldSearching
+            });
+            this.parent.pivotFieldListModule.isPopupView = true;
+            this.parent.pivotFieldListModule.pivotGridModule = this.parent;
+            this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
         }
-        this.parent.pivotFieldListModule = new PivotFieldList({
-            dataSourceSettings: {
-                providerType: this.parent.dataSourceSettings.providerType,
-                rows: [],
-                columns: [],
-                values: [],
-                filters: []
-            },
-            spinnerTemplate: this.parent.spinnerTemplate,
-            allowDeferLayoutUpdate: this.parent.allowDeferLayoutUpdate,
-            renderMode: 'Popup',
-            allowCalculatedField: this.parent.allowCalculatedField,
-            showValuesButton: this.parent.showValuesButton,
-            enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale,
-            target: this.parent.element.parentElement,
-            aggregateTypes: this.parent.aggregateTypes,
-            maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
-            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
-            onHeadersSort: this.parent.bindTriggerEvents.bind(this.parent),
-            cssClass: this.parent.cssClass,
-            enableFieldSearching: this.parent.enableFieldSearching
-        });
-        this.parent.pivotFieldListModule.isPopupView = true;
-        this.parent.pivotFieldListModule.pivotGridModule = this.parent;
-        this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }
 
     private updateControl(): void {

@@ -2,13 +2,21 @@
 
 ## [Unreleased]
 
-## 20.4.40 (2022-12-28)
+## 20.4.42 (2023-01-04)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I427235` - The issue `cssClass` property not updated properly while string with a white space in the end of the property in checkbox has been fixed.
 
 ### Chips
 
 #### Bug Fixes
 
 - `#I422262` - Added the aria-disabled attribute to the disabled Chip items.
+
+## 20.4.40 (2022-12-28)
 
 ## 20.3.47 (2022-09-29)
 

@@ -880,7 +880,7 @@ export class PdfExport {
                         } else {
                             txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
                         }
-                        value.push((<Text>txt[0]).textContent);
+                        value.push(!isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '');
                         isEmpty = false;
                     } else {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -5,28 +5,6 @@
 
     .e-tab-header {
 
-      .e-toolbar-items.e-hscroll.e-rtl {
-
-        .e-nav-left-arrow::before {
-          content: '\e219';
-        }
-
-        .e-nav-right-arrow::before {
-          content: '\e98f';
-        }
-      }
-
-      .e-scroll-nav {
-
-        .e-nav-left-arrow::before {
-          content: '\e98f';
-        }
-
-        .e-nav-right-arrow::before {
-          content: '\e219';
-        }
-      }
-
       .e-close-icon::before {
         content: '\e7fc';
         position: relative;
@@ -66,17 +44,6 @@
     &.e-vertical-tab {
 
       .e-tab-header {
-
-        .e-scroll-nav {
-
-          .e-nav-up-arrow::before {
-            content: '\e85e';
-          }
-
-          .e-nav-down-arrow::before {
-            content: '\e84f';
-          }
-        }
 
         .e-popup-up-icon {
 

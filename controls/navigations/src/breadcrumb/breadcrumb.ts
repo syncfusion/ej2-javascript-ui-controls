@@ -277,7 +277,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
         this._maxItems = this.maxItems;
         this.element.setAttribute('aria-label', 'breadcrumb');
         if (this.cssClass) {
-            addClass([this.element], this.cssClass.split(' '));
+            addClass([this.element], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (this.enableRtl) {
             this.element.classList.add('e-rtl');
@@ -779,7 +779,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                     removeClass([this.element], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([this.element], newProp.cssClass.split(' '));
+                    addClass([this.element], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 if ((oldProp.cssClass && oldProp.cssClass.indexOf(ICONRIGHT) > -1) && !(newProp.cssClass &&
                     newProp.cssClass.indexOf(ICONRIGHT) > -1) || !(oldProp.cssClass && oldProp.cssClass.indexOf(ICONRIGHT) > -1) &&

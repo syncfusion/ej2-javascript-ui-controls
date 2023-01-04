@@ -1688,7 +1688,7 @@ describe('Map marker properties tesing', () => {
                     expect(spec.childElementCount).toBe(5);
                     spec = document.getElementById('container_Legend_Shape_Index_0')
                     trigger.clickEvent(spec);
-                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                    expect(spec.getAttribute('fill')).toBe("yellow");
                     spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
                     expect(spec.getAttribute('fill')).toBe("yellow");
                     spec = document.getElementById('container_Legend_Shape_Index_0')
@@ -1846,7 +1846,7 @@ describe('Map marker properties tesing', () => {
                         expect(spec.childElementCount).toBe(9);
                         spec = document.getElementById('container_Legend_Index_0')
                         trigger.clickEvent(spec);
-                        expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                        expect(spec.getAttribute('fill')).toBe("yellow");
                         spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
                         expect(spec.getAttribute('fill')).toBe("yellow");
                         spec = document.getElementById('container_Legend_Index_0')
@@ -2244,7 +2244,7 @@ describe('Map marker properties tesing', () => {
                                 map.loaded = (args: ILoadedEventArgs) => {
                                     spec = document.getElementById('container_Legend_Shape_Index_0')
                                     trigger.clickEvent(spec);
-                                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                                    expect(spec.getAttribute('fill')).toBe("yellow");
                                     spec = document.getElementById('container_LayerIndex_0_shapeIndex_64_dataIndex_58')
                                     expect(spec.getAttribute('fill')).toBe("yellow");
                                 }

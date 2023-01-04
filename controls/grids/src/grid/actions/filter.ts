@@ -270,7 +270,8 @@ export class Filter implements IAction {
      * @hidden
      */
     public updateModel(): void {
-        const col: Column = this.parent.getColumnByField(this.fieldName);
+        const col: Column = this.column.isForeignColumn() ? this.parent.getColumnByUid(this.column.uid) :
+            this.parent.getColumnByField(this.fieldName);
         this.filterObjIndex =  this.getFilteredColsIndexByField(col);
         this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         const arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) ? this.value : [this.value];
@@ -509,7 +510,7 @@ export class Filter implements IAction {
         if (this.column.type === 'number' || this.column.type === 'date') {
             this.matchCase = true;
         }
-        gObj.getColumnHeaderByField(fieldName).setAttribute('aria-filtered', 'true');
+        gObj.getColumnHeaderByField(this.column.isForeignColumn() ? this.column.field : fieldName).setAttribute('aria-filtered', 'true');
         if (filterCell && this.filterSettings.type === 'FilterBar') {
             if ((filterValue && (filterValue as string).length < 1) || (!this.filterByMethod &&
                 this.checkForSkipInput(this.column, (filterValue as string)))) {

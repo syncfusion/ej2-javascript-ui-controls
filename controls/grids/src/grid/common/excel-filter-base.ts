@@ -381,7 +381,18 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 if (this.options.column.filterTemplate) {
                     const templateField: string = isComplexField(this.options.column.field) ?
                         getComplexFieldID(this.options.column.field) : this.options.column.field;
-                    (row.querySelector('#' + templateField + '-xlfl-frstvalue')as HTMLElement).focus();
+                    const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const isReactChild: boolean = (this.parent as any).parentDetails && (this.parent as any).parentDetails.parentInstObj &&
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (this.parent as any).parentDetails.parentInstObj.isReact;
+                    if (isReactCompiler || isReactChild) {
+                        this.parent.renderTemplates(function(): void {
+                            (row.querySelector('#' + templateField + '-xlfl-frstvalue')as HTMLElement).focus();
+                        });
+                    } else {
+                        (row.querySelector('#' + templateField + '-xlfl-frstvalue')as HTMLElement).focus();
+                    }
                 } else {
                     //(row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus();
                 }
@@ -796,15 +807,21 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             const tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
             if (isReactCompiler || isReactChild) {
                 (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
-                this.parent.renderTemplates();
             } else {
                 const element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
                 appendChildren(valueDiv, element);
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ((this.parent as any).isAngular ? valueDiv.children[0] : valueDiv.querySelector('input')).id = isComplex ?
-                complexFieldName + elementId : column + elementId;
-            value.appendChild(valueDiv);
+            if (isReactCompiler || isReactChild) {
+                this.parent.renderTemplates(function(): void {
+                    valueDiv.querySelector('input').id = isComplex ? complexFieldName + elementId : column + elementId;
+                    value.appendChild(valueDiv);
+                });
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((this.parent as any).isAngular ? valueDiv.children[0] : valueDiv.querySelector('input')).id = isComplex ?
+                    complexFieldName + elementId : column + elementId;
+                value.appendChild(valueDiv);
+            }
         } else {
             const valueInput: Element = this.parent
                 .createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId });

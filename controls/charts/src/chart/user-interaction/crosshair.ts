@@ -237,7 +237,7 @@ export class Crosshair {
     }
 
     private renderAxisTooltip(chart: Chart, chartRect: Rect, axisGroup: Element): void {
-        let axis: Axis; let text: string;
+        let axis: Axis; let text: string | string[] ;
         let rect: Rect;
         let pathElement: Element;
         let textElem: Element;
@@ -254,6 +254,9 @@ export class Crosshair {
                     pathElement = document.getElementById(this.elementID + '_axis_tooltip_' + k);
                     textElem = document.getElementById(this.elementID + '_axis_tooltip_text_' + k);
                     text = this.getAxisText(axis);
+                    if (text && text.indexOf('<br') > -1) {
+                        text = this.getAxisText(axis).split(/<br.*?>/g);
+                    }
                     if (!text) {
                         continue;
                     }
@@ -286,9 +289,25 @@ export class Crosshair {
                         this.isTop, this.isBottom, this.isLeft, this.valueX, this.valueY
                     );
                     pathElement.setAttribute('d', direction);
-                    textElem.textContent = text;
+                    if (typeof text !== 'string' && text.length > 1) {
+                        for (let i: number = 0; i < text.length; i++) {
+                            textElem.childNodes[i as number].textContent = text[i];
+                        }
+                    } else {
+                        textElem.textContent = text as string;
+                    }
                     textElem.setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0)).toString());
                     textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / 4).toString());
+                    if (typeof text !== 'string' && text.length > 1) {
+                        let height: number = 0;
+                        textElem.setAttribute('y', (rect.y + padding + 3 * this.elementSize.height / (4 * text.length)).toString());
+                        for (let i: number = 0; i < textElem.children.length; i++) {
+                            height += this.elementSize.height / text.length;
+                            textElem.children[i as number].setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0) + this.elementSize.width / 2).toString());
+                            textElem.children[i as number].setAttribute('y', ((parseInt(textElem.getAttribute('y')) + height).toString()));
+                            textElem.children[i as number].setAttribute('style', 'text-anchor: middle');
+                        }
+                    }
                     if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark') {
 
                         const shadowId: string = this.chart.element.id + '_shadow';
@@ -342,7 +361,7 @@ export class Crosshair {
 
 
 
-    private tooltipLocation(text: string, axis: Axis, bounds: Rect, axisRect: Rect): Rect {
+    private tooltipLocation(text: string[] | string, axis: Axis, bounds: Rect, axisRect: Rect): Rect {
 
         const padding: number = 5; const arrowPadding: number = 9;
         let tooltipRect: Rect;
@@ -351,7 +370,17 @@ export class Crosshair {
         const islabelInside: boolean = axis.labelPosition === 'Inside';
         let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
             ? axis.scrollBarHeight : 0;
-        this.elementSize = measureText(text, axis.crosshairTooltip.textStyle);
+        this.elementSize = measureText(text as string, axis.crosshairTooltip.textStyle);
+        if (typeof text !== 'string' && text.length > 1) {
+            this.elementSize.width = 0; this.elementSize.height = 0;
+            for (let i: number = 0; i < text.length; i++) {
+                let size: Size = measureText(text[i as number], axis.crosshairTooltip.textStyle);
+                this.elementSize.height += size.height;
+                if (this.elementSize.width < size.width) {
+                    this.elementSize.width = size.width
+                }
+            }
+        }
         const isOpposed: boolean = axis.isAxisOpposedPosition;
         if (axis.orientation === 'Horizontal') {
             const yLocation: number = islabelInside ? axisRect.y - this.elementSize.height - (padding * 2 + arrowPadding) :

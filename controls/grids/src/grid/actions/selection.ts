@@ -3078,7 +3078,7 @@ export class Selection implements IAction {
                 input.indeterminate = false;
                 if ((checkToSelectAll && isFiltered && this.getData().length) || (!isFiltered
                     && ((checkedLen === this.totalRecordsCount && this.totalRecordsCount
-                        && !this.isPartialSelection && !this.parent.enableVirtualization) ||
+                        && !this.isPartialSelection && (!this.parent.getDataModule().isRemote() || this.parent.allowPaging)) ||
                     (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling
                     && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen) || this.isHdrSelectAllClicked))
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
@@ -3092,9 +3092,8 @@ export class Selection implements IAction {
                         this.getRenderer().setSelection(null, true, true);
                     }
                     this.parent.checkAllRows = 'Check';
-                } else if ((((!this.selectedRowIndexes.length && !this.parent.enableVirtualization) ||
-                             (this.parent.enableVirtualization && ((!this.persistSelectedData.length && !isFiltered) ||
-                             (isFiltered && this.someDataSelected()))) ||
+                } else if (((!this.selectedRowIndexes.length && (!this.parent.enableVirtualization ||
+                             (!this.persistSelectedData.length && !isFiltered) || (isFiltered && this.someDataSelected())) ||
                              checkedLen === 0 && this.getCurrentBatchRecordChanges().length === 0) && !this.parent.allowPaging) ||
                              (this.parent.allowPaging && (checkedLen === 0 || (checkedLen && isFiltered && this.someDataSelected())))) {
                     addClass([spanEle], ['e-uncheck']);

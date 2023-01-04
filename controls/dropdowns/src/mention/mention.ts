@@ -969,9 +969,15 @@ export class Mention extends DropDownBase {
         const args: BeforeOpenEventArgs = { cancel: false };
         this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
             if (!args.cancel) {
-                const popupEle: HTMLElement = isNullOrUndefined(this.target) ? this.createElement('div', {
-                    id: this.inputElement.id + '_popup', className: 'e-mention e-popup ' + (this.cssClass != null ? this.cssClass : '')
-                }) : this.element;
+                let popupEle: HTMLElement;
+                if (isNullOrUndefined(this.target)) {
+                    popupEle = this.createElement('div', {
+                        id: this.inputElement.id + '_popup', className: 'e-mention e-popup ' + (this.cssClass != null ? this.cssClass : '')
+                    });
+                } else {
+                    popupEle = this.element;
+                    if (this.cssClass != null) { addClass([popupEle], this.cssClass.split(' ')); }
+                }
                 if (!isNullOrUndefined(this.target)) {
                     popupEle.id = this.inputElement.id + '_popup';
                     addClass([popupEle], ['e-mention' , 'e-popup',  'e-popup-close']);

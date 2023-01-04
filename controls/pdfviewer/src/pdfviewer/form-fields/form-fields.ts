@@ -178,7 +178,7 @@ export class FormFields {
                             } 
                             let fieldProperties: any = {
                                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
-                                value: elementValue, isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
+                                value: elementValue,insertSpaces: currentData['InsertSpaces'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
                                 isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
                             };
                               if (!currentData.id && this.pdfViewer.formFieldCollections[i] && !isNullOrUndefined(currentData['ActualFieldName'])) {
@@ -935,6 +935,9 @@ export class FormFields {
             // eslint-disable-next-line
             let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0 + ')';
             currentTarget.style.backgroundColor = currentColor;
+            if (currentTarget.type === 'checkbox') {
+                currentTarget.style.webkitAppearance = '';
+            }
         } else if (currentTarget) {
             // eslint-disable-next-line
             if (currentTarget.className === 'e-pdfviewer-signatureformfields' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature  e-pv-signature-focus') {
@@ -963,6 +966,11 @@ export class FormFields {
         // eslint-disable-next-line
         let currentColor: any = backgroundcolor.slice(0, currentIndex + 1) + 0.2 + ')';
         currentTarget.style.backgroundColor = currentColor;
+        if ((currentTarget.type === 'checkbox') && !currentTarget.checked) {
+            currentTarget.style.webkitAppearance = 'none';
+        } else {
+               currentTarget.style.webkitAppearance = '';
+        }
     }
     public updateFormFields(event: MouseEvent): void {
         // eslint-disable-next-line
@@ -1694,6 +1702,7 @@ export class FormFields {
                                     if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
                                         currentData.Selected = false;
                                         currentTarget.checked = false;
+                                        currentTarget.style.webkitAppearance = 'none';
                                     }
                                 }
                             }
@@ -1950,7 +1959,7 @@ export class FormFields {
     private createButtonField(data: any, pageIndex: number): any {
         // eslint-disable-next-line
         let inputField: any = document.createElement('input');
-        if (data.Value) {
+        if (data.Value && (this.isBase64(data.Value) || this.isURL(data.Value))) {
             inputField.type = 'image';
             inputField.src = data.Value;
         } else {
@@ -1964,6 +1973,35 @@ export class FormFields {
         }
         inputField.name = data.FieldName;
         return inputField;
+    }
+    
+    /**
+     * Returns the boolean value based on the imgae source base64
+     * 
+     * @param {string} imageSrc - Passing the image source.
+     * 
+     * @returns {boolean}
+     */
+    
+    private isBase64(imageSrc: string): boolean {
+        return /^data:([a-zA-Z]*\/[a-zA-Z+.-]*);base64,/.test(imageSrc);
+    }
+    
+    /**
+     * Returns the boolean value based on the imgae source URL
+     * 
+     * @param {string} imageSrc - Passing the image source.
+     * 
+     * @returns {boolean}
+     */
+    
+    private isURL(imageSrc: string): boolean {
+        try {
+             new URL(imageSrc);
+             return true;
+         } catch {
+            return false;
+         }
     }
     // eslint-disable-next-line
     private createTextBoxField(data: any, pageIndex: number, type: string): any {
@@ -2078,7 +2116,7 @@ export class FormFields {
     // eslint-disable-next-line
     private applyDefaultColor(inputField: any): void {
         // eslint-disable-next-line max-len
-        if (inputField.type !== 'button' && (inputField.style.backgroundColor === 'rgba(255, 255, 255, 0.2)' || inputField.style.backgroundColor === 'rgba(0, 0, 0, 0.2)')) {
+        if (inputField.type !== 'button' && (inputField.style.backgroundColor === 'rgba(255, 255, 255, 0.2)' || inputField.style.backgroundColor === 'rgba(0, 0, 0, 0.2)') || inputField.style.backgroundColor === 'rgba(218, 234, 247, 0.2)') {
             inputField.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
         }
         if (inputField.style.color === 'rgba(255, 255, 255, 0.2)') {
@@ -2138,6 +2176,9 @@ export class FormFields {
         inputField.type = type;
         if (data.Selected) {
             inputField.checked = true;
+        }
+        else if(type === 'checkbox' && !printContainer){
+            inputField.style.webkitAppearance = 'none';
         }
         inputField.name = data.GroupName;
         inputField.value = data.Value;
@@ -2506,6 +2547,10 @@ export class FormFields {
                     this.pdfViewer.annotation.deleteAnnotationById(annot.id);
                 }
                 this.pdfViewer.add(annot as PdfAnnotationBase);
+                if (target) {
+                    this.updateDataInSession(target, annot.data, annot.bounds);
+                    this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, annot.strokeColor, annot.thickness, annot.data);
+                }
             }
             data.Bounds = annot.bounds;
             if (this.pdfViewer.formDesignerModule) {

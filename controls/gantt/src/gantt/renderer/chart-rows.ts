@@ -502,7 +502,7 @@ export class ChartRows extends DateProcessor {
             const splitStartDate: Date = this.parent.dataOperation.checkStartDate(splitDate, ganttProp, false);
             if (splitStartDate.getTime() !== ganttProp.startDate.getTime()) {
                 if (ganttProp.isAutoSchedule) {
-                    if (!isNullOrUndefined(segments)) {
+                    if (!isNullOrUndefined(segments) && segments.length > 0) {
                         segmentIndex = this.getSegmentIndex(splitStartDate, splitRecord);
                     }
                     //check atleast one day difference is there to split
@@ -849,11 +849,11 @@ export class ChartRows extends DateProcessor {
             'width:' + data.ganttProperties.width + 'px;' +
             'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
                 data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
-                (this.parent.enableRtl? 'margin-right:0px;': '') + '"height:' + taskbarHeight + 'px;border-left-width:' + taskbarHeight / 5 +
+                (this.parent.enableRtl ? 'margin-right:0px;' : '') + '"height:' + ((taskbarHeight / 5) + 8) + 'px;border-left-width:' + taskbarHeight / 5 +
                 'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
-                '<div class="e-gantt-manualparenttaskbar-right" style=' + (this.parent.enableRtl?'margin-right:-8px;': '') +
-                (this.parent.enableRtl? 'right:': 'left:') + (data.ganttProperties.width - taskbarHeight / 5) + 'px;height:' +
-                (taskbarHeight) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
+                '<div class="e-gantt-manualparenttaskbar-right" style=' + (this.parent.enableRtl ? 'margin-right:-8px;' : '') +
+                (this.parent.enableRtl ? 'right:' : 'left:') + (data.ganttProperties.width - Math.floor(((taskbarHeight / 5) + 8) / 5)) + 'px;height:' +
+                ((taskbarHeight / 5) + 8) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
                 taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
         const milestoneTemplate: string = '<div class="' + cls.manualParentMilestone + '" style="position:absolute;'+ 
             (this.parent.enableRtl?'right:':'left:') +
@@ -918,18 +918,20 @@ export class ChartRows extends DateProcessor {
                 }
                 if (isNaN(parseInt(labelString))) {
                     labelDiv = '<span class="' + cls.taskLabel + '" style="line-height:' +
-                         (this.taskBarHeight - 1) + 'px; text-align:' + (this.parent.enableRtl? 'right;' : 'left;') +
-                         'display:' + 'inline-block;' +
-                         'width:' + (data.ganttProperties.width - 10) + 'px; height:' +
-                         this.taskBarHeight + 'px;">' + labelString + '</span>';
+                        (data['isManual'] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) : (this.taskBarHeight - 1)) +
+                        'px; text-align:' + (this.parent.enableRtl ? 'right;' : 'left;') +
+                        'display:' + 'inline-block;' +
+                        'width:' + (data.ganttProperties.width - 10) + 'px; height:' +
+                        this.taskBarHeight + 'px;">' + labelString + '</span>';
                 } else {
                     labelDiv = '<span class="' +
                     cls.taskLabel + '" style="line-height:' +
-                    (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'display:inline-flex;' : '') +
-                    (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
-                    (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'display: inline-flex;' : '') + 
-                    (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
-                    this.taskBarHeight + 'px;">' + labelString + '</span>';
+                        (data['isManual'] && data.hasChildRecords ? (Math.floor((60 / 100) * this.taskBarHeight)) : (this.taskBarHeight - 1)) + 'px;' +
+                        (this.parent.viewType === 'ResourceView' ? 'display:inline-flex;' : '') +
+                        (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                        (this.taskBarHeight - 1) + 'px;' + (this.parent.viewType === 'ResourceView' ? 'display: inline-flex;' : '') +
+                        (this.parent.viewType === 'ResourceView' ? 'width:' + (data.ganttProperties.width - 10) : '') + 'px; height:' +
+                        this.taskBarHeight + 'px;">' + labelString + '</span>';
                 }
                 let labelElement: Node = this.createDivElement(labelDiv)[0];
                 let parentLabel: string = this.parent.labelSettings.taskLabel;

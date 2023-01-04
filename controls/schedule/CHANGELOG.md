@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I426228` - An issue with drag and drop with timeline view header rows has been fixed.
+- `#I425268` - An issue with drag and drop flickering with `eventDragArea` in timeline views has been fixed.
+- `#I424662` - An issue with appointment resizing in month view with scrollbar has been fixed.
+
 ## 20.4.38 (2022-12-21)
 
 ### Schedule

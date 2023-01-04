@@ -907,7 +907,38 @@ describe('Context-', () => {
             expect(ganttObj.currentViewData[2].ganttProperties.isAutoSchedule).toBe(false);
         });
     });
-    
+    describe('Incorrect row height', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: scheduleModeData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Manual',
+                splitterSettings: {
+                    columnIndex: 8
+                },
+                rowHeight: 60,
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Changing taskmode of a task to manual', () => {
+            expect(document.getElementsByClassName('e-gantt-manualparenttaskbar-right')[0]['style'].height).toBe('11.5px');
+        });
+    });
      describe('Content menu -', () => {
         beforeAll((done: Function) => {
             ganttObj = createGantt({

@@ -676,8 +676,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     this.element.id + '_Trackball_' + count, this.palette[count],
                     1, '#cccccc', 1, null);
                 if (this.markerPoint[count]) {
+                    let padding: number = 0;
+                    if (this.header.indexOf('<br') > -1) {
+                        padding = this.header.split(/<br.*?>/g).length + count;
+                    }
                     markerGroup.appendChild(drawSymbol(
-                        new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : 0)),
+                        new TooltipLocation(x, this.markerPoint[count] - this.padding + (isBottom ? this.arrowPadding : padding)),
                         shape, new Size(size, size), '', shapeOption, null));
                 }
                 count++;
@@ -716,13 +720,17 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.header !== '') {
             let wrapPadding: number = 2;
+            let padding: number = 0;
             const wrapHeader: string = this.isWrap ? this.wrappedText : this.header;
             if (this.isWrap && typeof (wrapHeader) === 'string' && (wrapHeader.indexOf('<') > -1 || wrapHeader.indexOf('>') > -1)) {
                 const textArray: string[] = wrapHeader.split('<br>');
                 wrapPadding = textArray.length;
             }
+            if (this.header.indexOf('<br') > -1) {
+                padding = 5 * (this.header.split(/<br.*?>/g).length - 1);
+            }
             const headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, this.textStyle).height +
-                (this.marginY * wrapPadding) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : 0); //header padding;
+                (this.marginY * wrapPadding) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : padding); //header padding;
             const xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
             const direction: string = 'M ' + xLength + ' ' + headerSize +
                 'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
@@ -896,6 +904,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if ((!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
                         subWidth += line !== ' ' ? spaceWidth : 0;
                         if (isColumn && !isRow) {
+                            if (this.header.indexOf('<br') > -1 && k !== 0) {
+                                headerSpace += this.header.split(/<br.*?>/g).length;
+                            } 
                             tspanOption = {
                                 x: (this.marginX * 2) + (markerSize + markerPadding),
                                 dy: dy + ((isColumn) ? headerSpace : 0), fill: ''

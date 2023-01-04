@@ -4368,6 +4368,50 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj.rowSelected = null;
         });
     });
+    describe('EJ2-67278 - Row deselection is not working in Virtualization with checkbox column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: infiniteGroupData,
+                    enableVirtualization: true,
+                    columns: [{ type: "checkbox"},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 }],
+                    height: 300
+                }, done);
+        });
+
+        it('single row selecting action', () => {
+            expect(gridObj.selectedRowIndex).toBe(-1);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+            gridObj.selectRow(1);
+        });
+        it('check single row selection and single row de-selecting action', () => {
+            expect(gridObj.selectedRowIndex).toBe(1);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+            gridObj.selectRow(1, true);
+        });
+        it('check single row deselection and header checkbox selection action', () => {
+            expect(gridObj.selectedRowIndex).toBe(-1);
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        });
+        it('check select all selection and header checkbox de-selection action', () => {
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(gridObj.currentViewData.length);
+            (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        });
+        it('check select all deselection', () => {
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(0);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
     describe('EJ2-41468 - row data in rowSelected event args is not maintained properly with Batch edit mode', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

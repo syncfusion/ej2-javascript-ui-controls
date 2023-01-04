@@ -1220,7 +1220,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 glueElem.appendChild(inputElem);
             }
             inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
-            inputElem.setAttribute('checked', 'true');
             glueElem.appendChild(inputElem);
             labelElem = this.createElement('label', { attrs: { class: 'e-lib e-btn e-btngroup-and-lbl e-small' },
                 innerHTML: this.l10n.getConstant('AND') });
@@ -2352,6 +2351,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             const numeric: NumericTextBox = new NumericTextBox(numericTxt);
             numeric.appendTo('#' + parentId + '_valuekey' + idx);
+            numeric.element.setAttribute('aria-label', itemData.label + ' ' + 'Value');
         }
     }
     private processValueString(value: string, type: string): string[] | number[] {
@@ -3105,7 +3105,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private initWrapper(): void {
         this.isInitialLoad = true;
         if (this.cssClass) {
-            addClass([this.element], this.cssClass);
+            addClass([this.element], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (this.enableRtl) {
             addClass([this.element], 'e-rtl');
@@ -3281,7 +3281,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     removeClass([this.element], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([this.element], newProp.cssClass.split(' '));
+                    addClass([this.element], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
             case 'enableRtl':

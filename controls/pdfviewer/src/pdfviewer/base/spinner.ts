@@ -15,6 +15,7 @@ const CLS_BOOTSPIN: string = 'e-spin-bootstrap';
 const CLS_BOOT4SPIN: string = 'e-spin-bootstrap4';
 const CLS_BOOT5SPIN: string = 'e-spin-bootstrap5';
 const CLS_TAILWIND: string = 'e-spin-tailwind';
+const CLS_Fluent: string = 'e-spin-fluent';
 const CLS_HIGHCONTRASTSPIN: string = 'e-spin-high-contrast';
 const CLS_SPINWRAP: string = 'e-spinner-pane';
 const CLS_SPININWRAP: string = 'e-spinner-inner';
@@ -175,6 +176,19 @@ function createTailwindSpinner(container: HTMLElement, radius: number, makeEleme
 
 /**
  * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
+ */
+function createFluentSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    var uniqueID = randomGenerator();
+    globalTimeOut["" + uniqueID] = { timeOut: 0, type: 'Fluent', radius: radius };
+    createFabricElement(container, uniqueID, CLS_Fluent, makeElement);
+    fbCalculateAttributes(radius, container, CLS_Fluent);
+}
+
+/**
+ * @param {HTMLElement} container - The HTMLElement.
  * @param {string} uniqueID - The uniqueID.
  * @param {number} radius - The radius.
  * @returns {void}
@@ -256,6 +270,9 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
         break;
     case 'Tailwind':
         createTailwindSpinner(innerContainer, radius, makeElement );
+        break;
+    case 'Fluent':
+        createFluentSpinner(innerContainer, radius, makeElement);
         break;
     }
 }

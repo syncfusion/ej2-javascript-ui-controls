@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.42 (2023-01-04)
+
+### Common
+
+#### Bug Fixes
+
+- `I427250` - Resolved window undefined in server side rendering with React next JS.
+
 ## 20.4.38 (2022-12-21)
 
 ### Common

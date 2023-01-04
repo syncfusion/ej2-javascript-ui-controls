@@ -1668,4 +1668,101 @@ describe('Mention', () => {
             done();
         });
     });
+
+    describe('Show popup with CSS and target property set for div', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('div', { id: 'divMention' });
+        let divElement: HTMLDivElement = document.createElement('div');
+        divElement.id = 'divElement';
+        divElement.contentEditable = 'true';
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            element.innerHTML ="<p>@</p>";
+            document.body.appendChild(element);
+            document.body.appendChild(divElement);
+            mentionObj = new Mention({ dataSource: datasource2, target: '#divMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj.appendTo(divElement);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * initialize
+         */
+        it('ShowPopup with @ as value', () => {
+            setCursorPoint(mentionObj.inputElement.firstChild.firstChild, 1);
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect(document.querySelector('.e-mention.e-popup')).not.toBe(null);
+            expect(mentionObj.popupObj.element.classList.contains('sample')).toEqual(true);
+        });
+    });
+
+    describe('Show popup with CSS and target property set for input', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
+        let divElement: HTMLDivElement = document.createElement('div');
+        divElement.id = 'divElement';
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            
+            document.body.appendChild(element);
+            document.body.appendChild(divElement);
+            mentionObj = new Mention({ dataSource: datasource2, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj.appendTo(divElement);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * initialize
+         */
+        it('ShowPopup with @ as value', () => {
+            element.value = '@';
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect(document.querySelector('.e-mention.e-popup')).not.toBe(null);
+            expect(mentionObj.popupObj.element.classList.contains('sample')).toEqual(true);
+        });
+    });
+
+    describe('Show popup with CSS and target property set for textarea', () => {
+        let mentionObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'textareaMention' });
+        let divElement: HTMLDivElement = document.createElement('div');
+        divElement.id = 'divElement';
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            
+            document.body.appendChild(element);
+            document.body.appendChild(divElement);
+            mentionObj = new Mention({ dataSource: datasource2, target: '#textareaMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj.appendTo(divElement);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * initialize
+         */
+        it('ShowPopup with @ as value', () => {
+            element.value = '@';
+            mentionObj.onKeyUp(keyMentionEventArgs);
+            expect(document.querySelector('.e-mention.e-popup')).not.toBe(null);
+            expect(mentionObj.popupObj.element.classList.contains('sample')).toEqual(true);
+        });
+    });
 });

@@ -329,7 +329,7 @@ export class RangeSlider {
             if (e.preventDefault && this.isIOS) {
                 e.preventDefault();
             }
-            if (this.selectedPeriod) {
+            if (this.currentSlider !== 'Middle') {
                 const periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
                 if (periodSelectorModule) {
                     const buttons: PeriodsModel[] = periodSelectorModule.control.periods;
@@ -460,6 +460,9 @@ export class RangeSlider {
                 control.rangeAxis[this.currentSlider][this.labelIndex].value,
                 (secondLabel ? (control.allowIntervalData ? secondLabel.value - 1 : secondLabel.value) : range.max), control
             );
+            trigger = false;
+        }
+        else if (this.currentSlider === null) {
             trigger = false;
         }
         if (this.isDrag && control.allowSnapping) {

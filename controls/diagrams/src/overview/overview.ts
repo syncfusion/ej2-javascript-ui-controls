@@ -785,6 +785,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             const bounds: Rect = this.scrollOverviewRect(
                 this.parent.scroller.horizontalOffset, this.parent.scroller.verticalOffset, this.parent.scroller.currentZoom, true);
             this.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height);
+            // EJ2-67416 - Added below code to update the overview rect if the diagram and overview is scrolled. 
+            this.updateView(this);
         }
     }
 

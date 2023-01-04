@@ -507,7 +507,9 @@ export class Edit {
                 if ((key === tasks.baselineStartDate || key === tasks.baselineEndDate) &&
                     (ganttData.ganttProperties.baselineStartDate && ganttData.ganttProperties.baselineEndDate)) {
                     ganttObj.setRecordValue('baselineStartDate', ganttObj.dataOperation.checkBaselineStartDate(ganttData.ganttProperties.baselineStartDate),ganttData.ganttProperties, true);
-                    ganttObj.dataOperation.setTime(this.parent.defaultEndTime, ganttData.ganttProperties.baselineEndDate);
+                    if (ganttData.ganttProperties.baselineEndDate && ganttData.ganttProperties.baselineEndDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
+                        ganttObj.dataOperation.setTime(this.parent.defaultEndTime, ganttData.ganttProperties.baselineEndDate);
+                    }
                     ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttData.ganttProperties.baselineEndDate),ganttData.ganttProperties, true);
                     ganttObj.setRecordValue(
                         'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(
@@ -2832,6 +2834,12 @@ export class Edit {
                     this.parent.showMaskRow()
                 } else {
                     this.parent.showSpinner()
+                }
+                const tasks: TaskFieldsModel = this.parent.taskFields;
+                const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
+                this.parent.flatData[this.parent.getTaskIds().indexOf('T' + args.data[tasks.id])] : this.parent.getRecordByID(args.data[tasks.id]);
+                if (!isNullOrUndefined(ganttData)) {
+                   this.validateUpdateValues(args.newTaskData, ganttData, true);
                 }
                 if(!isNullOrUndefined(args.data[tempTaskID])) {
                     if(args.data[tempTaskID as string] != args.data['ganttProperties']['taskId']) {

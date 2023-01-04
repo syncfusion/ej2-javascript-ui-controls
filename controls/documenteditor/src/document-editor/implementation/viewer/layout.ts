@@ -1222,7 +1222,7 @@ export class Layout {
             }
         }
         if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
-            !(element instanceof ShapeElementBox) && !(paragraph.containerWidget instanceof TextFrame)) {
+            !(element instanceof ShapeElementBox) && !(paragraph.containerWidget instanceof TextFrame) && !(element instanceof CommentCharacterElementBox)) {
             this.adjustPosition(element, element.line.paragraph.bodyWidget);
         }
         if (this.viewer instanceof PageLayoutViewer &&
@@ -2769,9 +2769,10 @@ export class Layout {
         }
     }
     private addSplittedLineWidget(lineWidget: LineWidget, elementIndex: number, splittedElementBox?: ElementBox): void {
+        let index :number = elementIndex;
         if (this.isWrapText) {
             if (!isNullOrUndefined(splittedElementBox)) {
-                lineWidget.children.splice(elementIndex + 1, 0, splittedElementBox);
+                lineWidget.children.splice(index + 1, 0, splittedElementBox);
                 splittedElementBox.line = lineWidget;
             }
             return;
@@ -2783,8 +2784,12 @@ export class Layout {
             movedElementBox.push(splittedElementBox);
         }
         let newLineWidget: LineWidget = undefined;
+        let previousElement :ElementBox = lineWidget.children[index];
+        if(previousElement instanceof CommentCharacterElementBox && previousElement.commentType === 0){
+            index = index - 1;
+        }
         //Move Next element box to temp collection
-        for (let i: number = elementIndex + 1; i < lineWidget.children.length; i++) {
+        for (let i: number = index + 1; i < lineWidget.children.length; i++) {
             movedElementBox.push(lineWidget.children[i]);
         }
         if (movedElementBox.length > 0) {
@@ -2796,7 +2801,7 @@ export class Layout {
             for (let j: number = 0; j < movedElementBox.length; j++) {
                 movedElementBox[j].line = newLineWidget;
             }
-            lineWidget.children.splice(elementIndex + 1, lineWidget.children.length - 1);
+            lineWidget.children.splice(index + 1, lineWidget.children.length - 1);
             newLineWidget.children = movedElementBox.concat(newLineWidget.children);
             if (paragraph.childWidgets.indexOf(newLineWidget) === -1) {
                 paragraph.childWidgets.splice(lineIndex + 1, 0, newLineWidget);
@@ -3252,8 +3257,9 @@ export class Layout {
                 }
             }
             bottomMargin += afterSpacing;
+            let previousElement: ElementBox = i > 0 ? children[i - 1] as ElementBox: undefined;
             if (i === 0 || (!(elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') &&
-                elementBox.previousElement instanceof ShapeBase && elementBox.previousElement.textWrappingStyle !== 'Inline')
+                previousElement instanceof ShapeBase &&  previousElement.textWrappingStyle !== 'Inline')
                 || elementBox.padding.left > 0) {
                 line.height = topMargin + elementBox.height + bottomMargin;
                 if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && isParagraphEnd)) {
@@ -3261,7 +3267,11 @@ export class Layout {
                     leftMargin = subWidth;
                 } else if (textAlignment === 'Center') {
                     //Aligns the text as center justified.
-                    leftMargin = subWidth / 2;
+                    if (subWidth < 0) {
+                        leftMargin = subWidth;
+                    } else {
+                        leftMargin = subWidth / 2;
+                    }
                 } 
             }
             elementBox.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
@@ -9970,7 +9980,7 @@ export class Layout {
                                     //Re Update the x position to the page left when word version not equal to 2013 
                                     //and wrapping style not equal to infront of text and behind text. 
                                     if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'Behind')) {
-                                        if (!(floatElement.paragraph.isInsideTable) && (autoShape === 'StraightConnector' || autoShape === 'Rectangle')) {
+                                        if (!(floatElement.paragraph.isInsideTable) && ((autoShape === 'StraightConnector' || autoShape === 'Rectangle') || floatElement instanceof ImageElementBox)) {
                                             isXPositionUpated = true;
                                             indentX = horzPosition + paragraph.bodyWidget.x;
                                         } else {

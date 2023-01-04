@@ -996,7 +996,7 @@ export class DragAndDrop extends ActionBase {
             util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]);
         let offsetLeft: number = this.parent.enableRtl ? Math.abs(this.actionObj.clone.offsetLeft) - this.actionObj.clone.offsetWidth :
             parseInt(this.actionObj.clone.style.left, 10);
-        offsetLeft = Math.floor(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+        offsetLeft = Math.floor(offsetLeft / Math.trunc(this.actionObj.cellWidth)) * this.actionObj.cellWidth;
         let rightOffset: number;
         if (this.parent.enableRtl) {
             rightOffset = Math.abs(parseInt(this.actionObj.clone.style.right, 10));
@@ -1078,27 +1078,30 @@ export class DragAndDrop extends ActionBase {
             eventsData = this.updatedData;
         }
         for (let dataIndex: number = 0; dataIndex < eventsData.length; dataIndex++) {
-            const events: Record<string, any>[] =
-                this.timelineEventModule.splitEvent(eventsData[parseInt(dataIndex.toString(), 10)], this.timelineEventModule.dateRender);
-            const eventData: Record<string, any> = events[0].data as Record<string, any>;
-            const startTime: Date = this.timelineEventModule.getStartTime(events[0], eventData);
-            const endTime: Date = this.timelineEventModule.getEndTime(events[0], eventData);
-            // eslint-disable-next-line max-len
-            const width: number = this.timelineEventModule.getEventWidth(startTime, endTime, eventObj[this.parent.eventFields.isAllDay] as boolean, eventData.count as number);
-            // eslint-disable-next-line max-len
-            let day: number = this.parent.getIndexOfDate(this.timelineEventModule.dateRender, util.resetTime(new Date(startTime.getTime())));
-            day = day < 0 ? 0 : day;
-            const left: number =
-                this.timelineEventModule.getPosition(startTime, endTime, eventObj[this.parent.eventFields.isAllDay] as boolean, day);
             const cloneElement: HTMLElement =
                 this.multiData.length > 0 ? this.actionObj.cloneElement[parseInt(dataIndex.toString(), 10)] : this.actionObj.clone;
-            if (this.parent.enableRtl) {
-                cloneElement.style.right = formatUnit(left);
-            } else {
-                cloneElement.style.left = formatUnit(left);
-            }
-            if (!this.isMorePopupOpened) {
-                cloneElement.style.width = formatUnit(width);
+            if (isNullOrUndefined(this.parent.eventDragArea))
+            {
+                const events: Record<string, any>[] =
+                this.timelineEventModule.splitEvent(eventsData[parseInt(dataIndex.toString(), 10)], this.timelineEventModule.dateRender);
+                const eventData: Record<string, any> = events[0].data as Record<string, any>;
+                const startTime: Date = this.timelineEventModule.getStartTime(events[0], eventData);
+                const endTime: Date = this.timelineEventModule.getEndTime(events[0], eventData);
+                // eslint-disable-next-line max-len
+                const width: number = this.timelineEventModule.getEventWidth(startTime, endTime, eventObj[this.parent.eventFields.isAllDay] as boolean, eventData.count as number);
+                // eslint-disable-next-line max-len
+                let day: number = this.parent.getIndexOfDate(this.timelineEventModule.dateRender, util.resetTime(new Date(startTime.getTime())));
+                day = day < 0 ? 0 : day;
+                const left: number =
+                    this.timelineEventModule.getPosition(startTime, endTime, eventObj[this.parent.eventFields.isAllDay] as boolean, day);
+                if (this.parent.enableRtl) {
+                    cloneElement.style.right = formatUnit(left);
+                } else {
+                    cloneElement.style.left = formatUnit(left);
+                }
+                if (!this.isMorePopupOpened) {
+                    cloneElement.style.width = formatUnit(width);
+                }
             }
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 this.calculateResourceGroupingPosition(e, cloneElement);
@@ -1125,7 +1128,9 @@ export class DragAndDrop extends ActionBase {
                         rightOffset = (viewEle.scrollLeft - viewEle.scrollWidth);
                     }
                 }
-                this.actionObj.clone.style.left = formatUnit(rightOffset);
+                if (isNullOrUndefined(this.parent.eventDragArea)) {
+                    this.actionObj.clone.style.left = formatUnit(rightOffset);
+                }
             } else {
                 if (this.scrollEdges.left) {
                     offsetLeft = viewEle.scrollLeft - this.widthUptoCursorPoint + this.actionObj.cellWidth;
@@ -1139,7 +1144,9 @@ export class DragAndDrop extends ActionBase {
                         this.actionObj.clone.offsetWidth) + (this.actionObj.clone.offsetWidth - this.widthUptoCursorPoint);
                 }
                 offsetLeft = offsetLeft < 0 ? 0 : offsetLeft;
-                this.actionObj.clone.style.left = formatUnit(offsetLeft);
+                if (isNullOrUndefined(this.parent.eventDragArea)) {
+                    this.actionObj.clone.style.left = formatUnit(offsetLeft);
+                }
             }
         }
         return offsetLeft;
@@ -1221,6 +1228,9 @@ export class DragAndDrop extends ActionBase {
         const td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
+        if (!isNullOrUndefined(this.parent.eventDragArea)) {
+            return;
+        }
         let top: number = (<HTMLElement>trCollection[parseInt(rowIndex.toString(), 10)]).getBoundingClientRect().height * rowIndex;
         if (this.parent.rowAutoHeight) {
             const cursorElement: HTMLElement = this.getCursorElement(e);

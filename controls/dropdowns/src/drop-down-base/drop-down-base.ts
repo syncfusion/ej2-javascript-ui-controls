@@ -834,10 +834,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.isDataFetched = true;
                                 }
                                 ulElement = this.renderItems(listItems, fields);
+                                this.onActionComplete(ulElement, listItems, e);
                                 if (this.groupTemplate) {
                                     this.renderGroupTemplate(ulElement);
                                 }
-                                this.onActionComplete(ulElement, listItems, e);
                                 this.isRequested = false;
                                 this.bindChildItems(listItems, ulElement, fields, e);
                             }

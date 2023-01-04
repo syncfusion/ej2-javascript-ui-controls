@@ -7353,6 +7353,9 @@ export class Editor {
             this.isHandledComplex = false;
             return;
         }
+        if (!isNullOrUndefined(selection.editRegionHighlighters)) {
+            selection.editRegionHighlighters.clear();
+        }
         if (isNullOrUndefined(this.documentHelper.blockToShift)) {
             this.documentHelper.removeEmptyPages();
             this.documentHelper.layout.updateFieldElements();

@@ -686,6 +686,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     private selectAllEventEle: HTMLLIElement[] = [];
     private filterParent: HTMLElement;
     private removeIndex: number;
+    private resetMainList: HTMLElement = null;
+    private resetFilteredData: boolean= false;
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -1435,6 +1437,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         this.updateDataList();
+        if(this.resetMainList)
+        {
+             this.mainList = this.resetMainList;
+             this.resetMainList = null;
+        }
         this.refreshListItems(null);
         if (this.mode !== 'Box' && this.mode !== 'CheckBox') {
             this.updateDelimView();
@@ -2836,6 +2843,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         });
     }
     protected search(e: KeyboardEventArgs): void {
+        this.resetFilteredData = true;
         if (!isNullOrUndefined(e)) {
             this.keyCode = e.keyCode;
         }
@@ -4014,6 +4022,12 @@ export class MultiSelect extends DropDownBase implements IInput {
     public onPropertyChanged(newProp: MultiSelectModel, oldProp: MultiSelectModel): void {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))
         || newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
+            if(this.resetFilteredData)
+            {    
+                // The filtered data is not being reset in the component after the user focuses out.
+                this.resetMainList = !this.resetMainList ? this.mainList : this.resetMainList;
+                this.resetFilteredData = false;
+            }
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;

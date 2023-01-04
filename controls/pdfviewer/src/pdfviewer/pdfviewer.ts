@@ -3046,6 +3046,16 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(false)
     public isMultiline: boolean;
+
+    /**
+     * Meaningful only if the MaxLength property is set and the Multiline, Password properties are false. 
+     * If set, the field is automatically divided into as many equally spaced position, or  combs, as the value of MaxLength, and the text is laid out into the combs.
+     * 
+     * @default false
+     */
+    @Property(false)
+    public insertSpaces: boolean;
+
     /**
      * Get the pageIndex of the form field. Default value is -1.
      */

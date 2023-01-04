@@ -351,11 +351,9 @@
         font-size: $gantt-bigger-predecessor-dialog-font-size;
         font-weight: $gantt-bigger-predecessor-dialog-font-weight;
         line-height: $gantt-bigger-predecessor-dialog-line-height;
+        color: $gantt-bigger-tooltip-dialog-text-color;
         @if ($skin-name == 'FluentUI') {
           margin-bottom: 0;
-        }
-        @if ($skin-name == 'bootstrap-dark' or $skin-name == 'fabric-dark' or $theme-name == 'material-dark') {
-          color: $gantt-bigger-tooltip-button-color;
         }
       }
     }
@@ -1653,11 +1651,9 @@
       font-size: $gantt-bigger-predecessor-dialog-font-size;
       font-weight: $gantt-bigger-predecessor-dialog-font-weight;
       line-height: $gantt-bigger-predecessor-dialog-line-height;
+      color: $gantt-bigger-tooltip-dialog-text-color;
       @if ($skin-name == 'FluentUI') {
         margin-bottom: 0;
-      }
-      @if ($skin-name == 'bootstrap-dark' or $skin-name == 'fabric-dark' or $theme-name == 'material-dark') {
-        color: $gantt-bigger-tooltip-button-color;
       }
     }
   }

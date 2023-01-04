@@ -146,8 +146,8 @@ export class Browser {
      */
 
     private static getValue(key: string, regX: RegExp): Object {
-        const browserDetails: {} = window.browserDetails;
-        if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && Browser.isTouch === true) {
+        const browserDetails: {} = typeof window !== 'undefined' ? window.browserDetails : {};
+        if (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 && Browser.isTouch === true) {
             browserDetails['isIos'] = true;
             browserDetails['isDevice'] = true;
             browserDetails['isTouch'] = true;

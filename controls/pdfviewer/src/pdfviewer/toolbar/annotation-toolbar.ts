@@ -1020,8 +1020,8 @@ export class AnnotationToolbar {
         const shapesTemplate: string = this.getTemplate('button', '_annotation_shapes', 'e-pv-annotation-shapes-container');
         const calibrateTemplate: string = this.getTemplate('button', '_annotation_calibrate', 'e-pv-annotation-calibrate-container');
         const stampTemplate: string = this.getTemplate('span', '_annotation_stamp', 'e-pv-annotation-stamp-container');
-        const fontFamilyTemplate: string = this.getTemplate('input', '_annotation_fontname', 'e-pv-annotation-fontname-container');
-        const fontSizeTemplate: string = this.getTemplate('input', '_annotation_fontsize', 'e-pv-annotation-fontsize-container');
+        const fontFamilyTemplate: string = this.getTemplate('button', '_annotation_fontname', 'e-pv-annotation-fontname-container');
+        const fontSizeTemplate: string = this.getTemplate('button', '_annotation_fontsize', 'e-pv-annotation-fontsize-container');
         const textColorTemplate: string = this.getTemplate('button', '_annotation_textcolor', 'e-pv-annotation-textcolor-container');
         const alignmentTemplate: string = this.getTemplate('button', '_annotation_textalign', 'e-pv-annotation-textalign-container');
         const textPropertiesTemplate: string = this.getTemplate('button', '_annotation_textproperties', 'e-pv-annotation-textprop-container');

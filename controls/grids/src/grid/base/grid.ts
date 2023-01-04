@@ -7206,7 +7206,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.updateColumnModel(this.columns as Column[]);
         const gCols: Column[] = this.columnModel;
         for (let i: number = 0; i < gCols.length; i++) {
-            if (field === gCols[parseInt(i.toString(), 10)].field) {
+            if (field === gCols[parseInt(i.toString(), 10)].field || (gCols[parseInt(i.toString(), 10)].isForeignColumn() &&
+                field === gCols[parseInt(i.toString(), 10)].foreignKeyValue)) {
                 column = gCols[parseInt(i.toString(), 10)];
             }
         }

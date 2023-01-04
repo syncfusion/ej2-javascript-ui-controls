@@ -97,9 +97,9 @@ export function getCompValue(type: string, val: valueType): valueType {
  * @hidden
  */
 export function encode(value: string): string {
-    const data = [];
-    for (let i = value.length - 1; i >= 0; i--) {
-        data.unshift(['&#', value[i].charCodeAt(0), ';'].join(''));
+    const data : string[] = [];
+    for (let i : number = value.length - 1; i >= 0; i--) {
+        data.unshift(['&#', value[i as number].charCodeAt(0), ';'].join(''));
     }
     return data.join('');
 }

@@ -19,6 +19,7 @@ import { MatrixModelObject, Vertex, IVertex, IEdge, LayoutProp, MatrixObject } f
 import { Point } from '../primitives/point';
 import { PointPortModel } from '../objects/port-model';
 import { Port, PointPort } from '../objects/port';
+import { Size } from '../primitives/size';
 
 
 /**
@@ -606,6 +607,10 @@ export class LineDistribution {
             node.ports.push(newPort);
             const portWrapper: DiagramElement = (node as Node).initPortWrapper((node as NodeModel).ports[node.ports.length - 1] as Port);
             node.wrapper.children.push(portWrapper);
+            // EJ2-66867 -  Exception occurs on calling doLayout while injecting Linerouting module
+            // nodes portWrapper bouds is updated below 
+            node.wrapper.measure(new Size(node.width, node.height), node.id);
+            node.wrapper.arrange(node.wrapper.desiredSize); 
             diagram.connectorPropertyChange(internalConnector, inConnectors ? { targetPortID: '' } as Connector : { sourcePortID: '' } as Connector,
                                             // eslint-disable-next-line
                                             inConnectors ? { targetPortID: newPort.id } as Connector : { sourcePortID: newPort.id } as Connector);

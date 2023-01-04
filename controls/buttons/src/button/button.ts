@@ -171,7 +171,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     private initialize(): void {
         if (this.cssClass) {
-            addClass([this.element], this.cssClass.split(' '));
+            addClass([this.element], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         if (this.isPrimary) {
             this.element.classList.add(cssClassName.PRIMARY);
@@ -355,7 +355,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                     removeClass([this.element], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([this.element], newProp.cssClass.split(' '));
+                    addClass([this.element], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
             case 'enableRtl':

@@ -682,6 +682,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isFirstRender: boolean = false;
     // Specifies whether the node is dropped or not
     private isNodeDropped: boolean = false;
+    private isInteracted: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -2549,6 +2550,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
+            this.expandArgs.isInteracted = this.isInteracted;
             this.trigger('nodeExpanded', this.expandArgs);
         }
     }
@@ -2571,6 +2573,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let colArgs: NodeExpandEventArgs;
         if (this.isLoaded) {
             colArgs = this.getExpandEvent(currLi, e);
+            this.isInteracted = colArgs.isInteracted;
             this.trigger('nodeCollapsing', colArgs, (observedArgs: NodeExpandEventArgs) => {
                 if (observedArgs.cancel) {
                     removeClass([icon], PROCESS);
@@ -2628,6 +2631,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeExpand(liEle);
         if (this.isLoaded) {
             colArgs = this.getExpandEvent(liEle, null);
+            colArgs.isInteracted = this.isInteracted;
             this.trigger('nodeCollapsed', colArgs);
         }
     }
@@ -3044,6 +3048,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.isLoaded && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, e);
+            this.isInteracted = this.expandArgs.isInteracted;
             this.trigger('nodeExpanding', this.expandArgs, (observedArgs: NodeExpandEventArgs) => {
                 if (observedArgs.cancel) {
                     removeClass([icon], PROCESS);

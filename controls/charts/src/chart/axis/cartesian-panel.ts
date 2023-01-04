@@ -1054,7 +1054,7 @@ export class CartesianAxisLayoutPanel {
 
             padding = isOpposed ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
 
-            if (labelRotation !== -90 && labelRotation !== 90) {
+            if ((labelRotation !== -90 && !isOpposed) || (labelRotation !== 90 && isOpposed)) {
                 padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 : - axis.titleSize.width / 2;
             }
             const x: number =  rect.x + padding;

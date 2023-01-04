@@ -81,6 +81,7 @@ export class StickyNotesAnnotation {
     private accordionContentContainer: HTMLElement;
     private commentsContainer: HTMLElement;
     private commentMenuObj: Context;
+    private moreButtonId : string = '';
     private commentsCount: number = 0;
     private commentsreplyCount: number = 0;
     private commentContextMenu: MenuItemModel[] = [];
@@ -847,7 +848,7 @@ export class StickyNotesAnnotation {
                 accordionExpand.ej2_instances[0].expandItem(true);
             }
             // eslint-disable-next-line max-len
-            this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
+            this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
             this.commentsContainer.accessKey = pageIndex.toString() + '_' + this.commentsCount;
             let isCommentsAdded: boolean = false;
             if (data) {
@@ -877,7 +878,7 @@ export class StickyNotesAnnotation {
             }
             this.commentsContainer.addEventListener('mousedown', this.commentsAnnotationSelect.bind(this));
             // eslint-disable-next-line max-len
-            const commentDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentdiv' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-div' });
+            const commentDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentdiv_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-div' });
             this.commentsCount = this.commentsCount + 1;
             this.commentsContainer.appendChild(commentDiv);
             this.updateCommentPanelScrollTop(pageIndex);
@@ -896,7 +897,7 @@ export class StickyNotesAnnotation {
                 this.createTitleContainer(commentDiv, title, pageIndex, annotationSubType);
             }
             // eslint-disable-next-line max-len
-            const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox'+ pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox' });
+            const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox_'+ pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox' });
             // eslint-disable-next-line
             let editObj: any = new InPlaceEditor({
                 mode: 'Inline',
@@ -1041,7 +1042,7 @@ export class StickyNotesAnnotation {
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         // eslint-disable-next-line
-        let newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv' + this.commentsCount, className: 'e-pv-new-comments-div' });
+        let newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-new-comments-div' });
         if (args.localName) {
             commentsContainer = args;
         } else {
@@ -1136,10 +1137,10 @@ export class StickyNotesAnnotation {
         }
         if (commentsContainer  && lastElement) {
             commentsContainer.removeChild(lastElement);
-            const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox_' + this.commentsreplyCount });
+            const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox_'  + this.commentsCount + '_' + this.commentsreplyCount });
             this.commentsreplyCount = this.commentsreplyCount + 1;
             // eslint-disable-next-line
-            let replyCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + 'replyDiv' + this.commentsreplyCount, className: 'e-pv-reply-div' });
+            let replyCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + 'replyDiv_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-div' });
             replyCommentDiv.id = this.pdfViewer.annotation.createGUID();
             annotationAuthor = this.getAuthorName(this.pdfViewer.selectedItems.annotations[0], commentsContainer);
             this.createReplyDivTitleContainer(replyCommentDiv, null, annotationAuthor);
@@ -1200,9 +1201,9 @@ export class StickyNotesAnnotation {
     // eslint-disable-next-line
     private renderComments(data: any, commentDiv: any, undoRedoAction?: boolean, id?: string, isCommentAction?: boolean): void {
         let annotationAuthor: string;
-        const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox_' + this.commentsreplyCount });
+        const replyTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replytextbox_' + this.commentsCount + '_' + this.commentsreplyCount });
         this.commentsreplyCount = this.commentsreplyCount + 1;
-        const replyDiv: HTMLElement = createElement('div', { id: 'replyDiv' + this.commentsreplyCount, className: 'e-pv-reply-div' });
+        const replyDiv: HTMLElement = createElement('div', { id: 'replyDiv_'+ this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-div' });
         if (undoRedoAction) {
             replyDiv.id = data.annotName;
             annotationAuthor = data.author;
@@ -1338,14 +1339,14 @@ export class StickyNotesAnnotation {
         }
         const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordioncontent' + pageIndex);
         // eslint-disable-next-line max-len
-        this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
+        this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
         this.commentsContainer.accessKey = pageIndex.toString() + '_' + this.commentsCount;
         if (data) {
             this.commentsContainer.id = data.annotName ? data.annotName : data.annotationId;
         }
         this.commentsContainer.addEventListener('mousedown', this.commentsAnnotationSelect.bind(this));
         // eslint-disable-next-line max-len
-        const commentDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentdiv' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-div' });
+        const commentDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentdiv_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-div' });
         this.commentsCount = this.commentsCount + 1;
         this.commentsContainer.appendChild(commentDiv);
         this.updateCommentPanelScrollTop(pageIndex);
@@ -1390,7 +1391,7 @@ export class StickyNotesAnnotation {
             }
         }
         // eslint-disable-next-line max-len
-        const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
+        const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox' });
         // eslint-disable-next-line
         let editObj: any = new InPlaceEditor({
             mode: 'Inline',
@@ -1486,18 +1487,20 @@ export class StickyNotesAnnotation {
         commentTypeSpan.style.cssFloat = 'left';
         commentTitleContainer.appendChild(commentTypeSpan);
         // eslint-disable-next-line max-len
-        const commentsTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitle' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-title' });
+        const commentsTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitle_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-title' });
         if (!modifiedDate) {
             commentsTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
         } else {
             commentsTitle.textContent = annotationAuthor + ' - ' + this.convertUTCDateToLocalDate(modifiedDate);
         }
         commentTitleContainer.appendChild(commentsTitle);
+        this.moreButtonId = this.pdfViewer.element.id + '_more-options_'  + this.commentsCount + '_' + this.commentsreplyCount;
         // eslint-disable-next-line max-len
-        const moreOptionsButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_more-options', className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
+        const moreOptionsButton: HTMLElement = createElement('button', { id: this.moreButtonId, className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
         moreOptionsButton.style.visibility = 'hidden';
         moreOptionsButton.style.zIndex = '1001';
         moreOptionsButton.setAttribute('type', 'button');
+        moreOptionsButton.setAttribute('aria-label', 'more button');
         // eslint-disable-next-line max-len
         const moreOptionsButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_more-options_icon', className: 'e-pv-more-icon e-pv-icon' });
         moreOptionsButton.appendChild(moreOptionsButtonSpan);
@@ -1522,20 +1525,22 @@ export class StickyNotesAnnotation {
     // eslint-disable-next-line
     private createReplyDivTitleContainer(commentsDivElement: HTMLElement, modifiedDate?: string, annotationAuthor?: string): void {
         // eslint-disable-next-line max-len
-        const replyTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitleConatiner', className: 'e-pv-reply-title-container' });
+        const replyTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitleConatiner_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title-container' });
         // eslint-disable-next-line max-len
-        const replyTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitle', className: 'e-pv-reply-title' });
+        const replyTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitle_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title' });
         if (!modifiedDate) {
             replyTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
         } else {
             replyTitle.textContent = annotationAuthor + ' - ' + this.setExistingAnnotationModifiedDate(modifiedDate);
         }
         replyTitleContainer.appendChild(replyTitle);
+        this.moreButtonId = this.pdfViewer.element.id + '_more-options_'  + this.commentsCount + '_' + this.commentsreplyCount;
         // eslint-disable-next-line max-len
-        const moreButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_more-options', className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
+        const moreButton: HTMLElement = createElement('button', { id: this.moreButtonId, className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
         moreButton.style.visibility = 'hidden';
         moreButton.style.zIndex = '1001';
         moreButton.setAttribute('type', 'button');
+        moreButton.setAttribute('aria-label', 'more button');
         // eslint-disable-next-line max-len
         const moreButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_more-options_icon', className: 'e-pv-more-icon e-pv-icon' });
         moreButton.appendChild(moreButtonSpan);
@@ -1659,7 +1664,7 @@ export class StickyNotesAnnotation {
         const commentMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + '_comment_context_menu' });
         this.pdfViewer.element.appendChild(commentMenuElement);
         this.commentMenuObj = new Context({
-            target: '#' + this.pdfViewer.element.id + '_more-options', items: this.commentContextMenu,
+            target: '#' + this.moreButtonId, items: this.commentContextMenu,
             beforeOpen: this.contextMenuBeforeOpen.bind(this),
             select: this.commentMenuItemSelect.bind(this)
         });
@@ -1678,7 +1683,7 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         let contextActiveDiv: any;
         // eslint-disable-next-line
-        let contextDiv: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_more-options');
+        let contextDiv: any = document.querySelectorAll('.e-pv-more-options-button');
         if (contextDiv) {
             for (let i: number = 0; i < contextDiv.length; i++) {
                 if (contextDiv[i].style.visibility === 'visible') {
@@ -1701,7 +1706,7 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         let contextActiveDiv: any;
         // eslint-disable-next-line
-        let contextDiv: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_more-options');
+        let contextDiv: any = document.querySelectorAll('.e-pv-more-options-button');
         if (contextDiv) {
             for (let i: number = 0; i < contextDiv.length; i++) {
                 if (contextDiv[i].style.visibility === 'visible') {
@@ -1932,7 +1937,7 @@ export class StickyNotesAnnotation {
                 return null;
             }
             // eslint-disable-next-line
-            let x: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_more-options');
+            let x: any = document.querySelectorAll('.e-pv-more-options-button');
             for (let i: number = 0; i < x.length; i++) {
                 x[i].style.visibility = 'hidden';
             }

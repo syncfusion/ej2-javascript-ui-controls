@@ -77,6 +77,11 @@ $range-presets-width: 160px !default;
 $range-hover-start-radius: 0 !default;
 $range-hover-end-radius: 0 !default;
 $range-selected-hover-radius: 50% !default;
+$range-today-hover-line-height: 26px !default;
+$range-other-hover-line-height: 28px !default;
+$range-small-today-hover-line-height: 24px !default;
+$range-bigger-today-hover-line-height: 30px !default;
+$range-bigger-other-hover-line-height: 32px !default;
 $range-btn-height: 36px !default;
 $range-device-btn-line-height: 34px !default;
 $range-icon-hover-color: $content-bg-color-hover !default;
@@ -104,6 +109,7 @@ $range-icon-normal-padding: 0 !default;
 $range-preset-normal-list-height: 36px !default;
 $range-preset-bigger-list-height: 48px !default;
 $range-calendar-bigger-max: 296px !default;
+$range-calendar-landscape-height: 130px !default;
 
 // new variable
 $range-icon: '\e245' !default;

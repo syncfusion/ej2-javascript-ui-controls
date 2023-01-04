@@ -1366,5 +1366,96 @@ describe('Overview', () => {
         });
     });
 
+    describe('Overview HTML layer not update properly issue', () => {
+        let diagram: Diagram;
+        let overview: Overview;
+        let ele: HTMLElement;
+        let ove: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            ove = createElement('div', { id: 'over' });
+            document.body.appendChild(ove);
+
+            let nodes: NodeModel[] = [{
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                shape: {
+                    type: 'HTML',
+                    content: '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>'
+                }
+            }, {
+                id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 350,
+                shape: {
+                    type: 'HTML',
+                    content: '<div style="background:#6BA5D7;height:100%;width:100%;"><button type="button" style="width:100px"> Button</button></div>'
+                }
+            }];
+
+            let connectors: ConnectorModel[] = [
+                {
+                    id: "connector1",
+                    style: {
+                        strokeColor: '#6BA5D7',
+                        fill: '#6BA5D7',
+                        strokeWidth: 2
+                    },
+                    targetDecorator: {
+                        style: {
+                            fill: '#6BA5D7',
+                            strokeColor: '#6BA5D7'
+                        }
+                    },
+
+                    sourcePoint: {
+                        x: 300,
+                        y: 150
+                    },
+                    targetPoint: {
+                        x: 550,
+                        y: 150
+                    }
+                }
+            ];
+            diagram = new Diagram({
+                width: '600px', height: '500px', nodes: nodes, connectors: connectors,
+                scrollSettings: {
+                    scrollLimit: 'Infinity',
+                    canAutoScroll: true,
+                    autoScrollBorder: {
+                        left: 50,
+                        right: 50,
+                        top: 50,
+                        bottom: 50
+                    }
+                },
+            });
+
+            diagram.appendTo('#diagram');
+
+            let options: OverviewModel = {};
+            options.height = '500';
+            options.width = '250';
+            options.sourceID = 'diagram';
+            overview = new Overview(options);
+            overview.appendTo('#over');
+
+        });
+
+        afterAll((): void => {
+            overview.destroy();
+            diagram.destroy();
+            ele.remove();
+            ove.remove();
+        });
+        it('Drag the HTML node and check the overview HTML layer', (done: Function) => {
+            diagram.select([diagram.nodes[0]]);
+            var node_element = document.getElementById('node1_content_html_element');
+            var position1 = node_element.style.left;
+            diagram.drag(diagram.nodes[0], 150, 0);
+            var position2 = node_element.style.left;
+            expect(position2 === "200px" ).toBe(true);
+            done();
+        });
+    });
 
 });

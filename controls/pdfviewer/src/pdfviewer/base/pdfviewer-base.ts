@@ -2115,7 +2115,7 @@ export class PdfViewerBase {
 
     private updateCommentPanel(): void {
         // eslint-disable-next-line
-        let moreOptionsButton: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_more-options');
+        let moreOptionsButton: any = document.querySelectorAll('.e-pv-more-options-button');
         for (let i: number = 0; i < moreOptionsButton.length; i++) {
             moreOptionsButton[parseInt(i.toString(), 10)].style.visibility = 'hidden';
         }
@@ -4262,13 +4262,19 @@ export class PdfViewerBase {
                     }
                     this.pdfViewer.annotationModule.annotationSelect(currentAnnotation.annotName, currentAnnotation.pageIndex, currentAnnotation, null, true);
                 }
-                if (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations) === true) {
+                if (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations) && !(this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus)) {
                     const elmtPosition: PointModel = {};
                     elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
                     elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
+                    let targetAnnotation: any;
+                    if (this.pdfViewer.selectedItems.annotations[0].id == 'diagram_helper') {
+                        targetAnnotation = (this.pdfViewer.nameTable as any)[(this.eventArgs.source as any).id];
+                    } else {
+                        targetAnnotation = this.pdfViewer.selectedItems.annotations[0];
+                    }
                     // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
-                } else if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].enableShapeLabel === true) {
+                    this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, targetAnnotation);
+                } else if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].enableShapeLabel && !(this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus)) {
                     const elmtPosition: PointModel = {};
                     elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
                     elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
@@ -4877,6 +4883,7 @@ export class PdfViewerBase {
                         }
                     }
                     (image as HTMLImageElement).src = imageData;
+                    image.setAttribute('alt', '');
                     image.onload = (): void => {
                         proxy.showPageLoadingIndicator(pageIndex, false);
                         proxy.tileRenderCount = proxy.tileRenderCount + 1;
@@ -4914,6 +4921,7 @@ export class PdfViewerBase {
                             }
                             proxy.isDrawnCompletely = true;
                         }
+                        image.setAttribute('alt', 'Page ' + (pageIndex +1));
                     };
                     let currentImageWidth: number = (((width * this.getZoomFactor()) / zoomFactor) / scaleFactor);
                     let matrixElements: any = matrix.Elements ? matrix.Elements : matrix.Values;
@@ -4977,6 +4985,7 @@ export class PdfViewerBase {
                                     }
                                     proxy.isDrawnCompletely = true;
                                 }
+                                (node as HTMLImageElement).setAttribute('alt', 'Page ' + (pageIndex +1));
                             };
                             if (tileData)
                                 (node as HTMLImageElement).src = tileData.image;
@@ -5080,6 +5089,7 @@ export class PdfViewerBase {
                         if (this.pdfViewer.magnificationModule) {
                             this.pdfViewer.magnificationModule.pushImageObjects(canvas);
                         }
+                        canvas.setAttribute('alt', 'Page ' + (pageIndex +1));
                     };
                     canvas.src = imageData;
                 }
@@ -5421,6 +5431,7 @@ export class PdfViewerBase {
                 }
                 pageDiv.appendChild(pageCanvas);
             }
+            pageCanvas.setAttribute('alt', '');
             if (this.pdfViewer.annotationModule && this.pdfViewer.annotation) {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.annotationModule.createAnnotationLayer(pageDiv, pageWidth, pageHeight, pageNumber, displayMode);
@@ -5923,7 +5934,7 @@ export class PdfViewerBase {
     private downloadExportFormat (blobUrl: string, annotationDataFormat?: AnnotationDataFormat, formFieldDataFormat?: FormFieldDataFormat, isForm?: boolean): void {
         let isJson = annotationDataFormat === 'Json'|| formFieldDataFormat === 'Json';
         // eslint-disable-next-line max-len
-        let extension = isJson ? '.json' : formFieldDataFormat === 'Fdf' ? '.fdf' : (annotationDataFormat === 'Xfdf' || formFieldDataFormat === 'Xfdf') ? '.xfdf' : null; 
+        let extension = isJson ? '.json' : formFieldDataFormat === 'Fdf' ? '.fdf' : formFieldDataFormat === 'Xml' ? '.xml' : (annotationDataFormat === 'Xfdf' || formFieldDataFormat === 'Xfdf') ? '.xfdf' : null; 
         if(!isNullOrUndefined(extension)){
             // eslint-disable-next-line
             let Url: any = URL || webkitURL;
@@ -5997,7 +6008,7 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             let jsonObject: any = proxy.createFormfieldsJsonData();
 
-            if(formFieldDataFormat === 'Json' || formFieldDataFormat === 'Fdf' || formFieldDataFormat === 'Xfdf'){
+            if(formFieldDataFormat === 'Json' || formFieldDataFormat === 'Fdf' || formFieldDataFormat === 'Xfdf' || formFieldDataFormat === "Xml"){
                 jsonObject.formFieldDataFormat = formFieldDataFormat;
                 proxy.pdfViewer.fireFormExportStarted(jsonObject);
             }
@@ -6044,7 +6055,7 @@ export class PdfViewerBase {
                             const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
                             if (Browser.isIE || Browser.info.name === 'edge') {
                                 window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
-                            } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf') {
+                            } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf' || jsonObject.formFieldDataFormat === 'Xml') {
                                 proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
                             }
                         }
@@ -6069,16 +6080,30 @@ export class PdfViewerBase {
     }
 
     /**
+     * @param {string} fileName - Gets the name of the file name for slicing the last index
+     * @param {string} sliceBy - A type to slice the file name; example (".", "_")
+     * @returns {string}
+     * @private
+     */
+    // eslint-disable-next-line
+    public getLastIndexValue(fileName: string, sliceBy: string): string {
+        let indexName: string = fileName.slice(fileName.lastIndexOf(sliceBy)+1);
+        return indexName;
+    }
+
+    /**
      * @param source
      * @private
      */
     // eslint-disable-next-line
     public createRequestForImportingFormfields(source: any, formFieldDataFormat: FormFieldDataFormat): void {
         let proxy: PdfViewerBase = null;
+        let index: string = ".";
         proxy = this;
         // eslint-disable-next-line
         let jsonObject: any = {};
-        if (typeof source !== 'object' && (source.split('.')[1] === 'json' || source.split('.')[1] === 'fdf' || source.split('.')[1] === 'xfdf')) {
+        let sourceName: string = this.getLastIndexValue(source, index);
+        if (typeof source !== 'object' && (sourceName === 'json' || sourceName === 'fdf' || sourceName === 'xfdf' || sourceName === 'xml')) {
             jsonObject.data = source;
             jsonObject['fileName'] = proxy.pdfViewer.fileName;
             jsonObject.formFieldDataFormat = formFieldDataFormat;

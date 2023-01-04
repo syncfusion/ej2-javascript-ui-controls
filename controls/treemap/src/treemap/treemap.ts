@@ -485,6 +485,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public legendId: string[] = [];
     /** @private */
     public selectionId: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private resizeEvent: any;
 
     /**
      * Constructor for TreeMap component.
@@ -1023,7 +1025,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnTreeMap);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEndOnTreeMap);
         EventHandler.remove(this.element, 'pointerleave mouseleave', this.mouseLeaveOnTreeMap);
-        window.removeEventListener('resize', this.resizeOnTreeMap);
+        window.removeEventListener('resize', this.resizeEvent);
     }
 
     /**
@@ -1039,7 +1041,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEndOnTreeMap, this);
         EventHandler.add(this.element, 'pointerleave mouseleave', this.mouseLeaveOnTreeMap, this);
-        window.addEventListener('resize', this.resizeOnTreeMap.bind(this));
+        this.resizeEvent = this.resizeOnTreeMap.bind(this);
+        window.addEventListener('resize', this.resizeEvent);
     }
 
     /**

@@ -2153,9 +2153,18 @@ describe('check datasource  without passing position', () => {
             }, done);
     });
     it('datasource record length', () => {
-        ganttObj.addRecord()
-  expect((ganttObj.dataSource as any).length).toBe(2);
-        
+        ganttObj.actionBegin = function (args: any): void {
+            if (args.requestType === "beforeAdd") {
+                args.newTaskData.StartDate = new Date('02/08/2017');
+            }
+        };
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === 'add') {
+                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/8/2017');
+            }
+        };
+        ganttObj.addRecord();
+        expect((ganttObj.dataSource as any).length).toBe(2);
     });
     it('delete and add record',()=>{
         ganttObj.addRecord();

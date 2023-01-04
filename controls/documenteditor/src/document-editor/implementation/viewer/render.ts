@@ -940,7 +940,7 @@ export class Renderer {
                     pageGap = (this.viewer as PageLayoutViewer).pageGap;
                 }
                 let style: string = 'display:block;position:absolute;';
-                let topPosition: string = this.getScaledValue((top - 10) + (page.boundingRectangle.y -
+                let topPosition: string = this.getScaledValue((top) + (page.boundingRectangle.y -
                     (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
                 if (elementBox instanceof EditRangeStartElementBox) {
                     if (this.documentHelper.owner.enableLockAndEdit) {

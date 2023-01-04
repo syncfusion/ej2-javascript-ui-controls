@@ -4628,7 +4628,7 @@ export class Selection {
     public highlightSelectedContent(start: TextPosition, end: TextPosition): void {
         if (start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
             || (!start.paragraph.associatedCell.equals(end.paragraph.associatedCell))
-            || this.isCellSelected(start.paragraph.associatedCell, start, end))) {
+            || (!this.documentHelper.isSelectionChangedOnMouseMoved && this.isCellSelected(start.paragraph.associatedCell, start, end)))) {
             this.highlightCell(start.paragraph.associatedCell, this, start, end);
         } else {
             let inline: ElementBox = undefined;

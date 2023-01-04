@@ -462,14 +462,14 @@ export class Print {
                     printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; width:100% }'
                         + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
                         + ' img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; }'
-                        + ' div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body><center class="loader">');
+                        + ' div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body>');
                 }
                 else {
                     printDocument.write('<!DOCTYPE html>');
                     printDocument.write('<html><head>'
                         + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
                         + 'img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; } '
-                        + 'div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body><center>');
+                        + 'div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body>');
                 }
             }
         }

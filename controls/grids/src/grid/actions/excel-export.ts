@@ -807,7 +807,7 @@ export class ExcelExport {
         } else {
             txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
         }
-        return (<Text>txt[0]).textContent;
+        return !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
     }
 
     private mergeOptions(JSON1: Object, JSON2: Object): Object {

@@ -628,8 +628,11 @@ export class DiagramEventHandler {
                             } else {
                                 this.hoverElement = obj;
                             }
-                        } else if (!this.hoverElement && this.hoverElement === obj) {
-                            this.elementEnter(this.currentPosition, true);
+                        } 
+                        // EJ2-66418 - set tooltip relativeMode as mouse
+                        // Updating the tooltip position based on Mouse move
+                        else if(this.hoverElement === obj && this.diagram.tooltipObject != undefined && this.hoverElement.tooltip.relativeMode === "Mouse") {
+                            this.setTooltipOffset(this.currentPosition);
                         }
                         if (sourceElement) { target = this.commandHandler.findTarget(sourceElement, obj); }
                     }
@@ -1538,8 +1541,15 @@ export class DiagramEventHandler {
                     updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
                 }
             }
-            this.diagram.tooltipObject.offsetX = 0;
-            this.diagram.tooltipObject.offsetY = 0;
+            // EJ2-66418 - set tooltip relativeMode as mouse
+            // Calculating offset position for relativeMode Mouse
+            if(this.hoverElement.tooltip.relativeMode === "Mouse"){
+                this.setTooltipOffset(mousePosition);
+            }
+            else{
+                this.diagram.tooltipObject.offsetX = 0;
+                this.diagram.tooltipObject.offsetY = 0;
+            }
             const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             if (obj instanceof Node && obj.children && obj.children.length > 0) {
@@ -1559,8 +1569,14 @@ export class DiagramEventHandler {
                 }
             }
             if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
-                // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
-                (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                (this.diagram.tooltipObject as Tooltip).target = this.hoverElement.id;
+                if(this.hoverElement.tooltip.relativeMode === "Mouse"){
+                    (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
+                }
+                else{
+                    // eslint-disable-next-line security/detect-non-literal-fs-filename -- Safe as no value holds user input
+                    (this.diagram.tooltipObject as Tooltip).open(targetEle);
+                }
             }
         }
     }
@@ -1569,6 +1585,14 @@ export class DiagramEventHandler {
         if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
             this.diagram.tooltipObject.close();
         }
+    }
+
+    // EJ2-66418 - set tooltip relativeMode as mouse
+    // Calculating offset position for relativeMode Mouse
+    private setTooltipOffset(mousePosition: PointModel):void{
+        var offset = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
+        this.diagram.tooltipObject.offsetX = offset.x;
+        this.diagram.tooltipObject.offsetY = offset.y;
     }
 
     private altKeyPressed(keyModifier: KeyModifiers): boolean {

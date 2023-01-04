@@ -13,7 +13,7 @@
   @if $theme-name =='fluentui-dark' {
     background-color: lighten($treeview-item-active-bg, 5%);
   }
-
+  
   @else if $theme-name =='tailwind' {
     background-color: darken($treeview-item-active-hover-bg, 10%);
   }

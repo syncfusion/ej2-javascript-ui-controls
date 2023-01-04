@@ -5,8 +5,7 @@
     .e-editor {
       display: flex;
       flex-flow: row wrap;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 0 auto;
       max-width: 1240px;
     }
 
@@ -58,7 +57,7 @@
 
     .e-form-right,
     .e-input-wrapper-side.e-form-right {
-      padding: 0 0 10px 8px;
+      padding: 0 0 10px;
     }
 
     .e-input-wrapper {
@@ -111,14 +110,12 @@
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {
-        padding-left: 8px;
-        padding-right: 0;
+        padding: 0 0 0 8px;
       }
 
       .e-input-wrapper.e-end-on-date,
       .e-input-wrapper.e-end-on-count {
-        padding-left: 0;
-        padding-right: 8px;
+        padding: 0 8px 0 0;
       }
 
       .e-recurrenceeditor {
@@ -159,11 +156,11 @@
     }
 
     .e-month-expander tr:first-child .e-input-wrapper {
-      margin-bottom: 11px;
+      padding-bottom: 11px;
     }
 
     .e-month-expander-checkbox-wrapper.e-input-wrapper {
-      margin-top: -3px;
+      padding-top: 3px;
 
       .e-month-type .e-label {
         display: none;
@@ -229,7 +226,7 @@
 
       .e-form-right,
       .e-input-wrapper-side.e-form-right {
-        padding: 0 0 10px 12px;
+        padding: 0 0 10px;
       }
 
       .e-input-wrapper-side .e-days .e-form-left {
@@ -310,8 +307,7 @@
 
         .e-recurrence-table .e-monthday-element,
         .e-recurrence-table .e-day-position {
-          padding-left: 0;
-          padding-right: 64px;
+          padding: 0 64px 0 0;
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-label,
@@ -324,14 +320,12 @@
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-left {
-          padding-left: 12px;
-          padding-right: 0;
+          padding: 0 0 0 12px;
         }
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 0;
-          padding-right: 12px;
+          padding: 0 12px 0 0;
         }
 
         .e-recurrence-table .e-week-position {
@@ -378,8 +372,7 @@
 
       .e-input-wrapper.e-end-on-date,
       .e-input-wrapper.e-end-on-count {
-        padding-left: 10px;
-        padding-right: 0;
+        padding: 0 0 0 10px;
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {
@@ -406,8 +399,13 @@
         padding-left: 20px;
       }
 
+      .e-recurrence-table .e-monthday-element {
+        margin-left: 20px;
+      }
+
       .e-week-position {
         right: 0;
+        padding-right: 10px;
       }
 
       &.e-rtl {
@@ -417,17 +415,15 @@
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 0;
-          padding-right: 10px;
+          padding: 0 10px 0 0;
         }
 
         .e-recurrence-table .e-monthday-element {
-          padding-left: 0;
+          padding: 0 20px 0 0;
         }
 
         .e-recurrence-table .e-day-position {
-          padding-right: 20px;
-          padding-left: 0;
+          padding: 0 50px 0 0;
         }
 
         .e-week-position {
@@ -451,6 +447,22 @@
 
       .e-footer-content {
         padding: 16px 8px;
+      }
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .e-recurrenceeditor {
+
+      .e-editor {
+
+        .e-input-wrapper-side.e-end-on {
+          width: 100%;
+        }
+
+        .e-input-wrapper-side.e-non-week {
+          width: 65%;
+        }
       }
     }
   }
@@ -496,8 +508,7 @@
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 10px;
-          padding-right: 0;
+          padding: 0 0 0 10px;
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-left {
@@ -514,7 +525,11 @@
         }
 
         .e-input-wrapper-side.e-non-week {
-          width: 100%;
+          width: 65%;
+        }
+
+        .e-recurrence-table .e-day-position {
+          padding-left: 50px;
         }
       }
 
@@ -525,8 +540,7 @@
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding-left: 0;
-          padding-right: 10px;
+          padding: 0 10px 0 0;
         }
       }
     }
