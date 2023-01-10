@@ -11,6 +11,7 @@ import { CellRendererFactory } from '../services/cell-render-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { CellMergeRender } from './cell-merge-renderer';
 import * as literals from '../base/string-literals';
+import { ContentRender } from './content-renderer';
 /**
  * RowRenderer class which responsible for building row content.
  *
@@ -163,9 +164,10 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                     let isRowSpanned: boolean = false;
                     if (row.index > 0 && this.isSpan) {
+                        const rowsObject: Row<Column>[] = this.parent.isFrozenGrid() ?
+                            (this.parent.contentModule as ContentRender).tempFreezeRows : this.parent.getRowsObject();
                         const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
-                            !this.parent.getRowsObject()[row.index - 1].isDataRow ?
-                            this.parent.getRowsObject()[row.index].cells : this.parent.getRowsObject()[row.index - 1].cells;
+                            !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
                         const uid: string = 'uid';
                         const prevRowCell: Cell<Column> = prevRowCells.filter((cell: Cell<Column>) =>
                             cell.column.uid === row.cells[parseInt(i.toString(), 10)].column[`${uid}`])[0];

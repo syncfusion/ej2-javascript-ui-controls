@@ -125,20 +125,15 @@ export class ColumnMenu implements IAction {
         const gClient: ClientRect = this.parent.element.getBoundingClientRect();
         this.element.style.cssText = 'display:none;visibility:visible';
         this.headerCell = this.getHeaderCell(e);
-        if (Browser.isDevice) {
-            pos.top = ((window.innerHeight / 2) - (elePos.height / 2));
-            pos.left = ((window.innerWidth / 2) - (elePos.width / 2));
+        if (this.parent.enableRtl) {
+            pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'left', 'bottom', true) :
+                calculatePosition(this.headerCell, 'left', 'bottom');
         } else {
-            if (this.parent.enableRtl) {
-                pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'left', 'bottom', true) :
-                    calculatePosition(this.headerCell, 'left', 'bottom');
-            } else {
-                pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'right', 'bottom', true) :
-                    calculatePosition(this.headerCell, 'right', 'bottom');
-                pos.left -= elePos.width;
-                if ((pos.left + elePos.width + 1) >= gClient.right) {
-                    pos.left -= 35;
-                }
+            pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'right', 'bottom', true) :
+                calculatePosition(this.headerCell, 'right', 'bottom');
+            pos.left -= elePos.width;
+            if ((pos.left + elePos.width + 1) >= gClient.right) {
+                pos.left -= 35;
             }
         }
         this.columnMenu['open'](pos.top, pos.left);

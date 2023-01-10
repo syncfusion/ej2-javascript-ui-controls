@@ -2086,8 +2086,8 @@ describe('Deleting multiple lines in editing region', () => {
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory,);
-        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true, enableEditorHistory: true });
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;

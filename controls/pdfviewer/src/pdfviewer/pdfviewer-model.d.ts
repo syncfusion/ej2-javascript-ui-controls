@@ -3164,6 +3164,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * gets the page count of the document loaded in the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/pageCount/index.md' %}{% endcodeBlock %}
      *
      * @default 0
      */
@@ -3171,6 +3173,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Checks whether the PDF document is edited.
+     * 
+     * {% codeBlock src='pdfviewer/isDocumentEdited/index.md' %}{% endcodeBlock %}
      *
      * @asptype bool
      * @blazorType bool
@@ -3179,6 +3183,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/currentPageNumber/index.md' %}{% endcodeBlock %}
      *
      * @default 0
      */
@@ -3210,6 +3216,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the scrollable height of the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/height/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
      */
@@ -3217,6 +3225,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the scrollable width of the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/width/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
      */
@@ -3233,6 +3243,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the retry count for the failed requests.
+     * 
+     * {% codeBlock src='pdfviewer/retryCount/index.md' %}{% endcodeBlock %}
      *
      * @default 1
      */
@@ -3241,6 +3253,8 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Specifies the response status codes for retrying a failed request with a "3xx", "4xx", or "5xx" response status code.
      * The value can have multiple values, such as [500, 401, 400], and the default value is 500.
+     * 
+     * {% codeBlock src='pdfviewer/retryStatusCodes/index.md' %}{% endcodeBlock %}
      *
      * @default [500]
      */
@@ -3301,7 +3315,9 @@ export interface PdfViewerModel extends ComponentModel{
     enableMultiLineOverlap?: boolean;
 
     /**
-     * Checks if the freeText value is valid or not. FALSE by default
+     * Checks if the freeText value is valid or not.
+     * 
+     * {% codeBlock src='pdfviewer/isValidFreeText/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -3464,13 +3480,15 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
-     *
+     * 
+     * {% codeBlock src='pdfviewer/contextMenuOption/index.md' %}{% endcodeBlock %}
+     * 
      * @default RightClick
      */
     contextMenuOption?: ContextMenuAction;
 
     /**
-     * enable or disable context menu Items
+     * Disables the menu items in the context menu.
      * 
      * {% codeBlock src='pdfviewer/disableContextMenuItems/index.md' %}{% endcodeBlock %}
      *
@@ -3606,6 +3624,8 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Enable if the PDF document contains form fields.
+     * 
+     * {% codeBlock src='pdfviewer/isFormFieldDocument/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -3828,18 +3848,27 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the ajax Request settings of the PDF Viewer.
+     * 
+     * {% codeBlock src='pdfviewer/ajaxRequestSettings/index.md' %}{% endcodeBlock %}
+     * 
      */
     // eslint-disable-next-line max-len
     ajaxRequestSettings?: AjaxRequestSettingsModel;
 
     /**
      * Defines the stamp items of the PDF Viewer.
+     * 
+     * {% codeBlock src='pdfviewer/customStamp/index.md' %}{% endcodeBlock %}
+     * 
      */
     // eslint-disable-next-line max-len
     customStamp?: CustomStampModel[];
 
     /**
      * Defines the settings of the PDF Viewer service.
+     * 
+     * {% codeBlock src='pdfviewer/serverActionSettings/index.md' %}{% endcodeBlock %}
+     * 
      */
     // eslint-disable-next-line max-len
     serverActionSettings?: ServerActionSettingsModel;
@@ -4173,33 +4202,33 @@ export interface PdfViewerModel extends ComponentModel{
     selectedItems?: SelectorModel;
 
     /**
-     * Triggers while created the PdfViewer component.
+     * Triggers during the creation of the PDF viewer component.
      *
-     * @event
+     * @event created
      * @blazorProperty 'Created'
      */
     created?: EmitType<void>;
 
     /**
-     * Triggers while loading document into PdfViewer.
+     * Triggers while loading document into PDF viewer.
      *
-     * @event
+     * @event documentLoad
      * @blazorProperty 'DocumentLoaded'
      */
     documentLoad?: EmitType<LoadEventArgs>;
 
     /**
-     * Triggers while close the document
+     * Triggers while closing the document.
      *
-     * @event
+     * @event documentUnload
      * @blazorProperty 'DocumentUnloaded'
      */
     documentUnload?: EmitType<UnloadEventArgs>;
 
     /**
-     * Triggers while loading document got failed in PdfViewer.
+     * Triggers while document loading failed in PdfViewer.
      *
-     * @event
+     * @event documentLoadFailed
      * @blazorProperty 'DocumentLoadFailed'
      */
     documentLoadFailed?: EmitType<LoadFailedEventArgs>;
@@ -4207,22 +4236,22 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when the AJAX request is failed.
      *
-     * @event
+     * @event ajaxRequestFailed
      * @blazorProperty 'AjaxRequestFailed'
      */
     ajaxRequestFailed?: EmitType<AjaxRequestFailureEventArgs>;
 
     /**
-     * Event triggers on successful AJAX request 
+     * Triggers on successful AJAX request.
      * 
-     * @event
+     * @event ajaxRequestSuccess
      */
     ajaxRequestSuccess?: EmitType<AjaxRequestSuccessEventArgs>;
 
     /**
      * Triggers when validation is failed.
      *
-     * @event
+     * @event validateFormFields
      * @blazorProperty 'validateFormFields'
      */
     validateFormFields?: EmitType<ValidateFormFieldsArgs>;
@@ -4230,7 +4259,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      *
-     * @event
+     * @event pageClick
      * @blazorProperty 'OnPageClick'
      */
     pageClick?: EmitType<PageClickEventArgs>;
@@ -4238,113 +4267,113 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when there is change in current page number.
      *
-     * @event
+     * @event pageChange
      * @blazorProperty 'PageChanged'
      */
     pageChange?: EmitType<PageChangeEventArgs>;
 
     /**
-     * Triggers when hyperlink in the PDF Document is clicked
+     * Triggers when a hyperlink in a PDF document is clicked.
      *
-     * @event
+     * @event hyperlinkClick
      * @blazorProperty 'OnHyperlinkClick'
      */
     hyperlinkClick?: EmitType<HyperlinkClickEventArgs>;
 
     /**
-     * Triggers when hyperlink in the PDF Document is hovered
+     * Triggers when hyperlink in a PDF document is hovered.
      *
-     * @event
+     * @event hyperlinkMouseOver
      * @blazorProperty 'OnHyperlinkMouseOver'
      */
     hyperlinkMouseOver?: EmitType<HyperlinkMouseOverArgs>;
 
     /**
-     * Triggers when there is change in the magnification value.
+     * Triggers When the magnification value changes.
      *
-     * @event
+     * @event zoomChange
      * @blazorProperty 'ZoomChanged'
      */
     zoomChange?: EmitType<ZoomChangeEventArgs>;
 
     /**
-     * Triggers when an annotation is added over the page of the PDF document.
+     * Triggers when an annotation is added to a PDF document's page.
      *
-     * @event
+     * @event annotationAdd
      * @blazorProperty 'AnnotationAdded'
      */
     annotationAdd?: EmitType<AnnotationAddEventArgs>;
 
     /**
-     * Triggers when an annotation is removed from the page of the PDF document.
+     * Triggers when an annotation is removed from a PDF document's page.
      *
-     * @event
+     * @event annotationRemove
      * @blazorProperty 'AnnotationRemoved'
      */
     annotationRemove?: EmitType<AnnotationRemoveEventArgs>;
 
     /**
-     * Triggers when the property of the annotation is changed in the page of the PDF document.
+     * Triggers when the annotation's property is modified on a PDF document page.
      *
-     * @event
+     * @event annotationPropertiesChange
      * @blazorProperty 'AnnotationPropertiesChanged'
      */
     annotationPropertiesChange?: EmitType<AnnotationPropertiesChangeEventArgs>;
 
     /**
-     * Triggers when an annotation is resized over the page of the PDF document.
+     * Triggers when an annotation is resized over the page of a PDF document.
      *
-     * @event
+     * @event annotationResize
      * @blazorProperty 'AnnotationResized'
      */
     annotationResize?: EmitType<AnnotationResizeEventArgs>;
 
     /**
-     * Triggers when signature is added  over the page of the PDF document.
+     * Triggers when a signature is added to a page of a PDF document.
      *
-     * @event
+     * @event addSignature
      */
     addSignature?: EmitType<AddSignatureEventArgs>;
 
     /**
-     * Triggers when signature is removed over the page of the PDF document.
+     * Triggers when the signature is removed from the page of a PDF document.
      *
-     * @event
+     * @event removeSignature
      */
     removeSignature?: EmitType<RemoveSignatureEventArgs>;
 
     /**
-     * Triggers when an signature is moved over the page of the PDF document.
+     * Triggers when a signature is moved across the page of a PDF document.
      *
-     * @event
+     * @event moveSignature
      */
     moveSignature?: EmitType<MoveSignatureEventArgs>;
 
     /**
      * Triggers when the property of the signature is changed in the page of the PDF document.
      *
-     * @event
+     * @event signaturePropertiesChange
      */
     signaturePropertiesChange?: EmitType<SignaturePropertiesChangeEventArgs>;
 
     /**
-     * Triggers when signature is resized over the page of the PDF document.
+     * Triggers when the signature is resized and placed on a page of a PDF document.
      *
-     * @event
+     * @event resizeSignature
      */
     resizeSignature?: EmitType<ResizeSignatureEventArgs>;
 
     /**
      * Triggers when signature is selected over the page of the PDF document.
      *
-     * @event
+     * @event signatureSelect
      */
     signatureSelect?: EmitType<SignatureSelectEventArgs>;
 
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
      *
-     * @event
+     * @event annotationSelect
      * @blazorProperty 'AnnotationSelected'
      */
     annotationSelect?: EmitType<AnnotationSelectEventArgs>;
@@ -4352,15 +4381,15 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when an annotation is unselected over the page of the PDF document.
      *
-     * @event
+     * @event annotationUnSelect
      * @blazorProperty 'AnnotationUnSelect'
      */
     annotationUnSelect?: EmitType<AnnotationUnSelectEventArgs>;
 
     /**
-     * Triggers an event when the annotation is double click.
+     * Triggers when the annotation is double clicked.
      *
-     * @event
+     * @event annotationDoubleClick
      * @blazorProperty 'OnAnnotationDoubleClick'
      */
     annotationDoubleClick?: EmitType<AnnotationDoubleClickEventArgs>;
@@ -4368,7 +4397,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when an annotation is moved over the page of the PDF document.
      *
-     * @event
+     * @event annotationMove
      * @blazorProperty 'AnnotationMoved'
      */
     annotationMove?: EmitType<AnnotationMoveEventArgs>;
@@ -4376,76 +4405,76 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers while moving an annotation.
      *
-     * @event
+     * @event annotationMoving
      * @blazorProperty 'AnnotationMoving'
      */
     annotationMoving?: EmitType<AnnotationMovingEventArgs>;
 
     /**
-     * Triggers when mouse over the annotation object.
+     * Triggers when the mouse is moved over the annotation object.
      *
-     * @event
+     * @event annotationMouseover
      */
     annotationMouseover?: EmitType<AnnotationMouseoverEventArgs>;
 
     /**
-     * Triggers when mouse over the annotation object.
+     * Triggers when the user mouse moves away from the annotation object.
      *
-     * @event
+     * @event annotationMouseLeave
      */
     annotationMouseLeave?: EmitType<AnnotationMouseLeaveEventArgs>;
 
     /**
-     * Triggers when mouse over the page.
+     * Triggers when moving the mouse over the page.
      *
-     * @event
+     * @event pageMouseover
      */
     pageMouseover?: EmitType<PageMouseoverEventArgs>;
 
     /**
-     * Triggers when an imported annotations started in the PDF document.
+     * Triggers when an imported annotation started to appear in the PDF document.
      *
-     * @event
+     * @event importStart
      * @blazorProperty 'ImportStarted'
      */
     importStart?: EmitType<ImportStartEventArgs>;
 
     /**
-     * Triggers when an exported annotations started in the PDF Viewer.
+     * Triggers when an exported annotation started in the PDF Viewer.
      *
-     * @event
+     * @event exportStart
      * @blazorProperty 'ExportStarted'
      */
     exportStart?: EmitType<ExportStartEventArgs>;
 
     /**
-     * Triggers when an imports annotations succeed in the PDF document.
+     * Triggers when the annotations in a PDF document are successfully imported.
      *
-     * @event
+     * @event importSuccess
      * @blazorProperty 'ImportSucceed'
      */
     importSuccess?: EmitType<ImportSuccessEventArgs>;
 
     /**
-     * Triggers when an export annotations succeed in the PDF Viewer.
+     * Triggers when the annotations in a PDF document are successfully exported.
      *
-     * @event
+     * @event exportSuccess
      * @blazorProperty 'ExportSucceed'
      */
     exportSuccess?: EmitType<ExportSuccessEventArgs>;
 
     /**
-     * Triggers when an imports annotations failed in the PDF document.
+     * Triggers when the annotations imports in a PDF document fails.
      *
-     * @event
+     * @event importFailed
      * @blazorProperty 'ImportFailed'
      */
     importFailed?: EmitType<ImportFailureEventArgs>;
 
     /**
-     * Triggers when an export annotations failed in the PDF Viewer.
+     * Triggers when the annotations export in a PDF document fails.
      *
-     * @event
+     * @event exportFailed
      * @blazorProperty 'ExportFailed'
      */
     exportFailed?: EmitType<ExportFailureEventArgs>;
@@ -4453,167 +4482,167 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when an text extraction is completed in the PDF Viewer.
      *
-     * @event
+     * @event extractTextCompleted
      * @blazorProperty 'ExtractTextCompleted'
      */
     extractTextCompleted?: EmitType<ExtractTextCompletedEventArgs>;
 
     /**
-     * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
+     * Triggers when the thumbnail in the PDF Viewer's thumbnail panel is clicked.
      *
-     * @event
+     * @event thumbnailClick
      * @blazorProperty 'OnThumbnailClick'
      */
     thumbnailClick?: EmitType<ThumbnailClickEventArgs>;
 
     /**
-     * Triggers an event when the bookmark is clicked in the bookmark panel of PDF Viewer.
+     * Triggers when the bookmark is clicked in the PDF Viewer's bookmark panel.
      *
-     * @event
+     * @event bookmarkClick
      * @blazorProperty 'BookmarkClick'
      */
     bookmarkClick?: EmitType<BookmarkClickEventArgs>;
 
     /**
-     * Triggers an event when the text selection is started.
+     * Triggers when the text selection is initiated.
      *
-     * @event
+     * @event textSelectionStart
      * @blazorProperty 'OnTextSelectionStart'
      */
     textSelectionStart?: EmitType<TextSelectionStartEventArgs>;
 
     /**
-     * Triggers an event when the text selection is finished.
+     * Triggers when the text selection is complete.
      *
-     * @event
+     * @event textSelectionEnd
      * @blazorProperty 'OnTextSelectionEnd'
      */
     textSelectionEnd?: EmitType<TextSelectionEndEventArgs>;
 
     /**
-     * Triggers an event when the download action is started.
+     * Triggers when the download action is initiated.
      *
-     * @event
+     * @event downloadStart
      * @blazorProperty 'DownloadStart'
      */
     downloadStart?: EmitType<DownloadStartEventArgs>;
 
     /**
-     * Triggers an event when the button is clicked.
+     * Triggers when the button is clicked.
      *
      * @deprecated This property renamed into "formFieldClick"
-     * @event
+     * @event buttonFieldClick
      * @blazorProperty 'ButtonFieldClick'
      */
     buttonFieldClick?: EmitType<ButtonFieldClickEventArgs>;
 
     /**
-     * Triggers an event when the form field is clicked.
+     * Triggers when the form field is selected.
      *
-     * @event
+     * @event formFieldClick
      * @blazorProperty 'FormFieldClick'
      */
     formFieldClick?: EmitType<FormFieldClickArgs>;
 
     /**
-     * Triggers an event when the download actions is finished.
+     * Triggers when the download actions are completed.
      *
-     * @event
+     * @event downloadEnd
      * @blazorProperty 'DownloadEnd'
      */
     downloadEnd?: EmitType<DownloadEndEventArgs>;
 
     /**
-     * Triggers an event when the print action is started.
+     * Triggers when the print action is initiated.
      *
-     * @event
+     * @event printStart
      * @blazorProperty 'PrintStart'
      */
     printStart?: EmitType<PrintStartEventArgs>;
 
     /**
-     * Triggers an event when the print actions is finished.
+     * Triggers when the print actions are completed.
      *
-     * @event
+     * @event printEnd
      * @blazorProperty 'PrintEnd'
      */
     printEnd?: EmitType<PrintEndEventArgs>;
 
     /**
-     * Triggers an event when the text search is started.
+     * Triggers when the text search is initiated.
      *
-     * @event
+     * @event textSearchStart
      * @blazorProperty 'OnTextSearchStart'
      */
     textSearchStart?: EmitType<TextSearchStartEventArgs>;
 
     /**
-     * Triggers an event when the text search is completed.
+     * Triggers when the text search is completed.
      *
-     * @event
+     * @event textSearchComplete
      * @blazorProperty 'OnTextSearchComplete'
      */
     textSearchComplete?: EmitType<TextSearchCompleteEventArgs>;
 
     /**
-     * Triggers an event when the text search text is highlighted.
+     * Triggers when the text search text is highlighted.
      *
-     * @event
+     * @event textSearchHighlight
      * @blazorProperty 'OnTextSearchHighlight'
      */
     textSearchHighlight?: EmitType<TextSearchHighlightEventArgs>;
 
     /**
-     * Triggers before the data send in to the server.
+     * Triggers before the data is sent to the server.
      *
-     * @event
+     * @event ajaxRequestInitiate
      */
     ajaxRequestInitiate?: EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
-     * Triggers when the comment is added for the annotation in the comment panel.
+     * Triggers when a comment for the annotation is added to the comment panel.
      *
-     * @event
+     * @event commentAdd
      * @blazorProperty 'commentAdd'
      */
     commentAdd?: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment is edited for the annotation in the comment panel.
+     * Triggers when the comment for the annotation in the comment panel is edited.
      *
-     * @event
+     * @event commentEdit
      * @blazorProperty 'commentEdit'
      */
     commentEdit?: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment is deleted for the annotation in the comment panel.
+     * Triggers when the comment for the annotation in the comment panel is deleted.
      *
-     * @event
+     * @event commentDelete
      * @blazorProperty 'commentDelete'
      */
     commentDelete?: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment is selected for the annotation in the comment panel.
+     * Triggers when the comment for the annotation in the comment panel is selected.
      *
-     * @event
+     * @event commentSelect
      * @blazorProperty 'commentSelect
      */
     commentSelect?: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment for status is changed for the annotation in the comment panel.
+     * Triggers when the annotation's comment for status is changed in the comment panel.
      *
-     * @event
+     * @event commentStatusChanged
      * @blazorProperty 'commentStatusChanged'
      */
     commentStatusChanged?: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers the event before adding a text in the freeText annotation.
+     * Triggers before adding a text in the freeText annotation.
      *
-     * @event
+     * @event beforeAddFreeText
      * @blazorProperty 'beforeAddFreeText'
      */
     beforeAddFreeText?: EmitType<BeforeAddFreeTextEventArgs>;
@@ -4621,87 +4650,87 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Triggers when focus out from the form fields.
      *
-     * @event
+     * @event formFieldFocusOut
      * @blazorProperty 'formFieldFocusOut'
      */
     formFieldFocusOut?: EmitType<FormFieldFocusOutEventArgs>;
 
     /**
-     * The event is triggered when a form field is added.
+     * Triggers when a form field is added.
      *
-     * @event
+     * @event formFieldAdd
      * @blazorProperty 'formFieldAdd'
      */
     formFieldAdd?: EmitType<FormFieldAddArgs>;
 
     /**
-     * The event is triggered when a form field is removed.
+     * Triggers when a form field is removed.
      *
-     * @event
+     * @event formFieldRemove
      * @blazorProperty 'formFieldRemove'
      */
     formFieldRemove?: EmitType<FormFieldRemoveArgs>;
 
     /**
-     * The event is triggered when a property of form field is changed.
+     * Triggers when a property of form field is changed.
      *
-     * @event
+     * @event formFieldPropertiesChange
      * @blazorProperty 'formFieldPropertiesChange'
      */
     formFieldPropertiesChange?: EmitType<FormFieldPropertiesChangeArgs>;
 
     /**
-     * The event is triggered when a mouse cursor leaves form field.
+     * Triggers when the mouse cursor leaves the form field.
      *
-     * @event
+     * @event formFieldMouseLeave
      * @blazorProperty 'formFieldMouseLeave'
      */
     formFieldMouseLeave?: EmitType<FormFieldMouseLeaveArgs>;
 
     /**
-     * The event is triggered when a mouse cursor is over a form field.
+     * Triggers when the mouse cursor is over a form field.
      *
-     * @event
+     * @event formFieldMouseover
      * @blazorProperty 'formFieldMouseover'
      */
     formFieldMouseover?: EmitType<FormFieldMouseoverArgs>;
 
     /**
-     * The event is triggered when a form field is moved.
+     * Triggers when a form field is moved.
      *
-     * @event
+     * @event formFieldMove
      * @blazorProperty 'formFieldMove'
      */
     formFieldMove?: EmitType<FormFieldMoveArgs>;
 
     /**
-     * The event is triggered when a form field is resized.
+     * Triggers when a form field is resized.
      *
-     * @event
+     * @event formFieldResize
      * @blazorProperty 'formFieldResize'
      */
     formFieldResize?: EmitType<FormFieldResizeArgs>;
 
     /**
-     * The event is triggered when a form field is selected.
+     * Triggers when a form field is selected.
      *
-     * @event
+     * @event formFieldSelect
      * @blazorProperty 'formFieldSelect'
      */
     formFieldSelect?: EmitType<FormFieldSelectArgs>;
 
     /**
-     * The event is triggered when a form field is unselected.
+     * Triggers when a form field is unselected.
      *
-     * @event
+     * @event formFieldUnselect
      * @blazorProperty 'formFieldUnselect'
      */
     formFieldUnselect?: EmitType<FormFieldUnselectArgs>;
 
     /**
-     * Triggers an event when the form field is double-clicked.
+     * Triggers when the form field is double-clicked.
      *
-     * @event
+     * @event formFieldDoubleClick
      * @blazorProperty 'formFieldDoubleClick'
      */
     formFieldDoubleClick?: EmitType<FormFieldDoubleClickArgs>;

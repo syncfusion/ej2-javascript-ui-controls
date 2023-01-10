@@ -382,7 +382,7 @@ export class MonthEvent extends EventBase {
         const attrs: { [key: string]: string } = {
             'data-id': 'Appointment_' + record[this.fields.id],
             'role': 'button', 'tabindex': '0',
-            'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record), 'aria-pressed': 'false',
+            'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record),
             'aria-label': this.parent.getAnnouncementString(newRecord, eventSubject)
         };
         if (!isCloneElement) {

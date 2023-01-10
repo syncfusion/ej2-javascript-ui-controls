@@ -22,6 +22,7 @@
 - `#I427362` - Now, the checkbox background color is properly updated while rendering using form field module.
 - `#I427364` - Now, the button images are rendered properly while scrolling the document.
 - `#I421445` - Now, the multiple Font-styles(bold, italic, underline and strikeout) can be applied together for textbox fields.
+- `#I426174` - Now, the form fields that have been selected programmatically can be deleted by using the delete key.
 
 ## 20.4.40 (2022-12-28)
 

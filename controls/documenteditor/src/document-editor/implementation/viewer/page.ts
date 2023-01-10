@@ -3187,7 +3187,6 @@ export class TableRowWidget extends BlockWidget {
         let clientAreaX: number = tableWidget.x;
         let cellSpace: number = 0;
         let tableWidth: number = 0;
-
         if (tableWidget.tableFormat != null && tableWidget.tableFormat.cellSpacing > 0) {
             cellSpace = tableWidget.tableFormat.cellSpacing;
         }
@@ -3196,10 +3195,21 @@ export class TableRowWidget extends BlockWidget {
         let rowX: number = this.x;
         let clientAreaRight: number = clientAreaX + tableWidth;
         let left: number = clientAreaRight - (rowX - clientAreaX);
+        let prevSpannedCellWidth: number = 0;
         for (let j: number = 0; j < this.childWidgets.length; j++) {
             let cellWidget: TableCellWidget = this.childWidgets[j] as TableCellWidget;
-            left = left - (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right - cellWidget.rightBorderWidth + cellSpace);
-            cellWidget.updateWidgetLeft(left + cellWidget.margin.left);
+            let prevColumnIndex: number = 0;
+            if (!isNullOrUndefined(cellWidget.previousWidget)) {
+                prevColumnIndex = (cellWidget.previousWidget as TableCellWidget).columnIndex + (cellWidget.previousWidget as TableCellWidget).cellFormat.columnSpan;
+            }
+            if (prevColumnIndex < cellWidget.columnIndex) {
+                prevSpannedCellWidth = HelperMethods.convertPointToPixel(cellWidget.ownerTable.tableHolder.getPreviousSpannedCellWidth(prevColumnIndex, cellWidget.columnIndex));
+                if (prevColumnIndex === 0) {
+                    prevSpannedCellWidth = prevSpannedCellWidth - cellSpace / 2;
+                }
+            }
+            left = left - (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right + cellSpace);
+            cellWidget.updateWidgetLeft(left + cellWidget.margin.left - prevSpannedCellWidth);
         }
     }
     /**

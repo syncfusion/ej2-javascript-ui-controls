@@ -178,7 +178,7 @@
 
       .e-gantt-child-manualtaskbar {
         background-color: $gantt-manualchild-task-bar;
-        border: $gantt-manualchild-task-bar-border;
+        outline: $gantt-manualchild-task-bar-border;
       }
 
       .e-gantt-unscheduled-taskbar.e-gantt-child-manualtaskbar {

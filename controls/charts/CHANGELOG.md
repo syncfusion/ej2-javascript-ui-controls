@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.4.43 (2023-01-10)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I426642` - Now accumulation chart keyboard focus element is removed from DOM properly after destroying the component.
+- `#I426112` - Now UseGroupingSeparator is working in data label.
+- `#I426849` - Tooltip and crosshair are now working properly for the missed data.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#I426389` - Changed event triggered unnecessarily when clicking daterangepicker issue has been fixed.
+
 ## 20.4.42 (2023-01-04)
 
 ### Chart

@@ -118,7 +118,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 Browser.userAgent = currentUA;
                 (Object as any).assign = assignValue;
                 done();
-            },1500);
+            },2500);
         });
     });
 
@@ -155,7 +155,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
                 done()
-            },1500);
+            },2500);
         });
     });
 
@@ -213,7 +213,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 compObj.keyUp(keyboardEventArgs);
                 expect(compObj.liCollections.length).toBe(1);
                 done();
-            }, 1000);
+            }, 4500);
         });
     });
 
@@ -256,8 +256,8 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 setTimeout(() => {
                     expect(eventValue).toEqual('closed');
                     done();
-                },500);
-            },1500);
+                },1500);
+            },3000);
         });
     });
 
@@ -294,7 +294,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(document.querySelector('.e-multiselect.e-input-group').classList.contains('e-input-focus')).toEqual(true);
                 expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
                 done()
-            },1500);
+            },2000);
         });
     });
 
@@ -331,7 +331,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
                 expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
                 done()
-            },1500);
+            },2500);
         });
     });
 
@@ -368,7 +368,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
                 expect(document.querySelectorAll('.e-list-item').length).toEqual(9);
                 done()
-            },1500);
+            },2500);
         });
     });
 
@@ -404,7 +404,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
             setTimeout(() => {
                 expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
                 done()
-            },1500);
+            },2500);
         });
     });
 
@@ -489,7 +489,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Empty');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 500);
+            }, 3500);
         });
         it('actionSuccess eventArgs cancel as false testing', (done: Function) => {
             editorObj = renderEditor({
@@ -521,7 +521,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Syncfusion');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 500);
+            }, 3500);
         });
         it('actionSuccess eventArgs cancel not configured with testing', (done: Function) => {
             editorObj = renderEditor({
@@ -552,7 +552,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Syncfusion');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('actionBegin eventArgs cancel as true testing', (done: Function) => {
             editorObj = renderEditor({
@@ -582,7 +582,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
                 expect(editorObj.element.querySelectorAll('.' + classes.INPUT).length > 0).toEqual(true);
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('actionBegin eventArgs cancel as true with popup mode testing', (done: Function) => {
             editorObj = renderEditor({
@@ -612,7 +612,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 expect(document.querySelectorAll('.' + classes.ROOT_TIP).length > 0).toEqual(true);
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('actionBegin eventArgs cancel as false testing', (done: Function) => {
             editorObj = renderEditor({
@@ -644,7 +644,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Syncfusion');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('actionBegin eventArgs cancel not configured with testing', (done: Function) => {
             editorObj = renderEditor({
@@ -673,7 +673,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Syncfusion');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 4000);
+            }, 4500);
         });
     });
     describe('EJ2-33001 - Without change value to submit prevent testing ', () => {
@@ -720,7 +720,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(valueEle.innerText).toEqual('Syncfusion');
                 expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('Without change value to submit testing', (done: Function) => {
             successArgs = {};

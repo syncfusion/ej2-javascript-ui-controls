@@ -97,8 +97,8 @@ export interface RichTextEditorModel extends ComponentModel{
      * * enable - Set Boolean value to enable, the editors content is placed in an iframe and isolated from the rest of the page.
      * * attributes - Custom style to be used inside the iframe to display content. This style is added to the iframe body.
      * * resources - we can add both styles and scripts to the iframe.
-     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content
-     * 2. scripts[] - An array of JS script files to inject inside the iframe
+     * 1. styles[] - An array of CSS style files to inject inside the iframe to display content.
+     * 2. scripts[] - An array of JS script files to inject inside the iframe.
      *
      * {% codeBlock src='rich-text-editor/iframe-settings/index.md' %}{% endcodeBlock %}
      *

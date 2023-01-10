@@ -816,6 +816,12 @@
           display: inline-table;
           transform: rotate(180deg);
         }
+
+        .e-toolbar-items .e-toolbar-right .e-toolbar-item .e-dropdown-btn .e-icon-left {
+          @if $fm-skin-name == 'FluentUI' {
+            line-height: $fe-cb-line-height;
+          }
+        }
       }
 
       .e-splitter.e-splitter-horizontal {

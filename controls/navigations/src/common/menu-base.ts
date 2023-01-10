@@ -711,13 +711,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (fliIdx === (e.action === DOWNARROW ? cul.childElementCount : -1)) {
                     fliIdx = defaultIdx;
                 }
-                if (cul.children[fliIdx as number].classList.contains(HIDE)) {
-                    if (e.action === DOWNARROW && fliIdx === cul.childElementCount - 1) {
-                        fliIdx = defaultIdx;
-                    } else if (e.action === UPARROW && fliIdx === 0) {
-                        fliIdx = defaultIdx;
-                    }
-                }
             }
         }
         const cli: Element = cul.children[fliIdx as number];
@@ -728,8 +721,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private isValidLI(cli: Element, index: number, action: string): number {
         const cul: Element = this.getUlByNavIdx();
+        const defaultIdx: number = (action === DOWNARROW || action === HOME || action === TAB) ? 0 : cul.childElementCount - 1;
         if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
-            if ((action === DOWNARROW) || (action === RIGHTARROW)) {
+            if (action === DOWNARROW && index === cul.childElementCount - 1) {
+                index = defaultIdx;
+            } else if (action === UPARROW && index === 0) {
+                index = defaultIdx;
+            }
+            else if ((action === DOWNARROW) || (action === RIGHTARROW)) {
                 index++;
             } else {
                 index--;

@@ -3072,7 +3072,8 @@ export class FormDesigner {
         }
         if (formField && (this.pdfViewer.selectedItems && !isNullOrUndefined((this.pdfViewer.selectedItems as any).properties.formFields) && (this.pdfViewer.selectedItems as any).properties.formFields.length > 0 &&
             (this.pdfViewer.selectedItems as any).properties.formFields[0].id === formField.id)) {
-            this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                let pageId = !isNullOrUndefined(this.pdfViewerBase.activeElements.activePageID) ? this.pdfViewerBase.activeElements.activePageID : formField.pageIndex;
+                this.pdfViewer.clearSelection(pageId);
         }
     }
 

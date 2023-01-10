@@ -345,7 +345,7 @@ export class QuickPopups {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0',
                         'aria-disabled': this.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-pressed': 'false', 'aria-label': this.parent.getAnnouncementString(eventData)
+                        'aria-label': this.parent.getAnnouncementString(eventData)
                     }
                 });
                 let templateElement: HTMLElement[];

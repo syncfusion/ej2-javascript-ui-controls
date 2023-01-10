@@ -52,7 +52,6 @@ export class AgendaBase extends ViewBase {
                         'role': 'button',
                         'tabindex': '0',
                         'aria-disabled': this.parent.eventBase.getReadonlyAttribute(listData[parseInt(li.toString(), 10)]),
-                        'aria-pressed': 'false',
                         'aria-label': this.parent.getAnnouncementString(listData[parseInt(li.toString(), 10)])
                     }
                 });

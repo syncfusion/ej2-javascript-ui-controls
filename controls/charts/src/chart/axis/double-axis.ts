@@ -313,6 +313,16 @@ export class Double {
                     : axis.visibleRange.interval;
             }
         }
+        if (axis.maximum && axis.orientation === 'Vertical' && axis.rangePadding === 'Auto') {
+            let duplicateTempInterval: number;
+            let tempInterval: number = axis.visibleRange.min;
+            for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
+                duplicateTempInterval = tempInterval;
+            }
+            if (duplicateTempInterval < axis.visibleRange.max) {
+                axis.visibleRange.max = duplicateTempInterval + axis.visibleRange.interval;
+            }
+        }
         axis.triggerRangeRender(this.chart, axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.interval);
     }
 

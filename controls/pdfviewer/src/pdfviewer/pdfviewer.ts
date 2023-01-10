@@ -49,6 +49,71 @@ import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the tool bar settings.
+ *  viewer.toolbarSettings = {
+ *      showTooltip: false,
+ *      toolbarItems: [
+ *          "OpenOption",
+ *          "UndoRedoTool",
+ *          "PageNavigationTool",
+ *          "MagnificationTool",
+ *          "PanTool",
+ *          "SelectionTool",
+ *          "CommentTool",
+ *          "SubmitForm",
+ *          "AnnotationEditTool",
+ *          "FormDesignerEditTool",
+ *          "FreeTextAnnotationOption",
+ *          "InkAnnotationOption",
+ *          "ShapeAnnotationOption",
+ *          "StampAnnotation",
+ *          "SignatureOption",
+ *          "SearchOption",
+ *          "PrintOption",
+ *          "DownloadOption"
+ *      ],
+ *      annotationToolbarItems: [
+ *          "HighlightTool",
+ *          "UnderlineTool",
+ *          "StrikethroughTool",
+ *          "ColorEditTool",
+ *          "OpacityEditTool",
+ *          "AnnotationDeleteTool",
+ *          "StampAnnotationTool",
+ *          "HandWrittenSignatureTool",
+ *          "InkAnnotationTool",
+ *          "ShapeTool",
+ *          "CalibrateTool",
+ *          "StrokeColorEditTool",
+ *          "ThicknessEditTool",
+ *          "FreeTextAnnotationTool",
+ *          "FontFamilyAnnotationTool",
+ *          "FontSizeAnnotationTool",
+ *          "FontStylesAnnotationTool",
+ *          "FontAlignAnnotationTool",
+ *          "FontColorAnnotationTool",
+ *          "CommentPanelTool"
+ *      ],
+ *      formDesignerToolbarItems: [
+ *          "TextboxTool",
+ *          "PasswordTool",
+ *          "CheckBoxTool",
+ *          "RadioButtonTool",
+ *          "DropdownTool",
+ *          "ListboxTool",
+ *          "DrawSignatureTool",
+ *          "DeleteTool"
+ *      ]
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ *
  */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
@@ -78,6 +143,25 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 
 /**
  * The `AjaxRequestSettings` module is used to set the ajax Request Headers of PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // HTTP header "X-Custom-Header": "Custom header value" // Custom HTTP header
+ *  viewer.ajaxRequestSettings = { 
+ *      ajaxHeaders: [
+ *          { 
+ *              headerName : "Authorization", 
+ *              headerValue : "Bearer" 
+ *          } 
+ *      ], 
+ *      withCredentials: false 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class AjaxRequestSettings extends ChildProperty<AjaxRequestSettings> {
 
@@ -108,6 +192,22 @@ export interface IAjaxHeaders {
 }
 /**
  * The `CustomStamp` module is used to provide the custom stamp added in stamp menu of the PDF Viewer toolbar.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Add your custom stamp image source as base64 image.
+ *  viewer.customStamp = [
+ *       { 
+ *          customStampName: 'Sample', 
+ *          customStampImageSource: "data:image/png;base64, Syncfusion pdf viewer"
+ *      }
+ *  ]; 
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class CustomStamp extends ChildProperty<CustomStamp> {
     /**
@@ -125,6 +225,41 @@ export class CustomStamp extends ChildProperty<CustomStamp> {
 
 /**
  * The `AnnotationToolbarSettings` module is used to provide the annotation toolbar settings of the PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the annotation tool bar settings.
+ *  viewer.toolbarSettings = {
+ *      showTooltip: false,
+ *      annotationToolbarItems: [
+ *          "HighlightTool",
+ *          "UnderlineTool",
+ *          "StrikethroughTool",
+ *          "ColorEditTool",
+ *          "OpacityEditTool",
+ *          "AnnotationDeleteTool",
+ *          "StampAnnotationTool",
+ *          "HandWrittenSignatureTool",
+ *          "InkAnnotationTool",
+ *          "ShapeTool",
+ *          "CalibrateTool",
+ *          "StrokeColorEditTool",
+ *          "ThicknessEditTool",
+ *          "FreeTextAnnotationTool",
+ *          "FontFamilyAnnotationTool",
+ *          "FontSizeAnnotationTool",
+ *          "FontStylesAnnotationTool",
+ *          "FontAlignAnnotationTool",
+ *          "FontColorAnnotationTool",
+ *          "CommentPanelTool"
+ *      ],
+ *  };
+ * viewer.appendTo("#pdfViewer");
+ * ```
+ *
  */
 export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSettings> {
     /**
@@ -142,6 +277,29 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
 
 /**
  * The `FormDesignerToolbarSettings` module is used to provide the Form designer toolbar settings of the PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the form field tool bar settings.
+ *  viewer.toolbarSettings = {
+ *      showTooltip: false,
+ *      formDesignerToolbarItems: [
+ *          "TextboxTool",
+ *          "PasswordTool",
+ *          "CheckBoxTool",
+ *          "RadioButtonTool",
+ *          "DropdownTool",
+ *          "ListboxTool",
+ *          "DrawSignatureTool",
+ *          "DeleteTool"
+ *      ]
+ *  };
+ * viewer.appendTo("#pdfViewer");
+ * ```
+ *
  */
  export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolbarSettings> {
     /**
@@ -159,6 +317,38 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
 
 /**
  * The `SignatureFieldSettings` module is used to set the properties of signature field in PDF Viewer
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the signature field settings.
+ *  viewer.signatureFieldSettings = {
+ *      name: "",
+ *      isReadOnly: true,
+ *      visibility: "visible",
+ *      isRequired: true,
+ *      isPrint: false,
+ *      tooltip: "",
+ *      thickness: 1,
+ *      signatureIndicatorSettings: {
+ *          opacity: 1,
+ *          backgroundColor: "orange",
+ *          width: 19,
+ *          height: 10,
+ *          fontSize: 10,
+ *          text: null,
+ *          color: "black"  
+ *      },
+ *      signatureDialogSettings: {
+ *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
+ *          hideSaveSignature: false
+ *      }
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings> {
 
@@ -231,6 +421,38 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
 
 /**
  * The `InitialFieldSettings` module is used to set the properties of initial field in PDF Viewer
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Changes the initial field settings.
+ *  viewer.initialFieldSettings = {
+ *      name: "",
+ *      isReadOnly: true,
+ *      visibility: "visible",
+ *      isRequired: true,
+ *      isPrint: true,
+ *      tooltip: "",
+ *      thickness: 1,
+ *      initialIndicatorSettings: {
+ *          opacity: 1,
+ *          backgroundColor: "orange",
+ *          width: 19,
+ *          height: 10,
+ *          fontSize: 10,
+ *          text: null,
+ *          color: "black"
+ *      },
+ *      initialDialogSettings: {
+ *         displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
+ *          hideSaveSignature: false
+ *      }
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
 
@@ -308,7 +530,28 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
 }
 
 /**
- * The `SignatureIndicatorSettings` module is used to provide the properties of signature Indicator in the signature field
+ * The `SignatureIndicatorSettings` module is used to provide the properties of signature Indicator in the signature field.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the signature indicator settings.
+ *  viewer.signatureFieldSettings = {
+ *      signatureIndicatorSettings: {
+ *          opacity: 1, 
+ *          backgroundColor: 'orange', 
+ *          width: 19, 
+ *          height: 10, 
+ *          fontSize: 10, 
+ *          text: null, 
+ *          color: 'black' 
+ *      } 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicatorSettings> {
 
@@ -360,6 +603,21 @@ export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicator
 
 /**
  * The `SignatureDialogSettings` module is used to customize the signature dialog box.
+ * 
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the signature dialog settings.
+ *  viewer.signatureDialogSettings = { 
+ *      displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, 
+ *      hideSaveSignature: true
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettings> {
     /**
@@ -376,6 +634,30 @@ export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettin
 }
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the server action settings.
+ *  viewer.serverActionSettings = {
+ *      load: "Load",
+ *      renderPages: "RenderPdfPages",
+ *      unload: "Unload",
+ *      download: "Download",
+ *      renderThumbnail: "RenderThumbnailImages",
+ *      print: "PrintImages",
+ *      renderComments: "RenderAnnotationComments",
+ *      importAnnotations: "ImportAnnotations",
+ *      exportAnnotations: "ExportAnnotations",
+ *      importFormFields: "ImportFormFields",
+ *      exportFormFields: "ExportFormFields",
+ *      renderTexts: "RenderPdfTexts"
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     /**
@@ -454,6 +736,36 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
 /**
  * The `StrikethroughSettings` module is used to provide the properties to Strikethrough annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the strike through annotation settings.
+ *  viewer.strikethroughSettings = { 
+ *      opacity: 1, 
+ *      color: '#ff0000', 
+ *      author: 'Guest', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
+ *      }, 
+ *      isLock: false, 
+ *      enableMultiPageAnnotation: false, 
+ *      enableTextMarkupResizer: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> {
 
@@ -540,6 +852,36 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
 
 /**
  * The `UnderlineSettings` module is used to provide the properties to Underline annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the underline annotation settings.
+ *  viewer.underlineSettings = { 
+ *      opacity: 1, 
+ *      color: '#9c2592', 
+ *      author: 'Guest', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
+ *      }, 
+ *      isLock: false, 
+ *      enableMultiPageAnnotation: false, 
+ *      enableTextMarkupResizer: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
 
@@ -626,6 +968,36 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
 
 /**
  * The `HighlightSettings` module is used to provide the properties to Highlight annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the highlight annotation settings.
+ *  viewer.highlightSettings = { 
+ *      opacity: 1, 
+ *      color: '#ff0000', 
+ *      author: 'Guest', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
+ *      }, 
+ *      isLock: false, 
+ *      enableMultiPageAnnotation: false, 
+ *      enableTextMarkupResizer: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
@@ -712,6 +1084,36 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
 /**
  * The `LineSettings` module is used to provide the properties to line annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the line annotation settings.
+ *  viewer.lineSettings = { 
+ *      opacity: 1, 
+ *      color: '#9c2592', 
+ *      author: 'Guest', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges 
+ *      }, 
+ *      isLock: false, 
+ *      enableMultiPageAnnotation: false, 
+ *      enableTextMarkupResizer: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class LineSettings extends ChildProperty<LineSettings> {
     /**
@@ -841,6 +1243,44 @@ export class LineSettings extends ChildProperty<LineSettings> {
 
 /**
  * The `ArrowSettings` module is used to provide the properties to arrow annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the arrow annotation settings.
+ *  viewer.arrowSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#9c2592', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      borderDashArray: 0, 
+ *      lineHeadStartStyle: 'Closed', 
+ *      lineHeadEndStyle: 'Closed', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class ArrowSettings extends ChildProperty<ArrowSettings> {
     /**
@@ -970,6 +1410,41 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
 
 /**
  * The `RectangleSettings` module is used to provide the properties to rectangle annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the rectangle annotation settings.
+ *  viewer.rectangleSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#9c2592', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class RectangleSettings extends ChildProperty<RectangleSettings> {
     /**
@@ -1086,6 +1561,41 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
 
 /**
  * The `CircleSettings` module is used to provide the properties to circle annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the circle annotation settings.
+ *  viewer.circleSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#9c2592', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class CircleSettings extends ChildProperty<CircleSettings> {
     /**
@@ -1202,6 +1712,26 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
 
 /**
  * The `ShapeLabelSettings` module is used to provide the properties to rectangle annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the shape label settings.
+ *  viewer.shapeLabelSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#9c2592', 
+ *      borderColor: '#ff0000', 
+ *      fontColor: '#000', 
+ *      fontSize: 16, 
+ *      labelHeight: 24.6, 
+ *      labelMaxWidth: 151, 
+ *      labelContent: 'Label' 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
     /**
@@ -1245,6 +1775,41 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
 
 /**
  * The `PolygonSettings` module is used to provide the properties to polygon annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the polygon annotation settings.
+ *  viewer.polygonSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#4070FF', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class PolygonSettings extends ChildProperty<PolygonSettings> {
     /**
@@ -1356,6 +1921,67 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
 
 /**
  * The `stampSettings` module is used to provide the properties to stamp annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the stamp annotation settings.
+ *  viewer.stampSettings = { 
+ *      opacity: 1, 
+ *      author: 'Guest', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'red', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 5, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      dynamicStamps: [
+ *          DynamicStampItem.Revised, 
+ *          DynamicStampItem.Reviewed, 
+ *          DynamicStampItem.Received, 
+ *          DynamicStampItem.Confidential, 
+ *          DynamicStampItem.Approved, 
+ *          DynamicStampItem.NotApproved
+ *      ], 
+ *      signStamps: [
+ *          SignStampItem.Witness, 
+ *          SignStampItem.InitialHere, 
+ *          SignStampItem.SignHere, 
+ *          SignStampItem.Accepted, 
+ *          SignStampItem.Rejected
+ *      ], 
+ *      standardBusinessStamps: [
+ *          StandardBusinessStampItem.Approved, 
+ *          StandardBusinessStampItem.NotApproved, 
+ *          StandardBusinessStampItem.Draft, 
+ *          StandardBusinessStampItem.Final, 
+ *          StandardBusinessStampItem.Completed, 
+ *          StandardBusinessStampItem.Confidential, 
+ *          StandardBusinessStampItem.ForPublicRelease, 
+ *          StandardBusinessStampItem.NotForPublicRelease, 
+ *          StandardBusinessStampItem.ForComment, 
+ *          StandardBusinessStampItem.Void, 
+ *          StandardBusinessStampItem.PreliminaryResults, 
+ *          StandardBusinessStampItem.InformationOnly
+ *      ], 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class StampSettings extends ChildProperty<StampSettings> {
     /**
@@ -1472,6 +2098,33 @@ export class StampSettings extends ChildProperty<StampSettings> {
 
 /**
  * The `CustomStampSettings` module is used to provide the properties to customstamp annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ * 
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the custom stamp annotation settings.
+ *  viewer.customStampSettings = { 
+ *      opacity: 1, 
+ *      author: 'Guest', 
+ *      width: 0, 
+ *      height: 0, 
+ *      left: 0, 
+ *      top: 0, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      enableCustomStamp: true, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
     /**
@@ -1586,6 +2239,47 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
 
 /**
  * The `DistanceSettings` module is used to provide the properties to distance calibrate annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ * 
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the distance annotation settings.
+ *  viewer.distanceSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#4070FF', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      borderDashArray: 0, 
+ *      lineHeadStartStyle: 'Closed',
+ *      lineHeadEndStyle: 'Closed', 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Square', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      leaderLength: 40, 
+ *      resizeCursorType: CursorType.move, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class DistanceSettings extends ChildProperty<DistanceSettings> {
     /**
@@ -1727,6 +2421,43 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
 
 /**
  * The `PerimeterSettings` module is used to provide the properties to perimeter calibrate annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the perimeter annotation settings.
+ *  viewer.perimeterSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#4070FF', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      borderDashArray: 0, 
+ *      lineHeadStartStyle: 'Open', 
+ *      lineHeadEndStyle: 'Open', 
+ *      minHeight: 0, minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#4070FF', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     /**
@@ -1850,6 +2581,41 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
 
 /**
  * The `AreaSettings` module is used to provide the properties to area calibrate annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the area annotation settings.
+ *  viewer.areaSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#4070FF', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#4070FF', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class AreaSettings extends ChildProperty<AreaSettings> {
     /**
@@ -1955,6 +2721,41 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
 
 /**
  * The `RadiusSettings` module is used to provide the properties to radius calibrate annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the radius annotation settings.
+ *  viewer.radiusSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#4070FF', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'red', 
+ *          resizerFillColor: '#4070FF', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class RadiusSettings extends ChildProperty<RadiusSettings> {
     /**
@@ -2071,6 +2872,41 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
 
 /**
  * The `VolumeSettings` module is used to provide the properties to volume calibrate annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the volume annotation settings.
+ *  viewer.volumeSettings = { 
+ *      opacity: 1,
+ *      fillColor: '#4070FF', 
+ *      strokeColor: '#ff0000', 
+ *      author: 'Guest', 
+ *      thickness: 1,
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#4070FF', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class VolumeSettings extends ChildProperty<VolumeSettings> {
     /**
@@ -2175,6 +3011,36 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
 }
 /**
  * The `Ink` module is used to provide the properties to Ink annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the ink annotation settings.
+ *  viewer.inkAnnotationSettings = { 
+ *      author: 'Guest', 
+ *      opacity: 1, 
+ *      strokeColor: '#ff0000', 
+ *      thickness: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> {
     /**
@@ -2266,6 +3132,34 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
 }
 /**
  * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the sticky notes annotation settings.
+ *  viewer.stickyNotesSettings = { 
+ *      author: 'Guest', 
+ *      opacity: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'red', 
+ *          resizerFillColor: '#4070FF', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
 
@@ -2329,6 +3223,22 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
 
 /**
  * The `MeasurementSettings` module is used to provide the settings to measurement annotations.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the measurement annotation settings.
+ *  viewer.measurementSettings = { 
+ *      conversionUnit: 'cm', 
+ *      displayUnit: 'cm', 
+ *      scaleRatio: 1, 
+ *      depth: 96 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
     /**
@@ -2358,6 +3268,52 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
 
 /**
  * The `FreeTextSettings` module is used to provide the properties to free text annotation.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the free text annotation settings.
+ *  viewer.freeTextSettings = { 
+ *      opacity: 1, 
+ *      fillColor: '#4070FF', 
+ *      borderColor: '#4070FF', 
+ *      author: 'Guest', 
+ *      borderWidth: 1, 
+ *      width: 151, 
+ *      fontSize: 16, 
+ *      height: 24.6, 
+ *      fontColor: '#000', 
+ *      fontFamily: 'Courier', 
+ *      defaultText: 'Type Here', 
+ *      textAlignment: 'Right', 
+ *      fontStyle: FontStyle.Italic, 
+ *      allowTextOnly: false, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      allowedInteractions: ['None'], 
+ *      isPrint: true, 
+ *      isReadonly: false, 
+ *      enableAutoFit: false 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     /**
@@ -2534,6 +3490,27 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
 
 /**
  * The `AnnotationSelectorSettings` module is used to provide the properties to annotation selectors.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the annotation selector settings.
+ *  viewer.annotationSelectorSettings = { 
+ *      selectionBorderColor: '', 
+ *      resizerBorderColor: 'Circle', 
+ *      resizerFillColor: '#4070FF',
+ *      resizerSize: 8, 
+ *      selectionBorderThickness: 1, 
+ *      resizerShape: 'Square', 
+ *      selectorLineDashArray: [], 
+ *      resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *      resizerCursorType: null 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelectorSettings> {
     /**
@@ -2599,6 +3576,20 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
 
 /**
  * The `TextSearchColorSettings` module is used to set the settings for the color of the text search highlight.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the text search color settings.
+ *  viewer.textSearchColorSettings = { 
+ *      searchHighlightColor: '#4070FF', 
+ *      searchColor: '#FF4081' 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettings> {
     /**
@@ -2616,6 +3607,48 @@ export class TextSearchColorSettings extends ChildProperty<TextSearchColorSettin
 
 /**
  * The `HandWrittenSignatureSettings` module is used to provide the properties to handwritten signature.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the hand written signature settings.
+ *  viewer.handWrittenSignatureSettings = { 
+ *      signatureItem: [
+ *          'Signature', 
+ *          'Initial'
+ *      ], 
+ *      saveSignatureLimit: 1, 
+ *      saveInitialLimit: 1, 
+ *      opacity: 1, 
+ *      strokeColor: '#000000', 
+ *      width: 150, 
+ *      height: 100, 
+ *      thickness: 1, 
+ *      annotationSelectorSettings: { 
+ *          selectionBorderColor: '', 
+ *          resizerBorderColor: 'black', 
+ *          resizerFillColor: '#FF4081', 
+ *          resizerSize: 8, 
+ *          selectionBorderThickness: 1, 
+ *          resizerShape: 'Circle', 
+ *          selectorLineDashArray: [], 
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, 
+ *          resizerCursorType: null 
+ *      }, 
+ *      allowedInteractions: ['None'], 
+ *      signatureDialogSettings: {
+ *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false 
+ *      }, 
+ *      initialDialogSettings: {
+ *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, 
+ *      hideSaveSignature: false
+ *      } 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSignatureSettings> {
     /**
@@ -2694,6 +3727,27 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
 
 /**
  * The `AnnotationSettings` module is used to provide the properties to annotations.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the annotation settings.
+ *  viewer.annotationSettings = { 
+ *      author: 'Guest', 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      skipPrint: false, 
+ *      skipDownload: false, 
+ *      allowedInteractions: ['None'] 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
     /**
@@ -2857,6 +3911,27 @@ export class RectangleBounds extends ChildProperty<RectangleBounds> {
 
 /**
  * The `TileRenderingSettings` module is used to provide the tile rendering settings of the PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the tile rendering settings.
+ *  viewer.tileRenderingSettings = { 
+ *      author: 'Guest', 
+ *      minHeight: 0, 
+ *      minWidth: 0, 
+ *      maxWidth: 0, 
+ *      maxHeight: 0, 
+ *      isLock: false, 
+ *      skipPrint: false, 
+ *      skipDownload: false, 
+ *      allowedInteractions: ['None'] 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class TileRenderingSettings extends ChildProperty<TileRenderingSettings> {
     /**
@@ -2879,6 +3954,19 @@ export class TileRenderingSettings extends ChildProperty<TileRenderingSettings> 
 }
 /**
  * The `ScrollSettings` module is used to provide the settings of the scroll of the PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the scroll settings.
+ *  viewer.scrollSettings = { 
+ *      delayPageRequestTimeOnScroll: 150 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class ScrollSettings extends ChildProperty<ScrollSettings> {
     /**
@@ -3064,6 +4152,17 @@ export class FormField extends ChildProperty<FormField> {
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ * // Change the settings of the context menu option.
+ *  viewer.contextMenuOption = "RightClick";
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     /**
@@ -3085,6 +4184,35 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
 
 /**
  * The `TextFieldSettings` is used to to show and customize the appearance of text box HTML element.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the text field settings.
+ *  viewer.textFieldSettings = { 
+ *      name: '', 
+ *      value: '', 
+ *      fontFamily: 'Courier', 
+ *      fontSize: 10, 
+ *      fontStyle: 'None', 
+ *      color: 'black', 
+ *      borderColor: 'black', 
+ *      backgroundColor: 'white', 
+ *      alignment: 'Right', 
+ *      isReadOnly: false, 
+ *      visibility: 'visible', 
+ *      maxLength: 0, 
+ *      isRequired: false, 
+ *      isPrint: true, 
+ *      tooltip: '', 
+ *      thickness: 1, 
+ *      isMultiline: false 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
@@ -3205,6 +4333,34 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
 /**
  * The `PasswordFieldSettings` is used to to show and customize the appearance of password input HTML element.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the password field settings.
+ *  viewer.passwordFieldSettings = { 
+ *      name: '', 
+ *      value: '', 
+ *      fontFamily: 'Courier', 
+ *      fontSize: 10, 
+ *      fontStyle: 'None', 
+ *      color: 'black', 
+ *      borderColor: 'black', 
+ *      backgroundColor: 'white', 
+ *      alignment: 'Right',
+ *      isReadOnly: false, 
+ *      visibility: 'visible', 
+ *      maxLength: 0, 
+ *      isRequired: false, 
+ *      isPrint: true, 
+ *      tooltip: '', 
+ *      thickness: 1 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
  export class PasswordFieldSettings extends ChildProperty<PasswordFieldSettings> {
 
@@ -3319,6 +4475,28 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
 /**
  * The `CheckBoxFieldSettings` is used to to show and customize the appearance of check box element.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the check box field settings.
+ *  viewer.checkBoxFieldSettings = { 
+ *      name: '', 
+ *      isChecked: true, 
+ *      backgroundColor: 'white', 
+ *      isReadOnly: false, 
+ *      visibility: 'visible',  
+ *      isPrint: true, 
+ *      tooltip: '', 
+ *      isRequired: false, 
+ *      thickness: 5, 
+ *      borderColor: 'black' 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
  export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> {
     
@@ -3397,6 +4575,28 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
 /**
  * The `RadioButtonFieldSettings` is used to to show and customize the appearance of radio button element.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the radio button field settings.
+ *  viewer.radioButtonFieldSettings = { 
+ *      name: '',
+ *      isSelected: false, 
+ *      backgroundColor: 'white', 
+ *      isReadOnly: false, 
+ *      visibility: 'visible',  
+ *      isPrint: true, 
+ *      tooltip: '', 
+ *      isRequired: false, 
+ *      thickness: 1, 
+ *      borderColor: 'black' 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
  export class RadioButtonFieldSettings extends ChildProperty<RadioButtonFieldSettings> {
 
@@ -3475,6 +4675,28 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
 /**
  * The `DropdownFieldSettings` is used to to show and customize the appearance of drop down element.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the drop down field settings.
+ *  viewer.DropdownFieldSettings = { 
+ *      name: '', 
+ *      isSelected: false, 
+ *      backgroundColor: 'white', 
+ *      isReadOnly: true, 
+ *      visibility: 'visible', 
+ *      isPrint: true,  
+ *      tooltip: '', 
+ *      isRequired: false, 
+ *      thickness: 5, 
+ *      borderColor: 'blue' 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
  export class DropdownFieldSettings extends ChildProperty<DropdownFieldSettings> {
 
@@ -3589,6 +4811,33 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
 
 /**
  * The `ListBoxFieldSettings` is used to to show and customize the appearance of list box element.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the list box field settings.
+ *  viewer.listBoxFieldSettings = { 
+ *      name: '', 
+ *      fontFamily: 'Courier', 
+ *      fontSize: 5, 
+ *      fontStyle: 'None', 
+ *      color: 'black', 
+ *      backgroundColor: 'white', 
+ *      alignment: 'Right', 
+ *      isReadOnly: false, 
+ *      visibility: 'visible', 
+ *      isRequired: false, 
+ *      isPrint: false, 
+ *      tooltip: '', 
+ *      options: [], 
+ *      thickness: 1, 
+ *      borderColor: 'black' 
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
  */
 export class ListBoxFieldSettings extends ChildProperty<ListBoxFieldSettings> {
 
@@ -3740,6 +4989,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * gets the page count of the document loaded in the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/pageCount/index.md' %}{% endcodeBlock %}
      *
      * @default 0
      */
@@ -3748,6 +4999,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Checks whether the PDF document is edited.
+     * 
+     * {% codeBlock src='pdfviewer/isDocumentEdited/index.md' %}{% endcodeBlock %}
      *
      * @asptype bool
      * @blazorType bool
@@ -3757,6 +5010,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Returns the current page number of the document displayed in the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/currentPageNumber/index.md' %}{% endcodeBlock %}
      *
      * @default 0
      */
@@ -3811,6 +5066,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Gets or sets the document name loaded in the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/fileName/index.md' %}{% endcodeBlock %}
+     * 
      */
     public fileName: string = null;
 
@@ -3834,6 +5092,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable height of the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/height/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
      */
@@ -3842,6 +5102,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable width of the PdfViewer control.
+     * 
+     * {% codeBlock src='pdfviewer/width/index.md' %}{% endcodeBlock %}
      *
      * @default 'auto'
      */
@@ -3860,6 +5122,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the retry count for the failed requests.
+     * 
+     * {% codeBlock src='pdfviewer/retryCount/index.md' %}{% endcodeBlock %}
      *
      * @default 1
      */
@@ -3869,6 +5133,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Specifies the response status codes for retrying a failed request with a "3xx", "4xx", or "5xx" response status code.
      * The value can have multiple values, such as [500, 401, 400], and the default value is 500.
+     * 
+     * {% codeBlock src='pdfviewer/retryStatusCodes/index.md' %}{% endcodeBlock %}
      *
      * @default [500]
      */
@@ -3936,7 +5202,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableMultiLineOverlap: boolean;
 
     /**
-     * Checks if the freeText value is valid or not. FALSE by default
+     * Checks if the freeText value is valid or not.
+     * 
+     * {% codeBlock src='pdfviewer/isValidFreeText/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -4114,14 +5382,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies the state of the ContextMenu in the PDF document.
-     *
+     * 
+     * {% codeBlock src='pdfviewer/contextMenuOption/index.md' %}{% endcodeBlock %}
+     * 
      * @default RightClick
      */
     @Property('RightClick')
     public contextMenuOption: ContextMenuAction;
 
     /**
-     * enable or disable context menu Items
+     * Disables the menu items in the context menu.
      * 
      * {% codeBlock src='pdfviewer/disableContextMenuItems/index.md' %}{% endcodeBlock %}
      *
@@ -4272,6 +5542,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Enable if the PDF document contains form fields.
+     * 
+     * {% codeBlock src='pdfviewer/isFormFieldDocument/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -4519,6 +5791,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the ajax Request settings of the PDF Viewer.
+     * 
+     * {% codeBlock src='pdfviewer/ajaxRequestSettings/index.md' %}{% endcodeBlock %}
+     * 
      */
     // eslint-disable-next-line max-len
     @Property({ ajaxHeaders: [], withCredentials: false })
@@ -4526,6 +5801,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the stamp items of the PDF Viewer.
+     * 
+     * {% codeBlock src='pdfviewer/customStamp/index.md' %}{% endcodeBlock %}
+     * 
      */
     // eslint-disable-next-line max-len
     @Property({ customStampName: '', customStampImageSource: '' })
@@ -4533,6 +5811,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the settings of the PDF Viewer service.
+     * 
+     * {% codeBlock src='pdfviewer/serverActionSettings/index.md' %}{% endcodeBlock %}
+     * 
      */
     // eslint-disable-next-line max-len
     @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts' })
@@ -5099,36 +6380,36 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * Triggers while created the PdfViewer component.
+     * Triggers during the creation of the PDF viewer component.
      *
-     * @event
+     * @event created
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<void>;
 
     /**
-     * Triggers while loading document into PdfViewer.
+     * Triggers while loading document into PDF viewer.
      *
-     * @event
+     * @event documentLoad
      * @blazorProperty 'DocumentLoaded'
      */
     @Event()
     public documentLoad: EmitType<LoadEventArgs>;
 
     /**
-     * Triggers while close the document
+     * Triggers while closing the document.
      *
-     * @event
+     * @event documentUnload
      * @blazorProperty 'DocumentUnloaded'
      */
     @Event()
     public documentUnload: EmitType<UnloadEventArgs>;
 
     /**
-     * Triggers while loading document got failed in PdfViewer.
+     * Triggers while document loading failed in PdfViewer.
      *
-     * @event
+     * @event documentLoadFailed
      * @blazorProperty 'DocumentLoadFailed'
      */
     @Event()
@@ -5137,16 +6418,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the AJAX request is failed.
      *
-     * @event
+     * @event ajaxRequestFailed
      * @blazorProperty 'AjaxRequestFailed'
      */
     @Event()
     public ajaxRequestFailed: EmitType<AjaxRequestFailureEventArgs>;
 
     /**
-     * Event triggers on successful AJAX request 
+     * Triggers on successful AJAX request.
      * 
-     * @event
+     * @event ajaxRequestSuccess
      */
      @Event()
      public ajaxRequestSuccess: EmitType<AjaxRequestSuccessEventArgs>;
@@ -5154,7 +6435,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when validation is failed.
      *
-     * @event
+     * @event validateFormFields
      * @blazorProperty 'validateFormFields'
      */
     @Event()
@@ -5163,7 +6444,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      *
-     * @event
+     * @event pageClick
      * @blazorProperty 'OnPageClick'
      */
     @Event()
@@ -5172,95 +6453,95 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when there is change in current page number.
      *
-     * @event
+     * @event pageChange
      * @blazorProperty 'PageChanged'
      */
     @Event()
     public pageChange: EmitType<PageChangeEventArgs>;
 
     /**
-     * Triggers when hyperlink in the PDF Document is clicked
+     * Triggers when a hyperlink in a PDF document is clicked.
      *
-     * @event
+     * @event hyperlinkClick
      * @blazorProperty 'OnHyperlinkClick'
      */
     @Event()
     public hyperlinkClick: EmitType<HyperlinkClickEventArgs>;
 
     /**
-     * Triggers when hyperlink in the PDF Document is hovered
+     * Triggers when hyperlink in a PDF document is hovered.
      *
-     * @event
+     * @event hyperlinkMouseOver
      * @blazorProperty 'OnHyperlinkMouseOver'
      */
     @Event()
     public hyperlinkMouseOver: EmitType<HyperlinkMouseOverArgs>;
 
     /**
-     * Triggers when there is change in the magnification value.
+     * Triggers When the magnification value changes.
      *
-     * @event
+     * @event zoomChange
      * @blazorProperty 'ZoomChanged'
      */
     @Event()
     public zoomChange: EmitType<ZoomChangeEventArgs>;
 
     /**
-     * Triggers when an annotation is added over the page of the PDF document.
+     * Triggers when an annotation is added to a PDF document's page.
      *
-     * @event
+     * @event annotationAdd
      * @blazorProperty 'AnnotationAdded'
      */
     @Event()
     public annotationAdd: EmitType<AnnotationAddEventArgs>;
 
     /**
-     * Triggers when an annotation is removed from the page of the PDF document.
+     * Triggers when an annotation is removed from a PDF document's page.
      *
-     * @event
+     * @event annotationRemove
      * @blazorProperty 'AnnotationRemoved'
      */
     @Event()
     public annotationRemove: EmitType<AnnotationRemoveEventArgs>;
 
     /**
-     * Triggers when the property of the annotation is changed in the page of the PDF document.
+     * Triggers when the annotation's property is modified on a PDF document page.
      *
-     * @event
+     * @event annotationPropertiesChange
      * @blazorProperty 'AnnotationPropertiesChanged'
      */
     @Event()
     public annotationPropertiesChange: EmitType<AnnotationPropertiesChangeEventArgs>;
 
     /**
-     * Triggers when an annotation is resized over the page of the PDF document.
+     * Triggers when an annotation is resized over the page of a PDF document.
      *
-     * @event
+     * @event annotationResize
      * @blazorProperty 'AnnotationResized'
      */
     @Event()
     public annotationResize: EmitType<AnnotationResizeEventArgs>;
 
     /**
-     * Triggers when signature is added  over the page of the PDF document.
+     * Triggers when a signature is added to a page of a PDF document.
      *
-     * @event
+     * @event addSignature
      */
     @Event()
     public addSignature: EmitType<AddSignatureEventArgs>;
 
     /**
-     * Triggers when signature is removed over the page of the PDF document.
+     * Triggers when the signature is removed from the page of a PDF document.
      *
-     * @event
+     * @event removeSignature
      */
     @Event()
     public removeSignature: EmitType<RemoveSignatureEventArgs>;
 
     /**
-     * Triggers when an signature is moved over the page of the PDF document.
+     * Triggers when a signature is moved across the page of a PDF document.
      *
-     * @event
+     * @event moveSignature
      */
     @Event()
     public moveSignature: EmitType<MoveSignatureEventArgs>;
@@ -5268,15 +6549,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when the property of the signature is changed in the page of the PDF document.
      *
-     * @event
+     * @event signaturePropertiesChange
      */
     @Event()
     public signaturePropertiesChange: EmitType<SignaturePropertiesChangeEventArgs>;
 
     /**
-     * Triggers when signature is resized over the page of the PDF document.
+     * Triggers when the signature is resized and placed on a page of a PDF document.
      *
-     * @event
+     * @event resizeSignature
      */
     @Event()
     public resizeSignature: EmitType<ResizeSignatureEventArgs>;
@@ -5284,7 +6565,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when signature is selected over the page of the PDF document.
      *
-     * @event
+     * @event signatureSelect
      */
     @Event()
     public signatureSelect: EmitType<SignatureSelectEventArgs>;
@@ -5292,7 +6573,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is selected over the page of the PDF document.
      *
-     * @event
+     * @event annotationSelect
      * @blazorProperty 'AnnotationSelected'
      */
     @Event()
@@ -5301,16 +6582,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is unselected over the page of the PDF document.
      *
-     * @event
+     * @event annotationUnSelect
      * @blazorProperty 'AnnotationUnSelect'
      */
     @Event()
     public annotationUnSelect: EmitType<AnnotationUnSelectEventArgs>;
 
     /**
-     * Triggers an event when the annotation is double click.
+     * Triggers when the annotation is double clicked.
      *
-     * @event
+     * @event annotationDoubleClick
      * @blazorProperty 'OnAnnotationDoubleClick'
      */
     @Event()
@@ -5319,7 +6600,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an annotation is moved over the page of the PDF document.
      *
-     * @event
+     * @event annotationMove
      * @blazorProperty 'AnnotationMoved'
      */
     @Event()
@@ -5328,85 +6609,85 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers while moving an annotation.
      *
-     * @event
+     * @event annotationMoving
      * @blazorProperty 'AnnotationMoving'
      */
      @Event()
      public annotationMoving: EmitType<AnnotationMovingEventArgs>;
  
     /**
-     * Triggers when mouse over the annotation object.
+     * Triggers when the mouse is moved over the annotation object.
      *
-     * @event
+     * @event annotationMouseover
      */
     @Event()
     public annotationMouseover: EmitType<AnnotationMouseoverEventArgs>;
 
     /**
-     * Triggers when mouse over the annotation object.
+     * Triggers when the user mouse moves away from the annotation object.
      *
-     * @event
+     * @event annotationMouseLeave
      */
     @Event()
     public annotationMouseLeave: EmitType<AnnotationMouseLeaveEventArgs>;
 
     /**
-     * Triggers when mouse over the page.
+     * Triggers when moving the mouse over the page.
      *
-     * @event
+     * @event pageMouseover
      */
     @Event()
     public pageMouseover: EmitType<PageMouseoverEventArgs>;
 
     /**
-     * Triggers when an imported annotations started in the PDF document.
+     * Triggers when an imported annotation started to appear in the PDF document.
      *
-     * @event
+     * @event importStart
      * @blazorProperty 'ImportStarted'
      */
     @Event()
     public importStart: EmitType<ImportStartEventArgs>;
 
     /**
-     * Triggers when an exported annotations started in the PDF Viewer.
+     * Triggers when an exported annotation started in the PDF Viewer.
      *
-     * @event
+     * @event exportStart
      * @blazorProperty 'ExportStarted'
      */
     @Event()
     public exportStart: EmitType<ExportStartEventArgs>;
 
     /**
-     * Triggers when an imports annotations succeed in the PDF document.
+     * Triggers when the annotations in a PDF document are successfully imported.
      *
-     * @event
+     * @event importSuccess
      * @blazorProperty 'ImportSucceed'
      */
     @Event()
     public importSuccess: EmitType<ImportSuccessEventArgs>;
 
     /**
-     * Triggers when an export annotations succeed in the PDF Viewer.
+     * Triggers when the annotations in a PDF document are successfully exported.
      *
-     * @event
+     * @event exportSuccess
      * @blazorProperty 'ExportSucceed'
      */
     @Event()
     public exportSuccess: EmitType<ExportSuccessEventArgs>;
 
     /**
-     * Triggers when an imports annotations failed in the PDF document.
+     * Triggers when the annotations imports in a PDF document fails.
      *
-     * @event
+     * @event importFailed
      * @blazorProperty 'ImportFailed'
      */
     @Event()
     public importFailed: EmitType<ImportFailureEventArgs>;
 
     /**
-     * Triggers when an export annotations failed in the PDF Viewer.
+     * Triggers when the annotations export in a PDF document fails.
      *
-     * @event
+     * @event exportFailed
      * @blazorProperty 'ExportFailed'
      */
     @Event()
@@ -5415,187 +6696,187 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when an text extraction is completed in the PDF Viewer.
      *
-     * @event
+     * @event extractTextCompleted
      * @blazorProperty 'ExtractTextCompleted'
      */
     @Event()
     public extractTextCompleted: EmitType<ExtractTextCompletedEventArgs>;
 
     /**
-     * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
+     * Triggers when the thumbnail in the PDF Viewer's thumbnail panel is clicked.
      *
-     * @event
+     * @event thumbnailClick
      * @blazorProperty 'OnThumbnailClick'
      */
     @Event()
     public thumbnailClick: EmitType<ThumbnailClickEventArgs>;
 
     /**
-     * Triggers an event when the bookmark is clicked in the bookmark panel of PDF Viewer.
+     * Triggers when the bookmark is clicked in the PDF Viewer's bookmark panel.
      *
-     * @event
+     * @event bookmarkClick
      * @blazorProperty 'BookmarkClick'
      */
     @Event()
     public bookmarkClick: EmitType<BookmarkClickEventArgs>;
 
     /**
-     * Triggers an event when the text selection is started.
+     * Triggers when the text selection is initiated.
      *
-     * @event
+     * @event textSelectionStart
      * @blazorProperty 'OnTextSelectionStart'
      */
     @Event()
     public textSelectionStart: EmitType<TextSelectionStartEventArgs>;
 
     /**
-     * Triggers an event when the text selection is finished.
+     * Triggers when the text selection is complete.
      *
-     * @event
+     * @event textSelectionEnd
      * @blazorProperty 'OnTextSelectionEnd'
      */
     @Event()
     public textSelectionEnd: EmitType<TextSelectionEndEventArgs>;
 
     /**
-     * Triggers an event when the download action is started.
+     * Triggers when the download action is initiated.
      *
-     * @event
+     * @event downloadStart
      * @blazorProperty 'DownloadStart'
      */
     @Event()
     public downloadStart: EmitType<DownloadStartEventArgs>;
 
     /**
-     * Triggers an event when the button is clicked.
+     * Triggers when the button is clicked.
      *
      * @deprecated This property renamed into "formFieldClick"
-     * @event
+     * @event buttonFieldClick
      * @blazorProperty 'ButtonFieldClick'
      */
     @Event()
     public buttonFieldClick: EmitType<ButtonFieldClickEventArgs>;
 
     /**
-     * Triggers an event when the form field is clicked.
+     * Triggers when the form field is selected.
      *
-     * @event
+     * @event formFieldClick
      * @blazorProperty 'FormFieldClick'
      */
     @Event()
     public formFieldClick: EmitType<FormFieldClickArgs>;
 
     /**
-     * Triggers an event when the download actions is finished.
+     * Triggers when the download actions are completed.
      *
-     * @event
+     * @event downloadEnd
      * @blazorProperty 'DownloadEnd'
      */
     @Event()
     public downloadEnd: EmitType<DownloadEndEventArgs>;
 
     /**
-     * Triggers an event when the print action is started.
+     * Triggers when the print action is initiated.
      *
-     * @event
+     * @event printStart
      * @blazorProperty 'PrintStart'
      */
     @Event()
     public printStart: EmitType<PrintStartEventArgs>;
 
     /**
-     * Triggers an event when the print actions is finished.
+     * Triggers when the print actions are completed.
      *
-     * @event
+     * @event printEnd
      * @blazorProperty 'PrintEnd'
      */
     @Event()
     public printEnd: EmitType<PrintEndEventArgs>;
 
     /**
-     * Triggers an event when the text search is started.
+     * Triggers when the text search is initiated.
      *
-     * @event
+     * @event textSearchStart
      * @blazorProperty 'OnTextSearchStart'
      */
     @Event()
     public textSearchStart: EmitType<TextSearchStartEventArgs>;
 
     /**
-     * Triggers an event when the text search is completed.
+     * Triggers when the text search is completed.
      *
-     * @event
+     * @event textSearchComplete
      * @blazorProperty 'OnTextSearchComplete'
      */
     @Event()
     public textSearchComplete: EmitType<TextSearchCompleteEventArgs>;
 
     /**
-     * Triggers an event when the text search text is highlighted.
+     * Triggers when the text search text is highlighted.
      *
-     * @event
+     * @event textSearchHighlight
      * @blazorProperty 'OnTextSearchHighlight'
      */
     @Event()
     public textSearchHighlight: EmitType<TextSearchHighlightEventArgs>;
 
     /**
-     * Triggers before the data send in to the server.
+     * Triggers before the data is sent to the server.
      *
-     * @event
+     * @event ajaxRequestInitiate
      */
     @Event()
     public ajaxRequestInitiate: EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
-     * Triggers when the comment is added for the annotation in the comment panel.
+     * Triggers when a comment for the annotation is added to the comment panel.
      *
-     * @event
+     * @event commentAdd
      * @blazorProperty 'commentAdd'
      */
     @Event()
     public commentAdd: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment is edited for the annotation in the comment panel.
+     * Triggers when the comment for the annotation in the comment panel is edited.
      *
-     * @event
+     * @event commentEdit
      * @blazorProperty 'commentEdit'
      */
     @Event()
     public commentEdit: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment is deleted for the annotation in the comment panel.
+     * Triggers when the comment for the annotation in the comment panel is deleted.
      *
-     * @event
+     * @event commentDelete
      * @blazorProperty 'commentDelete'
      */
     @Event()
     public commentDelete: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment is selected for the annotation in the comment panel.
+     * Triggers when the comment for the annotation in the comment panel is selected.
      *
-     * @event
+     * @event commentSelect
      * @blazorProperty 'commentSelect
      */
     @Event()
     public commentSelect: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers when the comment for status is changed for the annotation in the comment panel.
+     * Triggers when the annotation's comment for status is changed in the comment panel.
      *
-     * @event
+     * @event commentStatusChanged
      * @blazorProperty 'commentStatusChanged'
      */
     @Event()
     public commentStatusChanged: EmitType<CommentEventArgs>;
 
     /**
-     * Triggers the event before adding a text in the freeText annotation.
+     * Triggers before adding a text in the freeText annotation.
      *
-     * @event
+     * @event beforeAddFreeText
      * @blazorProperty 'beforeAddFreeText'
      */
     @Event()
@@ -5604,97 +6885,97 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers when focus out from the form fields.
      *
-     * @event
+     * @event formFieldFocusOut
      * @blazorProperty 'formFieldFocusOut'
      */
     @Event()
     public formFieldFocusOut: EmitType<FormFieldFocusOutEventArgs>;
 
     /**
-     * The event is triggered when a form field is added.
+     * Triggers when a form field is added.
      *
-     * @event
+     * @event formFieldAdd
      * @blazorProperty 'formFieldAdd'
      */
     @Event()
     public formFieldAdd: EmitType<FormFieldAddArgs>;
 
     /**
-     * The event is triggered when a form field is removed.
+     * Triggers when a form field is removed.
      *
-     * @event
+     * @event formFieldRemove
      * @blazorProperty 'formFieldRemove'
      */
      @Event()
      public formFieldRemove: EmitType<FormFieldRemoveArgs>;
 
     /**
-     * The event is triggered when a property of form field is changed.
+     * Triggers when a property of form field is changed.
      *
-     * @event
+     * @event formFieldPropertiesChange
      * @blazorProperty 'formFieldPropertiesChange'
      */
     @Event()
     public formFieldPropertiesChange: EmitType<FormFieldPropertiesChangeArgs>;
 
     /**
-     * The event is triggered when a mouse cursor leaves form field.
+     * Triggers when the mouse cursor leaves the form field.
      *
-     * @event
+     * @event formFieldMouseLeave
      * @blazorProperty 'formFieldMouseLeave'
      */
     @Event()
     public formFieldMouseLeave: EmitType<FormFieldMouseLeaveArgs>;
 
     /**
-     * The event is triggered when a mouse cursor is over a form field.
+     * Triggers when the mouse cursor is over a form field.
      *
-     * @event
+     * @event formFieldMouseover
      * @blazorProperty 'formFieldMouseover'
      */
      @Event()
      public formFieldMouseover: EmitType<FormFieldMouseoverArgs>;
 
     /**
-     * The event is triggered when a form field is moved.
+     * Triggers when a form field is moved.
      *
-     * @event
+     * @event formFieldMove
      * @blazorProperty 'formFieldMove'
      */
      @Event()
      public formFieldMove: EmitType<FormFieldMoveArgs>;
 
     /**
-     * The event is triggered when a form field is resized.
+     * Triggers when a form field is resized.
      *
-     * @event
+     * @event formFieldResize
      * @blazorProperty 'formFieldResize'
      */
      @Event()
      public formFieldResize: EmitType<FormFieldResizeArgs>;
 
     /**
-     * The event is triggered when a form field is selected.
+     * Triggers when a form field is selected.
      *
-     * @event
+     * @event formFieldSelect
      * @blazorProperty 'formFieldSelect'
      */
      @Event()
      public formFieldSelect: EmitType<FormFieldSelectArgs>;
 
     /**
-     * The event is triggered when a form field is unselected.
+     * Triggers when a form field is unselected.
      *
-     * @event
+     * @event formFieldUnselect
      * @blazorProperty 'formFieldUnselect'
      */
     @Event()
     public formFieldUnselect: EmitType<FormFieldUnselectArgs>;
 
     /**
-     * Triggers an event when the form field is double-clicked.
+     * Triggers when the form field is double-clicked.
      *
-     * @event
+     * @event formFieldDoubleClick
      * @blazorProperty 'formFieldDoubleClick'
      */
     @Event()
@@ -6387,6 +7668,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Focus a form field in a document by its field name or the field object.
      *
+     * @param field
      * @returns void
      */
     public focusFormField(field: any): void {
@@ -6698,6 +7980,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Destroys all managed resources used by this object.
+     * 
+     * @returns void
      */
     public destroy(): void {
         super.destroy();
@@ -6784,6 +8068,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Export annotations and returns a base64 string for both Json and XFDF formats
      *
+     * @param {AnnotationDataFormat} annotationDataFormat
      * @returns Promise<string>
      */
     public exportAnnotationsAsBase64String(annotationDataFormat: AnnotationDataFormat): Promise<string> {
@@ -6846,6 +8131,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Returns an object which represents the form field data in the specified data format.
      *
+     * @param {FormFieldDataFormat} formFieldDataFormat
      * @returns Promise<object>
      */
      public exportFormFieldsAsObject(formFieldDataFormat?: FormFieldDataFormat): Promise<object> {
@@ -6933,9 +8219,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param name
-     * @param field
-     * @param cancel
      * @param name
      * @param field
      * @param cancel
@@ -7155,8 +8438,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param isPasswordRequired
      * @param password
-     * @param isPasswordRequired
-     * @param password
      * @private
      */
     public fireDocumentLoadFailed(isPasswordRequired: boolean, password: string): void {
@@ -7166,14 +8447,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param errorStatusCode
-     * @param errorMessage
-     * @param action
-     * @param retryCount
-     * @param errorStatusCode
-     * @param errorMessage
-     * @param action
-     * @param retryCount
      * @param errorStatusCode
      * @param errorMessage
      * @param action
@@ -7190,8 +8463,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @action
-     * @data
+     * @param action
+     * @param data
      * @private
      */
     public fireAjaxRequestSuccess(action: string, data: any): any {
@@ -7223,12 +8496,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param x
-     * @param y
-     * @param pageNumber
-     * @param x
-     * @param y
-     * @param pageNumber
      * @param x
      * @param y
      * @param pageNumber
@@ -7298,8 +8565,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param fieldName
      * @param value
-     * @param fieldName
-     * @param value
      * @private
      */
     public fireFocusOutFormField(fieldName: string, value: string): void {
@@ -7310,66 +8575,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
      * @param pageNumber
      * @param index
      * @param type
@@ -7455,9 +8660,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param id
      * @param text
      * @param annotation
-     * @param id
-     * @param text
-     * @param annotation
      * @private
      */
     // eslint-disable-next-line
@@ -7472,12 +8674,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param id
      * @param text
      * @param annotation
-     * @param id
-     * @param text
-     * @param annotation
-     * @param id
-     * @param text
-     * @param annotation
      * @private
      */
     // eslint-disable-next-line
@@ -7489,9 +8685,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param id
-     * @param text
-     * @param annotation
      * @param id
      * @param text
      * @param annotation
@@ -7524,18 +8717,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param text
      * @param annotation
      * @param statusChange
-     * @param id
-     * @param text
-     * @param annotation
-     * @param statusChange
-     * @param id
-     * @param text
-     * @param annotation
-     * @param statusChange
-     * @param id
-     * @param text
-     * @param annotation
-     * @param statusChange
      * @private
      */
     // eslint-disable-next-line
@@ -7547,17 +8728,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param isColorChanged
-     * @param isOpacityChanged
-     * @param isTextChanged
-     * @param isCommentsChanged
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param multiPageCollection
      * @param pageNumber
      * @param index
      * @param type
@@ -7596,22 +8766,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param strokeColor
      * @param thickness
      * @param data
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param data
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param data
      * @private
      */
     // eslint-disable-next-line
@@ -7634,10 +8788,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param index
      * @param type
      * @param bounds
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
      * @private
      */
     // eslint-disable-next-line
@@ -7647,62 +8797,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param previousPosition
-     * @param currentPosition
      * @param pageNumber
      * @param id
      * @param type
@@ -7728,30 +8822,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param isThicknessChanged
      * @param oldProp
      * @param newProp
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param isStrokeColorChanged
-     * @param isOpacityChanged
-     * @param isThicknessChanged
-     * @param oldProp
-     * @param newProp
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param isStrokeColorChanged
-     * @param isOpacityChanged
-     * @param isThicknessChanged
-     * @param oldProp
-     * @param newProp
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param isStrokeColorChanged
-     * @param isOpacityChanged
-     * @param isThicknessChanged
-     * @param oldProp
-     * @param newProp
      * @private
      */
     // eslint-disable-next-line
@@ -7769,22 +8839,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param thickness
      * @param currentPosition
      * @param previousPosition
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param currentPosition
-     * @param previousPosition
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param opacity
-     * @param strokeColor
-     * @param thickness
-     * @param currentPosition
-     * @param previousPosition
      * @private
      */
     // eslint-disable-next-line
@@ -7794,9 +8848,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param id
-     * @param pageNumber
-     * @param signature
      * @param id
      * @param pageNumber
      * @param signature
@@ -7861,9 +8912,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param id
      * @param pageNumber
      * @param annotation
-     * @param id
-     * @param pageNumber
-     * @param annotation
      * @private
      */
     // eslint-disable-next-line
@@ -7877,9 +8925,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param id
-     * @param pageNumber
-     * @param annotation
      * @param id
      * @param pageNumber
      * @param annotation
@@ -7943,96 +8988,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param tmEndIndex
      * @param labelSettings
      * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
-     * @param pageNumber
-     * @param index
-     * @param type
-     * @param bounds
-     * @param settings
-     * @param textMarkupContent
-     * @param tmStartIndex
-     * @param tmEndIndex
-     * @param labelSettings
-     * @param multiPageCollection
      * @private
      */
     // eslint-disable-next-line
@@ -8073,12 +9028,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param annotationSettings
      * @param previousPosition
      * @param currentPosition
-     * @param pageNumber
-     * @param id
-     * @param type
-     * @param annotationSettings
-     * @param previousPosition
-     * @param currentPosition
      * @private
      */
     // eslint-disable-next-line
@@ -8087,34 +9036,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('annotationMove', eventArgs);
     }
     /**
-     * @param id
-     * @param pageNumber
-     * @param annotationType
-     * @param bounds
-     * @param annotation
-     * @param currentPosition
-     * @param mousePosition
-     * @param id
-     * @param pageNumber
-     * @param annotationType
-     * @param bounds
-     * @param annotation
-     * @param currentPosition
-     * @param mousePosition
-     * @param id
-     * @param pageNumber
-     * @param annotationType
-     * @param bounds
-     * @param annotation
-     * @param currentPosition
-     * @param mousePosition
-     * @param id
-     * @param pageNumber
-     * @param annotationType
-     * @param bounds
-     * @param annotation
-     * @param currentPosition
-     * @param mousePosition
      * @param id
      * @param pageNumber
      * @param annotationType
@@ -8228,14 +9149,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param position
      * @param text
      * @param fileName
-     * @param pageNumber
-     * @param position
-     * @param text
-     * @param fileName
-     * @param pageNumber
-     * @param position
-     * @param text
-     * @param fileName
      * @private
      */
     public fireBookmarkClick(pageNumber: number, position: number, text: string, fileName: string ): void {
@@ -8273,8 +9186,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param exportData
      * @param fileName
-     * @param exportData
-     * @param fileName
      * @private
      */
     // eslint-disable-next-line
@@ -8294,8 +9205,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('importFailed', eventArgs);
     }
     /**
-     * @param data
-     * @param errorDetails
      * @param data
      * @param errorDetails
      * @private
@@ -8336,8 +9245,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param data
      * @param fileName
-     * @param data
-     * @param fileName
      * @private
      */
     // eslint-disable-next-line
@@ -8346,8 +9253,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('exportSuccess', eventArgs);
     }
     /**
-     * @param data
-     * @param errorDetails
      * @param data
      * @param errorDetails
      * @private
@@ -8359,8 +9264,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('importFailed', eventArgs);
     }
     /**
-     * @param data
-     * @param errorDetails
      * @param data
      * @param errorDetails
      * @private
@@ -8382,8 +9285,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('extractTextCompleted', eventArgs);
     }
     /**
-     * @param searchText
-     * @param isMatchcase
      * @param searchText
      * @param isMatchcase
      * @private
@@ -8431,26 +9332,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param index
      * @param currentSelector
-     * @param index
-     * @param currentSelector
      * @private
      */
     public renderSelector(index: number, currentSelector?: AnnotationSelectorSettingsModel): void {
         this.drawing.renderSelector(index, currentSelector);
     }
     /**
-     * @param objArray
-     * @param currentSelector
-     * @param multipleSelection
-     * @param preventUpdate
-     * @param objArray
-     * @param currentSelector
-     * @param multipleSelection
-     * @param preventUpdate
-     * @param objArray
-     * @param currentSelector
-     * @param multipleSelection
-     * @param preventUpdate
      * @param objArray
      * @param currentSelector
      * @param multipleSelection
@@ -8515,16 +9402,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param pageIndex
      * @param currentSelector
      * @param helper
-     * @param diffX
-     * @param diffY
-     * @param pageIndex
-     * @param currentSelector
-     * @param helper
-     * @param diffX
-     * @param diffY
-     * @param pageIndex
-     * @param currentSelector
-     * @param helper
      * @private
      */
     // eslint-disable-next-line max-len
@@ -8541,27 +9418,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         return this.drawing.scaleSelectedItems(sx, sy, pivot);
     }
     /**
-     * @param endPoint
-     * @param obj
-     * @param point
-     * @param segment
-     * @param target
-     * @param targetPortId
-     * @param currentSelector
-     * @param endPoint
-     * @param obj
-     * @param point
-     * @param segment
-     * @param target
-     * @param targetPortId
-     * @param currentSelector
-     * @param endPoint
-     * @param obj
-     * @param point
-     * @param segment
-     * @param target
-     * @param targetPortId
-     * @param currentSelector
      * @param endPoint
      * @param obj
      * @param point
@@ -8702,8 +9558,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param angle
      * @param currentSelector
-     * @param angle
-     * @param currentSelector
      * @private
      */
     public rotate(angle: number, currentSelector?: AnnotationSelectorSettingsModel): boolean {
@@ -8774,9 +9628,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * enableServerDataBinding method \
+     * enableServerDataBinding method 
      *
-     * @returns { void }  enableServerDataBinding method .\
+     * @returns { void }  enableServerDataBinding method.
      * @param {boolean} enable - provide the node value.
      *
      * @private
@@ -8791,18 +9645,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param tx
-     * @param ty
-     * @param pageIndex
-     * @param nodeBounds
-     * @param isStamp
-     * @param isSkip
-     * @param tx
-     * @param ty
-     * @param pageIndex
-     * @param nodeBounds
-     * @param isStamp
-     * @param isSkip
      * @param tx
      * @param ty
      * @param pageIndex

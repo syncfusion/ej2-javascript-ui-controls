@@ -139,7 +139,7 @@ export class Skeleton extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of Skeleton.
      *
-     * @default '''
+     * @default ""
      */
     @Property('')
     public cssClass: string;

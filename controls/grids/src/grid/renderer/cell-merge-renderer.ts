@@ -7,6 +7,7 @@ import { CellRendererFactory } from '../services/cell-render-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { CellType } from '../base/enum';
 import { Cell } from '../models/cell';
+import { ContentRender } from './content-renderer';
 
 /**
  * `CellMergeRender` module.
@@ -32,9 +33,10 @@ export class CellMergeRender<T> {
         let visible: number = 0;
         let spannedCell: Cell<Column>;
         if (row.index > 0) {
+            const rowsObject: Row<Column>[] = this.parent.isFrozenGrid() ?
+                (this.parent.contentModule as ContentRender).tempFreezeRows : this.parent.getRowsObject();
             const cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
-                !this.parent.getRowsObject()[row.index - 1].isDataRow ? this.parent.getRowsObject()[row.index].cells :
-                this.parent.getRowsObject()[row.index - 1].cells;
+                !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
             const targetCell: Cell<T> = row.cells[parseInt(i.toString(), 10)];
             const uid: string = 'uid';
             spannedCell = cells.filter((cell: Cell<Column>) => cell.column.uid === targetCell.column[`${uid}`])[0];

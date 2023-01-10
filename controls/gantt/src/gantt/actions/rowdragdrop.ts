@@ -264,6 +264,15 @@ export class RowDD {
                                 delete droppedRecord.taskData[this.parent.taskFields.segments];
                             }
                         }
+                        if (this.treeGridData.length != 0) {
+                            for (let i: number = 0; i < this.treeGridData.length; i++) {
+                                this.treeGridData[parseInt(i.toString(), 10)].index = i;
+                                if (!isNullOrUndefined(this.treeGridData[parseInt(i.toString(), 10)].parentItem)) {
+                                    let updatedParent: any = getValue('uniqueIDCollection.' + this.treeGridData[parseInt(i.toString(), 10)].parentUniqueID, this.parent.treeGrid);
+                                    this.treeGridData[parseInt(i.toString(), 10)].parentItem.index = updatedParent.index;
+                                }
+                            }
+                        }
                         // eslint-disable-next-line
                         if (!isNullOrUndefined(draggedRecord.parentItem && this.updateParentRecords.indexOf(draggedRecord.parentItem) !== -1)) {
                             this.updateParentRecords.push(draggedRecord.parentItem);

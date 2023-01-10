@@ -11,6 +11,7 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 import { getScrollBarWidth } from '../../../src/grid/base/util';
+import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 
 Grid.Inject(Freeze, Aggregate, Edit);
 
@@ -863,6 +864,58 @@ describe('Freeze render module', () => {
             gridObj = frozenLeftHeaderElement = movableHeaderElement = frozenRightHeaderElement = null;
             frozenLeftContentElement = movableContentElement = frozenRightContentElement = null;
             frozenLeftFooterElement = movableFooterElement = frozenRightFooterElement = null;
+        });
+    });
+
+    describe('EJ2-67886 => colSpan is not working with Frozen Grid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    gridLines: 'Both',
+                    frozenRows: 2,
+                    frozenColumns: 3,
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'Order ID',
+                            width: 120,
+                            textAlign: 'Right'
+                        },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        {
+                            field: 'OrderDate',
+                            headerText: 'Order Date',
+                            width: 130,
+                            format: 'yMd',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                        { field: 'ShipName', width: 150 },
+                        { field: 'ShipCity', width: 150 },
+                    ],
+                    queryCellInfo: function (args: QueryCellInfoEventArgs) {
+                        if (args.column.field == 'CustomerID') {
+                            args.colSpan = 2;
+                        }
+                        if (args.column.field == 'Freight') {
+                            args.colSpan = 2;
+                        }
+                        if (args.column.field == 'ShipName') {
+                            args.colSpan = 2;
+                        }
+                    }
+                }, done);
+        });
+        it('Ensure colSpan for the cell', () => {
+            expect((gridObj.getContentTable() as HTMLTableElement).rows[0].cells[1].getAttribute('colSpan')).toBe('2');
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

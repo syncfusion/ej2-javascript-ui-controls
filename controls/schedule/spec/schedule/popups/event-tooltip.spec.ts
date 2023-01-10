@@ -391,6 +391,56 @@ describe('Schedule event tooltip module', () => {
         });
     });
 
+    describe('Tooltip time format checking ', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 14, 30),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 9, 31), currentView: 'Week',
+                eventSettings: { enableTooltip: true }
+            };
+            schObj = util.createSchedule(schOptions, eventData, done);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking tooltip time after changing time format', (done: Function) => {
+            schObj.dataBound = function () {
+                const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+                expect(target.querySelector('.e-subject').innerHTML).toBe('Paris');
+                expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+                util.triggerMouseEvent(target, 'mouseover');
+                const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+                expect(tooltipEle.querySelector('.e-subject').innerHTML).toBe('Paris');
+                expect(tooltipEle.querySelector('.e-location').innerHTML).toBe('');
+                expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('October 29, 2017');
+                expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('10:00 - 14:30');
+                done();
+            };
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect(target.querySelector('.e-subject').innerHTML).toBe('Paris');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            expect(tooltipEle.querySelector('.e-subject').innerHTML).toBe('Paris');
+            expect(tooltipEle.querySelector('.e-location').innerHTML).toBe('');
+            expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('October 29, 2017');
+            expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('10:00 AM - 2:30 PM');
+            util.triggerMouseEvent(target, 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            schObj.timeFormat = 'HH:mm';
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

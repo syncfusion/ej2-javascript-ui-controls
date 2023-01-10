@@ -231,7 +231,7 @@ export class Page implements IAction {
         const prevPage: number = this.pageSettings.currentPage;
         const args: Object = {
             cancel: false, requestType: 'paging', previousPage: prevPage,
-            currentPage: e.currentPage, type: events.actionBegin
+            currentPage: e.currentPage, pageSize: gObj.pageSettings.pageSize, type: events.actionBegin
         };
         if (!this.isCancel) {
             this.pageSettings.currentPage = e.currentPage;

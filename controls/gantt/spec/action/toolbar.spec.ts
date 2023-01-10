@@ -317,6 +317,58 @@ describe('Gantt toolbar support', () => {
             ganttObj.toolbarModule.destroy();
         });
     });
+    describe('Zoomin action and zoomtofit action', () => {
+        Gantt.Inject(Edit, Toolbar, Selection, Filter);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowSelection: true,
+                    allowFiltering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                        segments: 'Segments'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Check Zoom In action', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'AfterZoomToProject') {
+                    expect(args.requestType).toBe('AfterZoomToProject');
+                }
+            };
+            let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
+            triggerMouseEvent(zoomIn, 'click');
+            let zoomToFit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomtofit') as HTMLElement;
+            triggerMouseEvent(zoomToFit, 'click');
+        });
+    });
      describe('Gantt toolbar action', () => {
         Gantt.Inject(Edit, Toolbar, Selection, Filter);
         let ganttObj: Gantt;

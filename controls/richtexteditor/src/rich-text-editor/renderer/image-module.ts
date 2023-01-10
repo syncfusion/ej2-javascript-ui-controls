@@ -487,6 +487,7 @@ export class Image {
         });
     }
     private resizing(e: PointerEvent | TouchEvent): void {
+        if (!this.parent) { this.cancelResizeAction(); return; }
         if (this.imgEle.offsetWidth >= this.parent.getInsertImgMaxWidth()) {
             this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
         } else if (isNOU(this.parent.insertImageSettings.maxHeight)) {

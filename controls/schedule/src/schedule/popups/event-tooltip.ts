@@ -108,13 +108,8 @@ export class EventTooltip {
             startMonthDate = util.capitalizeFirstWord(startMonthDate, 'single');
             startMonthYearDate = util.capitalizeFirstWord(startMonthYearDate, 'single');
             endMonthYearDate = util.capitalizeFirstWord(endMonthYearDate, 'single');
-            const skeleton: string = 'short';
-            const startTime: string = globalize.formatDate(eventStart, {
-                type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
-            });
-            const endTime: string = globalize.formatDate(eventEnd, {
-                type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
-            });
+            const startTime: string = this.parent.getTimeString(eventStart as Date);
+            const endTime: string = this.parent.getTimeString(eventEnd as Date);
             let tooltipDetails: string;
             if (startDate.getTime() === endDate.getTime()) {
                 tooltipDetails =

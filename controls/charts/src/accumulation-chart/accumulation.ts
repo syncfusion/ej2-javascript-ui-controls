@@ -1940,6 +1940,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
             this.element.classList.remove('e-accumulationchart-focused');
+            document.getElementById(this.element.id + 'Keyboard_accumulationchart_focus').remove();
             this.removeSvg();
             this.svgObject = null;
         }

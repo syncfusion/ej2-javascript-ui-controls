@@ -68,6 +68,8 @@ export class ContentRender implements IRenderer {
     private initialPageRecords: Object;
     private isInfiniteFreeze: boolean = false;
     private useGroupCache: boolean = false;
+    /** @hidden */
+    public tempFreezeRows: Row<Column>[] = [];
 
     private rafCallback: Function = (args: NotifyArgs) => {
         const arg: NotifyArgs = args;
@@ -288,6 +290,7 @@ export class ContentRender implements IRenderer {
         gObj.notify(events.destroyChildGrid, {});
         this.rowElements = [];
         this.rows = [];
+        this.tempFreezeRows = [];
         const fCont: Element = this.getPanel().querySelector('.' + literals.frozenContent);
         const mCont: HTMLElement = this.getPanel().querySelector('.' + literals.movableContent) as HTMLElement;
         const cont: HTMLElement = this.getPanel().querySelector('.' + literals.content) as HTMLElement;
@@ -413,6 +416,9 @@ export class ContentRender implements IRenderer {
         }
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             this.rows.push(modelData[parseInt(i.toString(), 10)]);
+            if (isFrozenGrid) {
+                this.tempFreezeRows.push(modelData[parseInt(i.toString(), 10)]);
+            }
             if (this.parent.groupSettings.enableLazyLoading && !this.useGroupCache && this.parent.groupSettings.columns.length) {
                 (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
                     this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage].push(
@@ -1218,7 +1224,8 @@ export class ContentRender implements IRenderer {
                     this.refreshImmutableContent(i, tr, newRowObjs[parseInt(i.toString(), 10)]);
                 } else {
                     const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, gObj);
-                    const modelData: Row<Column>[] = this.generator.generateRows([dataSource[parseInt(i.toString(), 10)]]);
+                    const args: Object = { startIndex: i };
+                    const modelData: Row<Column>[] = this.generator.generateRows([dataSource[parseInt(i.toString(), 10)]], args);
                     newRowObjs.push(modelData[0]);
                     const tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
                     tbody.appendChild(tr);

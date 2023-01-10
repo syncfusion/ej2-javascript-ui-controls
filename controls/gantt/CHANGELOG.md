@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.43 (2023-01-10)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#I426170` - Incorrect request type in zooming action has been fixed.
+- `#FB39646` - Incorrect index value during row drag and drop has been fixed.
+
 ## 20.4.42 (2023-01-04)
 
 ### Gantt

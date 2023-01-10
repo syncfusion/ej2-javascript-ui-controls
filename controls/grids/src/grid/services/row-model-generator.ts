@@ -31,6 +31,9 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         const rows: Row<Column>[] = [];
         let startIndex: number = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling && args ? this.getInfiniteIndex(args) : startIndex;
+        if (this.parent.enableImmutableMode && args && args.startIndex) {
+            startIndex = args.startIndex;
+        }
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
             rows[parseInt(i.toString(), 10)] = this.generateRow(data[parseInt(i.toString(), 10)], startIndex);
         }

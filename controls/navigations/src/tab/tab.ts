@@ -604,9 +604,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.tbObj = null;
         }
         this.unWireEvents();
-        ['role', 'aria-disabled', 'aria-activedescendant', 'tabindex', 'aria-orientation', 'aria-owns'].forEach((val: string): void => {
-            this.element.removeAttribute(val);
-        });
+        this.element.removeAttribute('aria-disabled');
         this.expTemplateContent();
         if (!this.isTemplate) {
             while (this.element.firstElementChild) {
@@ -687,7 +685,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const css: Str = (name === 'msie') ? 'e-ie' : (name === 'edge') ? 'e-edge' : (name === 'safari') ? 'e-safari' : '';
         setStyle(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
         this.setCssClass(this.element, this.cssClass, true);
-        attributes(this.element, { role: 'tablist', 'aria-disabled': 'false', 'aria-activedescendant': '', 'aria-owns': this.element.id + '_' + 'tab_header_items' });
+        attributes(this.element, {  'aria-disabled': 'false' });
         this.setCssClass(this.element, css, true);
         this.updatePopAnimationConfig();
     }
@@ -788,8 +786,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 hdrItems.forEach((item: string, index: number) => {
                     this.lastIndex = index;
                     const attr: object = {
-                        className: CLS_ITEM, id: CLS_ITEM + this.tabId + '_' + index,
-                        attrs: { role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-selected': 'false' }
+                        className: CLS_ITEM, id: CLS_ITEM + this.tabId + '_' + index
                     };
                     const txt: Str = this.createElement('span', {
                         className: CLS_TEXT, innerHTML: item, attrs: { 'role': 'presentation' }
@@ -797,7 +794,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     const cont: Str = this.createElement('div', {
                         className: CLS_TEXT_WRAP, innerHTML: txt + this.btnCls.outerHTML
                     }).outerHTML;
-                    const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, innerHTML: cont, attrs: { tabIndex: '-1' } });
+                    const wrap: HTEle = this.createElement('div', {
+                        className: CLS_WRAP, innerHTML: cont,
+                        attrs: { role: 'tab', tabIndex: '-1', 'aria-selected': 'false', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index }
+                    });
                     tabItems.appendChild(this.createElement('div', attr));
                     selectAll('.' + CLS_ITEM, tabItems)[index].appendChild(wrap);
                 });
@@ -816,15 +816,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(<HTEle>this.hdrEle);
-        attributes(this.hdrEle, { 'aria-label': 'tab-header' });
-        this.updateOrientationAttribute();
+        attributes(this.hdrEle, { role: 'tablist' });
         this.setCloseButton(this.showCloseButton);
         const toolbarHeader: HTEle = this.tbObj.element.querySelector('.' + CLS_TB_ITEMS);
         if (!isNOU(toolbarHeader)) {
             if (isNOU(toolbarHeader.id) || toolbarHeader.id === '') {
                 toolbarHeader.id = this.element.id + '_' +  'tab_header_items';
             }
-            this.element.setAttribute('aria-owns', toolbarHeader.id);
         }
     }
     private renderContent(): void {
@@ -915,7 +913,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
             }
             const tabIndex : string =  isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
-            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex  };
+            const wrapAttrs: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex , role: 'tab', 'aria-selected': 'false' };
             tCont.appendChild(this.btnCls.cloneNode(true));
             const wrap: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAttrs });
             wrap.appendChild(tCont);
@@ -925,7 +923,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.itemIndexArray.splice((index + i), 0, CLS_ITEM + this.tabId + '_' + this.lastIndex);
             }
             const attrObj: Object = {
-                id: CLS_ITEM + this.tabId + '_' + this.lastIndex, role: 'tab', 'aria-selected': 'false'
+                id: CLS_ITEM + this.tabId + '_' + this.lastIndex
             };
             const tItem: { [key: string]: {} } = { htmlAttributes: attrObj, template: wrap };
             tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden + ' '
@@ -953,6 +951,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (tabHeader) {
             const tabItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, tabHeader);
             [].slice.call(tabItems).forEach((node: HTMLElement) => node.classList.remove(CLS_ACTIVE));
+            [].slice.call(tabItems).forEach((node: HTMLElement) => node.firstElementChild.setAttribute('aria-selected', 'false'));
         }
     }
     private checkPopupOverflow(ele: HTEle): boolean {
@@ -993,9 +992,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.isPopup = true;
         }
         return selectAll('.' + CLS_TB_ITEM, this.tbItems).length - 1;
-    }
-    private updateOrientationAttribute(): void {
-        attributes(this.element, { 'aria-orientation': (this.isVertical() ? 'vertical' : 'horizontal') });
     }
     private setCloseButton(val: boolean): void {
         const trg: Element = select('.' + CLS_HEADER, this.element);
@@ -1282,7 +1278,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }
         }
         this.addVerticalClass();
-        this.updateOrientationAttribute();
         this.setActiveBorder();
         this.focusItem();
     }
@@ -1457,20 +1452,18 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!this.isTemplate) {
             const prev: HTEle = this.tbItem[this.prevIndex];
             if (!isNOU(prev)) {
-                prev.removeAttribute('aria-controls');
+                prev.firstElementChild.removeAttribute('aria-controls');
             }
-            attributes(trg, { 'aria-controls': CLS_CONTENT + this.tabId + '_' + value });
+            attributes(trg.firstElementChild, { 'aria-controls': CLS_CONTENT + this.tabId + '_' + value });
         }
         const id: Str = trg.id;
         this.removeActiveClass();
         trg.classList.add(CLS_ACTIVE);
-        this.tbItem[this.prevIndex].setAttribute('aria-selected', 'false');
-        trg.setAttribute('aria-selected', 'true');
+        trg.firstElementChild.setAttribute('aria-selected', 'true');
         const no: number = Number(this.extIndex(id));
         if (isNOU(this.prevActiveEle)) {
             this.prevActiveEle = CLS_CONTENT + this.tabId + '_' + no;
         }
-        attributes(this.element, { 'aria-activedescendant': id });
         if (this.isTemplate) {
             if (select('.' + CLS_CONTENT, this.element).children.length > 0) {
                 const trg: HTEle = this.findEle(select('.' + CLS_CONTENT, this.element).children, CLS_CONTENT + this.tabId + '_' + no);
@@ -2120,7 +2113,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     ((<string>textValue).length === 0) && !isNOU(item.header) && isNOU(item.header.iconCss))) {
                     if (tabItems[place]) {
                         if (isNOU(item.id)) {
-                            item.id = TABITEMPREFIX + (lastEleIndex + place).toString();
+                            item.id = CLS_ITEM + this.tabId + '_' + TABITEMPREFIX + (lastEleIndex + place).toString();
                         }
                         (tabItems[place] as Record<string, any>).htmlAttributes['data-id'] = item.id;
                     }
@@ -2532,7 +2525,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     }
                 }
                 const tabIndex: string = isNOU(item.tabIndex) ? '-1' : item.tabIndex.toString();
-                const wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex};
+                const wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: tabIndex, 'data-tabindex': tabIndex, role: 'tab', 'aria-selected': 'true'};
                 tConts.appendChild(this.btnCls.cloneNode(true));
                 const wraper: HTEle = this.createElement('div', { className: CLS_WRAP, attrs: wrapAtt });
                 wraper.appendChild(tConts);
@@ -2578,11 +2571,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             detach(element);
             detach(detachContent);
             const attr: object = {
-                className: CLS_TB_ITEM + ' ' + CLS_TEMPLATE + ' ' + CLS_ACTIVE, id: CLS_ITEM + this.tabId + '_' + index,
-                attrs: {
-                    role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index,
-                    'aria-disabled': 'false', 'aria-selected': 'true'
-                }
+                className: CLS_TB_ITEM + ' ' + CLS_TEMPLATE + ' ' + CLS_ACTIVE, id: CLS_ITEM + this.tabId + '_' + index
             };
             const txtString: Str = this.createElement('span', {
                 className: CLS_TEXT, innerHTML: header, attrs: { 'role': 'presentation' }
@@ -2592,7 +2581,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             }).outerHTML;
             const tabIndex: string = element.firstElementChild.getAttribute('data-tabindex'); 
             const wrap: HTEle = this.createElement('div', {
-                className: CLS_WRAP, innerHTML: conte, attrs: { tabIndex: tabIndex, 'data-tabindex': tabIndex }  });
+                className: CLS_WRAP, innerHTML: conte,
+                attrs: { tabIndex: tabIndex, 'data-tabindex': tabIndex, role: 'tab', 'aria-controls': CLS_CONTENT + this.tabId + '_' + index, 'aria-selected': 'true' }
+            });
             tabItems.insertBefore(this.createElement('div', attr), tabItems.children[index + 1]);
             this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wrap);
             const crElem: HTEle = this.createElement('div', { innerHTML: mainContents });

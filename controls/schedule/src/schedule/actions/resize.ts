@@ -457,7 +457,7 @@ export class Resize extends ActionBase {
         clnTop = isTop ? Math.floor(clnTop / slotInterval) * slotInterval : clnTop;
         clnHeight = clnTop + clnHeight >= viewElement.scrollHeight ? viewElement.scrollHeight - clnTop :
             Math.ceil(clnHeight / slotInterval) * slotInterval;
-        if(!isTop && this.actionObj.clone.offsetTop + clnHeight >= this.parent.getContentTable().offsetHeight){
+        if (!isTop && this.actionObj.clone.offsetTop + clnHeight >= this.parent.getContentTable().offsetHeight) {
             clnHeight = this.parent.getContentTable().offsetHeight - this.actionObj.clone.offsetTop;
         }
         const styles: Record<string, any> = {

@@ -505,9 +505,10 @@ export class Table {
                 const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                const pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + this.parent.element.getBoundingClientRect().left + args.clientX : args.pageX;
                 const pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
                     this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
-                this.quickToolObj.tableQTBar.showPopup(args.pageX, pageY, target as Element);
+                this.quickToolObj.tableQTBar.showPopup(pageX, pageY, target as Element);
                 this.parent.formatter.editorManager.nodeSelection.restore();
             } else {
                 this.hideTableQuickToolbar();

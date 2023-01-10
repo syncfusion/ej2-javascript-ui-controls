@@ -760,4 +760,35 @@ describe('Paging module', () => {
             gridObj = actionBegin = actionComplete = null;
         });
     });
+    describe('EJ2-57783 Need to add selected page size in the page event argument', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    allowPaging: true,
+                    dataSource: data,
+                    allowSorting: true,
+                    height: 300,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    pageSettings: {
+                        currentPage: 2, pageCount: 4,
+                        enableQueryString: true, pageSizes: [10, 20, 30, 40]
+                    },
+                }, done);
+        });
+        it('pagesizes value changed to 30 and check pagesize in actionBegin args', (done: Function) => {
+            let actionBegin = (args?: any): void => {
+                    expect(args.pageSize).toBe(30);
+                }
+                done();
+            gridObj.actionBegin = actionBegin;
+            (<any>gridObj.pagerModule).pagerObj.element.querySelector('.e-dropdownlist').ej2_instances[0].value = 30;
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

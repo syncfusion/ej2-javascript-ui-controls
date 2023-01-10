@@ -13970,7 +13970,7 @@ export class Editor {
             if(isNullOrUndefined(inline)){
                 inline = previousNode;
             }
-            if((inline as CommentCharacterElementBox).commentType == 0){
+            if(!isNullOrUndefined(inline) && (inline as CommentCharacterElementBox).commentType == 0){
                 previousNode = inline.previousNode;
             }
             if (inline) {
@@ -14940,6 +14940,8 @@ export class Editor {
                 inline = inline.nextNode;
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 0);
+                selection.start.setPositionParagraph(inline.line, offset);
+                selection.end.setPositionParagraph(inline.line, offset);
             }
             if (inline.length === 1 && inline.nextNode instanceof BookmarkElementBox
                 && inline.previousNode instanceof BookmarkElementBox) {
@@ -15051,6 +15053,12 @@ export class Editor {
             // }
         } else {
             this.singleDeleteInternal(selection, isRedoing, paragraph);
+        }
+        let line: LineWidget = selection.start.currentWidget;
+        let elementInfo: ElementInfo = line.getInline(selection.start.offset + 1, 0);
+        if (elementInfo.element instanceof BookmarkElementBox) {
+            selection.start.offset++;
+            selection.end.offset++;
         }
     }
     private singleDeleteInternal(selection: Selection, isRedoing: boolean, paragraph: ParagraphWidget): void {

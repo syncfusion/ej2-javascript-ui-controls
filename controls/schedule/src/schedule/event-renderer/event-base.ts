@@ -495,9 +495,6 @@ export class EventBase {
 
     public removeSelectedAppointmentClass(): void {
         const selectedAppointments: Element[] = this.getSelectedAppointments();
-        for (const appointment of selectedAppointments) {
-            appointment.setAttribute('aria-pressed', 'false');
-        }
         removeClass(selectedAppointments, cls.APPOINTMENT_BORDER);
         if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
             removeClass(selectedAppointments, cls.AGENDA_SELECTED_CELL);
@@ -505,9 +502,6 @@ export class EventBase {
     }
 
     public addSelectedAppointments(cells: Element[]): void {
-        for (const cell of cells) {
-            cell.setAttribute('aria-pressed', 'true');
-        }
         if (this.parent.currentView !== 'MonthAgenda') {
             this.parent.removeSelectedClass();
         }
@@ -1067,7 +1061,7 @@ export class EventBase {
             className: cls.BLOCK_APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.parent.eventFields.id],
-                'aria-disabled': 'true', 'aria-pressed': 'false'
+                'aria-disabled': 'true'
             }
         });
         let templateElement: HTMLElement[];

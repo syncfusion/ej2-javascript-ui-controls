@@ -5398,6 +5398,64 @@ describe('EJ2-62907-Checking rowSelected event should have rowIndexes when singl
     });
 });
 
+describe('EJ2-67746-Checking rowSelected, rowDeselected event should not have cancel property', () => {
+    let gridObj: Grid;
+    let rowSelected: (e?: Object) => void;
+    let rowSelecting: (e?: Object) => void;
+    let rowDeselected: (e?: Object) => void;
+    let rowDeselecting: (e?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { type: "Multiple", enableSimpleMultiRowSelection: true },
+                rowSelected: rowSelected,
+                rowSelecting: rowSelecting,
+                rowDeselected: rowDeselected,
+                rowDeselecting: rowDeselecting,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('Checking rowSelected cancel property', () => {
+        let rowSelected = (e: any) => {
+            expect(e.cancel).toBeUndefined();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
+    });
+    it('Checking rowSelecting cancel property', () => {
+        let rowSelecting = (e: any) => {
+            expect(e.cancel).toBeFalsy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
+    });
+    it('Checking rowDeselected cancel property', () => {
+        let rowDeselected = (e: any) => {
+            expect(e.cancel).toBeUndefined();
+        };
+        gridObj.rowDeselected = rowDeselected;
+        (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
+    });
+    it('Checking rowDeselecting cancel property', () => {
+        let rowDeselecting = (e: any) => {
+            expect(e.cancel).toBeFalsy();
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('EJ2-65110 - Enter and shiftEnter key functionality with template column', () => {
     let gridObj: Grid;
     let rows: Element[];

@@ -398,6 +398,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public onPropertyChanged(newProp: PagerModel, oldProp: PagerModel): void {
         if (this.isDestroyed) { return; }
+        if (((newProp.pageSize as number | string) === this.getLocalizedLabel('All')) && oldProp.pageSize === this.totalRecordsCount) {
+            this.pageSize = this.totalRecordsCount;
+            return;
+        }
         if (newProp.pageCount !== oldProp.pageCount) {
             this.containerModule.refreshNumericLinks();
             this.containerModule.refresh();

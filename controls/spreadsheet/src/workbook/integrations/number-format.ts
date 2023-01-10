@@ -350,8 +350,8 @@ export class WorkbookNumberFormat {
             if (isNullOrUndefined(custFormat[2])) {
                 cell.format = custFormat[0];
             } else {
-                cell.format = custFormat[2] + '0';
-                return this.processCustomNumberFormat(cell, rowIdx, colIdx, td).split('0').join('');
+                cell.format = custFormat[2];
+                return this.processCustomNumberFormat(cell, rowIdx, colIdx, td);
             }
         } else if (isNumber(cellValue)) {
             cell.format = custFormat[1];
@@ -484,7 +484,7 @@ export class WorkbookNumberFormat {
             if (!isFormatted) {
                 formattedText = this.getFormattedNumber(customFormat, cellValue);
             }
-            if (customFormat != null && customFormat.split('.')[0].indexOf('#') > -1 && cellValue > 0 && cellValue < 1) {
+            if (customFormat != null && !customFormat.split('.')[0].includes('0') && cellValue > 0 && cellValue < 1) {
                 formattedText = formattedText.toString().replace(/^0+/, '');
             }
         }

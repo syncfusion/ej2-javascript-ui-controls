@@ -491,5 +491,32 @@ describe('Pager base module', () => {
             pagerObj = elem = null;
         });
     });
-    
+    describe('pager onproperty changed with value `All` ', () => {
+        let pagerObj: Pager;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager(
+                {
+                    totalRecordsCount: 100, currentPage: 8, pageCount: 5, pageSize: 100,
+                    enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
+                    enableRtl: true, enableQueryString: true, customText: 'sheet',
+                    created: created
+                });
+            pagerObj.appendTo('#Pager');
+        });
+
+        it('pageSize testing should has value of total records', () => {
+            (pagerObj.pageSize as any) = 'All';
+            pagerObj.dataBind();
+            expect(pagerObj.pageSize).toBe(100);
+        });
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
 });

@@ -296,6 +296,7 @@ export class NormalEdit {
                 return;
             }
         }
+        gObj.editModule.resetMovableContentValidation();
     }
 
     private destroyElements(): void {
@@ -479,6 +480,7 @@ export class NormalEdit {
                 if (gObj.editSettings.mode !== 'Dialog') {
                     gObj.selectRow(this.rowIndex);
                 }
+                gObj.editModule.resetMovableContentValidation();
                 gObj.trigger(events.actionComplete, closeEditArgs);
             });
     }

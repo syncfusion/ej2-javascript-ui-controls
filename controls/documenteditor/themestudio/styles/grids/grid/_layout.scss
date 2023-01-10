@@ -900,7 +900,10 @@
       border-color: $grid-dragcell-border-color;
     }
 
-    .e-gridcontent .e-rowdragdrop.e-lastrowcell {
+    .e-gridcontent .e-rowdragdrop.e-lastrowcell,
+    .e-gridcontent .e-recordpluscollapse.e-lastrowcell,
+    .e-gridcontent .e-indentcell.e-lastrowcell,
+    .e-gridcontent .e-groupcaption.e-lastrowcell {
       border-bottom-width: $grid-border-bottom-width;
     }
 
@@ -1697,7 +1700,7 @@
 
     &.e-default tr {
       & td:first-child,
-      & th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border),
+      & :not(.e-rtl) th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border),
       & th.e-detailheadercell:first-child,
       & th.e-filterbarcell:first-child:not(.e-filterbarcell.e-frozen-left-border) {
         border-left-width: 0;
@@ -3667,7 +3670,12 @@
 
       .e-movablecontent {
         height: inherit;
-        overflow: hidden;
+        overflow-x: auto;
+        scrollbar-width: none; /* firefox */
+      }
+
+      .e-movablecontent::-webkit-scrollbar {
+        display: none; /* safari, chrome and edge */
       }
 
       .e-frozencontent {

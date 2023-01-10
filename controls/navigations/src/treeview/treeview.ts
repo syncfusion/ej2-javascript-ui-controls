@@ -2417,7 +2417,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private clickHandler(event: TapEventArgs): void {
-        let target: Element = <Element>event.originalEvent.target;
+        let target: Element = Browser.isDevice ? document.elementFromPoint(event.originalEvent.changedTouches[0].clientX, event.originalEvent.changedTouches[0].clientY) : <Element>event.originalEvent.target;
         EventHandler.remove(this.element, 'contextmenu', this.preventContextMenu);
         if (!target || this.dragStartAction) {
             return;

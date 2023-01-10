@@ -1432,7 +1432,7 @@ export function getLabelText(currentPoint: Points, series: Series, chart: Chart)
         break;
 
     }
-    if (labelFormat && !currentPoint.text) {
+    if ((labelFormat || chart.useGroupingSeparator) && !currentPoint.text) {
         series.yAxis.format = chart.intl.getNumberFormat({
             format: customLabelFormat ? '' : labelFormat,
             useGrouping: chart.useGroupingSeparator

@@ -304,7 +304,7 @@ export class TableResizer {
                 if (!isNullOrUndefined(widget)) {
                     break;
                 }
-                if (this.documentHelper.owner.layoutType === 'Pages') {
+                if (this.documentHelper.owner.layoutType === 'Pages' && this.viewer.owner.enableHeaderAndFooter) {
                 const body: BodyWidget = currentPage.headerWidget;
                 widget = body.getTableCellWidget(cursorPoint);
                 if (!isNullOrUndefined(widget)) {

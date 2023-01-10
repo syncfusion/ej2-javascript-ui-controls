@@ -240,43 +240,52 @@ export class InsertHtml {
                 tempSpan.parentNode.replaceChild(fragment, tempSpan);
             }
         } else {
-            this.insertTempNode(range, node, nodes, nodeCutter, editNode);
-            let isFirstTextNode: boolean = true;
-            let isPreviousInlineElem: boolean; let paraElm: HTMLElement; let previousParent: HTMLElement;
-            if (!this.contentsDeleted) {
-                range.deleteContents();
+            let parentElem: Node = range.startContainer;
+            while (!isNOU(parentElem) && parentElem.nodeName !== 'PRE' && parentElem !== editNode ) {
+                parentElem = parentElem.parentElement as Node;
             }
-            while (node.firstChild) {
-                if (node.firstChild.nodeName === '#text' && node.firstChild.textContent.trim() === '') {
-                    detach(node.firstChild); continue;
+            if (!isNOU(node) && !isNOU(parentElem) && parentElem.nodeName === 'PRE') {
+                range.insertNode(node);
+                lastSelectionNode = node.lastChild;
+            } else {
+                this.insertTempNode(range, node, nodes, nodeCutter, editNode);
+                let isFirstTextNode: boolean = true;
+                let isPreviousInlineElem: boolean; let paraElm: HTMLElement; let previousParent: HTMLElement;
+                if (!this.contentsDeleted) {
+                    range.deleteContents();
                 }
-                if (node.firstChild.nodeName === '#text' && isFirstTextNode ||
-                (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0 && isFirstTextNode)) {
-                    lastSelectionNode = node.firstChild;
-                    if (isNOU((node as HTMLElement).previousElementSibling)) {
-                        const firstParaElm: HTMLElement = createElement('p');
-                        (node as HTMLElement).parentElement.insertBefore(firstParaElm, node);
+                while (node.firstChild) {
+                    if (node.firstChild.nodeName === '#text' && node.firstChild.textContent.trim() === '') {
+                        detach(node.firstChild); continue;
                     }
-                    (node as HTMLElement).previousElementSibling.appendChild(node.firstChild);
-                } else {
-                    lastSelectionNode = node.firstChild;
-                    if (node.firstChild.nodeName === '#text' ||
-                    (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
-                        if (!isPreviousInlineElem) {
-                            paraElm = createElement('p'); paraElm.appendChild(node.firstChild);
-                            fragment.appendChild(paraElm);
-                        } else {
-                            previousParent.appendChild(node.firstChild);
-                            fragment.appendChild(previousParent);
+                    if (node.firstChild.nodeName === '#text' && isFirstTextNode ||
+                    (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0 && isFirstTextNode)) {
+                        lastSelectionNode = node.firstChild;
+                        if (isNOU((node as HTMLElement).previousElementSibling)) {
+                            const firstParaElm: HTMLElement = createElement('p');
+                            (node as HTMLElement).parentElement.insertBefore(firstParaElm, node);
                         }
-                        previousParent = paraElm; isPreviousInlineElem = true;
+                        (node as HTMLElement).previousElementSibling.appendChild(node.firstChild);
                     } else {
-                        fragment.appendChild(node.firstChild); isPreviousInlineElem = false;
+                        lastSelectionNode = node.firstChild;
+                        if (node.firstChild.nodeName === '#text' ||
+                        (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
+                            if (!isPreviousInlineElem) {
+                                paraElm = createElement('p'); paraElm.appendChild(node.firstChild);
+                                fragment.appendChild(paraElm);
+                            } else {
+                                previousParent.appendChild(node.firstChild);
+                                fragment.appendChild(previousParent);
+                            }
+                            previousParent = paraElm; isPreviousInlineElem = true;
+                        } else {
+                            fragment.appendChild(node.firstChild); isPreviousInlineElem = false;
+                        }
+                        isFirstTextNode = false;
                     }
-                    isFirstTextNode = false;
                 }
+                node.parentNode.replaceChild(fragment, node);
             }
-            node.parentNode.replaceChild(fragment, node);
         }
         if (lastSelectionNode.nodeName === '#text') {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);

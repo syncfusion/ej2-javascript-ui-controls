@@ -87,7 +87,7 @@ describe('EJ2-56416 ->', () => {
         expect(cell.textContent).toBe('5-10');
         expect(sheet.rows[12].cells[0].format).toBeUndefined();
         helper.edit('B13', '5-10');
-        expect(sheet.rows[12].cells[1].value).toBe('44691');
+        expect(sheet.rows[12].cells[1].value).toBe('45056');
         expect(sheet.rows[12].cells[1].format).toBe('dd-MMM');
         done();
     });

@@ -1967,7 +1967,7 @@ export class Renderer {
         if (!isBidiTable) {
             isLastCell = tableCell.cellIndex === tableCell.ownerRow.childWidgets.length - 1;
         } else {
-            isLastCell = tableCell.cellIndex === 0;
+            isLastCell = tableCell.columnIndex === 0;
         }
         let prevRowSpannedCells: TableCellWidget[] = (tableCell.containerWidget as TableRowWidget).getPreviousRowSpannedCells();
         let isAffectedByRowSpan: boolean = false;
@@ -2052,7 +2052,7 @@ export class Renderer {
         let left: number = cellWidget.x - leftMargin - lineWidth;
         let topMargin: number = (cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth);
         let top: number = cellWidget.y - topMargin;
-        let width: number = cellWidget.width + leftMargin + cellWidget.margin.right + lineWidth;
+        let width: number = cellWidget.width + leftMargin + cellWidget.margin.right + lineWidth / 2;
         if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
             let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
             bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';

@@ -60,7 +60,7 @@ export interface SkeletonModel extends ComponentModel{
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of Skeleton.
      *
-     * @default '''
+     * @default ""
      */
     cssClass?: string;
 

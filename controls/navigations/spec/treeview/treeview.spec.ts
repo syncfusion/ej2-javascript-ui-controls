@@ -12079,6 +12079,7 @@ describe('TreeView control', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
             stopImmediatePropagation: (): void => {},
+            changedTouches: [{clientX:0,clientY:0}],
             target: null,
             type: null,
         };
@@ -12110,6 +12111,8 @@ describe('TreeView control', () => {
             expect(treeObj.touchExpandObj.isDestroyed).toBe(false);
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            mouseEventArgs.changedTouches[0].clientX = mouseEventArgs.target.offsetLeft;
+            mouseEventArgs.changedTouches[0].clientY = mouseEventArgs.target.offsetTop;
             treeObj.touchEditObj.tap(tapEvent);
             tapEvent.tapCount = 2;
             treeObj.touchEditObj.tap(tapEvent);

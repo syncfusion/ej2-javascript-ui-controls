@@ -282,12 +282,14 @@ export class ChartData {
         return this.commonXvalues;
     }
 
-    public commonXValue(series: Series): number[] {
+    public commonXValue(visibleSeries: Series[]): number[] {
         const commonXValues: number[] = [];
-        for (let i: number = 0; i < series.points.length; i++) {
-            const point: Points = series.points[i as number];
-            if (point && (point.index === 0 || point.index === series.points.length - 1 || (point.symbolLocations && point.symbolLocations.length > 0))) {
-                commonXValues.push(point.xValue);
+        for (let j: number = 0; j < visibleSeries.length; j++) {
+            for (let i: number = 0; i < visibleSeries[j].points.length; i++) {
+                const point: Points = visibleSeries[j].points[i as number];
+                if (point && (point.index === 0 || point.index === visibleSeries[j].points.length - 1 || (point.symbolLocations && point.symbolLocations.length > 0))) {
+                    commonXValues.push(point.xValue);
+                }
             }
         }
         return commonXValues;

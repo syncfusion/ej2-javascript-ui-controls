@@ -263,7 +263,7 @@ export class YearEvent extends TimelineEvent {
             if (!this.parent.isMinMaxDate(eventData[this.fields.startTime] as Date)) {
                 return;
             }
-                if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+            if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
                 this.renderEvent(eventWrapper, eventData, month, leftValue, leftValue, monthStart, index);
                 this.updateCellHeight(td, availedHeight);
             } else {
@@ -272,7 +272,7 @@ export class YearEvent extends TimelineEvent {
                 if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                     for (let i: number = index; i < eventDatas.length; i++) {
                         this.renderedEvents.push(extend({}, eventDatas[parseInt(i.toString(), 10)],
-                                                        { Index: overlapIndex + i }, true) as Record<string, any>);
+                            { Index: overlapIndex + i }, true) as Record<string, any>);
                     }
                 }
                 break;
@@ -358,7 +358,7 @@ export class YearEvent extends TimelineEvent {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'data-guid': record.Guid as string,
                 'role': 'button', 'tabindex': '0',
-                'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record), 'aria-pressed': 'false',
+                'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-label': this.parent.getAnnouncementString(record)
             }
         });

@@ -394,6 +394,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public initialCellX: number;
     /** @private */
     public initialCellY: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private resizeEvent: any;
+    private touchInstance: Touch;
     /**
      * @private
      */
@@ -882,6 +885,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     public destroy(): void {
         this.unWireEvents();
+        this.touchInstance.destroy();
+        this.touchInstance = null;
         super.destroy();
         this.element.innerHTML = '';
         this.element.classList.remove('e-heatmap');
@@ -1120,10 +1125,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.add(this.element, stop, this.heatMapMouseLeave, this);
         EventHandler.add(this.element, move, this.heatMapMouseMove, this);
         EventHandler.add(this.element, cancel, this.heatMapMouseLeave, this);
-
+        this.resizeEvent = this.heatMapResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.heatMapResize.bind(this)
+            this.resizeEvent
         );
         // eslint-disable-next-line
         const heatmap: HeatMap = this;
@@ -1132,7 +1137,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
          */
 
         // eslint-disable-next-line
-        const touchObj: Touch = new Touch(this.element, {
+        this.touchInstance = new Touch(this.element, {
             tapHold: (e: TapEventArgs) => {
                 heatmap.isCellTapHold = true;
                 if (!e.originalEvent.ctrlKey || !this.enableMultiSelect) {
@@ -1200,12 +1205,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.remove(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick);
         EventHandler.remove(this.element, start, this.heatMapMouseMove);
-        EventHandler.remove(this.element, move, this.heatMapMouseLeave);
+        EventHandler.remove(this.element, stop, this.heatMapMouseLeave);
         EventHandler.remove(this.element, move, this.heatMapMouseMove);
         EventHandler.remove(this.element, cancel, this.heatMapMouseLeave);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.heatMapResize
+            this.resizeEvent
         );
     }
     /**

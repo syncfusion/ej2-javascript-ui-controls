@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.4.43 (2023-01-10)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I424794` - The issue with "Script error thrown in context menu when navigate using the keyboard" has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I422672` - The expand icon not working properly in mobile mode issue has been fixed.
+
 ## 20.4.42 (2023-01-04)
 
 ### TreeView
@@ -16,7 +30,6 @@
 
 #### Bug Fixes
 
-- `#I424794` - The issue with "Script error thrown in context menu when navigate using the keyboard" has been resolved.
 - `#I425402` -  Accessibility issue in context menu has been fixed.
 
 ## 20.4.38 (2022-12-21)

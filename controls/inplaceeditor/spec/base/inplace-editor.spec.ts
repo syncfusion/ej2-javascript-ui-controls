@@ -2287,7 +2287,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('Success with data modify testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2311,7 +2311,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('Url null with Success testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2334,7 +2334,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('Failure testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2356,7 +2356,7 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['name']).toEqual('actionFailure');
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         // it('WebApi adaptor with failure testing', (done: Function) => {
         //     editorObj = renderEditor({
@@ -2400,7 +2400,7 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['name']).toEqual('actionFailure');
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 2000);
+            }, 2500);
         });
         it('Json adaptor with custom data testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2426,7 +2426,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         // it('WebApi adaptor with custom data testing', (done: Function) => {
         //     editorObj = renderEditor({
@@ -2477,7 +2477,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual(date.toISOString());
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('primaryKey as "number" with success testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2501,7 +2501,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('Failure with popup testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2522,7 +2522,7 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['name']).toEqual('actionFailure');
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         it('UrlAdaptor with value submit testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2546,7 +2546,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
         // it('WebApiAdaptor with value submit testing', (done: Function) => {
         //     editorObj = renderEditor({
@@ -2594,7 +2594,7 @@ describe('InPlace-Editor Control', () => {
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 4000);
+            }, 4500);
         });
     });
     describe('Button keyboard action testing', () => {

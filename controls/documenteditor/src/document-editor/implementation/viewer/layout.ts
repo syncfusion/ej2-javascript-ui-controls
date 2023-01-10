@@ -197,12 +197,13 @@ export class Layout {
         for (let i: number = 0; i < sections.length; i++) {
             const section: BodyWidget = sections[i] as BodyWidget;
             this.viewer.columnLayoutArea.setColumns(section.sectionFormat);
-            const lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+            let lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             /* eslint-disable-next-line max-len */
             if (i > 0 && (((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak || ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithColumnBreak) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
                 this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
+                lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             }
-            if (i === 0 || isNullOrUndefined(section.sectionFormat.breakCode) || section.sectionFormat.breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (section.sectionFormat.columns.length > 1 || (i - 1 >= 0 && sections[i - 1].sectionFormat.columns.length > 1))) {
+            if (i === 0 || isNullOrUndefined(section.sectionFormat.breakCode) || section.sectionFormat.breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (section.sectionFormat.columns.length > 1 || (i - 1 >= 0 && sections[i - 1].sectionFormat.columns.length > 1)) || (lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as ParagraphWidget).isEndsWithPageBreak) {
                 page = this.viewer.createNewPage(section);
             } else {
                 let clientY: number = this.documentHelper.viewer.clientActiveArea.y;
@@ -2785,7 +2786,7 @@ export class Layout {
         }
         let newLineWidget: LineWidget = undefined;
         let previousElement :ElementBox = lineWidget.children[index];
-        if(previousElement instanceof CommentCharacterElementBox && previousElement.commentType === 0){
+        if(previousElement instanceof CommentCharacterElementBox && previousElement.commentType === 0 && index != 0){
             index = index - 1;
         }
         //Move Next element box to temp collection
@@ -7820,7 +7821,7 @@ export class Layout {
         // Todo: For page layout and section break continuous, need to handle the same.
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
-        while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak')) {
+        while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || (nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak'&& ((nextBlock.bodyWidget.nextRenderedWidget !== undefined && (nextBlock.bodyWidget.nextRenderedWidget as BodyWidget).page === nextBlock.bodyWidget.page) || nextBlock.bodyWidget.nextRenderedWidget === undefined)))) {
             let currentWidget: Widget = undefined;
             let blocks: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
             currentWidget = blocks[blocks.length - 1];

@@ -129,4 +129,30 @@ describe('Pagerdropdown module', () => {
             pagerObj = elem = null;
         });
     });
+    describe('pagesize as All input testing', () => {
+        let pagerObj: Pager;
+        let dropDownChanged: () => void;
+        let elem: HTMLElement = createElement('div', { id: 'Pager' });
+
+        beforeAll((done: Function) => {
+            let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            pagerObj = new Pager({
+                totalRecordsCount: 103, currentPage: 8, pageCount: 5, pageSizes: [10, 30, 40, 50], created: created,
+                dropDownChanged: dropDownChanged
+            });
+            pagerObj.appendTo('#Pager');
+        });
+
+        it('set dropvalue as totalrecord value as string', () => {
+            (<any>pagerObj.pagerdropdownModule).setDropDownValue('value', '103');
+            expect((<any>pagerObj.pagerdropdownModule).dropDownListObject.value).toBe('All');
+        }); 
+
+        afterAll(() => {
+            pagerObj.destroy();
+            elem.remove();
+            pagerObj = elem = null;
+        });
+    });
 });

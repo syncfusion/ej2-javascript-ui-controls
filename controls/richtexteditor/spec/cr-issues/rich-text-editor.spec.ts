@@ -1478,4 +1478,81 @@ describe('RTE CR issues', () => {
             expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
         });
     });
+    
+    describe(' EJ2-65988 - Code block doesnt work properly when pasting contents into the pre tag in RTE' , () => {
+        let rteObj: RichTextEditor ;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+          };
+        const targetElm: HTMLElement = createElement('div', { className: 'target' });
+        beforeEach( () => {
+            rteObj = new RichTextEditor({
+                toolbarSettings : {
+                    items: ['Formats']
+                }, value : '<pre>```<br><br><br>```</pre>'
+            });
+            document.body.appendChild(targetElm);
+            rteObj.appendTo(targetElm);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        })
+        it('Test for PRE Node Should add code block inside the <pre> tag', (done: Function) => {
+            rteObj.focusIn();
+            let firstPre: Element = (rteObj as any).inputElement.querySelector('pre');
+            setCursorPoint(firstPre, 4);
+            keyBoardEvent.clipboardData = {
+                getData: (e: any) => {
+                  if (e === "text/plain") {
+                    return `// With strictBindCallApply off
+                    function fn(x: string) {
+                      return parseInt(x);
+                    }
+                     
+                    // Note: No error; return type is any
+                    const n = fn.call(undefined, false);`;
+                  } else {
+                    return '';
+                  }
+                },
+                items: []
+            }
+            rteObj.onPaste(keyBoardEvent);
+            expect( rteObj.element.querySelectorAll('pre').length ).toEqual(1);
+            done();
+        });
+        it('Test for #text node, Should add code block inside the <pre> tag', (done: Function) => {
+            rteObj.inputElement.innerHTML = '<pre><span style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255); display: inline !important; float: none;">The label </span><strong data-renderer-mark="true" style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255);">ProductPlanner_pid_1758</strong><span style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255); display: inline !important; float: none;"> was removed from the task since the added release plan label is not mapped under the fix version(s) </span><strong data-renderer-mark="true" style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255);">20.4-sp1</strong><span style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255); display: inline !important; float: none;">.</span>﻿﻿<br></pre>';
+            rteObj.value = '<pre><span style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255); display: inline !important; float: none;">The label </span><strong data-renderer-mark="true" style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255);">ProductPlanner_pid_1758</strong><span style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255); display: inline !important; float: none;"> was removed from the task since the added release plan label is not mapped under the fix version(s) </span><strong data-renderer-mark="true" style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255);">20.4-sp1</strong><span style="color: rgb(23, 43, 77); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: pre-wrap; background-color: rgb(255, 255, 255); display: inline !important; float: none;">.</span>﻿﻿<br></pre>';
+            rteObj.focusIn();
+            let firstStrong: Element = (rteObj as any).inputElement.querySelector('strong').nextSibling;
+            setCursorPoint(firstStrong, 0);
+            keyBoardEvent.clipboardData = {
+                getData: (e: any) => {
+                  if (e === "text/plain") {
+                    return `// With strictBindCallApply off
+                    function fn(x: string) {
+                      return parseInt(x);
+                    }
+                     
+                    // Note: No error; return type is any
+                    const n = fn.call(undefined, false);`;
+                  } else {
+                    return '';
+                  }
+                },
+                items: []
+            }
+            rteObj.onPaste(keyBoardEvent);
+            expect( rteObj.element.querySelectorAll('pre').length ).toEqual(1);
+            done();
+        });
+    });
 });

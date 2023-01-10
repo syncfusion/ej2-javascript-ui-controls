@@ -136,10 +136,12 @@ export class HtmlEditor {
         // eslint-disable-next-line
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
         let pointer: number;
+        let isRootParent: boolean = false;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey) {
             pointer = range.startOffset;
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            range.startContainer.nodeName === '#text' ? range.startContainer.parentElement.classList.add('currentStartMark') : (range.startContainer as Element).classList.add('currentStartMark');
+            range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
+            : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');
             if (range.startContainer.textContent.charCodeAt(0) === 8203) {
                 pointer = range.startOffset === 0 ? range.startOffset : range.startOffset - 1;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
@@ -149,7 +151,7 @@ export class HtmlEditor {
             const previousLength: number = this.parent.inputElement.innerHTML.length;
             const currentLength: number = this.parent.inputElement.innerHTML.replace(regEx, '').length;
             let focusNode: Element = range.startContainer as Element;
-            if (previousLength > currentLength) {
+            if (previousLength > currentLength && !isRootParent) {
                 let currentChild: Element = this.parent.inputElement.firstChild as Element;
                 while (!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
                     currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');

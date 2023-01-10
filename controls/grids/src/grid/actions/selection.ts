@@ -4,7 +4,7 @@ import { remove, closest, select } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import {
     IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, NotifyArgs, CellFocusArgs,
-    BeforeAutoFillEventArgs, RowDeselectEventArgs
+    BeforeAutoFillEventArgs, RowDeselectEventArgs, RowDeselectingEventArgs
 } from '../base/interface';
 import { SelectionSettings } from '../base/grid';
 import { setCssInGridPopUp, getPosition, isGroupAdaptive, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
@@ -959,7 +959,7 @@ export class Selection implements IAction {
             !this.selectionSettings.persistSelection) {
             const cancl: string = 'cancel';
             const isSingleDeSel: boolean = rowIndex.length === 1 && this.deSelectedData.length === 1;
-            const rowDeselectObj: RowDeselectEventArgs = {
+            const rowDeselectObj: RowDeselectingEventArgs = {
                 rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && (this.parent.checkAllRows === 'Uncheck' &&
                     !isSingleDeSel) && this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ? this.deSelectedData : data,
                 foreignKeyData: foreignKeyData, cancel: false, isInteracted: this.isInteracted,

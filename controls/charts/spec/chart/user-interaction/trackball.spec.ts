@@ -220,8 +220,8 @@ describe('Chart Trackball', () => {
                 expect(parseFloat(translateX[0]) < x).toBe(true);
 
                 let group: HTMLElement = tooltip.childNodes[0].childNodes[0] as HTMLElement;
-                expect(group.childNodes[4].childNodes.length == 2).toBe(true);
-                expect(group.childNodes[1].childNodes.length == 9).toBe(true);
+                expect(group.childNodes[4].childNodes.length == 1).toBe(true);
+                expect(group.childNodes[1].childNodes.length == 5).toBe(true);
 
                 targetElement = chartObj.element.querySelector('#container_Series_0_Point_11_Symbol') as HTMLElement;
                 y = parseFloat(targetElement.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;

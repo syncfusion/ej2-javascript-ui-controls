@@ -372,6 +372,9 @@ export class Toolbar {
      * @private
      */
     public zoomToFit(): void {
+        if (this.parent.timelineModule.isZoomIn) {
+            this.parent.timelineModule.isZoomIn = false;
+        }
         this.parent.timelineModule.processZoomToFit();
         this.parent.ganttChartModule.updateScrollLeft(0);
     }

@@ -112,7 +112,7 @@ export class MarkerExplode extends ChartData {
                         continue;
                     }
                     if (chart.chartAreaType === 'Cartesian' && chartSeries.visible) {
-                        data = this.getClosestX(chart, chartSeries, this.commonXValue(chartSeries));
+                        data = this.getClosestX(chart, chartSeries, this.commonXValue(this.chart.visibleSeries));
                     } else if (chart.chartAreaType === 'PolarRadar' && chartSeries.visible && pointData.point !== null) {
                         data = new PointData(chartSeries.points[pointData.point.index], chartSeries);
                     }

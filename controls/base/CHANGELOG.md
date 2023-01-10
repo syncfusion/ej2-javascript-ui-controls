@@ -8,9 +8,22 @@
 
 #### Bug Fixes
 
-- `I427250` - Resolved window undefined in server side rendering with React next JS.
+- `#I427250` - Resolved window undefined in server side rendering with React next JS.
 
 ## 20.4.38 (2022-12-21)
+
+### Common
+
+#### New Features
+
+- The new `Rating` control has been added to Essential JS 2.
+- The `AppBar`, `Floating Action Button (FAB)`, `Mention`, `Message` and `Speed Dial` controls have been developed to meet industry standards and are now marked production-ready.
+
+#### Breaking Changes
+
+- If you are using Syncfusion's controls without first registering a license, a license dialog will appear after a certain limit of usage, preventing further interaction in the application. Please make sure to register a valid license in order to continue using the Syncfusion controls without interruption.
+
+## 20.3.59 (2022-11-29)
 
 ### Common
 

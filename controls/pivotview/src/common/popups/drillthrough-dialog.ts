@@ -240,7 +240,7 @@ export class DrillThroughDialog {
             locale: this.parent.locale,
             cssClass: this.parent.cssClass,
             change: () => {
-                const textBoxValue: number = this.numericTextBox.value;
+                const textBoxValue: number = isNullOrUndefined(this.numericTextBox.value) ? 0 : this.numericTextBox.value;
                 const indexValue: number = eventArgs.currentCell.indexObject[indexObject as number];
                 eventArgs.rawData[0][actualText as string] = textBoxValue;
                 this.parent.engineModule.data[indexValue as number] = eventArgs.rawData[0];

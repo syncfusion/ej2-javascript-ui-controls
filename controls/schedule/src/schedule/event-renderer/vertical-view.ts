@@ -316,7 +316,6 @@ export class VerticalEvent extends EventBase {
                 'role': 'button',
                 'tabindex': '0',
                 'aria-disabled': this.parent.eventBase.getReadonlyAttribute(record),
-                'aria-pressed': 'false',
                 'aria-label': this.parent.getAnnouncementString(record)
             }
         });

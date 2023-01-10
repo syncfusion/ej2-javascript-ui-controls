@@ -68,7 +68,7 @@ export class ColumnChooser implements IAction {
             this.cBoxTrue.firstChild);
         this.cBoxFalse.insertBefore(
             this.parent.createElement('input', {
-                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox', 'aria-checked': 'true' }
+                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox', 'aria-checked': 'false' }
             }),
             this.cBoxFalse.firstChild);
         this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
@@ -580,13 +580,11 @@ export class ColumnChooser implements IAction {
         btn.disabled = false;
         if (cnt === selected) {
             className = ['e-check'];
-            inputElem.setAttribute('aria-checked', 'true');
         } else if (selected) {
             className = ['e-stop'];
             inputElem.setAttribute('aria-checked', 'mixed');
         } else {
             className = ['e-uncheck'];
-            inputElem.setAttribute('aria-checked', 'flase');
             btn.disabled = true;
         }
         btn.dataBind();
@@ -598,6 +596,13 @@ export class ColumnChooser implements IAction {
         const cBoxes: Element[] = [].slice.call(this.ulElement.getElementsByClassName('e-frame'));
         for (const cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
+            const cBoxInput: Element = cBox.parentElement.querySelector('input');
+            if (cBox.classList.contains('e-check')) {
+                cBoxInput.setAttribute('aria-checked', 'true');
+            }
+            else if (cBox.classList.contains('e-uncheck')) {
+                cBoxInput.setAttribute('aria-checked', 'false');
+            }
         }
     }
 

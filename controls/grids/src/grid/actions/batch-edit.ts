@@ -288,6 +288,7 @@ export class BatchEdit {
         }
         gObj.selectRow(this.cellDetails.rowIndex);
         this.refreshRowIdx();
+        gObj.editModule.resetMovableContentValidation();
         gObj.notify(events.toolbarRefresh, {});
         this.parent.notify(events.tooltipDestroy, {});
         args = { requestType: 'batchCancel', rows: this.parent.getRowsObject() };
@@ -419,6 +420,7 @@ export class BatchEdit {
             gObj.showSpinner();
             gObj.notify(events.bulkSave, { changes: changes, original: original });
         });
+        gObj.editModule.resetMovableContentValidation();
     }
 
     public getBatchChanges(): Object {

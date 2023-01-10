@@ -876,7 +876,7 @@ function onSubmitValidate(parent: IFileManager, ele: HTMLInputElement): void {
     onValidate(parent, ele);
     const len: number = ele.value.length - 1;
     if (ele.value !== '' && ((ele.value.lastIndexOf('.') === len) || (ele.value.lastIndexOf(' ') === len)) &&
-        (parent.showFileExtension || (parent.currentItemText.lastIndexOf('.') === -1))) {
+        (parent.showFileExtension || (ele.value.lastIndexOf('.') === -1 || ele.value.substring(ele.value.indexOf('.')+1).length === 0))) {
         addInvalid(parent, ele);
     }
 }

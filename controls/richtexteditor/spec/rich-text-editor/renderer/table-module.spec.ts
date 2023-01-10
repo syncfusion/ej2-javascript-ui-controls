@@ -4332,4 +4332,53 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(rteObj.contentModule.getEditPanel().innerHTML === '<p></br></p>');
         });
     });
+
+    describe("EJ2-67615: Table quick toolbar got misplaced outside the Rich Text Editor when enabling IFrame", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side.</p>
+                <table class="e-rte-table" style="width: 100%; min-width: 0px;">
+                    <tbody>
+                        <tr>
+                            <td class="" style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><br></td>
+                            <td style="width: 10%;"><p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid HTML markup or markdown of the <span class="focusNode">content</span></p></td>
+                        </tr>
+                    </tbody>
+                </table>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table quick toolbar got misplaced when enabling IFrame', (done) => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector(".focusNode");
+            setCursorPoint(node, 0);
+            node.focus();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let eventsArg: any = { pageX: 50, pageY: 300, target: node };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            expect((document.querySelectorAll('.e-rte-quick-popup') as any).length).toBe(1);
+            done();
+        });
+    });
 });

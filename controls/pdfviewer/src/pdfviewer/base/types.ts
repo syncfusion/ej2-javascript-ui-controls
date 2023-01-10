@@ -116,7 +116,7 @@ export enum FontStyle {
 }
 
 /**
- * enum for context menu items
+ * Enum for context menu items
  */
 export enum ContextMenuItem {
     Copy = 0,
@@ -163,6 +163,9 @@ export enum AnnotationResizerLocation {
     Edges = 2
 }
 
+/**
+ * Enum for displaying the signature dialog
+ */
 export enum DisplayMode {
     /** Draw - Display only the draw option in the signature dialog. */
     Draw = 1 << 0,

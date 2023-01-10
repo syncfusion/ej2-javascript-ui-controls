@@ -82,6 +82,62 @@ describe('Gantt Drag and Drop support', () => {
             expect(ganttObj_self.flatData[4].taskData[ganttObj_self.taskFields.parentID]).toBe(7);
         });    
     });
+    describe('Incorrect index value', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource: dragSelfReferenceData,
+                    height: '450px',
+                    allowRowDragAndDrop: true,
+                    highlightWeekends: true,
+                    allowSelection: true,
+                    treeColumnIndex: 1,
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        parentID: 'parentID'
+                    },
+                    columns: [
+                        { field: 'taskID', width: 60 },
+                        { field: 'taskName', width: 250 },
+                        { field: 'startDate' },
+                        { field: 'endDate' },
+                        { field: 'duration' },
+                        { field: 'predecessor' },
+                        { field: 'progress' },
+                    ],
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true
+                    },
+                    labelSettings: {
+                        leftLabel: 'taskName'
+                    },
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    projectStartDate: new Date('01/28/2019'),
+                    projectEndDate: new Date('03/10/2019')
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_self) {
+                destroyGantt(ganttObj_self);
+            }
+        });
+        it('Drag and drop child to child below', function () {
+            ganttObj_self.dataBind();
+            expect(ganttObj_self.flatData[3].index).toBe(3);
+            ganttObj_self.reorderRows([3], 4, 'below');
+            expect(ganttObj_self.flatData[4].index).toBe(4);
+        });
+    });
     describe('Resource view data binding', () => {
         let ganttObj_resource: Gantt;
         beforeAll((done: Function) => {

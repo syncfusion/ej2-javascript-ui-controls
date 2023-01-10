@@ -1268,8 +1268,6 @@ export interface RowDeselectEventArgs {
     row?: Element | Element[];
     /** Define the foreignKey row data associated with this column */
     foreignKeyData?: Object | Object[];
-    /** Defines the cancel option value. */
-    cancel?: boolean;
     /** Defines the target element for row deselect. */
     target?: Element;
     /** Defines whether event is triggered by interaction or not. */
@@ -1340,6 +1338,13 @@ export interface RowSelectingEventArgs extends RowSelectEventArgs {
     isCtrlPressed?: boolean;
     /** Defines whether SHIFT key is pressed. */
     isShiftPressed?: boolean;
+    /** Defines the cancel option value. */
+    cancel?: boolean;
+}
+
+export interface RowDeselectingEventArgs extends RowDeselectEventArgs {
+    /** Defines the cancel option value. */
+    cancel?: boolean;
 }
 
 export interface CellDeselectEventArgs {

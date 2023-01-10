@@ -35,10 +35,11 @@ export class ToolbarStatus {
         let formatCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
         const nodeCollection: IToolbarStatus = JSON.parse(JSON.stringify(statusCollection));
         const nodeSelection: NodeSelection = new NodeSelection();
-        const nodes: Node[] = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
+        const range: Range = nodeSelection.getRange(docElement);
+        const nodes: Node[] = documentNode ? [documentNode] : range.collapsed ? nodeSelection.getNodeCollection(range) :
+        nodeSelection.getSelectionNodeCollectionBr(range);
         const nodesLength: number = nodes.length;
         let isNodeChanged: boolean = false;
-        const range: Range = nodeSelection.getRange(docElement);
         for (let index: number = 0; index < nodes.length; index++) {
             while (nodes[index as number].nodeType === 3 && range.startContainer.nodeType === 3 && nodes[index as number].parentNode &&
                 nodes[index as number].parentNode.lastElementChild && nodes[index as number].parentNode.lastElementChild.nodeName !== 'BR' &&

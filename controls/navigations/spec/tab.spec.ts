@@ -59,7 +59,7 @@ describe('Tab Control', () => {
             });
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
             expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(1);
@@ -78,7 +78,7 @@ describe('Tab Control', () => {
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-vertical')).toEqual(true);
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.querySelector('.e-tab-header').classList.contains('e-vertical-left')).toEqual(true);
         });
         it('Items [Orientation right] - Toolbar child element testing', () => {
@@ -92,7 +92,7 @@ describe('Tab Control', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.querySelector('.e-tab-header').classList.contains('e-toolbar')).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-vertical')).toEqual(true);
             expect(element.querySelector('.e-tab-header').classList.contains('e-vertical-right')).toEqual(true);
@@ -1516,12 +1516,12 @@ describe('Tab Control', () => {
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(tab.headerPlacement).toEqual('Top');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1530,7 +1530,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1539,7 +1539,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1548,7 +1548,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1557,7 +1557,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Right';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1566,7 +1566,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1575,7 +1575,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1584,7 +1584,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1593,7 +1593,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1602,7 +1602,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Right';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1611,7 +1611,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1620,7 +1620,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1629,7 +1629,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Right';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1638,7 +1638,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1717,13 +1717,13 @@ describe('Tab Control', () => {
             tab = new Tab();
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
             expect(tab.headerPlacement).toEqual('Top');
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1732,7 +1732,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1741,7 +1741,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1750,7 +1750,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1759,7 +1759,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Right';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1768,7 +1768,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Top';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Top');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1777,7 +1777,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1786,7 +1786,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1795,7 +1795,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Bottom';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1804,7 +1804,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Right';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1821,7 +1821,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1830,7 +1830,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Right';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1839,7 +1839,7 @@ describe('Tab Control', () => {
             tab.headerPlacement = 'Left';
             tab.dataBind();
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1911,7 +1911,7 @@ describe('Tab Control', () => {
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('horizontal');
             expect(tab.headerPlacement).toEqual('Top');
             tab.select(8);
             tab.headerPlacement = 'Left';
@@ -1921,7 +1921,7 @@ describe('Tab Control', () => {
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
             expect(tab.headerPlacement).toEqual('Left');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1934,7 +1934,7 @@ describe('Tab Control', () => {
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
             expect(tab.headerPlacement).toEqual('Bottom');
-            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.querySelector('.e-tab-header').getAttribute('aria-orientation')).toEqual('horizontal');
             expect(element.classList.contains('e-vertical-tab')).toEqual(false);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
@@ -1947,7 +1947,7 @@ describe('Tab Control', () => {
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
             expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
             expect(tab.headerPlacement).toEqual('Right');
-            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.firstElementChild.getAttribute('aria-orientation')).toEqual('vertical');
             expect(element.classList.contains('e-vertical-tab')).toEqual(true);
             expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
@@ -1968,19 +1968,20 @@ describe('Tab Control', () => {
             expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
             expect(element.children.item(0).classList.contains('e-toolbar')).toEqual(true);
             const toolbarElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-toolbar-item'));
-            expect(toolbarElement[0].getAttribute('aria-selected')).toEqual('true');
-            expect(toolbarElement[1].getAttribute('aria-selected')).toEqual('false');
-            expect(toolbarElement[2].getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[0].firstElementChild.getAttribute('aria-selected')).toEqual('true');
+            expect(toolbarElement[1].firstElementChild.getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[2].firstElementChild.getAttribute('aria-selected')).toEqual('false');
             tab.selectedItem = 1;
             tab.dataBind();
-            expect(toolbarElement[0].getAttribute('aria-selected')).toEqual('false');
-            expect(toolbarElement[1].getAttribute('aria-selected')).toEqual('true');
-            expect(toolbarElement[2].getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[0].firstElementChild.getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[1].firstElementChild.getAttribute('aria-selected')).toEqual('true');
+            expect(toolbarElement[2].firstElementChild.getAttribute('aria-selected')).toEqual('false');
             tab.selectedItem = 2;
             tab.dataBind();
-            expect(toolbarElement[0].getAttribute('aria-selected')).toEqual('false');
-            expect(toolbarElement[1].getAttribute('aria-selected')).toEqual('false');
-            expect(toolbarElement[2].getAttribute('aria-selected')).toEqual('true');
+            expect(toolbarElement[0].firstElementChild.getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[1].firstElementChild.getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[2].firstElementChild.getAttribute('aria-selected')).toEqual('true');
+            expect(toolbarElement[2].firstElementChild.getAttribute('role')).toEqual('tab');
         });
     });
     describe('enableRTL property testing', () => {
@@ -8088,10 +8089,10 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
             tab.addTab(items, 1);
             expect(element.querySelectorAll('.e-toolbar-item').length).toBe(4);
-            expect(element.querySelectorAll('.e-toolbar-item')[1].getAttribute('data-id')).toBe('tabitem_2');
+            expect(element.querySelectorAll('.e-toolbar-item')[1].getAttribute('data-id')).toBe('e-item-ej2Tab_tabitem_2');
             let tabIndex: number = tab.getItemIndex(tab.items[1].id);
             expect(tabIndex).toEqual(1);
-            expect(element.querySelectorAll('.e-toolbar-item')[2].getAttribute('data-id')).toBe('tabitem_3');
+            expect(element.querySelectorAll('.e-toolbar-item')[2].getAttribute('data-id')).toBe('e-item-ej2Tab_tabitem_3');
             tabIndex = tab.getItemIndex(tab.items[2].id);
             expect(tabIndex).toEqual(2);
             items = [
@@ -10927,7 +10928,6 @@ describe('Tab Control', () => {
             expect(content).toBeTruthy();
             expect(content.textContent).toEqual('Tab content 4');
             expect(tab.element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
-            expect(tab.element.getAttribute('aria-owns')).toEqual(tab.element.querySelector('.e-toolbar-items').id);
         });
     });
     describe('tab key support in tabitems', () => {

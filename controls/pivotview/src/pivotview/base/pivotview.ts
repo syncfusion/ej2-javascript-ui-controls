@@ -3163,6 +3163,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         if (this.showFieldList && this.pivotFieldListModule) {
                             this.pivotFieldListModule.destroyEngine = true;
                             this.pivotFieldListModule.destroy();
+                            if (select('#' + this.element.id + '_PivotFieldList', this.element) !== null) {
+                                remove(select('#' + this.element.id + '_PivotFieldList', this.element));
+                            }
                             this.pivotFieldListModule.destroyEngine = false;
                         }
                         /**
@@ -5935,6 +5938,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.pivotFieldListModule && !this.pivotFieldListModule.isDestroyed) {
             this.pivotFieldListModule.destroy();
+            if (this.pivotFieldListModule.isDestroyed && select('#' + this.element.id + '_PivotFieldList', this.element) !== null) {
+                remove(select('#' + this.element.id + '_PivotFieldList', this.element));
+            }
         }
         if ((this.allowDrillThrough || (this.editSettings && this.editSettings.allowEditing)) && this.drillThroughModule) {
             this.drillThroughModule.destroy();

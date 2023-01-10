@@ -118,7 +118,7 @@ export class PagerDropDown {
 
     public refresh(): void {
         if (this.pagerCons) {
-            if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+            if (this.isPageSizeAll(this.pagerModule.pageSize)) {
                 this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerAllDropDown');
             } else {
                 this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
@@ -141,9 +141,20 @@ export class PagerDropDown {
         }
         return item as string[];
     }
-
-    public setDropDownValue(prop: string, value: string | number | Object | boolean): void {
+    private isPageSizeAll(value: string | number): boolean {
+        const pageSizeNum : string | number = typeof(value) === 'string' && value !== this.pagerModule.getLocalizedLabel('All') ?
+            parseInt(value, 10) : value;
+        if (pageSizeNum === this.pagerModule.totalRecordsCount || value === this.pagerModule.getLocalizedLabel('All')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    public setDropDownValue(prop: string, value: string | number): void {
         if (this.dropDownListObject) {
+            this.pagerModule.isAllPage = this.isPageSizeAll(value);
             this.dropDownListObject[`${prop}`] = this.pagerModule.isAllPage ? this.pagerModule.getLocalizedLabel('All') : value;
         }
     }

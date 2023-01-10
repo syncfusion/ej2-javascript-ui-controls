@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.43 (2023-01-10)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- While performing inline editing, the pivot table cell will now properly update for empty values.
+
 ## 20.4.42 (2023-01-04)
 
 ### Pivot Table

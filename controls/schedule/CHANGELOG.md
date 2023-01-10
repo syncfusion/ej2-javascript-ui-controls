@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.43 (2023-01-10)
+
+### Schedule
+
+#### Bug fixes
+
+- `#425940` - An issue with adding an aria-pressed attribute to the appointment has been fixed.
+- `#F40124` - The issue with the schedule tooltip displaying start and end times in 12 hour format when the schedule is in 24 hour format has been fixed.
+
 ## 20.4.42 (2023-01-04)
 
 ### Schedule

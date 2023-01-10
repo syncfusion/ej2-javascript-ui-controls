@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.43 (2023-01-10)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I424682` - Resolved the issue in the delete and backspace case in bookmark start and end element.
+- `#I425401` - Header is now read-only when resizing a table.
+
 ## 20.4.42 (2023-01-04)
 
 ### Document Editor

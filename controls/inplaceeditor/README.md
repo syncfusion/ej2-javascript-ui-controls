@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-inplace-editor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inplace-editor)
+
 # ej2-inplace-editor
 
 ![ej2-inplace-editor](https://ej2.syncfusion.com/products/images/inplace-editor/readMe.gif)

@@ -6202,3 +6202,33 @@ describe('EJ2-67372: Toolbar overlaps the condent edit area', () => {
         destroy(rteObj);
     });
 });
+
+describe("Toobar item focus testing -", () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><span style="font-family:Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></span><br></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-family:Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></span></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p>
+            </div><div id="defaultRTE2"><p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><span style="font-family:Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></span><br></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-family:Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></span></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p></div><div id="defaultRTE3"><p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><span style="font-family:Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></span><br></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-family:Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></span></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p>`
+        });
+        elem = rteObj.element;
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('checking the toolbar item is in active state', (done: Function) => {
+        rteObj.focusIn();
+        rteObj.selectAll();
+        ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        expect(((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).parentElement.classList.contains('e-active')).toBe(true);
+        ((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        expect(((elem.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).parentElement.classList.contains('e-active')).toBe(false);
+        ((elem.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        expect(((elem.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).parentElement.classList.contains('e-active')).toBe(true);
+        ((elem.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+        expect(((elem.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).parentElement.classList.contains('e-active')).toBe(true);
+        done();
+    });
+});

@@ -5994,25 +5994,25 @@ export class WordExport {
             case 'Ordinal':
                 patternType = 'ordinal';
                 break;
-            // case 'Number':
-            //     patternType = 'cardinalText';
-            //     break;
-            // case 'OrdinalText':
-            //     patternType = 'ordinalText';
-            //     break;
-            // case 'LeadingZero':
-            //     patternType = 'decimalZero';
-            //     break;
+            case 'Number':
+                patternType = 'cardinalText';
+                break;
+            case 'OrdinalText':
+                patternType = 'ordinalText';
+                break;
+            case 'LeadingZero':
+                patternType = 'decimalZero';
+                break;
+            case 'FarEast':
+                patternType = 'aiueoFullWidth';
+                break;
+            case 'Special':
+                patternType = 'russianLower';
+                break;
             // case 'Bullet':
             default:
                 patternType = 'bullet';
                 break;
-            // case 'FarEast':
-            //     patternType = 'aiueoFullWidth';
-            //     break;
-            // case 'Special':
-            //     patternType = 'russianLower';
-            //     break;
         }
         return patternType;
     }

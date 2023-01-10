@@ -186,7 +186,8 @@ export class ColumnWidthService {
             contentCol = (<HTMLTableColElement>content.querySelector(literals.colGroup).children[parseInt(index.toString(), 10)]);
         }
         if (contentCol && !clear) {
-            if (contentCol.style.width !== headerCol.style.width) {
+            if (contentCol.style.width !== headerCol.style.width && this.parent.isFrozenGrid() && this.parent['reorderModule'] &&
+                this.parent['reorderModule'].element && this.parent['reorderModule'].destElement) {
                 contentCol.style.display = this.parent.getColumnByIndex(index).visible ? '' : 'none';
             }
             contentCol.style.width = fWidth;

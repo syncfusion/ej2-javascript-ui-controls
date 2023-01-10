@@ -57,6 +57,8 @@ export class Edit implements IAction {
     private alertDObj: Dialog;
     private actionBeginFunction: Function;
     private actionCompleteFunction: Function;
+    private onDataBoundFunction: Function;
+    private isValidationApplied: boolean = false;
     private preventObj: {
         instance: Object,
         handler: Function, arg1?: Object, arg2?: Object, arg3?: Object, arg4?: Object, arg5?: Object, arg6?: Object, arg7?: Object,
@@ -552,8 +554,10 @@ export class Edit implements IAction {
         addRemoveEventListener(this.parent, this.eventDetails, true, this);
         this.actionBeginFunction = this.onActionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
+        this.onDataBoundFunction = this.onDataBound.bind(this);
         this.parent.addEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunction);
+        this.parent.addEventListener(events.dataBound, this.onDataBoundFunction);
     }
 
     /**
@@ -565,6 +569,11 @@ export class Edit implements IAction {
         addRemoveEventListener(this.parent, this.eventDetails, false);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
+        this.parent.removeEventListener(events.dataBound, this.onDataBoundFunction);
+    }
+
+    private onDataBound(): void {
+        this.resetMovableContentValidation();
     }
 
     private actionComplete(e: NotifyArgs): void {
@@ -1058,6 +1067,20 @@ export class Edit implements IAction {
         }
     }
 
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public resetMovableContentValidation(): void {
+        if (this.isValidationApplied && this.parent.getMovableVirtualContent() &&
+            !(this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                const elem: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
+                elem.style.overflowX = 'auto';
+                elem.style.overflowY = 'hidden';
+                this.isValidationApplied = false;
+        }
+    }
+
     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         const column: Column = this.parent.getColumnByField(name);
         let formObj: HTMLFormElement = this.parent.getFrozenMode() === literals.leftRight && this.parent.editSettings.mode === 'Normal'
@@ -1081,11 +1104,13 @@ export class Edit implements IAction {
         let isFHdrLastRow: boolean = false;
         let validationForBottomRowPos: boolean;
         let isBatchModeLastRow: boolean = false;
+        const isSpace: boolean =  this.parent.editSettings.newRowPosition === 'Bottom' &&
+            (this.parent.getContent().firstElementChild as HTMLElement).offsetHeight > this.parent.getContentTable().scrollHeight;
         const viewPortRowCount: number = Math.round(this.parent.getContent().clientHeight / this.parent.getRowHeight()) - 1;
         const rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().getElementsByClassName(literals.row))
             : [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
-            if (viewPortRowCount > 1 && rows.length >= viewPortRowCount
+            if (viewPortRowCount > 1 && rows.length >= viewPortRowCount && !isSpace
                 && rows[rows.length - 1].getAttribute(literals.dataRowIndex) === row.getAttribute(literals.dataRowIndex)) {
                 isBatchModeLastRow = true;
             }
@@ -1145,8 +1170,7 @@ export class Edit implements IAction {
         if (!customForm && (frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             const getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
-            getEditCell.style.position = this.parent.currentViewData.length === 0 && closest(element, '.' + literals.movableContent) ?
-                'absolute' : 'relative';
+            getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
                 (closest(element, '.' + literals.frozenContent) || closest(element, '.' + literals.frozenHeader))
@@ -1188,11 +1212,19 @@ export class Edit implements IAction {
             const pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
+        if (closest(element, '.' + literals.movableContent) && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
+            const elem: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
+            elem.style.overflowX = 'visible';
+            elem.style.overflowY = 'visible';
+            this.isValidationApplied = true;
+        }
         if (validationForBottomRowPos) {
             if (isScroll && !frzCols && this.parent.height !== 'auto' && !this.parent.frozenRows
                 && !this.parent.enableVirtualization) {
                 const scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
-                div.style.bottom = ((this.parent.height as number) - gcontent.querySelector('table').offsetHeight
+                const gHeight: number | string = this.parent.height.toString().indexOf('%') === -1 ?
+                    parseInt(this.parent.height as string, 10) : gcontent.offsetHeight;
+                div.style.bottom = ((gHeight as number) - gcontent.querySelector('table').offsetHeight
                     - scrollWidth) + inputClient.height + 9 + 'px';
             } else {
                 div.style.bottom = inputClient.height + 9 + 'px';

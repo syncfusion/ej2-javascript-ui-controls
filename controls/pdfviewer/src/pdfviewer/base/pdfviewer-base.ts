@@ -3424,6 +3424,9 @@ export class PdfViewerBase {
         }
         if (!event.ctrlKey || !isCommandKey) {
             switch (event.keyCode) {
+                case 46:
+                    this.DeleteKeyPressed(event);
+                    break;
                 case 27:
                     if (this.pdfViewer.toolbar) {
                         this.pdfViewer.toolbar.addInkAnnotation();
@@ -3576,6 +3579,8 @@ export class PdfViewerBase {
         }
     };
     private DeleteKeyPressed(event: KeyboardEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
         let isSearchboxDialogOpen: boolean;
         let searchBoxId: any = document.getElementById(this.pdfViewer.element.id + "_search_box");
         if (searchBoxId) {

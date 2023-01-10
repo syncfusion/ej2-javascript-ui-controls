@@ -342,7 +342,7 @@ describe('Chart Control - Box and Whisker Series', () => {
                 svg = getElement('container_Series_0_Point_3_BoxPath');
                 expect((svg.getAttribute('d').match(/M/g) || []).length).toBe(6);
                 svg = getElement('containerSeriesGroup0');
-                expect(svg.childElementCount).toBe(7);
+                expect(svg.childElementCount).toBe(8);
                 done();
             };
             chartObj.primaryXAxis.minimum = 3;
