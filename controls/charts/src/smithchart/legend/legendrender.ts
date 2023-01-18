@@ -12,7 +12,7 @@ export class SmithchartLegend {
     public legendSeries: LegendSeries[] = [];
     public legendGroup: Element;
     /**
-     * legend rendering
+     * legend rendering.
      */
     public legendItemGroup: Element;
 

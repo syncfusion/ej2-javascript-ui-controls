@@ -132,7 +132,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public interval: number;
 
     /**
-     * specifies the interval of minor ticks
+     * specifies the interval of minor ticks.
      *
      * @default 4
      */
@@ -148,7 +148,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public labelStyle: BulletLabelStyleModel;
 
     /**
-     * Options for customizing values labels
+     * Options for customizing values labels.
      */
 
     @Complex<BulletLabelStyleModel>(BulletChartTheme.axisLabelFont, BulletLabelStyle)
@@ -175,7 +175,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * Options for customizing the title styles of the bullet chart
+     * Options for customizing the title styles of the bullet chart.
      */
     @Complex<BulletLabelStyleModel>(BulletChartTheme.titleFont, BulletLabelStyle)
     public titleStyle: BulletLabelStyleModel;
@@ -191,14 +191,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * Options for customizing the sub title styles of the bullet chart
+     * Options for customizing the sub title styles of the bullet chart.
      */
     @Complex<BulletLabelStyleModel>(BulletChartTheme.subTitleFont, BulletLabelStyle)
     public subtitleStyle: BulletLabelStyleModel;
 
 
     /**
-     * Orientation of the scale
+     * Orientation of the scale.
      *
      * @default 'Horizontal'
      */
@@ -227,7 +227,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * specifies the axis label position of the bullet chart
+     * specifies the axis label position of the bullet chart.
      *
      * @default 'Outside'
      */
@@ -236,7 +236,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public labelPosition: LabelsPlacement;
 
     /**
-     * specifies the tick position of the bullet chart
+     * specifies the tick position of the bullet chart.
      *
      * @default 'Outside'
      */
@@ -292,7 +292,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * default value for enableGroupSeparator
+     * default value for enableGroupSeparator.
      *
      * @default false
      */
@@ -307,7 +307,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public margin: MarginModel;
 
     /**
-     * Options for customizing comparative bar color bullet chart
+     * Options for customizing comparative bar color bullet chart.
      *
      * @default 5
      */
@@ -325,7 +325,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public targetColor: string;
 
     /**
-     * Options for customizing feature bar height of the bullet chart
+     * Options for customizing feature bar height of the bullet chart.
      *
      * @default 6
      */

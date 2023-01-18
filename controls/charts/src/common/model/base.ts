@@ -102,7 +102,7 @@ export class Font extends ChildProperty<Font> {
     public color: string;
 
     /**
-     * text alignment
+     * text alignment.
      *
      * @default 'Center'
      */
@@ -126,7 +126,7 @@ export class Font extends ChildProperty<Font> {
     public opacity: number;
 
     /**
-     * Specifies the chart title text overflow
+     * Specifies the chart title text overflow.
      *
      * @default 'Wrap'
      */
@@ -165,7 +165,7 @@ export class Border extends ChildProperty<Border> {
 export class Offset extends ChildProperty<Offset> {
 
     /**
-     * x value of the marker position
+     * x value of the marker position.
      *
      * @default 0
      */
@@ -174,7 +174,7 @@ export class Offset extends ChildProperty<Offset> {
     public x: number;
 
     /**
-     * y value of the marker position
+     * y value of the marker position.
      *
      * @default 0
      */
@@ -351,7 +351,7 @@ export class Animation extends ChildProperty<Animation> {
 
 export class Indexes extends ChildProperty<Indexes> {
     /**
-     * Specifies the series index
+     * Specifies the series index.
      *
      * @default 0
      * @aspType int
@@ -361,7 +361,7 @@ export class Indexes extends ChildProperty<Indexes> {
     public series: number;
 
     /**
-     * Specifies the point index
+     * Specifies the point index.
      *
      * @default 0
      * @aspType int
@@ -376,7 +376,7 @@ export class Indexes extends ChildProperty<Indexes> {
  */
 export class CornerRadius extends ChildProperty<CornerRadius> {
     /**
-     * Specifies the top left corner radius value
+     * Specifies the top left corner radius value.
      *
      * @default 0
      */
@@ -384,7 +384,7 @@ export class CornerRadius extends ChildProperty<CornerRadius> {
     @Property(0)
     public topLeft: number;
     /**
-     * Specifies the top right corner radius value
+     * Specifies the top right corner radius value.
      *
      * @default 0
      */
@@ -392,7 +392,7 @@ export class CornerRadius extends ChildProperty<CornerRadius> {
     @Property(0)
     public topRight: number;
     /**
-     * Specifies the bottom left corner radius value
+     * Specifies the bottom left corner radius value.
      *
      * @default 0
      */
@@ -400,7 +400,7 @@ export class CornerRadius extends ChildProperty<CornerRadius> {
     @Property(0)
     public bottomLeft: number;
     /**
-     * Specifies the bottom right corner radius value
+     * Specifies the bottom right corner radius value.
      *
      * @default 0
      */
@@ -461,7 +461,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 export class DragSettings extends ChildProperty<DragSettings> {
 
     /**
-     * To enable the drag the points
+     * To enable the drag the points.
      *
      * @default false
      */
@@ -470,7 +470,7 @@ export class DragSettings extends ChildProperty<DragSettings> {
     public enable: boolean;
 
     /**
-     * To set the minimum y of the point
+     * To set the minimum y of the point.
      *
      * @default null
      */
@@ -479,7 +479,7 @@ export class DragSettings extends ChildProperty<DragSettings> {
     public minY: number;
 
     /**
-     * To set the maximum y of the point
+     * To set the maximum y of the point.
      *
      * @default null
      */
@@ -488,7 +488,7 @@ export class DragSettings extends ChildProperty<DragSettings> {
     public maxY: number;
 
     /**
-     * To set the color of the edited point
+     * To set the color of the edited point.
      *
      * @default null
      */
@@ -643,7 +643,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
  */
 export class Periods extends ChildProperty<Periods> {
     /**
-     * IntervalType of button
+     * IntervalType of button.
      *
      * @default 'Years'
      */
@@ -652,7 +652,7 @@ export class Periods extends ChildProperty<Periods> {
     public intervalType: RangeIntervalType;
 
     /**
-     * Count value for the button
+     * Count value for the button.
      *
      * @default 1
      */
@@ -661,7 +661,7 @@ export class Periods extends ChildProperty<Periods> {
     public interval: number;
 
     /**
-     * Text to be displayed on the button
+     * Text to be displayed on the button.
      *
      * @default null
      */
@@ -670,7 +670,7 @@ export class Periods extends ChildProperty<Periods> {
     public text: string;
 
     /**
-     * To select the default period
+     * To select the default period.
      *
      * @default false
      */
@@ -685,7 +685,7 @@ export class Periods extends ChildProperty<Periods> {
 export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings> {
 
     /**
-     * Height for the period selector
+     * Height for the period selector.
      *
      * @default 43
      */
@@ -694,7 +694,7 @@ export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings
     public height: number;
 
     /**
-     * vertical position of the period selector
+     * vertical position of the period selector.
      *
      * @default 'Bottom'
      */

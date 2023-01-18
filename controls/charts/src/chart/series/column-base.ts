@@ -383,7 +383,7 @@ export class ColumnBase {
         }
     }
     /**
-     * To get rounded rect path direction
+     * To get rounded rect path direction.
      */
     private calculateRoundedRectPath(
         rect: Rect, topLeft: number, topRight: number,

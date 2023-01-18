@@ -46,14 +46,14 @@ export interface StockChartFontModel {
     opacity?: number;
 
     /**
-     * Specifies the chart title text overflow
+     * Specifies the chart title text overflow.
      *
      * @default 'Trim'
      */
     textOverflow?: TextOverflow;
 
     /**
-     * text alignment
+     * text alignment.
      *
      * @default 'Center'
      */
@@ -194,7 +194,7 @@ export interface StockChartStripLineSettingsModel {
     size?: number;
 
     /**
-     * Size type of the strip line
+     * Size type of the strip line.
      *
      * @default Auto
      */
@@ -225,7 +225,7 @@ export interface StockChartStripLineSettingsModel {
     repeatEvery?: Object | number | Date;
 
     /**
-     * isSegmented value of the strip line
+     * isSegmented value of the strip line.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -265,7 +265,7 @@ export interface StockChartStripLineSettingsModel {
     segmentEnd?: Object | number | Date;
 
     /**
-     * Strip line Opacity
+     * Strip line Opacity.
      *
      * @default 1
      */
@@ -691,7 +691,7 @@ export interface StockSeriesModel {
     selectionStyle?: string;
 
     /**
-     * It defines tension of cardinal spline types
+     * It defines tension of cardinal spline types.
      *
      * @default 0.5
      */
@@ -703,7 +703,7 @@ export interface StockSeriesModel {
     cornerRadius?: CornerRadiusModel;
 
     /**
-     * options to customize the empty points in series
+     * options to customize the empty points in series.
      */
     emptyPointSettings?: EmptyPointSettingsModel;
 
@@ -731,84 +731,84 @@ export interface StockSeriesModel {
 export interface StockChartIndicatorModel {
 
     /**
-     * Defines the type of the technical indicator
+     * Defines the type of the technical indicator.
      *
      * @default 'Sma'
      */
     type?: TechnicalIndicators;
 
     /**
-     * Defines the period, the price changes over which will be considered to predict the trend
+     * Defines the period, the price changes over which will be considered to predict the trend.
      *
      * @default 14
      */
     period?: number;
 
     /**
-     * Defines the period, the price changes over which will define the %D value in stochastic indicators
+     * Defines the period, the price changes over which will define the %D value in stochastic indicators.
      *
      * @default 3
      */
     dPeriod?: number;
 
     /**
-     * Defines the look back period, the price changes over which will define the %K value in stochastic indicators
+     * Defines the look back period, the price changes over which will define the %K value in stochastic indicators.
      *
      * @default 14
      */
     kPeriod?: number;
 
     /**
-     * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators
+     * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators.
      *
      * @default 80
      */
     overBought?: number;
 
     /**
-     * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators
+     * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators.
      *
      * @default 20
      */
     overSold?: number;
 
     /**
-     * Defines the field to compare the current value with previous values
+     * Defines the field to compare the current value with previous values.
      *
      * @default 'Close'
      */
     field?: FinancialDataFields;
 
     /**
-     * Sets the standard deviation values that helps to define the upper and lower bollinger bands
+     * Sets the standard deviation values that helps to define the upper and lower bollinger bands.
      *
      * @default 2
      */
     standardDeviation?: number;
 
     /**
-     * Sets the slow period to define the Macd line
+     * Sets the slow period to define the Macd line.
      *
      * @default 12
      */
     slowPeriod?: number;
 
     /**
-     * Enables/Disables the over-bought and over-sold regions
+     * Enables/Disables the over-bought and over-sold regions.
      *
      * @default true
      */
     showZones?: boolean;
 
     /**
-     * Sets the fast period to define the Macd line
+     * Sets the fast period to define the Macd line.
      *
      * @default 26
      */
     fastPeriod?: number;
 
     /**
-     * Defines the appearance of the the MacdLine of Macd indicator
+     * Defines the appearance of the the MacdLine of Macd indicator.
      *
      * @default { color: '#ff9933', width: 2 }
      */
@@ -822,14 +822,14 @@ export interface StockChartIndicatorModel {
     macdType?: MacdType;
 
     /**
-     * Defines the color of the negative bars in Macd indicators
+     * Defines the color of the negative bars in Macd indicators.
      *
      * @default '#e74c3d'
      */
     macdNegativeColor?: string;
 
     /**
-     * Defines the color of the positive bars in Macd indicators
+     * Defines the color of the positive bars in Macd indicators.
      *
      * @default '#2ecd71'
      */
@@ -844,25 +844,25 @@ export interface StockChartIndicatorModel {
     bandColor?: string;
 
     /**
-     * Defines the appearance of the upper line in technical indicators
+     * Defines the appearance of the upper line in technical indicators.
      */
     upperLine?: StockChartConnectorModel;
 
     /**
-     * Defines the name of the series, the data of which has to be depicted as indicator
+     * Defines the name of the series, the data of which has to be depicted as indicator.
      *
      * @default ''
      */
     seriesName?: string;
 
     /**
-     * Defines the appearance of period line in technical indicators
+     * Defines the appearance of period line in technical indicators.
      */
 
     periodLine?: StockChartConnectorModel;
 
     /**
-     * Defines the appearance of lower line in technical indicators
+     * Defines the appearance of lower line in technical indicators.
      */
 
     lowerLine?: ConnectorModel;
@@ -1299,7 +1299,7 @@ export interface StockChartAxisModel {
     crossesAt?: Object;
 
     /**
-     * Specifies axis name with which the axis line has to be crossed
+     * Specifies axis name with which the axis line has to be crossed.
      *
      * @default null
      */
@@ -1307,7 +1307,7 @@ export interface StockChartAxisModel {
     crossesInAxis?: string;
 
     /**
-     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
+     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line.
      *
      * @default true
      */
@@ -1426,7 +1426,7 @@ export interface StockChartAxisModel {
     tabIndex?: number;
 
     /**
-     * Specifies the stripLine collection for the axis
+     * Specifies the stripLine collection for the axis.
      */
     stripLines?: StockChartStripLineSettingsModel[];
 
@@ -1467,66 +1467,66 @@ export interface StockChartRowModel {
 export interface StockChartTrendlineModel {
 
     /**
-     * Defines the period, the price changes over which will be considered to predict moving average trend line
+     * Defines the period, the price changes over which will be considered to predict moving average trend line.
      *
      * @default 2
      */
     period?: number;
 
     /**
-     * Defines the name of trendline
+     * Defines the name of trendline.
      *
      * @default ''
      */
     name?: string;
 
     /**
-     * Defines the type of the trendline
+     * Defines the type of the trendline.
      *
      * @default 'Linear'
      */
     type?: TrendlineTypes;
 
     /**
-     * Defines the polynomial order of the polynomial trendline
+     * Defines the polynomial order of the polynomial trendline.
      *
      * @default 2
      */
     polynomialOrder?: number;
 
     /**
-     * Defines the period, by which the trend has to forward forecast
+     * Defines the period, by which the trend has to forward forecast.
      *
      * @default 0
      */
     forwardForecast?: number;
 
     /**
-     * Defines the period, by which the trend has to backward forecast
+     * Defines the period, by which the trend has to backward forecast.
      *
      * @default 0
      */
     backwardForecast?: number;
 
     /**
-     * Options to customize the animation for trendlines
+     * Options to customize the animation for trendlines.
      */
     animation?: AnimationModel;
 
     /**
-     * Enables/disables tooltip for trendlines
+     * Enables/disables tooltip for trendlines.
      *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
-     * Options to customize the marker for trendlines
+     * Options to customize the marker for trendlines.
      */
     marker?: MarkerSettingsModel;
 
     /**
-     * Defines the intercept of the trendline
+     * Defines the intercept of the trendline.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -1534,21 +1534,21 @@ export interface StockChartTrendlineModel {
     intercept?: number;
 
     /**
-     * Defines the fill color of trendline
+     * Defines the fill color of trendline.
      *
      * @default ''
      */
     fill?: string;
 
     /**
-     * Sets the legend shape of the trendline
+     * Sets the legend shape of the trendline.
      *
      * @default 'SeriesType'
      */
     legendShape?: LegendShape;
 
     /**
-     * Defines the width of the trendline
+     * Defines the width of the trendline.
      *
      * @default 1
      */
@@ -1659,7 +1659,7 @@ export interface StockChartAnnotationSettingsModel {
 export interface StockChartIndexesModel {
 
     /**
-     * Specifies index of point
+     * Specifies index of point.
      *
      * @default 0
      * @aspType int
@@ -1667,7 +1667,7 @@ export interface StockChartIndexesModel {
     point?: number;
 
     /**
-     * Specifies index of series
+     * Specifies index of series.
      *
      * @default 0
      * @aspType int

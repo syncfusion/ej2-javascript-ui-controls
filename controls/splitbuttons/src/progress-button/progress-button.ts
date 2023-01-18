@@ -122,7 +122,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * @default "Left"
      */
     @Property('Left')
-    public iconPosition: IconPosition | string;
+    public iconPosition: string | IconPosition;
 
     /**
      * Defines class/multiple classes separated by a space for the progress button that is used to include an icon.

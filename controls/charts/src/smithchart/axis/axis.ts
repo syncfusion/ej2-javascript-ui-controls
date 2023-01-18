@@ -11,7 +11,7 @@ import { Theme} from '../model/theme';
 export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridLines> {
 
     /**
-     * width of the major grid lines
+     * width of the major grid lines.
      *
      * @default 1
      */
@@ -38,7 +38,7 @@ export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridL
     public visible: boolean;
 
     /**
-     * option for customizing the majorGridLine color
+     * option for customizing the majorGridLine color.
      *
      * @default null
      */
@@ -63,7 +63,7 @@ export class SmithchartMajorGridLines extends ChildProperty<SmithchartMajorGridL
 export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridLines> {
 
     /**
-     * width of the minor grid lines
+     * width of the minor grid lines.
      *
      * @default 1
      */
@@ -89,7 +89,7 @@ export class SmithchartMinorGridLines extends ChildProperty<SmithchartMinorGridL
     public visible: boolean;
 
     /**
-     * option for customizing the minorGridLine color
+     * option for customizing the minorGridLine color.
      *
      * @default null
      */
@@ -120,7 +120,7 @@ export class SmithchartAxisLine extends ChildProperty<SmithchartAxisLine> {
     public visible: boolean;
 
     /**
-     * width of the axis lines
+     * width of the axis lines.
      *
      * @default 1
      */
@@ -128,7 +128,7 @@ export class SmithchartAxisLine extends ChildProperty<SmithchartAxisLine> {
     public width: number;
 
     /**
-     * option for customizing the axisLine color
+     * option for customizing the axisLine color.
      *
      * @default null
      */

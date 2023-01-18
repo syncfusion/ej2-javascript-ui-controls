@@ -170,8 +170,8 @@ function createBootstrap5Spinner(container: HTMLElement, radius: number, makeEle
 function createTailwindSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const uniqueID: string = randomGenerator();
     globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Tailwind', radius: radius };
-    createMaterialElement (container, uniqueID, makeElement, CLS_TAILWIND);
-    matCalculateAttributes(radius, container, 'Tailwind', CLS_TAILWIND);
+    createFabricElement(container, uniqueID, CLS_TAILWIND, makeElement);
+    fbCalculateAttributes(radius, container, CLS_TAILWIND);
 }
 
 /**
@@ -182,7 +182,7 @@ function createTailwindSpinner(container: HTMLElement, radius: number, makeEleme
  */
 function createFluentSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
     var uniqueID = randomGenerator();
-    globalTimeOut["" + uniqueID] = { timeOut: 0, type: 'Fluent', radius: radius };
+    globalTimeOut[`${uniqueID}`] = { timeOut: 0, type: 'Fluent', radius: radius };
     createFabricElement(container, uniqueID, CLS_Fluent, makeElement);
     fbCalculateAttributes(radius, container, CLS_Fluent);
 }

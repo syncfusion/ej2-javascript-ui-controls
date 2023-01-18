@@ -19,7 +19,7 @@ import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessCla
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule, getFullPath } from '../common/index';
 import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs } from '@syncfusion/ej2-grids';
 
 /**
  * DetailsView module
@@ -1082,7 +1082,7 @@ export class DetailsView {
     }
 
     /* istanbul ignore next */
-    private onSelection(action: string, args: RowSelectingEventArgs | RowDeselectEventArgs): void {
+    private onSelection(action: string, args: RowSelectingEventArgs | RowDeselectingEventArgs ): void {
         const eventArgs: FileSelectionEventArgs = {
             action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target
         };

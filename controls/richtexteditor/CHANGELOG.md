@@ -2,11 +2,23 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F179573` - Now, when typing in the Rich Text Editor the issue of letters appearing slowly has been resolved.
+
+- `#I417838` - Now, the `Underline` and `Strikethrough` toolbar styles applied properly when we modify the `font-size` in the editor.
+
 ## 20.4.43 (2023-01-10)
 
 ### RichTextEditor
 
 #### Bug Fixes
+
+- `#I423129` - Now, resolve the script error thrown after full screen and close the bootstrap modal dialog
 
 - `#I423129` - Now, the buttons for bold, italic, underline, and strikethrough are highlighted properly.
 
@@ -15,6 +27,8 @@
 - `#I425631` - Now, with the `enterKey` configuration set to `BR` the script error is no longer raised while modifying values in the editor.
 
 - `#I420264` - Now, the Code Format feature will now work correctly when you copy and paste the code into the Editor with the paste clean up settings enabled.
+
+- `#I424567` - Now, the quick table toolbar is not misplaced outside the Rich Text Editor when enabling IFrame.
 
 ## 20.4.40 (2022-12-28)
 

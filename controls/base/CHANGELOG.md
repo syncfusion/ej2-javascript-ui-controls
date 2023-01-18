@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### Common
+
+#### Bug Fixes
+
+- `#F178732` - Resolved the sudden changes in top value of `draggable` element.
+
 ## 20.4.42 (2023-01-04)
 
 ### Common

@@ -1086,8 +1086,15 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Configures the column chooser in the Grid.
+     *  <br><br>
+     * The available operators are,
+     * `startsWith` - Checks whether a value begins with the specified value.
+     * `endsWith` - Checks whether a value ends with the specified value.
+     * `contains` - Checks whether a value contains the specified value.
+     * `equal` - Checks whether a value is equal to the specified value.
+     * `notEqual` - Checks for values not equal to the specified value.
      *
-     * @default { columnChooserOperator: 'startsWith' }
+     * @default { operator: 'startsWith' }
      */
     columnChooserSettings?: ColumnChooserSettingsModel;
 
@@ -1396,7 +1403,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
-     * 
+     *
      * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event actionBegin

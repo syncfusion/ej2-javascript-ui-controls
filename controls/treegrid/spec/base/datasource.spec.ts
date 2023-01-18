@@ -1044,6 +1044,51 @@ export let sampleBlankData: Object[] = [
     },
     ];
 
+    export let stateDatas: object[] = [
+        {
+            id: 1,
+            TaskName: 'Parent Task 1',
+            StartDate: new Date('02/23/2017'),
+            EndDate: new Date('02/27/2017'),
+            Duration: 35,
+            Priority: 'high',
+            Progress: 50,
+            isParent: true,
+          },
+          {
+            id: 2,
+            TaskName: 'Parent Task 2',
+            StartDate: new Date('03/14/2017'),
+            EndDate: new Date('03/18/2017'),
+            Duration: 85,
+            Progress: 10,
+            Priority: 'low',
+            isParent: true,
+            ParentID: 1,
+          },
+          {
+            id: 3,
+            TaskName: 'Parent Task 3',
+            StartDate: new Date('03/14/2017'),
+            EndDate: new Date('03/18/2017'),
+            Duration: 85,
+            Progress: 10,
+            Priority: 'low',
+            isParent: true,
+            ParentID: 1
+          },
+          {
+            id: 4,
+            TaskName: 'Parent Task 4',
+            StartDate: new Date('03/14/2017'),
+            EndDate: new Date('03/18/2017'),
+            Duration: 85,
+            Progress: 10,
+            Priority: 'low',
+            isParent: true,
+            ParentID: 1
+          },
+    ];
 
     export let customTotalData: Object[] = [
         {

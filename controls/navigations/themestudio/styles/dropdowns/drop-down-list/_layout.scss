@@ -54,6 +54,9 @@
     #{&}.e-ddl.e-popup.e-ddl-device-filter {
       margin: $ddl-filter-margin;
     }
+    #{&}.e-ios {
+      position: fixed;
+    }
   }
 
   .e-ddl.e-control-wrapper .e-ddl-disable-icon {

@@ -239,7 +239,7 @@ export class Render {
                 const portals: string = 'portals';
                 const renderReactTemplates: string = 'renderReactTemplates';
                 if ((<{ isReact?: boolean }>this.parent).isReact && typeof (args.column.template) !== 'string') {
-                    args.column[`${templateFn}`](args.data, this.parent, 'template', tempID, null, null, cellElement);
+                    args.column[`${templateFn}`](args.data, this.parent, 'columnTemplate', tempID, null, null, cellElement);
                     if (isNullOrUndefined(this.parent.grid[`${portals}`])) {
                         this.parent.grid[`${portals}`] = this.parent[`${portals}`];
                     }

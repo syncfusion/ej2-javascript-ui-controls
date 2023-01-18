@@ -75,7 +75,7 @@ export class SparklineRenderer {
         this.sparkline = sparkline;
     }
     /**
-     * To process the sparkline data
+     * To process the sparkline data.
      */
     public processData(): void {
         let data: object[] = <object[]>this.sparkline.dataSource;

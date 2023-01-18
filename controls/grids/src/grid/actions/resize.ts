@@ -4,7 +4,7 @@ import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
 import * as events from '../base/constant';
 import { freezeTable } from '../base/enum';
-import { getScrollBarWidth, parentsUntil, gridActionHandler, Global } from '../base/util';
+import { getScrollBarWidth, parentsUntil, gridActionHandler, Global, getExactFrozenMovableColumn } from '../base/util';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as literals from '../base/string-literals';
@@ -189,14 +189,19 @@ export class Resize implements IAction {
         if (result === false) {
             let element: Column[];
             if (this.parent.isAutoFitColumns && gObj.isFrozenGrid()) {
+                let frozenMovableColumns: { 
+                    frozenLeft:Column[],
+                    movable:Column[],
+                    frozenRight: Column[] 
+                } = getExactFrozenMovableColumn(this.parent); 
                 if (columnbyindex.freezeTable === 'frozen-left') {
-                    element = gObj.getFrozenLeftColumns() as Column[];
+                    element = frozenMovableColumns.frozenLeft;
                 }
                 else if (columnbyindex.freezeTable === 'movable') {
-                    element = gObj.getMovableColumns() as Column[];
+                    element = frozenMovableColumns.movable;
                 }
                 else {
-                    element = gObj.getFrozenRightColumns() as Column[];
+                    element = frozenMovableColumns.frozenRight;
                 }
             }
             else {
@@ -275,6 +280,9 @@ export class Resize implements IAction {
             if (columnIndex > -1 && !isNullOrUndefined(column) && column.visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
+        }
+        if (this.parent.allowTextWrap) {
+            this.parent.notify(events.freezeRender, { case: 'refreshHeight', isModeChg: true });
         }
     }
 

@@ -99,7 +99,7 @@ export class DateTimeCategory extends Category {
         }
     }
     /**
-     * To get the Indexed axis label text with axis format for DateTimeCategory axis
+     * To get the Indexed axis label text with axis format for DateTimeCategory axis.
      *
      * @param {string} value value
      * @param {Function} format format

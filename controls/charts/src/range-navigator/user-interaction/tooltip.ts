@@ -32,7 +32,7 @@ export class RangeTooltip {
         this.elementId = range.element.id;
     }
     /**
-     * Left tooltip method called here
+     * Left tooltip method called here.
      *
      * @param {RangeSlider} rangeSlider RangeSlider
      */
@@ -71,7 +71,7 @@ export class RangeTooltip {
         return width;
     }
     /**
-     * Right tooltip method called here
+     * Right tooltip method called here.
      *
      * @param {RangeSlider} rangeSlider RangeSlider
      */

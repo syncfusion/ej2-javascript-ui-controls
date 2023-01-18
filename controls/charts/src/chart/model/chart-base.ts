@@ -157,7 +157,7 @@ export class LabelBorder extends ChildProperty<LabelBorder> {
 export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
 
     /**
-     * Start value of the multi level labels
+     * Start value of the multi level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -165,7 +165,7 @@ export class MultiLevelCategories extends ChildProperty<MultiLevelCategories> {
     @Property(null)
     public start: number | Date | string;
     /**
-     * End value of the multi level labels
+     * End value of the multi level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -280,7 +280,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     public dashArray: string;
 
     /**
-     * Size type of the strip line
+     * Size type of the strip line.
      *
      * @default Auto
      */
@@ -315,7 +315,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     public repeatUntil: Object | number | Date;
 
     /**
-     * isSegmented value of the strip line
+     * isSegmented value of the strip line.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -412,7 +412,7 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
     public zIndex: ZIndex;
 
     /**
-     * Strip line Opacity
+     * Strip line Opacity.
      *
      * @default 1
      */

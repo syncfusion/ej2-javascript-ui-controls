@@ -37,35 +37,35 @@ export interface SmithchartModel extends ComponentModel{
     theme?: SmithchartTheme;
 
     /**
-     *  options for customizing margin
+     *  options for customizing margin.
      */
     margin?: SmithchartMarginModel;
 
     /**
-     *  options for customizing margin
+     *  options for customizing margin.
      */
     font?: SmithchartFontModel;
 
     /**
-     *  options for customizing border
+     *  options for customizing border.
      */
 
     border?: SmithchartBorderModel;
 
     /**
-     *  options for customizing title
+     *  options for customizing title.
      */
 
     title?: TitleModel;
 
     /**
-     *  options for customizing series
+     *  options for customizing series.
      */
 
     series?: SmithchartSeriesModel[];
 
     /**
-     *  options for customizing legend
+     *  options for customizing legend.
      */
 
     legendSettings?: SmithchartLegendSettingsModel;
@@ -88,7 +88,7 @@ export interface SmithchartModel extends ComponentModel{
     background?: string;
 
     /**
-     *  Spacing between elements
+     *  Spacing between elements.
      *
      * @default 10
      */
@@ -96,7 +96,7 @@ export interface SmithchartModel extends ComponentModel{
     elementSpacing?: number;
 
     /**
-     *  Spacing between elements
+     *  Spacing between elements.
      *
      * @default 1
      */
@@ -160,7 +160,7 @@ export interface SmithchartModel extends ComponentModel{
     textRender?: EmitType<ISmithchartTextRenderEventArgs>;
 
     /**
-     * Triggers before the axis label is rendered
+     * Triggers before the axis label is rendered.
      *
      * @event axisLabelRender
      */
@@ -175,7 +175,7 @@ export interface SmithchartModel extends ComponentModel{
     seriesRender?: EmitType<ISmithchartSeriesRenderEventArgs>;
 
     /**
-     * Triggers before the tooltip rendering
+     * Triggers before the tooltip rendering.
      *
      * @event tooltipRender
      */

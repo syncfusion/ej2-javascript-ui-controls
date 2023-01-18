@@ -295,8 +295,9 @@ export class EventWindow {
             const tempEle: HTMLElement[] =
                 [].slice.call(this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false));
             append(tempEle, form);
-            this.parent.renderTemplates();
-            this.applyFormValidation();
+            this.parent.renderTemplates(() => {
+                this.applyFormValidation();
+            });
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
         }
@@ -1252,7 +1253,9 @@ export class EventWindow {
             }
         }
         if (this.recurrenceEditor && this.recurrenceEditor.value && this.recurrenceEditor.value !== '') {
-            alertType = this.recurrenceValidation(<Date>eventObj[this.fields.startTime], <Date>eventObj[this.fields.endTime], alert);
+            if(this.parent.currentAction !== 'EditOccurrence'){
+                alertType = this.recurrenceValidation(<Date>eventObj[this.fields.startTime], <Date>eventObj[this.fields.endTime], alert);
+            }
             let isShowAlert: boolean = true;
             if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
                 isShowAlert = false;
@@ -1479,53 +1482,58 @@ export class EventWindow {
         if (isNullOrUndefined(index)) {
             return false;
         }
+        const currentStartTime: Date = new Date(+currentData[this.fields.startTime]);
+        const currentEndTime: Date = new Date(+currentData[this.fields.endTime]);
+        if (index !== recurColl.length - 1) {
+            var nextStartTime = new Date(+recurColl[index + 1][this.fields.startTime]);
+            var nextEndTime = new Date(+recurColl[index + 1][this.fields.endTime]);
+        }
+        const lastEndTime: Date = new Date(+recurColl[recurColl.length - 1][this.fields.endTime]);
         if (index === 0) {
             if (!isNullOrUndefined(recurColl[index + 1])) {
-                if (!(util.resetTime(new Date(+recurColl[index + 1][this.fields.startTime])).getTime() >
-                    util.resetTime(new Date(+currentData[this.fields.endTime])).getTime()) &&
-                    (util.resetTime(new Date(+recurColl[recurColl.length - 1][this.fields.endTime])).getTime() >=
-                        util.resetTime(new Date(+currentData[this.fields.startTime])).getTime())) {
-                    this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
-                    return true;
-                }
-                else if (util.resetTime(new Date(+recurColl[recurColl.length - 1][this.fields.endTime])).getTime() <
-                    util.resetTime(new Date(+currentData[this.fields.startTime])).getTime()) {
+                if (!(nextStartTime.getTime() >= currentEndTime.getTime()) &&
+                    (util.resetTime(lastEndTime).getTime() >=
+                        util.resetTime(currentStartTime).getTime()) ||
+                    util.resetTime(lastEndTime).getTime() < util.resetTime(currentStartTime).getTime()) {
                     this.parent.quickPopup.openRecurrenceValidationAlert('occurrenceAlert');
+                    return true;
+                } else if (!(util.resetTime(currentStartTime).getTime() <
+                    util.resetTime(nextStartTime).getTime())) {
+                    this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                     return true;
                 }
             }
             return false;
         }
         else {
+            const previousStartTime: Date = new Date(+recurColl[index - 1][this.fields.startTime]);
+            const previousEndTime: Date = new Date(+recurColl[index - 1][this.fields.endTime]);
             if (index === recurColl.length - 1) {
-                if (!(util.resetTime(new Date(+recurColl[index - 1][this.fields.endTime])).getTime() <
-                    util.resetTime(new Date(+currentData[this.fields.startTime])).getTime()) &&
-                    (util.resetTime(new Date(+recurColl[(recurColl.length - 1) - index][this.fields.startTime])).getTime() <=
-                        util.resetTime(new Date(+currentData[this.fields.endTime])).getTime())) {
-                    this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
-                    return true;
-                }
-                else if (util.resetTime(new Date(+recurColl[(recurColl.length - 1) - index][this.fields.endTime])).getTime() >
-                    util.resetTime(new Date(+currentData[this.fields.startTime])).getTime()) {
+                if (util.resetTime(new Date(+recurColl[(recurColl.length - 1) - index][this.fields.startTime])).getTime() >
+                    util.resetTime(currentStartTime).getTime()) {
                     this.parent.quickPopup.openRecurrenceValidationAlert('occurrenceAlert');
                     return true;
                 }
+                else if (!((previousEndTime.getTime() <= currentStartTime.getTime()) &&
+                    (util.resetTime(currentStartTime).getTime() > util.resetTime(previousStartTime).getTime()))) {
+                    this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
+                    return true;
+                }
             }
-            else if (!(((util.resetTime(new Date(+recurColl[index - 1][this.fields.endTime])).getTime() <
-                util.resetTime(new Date(+currentData[this.fields.startTime])).getTime()) ||
-                (util.resetTime(new Date(+recurColl[0][this.fields.startTime])).getTime() >
-                    util.resetTime(new Date(+currentData[this.fields.startTime])).getTime())) &&
-                ((util.resetTime(new Date(+recurColl[index + 1][this.fields.startTime])).getTime() >
-                    util.resetTime(new Date(+currentData[this.fields.endTime])).getTime()) ||
-                    (util.resetTime(new Date(+recurColl[recurColl.length - 1][this.fields.endTime])).getTime() <
-                        util.resetTime(new Date(+currentData[this.fields.startTime])).getTime())))) {
+            else if (!(((
+                util.resetTime(previousStartTime).getTime() < util.resetTime(currentStartTime).getTime()) ||
+                util.resetTime(new Date(+recurColl[0][this.fields.startTime])).getTime() >
+                util.resetTime(currentStartTime).getTime()) &&
+                ((util.resetTime(nextStartTime).getTime() > util.resetTime(currentStartTime).getTime()) ||
+                    (lastEndTime.getTime() < currentStartTime.getTime())))) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return true;
             }
-            else if ((util.resetTime(new Date(+recurColl[index + 1][this.fields.endTime])).getTime() <
-                util.resetTime(new Date(+currentData[this.fields.startTime])).getTime()) ||
-                (util.resetTime(new Date(+recurColl[index - 1][this.fields.startTime])).getTime() >
-                    util.resetTime(new Date(+currentData[this.fields.endTime])).getTime())) {
+            else if (!(previousEndTime.getTime() <= currentStartTime.getTime() && nextStartTime.getTime() >
+                currentEndTime.getTime()) || (util.resetTime(nextEndTime).getTime() <
+                    util.resetTime(currentStartTime).getTime()) ||
+                (util.resetTime(previousStartTime).getTime() > util.resetTime(currentEndTime).getTime()) ||
+                !(util.resetTime(currentStartTime).getTime() < util.resetTime(nextStartTime).getTime())) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('occurrenceAlert');
                 return true;
             }

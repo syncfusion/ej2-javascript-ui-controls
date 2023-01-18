@@ -115,33 +115,33 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     public availableSize: SmithchartSize;
 
     /**
-     *  options for customizing margin
+     *  options for customizing margin.
      */
     @Complex<SmithchartMarginModel>({}, SmithchartMargin)
     public margin: SmithchartMarginModel;
 
     /**
-     *  options for customizing margin
+     *  options for customizing margin.
      */
     @Complex<SmithchartFontModel>({}, SmithchartFont)
     public font: SmithchartFontModel;
 
     /**
-     *  options for customizing border
+     *  options for customizing border.
      */
 
     @Complex<SmithchartBorderModel>({}, SmithchartBorder)
     public border: SmithchartBorderModel;
 
     /**
-     *  options for customizing title
+     *  options for customizing title.
      */
 
     @Complex<TitleModel>({}, Title)
     public title: TitleModel;
 
     /**
-     *  options for customizing series
+     *  options for customizing series.
      */
 
     @Collection<SmithchartSeriesModel>([{}], SmithchartSeries)
@@ -149,7 +149,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
 
     /**
-     *  options for customizing legend
+     *  options for customizing legend.
      */
 
     @Complex<SmithchartLegendSettingsModel>({}, SmithchartLegendSettings)
@@ -200,7 +200,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     public background: string;
 
     /**
-     *  Spacing between elements
+     *  Spacing between elements.
      *
      * @default 10
      */
@@ -209,7 +209,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     public elementSpacing: number;
 
     /**
-     *  Spacing between elements
+     *  Spacing between elements.
      *
      * @default 1
      */
@@ -279,7 +279,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     @Event()
     public textRender: EmitType<ISmithchartTextRenderEventArgs>;
     /**
-     * Triggers before the axis label is rendered
+     * Triggers before the axis label is rendered.
      *
      * @event axisLabelRender
      */
@@ -296,7 +296,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     public seriesRender: EmitType<ISmithchartSeriesRenderEventArgs>;
 
     /**
-     * Triggers before the tooltip rendering
+     * Triggers before the tooltip rendering.
      *
      * @event tooltipRender
      */

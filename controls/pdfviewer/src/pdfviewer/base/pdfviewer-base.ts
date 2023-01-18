@@ -8196,7 +8196,7 @@ export class PdfViewerBase {
                 if (isAnnotationDrawn) {
                     const obj: IElement = findActiveElement(evt, this, this.pdfViewer);
                     // eslint-disable-next-line max-len
-                    if ((this.isShapeAnnotationModule() && this.isCalibrateAnnotationModule())) {
+                    if ((this.isShapeAnnotationModule() || this.isCalibrateAnnotationModule())) {
                         this.pdfViewer.annotation.onShapesMouseup(obj as PdfAnnotationBaseModel, evt);
                     }                    
                 }

@@ -25,7 +25,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
     public dataSource: Object | DataManager;
 
     /**
-     * It defines the xName for the series
+     * It defines the xName for the series.
      *
      * @default null
      */
@@ -33,7 +33,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
     public xName: string;
 
     /**
-     * It defines the yName for the series
+     * It defines the yName for the series.
      *
      * @default  null
      */
@@ -41,7 +41,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
     public yName: string;
 
     /**
-     * It defines the query for the data source
+     * It defines the query for the data source.
      *
      * @default null
      */
@@ -49,7 +49,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
     public query: Query;
 
     /**
-     * It defines the series type of the range navigator
+     * It defines the series type of the range navigator.
      *
      * @default 'Line'
      */
@@ -131,7 +131,7 @@ export class RangeNavigatorSeries extends ChildProperty<RangeNavigatorSeries> {
  */
 export class ThumbSettings extends ChildProperty<ThumbSettings> {
     /**
-     * width of thumb
+     * width of thumb.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -140,7 +140,7 @@ export class ThumbSettings extends ChildProperty<ThumbSettings> {
     public width: number;
 
     /**
-     * height of thumb
+     * height of thumb.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -149,13 +149,13 @@ export class ThumbSettings extends ChildProperty<ThumbSettings> {
     public height: number;
 
     /**
-     * border for the thumb
+     * border for the thumb.
      */
     @Complex<BorderModel>({ width: 1, color: null }, Border)
     public border: BorderModel;
 
     /**
-     * fill color for the thumb
+     * fill color for the thumb.
      *
      * @default null
      */
@@ -163,7 +163,7 @@ export class ThumbSettings extends ChildProperty<ThumbSettings> {
     public fill: string;
 
     /**
-     * type of thumb
+     * type of thumb.
      *
      * @default `Circle`
      */
@@ -176,13 +176,13 @@ export class ThumbSettings extends ChildProperty<ThumbSettings> {
  */
 export class StyleSettings extends ChildProperty<StyleSettings> {
     /**
-     * thumb settings
+     * thumb settings.
      */
     @Complex<ThumbSettingsModel>({}, ThumbSettings)
     public thumb: ThumbSettingsModel;
 
     /**
-     * Selected region color
+     * Selected region color.
      *
      * @default null
      */
@@ -190,7 +190,7 @@ export class StyleSettings extends ChildProperty<StyleSettings> {
     public selectedRegionColor: string;
 
     /**
-     * Un Selected region color
+     * Un Selected region color.
      *
      * @default null
      */
@@ -263,7 +263,7 @@ export class RangeTooltipSettings extends ChildProperty<RangeTooltipSettings> {
     public border: BorderModel;
 
     /**
-     * It defines display mode for tooltip
+     * It defines display mode for tooltip.
      *
      * @default 'OnDemand'
      */

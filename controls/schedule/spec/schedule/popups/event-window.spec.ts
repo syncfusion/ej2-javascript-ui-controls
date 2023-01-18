@@ -2823,6 +2823,17 @@ describe('Schedule event window initial load', () => {
             expect(dialogElement.querySelector('.e-time-zone-container.e-disable')).toBeFalsy();
             const closeButton: HTMLElement = dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement;
             closeButton.click();
+            schObj.width = '400px';
+            schObj.dataBind();
+        });
+        it ('EJ2-66573 - Editor window does not open when schedule is rendered with minimum width', () => {
+            expect(schObj.element.style.width).toEqual('400px');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment-wrapper')[4].firstElementChild as HTMLElement, 'click', 300, 350);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment-wrapper')[4].firstElementChild as HTMLElement, 'dblclick', 300, 350);
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS).firstElementChild as HTMLElement;
+            expect(dialogElement).toBeTruthy();
+            expect(dialogElement.classList.contains('e-popup-open')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toBeFalsy();
         });
     });
 
@@ -3009,6 +3020,234 @@ describe('Schedule event window initial load', () => {
             schObj.closeEditor();
             expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
             expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
+        });
+    });
+
+    describe('EJ2-67179 - checking possible alert cases', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any> = {
+            Id: 1,
+            Subject: 'test event',
+            StartTime: new Date(2023, 0, 2, 23, 30),
+            EndTime: new Date(2023, 0, 3, 0, 0),
+            IsAllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+        };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2023, 0, 1) };
+            schObj = util.createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('add event checking', (done: DoneFn) => {
+            expect(schObj.eventsData.length).toEqual(0);
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                done();
+            };
+            schObj.addEvent(eventData);
+        });
+
+        it('Checking possible alert case for edit first occurrence', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                expect(schObj.element.querySelector('[data-id="Appointment_2"] .e-subject').innerHTML).toEqual('Edited');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'dblclick');
+            const eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startDate: DateTimePicker =
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker =
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            startDate.value = new Date('1/6/23 10:00 PM');
+            startDate.dataBind();
+            endDate.value = new Date('1/6/23 11:00 PM');
+            endDate.dataBind();
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+            const okButton: HTMLElement = eventDialog.querySelector('.e-quick-alertok');
+            okButton.click();
+            startDate.value = new Date('1/1/23 11:00 PM');
+            startDate.dataBind();
+            endDate.value = new Date('1/3/23 11:50 PM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+            okButton.click();
+            startDate.value = new Date('1/3/23 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('1/3/23 11:30 AM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
+            okButton.click();
+            startDate.value = new Date('1/1/23 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('1/1/23 11:30 PM');
+            endDate.dataBind();
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Edited';
+            saveButton.click();
+        });
+
+        it('Checking possible alert case for edit mid occurrence', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                expect(schObj.element.querySelectorAll('[data-id="Appointment_3"] .e-subject')[0].innerHTML).toEqual('Edited Mid Occurrence');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_1"]')[1] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_1"]')[1] as HTMLElement, 'dblclick');
+            const eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startDate: DateTimePicker =
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker =
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            startDate.value = new Date('12/30/22 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('12/30/22 11:30 AM');
+            endDate.dataBind();
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+            const okButton: HTMLElement = eventDialog.querySelector('.e-quick-alertok');
+            okButton.click();
+            startDate.value = new Date('1/7/23 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('1/7/23 11:30 AM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+            okButton.click();
+            startDate.value = new Date('1/4/23 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('1/5/23 11:50 PM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+            okButton.click();
+            startDate.value = new Date('1/3/23 11:00 PM');
+            startDate.dataBind();
+            endDate.value = new Date('1/4/23 11:00 AM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
+            okButton.click();
+            startDate.value = new Date('1/5/23 11:00 PM');
+            startDate.dataBind();
+            endDate.value = new Date('1/5/23 11:30 PM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
+            okButton.click();
+            startDate.value = new Date('1/4/23 10:00 PM');
+            startDate.dataBind();
+            endDate.value = new Date('1/5/23 11:30 AM');
+            endDate.dataBind();
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Edited Mid Occurrence';
+            saveButton.click();
+        });
+
+        it('Checking possible alert case for edit last occurrence', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                expect(schObj.element.querySelector('[data-id="Appointment_4"] .e-subject').innerHTML).toEqual('Edited Last Occurrence');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_1"]')[2] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_1"]')[2] as HTMLElement, 'dblclick');
+            const eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startDate: DateTimePicker =
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker =
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            startDate.value = new Date('1/5/23 11:30 PM');
+            startDate.dataBind();
+            endDate.value = new Date('1/6/23 11:30 AM');
+            endDate.dataBind();
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Two occurrences of the same event cannot occur on the same day.');
+            const okButton: HTMLElement = eventDialog.querySelector('.e-quick-alertok');
+            okButton.click();
+            startDate.value = new Date('12/30/22 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('12/30/22 11:30 AM');
+            endDate.dataBind();
+            saveButton.click();
+            expect(eventDialog.querySelector('.e-dlg-content').innerHTML).
+                toEqual('Cannot reschedule an occurrence of the recurring appointment if it skips over a later occurrence of the same appointment.');
+            okButton.click();
+            startDate.value = new Date('1/7/23 11:30 AM');
+            startDate.dataBind();
+            endDate.value = new Date('1/7/23 11:30 PM');
+            endDate.dataBind();
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Edited Last Occurrence';
+            saveButton.click();
+        });
+
+        it('Checking edit start date of mid occurence, if that date not having occurrence', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                expect(schObj.element.querySelector('[data-id="Appointment_5"] .e-subject').innerHTML).toEqual('Start date edited for mid occurrence');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_1"]')[1] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_1"]')[1] as HTMLElement, 'dblclick');
+            const eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const startDate: DateTimePicker =
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            const endDate: DateTimePicker =
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            startDate.value = new Date('1/6/23 11:00 AM');
+            startDate.dataBind();
+            endDate.value = new Date('1/6/23 11:30 AM');
+            endDate.dataBind();
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Start date edited for mid occurrence';
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+        });
+
+        it('Checking occurrence title edit', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                expect(schObj.element.querySelector('[data-id="Appointment_6"] .e-subject').innerHTML).toEqual('Edited');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'dblclick');
+            const eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            const editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.e-subject') as HTMLInputElement).value = 'Edited';
+            const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
         });
     });
 

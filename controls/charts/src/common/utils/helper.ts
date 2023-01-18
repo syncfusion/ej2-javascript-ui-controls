@@ -38,6 +38,13 @@ import {Alignment} from './enum';
  */
 export function sort(data: Object[], fields: string[], isDescending?: boolean): Object[] {
     const sortData: Object[] = <Object[]>extend([], data, null);
+    for (let i: number = 0; i < sortData.length; i++) {
+        for (let j: number = 0; j < fields.length; j++) {
+            if (sortData[i][fields[j]] instanceof Date) {
+                sortData[i][fields[j]] = sortData[i][fields[j]].getTime();
+            }
+        }
+    }
     sortData.sort((a: Object, b: Object) => {
         let first: number = 0;
         let second: number = 0;
@@ -800,7 +807,7 @@ export function markerAnimate(
 }
 
 /**
- * Animate the rect element
+ * Animate the rect element.
  */
 export function animateRectElement(
     element: Element, delay: number, duration: number, currentRect: Rect, previousRect: Rect
@@ -832,7 +839,7 @@ export function animateRectElement(
 }
 
 /**
- * Animation after legend click a path
+ * Animation after legend click a path.
  *
  * @param {Element} element element to be animated
  * @param {string} direction current direction of the path
@@ -896,7 +903,7 @@ export function pathAnimation(
     });
 }
 /**
- * To append the clip rect element
+ * To append the clip rect element.
  *
  * @param {boolean} redraw chart redraw value
  * @param {BaseAttibutes} options element options
@@ -1304,7 +1311,7 @@ export function appendElement(
     }
 }
 /**
- * Method to append child element
+ * Method to append child element.
  *
  * @param {boolean} isCanvas canvas mode value
  * @param {Element} parent parent element
@@ -1838,7 +1845,7 @@ export function textElement(
 }
 
 /**
- * Method to calculate the width and height of the chart
+ * Method to calculate the width and height of the chart.
  */
 export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart): void {
     // fix for Chart rendered with default width in IE issue
@@ -1868,6 +1875,9 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         stringToNumber(chart.width, containerWidth) || containerWidth || 600,
         stringToNumber(chart.height, containerHeight || height) || containerHeight || height
     );
+    if (containerWidth && chart.availableSize.width > containerWidth) {
+        chart.availableSize.width = containerWidth;
+    }
     if (chart.getModuleName() === 'chart') {
         let scaleX: number = 1; let scaleY: number = 1;
         if (chart.width === '' || chart.width === null || chart.width === '100%') {
@@ -1916,7 +1926,7 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): vo
 }
 
 /**
- * To calculate chart title and height
+ * To calculate chart title and height.
  *
  * @param {string} title text of the title
  * @param {FontModel} style style of the title
@@ -1939,7 +1949,7 @@ export function getTitle(title: string, style: FontModel, width: number): string
 }
 
 /**
- * Method to calculate x position of title
+ * Method to calculate x position of title.
  */
 export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
     let positionX: number;
@@ -1954,7 +1964,7 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
 }
 
 /**
- * Method to find new text and element size based on textOverflow
+ * Method to find new text and element size based on textOverflow.
  */
 export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, wrapAnyWhere ?: boolean, clip ?: boolean): string[] {
     if (wrapAnyWhere) {
@@ -1986,7 +1996,7 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
     }
 }
 /**
- * Method to find new text and element size based on textWrap
+ * Method to find new text and element size based on textWrap.
  */
 export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, font: FontModel) : string[] {
     let size : number = measureText(currentLabel, font).width;
@@ -2025,7 +2035,7 @@ export function textWrapAnyWhere(currentLabel: string, maximumWidth: number, fon
 }
 
 /**
- * Method to support the subscript and superscript value to text
+ * Method to support the subscript and superscript value to text.
  */
 export function getUnicodeText(text: string, regexp: RegExp): string {
     const title: string = text.replace(regexp, ' ');
@@ -2056,7 +2066,7 @@ export function getUnicodeText(text: string, regexp: RegExp): string {
 }
 
 /**
- * Method to reset the blazor templates
+ * Method to reset the blazor templates.
  */
 export function blazorTemplatesReset(control: Chart | AccumulationChart): void {
     for (let i: number = 0; i < control.annotations.length; i++) {

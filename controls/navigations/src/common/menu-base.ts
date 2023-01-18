@@ -872,11 +872,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
                         closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
                         trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
+                    } else if (trgtpopUp) {
+                        closedLi = trgtpopUp.querySelector('.e-menu-item.e-selected');
+                        trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     }
                     const submenus: NodeListOf<Element> = liElem && liElem.querySelectorAll('.e-menu-item');
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
-                    } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi && this.keyType !== 'left') {
+                    } else if (isOpen && !this.hamburgerMode && closedLi && !trgtLi && this.keyType !== 'left' && (this.navIdx.length || !this.isMenu && this.navIdx.length === 0) ) {
                         let ele: HTMLElement = (e && (e.target as Element).classList.contains('e-vscroll'))
                             ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
                         if (ele) {
@@ -888,7 +891,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
                         }
                     } else if (isOpen && !isIterated && !ulIndex && ((this.hamburgerMode && this.navIdx.length) ||
-                        this.navIdx.length === 1)) {
+                        this.navIdx.length === 1 && liElem && trgtpopUp !== liElem.parentElement)) {
                         this.closeMenu(null, e);
                     } else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);

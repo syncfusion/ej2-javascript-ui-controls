@@ -34,7 +34,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -419,7 +419,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container' });
+            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -494,7 +494,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let loaded1: EmitType<ILoadedEventArgs>;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

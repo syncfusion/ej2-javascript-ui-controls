@@ -25,6 +25,7 @@ export class FormFields {
     private maintanMinTabindex: any = {};
     private isSignatureField: boolean = false;
     private  paddingDifferenceValue : number = 10;
+    private indicatorPaddingValue : number = 4;
     private isKeyDownCheck: boolean = false;
     /**
      * @private
@@ -214,7 +215,12 @@ export class FormFields {
                                     count++;
                                 }
                             }
-                            
+                            if(currentData.ActualFieldName===null &&  this.formFieldsData.filter((item:any)=> item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value:any)=>value.Name!='ink').length===0){
+                                this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
+                                this.pdfViewerBase.signatureModule.storeSignatureData( pageIndex, currentData);
+                                this.isSignatureRendered = true;
+                                count++;
+                            }
                                 this.pdfViewerBase.isLoadedFormFieldAdded = true; 
                           }
                         } else {
@@ -224,6 +230,13 @@ export class FormFields {
                                 let field: any = this.createFormFields(currentData, pageIndex, i, null, count);
                                 let inputField : any = field.currentField;
                                 let signCount : number = field.count;
+                                let isFieldRotated : boolean = false;
+                                if(currentData.ActualFieldName===null &&  this.formFieldsData.filter((item:any)=> item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value:any)=>value.Name!='ink').length===0){
+                                    this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
+                                    this.pdfViewerBase.signatureModule.storeSignatureData( pageIndex, currentData);
+                                    this.isSignatureRendered = true;
+                                    count++;
+                                }
                                 if (inputField) {
                                     // eslint-disable-next-line
                                     let divElement: any = this.createParentElement(currentData, pageIndex);
@@ -232,7 +245,6 @@ export class FormFields {
                                     // eslint-disable-next-line
                                     let font: any = currentData['Font'];
                                     // eslint-disable-next-line
-                                    let isFieldRotated : boolean = false;
                                     var rotateAngle : number= 0;
                                     if (currentData['Rotation'] === 0) {
                                         isFieldRotated = true;
@@ -1242,56 +1254,57 @@ export class FormFields {
     private updateSignatureDataInSession(annot: any, key: string) {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
-        for (let i: number = 0; i < formFieldsData.length; i++) {
-            if (formFieldsData[i].Key === key) {
-                let formFieldIndex: number = this.pdfViewer.formFieldCollection.findIndex(el => el.id === formFieldsData[i].FormField.id.split('_')[0]);
-                if (annot.shapeAnnotationType === "SignatureText") {
-                    formFieldsData[i].FormField.signatureType = "Text";
-                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
-                    (this.pdfViewer.nameTable as any)[key].signatureType = "Text";
-                    formFieldsData[i].FormField.fontFamily = annot.fontFamily === "TimesRoman" ? "Times New Roman" : annot.fontFamily;
-                    this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
-                    (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
-                    formFieldsData[i].FormField.fontSize = annot.fontSize;
-                    this.pdfViewerBase.formFieldCollection[i].FormField.fontSize = annot.fontSize;
-                    (this.pdfViewer.nameTable as any)[key].fontSize = annot.fontSize;
-                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Text" : null;
-                } else if (annot.shapeAnnotationType === "SignatureImage") {
-                    formFieldsData[i].FormField.signatureType = "Image";
-                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
-                    (this.pdfViewer.nameTable as any)[key].signatureType = "Image";
-                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Image" : null;
-                } else {
-                    formFieldsData[i].FormField.signatureType = "Path";
-                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
-                    (this.pdfViewer.nameTable as any)[key].signatureType = "Path";
-                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Path" : null;
+        if(!isNullOrUndefined(formFieldsData)){
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                if (formFieldsData[i].Key === key) {
+                    let formFieldIndex: number = this.pdfViewer.formFieldCollection.findIndex(el => el.id === formFieldsData[i].FormField.id.split('_')[0]);
+                    if (annot.shapeAnnotationType === "SignatureText") {
+                        formFieldsData[i].FormField.signatureType = "Text";
+                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
+                        (this.pdfViewer.nameTable as any)[key].signatureType = "Text";
+                        formFieldsData[i].FormField.fontFamily = annot.fontFamily === "TimesRoman" ? "Times New Roman" : annot.fontFamily;
+                        this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
+                        (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
+                        formFieldsData[i].FormField.fontSize = annot.fontSize;
+                        this.pdfViewerBase.formFieldCollection[i].FormField.fontSize = annot.fontSize;
+                        (this.pdfViewer.nameTable as any)[key].fontSize = annot.fontSize;
+                        formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Text" : null;
+                    } else if (annot.shapeAnnotationType === "SignatureImage") {
+                        formFieldsData[i].FormField.signatureType = "Image";
+                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
+                        (this.pdfViewer.nameTable as any)[key].signatureType = "Image";
+                        formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Image" : null;
+                    } else {
+                        formFieldsData[i].FormField.signatureType = "Path";
+                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
+                        (this.pdfViewer.nameTable as any)[key].signatureType = "Path";
+                        formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureType = "Path" : null;
+                    }
+                    formFieldsData[i].FormField.signatureBound = annot.bounds;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = annot.bounds;
+                    (this.pdfViewer.nameTable as any)[key].signatureBound = annot.bounds;
+                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureBound = annot.bounds : null;
+                    if (annot.shapeAnnotationType === "Path") {
+                        let collectionData: any = processPathData(annot.data);
+                        let csData: any = splitArrayCollection(collectionData);
+                        formFieldsData[i].FormField.value = JSON.stringify(csData);
+                        (this.pdfViewer.nameTable as any)[key].value = annot.data;
+                        (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
+                        this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                        formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = JSON.stringify(csData) : null;
+                    } else {
+                        formFieldsData[i].FormField.value = annot.data;
+                        this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
+                        (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
+                        (this.pdfViewer.nameTable as any)[key].value = annot.data;
+                        formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = annot.data : null;
+                    }
+                    this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[i].FormField);
+                    this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldsData[i].FormField, true, false, false,
+                        false, false, false, false, false, false, false, false, false, false, false, false, "", formFieldsData[i].FormField.value);
                 }
-                formFieldsData[i].FormField.signatureBound = annot.bounds;
-                this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = annot.bounds;
-                (this.pdfViewer.nameTable as any)[key].signatureBound = annot.bounds;
-                formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].signatureBound = annot.bounds : null;
-                if (annot.shapeAnnotationType === "Path") {
-                    let collectionData: any = processPathData(annot.data);
-                    let csData: any = splitArrayCollection(collectionData);
-                    formFieldsData[i].FormField.value = JSON.stringify(csData);
-                    (this.pdfViewer.nameTable as any)[key].value = annot.data;
-                    (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
-                    this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
-                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = JSON.stringify(csData) : null;
-                } else {
-                    formFieldsData[i].FormField.value = annot.data;
-                    this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
-                    (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
-                    (this.pdfViewer.nameTable as any)[key].value = annot.data;
-                    formFieldIndex > -1 ? this.pdfViewer.formFieldCollection[formFieldIndex].value = annot.data : null;
-                }
-                this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[i].FormField);
-                this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldsData[i].FormField, true, false, false,
-                    false, false, false, false, false, false, false, false, false, false, false, false, "", formFieldsData[i].FormField.value);
             }
         }
-
         this.pdfViewerBase.setItemInSessionStorage(formFieldsData, '_formDesigner');
     }
 
@@ -2274,6 +2287,7 @@ export class FormFields {
         let inputField: any = document.createElement('input');
         inputField.type = 'text';
         inputField.name = data.FieldName;
+        const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         // eslint-disable-next-line
         let previousField: any = document.getElementById('signIcon_' + pageIndex + '_' + index);
         if (previousField && !printContainer) {
@@ -2292,15 +2306,17 @@ export class FormFields {
         let font: any = data['Font'];
         const left: number = this.ConvertPointToPixel(bounds.X);
         const top: number = this.ConvertPointToPixel(bounds.Y);
+        const indicatorWidth : number =this.ConvertPointToPixel(bounds.Width);
+        const indicatorHeight : number =this.ConvertPointToPixel(bounds.Height);
         // eslint-disable-next-line max-len
-        const height: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height > bounds.Height / 2 ? bounds.Height / 2 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height) : bounds.Height / 2;
+        const height: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height > indicatorHeight * zoomvalue / 2 ? indicatorHeight * zoomvalue / 2 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height) : indicatorHeight * zoomvalue / 2;
         // eslint-disable-next-line max-len
-        const width: number = signatureFieldIndicatorWidth > bounds.Width / 2 ? bounds.Width / 2 : signatureFieldIndicatorWidth;
+        const width: number = signatureFieldIndicatorWidth > indicatorWidth * zoomvalue / 2 ? indicatorWidth * zoomvalue / 2 : signatureFieldIndicatorWidth;
         // eslint-disable-next-line max-len
-        const fontSize: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize) : 10;
+        const size: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings ? (this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize) : 10;
+        const fontSize : number = size > width ? width /2 : (size > height? height/2: size);
         span.style.position = 'absolute';
         span.id = 'signIcon_' + pageIndex + '_' + index;
-        const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         const rotation: number = this.getAngle(pageIndex);
         // eslint-disable-next-line
         let annotBounds: any = { left: left, top: top, width: width, height: height };
@@ -2321,7 +2337,9 @@ export class FormFields {
                 span.style.fontSize = (fontSize - 1) + 'px';
             }
         }
-        span.style.padding = '2px';
+        if(!((height + this.indicatorPaddingValue) > indicatorHeight * zoomvalue) && !((width + this.indicatorPaddingValue) > indicatorWidth * zoomvalue)){
+            span.style.padding = '2px';
+        }
         span.style.textAlign = 'center';
         span.style.boxSizing = 'content-box';
         // eslint-disable-next-line

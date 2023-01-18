@@ -38,7 +38,7 @@ export class BulletTooltip {
     }
 
     /**
-     * To create tooltip div element
+     * To create tooltip div element.
      */
     public _elementTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number): void {
         let tooltipDiv: HTMLDivElement = <HTMLDivElement>this.control.createElement('div');
@@ -71,7 +71,7 @@ export class BulletTooltip {
 
 
     /**
-     * To display the bullet chart tooltip
+     * To display the bullet chart tooltip.
      */
     // tslint:disable-next-line:max-func-body-length
     public _displayTooltip(e: PointerEvent, targetClass: string, targetId: string, mouseX: number, mouseY: number): void {
@@ -181,7 +181,7 @@ export class BulletTooltip {
     }
 
     /**
-     * To update template values in the tooltip
+     * To update template values in the tooltip.
      */
     public updateTemplateFn(): void {
         if (this.control.tooltip.template) {

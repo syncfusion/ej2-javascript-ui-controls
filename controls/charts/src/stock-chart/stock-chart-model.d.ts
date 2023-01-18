@@ -146,7 +146,7 @@ export interface StockChartModel extends ComponentModel{
     titleStyle?: StockChartFontModel;
 
     /**
-     * Defines the collection of technical indicators, that are used in financial markets
+     * Defines the collection of technical indicators, that are used in financial markets.
      */
     indicators?: StockChartIndicatorModel[];
 
@@ -297,7 +297,7 @@ export interface StockChartModel extends ComponentModel{
     legendRender?: EmitType<IStockLegendRenderEventArgs>;
 
     /**
-     * Triggers after click on legend
+     * Triggers after click on legend.
      *
      * @event legendClick
      */
@@ -325,14 +325,14 @@ export interface StockChartModel extends ComponentModel{
     isMultiSelect?: boolean;
 
     /**
-     * Triggers before the range navigator rendering
+     * Triggers before the range navigator rendering.
      *
      * @event load
      */
     load?: EmitType<IStockChartEventArgs>;
 
     /**
-     * Triggers after the range navigator rendering
+     * Triggers after the range navigator rendering.
      *
      * @event loaded
      * @blazorProperty 'Loaded'

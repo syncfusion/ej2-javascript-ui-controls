@@ -591,7 +591,7 @@ export interface AxisModel {
     crossesAt?: Object;
 
     /**
-     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
+     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line.
      *
      * @default true
      */
@@ -599,7 +599,7 @@ export interface AxisModel {
     placeNextToAxisLine?: boolean;
 
     /**
-     * Specifies axis name with which the axis line has to be crossed
+     * Specifies axis name with which the axis line has to be crossed.
      *
      * @default null
      */
@@ -646,7 +646,7 @@ export interface AxisModel {
     enableTrim?: boolean;
 
     /**
-     * Specifies the labelPadding from axis
+     * Specifies the labelPadding from axis.
      *
      * @default 5
      */
@@ -654,7 +654,7 @@ export interface AxisModel {
     labelPadding?: number;
 
     /**
-     * Specifies the titlePadding from axis label
+     * Specifies the titlePadding from axis label.
      *
      * @default 5
      */
@@ -752,12 +752,12 @@ export interface AxisModel {
     tabIndex?: number;
 
     /**
-     * Specifies the stripLine collection for the axis
+     * Specifies the stripLine collection for the axis.
      */
     stripLines?: StripLineSettingsModel[];
 
     /**
-     * Specifies the multi level labels collection for the axis
+     * Specifies the multi level labels collection for the axis.
      */
     multiLevelLabels?: MultiLevelLabelsModel[];
 
@@ -767,7 +767,7 @@ export interface AxisModel {
     border?: LabelBorderModel;
 
     /**
-     * Option to customize scrollbar with lazy loading
+     * Option to customize scrollbar with lazy loading.
      */
     scrollbarSettings?: ScrollbarSettingsModel;
 

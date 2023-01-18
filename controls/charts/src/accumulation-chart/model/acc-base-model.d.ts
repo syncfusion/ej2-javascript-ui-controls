@@ -13,16 +13,16 @@ export interface AccumulationAnnotationSettingsModel {
     content?: string;
 
     /**
-     * if set coordinateUnit as `Pixel` X specifies the axis value
-     * else is specifies pixel or percentage of coordinate
+     * if set coordinateUnit as `Pixel` X specifies the axis value.
+     * else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
     x?: string | Date | number;
 
     /**
-     * if set coordinateUnit as `Pixel` Y specifies the axis value
-     * else is specifies pixel or percentage of coordinate
+     * if set coordinateUnit as `Pixel` Y specifies the axis value.
+     * else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
@@ -311,7 +311,7 @@ export interface AccumulationSeriesModel {
     name?: string;
 
     /**
-     * The provided value will be considered as a Tooltip Mapping name
+     * The provided value will be considered as a Tooltip Mapping name.
      *
      * @default ''
      */
@@ -389,14 +389,14 @@ export interface AccumulationSeriesModel {
     selectionStyle?: string;
 
     /**
-     * AccumulationSeries y values less than groupTo are combined into single slice named others
+     * AccumulationSeries y values less than groupTo are combined into single slice named others.
      *
      * @default null
      */
     groupTo?: string;
 
     /**
-     * AccumulationSeries y values less than groupMode are combined into single slice named others
+     * AccumulationSeries y values less than groupMode are combined into single slice named others.
      *
      * @default Value
      */
@@ -489,7 +489,7 @@ export interface AccumulationSeriesModel {
     explodeIndex?: number;
 
     /**
-     * options to customize the empty points in series
+     * options to customize the empty points in series.
      */
     emptyPointSettings?: EmptyPointSettingsModel;
 
@@ -501,35 +501,35 @@ export interface AccumulationSeriesModel {
     gapRatio?: number;
 
     /**
-     * Defines the width of the funnel/pyramid with respect to the chart area
+     * Defines the width of the funnel/pyramid with respect to the chart area.
      *
      * @default '80%'
      */
     width?: string;
 
     /**
-     * Defines the height of the funnel/pyramid with respect to the chart area
+     * Defines the height of the funnel/pyramid with respect to the chart area.
      *
      * @default '80%'
      */
     height?: string;
 
     /**
-     * Defines the width of the funnel neck with respect to the chart area
+     * Defines the width of the funnel neck with respect to the chart area.
      *
      * @default '20%'
      */
     neckWidth?: string;
 
     /**
-     * Defines the height of the funnel neck with respect to the chart area
+     * Defines the height of the funnel neck with respect to the chart area.
      *
      * @default '20%'
      */
     neckHeight?: string;
 
     /**
-     * Defines how the values have to be reflected, whether through height/surface of the segments
+     * Defines how the values have to be reflected, whether through height/surface of the segments.
      *
      * @default 'Linear'
      */

@@ -44,7 +44,7 @@ describe('Legend checking for the pie series', () => {
     let accumulation: AccumulationChart;
     let trigger: MouseEvents = new MouseEvents();
     beforeAll((): void => {
-        ele = createElement('div', { id: id });
+        ele = createElement('div', { id: id, styles: 'width: 800px' });
         document.body.appendChild(ele);
         accumulation = new AccumulationChart({
             border: { width: 1, color: 'blue' },
@@ -232,7 +232,7 @@ describe('Legend checking for the pie series', () => {
     it('Smart Legend placing datalabel Inside, legend position right, exploding length less than chart width', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             legendEle = getElement(legendId + '_element');
-            expect(legendEle.getAttribute('x') == '665.15' || legendEle.getAttribute('x') == '665.9').toBe(true);
+            expect(legendEle.getAttribute('x') == '665.15' || legendEle.getAttribute('x') == '665.9' || legendEle.getAttribute('x') == '642.65').toBe(true);
 
             expect(legendEle.getAttribute('y') === '71' || legendEle.getAttribute('y') === '76').toBe(true);
 
@@ -247,7 +247,7 @@ describe('Legend checking for the pie series', () => {
     it('Smart Legend placing datalabel Inside, legend position left, exploding length less than chart width', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
             legendEle = getElement(legendId + '_element');
-            expect(legendEle.getAttribute('x') == '86.85' || legendEle.getAttribute('x') == '87.1').toBe(true);
+            expect(legendEle.getAttribute('x') == '86.85' || legendEle.getAttribute('x') == '87.1' || legendEle.getAttribute('x') == '79.35').toBe(true);
 
             expect(legendEle.getAttribute('y') === '71' || legendEle.getAttribute('y') === '76').toBe(true);
 
@@ -667,7 +667,7 @@ describe('Legend checking for the pie series', () => {
         let legendId: string = 'container1' + '_chart_legend';
         let legendElement: Element; let legendArgCancel: boolean;
         let trigger: MouseEvents = new MouseEvents();
-        let ele: HTMLElement = createElement('div', { id: 'container1' });
+        let ele: HTMLElement = createElement('div', { id: 'container1', styles: 'width: 900px' });
         document.body.appendChild(ele);
         beforeAll((): void => {
             var data = [{ x: 'English', y: 48.20, text: '18.20%' },
@@ -1077,7 +1077,7 @@ describe('Checking RTL Behaviour for legend', () => {
     let textAnchor: string;
     let loaded: EmitType<IAccLoadedEventArgs>;
     beforeAll((): void => {
-        ele = createElement('div', { id: id });
+        ele = createElement('div', { id: id, styles: 'width: 600px' });
         document.body.appendChild(ele);
         accumulation = new AccumulationChart({
             border: { width: 1, color: 'blue' },

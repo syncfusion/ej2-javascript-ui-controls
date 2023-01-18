@@ -28,7 +28,7 @@ describe('Chart Control', () => {
     describe('Checking Column Definition', () => {
         let chartObj: Chart;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chartObj = new Chart(
                 {
@@ -127,7 +127,7 @@ describe('Chart Control', () => {
     describe('Checking Column Definition with Spanning', () => {
         let chartElem: Chart;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px'});
             document.body.appendChild(ele);
             chartElem = new Chart({
                 border: { width: 1, color: 'black' },
@@ -216,7 +216,7 @@ describe('Chart Control', () => {
     describe('Checking Column Definition with oppossed position', () => {
         let chart: Chart;
         beforeAll(() => {
-            ele = createElement('div', { id: 'chartContainer' });
+            ele = createElement('div', { id: 'chartContainer', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -271,7 +271,7 @@ describe('Chart Control', () => {
     });
     describe('Checking the Calculating Column Size Method with Axis Crossing', () => {
         let chartEle: Chart;
-        ele = createElement('div', { id: 'chartContainer' });
+        ele = createElement('div', { id: 'chartContainer', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(ele);
             chartEle = new Chart(

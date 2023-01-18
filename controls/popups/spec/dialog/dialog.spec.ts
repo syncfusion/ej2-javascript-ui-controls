@@ -3921,3 +3921,51 @@ describe('EJ2-65299-DialogUtility position property is not working properly', ()
 
 });
 
+describe('EJ2-67184- Removed "aria-describedby" attribute from Dialog element', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    it('Remove "aria-describedby" attribute from Dialog element', () => {
+        dialog = new Dialog({
+            header: 'Demo',
+            content: 'dialog content',
+            showCloseIcon: true,
+            allowDragging: true,
+            enableResize: true,
+            enableRtl: true,
+            cssClass: 'testClass'
+        });
+        dialog.appendTo('#dialog');
+        let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+        expect(targetEle.hasAttribute('aria-describedby')).toBe(false);
+        detach(dialog.element);
+    });
+});
+describe('EJ2-67757 Dialog closed when esc key action-', () => {
+    let dlgObj: any;
+    let eventArgs: any;
+    let dialogClosedBy:string;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { className:"e-popup-open" });
+        ele.classList.add("e-toolbar-pop");
+        let dlgEle: HTMLElement = createElement('div');
+        ele.appendChild(dlgEle);
+        document.body.appendChild(ele);
+        function cancelEvents(args: any) {            
+            dialogClosedBy = args.closedBy;
+        }
+        dlgObj = new Dialog({header:'Dialog', beforeClose: cancelEvents, content:'First demo dailog ', animationSettings: { effect: 'None' }, closeOnEscape: true });        
+        dlgObj.appendTo(dlgEle);
+    });
+    it('Dialog closed by esc key action ', () => {
+        expect(dlgObj.element.classList.contains("e-popup-close") !== true ).toBe(true);
+        eventArgs = { keyCode: 27, altKey: false, ctrlKey: false, shiftKey: false };
+        dlgObj.keyDown(eventArgs);
+        expect(dlgObj.element.classList.contains("e-popup-close") === true).toBe(true);
+    });
+    afterAll(() => {
+        destroyDialog(dlgObj);
+    });
+});

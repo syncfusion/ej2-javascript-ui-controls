@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I425173` - The issue with "Context menu Submenus not opening properly with multiple levels " has been resolved.
+
 ## 20.4.43 (2023-01-10)
 
 ### ContextMenu

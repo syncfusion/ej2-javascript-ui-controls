@@ -140,7 +140,7 @@ export interface LabelBorderModel {
 export interface MultiLevelCategoriesModel {
 
     /**
-     * Start value of the multi level labels
+     * Start value of the multi level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -148,7 +148,7 @@ export interface MultiLevelCategoriesModel {
     start?: number | Date | string;
 
     /**
-     * End value of the multi level labels
+     * End value of the multi level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -253,7 +253,7 @@ export interface StripLineSettingsModel {
     dashArray?: string;
 
     /**
-     * Size type of the strip line
+     * Size type of the strip line.
      *
      * @default Auto
      */
@@ -284,7 +284,7 @@ export interface StripLineSettingsModel {
     repeatUntil?: Object | number | Date;
 
     /**
-     * isSegmented value of the strip line
+     * isSegmented value of the strip line.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -370,7 +370,7 @@ export interface StripLineSettingsModel {
     zIndex?: ZIndex;
 
     /**
-     * Strip line Opacity
+     * Strip line Opacity.
      *
      * @default 1
      */

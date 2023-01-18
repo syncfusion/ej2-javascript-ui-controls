@@ -6407,7 +6407,7 @@ export class Selection {
                         if (isRtlText && isParaBidi) {
                             index = 0;
                         }
-                        if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" || (element as TextElementBox).text !== '\f' || (element as TextElementBox).text !== String.fromCharCode(14))) || includeParagraphMark) {
+                        if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" && (element as TextElementBox).text !== '\f' && (element as TextElementBox).text !== String.fromCharCode(14))) || includeParagraphMark) {
                             left += element.margin.left + element.width + element.padding.left;
                         }
                     } else if (element instanceof TextElementBox) {
@@ -6510,7 +6510,7 @@ export class Selection {
                 inline = inlineObj.element;
                 index = inlineObj.index;
                 let isParagraphEnd: boolean = isNullOrUndefined(inline.nextNode) && index === inline.length;
-                let isLineEnd: boolean = isNullOrUndefined(inline.nextNode)
+                let isLineEnd: boolean = inline.line.isEndsWithLineBreak
                     && inline instanceof TextElementBox && (inline as TextElementBox).text === '\v';
                 if (includeParagraphMark && inline.nextNode instanceof FieldElementBox && index === inline.length) {
                     isParagraphEnd = this.isLastRenderedInline(inline, index);
@@ -6529,7 +6529,7 @@ export class Selection {
                     } else if (isLineEnd) {
                         width = element.width + element.padding.left;
                         left += width;
-                        index = inline.length;
+                        // index = inline.length;
                     }
                 }
                 caretPosition = new Point(left, top);
@@ -9166,7 +9166,7 @@ export class Selection {
         div.style.position = 'relative';
         div.innerHTML = htmlContent;
         document.body.appendChild(div);
-        if (navigator.userAgent.indexOf('Firefox') !== -1) {
+        if (navigator !== undefined && navigator.userAgent.indexOf('Firefox') !== -1) {
             div.contentEditable = 'true';
         }
         let range: Range = document.createRange();

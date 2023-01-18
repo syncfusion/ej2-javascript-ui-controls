@@ -34,7 +34,7 @@ describe('Chart Control', () => {
         let chartObj: Chart;
         let element: Element;
         let chartElement: Element;
-        chartElement = createElement('div', { id: 'container' });
+        chartElement = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             if (document.getElementById('template')) {
                 remove(document.getElementById('template'));

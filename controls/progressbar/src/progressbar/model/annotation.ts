@@ -29,7 +29,7 @@ export class AnnotationBase {
         return childElement;
     }
     /**
-     * To process the annotation
+     * To process the annotation.
      *
      * @param {ProgressAnnotationSettings} annotation One of the parameter called annotation
      * @param {number} index Index of the annotation

@@ -143,7 +143,7 @@ export class AnnotationBase {
     }
 
     /**
-     * To process the annotation for accumulation chart
+     * To process the annotation for accumulation chart.
      *
      * @param annotation
      * @param index

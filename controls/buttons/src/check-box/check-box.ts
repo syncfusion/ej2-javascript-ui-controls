@@ -627,7 +627,13 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     } else if (key === 'style') {
                         const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
                         frameSpan.setAttribute(key, this.htmlAttributes[`${key}`]);
-                    } else {
+                    } else if(key === 'disabled') {
+                        if (this.htmlAttributes[`${key}`] === 'true') {
+                            this.setDisabled();
+                        }
+                        this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    }
+                    else {
                         this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
                 }

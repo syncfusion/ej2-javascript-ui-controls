@@ -1626,19 +1626,19 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
     }
     private setCSSClass(oldCSSClass?: string): void {
-        let updatedCssClassValue: string = this.cssClass;
-        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
-            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
-        }
-        if (!isNullOrUndefined(this.cssClass) && updatedCssClassValue !== '') {
-            addClass([this.uploadWrapper], updatedCssClassValue.split(updatedCssClassValue.indexOf(',') > -1 ? ',' : ' '));
-        }
         let updatedOldCssClass: string = oldCSSClass;
         if (!isNullOrUndefined(oldCSSClass)) {
             updatedOldCssClass = (oldCSSClass.replace(/\s+/g, ' ')).trim();
         }
         if (!isNullOrUndefined(oldCSSClass) && updatedOldCssClass !== '') {
             removeClass([this.uploadWrapper], updatedOldCssClass.split(' '));
+        }
+        let updatedCssClassValue: string = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(this.cssClass) && updatedCssClassValue !== '') {
+            addClass([this.uploadWrapper], updatedCssClassValue.split(updatedCssClassValue.indexOf(',') > -1 ? ',' : ' '));
         }
     }
     private wireEvents(): void {
@@ -4222,7 +4222,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         const files: FileInfo[] = this.getFiles(fileData);
         for (let i: number = 0; i < files.length; i++) {
             if (files[i as number].statusCode === '5' || files[i as number].statusCode === '0') {
-                if (this.asyncSettings.chunkSize > 0) {
+                if (this.asyncSettings.chunkSize > 0 && this.getCurrentMetaData(files[i as number], null)) {
                     this.retryUpload(this.getCurrentMetaData(files[i as number], null), fromcanceledStage);
                 } else {
                     let liElement: HTMLElement;

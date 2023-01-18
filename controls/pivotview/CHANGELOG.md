@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- When switching from table to chart using the toolbar, the fieldlist popup now renders properly.
+
 ## 20.4.43 (2023-01-10)
 
 ### Pivot Table

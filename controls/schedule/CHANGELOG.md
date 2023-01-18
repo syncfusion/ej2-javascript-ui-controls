@@ -2,14 +2,24 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I414149` - An issue with editor window not open in iPad device has been fixed.
+- `#I425181` - An issue with wrongly shown the occurrence alert while editing title of single occurrence of daily recurrence event has been fixed.
+- `#I427296` - An issue with wrongly shown the occurrence alert while editing the date of single occurrence of weekly recurrence event has been fixed.
+
 ## 20.4.43 (2023-01-10)
 
 ### Schedule
 
 #### Bug fixes
 
-- `#425940` - An issue with adding an aria-pressed attribute to the appointment has been fixed.
-- `#F40124` - The issue with the schedule tooltip displaying start and end times in 12 hour format when the schedule is in 24 hour format has been fixed.
+- `#I425940` - An issue with adding an aria-pressed attribute to the appointment has been fixed.
+- `#I427181` - The issue with the schedule tooltip displaying start and end times in 12 hour format when the schedule is in 24 hour format has been fixed.
 
 ## 20.4.42 (2023-01-04)
 

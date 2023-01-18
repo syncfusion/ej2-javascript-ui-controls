@@ -31,6 +31,7 @@ export class FocusStrategy {
     private forget: boolean = false;
     private skipFocus: boolean = true;
     private focusByClick: boolean = false;
+    private firstHeaderCellClick: boolean = false;
     private passiveHandler: EventListener;
     private prevIndexes: IIndex = {};
     private focusedColumnUid: string;
@@ -51,6 +52,7 @@ export class FocusStrategy {
     protected focusCheck(e: Event): void {
         const target: HTMLElement = <HTMLElement>e.target;
         this.focusByClick = true;
+        this.firstHeaderCellClick = true;
         this.skipFocus = target.classList.contains('e-grid');
     }
 
@@ -76,6 +78,14 @@ export class FocusStrategy {
 
     protected passiveFocus(e: FocusEvent): void {
         if (this.parent.isDestroyed) { return; }
+        const firstHeaderCell: Element = this.parent.getHeaderContent().querySelector('.e-headercell');
+        if (e.target === firstHeaderCell && e.relatedTarget && !parentsUntil((e.relatedTarget as Element), 'e-grid')
+            && !this.firstHeaderCellClick) {
+            this.currentInfo.element = e.target as HTMLElement;
+            this.currentInfo.elementToFocus = e.target as HTMLElement;
+            addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+        }
+        this.firstHeaderCellClick = false;
         if (e.target && (<HTMLElement>e.target).classList.contains('e-detailcell')) {
             this.currentInfo.skipAction = false;
             addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
@@ -95,6 +105,7 @@ export class FocusStrategy {
         this.removeFocus(); this.skipFocus = true; this.currentInfo.skipAction = false;
         this.setLastContentCellTabIndex();
         this.setFirstFocusableTabIndex();
+        this.firstHeaderCellClick = false;
     }
 
     /**

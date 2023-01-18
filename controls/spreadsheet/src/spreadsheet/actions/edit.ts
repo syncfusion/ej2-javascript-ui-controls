@@ -810,11 +810,19 @@ export class Edit {
             } else {
                 editWidth = (mainContElement.offsetWidth - (left - cont.scrollLeft) - 28) - this.parent.sheetModule.getRowHeaderWidth(sheet);
                 const tdEleInf: ClientRect = tdElem.getBoundingClientRect();
-                const panelWidth: number = mainContElement.getBoundingClientRect().width;
+                const mainContEleInf: ClientRect = mainContElement.getBoundingClientRect();
                 const getCellRight: number = this.parent.enableRtl ? tdEleInf.left : tdEleInf.right;
-                const scrollBar: Element = this.parent.getScrollElement();
-                if (panelWidth < getCellRight) {
-                    scrollBar.scrollLeft += getCellRight - panelWidth + this.parent.sheetModule.getScrollSize();
+                const getMainConEleRight: number = this.parent.enableRtl ? mainContEleInf.left : mainContEleInf.right;
+                const horizontalScrollBar: Element = this.parent.getScrollElement();
+                const verticalScrollBarWidth: number = this.parent.sheetModule.getScrollSize();
+                if (this.parent.enableRtl) {
+                    if ((getMainConEleRight + verticalScrollBarWidth) > getCellRight) {
+                        horizontalScrollBar.scrollLeft -= tdEleInf.width;
+                    }
+                } else {
+                    if ((getMainConEleRight - verticalScrollBarWidth) < getCellRight) {
+                        horizontalScrollBar.scrollLeft += tdEleInf.width;
+                    }
                 }
             }
             if (this.editCellData.rowIndex < frozenRow) { preventWrap = true; }

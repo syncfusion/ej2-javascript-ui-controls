@@ -10,157 +10,157 @@ import { Size } from '../utils/helper';
  * @private
  */
 export interface ISparklineEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /** Defines the event cancel status. */
     cancel: boolean;
 }
 /**
  * Specifies the interface for themes.
  */
 export interface IThemes {
-    /** Defines the color of the axis line */
+    /** Defines the color of the axis line. */
     axisLineColor: string;
-    /** Defines the color of the range band */
+    /** Defines the color of the range band. */
     rangeBandColor: string;
-    /** Defines the font color of the data labels */
+    /** Defines the font color of the data labels. */
     dataLabelColor: string;
-    /** Defines the background color of the tooltip */
+    /** Defines the background color of the tooltip. */
     tooltipFill: string;
-    /** Defines the font color of the tooltip */
+    /** Defines the font color of the tooltip. */
     tooltipFontColor: string;
-    /** Defines the background color of the sparkline */
+    /** Defines the background color of the sparkline. */
     background: string;
-    /** Defines the color of the tracker line */
+    /** Defines the color of the tracker line. */
     trackerLineColor: string;
-    /** Defines the font style of the text */
+    /** Defines the font style of the text. */
     fontFamily?: string;
-    /** Defines the tooltip fill color opacity */
+    /** Defines the tooltip fill color opacity. */
     tooltipFillOpacity?: number;
-    /** Defines the tooltip text opacity */
+    /** Defines the tooltip text opacity. */
     tooltipTextOpacity?: number;
-    /** Defines the label font style */
+    /** Defines the label font style. */
     labelFontFamily?: string;
 }
 /**
  * Specifies the Loaded Event arguments.
  */
 export interface ISparklineLoadedEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline: Sparkline;
 }
 /**
  * Specifies the Load Event arguments.
  */
 export interface ISparklineLoadEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline: Sparkline;
 }
 /**
  * Specifies the axis rendering Event arguments.
  */
 export interface IAxisRenderingEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline: Sparkline;
-    /** Defines the sparkline axis min x */
+    /** Defines the sparkline axis min x. */
     minX: number;
-    /** Defines the sparkline axis max x */
+    /** Defines the sparkline axis max x. */
     maxX: number;
-    /** Defines the sparkline axis min y */
+    /** Defines the sparkline axis min y. */
     minY: number;
-    /** Defines the sparkline axis max y */
+    /** Defines the sparkline axis max y. */
     maxY: number;
-    /** Defines the sparkline axis value */
+    /** Defines the sparkline axis value. */
     value: number;
-    /** Defines the sparkline axis line color */
+    /** Defines the sparkline axis line color. */
     lineColor: string;
-    /** Defines the sparkline axis line width */
+    /** Defines the sparkline axis line width. */
     lineWidth: number;
 }
 /**
  * Specifies the sparkline series rendering Event arguments.
  */
 export interface ISeriesRenderingEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline: Sparkline;
-    /** Defines the sparkline series fill color */
+    /** Defines the sparkline series fill color. */
     fill: string;
     /** Defines the sparkline series line width for applicable line and area. */
     lineWidth: number;
-    /** Defines the current sparkline series border */
+    /** Defines the current sparkline series border. */
     border: SparklineBorderModel;
 }
 /**
  * Specifies the sparkline point related Event arguments.
  */
 export interface ISparklinePointEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline?: Sparkline;
-    /** Defines the current sparkline point index */
+    /** Defines the current sparkline point index. */
     pointIndex: number;
-    /** Defines the current sparkline point fill color */
+    /** Defines the current sparkline point fill color. */
     fill: string;
-    /** Defines the current sparkline point border */
+    /** Defines the current sparkline point border. */
     border: SparklineBorderModel;
 }
 /**
  * Specifies the sparkline mouse related Event arguments.
  */
 export interface ISparklineMouseEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline?: Sparkline;
-    /** Defines the current sparkline mouse event */
+    /** Defines the current sparkline mouse event. */
     event: PointerEvent | MouseEvent;
 }
 /**
  * Specifies the sparkline mouse point region Event arguments.
  */
 export interface IPointRegionEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline?: Sparkline;
-    /** Defines the sparkline point index region event  */
+    /** Defines the sparkline point index region event.  */
     pointIndex: number;
-    /** Defines the current sparkline mouse event */
+    /** Defines the current sparkline mouse event. */
     event: PointerEvent | MouseEvent;
 }
 /**
  * Specifies the sparkline datalabel rendering Event arguments.
  */
 export interface IDataLabelRenderingEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline?: Sparkline;
-    /** Defines the current sparkline label text */
+    /** Defines the current sparkline label text. */
     text?: string;
-    /** Defines the current sparkline label text location x */
+    /** Defines the current sparkline label text location x. */
     x?: number;
-    /** Defines the current sparkline label text location y */
+    /** Defines the current sparkline label text location y. */
     y?: number;
-    /** Defines the current sparkline label text color */
+    /** Defines the current sparkline label text color. */
     color: string;
-    /** Defines the current sparkline label rect fill color */
+    /** Defines the current sparkline label rect fill color. */
     fill: string;
-    /** Defines the current sparkline label rect border */
+    /** Defines the current sparkline label rect border. */
     border?: SparklineBorderModel;
-    /** Defines the current sparkline label point index */
+    /** Defines the current sparkline label point index. */
     pointIndex: number;
 }
 /**
  * Specifies the sparkline marker rendering Event arguments.
  */
 export interface IMarkerRenderingEventArgs extends ISparklineEventArgs {
-    /** Defines the current sparkline instance */
+    /** Defines the current sparkline instance. */
     sparkline?: Sparkline;
-    /** Defines the current sparkline marker location x */
+    /** Defines the current sparkline marker location x. */
     x: number;
-    /** Defines the current sparkline marker location y */
+    /** Defines the current sparkline marker location y. */
     y: number;
-    /** Defines the sparkline marker radius */
+    /** Defines the sparkline marker radius. */
     size: number;
-    /** Defines the current sparkline marker fill color */
+    /** Defines the current sparkline marker fill color. */
     fill: string;
-    /** Defines the current sparkline marker border */
+    /** Defines the current sparkline marker border. */
     border?: SparklineBorderModel;
-    /** Defines the current sparkline label point index */
+    /** Defines the current sparkline label point index. */
     pointIndex: number;
 }
 
@@ -168,21 +168,21 @@ export interface IMarkerRenderingEventArgs extends ISparklineEventArgs {
  * Sparkline Resize event arguments.
  */
 export interface ISparklineResizeEventArgs {
-    /** Defines the name of the Event */
+    /** Defines the name of the Event. */
     name: string;
-    /** Defines the previous size of the sparkline */
+    /** Defines the previous size of the sparkline. */
     previousSize: Size;
-    /** Defines the current size of the sparkline */
+    /** Defines the current size of the sparkline. */
     currentSize: Size;
-    /** Defines the sparkline instance */
+    /** Defines the sparkline instance. */
     sparkline: Sparkline;
 }
 /**
  * Sparkline tooltip event args.
  */
 export interface ITooltipRenderingEventArgs extends ISparklineEventArgs {
-    /** Defines tooltip text */
+    /** Defines tooltip text. */
     text?: string[];
-    /** Defines tooltip text style */
+    /** Defines tooltip text style. */
     textStyle?: SparklineFontModel;
 }

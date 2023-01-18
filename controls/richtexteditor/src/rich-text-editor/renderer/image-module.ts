@@ -652,7 +652,6 @@ export class Image {
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
             originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             selectParentEle = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             if (!originalEvent.ctrlKey && originalEvent.key && (originalEvent.key.length === 1 || originalEvent.action === 'enter') &&
@@ -672,6 +671,8 @@ export class Image {
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
+                if(!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
+                save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -727,6 +728,8 @@ export class Image {
             }
             break;
         case 'insert-image':
+            if(!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
+            save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
             this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
             break;

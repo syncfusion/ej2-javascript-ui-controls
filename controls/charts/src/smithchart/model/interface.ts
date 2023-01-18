@@ -7,9 +7,9 @@ import { Smithchart} from '../../index';
  */
 
 export interface ISmithchartEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /** Defines the event cancel status. */
     cancel: boolean;
 }
 
@@ -21,19 +21,19 @@ export interface ISmithchartPrintEventArgs extends ISmithchartEventArgs {
  * Specifies the Load Event arguments.
  */
 export interface ISmithchartLoadEventArgs extends ISmithchartEventArgs {
-    /** Defines the current Smithchart instance */
+    /** Defines the current Smithchart instance. */
     smithchart: Smithchart;
 }
 /**
  * Specifies the Loaded Event arguments.
  */
 export interface ISmithchartLoadedEventArgs extends ISmithchartEventArgs {
-    /** Defines the current Smithchart instance */
+    /** Defines the current Smithchart instance. */
     smithchart: Smithchart;
 }
 export interface ISmithchartAnimationCompleteEventArgs extends ISmithchartEventArgs {
     /**
-     * smithchart instance event argument
+     * smithchart instance event argument.
      */
     smithchart?: Smithchart;
 }
@@ -42,11 +42,11 @@ export interface ISmithchartAnimationCompleteEventArgs extends ISmithchartEventA
  * Specifies the Title Render Event arguments.
  */
 export interface ITitleRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines the current title text */
+    /** Defines the current title text. */
     text: string;
-    /** Defines the current title text x location */
+    /** Defines the current title text x location. */
     x: number;
-    /** Defines the current title text y location */
+    /** Defines the current title text y location. */
     y: number;
 }
 
@@ -54,11 +54,11 @@ export interface ITitleRenderEventArgs extends ISmithchartEventArgs {
  * Specifies the SubTitle Render Event arguments.
  */
 export interface ISubTitleRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines the current subtitle text */
+    /** Defines the current subtitle text. */
     text: string;
-    /** Defines the current subtitle text x location */
+    /** Defines the current subtitle text x location. */
     x: number;
-    /** Defines the current subtitle text y location */
+    /** Defines the current subtitle text y location. */
     y: number;
 }
 
@@ -66,15 +66,15 @@ export interface ISubTitleRenderEventArgs extends ISmithchartEventArgs {
  * Specifies the Text Render Event arguments.
  */
 export interface ISmithchartTextRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines the current datalabel text */
+    /** Defines the current datalabel text. */
     text: string;
-    /** Defines the current datalabel text x location */
+    /** Defines the current datalabel text x location. */
     x: number;
-    /** Defines the current datalabel text y location */
+    /** Defines the current datalabel text y location. */
     y: number;
-    /** Defines the current datalabel seriesIndex */
+    /** Defines the current datalabel seriesIndex. */
     seriesIndex: number;
-    /** Defines the current datalabel pointIndex */
+    /** Defines the current datalabel pointIndex. */
     pointIndex: number;
 }
 
@@ -82,11 +82,11 @@ export interface ISmithchartTextRenderEventArgs extends ISmithchartEventArgs {
  * Specifies the Axis Label Render Event arguments.
  */
 export interface ISmithchartAxisLabelRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines the current axis label text */
+    /** Defines the current axis label text. */
     text: string;
-    /** Defines the current axis label x location */
+    /** Defines the current axis label x location. */
     x: number;
-    /** Defines the current axis label y location */
+    /** Defines the current axis label y location. */
     y: number;
 }
 
@@ -94,9 +94,9 @@ export interface ISmithchartAxisLabelRenderEventArgs extends ISmithchartEventArg
  * Specifies the Series Render Event arguments.
  */
 export interface ISmithchartSeriesRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines name of the event */
+    /** Defines name of the event. */
     text: string;
-    /** Defines the current series fill */
+    /** Defines the current series fill. */
     fill: string;
 }
 
@@ -104,22 +104,22 @@ export interface ISmithchartSeriesRenderEventArgs extends ISmithchartEventArgs {
  * Specifies the Legend Render Event arguments.
  */
 export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
-    /** Defines the current legend text */
+    /** Defines the current legend text. */
     text: string;
-    /** Defines the current legend fill color */
+    /** Defines the current legend fill color. */
     fill: string;
-    /** Defines the current legend shape */
+    /** Defines the current legend shape. */
     shape: string;
 }
 
 export interface ISmithChartTooltipEventArgs extends ISmithchartEventArgs {
-    /** Defines the tooltip text */
+    /** Defines the tooltip text. */
     text: string[];
-    /** Defines the headerText of tooltip */
+    /** Defines the headerText of tooltip. */
     headerText: string;
-    /** Defines point of the tooltip */
+    /** Defines point of the tooltip. */
     point: ISmithChartPoint;
-    /** template */
+    /** template. */
     template: string;
 }
 

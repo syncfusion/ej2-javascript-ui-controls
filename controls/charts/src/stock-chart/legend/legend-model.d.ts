@@ -65,7 +65,7 @@ export interface StockChartLegendSettingsModel {
     position?: LegendPosition;
 
     /**
-     * Mode of legend items
+     * Mode of legend items.
      * * Series: Legend items generated based on series count.
      * * Point: Legend items generated based on unique data points.
      * * Range: Legend items generated based on range color mapping property.
@@ -201,7 +201,7 @@ export interface StockChartLegendSettingsModel {
     titleStyle?: StockChartFontModel;
 
     /**
-     * legend title position in stock chart
+     * legend title position in stock chart.
      *
      * @default 'Top'
      */

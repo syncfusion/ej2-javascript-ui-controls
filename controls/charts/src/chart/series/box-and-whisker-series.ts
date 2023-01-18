@@ -105,7 +105,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
     }
 
     /**
-     * Calculation for path direction performed here
+     * Calculation for path direction performed here.
      *
      * @param {Points} point point
      * @param {Series} series series
@@ -202,7 +202,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         series.seriesElement.appendChild(parentElement);
     }
     /**
-     * To find the box plot values
+     * To find the box plot values.
      *
      * @param {number[]} yValues yValues
      * @param {Points} point point

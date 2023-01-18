@@ -215,7 +215,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     @Complex<StockChartFontModel>({ size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' }, StockChartFont)
     public titleStyle: StockChartFontModel;
     /**
-     * Defines the collection of technical indicators, that are used in financial markets
+     * Defines the collection of technical indicators, that are used in financial markets.
      */
     @Collection<StockChartIndicatorModel>([], StockChartIndicator)
     public indicators: StockChartIndicatorModel[];
@@ -387,7 +387,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public legendRender: EmitType<IStockLegendRenderEventArgs>;
 
     /**
-     * Triggers after click on legend
+     * Triggers after click on legend.
      *
      * @event legendClick
      */
@@ -418,7 +418,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public isMultiSelect: boolean;
 
     /**
-     * Triggers before the range navigator rendering
+     * Triggers before the range navigator rendering.
      *
      * @event load
      */
@@ -426,7 +426,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public load: EmitType<IStockChartEventArgs>;
 
     /**
-     * Triggers after the range navigator rendering
+     * Triggers after the range navigator rendering.
      *
      * @event loaded
      * @blazorProperty 'Loaded'

@@ -1080,6 +1080,12 @@ export interface TextFormFieldInfo {
      * Tooltip text.
      */
     helpText: string
+    /**
+     * Specifies the name of the form field.
+     *
+     * > If a form field already exists in the document with the new name specified, the old form field name property will be cleared and it will not be accessible. Ensure the new name is unique.
+     */
+    name?: string
 }
 
 /**
@@ -1107,6 +1113,12 @@ export interface CheckBoxFormFieldInfo {
      * Tooltip text.
      */
     helpText: string
+    /**
+     * Specifies the name of the form field.
+     *
+     * > If a form field already exists in the document with the new name specified, the old form field name property will be cleared and it will not be accessible. Ensure the new name is unique.
+     */
+    name?: string
 }
 
 /**
@@ -1126,6 +1138,12 @@ export interface DropDownFormFieldInfo {
      * Tooltip text.
      */
     helpText: string
+    /**
+     * Specifies the name of the form field.
+     *
+     * > If a form field already exists in the document with the new name specified, the old form field name property will be cleared and it will not be accessible. Ensure the new name is unique.
+     */
+    name?: string
 
 }
 

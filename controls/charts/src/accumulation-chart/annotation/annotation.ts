@@ -33,7 +33,7 @@ export class AccumulationAnnotation extends AnnotationBase {
     }
 
     /**
-     * Method to render the annotation for accumulation chart
+     * Method to render the annotation for accumulation chart.
      *
      * @param {Element} element Annotation element.
      */

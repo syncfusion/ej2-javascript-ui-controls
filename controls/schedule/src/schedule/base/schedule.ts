@@ -1122,12 +1122,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Method to render react templates
      *
+     * @param {Function} callBack - specifies the callBack method
      * @returns {void}
      * @private
      */
-    public renderTemplates(): void {
+    public renderTemplates(callback?: Function): void {
         if ((this as any).isReact) {
-            this.renderReactTemplates();
+            this.renderReactTemplates(callback);
+        } else if (callback) {
+            callback();
         }
     }
 

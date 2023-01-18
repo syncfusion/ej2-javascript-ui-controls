@@ -294,6 +294,42 @@ describe('Switch', () => {
             expect(element.parentElement.classList.contains('newClass')).toEqual(true);
         });
     });
+    describe('Notify Html Attributes property changes of', () => {
+        afterEach(() => {
+            specSwitch.destroy();
+        })
+        it('Switch with Style', () => {
+            specSwitch = new Switch({ htmlAttributes: { style: 'background-color:red' }}, '#specSwitch');
+            expect(element.parentElement.getAttribute("style").indexOf("background-color:red")).toEqual(0);
+            specSwitch.htmlAttributes = {style: "background-color:#d3d3d3" }
+            specSwitch.dataBind();
+            expect(element.parentElement.getAttribute("style").indexOf("background-color:#d3d3d3")).toEqual(0);
+        });
+
+        it('Switch with Class', () => {
+            specSwitch = new Switch({ htmlAttributes: { class: 'e-switch-syncfusion' }}, '#specSwitch')
+            expect(element.parentElement.classList.contains('e-switch-syncfusion')).toEqual(true);
+            specSwitch.htmlAttributes = {class: "e-new-switch" }
+            specSwitch.dataBind();
+            expect(element.parentElement.classList.contains('e-new-switch')).toEqual(true);
+        });
+
+        it('Switch with Title', () => {
+            specSwitch = new Switch({ htmlAttributes: { title: 'ejswitch' }}, '#specSwitch');
+            expect(element.parentElement.getAttribute("title").indexOf("ejswitch")).toEqual(0);
+            specSwitch.htmlAttributes = {title: "e-new-switch" }
+            specSwitch.dataBind();
+            expect(element.parentElement.getAttribute("title").indexOf("e-new-switch")).toEqual(0);
+        });
+
+        it('Switch with disabled state', () => {
+            specSwitch = new Switch({ htmlAttributes: { disabled: "true" }}, '#specSwitch');
+            expect(element.getAttribute("disabled").indexOf("true")).toEqual(0);
+            specSwitch.htmlAttributes = {readonly: "true" }
+            specSwitch.dataBind();
+            expect(element.getAttribute("readonly").indexOf("true")).toEqual(0);
+        });
+    });
     describe('Methods test', () => {
         it('Destroy method', () => {
             specSwitch = new Switch({

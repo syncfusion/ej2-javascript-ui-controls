@@ -2030,7 +2030,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
             this.commonModule = new Common(this);
         }
-        if (this.allowPdfExport === true && (this.displayOption.view === 'Both' || this.displayOption.view === 'Chart')) {
+        if (this.allowPdfExport && (this.displayOption.view === 'Both' || this.displayOption.view === 'Chart')) {
             this.chartExportModule = new ChartExport(this);
         }
         this.defaultLocale = {

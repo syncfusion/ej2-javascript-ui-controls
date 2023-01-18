@@ -49,7 +49,7 @@ export interface SubtitleModel {
     maximumWidth?: number;
 
     /**
-     * options for customizing sub title font
+     * options for customizing sub title font.
      */
 
     textStyle?: SmithchartFontModel;
@@ -98,7 +98,7 @@ export interface TitleModel {
     enableTrim?: boolean;
 
     /**
-     * maximum width of the sub title
+     * maximum width of the sub title.
      *
      * @aspDefaultValueIgnore
      * @default null
@@ -106,19 +106,19 @@ export interface TitleModel {
     maximumWidth?: number;
 
     /**
-     * options for customizing sub title
+     * options for customizing sub title.
      */
 
     subtitle?: SubtitleModel;
 
     /**
-     * options for customizing title font
+     * options for customizing title font.
      */
 
     font?: SmithchartFontModel;
 
     /**
-     * options for customizing title text
+     * options for customizing title text.
      */
 
     textStyle?: SmithchartFontModel;

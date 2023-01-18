@@ -44,7 +44,7 @@ describe('Empty Points checking with', () => {
         let path: string = null;
         let id: string = 'empty-container';
         let temp: number;
-        element = createElement('div', { id: id });
+        element = createElement('div', { id: id, styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(

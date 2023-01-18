@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { destroy } from './treegridutil.spec';
-import { stateChangeData, childdata1 , customTotalData} from './datasource.spec';
+import { stateChangeData, childdata1 , customTotalData, stateDatas} from './datasource.spec';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { select } from '@syncfusion/ej2-base';
 
@@ -298,6 +298,96 @@ describe('Custom Binding', () => {
     });
     afterAll(() => {
       destroy(gridObj);
+    });
+
+    describe('EJ2-67375 - Data is hidden while expanding the childs parents', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let expanded: () => void;
+      let dataStateChange: (args: any) => void;
+      let elem: HTMLElement = createElement('div', { id: 'Grid' });    
+      beforeAll((done: Function) => {
+        document.body.appendChild(elem);
+        gridObj = new TreeGrid(
+          {
+            dataSource: { result: stateDatas, count: 4 },
+            hasChildMapping:'isParent',
+            parentIdMapping:'ParentID',
+            idMapping:'id',
+            height:'470',
+            dataStateChange: dataStateChange,
+            allowPaging: true,
+            treeColumnIndex: 1,
+            pageSettings: { pageSize: 1, pageSizeMode: 'Root' },
+            columns: ['TaskID', 'TaskName', 'Duration']
+          }
+        );
+        gridObj.appendTo('#Grid');
+        done();
+      });
+      it('Collapse and expand first parent record then expand second record', (done: Function) => {
+        dataStateChange = (args: any) => {
+          if (args.requestType === 'expand') {
+            /////    assigning the child data for the expanded record.
+      
+            if ((<any>args.data).id == 2) {
+              args.childData = <any>[
+                { id: 11, TaskName: 'ANDREW', ParentID: 2, isParent: true },
+                { id: 12, TaskName: 'JOSH', ParentID: 2, isParent: false },
+                { id: 13, TaskName: 'TOM', ParentID: 2, isParent: false },
+              ];
+              if(args.childDataBind){
+                args.childDataBind();
+              }
+      
+            }
+            else if ((<any>args.data).id == 3) {
+              args.childData = <any>[
+                { id: 14, TaskName: 'ANDREW', ParentID: 3, isParent: false },
+                { id: 15, TaskName: 'JOSH', ParentID: 3, isParent: false },
+                { id: 16, TaskName: 'TOM', ParentID: 3, isParent: false },
+              ];
+              if(args.childDataBind){
+                args.childDataBind();
+              }
+            }
+      
+            else if ((<any>args.data).id == 4) {
+              args.childData = <any>[
+                { id: 17, TaskName: 'ANDREW', ParentID: 4, isParent: false },
+                { id: 18, TaskName: 'JOSH', ParentID: 5, isParent: false },
+                { id: 19, TaskName: 'TOM', ParentID: 6, isParent: false },
+              ];
+              if(args.childDataBind){
+                args.childDataBind();
+              }
+            } else if ((<any>args.data).id == 11) {
+              args.childData = <any>[
+                { id: 21, TaskName: 'ANDREW', ParentID: 11, isParent: false },
+                { id: 22, TaskName: 'JOSH', ParentID: 11, isParent: false },
+                { id: 23, TaskName: 'TOM', ParentID: 11, isParent: false },
+              ];
+              if(args.childDataBind){
+                args.childDataBind();
+              }
+            }
+          }       
+        };
+        gridObj.dataStateChange = dataStateChange;
+        rows = gridObj.getRows();
+        gridObj.collapseRow(rows[0] as HTMLTableRowElement);
+        gridObj.expandRow(rows[0] as HTMLTableRowElement);
+        gridObj.expandRow(rows[1] as HTMLTableRowElement);
+        expanded = (args?: any) => {
+          expect(gridObj.getCurrentViewRecords().length === 7).toBe(true);
+          gridObj.expanded = null;
+          done();
+      }
+      gridObj.expanded = expanded;
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
     });
 
 	describe('EJ2-61682 - Expand/collapse in observable binding', () => {

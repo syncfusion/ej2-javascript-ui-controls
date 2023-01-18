@@ -5,7 +5,7 @@ import { TextAlignmentType } from '../utils/enum';
  */
 export class Margin extends ChildProperty<Margin> {
     /**
-     * To customize top margin value
+     * To customize top margin value.
      *
      * @default 10
      */
@@ -14,7 +14,7 @@ export class Margin extends ChildProperty<Margin> {
     public top: number;
 
     /**
-     * To customize top bottom value
+     * To customize top bottom value.
      *
      * @default 10
      */
@@ -23,7 +23,7 @@ export class Margin extends ChildProperty<Margin> {
     public bottom: number;
 
     /**
-     * To customize top left value
+     * To customize top left value.
      *
      * @default 10
      */
@@ -32,7 +32,7 @@ export class Margin extends ChildProperty<Margin> {
     public left: number;
 
     /**
-     * To customize top right value
+     * To customize top right value.
      *
      * @default 10
      */
@@ -93,7 +93,7 @@ export class Font extends ChildProperty<Font> {
     public opacity: number;
 
     /**
-     * text alignment for label
+     * text alignment for label.
      *
      * @default Far
      */
@@ -101,7 +101,7 @@ export class Font extends ChildProperty<Font> {
     public textAlignment: TextAlignmentType;
 
     /**
-     * label text
+     * label text.
      *
      * @default ''
      */
@@ -147,14 +147,14 @@ export class ProgressAnnotationSettings extends ChildProperty<ProgressAnnotation
     @Property(null)
     public content: string;
     /**
-     * to move annotation
+     * to move annotation.
      *
      * @default 0
      */
     @Property(0)
     public annotationAngle: number;
     /**
-     * to move annotation
+     * to move annotation.
      *
      * @default '0%'
      */

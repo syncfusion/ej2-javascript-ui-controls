@@ -14,7 +14,7 @@ import { Chart } from '../chart';
 export class BollingerBands extends TechnicalAnalysis {
 
     /**
-     * Initializes the series collection to represent bollinger band
+     * Initializes the series collection to represent bollinger band.
      */
     public initSeriesCollection(indicator: TechnicalIndicator, chart: Chart): void {
         indicator.targetSeries = [];

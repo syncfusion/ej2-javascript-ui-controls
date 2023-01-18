@@ -19,7 +19,7 @@ import { SparklineBorderModel, SparklineFontModel } from '../model/base-model';
  */
 export class Size {
     /**
-     * height of the size
+     * height of the size.
      */
     public height: number;
     public width: number;
@@ -186,7 +186,7 @@ export function stringToNumber(value: string, containerSize: number): number {
 }
 
 /**
- * Method to calculate the width and height of the sparkline
+ * Method to calculate the width and height of the sparkline.
  */
 export function calculateSize(sparkline: Sparkline): void {
     const containerWidth: number = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
@@ -343,7 +343,7 @@ export function drawCircle(sparkline: Sparkline, options: CircleOption, element?
 }
 
 /**
- * To get rounded rect path direction
+ * To get rounded rect path direction.
  */
 export function calculateRoundedRectPath(
     r: Rect, topLeft: number, topRight: number,
@@ -464,14 +464,14 @@ export function renderTextElement(options: TextOption, font: SparklineFontModel,
     return htmlObject;
 }
 /**
- * To remove element by id
+ * To remove element by id.
  */
 export function removeElement(id: string): void {
     const element: Element = document.getElementById(id);
     return element ? remove(element) : null;
 }
 /**
- * To find the element by id
+ * To find the element by id.
  */
 export function getIdElement(id: string): Element {
     return document.getElementById(id);

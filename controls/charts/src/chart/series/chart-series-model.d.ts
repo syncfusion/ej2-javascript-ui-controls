@@ -135,7 +135,7 @@ export interface DataLabelSettingsModel {
     template?: string;
 
     /**
-     * Show Datalabel Even two Data Labels Are Overflow
+     * Show Datalabel Even two Data Labels Are Overflow.
      *
      * @default 'Hide'
      */
@@ -255,7 +255,7 @@ export interface PointsModel {
 export interface TrendlineModel {
 
     /**
-     * Defines the name of trendline
+     * Defines the name of trendline.
      *
      * @default ''
      */
@@ -278,61 +278,61 @@ export interface TrendlineModel {
     visible?: boolean;
 
     /**
-     * Defines the type of the trendline
+     * Defines the type of the trendline.
      *
      * @default 'Linear'
      */
     type?: TrendlineTypes;
 
     /**
-     * Defines the period, the price changes over which will be considered to predict moving average trend line
+     * Defines the period, the price changes over which will be considered to predict moving average trend line.
      *
      * @default 2
      */
     period?: number;
 
     /**
-     * Defines the polynomial order of the polynomial trendline
+     * Defines the polynomial order of the polynomial trendline.
      *
      * @default 2
      */
     polynomialOrder?: number;
 
     /**
-     * Defines the period, by which the trend has to backward forecast
+     * Defines the period, by which the trend has to backward forecast.
      *
      * @default 0
      */
     backwardForecast?: number;
 
     /**
-     * Defines the period, by which the trend has to forward forecast
+     * Defines the period, by which the trend has to forward forecast.
      *
      * @default 0
      */
     forwardForecast?: number;
 
     /**
-     * Options to customize the animation for trendlines
+     * Options to customize the animation for trendlines.
      */
     animation?: AnimationModel;
 
     /**
-     * Options to customize the marker for trendlines
+     * Options to customize the marker for trendlines.
      *
      * @deprecated
      */
     marker?: MarkerSettingsModel;
 
     /**
-     * Enables/disables tooltip for trendlines
+     * Enables/disables tooltip for trendlines.
      *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
-     * Defines the intercept of the trendline
+     * Defines the intercept of the trendline.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -340,21 +340,21 @@ export interface TrendlineModel {
     intercept?: number;
 
     /**
-     * Defines the fill color of trendline
+     * Defines the fill color of trendline.
      *
      * @default ''
      */
     fill?: string;
 
     /**
-     * Defines the width of the trendline
+     * Defines the width of the trendline.
      *
      * @default 1
      */
     width?: number;
 
     /**
-     * Sets the legend shape of the trendline
+     * Sets the legend shape of the trendline.
      *
      * @default 'SeriesType'
      */
@@ -1056,14 +1056,14 @@ export interface SeriesModel extends SeriesBaseModel{
     splineType?: SplineType;
 
     /**
-     * It defines tension of cardinal spline types
+     * It defines tension of cardinal spline types.
      *
      * @default 0.5
      */
     cardinalSplineTension?: number;
 
     /**
-     * options to customize the empty points in series
+     * options to customize the empty points in series.
      */
     emptyPointSettings?: EmptyPointSettingsModel;
 

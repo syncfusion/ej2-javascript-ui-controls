@@ -1016,8 +1016,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (event.keyCode === 27 && this.closeOnEscape) {
             this.dlgClosedBy = DLG_ESCAPE_CLOSED;
+            const query:HTMLElement=<HTMLElement>document.querySelector('.e-popup-open:not(.e-dialog)');
             // 'document.querySelector' is used to find the elements rendered based on body
-            if (!document.querySelector('.e-popup-open:not(.e-dialog)')) {
+            if (!(!isNullOrUndefined(query)&& !query.classList.contains("e-toolbar-pop"))){
                 this.hide(event);
             }
         }
@@ -1321,7 +1322,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setContent(): void {
-        attributes(this.element, { 'aria-describedby': this.element.id + '_dialog-content' });
         this.contentEle = this.createElement('div', { className: DLG_CONTENT, id: this.element.id + '_dialog-content' });
         if (this.innerContentElement) {
             this.contentEle.appendChild(this.innerContentElement);

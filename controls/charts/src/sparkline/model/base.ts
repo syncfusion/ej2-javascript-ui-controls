@@ -188,30 +188,30 @@ export class LineSettings extends ChildProperty<LineSettings> {
     public opacity: number;
 }
 /**
- * To configure the sparkline rangeband
+ * To configure the sparkline rangeband.
  */
 export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
     /**
-     * To configure sparkline start range
+     * To configure sparkline start range.
      *
      * @aspDefaultValueIgnore
      */
     @Property(null)
     public startRange: number;
     /**
-     * To configure sparkline end range
+     * To configure sparkline end range.
      *
      * @aspDefaultValueIgnore
      */
     @Property(null)
     public endRange: number;
     /**
-     * To configure sparkline rangeband color
+     * To configure sparkline rangeband color.
      */
     @Property(null)
     public color: string;
     /**
-     * To configure sparkline rangeband opacity
+     * To configure sparkline rangeband opacity.
      *
      * @default 1
      */
@@ -219,7 +219,7 @@ export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
     public opacity: number;
 }
 /**
- * To configure the sparkline axis
+ * To configure the sparkline axis.
  */
 export class AxisSettings extends ChildProperty<AxisSettings> {
     /**

@@ -68,7 +68,7 @@ export class ScaleGroup {
     }
 
     /**
-     * To render range scale of the bulletChart graph
+     * To render range scale of the bulletChart graph.
      *
      * @param {Element} scaleGroup
      */
@@ -122,7 +122,7 @@ export class ScaleGroup {
     }
 
     /**
-     * To render the feature bar of the bulletChart chart
+     * To render the feature bar of the bulletChart chart.
      *
      * @param {number} dataCount Count of the bar.
      */
@@ -251,7 +251,7 @@ export class ScaleGroup {
     }
 
     /**
-     * To render comparative symbol of the bulletChart chart
+     * To render comparative symbol of the bulletChart chart.
      *
      * @param {number} dataCount Data count value.
      */

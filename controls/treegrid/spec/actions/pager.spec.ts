@@ -556,10 +556,10 @@ describe('TreeGrid Pager module', () => {
 			{
 				gridObj.collapseAll();
 				gridObj.grid.pagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value = gridObj.grid.pagerModule.pagerObj.getLocalizedLabel('All');
-				gridObj.expandAll();				
+				gridObj.expandAll();
+				expect(gridObj.grid.currentViewData.length === 36).toBe(true);
 				done();
 			}
-			expect(gridObj.grid.pagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value === 36).toBe(true);
 		});
 		afterAll(() => {
 			destroy(gridObj);

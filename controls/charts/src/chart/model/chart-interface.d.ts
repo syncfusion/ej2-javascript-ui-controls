@@ -13,97 +13,97 @@ import { Size } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart';
 import { StockChart } from '../../stock-chart/stock-chart';
 export interface IChartEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /** Defines the event cancel status. */
     cancel: boolean;
 }
 export interface IAnimationCompleteEventArgs extends IChartEventArgs {
-    /** Defines the current animation series */
+    /** Defines the current animation series. */
     series: Series;
 }
 export interface IAxisMultiLabelRenderEventArgs extends IChartEventArgs {
-    /** Defines the current axis */
+    /** Defines the current axis. */
     axis: Axis;
-    /** Defines axis current label text */
+    /** Defines axis current label text. */
     text: string;
-    /** Defines font style for multi labels */
+    /** Defines font style for multi labels. */
     textStyle: FontModel;
-    /** Defines text alignment for multi labels */
+    /** Defines text alignment for multi labels. */
     alignment: Alignment;
-    /** Defines custom objects for multi labels */
+    /** Defines custom objects for multi labels. */
     customAttributes: object;
 }
 export interface IMultiLevelLabelClickEventArgs extends IChartEventArgs {
-    /** Defines the current axis */
+    /** Defines the current axis. */
     axis: Axis;
-    /** Defines label current label text */
+    /** Defines label current label text. */
     text: string;
     level: number;
     start: number | Date | string;
     end: number | Date | string;
-    /** Defines custom objects for multi labels */
+    /** Defines custom objects for multi labels. */
     customAttributes: object;
 }
 export interface IPointEventArgs extends IChartEventArgs {
-    /** Defines the current series */
+    /** Defines the current series. */
     series: SeriesModel;
-    /** Defines the current point */
+    /** Defines the current point. */
     point: Points;
-    /** Defines the point index */
+    /** Defines the point index. */
     pointIndex: number;
-    /** Defines the series index */
+    /** Defines the series index. */
     seriesIndex: number;
-    /** Defines the current chart instance */
+    /** Defines the current chart instance. */
     chart: Chart;
-    /** Defines current mouse x location */
+    /** Defines current mouse x location. */
     x: number;
-    /** Defines current mouse y location */
+    /** Defines current mouse y location. */
     y: number;
-    /** Defines current window page x location */
+    /** Defines current window page x location. */
     pageX?: number;
-    /** Defines current window page y location */
+    /** Defines current window page y location. */
     pageY?: number;
 }
 export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
-    /** Defines tooltip text collections */
+    /** Defines tooltip text collections. */
     text?: string[];
-    /** Defines tooltip text style */
+    /** Defines tooltip text style. */
     textStyle?: FontModel;
-    /** Defines current tooltip series */
+    /** Defines current tooltip series. */
     series: Series[];
-    /** Defines current tooltip point */
+    /** Defines current tooltip point. */
     point: Points[];
-    /** Defines the header text for the tooltip */
+    /** Defines the header text for the tooltip. */
     headerText?: string;
-    /** point informations */
+    /** point informations. */
     data?: IPointInformation[];
-    /** Defines the tooltip template */
+    /** Defines the tooltip template. */
     template?: string;
 }
 /**
  * Defines the scroll events
  */
 export interface IScrollEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name?: string;
-    /** Defines the current Zoom Position */
+    /** Defines the current Zoom Position. */
     zoomPosition?: number;
-    /** Defines the current Zoom Factor */
+    /** Defines the current Zoom Factor. */
     zoomFactor?: number;
-    /** Defines the current range */
+    /** Defines the current range. */
     range?: VisibleRangeModel;
-    /** Defines the previous Zoom Position */
+    /** Defines the previous Zoom Position. */
     previousZoomPosition?: number;
-    /** Defines the previous Zoom Factor */
+    /** Defines the previous Zoom Factor. */
     previousZoomFactor?: number;
-    /** Defines the previous range */
+    /** Defines the previous range. */
     previousRange?: VisibleRangeModel;
-    /** Defines the current scroll axis */
+    /** Defines the current scroll axis. */
     axis?: Axis;
-    /** Defines axis previous range */
+    /** Defines axis previous range. */
     previousAxisRange?: ScrollbarSettingsRangeModel;
-    /** Defines axis current range */
+    /** Defines axis current range. */
     currentRange?: ScrollbarSettingsRangeModel;
 }
 export interface IZoomCompleteEventArgs extends IChartEventArgs {
@@ -139,146 +139,146 @@ export interface ITooltipRenderEventArgs extends IChartEventArgs {
     template?: string;
 }
 export interface IPointInformation {
-    /** point xValue */
+    /** point xValue. */
     pointX: object;
-    /** point yValue */
+    /** point yValue. */
     pointY: object;
-    /** point index */
+    /** point index. */
     pointIndex: number;
-    /** series index */
+    /** series index. */
     seriesIndex: number;
-    /** series name */
+    /** series name. */
     seriesName: string;
-    /** point text */
+    /** point text. */
     pointText: string;
 }
 export interface IAxisLabelRenderEventArgs extends IChartEventArgs {
-    /** Defines the current axis */
+    /** Defines the current axis. */
     axis: Axis;
-    /** Defines axis current label text */
+    /** Defines axis current label text. */
     text: string;
-    /** Defines axis current label value */
+    /** Defines axis current label value. */
     value: number;
-    /** Defines axis current label font style */
+    /** Defines axis current label font style. */
     labelStyle: FontModel;
 }
 export interface IAxisLabelClickEventArgs extends IChartEventArgs {
-    /** Defines the chart when labelClick */
+    /** Defines the chart when labelClick. */
     chart: Chart;
-    /** Defines the current axis */
+    /** Defines the current axis. */
     axis: Axis;
-    /** Defines axis current label text */
+    /** Defines axis current label text. */
     text: string;
-    /** Defines axis current label element id */
+    /** Defines axis current label element id. */
     labelID: string;
-    /** Defines axis current label index */
+    /** Defines axis current label index. */
     index: number;
-    /** Defines the current annotation location */
+    /** Defines the current annotation location. */
     location: ChartLocation;
-    /** Defines axis current label value */
+    /** Defines axis current label value. */
     value: number;
 }
 export interface ILegendRenderEventArgs extends IChartEventArgs {
-    /** Defines the current legend text */
+    /** Defines the current legend text. */
     text: string;
-    /** Defines the current legend fill color */
+    /** Defines the current legend fill color. */
     fill: string;
-    /** Defines the current legend shape */
+    /** Defines the current legend shape. */
     shape: LegendShape;
-    /** Defines the current legend marker shape */
+    /** Defines the current legend marker shape. */
     markerShape?: ChartShape;
 }
 export interface ILegendClickEventArgs extends IChartEventArgs {
-    /** Defines the chart when legendClick */
+    /** Defines the chart when legendClick. */
     chart: Chart;
-    /** Defines the current legend shape */
+    /** Defines the current legend shape. */
     legendShape: LegendShape;
-    /** Defines the current series */
+    /** Defines the current series. */
     series: Series;
-    /** Defines the list of points mapped to a legend */
+    /** Defines the list of points mapped to a legend. */
     points: Points[];
-    /** Defines the current legend text */
+    /** Defines the current legend text. */
     legendText: string;
 }
 export interface ITextRenderEventArgs extends IChartEventArgs {
-    /** Defines the current series of the label */
+    /** Defines the current series of the label. */
     series: SeriesModel;
-    /** Defines the current point of the label */
+    /** Defines the current point of the label. */
     point: Points;
-    /** Defines the current text */
+    /** Defines the current text. */
     text: string;
-    /** Defines the width and height of the current text */
+    /** Defines the width and height of the current text. */
     textSize: Size;
-    /** Defines the current label fill color */
+    /** Defines the current label fill color. */
     color: string;
-    /** Defines the current label border */
+    /** Defines the current label border. */
     border: BorderModel;
-    /** Defines the current label template */
+    /** Defines the current label template. */
     template: string;
-    /** Defines the current font */
+    /** Defines the current font. */
     font: FontModel;
-    /** Defines the current data label position can change */
+    /** Defines the current data label position can change. */
     location: LabelLocation;
 }
 export interface IAnnotationRenderEventArgs extends IChartEventArgs {
-    /** Defines the current annotation content */
+    /** Defines the current annotation content. */
     content: HTMLElement;
-    /** Defines the current annotation location */
+    /** Defines the current annotation location. */
     location: ChartLocation;
 }
 export interface IPointRenderEventArgs extends IChartEventArgs {
-    /** Defines the current series of the point */
+    /** Defines the current series of the point. */
     series: Series;
-    /** Defines the current point */
+    /** Defines the current point. */
     point: Points;
-    /** Defines the current point fill color */
+    /** Defines the current point fill color. */
     fill: string;
-    /** Defines the current point border */
+    /** Defines the current point border. */
     border: BorderModel;
-    /** Defines the current point height */
+    /** Defines the current point height. */
     height?: number;
-    /** Defines the current point width */
+    /** Defines the current point width. */
     width?: number;
-    /** Defines the current point marker shape */
+    /** Defines the current point marker shape. */
     shape?: ChartShape;
 }
 export interface ISeriesRenderEventArgs {
-    /** Defines the current series */
+    /** Defines the current series. */
     series: Series;
-    /** Defines the current series data object */
+    /** Defines the current series data object. */
     data: Object;
-    /** Defines name of the event */
+    /** Defines name of the event. */
     name: string;
-    /** Defines the current series fill */
+    /** Defines the current series fill. */
     fill: string;
 }
 export interface IAxisRangeCalculatedEventArgs extends IChartEventArgs {
-    /** Defines the current axis */
+    /** Defines the current axis. */
     axis: Axis;
-    /** Defines axis current range */
+    /** Defines axis current range. */
     minimum: number;
-    /** Defines axis current range */
+    /** Defines axis current range. */
     maximum: number;
-    /** Defines axis current interval */
+    /** Defines axis current interval. */
     interval: number;
 }
 export interface IMouseEventArgs extends IChartEventArgs {
-    /** Defines current mouse event target id */
+    /** Defines current mouse event target id. */
     target: string;
-    /** Defines current mouse x location */
+    /** Defines current mouse x location. */
     x: number;
-    /** Defines current mouse y location */
+    /** Defines current mouse y location. */
     y: number;
 }
 export interface IDragCompleteEventArgs extends IChartEventArgs {
-    /** Defines current selected Data X, Y values */
+    /** Defines current selected Data X, Y values. */
     selectedDataValues: {
         x: string | number | Date;
         y: number;
     }[][];
 }
 export interface ISelectionCompleteEventArgs extends IChartEventArgs {
-    /** Defines current selected Data X, Y values */
+    /** Defines current selected Data X, Y values. */
     selectedDataValues: {
         x?: string | number | Date;
         y?: number;
@@ -287,7 +287,7 @@ export interface ISelectionCompleteEventArgs extends IChartEventArgs {
     }[];
 }
 export interface ILoadedEventArgs extends IChartEventArgs {
-    /** Defines the current chart instance */
+    /** Defines the current chart instance. */
     chart: Chart;
     theme?: ChartTheme;
 }
@@ -351,11 +351,11 @@ export interface IThemeStyle {
     tabColor: string;
 }
 export interface IRangeSelectorRenderEventArgs extends IChartEventArgs {
-    /** Defines selector collections */
+    /** Defines selector collections. */
     selector: ItemModel[];
-    /** enable custom format for calendar */
+    /** enable custom format for calendar. */
     enableCustomFormat: boolean;
-    /** content fro calendar format */
+    /** content fro calendar format. */
     content: string;
 }
 /** @private */
@@ -372,19 +372,19 @@ export interface IZoomAxisRange {
     delta?: number;
 }
 export interface IResizeEventArgs {
-    /** Defines the name of the Event */
+    /** Defines the name of the Event. */
     name: string;
-    /** Defines the previous size of the accumulation chart */
+    /** Defines the previous size of the accumulation chart. */
     previousSize: Size;
-    /** Defines the current size of the accumulation chart */
+    /** Defines the current size of the accumulation chart. */
     currentSize: Size;
-    /** Defines the accumulation chart instance */
+    /** Defines the accumulation chart instance. */
     chart: Chart | AccumulationChart | StockChart;
 }
 export interface IBeforeResizeEventArgs {
-    /** Defines the name of the Event */
+    /** Defines the name of the Event. */
     name: string;
-    /** It is  used to cancel the resized event */
+    /** It is  used to cancel the resized event. */
     cancelResizedEvent: boolean;
 }
 /**
@@ -417,20 +417,20 @@ export interface IDataEditingEventArgs {
     point: Points;
 }
 export interface IChartTemplate {
-    /** point x */
+    /** point x. */
     x?: object;
-    /** point y */
+    /** point y. */
     y?: object;
-    /** point text */
+    /** point text. */
     text?: string;
-    /** point open value */
+    /** point open value. */
     open?: object;
-    /** point close value */
+    /** point close value. */
     close?: object;
-    /** point high value */
+    /** point high value. */
     high?: object;
-    /** point low value */
+    /** point low value. */
     low?: object;
-    /** point volume value */
+    /** point volume value. */
     volume?: object;
 }

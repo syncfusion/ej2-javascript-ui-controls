@@ -1677,7 +1677,7 @@ export class DataUtil {
                         if (arr[5].indexOf('.') > -1) {
                             const secondsMs: string[] = arr[5].split('.');
                             arr[5] = secondsMs[0];
-                            arr[6] = secondsMs[1];
+                            arr[6] = new Date(<string>value).getUTCMilliseconds().toString();
                         } else {
                             arr[6] = '00';
                         }

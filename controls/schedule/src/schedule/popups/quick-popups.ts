@@ -414,7 +414,7 @@ export class QuickPopups {
         if (deleteIcon) {
             this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.DELETE_ICON_CLASS, deleteAction, deleteIcon, this.deleteClick);
         }
-        this.beforeQuickPopupOpen(target);
+        this.beforeQuickPopupOpen(target, e);
     }
 
     private isCellBlocked(args: CellClickEventArgs): boolean {
@@ -500,7 +500,7 @@ export class QuickPopups {
         this.quickPopup.content = quickCellPopup;
         this.quickPopup.relateTo = target as HTMLElement;
         this.quickPopup.dataBind();
-        this.beforeQuickPopupOpen(target);
+        this.beforeQuickPopupOpen(target, args.event);
     }
 
     private isSameEventClick(events: EventClickArgs): boolean {
@@ -574,7 +574,7 @@ export class QuickPopups {
             this.quickPopup.relateTo = this.parent.isAdaptive ? document.body :
                 closest(<HTMLElement>events.element, '.' + cls.APPOINTMENT_CLASS) as HTMLElement;
             this.quickPopup.dataBind();
-            this.beforeQuickPopupOpen(events.element as Element);
+            this.beforeQuickPopupOpen(events.element as Element, (events as any).originalEvent);
         }
     }
 
@@ -848,15 +848,16 @@ export class QuickPopups {
                 this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
             }
         }
-        this.parent.renderTemplates();
-        const eventProp: PopupOpenEventArgs = {
-            type: 'EventContainer', cancel: false,
-            element: this.morePopup.element, data: data as unknown as Record<string, any>
-        };
-        this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
-            if (!popupArgs.cancel) {
-                this.morePopup.show();
-            }
+        this.parent.renderTemplates(() => {
+            const eventProp: PopupOpenEventArgs = {
+                type: 'EventContainer', cancel: false,
+                element: this.morePopup.element, data: data as unknown as Record<string, any>
+            };
+            this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
+                if (!popupArgs.cancel) {
+                    this.morePopup.show();
+                }
+            });
         });
     }
 
@@ -1054,68 +1055,91 @@ export class QuickPopups {
         });
     }
 
-    private beforeQuickPopupOpen(target: Element): void {
-        this.parent.renderTemplates();
-        const isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
-        const popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
-        const eventProp: PopupOpenEventArgs = {
-            type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true) as Record<string, any>,
-            target: target, element: this.quickPopup.element
-        };
-        this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
-            if (popupArgs.cancel) {
-                this.quickPopupHide();
-                this.destroyPopupButtons('quickPopup');
-                if (popupArgs.element.classList.contains(cls.POPUP_OPEN)) {
-                    this.quickPopupClose();
-                }
-                util.removeChildren(this.quickPopup.element);
-                this.isMultipleEventSelect = false;
-            } else {
-                const display: string = this.quickPopup.element.style.display;
-                this.quickPopup.element.style.display = 'block';
-                if (this.parent.isAdaptive) {
-                    this.quickPopup.element.removeAttribute('style');
-                    this.quickPopup.element.style.display = 'block';
-                    this.quickPopup.element.style.height = formatUnit((popupType === 'EditEventInfo') ? 65 : window.innerHeight);
+    private beforeQuickPopupOpen(target: Element, originalEvent: MouseEvent | Event): void {
+        this.parent.renderTemplates(() => {
+            const isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
+            const popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
+            const eventProp: PopupOpenEventArgs = {
+                type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true) as Record<string, any>,
+                target: target, element: this.quickPopup.element
+            };
+            this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
+                if (popupArgs.cancel) {
+                    this.quickPopupHide();
+                    this.destroyPopupButtons('quickPopup');
+                    if (popupArgs.element.classList.contains(cls.POPUP_OPEN)) {
+                        this.quickPopupClose();
+                    }
+                    util.removeChildren(this.quickPopup.element);
+                    this.isMultipleEventSelect = false;
                 } else {
-                    const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.virtualScrollModule.isHorizontalScroll
-                        && !isNullOrUndefined(closest(target, '.' + cls.CONTENT_TABLE_CLASS));
-                    const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
-                    this.quickPopup.offsetX = isVirtualScroll && !this.parent.enableRtl ? (util.getTranslateX(conTable) + 10) : 10;
-                    this.quickPopup.collision = { X: this.parent.enableRtl ? 'flip' : 'none', Y: 'fit' };
-                    this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: this.parent.enableRtl ? 'bottom' : 'top' };
-                    this.quickPopup.dataBind();
-                    this.quickPopup.refreshPosition(null, true);
-                    const collide: string[] = isCollide(this.quickPopup.element, this.parent.element);
-                    if (collide.indexOf(this.parent.enableRtl ? 'left' : 'right') > -1) {
-                        this.quickPopup.offsetX = -(target as HTMLElement).offsetWidth - 10 - this.quickPopup.element.offsetWidth;
-                        if (isVirtualScroll && !this.parent.enableRtl) {
-                            this.quickPopup.offsetX = util.getTranslateX(conTable) + this.quickPopup.offsetX;
-                        }
+                    const display: string = this.quickPopup.element.style.display;
+                    this.quickPopup.element.style.display = 'block';
+                    if (this.parent.isAdaptive) {
+                        this.quickPopup.element.removeAttribute('style');
+                        this.quickPopup.element.style.display = 'block';
+                        this.quickPopup.element.style.height = formatUnit((popupType === 'EditEventInfo') ? 65 : window.innerHeight);
+                    } else {
+                        const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.virtualScrollModule.isHorizontalScroll
+                            && !isNullOrUndefined(closest(target, '.' + cls.CONTENT_TABLE_CLASS));
+                        const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
+                        this.quickPopup.offsetX = isVirtualScroll && !this.parent.enableRtl ? (util.getTranslateX(conTable) + 10) : 10;
+                        this.quickPopup.offsetY = this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll ?
+                            this.quickPopup.offsetY : 0;
+                        this.quickPopup.collision = { X: this.parent.enableRtl ? 'flip' : 'none', Y: 'fit' };
+                        this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: this.parent.enableRtl ? 'bottom' : 'top' };
                         this.quickPopup.dataBind();
                         this.quickPopup.refreshPosition(null, true);
-                        const leftCollide: string[] = isCollide(this.quickPopup.element, this.parent.element);
-                        if (leftCollide.indexOf('left') > -1) {
-                            this.quickPopup.position = { X: 'center', Y: 'center' };
-                            this.quickPopup.collision = { X: 'fit', Y: 'fit' };
-                            this.quickPopup.offsetX = -(this.quickPopup.element.offsetWidth / 2);
+                        const collide: string[] = isCollide(this.quickPopup.element, this.parent.element);
+                        if (collide.indexOf(this.parent.enableRtl ? 'left' : 'right') > -1) {
+                            this.quickPopup.offsetX = -(target as HTMLElement).offsetWidth - 10 - this.quickPopup.element.offsetWidth;
+                            if (isVirtualScroll && !this.parent.enableRtl) {
+                                this.quickPopup.offsetX = util.getTranslateX(conTable) + this.quickPopup.offsetX;
+                            }
                             this.quickPopup.dataBind();
+                            this.quickPopup.refreshPosition(null, true);
+                            const leftCollide: string[] = isCollide(this.quickPopup.element, this.parent.element);
+                            if (leftCollide.indexOf('left') > -1) {
+                                this.quickPopup.position = { X: 'center', Y: 'center' };
+                                this.quickPopup.collision = { X: 'fit', Y: 'fit' };
+                                this.quickPopup.offsetX = -(this.quickPopup.element.offsetWidth / 2);
+                                this.quickPopup.dataBind();
+                            }
+                        }
+                        if (this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
+                            const translateY: number = util.getTranslateY(conTable);
+                            this.quickPopup.offsetY = translateY;
+                            this.quickPopup.dataBind();
+                            this.quickPopup.refreshPosition(null, true);
+                        }
+                        if (this.quickPopup.position.X === 'center' && this.quickPopup.position.Y === 'center' && !isNullOrUndefined(originalEvent)) {
+                            const previousOffset: number = this.quickPopup.offsetY;
+                            let collision: string[] = isCollide(target as HTMLElement, this.quickPopup.element);
+                            const popupRect: ClientRect | DOMRect = this.quickPopup.element.getBoundingClientRect();
+                            if (collision.indexOf('top') > -1 || collision.indexOf('bottom') > -1) {
+                                if (popupRect.top <= (originalEvent as MouseEvent).clientY && (originalEvent as MouseEvent).clientY <= popupRect.top + popupRect.height) {
+                                    this.quickPopup.offsetY = previousOffset - popupRect.height - 10;
+                                    this.quickPopup.dataBind();
+                                    collision = isCollide(this.quickPopup.element, this.parent.element);
+                                    if (collision.indexOf('top') > -1) {
+                                        this.quickPopup.offsetY = previousOffset + (originalEvent as MouseEvent).offsetY;
+                                        this.quickPopup.dataBind();
+                                    }
+                                } else if (isCollide(this.quickPopup.element, this.parent.element).indexOf('bottom') > -1) {
+                                    this.quickPopup.offsetY = previousOffset - (originalEvent as MouseEvent).offsetY - Math.ceil(popupRect.height) - 10;
+                                    this.quickPopup.dataBind();
+                                }
+                            }
                         }
                     }
-                    if (this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll && (collide.indexOf('top') > -1 || collide.indexOf('bottom') > -1)) {
-                        const translateY: number = util.getTranslateY(conTable);
-                        this.quickPopup.offsetY = translateY;
-                        this.quickPopup.dataBind();
+                    if (isEventPopup) {
+                        this.applyEventColor();
                     }
+                    this.quickPopup.element.style.display = display;
+                    this.quickPopup.dataBind();
+                    this.quickPopup.show();
                 }
-                if (isEventPopup) {
-                    this.applyEventColor();
-                }
-                this.quickPopup.element.style.display = display;
-                this.quickPopup.dataBind();
-                this.quickPopup.show();
-            }
+            });
         });
     }
 

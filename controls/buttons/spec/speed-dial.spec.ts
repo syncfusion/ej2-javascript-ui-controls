@@ -1387,7 +1387,7 @@ describe('Floating Action Button', () => {
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
         });
         it('uparrow key + bottomright', () => {
             speedDial = new SpeedDial({ items: data, target: "#speedDialtarget", animation: NoAnimation });
@@ -1454,7 +1454,7 @@ describe('Floating Action Button', () => {
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
         });
         it('downarrow key + topLeft', () => {
             speedDial = new SpeedDial({ items: data, position: "TopLeft", target: "#speedDialtarget", animation: NoAnimation });
@@ -1500,7 +1500,7 @@ describe('Floating Action Button', () => {
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
         });
         it('left key + TopCenter + right', () => {
             speedDial = new SpeedDial({ items: data, position: "TopCenter", direction: "Right", target: "#speedDialtarget", animation: NoAnimation });
@@ -1525,7 +1525,7 @@ describe('Floating Action Button', () => {
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
         });
         it('leftArrow key + TopCenter + left', () => {
             speedDial = new SpeedDial({ items: data, position: "TopCenter", direction: "Left", target: "#speedDialtarget", animation: NoAnimation });
@@ -1548,6 +1548,27 @@ describe('Floating Action Button', () => {
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll(".e-speeddial-li")[4].classList.contains("e-speeddial-li-active")).toBe(true);
         });
+
+        it('keyboard navigation test for blinking effect + bottomright', () => {
+            speedDial = new SpeedDial({ items: data, target: "#speedDialtarget", animation: NoAnimation });
+            speedDial.appendTo('#speedDial');
+            let popupEle = (speedDial as any).popupEle;
+            expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(true);
+            keyboardEventArgs.action = 'enter';
+            (speedDial as any).keyActionHandler(keyboardEventArgs);
+            expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
+            keyboardEventArgs.action = 'home';
+            (speedDial as any).keyActionHandler(keyboardEventArgs);
+            /*checking the first li element */
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            keyboardEventArgs.action = 'moveDown';
+            (speedDial as any).keyActionHandler(keyboardEventArgs);
+            expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
+            (speedDial as any).keyActionHandler(keyboardEventArgs);
+            expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
+       });
     });
     describe('Keyboard Navigation + Radial', () => {
         let speedDial: SpeedDial;
@@ -1642,7 +1663,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1675,7 +1696,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1736,7 +1757,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1769,7 +1790,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1830,7 +1851,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1919,7 +1940,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1952,7 +1973,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -1985,7 +2006,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2046,7 +2067,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2079,7 +2100,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2140,7 +2161,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2173,7 +2194,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2262,7 +2283,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2323,7 +2344,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2356,7 +2377,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveLeft';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';
@@ -2417,7 +2438,7 @@ describe('Floating Action Button', () => {
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
             keyboardEventArgs.action = 'moveDown';
             (speedDial as any).keyActionHandler(keyboardEventArgs);
-            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(true);
+            expect(popupEle.querySelectorAll(".e-speeddial-li")[0].classList.contains("e-speeddial-li-active")).toBe(false);
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(popupEle.querySelectorAll("e-speeddial-li-active").length).toBe(0);
             keyboardEventArgs.action = 'moveRight';

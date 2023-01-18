@@ -37,8 +37,8 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public content: string;
 
     /**
-     * if set coordinateUnit as `Pixel` X specifies the axis value
-     * else is specifies pixel or percentage of coordinate
+     * if set coordinateUnit as `Pixel` X specifies the axis value.
+     * else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
@@ -46,8 +46,8 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public x: string | Date | number;
 
     /**
-     * if set coordinateUnit as `Pixel` Y specifies the axis value
-     * else is specifies pixel or percentage of coordinate
+     * if set coordinateUnit as `Pixel` Y specifies the axis value.
+     * else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
@@ -302,29 +302,29 @@ export class PieCenter extends ChildProperty<PieCenter> {
  * @public
  */
 export class AccPoints {
-    /** accumulation point x value */
+    /** accumulation point x value. */
     public x: Object;
-    /** accumulation point y value */
+    /** accumulation point y value. */
     public y: number;
-    /** accumulation point visibility */
+    /** accumulation point visibility. */
     public visible: boolean = true;
-    /** accumulation point text */
+    /** accumulation point text. */
     public text: string;
-    /** accumulation point tooltip */
+    /** accumulation point tooltip. */
     public tooltip: string;
-    /** accumulation point slice radius */
+    /** accumulation point slice radius. */
     public sliceRadius: string;
-    /** accumulation point original text */
+    /** accumulation point original text. */
     public originalText: string;
     /** @private */
     public label: string;
-    /** accumulation point color */
+    /** accumulation point color. */
     public color: string;
-    /** accumulation point percentage value */
+    /** accumulation point percentage value. */
     public percentage: number;
-    /** accumulation point symbol location */
+    /** accumulation point symbol location. */
     public symbolLocation: ChartLocation = null;
-    /** accumulation point index */
+    /** accumulation point index. */
     public index: number;
     /** @private */
     public midAngle: number;
@@ -445,7 +445,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public name: string;
 
     /**
-     * The provided value will be considered as a Tooltip Mapping name
+     * The provided value will be considered as a Tooltip Mapping name.
      *
      * @default ''
      */
@@ -533,7 +533,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public selectionStyle: string;
 
     /**
-     * AccumulationSeries y values less than groupTo are combined into single slice named others
+     * AccumulationSeries y values less than groupTo are combined into single slice named others.
      *
      * @default null
      */
@@ -541,7 +541,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public groupTo: string;
 
     /**
-     * AccumulationSeries y values less than groupMode are combined into single slice named others
+     * AccumulationSeries y values less than groupMode are combined into single slice named others.
      *
      * @default Value
      */
@@ -647,7 +647,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public explodeIndex: number;
 
     /**
-     * options to customize the empty points in series
+     * options to customize the empty points in series.
      */
     @Complex<EmptyPointSettingsModel>({ mode: 'Drop' }, EmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;
@@ -661,7 +661,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public gapRatio: number;
 
     /**
-     * Defines the width of the funnel/pyramid with respect to the chart area
+     * Defines the width of the funnel/pyramid with respect to the chart area.
      *
      * @default '80%'
      */
@@ -669,7 +669,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public width: string;
 
     /**
-     * Defines the height of the funnel/pyramid with respect to the chart area
+     * Defines the height of the funnel/pyramid with respect to the chart area.
      *
      * @default '80%'
      */
@@ -677,7 +677,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public height: string;
 
     /**
-     * Defines the width of the funnel neck with respect to the chart area
+     * Defines the width of the funnel neck with respect to the chart area.
      *
      * @default '20%'
      */
@@ -685,7 +685,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public neckWidth: string;
 
     /**
-     * Defines the height of the funnel neck with respect to the chart area
+     * Defines the height of the funnel neck with respect to the chart area.
      *
      * @default '20%'
      */
@@ -693,7 +693,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public neckHeight: string;
 
     /**
-     * Defines how the values have to be reflected, whether through height/surface of the segments
+     * Defines how the values have to be reflected, whether through height/surface of the segments.
      *
      * @default 'Linear'
      */

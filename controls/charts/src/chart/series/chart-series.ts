@@ -184,7 +184,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public template: string;
 
     /**
-     * Show Datalabel Even two Data Labels Are Overflow
+     * Show Datalabel Even two Data Labels Are Overflow.
      *
      * @default 'Hide'
      */
@@ -312,69 +312,69 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
  * @public
  */
 export class Points {
-    /** point x */
+    /** point x. */
     public x: Object;
-    /** point y */
+    /** point y. */
     public y: Object;
-    /** point visibility */
+    /** point visibility. */
     public visible: boolean;
-    /** point text */
+    /** point text. */
     public text: string;
-    /** point tooltip */
+    /** point tooltip. */
     public tooltip: string;
-    /** point color */
+    /** point color. */
     public color: string;
-    /** point open value */
+    /** point open value. */
     public open: Object;
-    /** point close value */
+    /** point close value. */
     public close: Object;
-    /** point symbol location */
+    /** point symbol location. */
     public symbolLocations: ChartLocation[] = null;
-    /** point x value */
+    /** point x value. */
     public xValue: number;
-    /** point y value */
+    /** point y value. */
     public yValue: number;
-    /** point color mapping column */
+    /** point color mapping column. */
     public colorValue: number;
-    /** point index value */
+    /** point index value. */
     public index: number;
-    /** point region */
+    /** point region. */
     public regions: Rect[] = null;
-    /** point percentage value */
+    /** point percentage value. */
     public percentage: number = null;
-    /** point high value */
+    /** point high value. */
     public high: Object;
-    /** point low value */
+    /** point low value. */
     public low: Object;
-    /** point volume value */
+    /** point volume value. */
     public volume: Object;
-    /** point size value */
+    /** point size value. */
     public size: Object;
-    /** point empty checking */
+    /** point empty checking. */
     public isEmpty: boolean;
-    /** point region data */
+    /** point region data. */
     public regionData: PolarArc = null;
-    /** point minimum value */
+    /** point minimum value. */
     public minimum: number;
-    /** point maximum value */
+    /** point maximum value. */
     public maximum: number;
-    /** point upper quartile value */
+    /** point upper quartile value. */
     public upperQuartile: number;
-    /** point lower quartile value */
+    /** point lower quartile value. */
     public lowerQuartile: number;
-    /** point median value */
+    /** point median value. */
     public median: number;
-    /** point outliers value */
+    /** point outliers value. */
     public outliers: number[];
-    /** point average value */
+    /** point average value. */
     public average: number;
-    /** point error value */
+    /** point error value. */
     public error: number;
-    /** point interior value */
+    /** point interior value. */
     public interior: string;
-    /** To know the point is selected */
+    /** To know the point is selected. */
     public isSelect: boolean = false;
-    /** point marker */
+    /** point marker. */
     public marker: MarkerSettingsModel = {
         visible: false
     };
@@ -391,7 +391,7 @@ export class Points {
  */
 export class Trendline extends ChildProperty<Trendline> {
     /**
-     * Defines the name of trendline
+     * Defines the name of trendline.
      *
      * @default ''
      */
@@ -417,7 +417,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public visible: boolean;
 
     /**
-     * Defines the type of the trendline
+     * Defines the type of the trendline.
      *
      * @default 'Linear'
      */
@@ -425,7 +425,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public type: TrendlineTypes;
 
     /**
-     * Defines the period, the price changes over which will be considered to predict moving average trend line
+     * Defines the period, the price changes over which will be considered to predict moving average trend line.
      *
      * @default 2
      */
@@ -433,7 +433,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public period: number;
 
     /**
-     * Defines the polynomial order of the polynomial trendline
+     * Defines the polynomial order of the polynomial trendline.
      *
      * @default 2
      */
@@ -441,7 +441,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public polynomialOrder: number;
 
     /**
-     * Defines the period, by which the trend has to backward forecast
+     * Defines the period, by which the trend has to backward forecast.
      *
      * @default 0
      */
@@ -449,7 +449,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public backwardForecast: number;
 
     /**
-     * Defines the period, by which the trend has to forward forecast
+     * Defines the period, by which the trend has to forward forecast.
      *
      * @default 0
      */
@@ -458,13 +458,13 @@ export class Trendline extends ChildProperty<Trendline> {
 
 
     /**
-     * Options to customize the animation for trendlines
+     * Options to customize the animation for trendlines.
      */
     @Complex<AnimationModel>({}, Animation)
     public animation: AnimationModel;
 
     /**
-     * Options to customize the marker for trendlines
+     * Options to customize the marker for trendlines.
      *
      * @deprecated
      */
@@ -472,7 +472,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public marker: MarkerSettingsModel;
 
     /**
-     * Enables/disables tooltip for trendlines
+     * Enables/disables tooltip for trendlines.
      *
      * @default true
      */
@@ -481,7 +481,7 @@ export class Trendline extends ChildProperty<Trendline> {
 
 
     /**
-     * Defines the intercept of the trendline
+     * Defines the intercept of the trendline.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -490,7 +490,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public intercept: number;
 
     /**
-     * Defines the fill color of trendline
+     * Defines the fill color of trendline.
      *
      * @default ''
      */
@@ -498,7 +498,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public fill: string;
 
     /**
-     * Defines the width of the trendline
+     * Defines the width of the trendline.
      *
      * @default 1
      */
@@ -506,7 +506,7 @@ export class Trendline extends ChildProperty<Trendline> {
     public width: number;
 
     /**
-     * Sets the legend shape of the trendline
+     * Sets the legend shape of the trendline.
      *
      * @default 'SeriesType'
      */
@@ -1787,7 +1787,7 @@ export class Series extends SeriesBase {
     @Property('Natural')
     public splineType: SplineType;
     /**
-     * It defines tension of cardinal spline types
+     * It defines tension of cardinal spline types.
      *
      * @default 0.5
      */
@@ -1795,7 +1795,7 @@ export class Series extends SeriesBase {
     public cardinalSplineTension: number;
 
     /**
-     * options to customize the empty points in series
+     * options to customize the empty points in series.
      */
     @Complex<EmptyPointSettingsModel>(null, EmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;

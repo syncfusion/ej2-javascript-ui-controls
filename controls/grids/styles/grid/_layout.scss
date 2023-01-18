@@ -2312,7 +2312,9 @@
     }
 
     .e-gridheader .e-headercontent .e-reorderuparrow,
-    .e-gridheader .e-headercontent .e-reorderdownarrow {
+    .e-gridheader .e-headercontent .e-reorderdownarrow,
+    .e-gridheader .e-headercontent .e-reorderuparrow-virtual,
+    .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
       font-size: $grid-reorderarrow-font-size;
       margin-left: $grid-reorderarrow-margin-left;
       margin-top: $grid-reorderarrow-margin-top;

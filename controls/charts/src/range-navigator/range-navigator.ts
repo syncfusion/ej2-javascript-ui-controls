@@ -178,7 +178,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public maximum: number | Date;
 
     /**
-     * interval value for the axis
+     * interval value for the axis.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -187,7 +187,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public interval: number;
 
     /**
-     * IntervalType for the dateTime axis
+     * IntervalType for the dateTime axis.
      *
      * @default 'Auto'
      */
@@ -206,7 +206,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public labelIntersectAction: RangeLabelIntersectAction;
 
     /**
-     * base value for log axis
+     * base value for log axis.
      *
      * @default 10
      */
@@ -222,7 +222,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public valueType: RangeValueType;
 
     /**
-     * Label positions for the axis
+     * Label positions for the axis.
      *
      * @default 'Outside'
      */
@@ -230,7 +230,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public labelPosition: AxisPosition;
 
     /**
-     * Duration of the animation
+     * Duration of the animation.
      *
      * @default 500
      */
@@ -238,7 +238,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public animationDuration: number;
 
     /**
-     * Enable grouping for the labels
+     * Enable grouping for the labels.
      *
      * @default false
      */
@@ -246,7 +246,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public enableGrouping: boolean;
 
     /**
-     * Enable deferred update for the range navigator
+     * Enable deferred update for the range navigator.
      *
      * @default false
      */
@@ -262,7 +262,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public disableRangeSelector: boolean;
 
     /**
-     * Enable snapping for range navigator sliders
+     * Enable snapping for range navigator sliders.
      *
      * @default false
      */
@@ -270,7 +270,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public allowSnapping: boolean;
 
     /**
-     * Allow the data to be selected for that particular interval while clicking the particular label
+     * Allow the data to be selected for that particular interval while clicking the particular label.
      */
     @Property(false)
     public allowIntervalData: boolean;
@@ -284,7 +284,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public useGroupingSeparator: boolean;
 
     /**
-     * GroupBy property for the axis
+     * GroupBy property for the axis.
      *
      * @default `Auto`
      */
@@ -300,7 +300,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public tickPosition: AxisPosition;
 
     /**
-     * Label style for the labels
+     * Label style for the labels.
      */
     @Complex<FontModel>(RangeNavigatorTheme.axisLabelFont, Font)
     public labelStyle: FontModel;
@@ -406,7 +406,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public themeStyle: IRangeStyle;
 
     /**
-     * Triggers before the range navigator rendering
+     * Triggers before the range navigator rendering.
      *
      * @event load
      */
@@ -414,7 +414,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public load: EmitType<IRangeLoadedEventArgs>;
 
     /**
-     * Triggers after the range navigator rendering
+     * Triggers after the range navigator rendering.
      *
      * @event loaded
      * @blazorProperty 'Loaded'
@@ -441,7 +441,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public beforeResize: EmitType<IRangeBeforeResizeEventArgs>;
 
     /**
-     * Triggers before the label rendering
+     * Triggers before the label rendering.
      *
      * @event labelRender
      * @deprecated
@@ -467,7 +467,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public tooltipRender: EmitType<IRangeTooltipRenderEventArgs>;
 
     /**
-     * Triggers before the range navigator selector rendering
+     * Triggers before the range navigator selector rendering.
      *
      * @event selectorRender
      * @deprecated

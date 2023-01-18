@@ -91,7 +91,14 @@ export class Reorder implements IAction {
             return this.parent.getColumns();
         } else {
             for (let i: number = 0, len: number = cols.length; i < len; i++) {
-                columnModel.push(cols[parseInt(i.toString(), 10)]);
+                if (this.parent.getStackedColumns(cols).length) {
+                    if (cols[parseInt(i.toString(), 10)].visible) {
+                        columnModel.push(cols[parseInt(i.toString(), 10)]);
+                    }
+                }
+                else {
+                    columnModel.push(cols[parseInt(i.toString(), 10)]);
+                }
                 if (cols[parseInt(i.toString(), 10)].columns) {
                     subCols = subCols.concat(cols[parseInt(i.toString(), 10)].columns as Column[]);
                 }
@@ -216,18 +223,30 @@ export class Reorder implements IAction {
         let cols: Column[] = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid() ? this.parent.getColumns() :
             this.parent.columns as Column[];
         const headers: Element[] = this.getHeaderCells();
-        const visibleStackedHdrCell: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-stackedheadercell');
         const stackedHdrColumn: Column[] = this.parent.getStackedColumns(cols);
-        let hiddenStackedColCount: number = 0;
-        if (visibleStackedHdrCell && stackedHdrColumn && visibleStackedHdrCell.length < stackedHdrColumn.length) {
-            hiddenStackedColCount = stackedHdrColumn.length - visibleStackedHdrCell.length;
+        let stackedCols: Column[] = [];
+        if (stackedHdrColumn.length) {
+            stackedCols = this.getAllStackedheaderParentColumns(headers);
         }
-        const flatColumns: Column[] = this.getColumnsModel(cols);
-        const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers) + hiddenStackedColCount], cols);
-
+        const flatColumns: Column[] = stackedHdrColumn.length && stackedCols.length ?
+            this.getColumnsModel(stackedCols) : this.getColumnsModel(cols);
+        const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
         cols = parent ? parent.columns as Column[] : cols;
-        return inArray(flatColumns[getElementIndex(destElem, headers) + hiddenStackedColCount], cols);
-
+        return inArray(flatColumns[getElementIndex(destElem, headers)], cols);
+    }
+    
+    private getAllStackedheaderParentColumns(headers: Element[]): Column[] {
+        let stackedCols: Column[] = [];
+        for (let i: number = 0; i < headers.length; i++) {
+            if (headers[i].classList.contains('e-hide')) {
+                headers.splice(i, 1);
+                i--;
+            }
+            else if (headers[i].closest('thead').firstChild === headers[i].parentElement) {
+                stackedCols.push(this.parent.getColumnByUid(headers[i].firstElementChild.getAttribute('e-mappinguid')));
+            }
+        }
+        return stackedCols;
     }
 
     private getHeaderCells(): Element[] {

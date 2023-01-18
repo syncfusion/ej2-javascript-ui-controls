@@ -21,7 +21,7 @@ import { Circular } from './types/circular-progress';
 import { ProgressAnimation } from './utils/progress-animation';
 
 /**
- *  progress bar control
+ *  progress bar control.
  */
 @NotifyPropertyChanges
 export class ProgressBar extends Component<HTMLElement> implements INotifyPropertyChanged {
@@ -29,210 +29,210 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         super(options, element);
     }
     /**
-     * type of the progress bar
+     * type of the progress bar.
      *
      * @default Linear
      */
     @Property('Linear')
     public type: ProgressType;
     /**
-     * progress value
+     * progress value.
      *
      * @default null
      */
     @Property(null)
     public value: number;
     /**
-     * secondary progress value
+     * secondary progress value.
      *
      * @default null
      */
     @Property(null)
     public secondaryProgress: number;
     /**
-     * minimum progress value
+     * minimum progress value.
      *
      * @default 0
      */
     @Property(0)
     public minimum: number;
     /**
-     * maximum progress value
+     * maximum progress value.
      *
      * @default 0
      */
     @Property(100)
     public maximum: number;
     /**
-     * startAngle for circular progress bar
+     * startAngle for circular progress bar.
      *
      * @default 0
      */
     @Property(0)
     public startAngle: number;
     /**
-     * endAngle for circular progress bar
+     * endAngle for circular progress bar.
      *
      * @default 0
      */
     @Property(0)
     public endAngle: number;
     /**
-     * track radius for circular
+     * track radius for circular.
      *
      * @default '100%'
      */
     @Property('100%')
     public radius: string;
     /**
-     * progress radius for circular
+     * progress radius for circular.
      *
      * @default '100%'
      */
     @Property('100%')
     public innerRadius: string;
     /**
-     * segmentCount of the progress bar
+     * segmentCount of the progress bar.
      *
      * @default 1
      */
     @Property(1)
     public segmentCount: number;
     /**
-     * gapwidth of the segment
+     * gapwidth of the segment.
      *
      * @default null
      */
     @Property(null)
     public gapWidth: number;
     /**
-     * Segment color
+     * Segment color.
      *
      * @default null
      */
     @Property('')
     public segmentColor: string[];
     /**
-     * corner type
+     * corner type.
      *
      * @default Auto
      */
     @Property('Auto')
     public cornerRadius: CornerType;
     /**
-     * height of the progress bar
+     * height of the progress bar.
      *
      * @default null
      */
     @Property(null)
     public height: string;
     /**
-     * width of the progress bar
+     * width of the progress bar.
      *
      * @default null
      */
     @Property(null)
     public width: string;
     /**
-     * Indeterminate progress
+     * Indeterminate progress.
      *
      * @default false
      */
     @Property(false)
     public isIndeterminate: boolean;
     /**
-     * Active state
+     * Active state.
      *
      * @default false
      */
     @Property(false)
     public isActive: boolean;
     /**
-     * gradient
+     * gradient.
      *
      * @default false
      */
     @Property(false)
     public isGradient: boolean;
     /**
-     * striped
+     * striped.
      *
      * @default false
      */
     @Property(false)
     public isStriped: boolean;
     /**
-     * modes of linear progress
+     * modes of linear progress.
      *
      * @default null
      */
     @Property('Auto')
     public role: ModeType;
     /**
-     * right to left
+     * right to left.
      *
      * @default false
      */
     @Property(false)
     public enableRtl: boolean;
     /**
-     * labelOnTrack
+     * labelOnTrack.
      *
      * @default true
      */
     @Property(true)
     public labelOnTrack: boolean;
     /**
-     * trackColor
+     * trackColor.
      *
      * @default null
      */
     @Property(null)
     public trackColor: string;
     /**
-     * progressColor
+     * progressColor.
      *
      * @default null
      */
     @Property(null)
     public progressColor: string;
     /**
-     * track thickness
+     * track thickness.
      *
      * @default 0
      */
     @Property(0)
     public trackThickness: number;
     /**
-     * progress thickness
+     * progress thickness.
      *
      * @default 0
      */
     @Property(0)
     public progressThickness: number;
     /**
-     * pie view
+     * pie view.
      *
      * @default false
      */
     @Property(false)
     public enablePieProgress: boolean;
     /**
-     * theme style
+     * theme style.
      *
      * @default Fabric
      */
     @Property('Fabric')
     public theme: ProgressTheme;
     /**
-     * label of the progress bar
+     * label of the progress bar.
      *
      * @default false
      */
     @Property(false)
     public showProgressValue: boolean;
     /**
-     * disable the trackSegment
+     * disable the trackSegment.
      *
      * @default false
      */
@@ -244,12 +244,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: 'Normal', fontFamily: null }, Font)
     public labelStyle: FontModel;
     /**
-     * margin size
+     * margin size.
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
     /**
-     * Animation for the progress bar
+     * Animation for the progress bar.
      */
     @Complex<AnimationModel>({}, Animation)
     public animation: AnimationModel;
@@ -296,35 +296,35 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Event()
     public animationComplete: EmitType<IProgressValueEventArgs>;
     /**
-     * Trigger after mouse click
+     * Trigger after mouse click.
      *
      * @event mouseClick
      */
     @Event()
     public mouseClick: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse move
+     * Trigger after mouse move.
      *
      * @event mouseMove
      */
     @Event()
     public mouseMove: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse up
+     * Trigger after mouse up.
      *
      * @event mouseUp
      */
     @Event()
     public mouseUp: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse down
+     * Trigger after mouse down.
      *
      * @event mouseDown
      */
     @Event()
     public mouseDown: EmitType<IMouseEventArgs>;
     /**
-     * Trigger after mouse down
+     * Trigger after mouse down.
      *
      * @event mouseLeave
      */

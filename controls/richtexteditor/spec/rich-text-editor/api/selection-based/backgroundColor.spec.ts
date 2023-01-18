@@ -120,8 +120,8 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                 let popup: HTMLElement = document.getElementById(controlId + '_toolbar_FontSize-popup');
                 dispatchEvent((popup.querySelectorAll('.e-item')[0] as HTMLElement), 'mousedown');
                 (popup.querySelectorAll('.e-item')[0] as HTMLElement).click();
-                expect(firstPEle.children[0].innerHTML === '<span style="font-size: 36pt; background-color: rgb(255, 255, 0);">hello</span>').toBe(true);
-                expect(lastPEle.children[0].innerHTML === '<span style="font-size: 36pt; background-color: rgb(255, 255, 0);">syncfusion</span>').toBe(true);
+                expect(firstPEle.innerHTML === '<span style="font-size: 36pt;"><span style="background-color: rgb(255, 255, 0);">hello</span></span>').toBe(true);
+                expect(lastPEle.innerHTML === '<span style="font-size: 36pt;"><span style="background-color: rgb(255, 255, 0);">syncfusion</span></span>').toBe(true);
                 done();
             });
         });

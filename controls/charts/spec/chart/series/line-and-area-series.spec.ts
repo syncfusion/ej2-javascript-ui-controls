@@ -61,7 +61,7 @@ describe('Chart Control Series', () => {
         let fillcolor: string;
         let x: number; let y: number;
         let trigger: MouseEvents = new MouseEvents();
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container',styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -306,7 +306,7 @@ describe('Chart Control Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let animate: EmitType<IAnimationCompleteEventArgs>;
-        let element1: Element = createElement('div', { id: 'container' });
+        let element1: Element = createElement('div', { id: 'container',styles: 'width: 800px'  });
         beforeAll(() => {
             document.body.appendChild(element1);
             chartObj = new Chart(
@@ -799,7 +799,7 @@ describe('Chart Control Series', () => {
     describe('Area Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
-        let element1: Element = createElement('div', { id: 'container' });
+        let element1: Element = createElement('div', { id: 'container',styles: 'width: 800px'  });
         beforeAll(() => {
             document.body.appendChild(element1);
             chartObj = new Chart(
@@ -1033,7 +1033,7 @@ describe('Chart Control Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container',styles: 'width: 800px'  });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -1867,7 +1867,7 @@ describe('Chart Control Series', () => {
         let element: HTMLElement;
         let dataLabelY;
         let pointY;
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container',styles: 'width: 800px'  });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

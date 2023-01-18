@@ -6,7 +6,7 @@ import { ChildProperty, Property } from '@syncfusion/ej2-base';import { TextAlig
 export interface MarginModel {
 
     /**
-     * To customize top margin value
+     * To customize top margin value.
      *
      * @default 10
      */
@@ -14,7 +14,7 @@ export interface MarginModel {
     top?: number;
 
     /**
-     * To customize top bottom value
+     * To customize top bottom value.
      *
      * @default 10
      */
@@ -22,7 +22,7 @@ export interface MarginModel {
     bottom?: number;
 
     /**
-     * To customize top left value
+     * To customize top left value.
      *
      * @default 10
      */
@@ -30,7 +30,7 @@ export interface MarginModel {
     left?: number;
 
     /**
-     * To customize top right value
+     * To customize top right value.
      *
      * @default 10
      */
@@ -85,14 +85,14 @@ export interface FontModel {
     opacity?: number;
 
     /**
-     * text alignment for label
+     * text alignment for label.
      *
      * @default Far
      */
     textAlignment?: TextAlignmentType;
 
     /**
-     * label text
+     * label text.
      *
      * @default ''
      */
@@ -141,14 +141,14 @@ export interface ProgressAnnotationSettingsModel {
     content?: string;
 
     /**
-     * to move annotation
+     * to move annotation.
      *
      * @default 0
      */
     annotationAngle?: number;
 
     /**
-     * to move annotation
+     * to move annotation.
      *
      * @default '0%'
      */

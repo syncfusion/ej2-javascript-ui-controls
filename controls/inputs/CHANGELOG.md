@@ -4,7 +4,7 @@
 
 ## 20.4.38 (2022-12-21)
 
-### Rating `Preview`
+### Rating
 
 **Key features**:
 

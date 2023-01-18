@@ -91,7 +91,7 @@ export class StockChartLegendSettings extends ChildProperty<StockChartLegendSett
     public position: LegendPosition;
 
     /**
-     * Mode of legend items
+     * Mode of legend items.
      * * Series: Legend items generated based on series count.
      * * Point: Legend items generated based on unique data points.
      * * Range: Legend items generated based on range color mapping property.
@@ -245,7 +245,7 @@ export class StockChartLegendSettings extends ChildProperty<StockChartLegendSett
     public titleStyle: StockChartFontModel;
 
     /**
-     * legend title position in stock chart
+     * legend title position in stock chart.
      *
      * @default 'Top'
      */

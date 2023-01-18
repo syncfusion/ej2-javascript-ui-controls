@@ -117,7 +117,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public position: LegendPosition;
 
     /**
-     * Mode of legend items
+     * Mode of legend items.
      * * Series: Legend items generated based on series count.
      * * Point: Legend items generated based on unique data points.
      * * Range: Legend items generated based on range color mapping property.
@@ -282,7 +282,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public titleStyle: FontModel;
 
     /**
-     * legend title position
+     * legend title position.
      *
      * @default 'Top'
      */

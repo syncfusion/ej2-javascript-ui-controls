@@ -14,7 +14,7 @@ import { RangeIntervalType } from '../../common/utils/enum';
 
 export class NiceInterval extends Double {
     /**
-     * Method to calculate numeric datetime interval
+     * Method to calculate numeric datetime interval.
      */
     public calculateDateTimeNiceInterval(axis: Axis, size: Size, start: number, end: number, isChart: boolean = true): number {
         const oneDay: number = 24 * 60 * 60 * 1000;

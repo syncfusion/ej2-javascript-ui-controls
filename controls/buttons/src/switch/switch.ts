@@ -10,6 +10,7 @@ const RIPPLE_CHECK: string = 'e-ripple-check';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-switch-wrapper';
 const ACTIVE: string = 'e-switch-active';
+const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 
 /**
  * The Switch is a graphical user interface element that allows you to toggle between checked and unchecked states.
@@ -108,6 +109,15 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
      */
     @Property('')
     public value: string;
+
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string; };
 
     /**
      * Constructor for creating the widget.
@@ -301,6 +311,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                     addClass([wrapper], newProp.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                 }
                 break;
+            case 'htmlAttributes':
+                this.updateHtmlAttribute();
+                break;    
             }
         }
     }
@@ -329,6 +342,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             this.wireEvents();
         }
         this.renderComplete();
+        this.updateHtmlAttribute();
     }
     private rippleHandler(e: MouseEvent): void {
         const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
@@ -359,6 +373,29 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
         if (offText) {
             wrapper.querySelector('.e-switch-off').textContent = offText;
+        }
+    }
+    private updateHtmlAttribute(): void {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (const key of Object.keys(this.htmlAttributes)) {
+                if (ATTRIBUTES.indexOf(key) > -1) {
+                    const wrapper: Element = this.getWrapper();
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
+                    } else if (key === 'title') {
+                        wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    } else if (key === 'style') {
+                        wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    } else if(key === 'disabled') {
+                        if (this.htmlAttributes[`${key}`] === 'true') {
+                            this.setDisabled();
+                        }
+                        this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    } else {
+                        this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
+                    }
+                }
+            }
         }
     }
     private switchFocusHandler(): void {

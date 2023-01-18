@@ -67,7 +67,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
     public opacity: number;
 
     /**
-     * Specifies the chart title text overflow
+     * Specifies the chart title text overflow.
      *
      * @default 'Trim'
      */
@@ -75,7 +75,7 @@ export class StockChartFont extends ChildProperty<StockChartFont> {
     public textOverflow: TextOverflow;
 
     /**
-     * text alignment
+     * text alignment.
      *
      * @default 'Center'
      */
@@ -233,7 +233,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     public size: number;
 
     /**
-     * Size type of the strip line
+     * Size type of the strip line.
      *
      * @default Auto
      */
@@ -268,7 +268,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     public repeatEvery: Object | number | Date;
 
     /**
-     * isSegmented value of the strip line
+     * isSegmented value of the strip line.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -313,7 +313,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     public segmentEnd: Object | number | Date;
 
     /**
-     * Strip line Opacity
+     * Strip line Opacity.
      *
      * @default 1
      */
@@ -785,7 +785,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     public selectionStyle: string;
 
     /**
-     * It defines tension of cardinal spline types
+     * It defines tension of cardinal spline types.
      *
      * @default 0.5
      */
@@ -799,7 +799,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
     public cornerRadius: CornerRadiusModel;
 
     /**
-     * options to customize the empty points in series
+     * options to customize the empty points in series.
      */
     @Complex<EmptyPointSettingsModel>(null, StockEmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;
@@ -828,11 +828,11 @@ export class StockSeries extends ChildProperty<StockSeries> {
 }
 
 export interface IStockChartEventArgs {
-    /** name of the event */
+    /** name of the event. */
     name: string;
-    /** stock chart */
+    /** stock chart. */
     stockChart: StockChart;
-    /** theme */
+    /** theme. */
     theme: ChartTheme;
 }
 
@@ -840,63 +840,63 @@ export interface IStockChartEventArgs {
  * Interface for changed events
  */
 export interface IRangeChangeEventArgs {
-    /** name of the event */
+    /** name of the event. */
     name: string;
-    /** Defines the start value */
+    /** Defines the start value. */
     start: number | Date;
-    /** Defines the end value */
+    /** Defines the end value. */
     end: number | Date;
-    /** Defines the data source */
+    /** Defines the data source. */
     data: Object[];
-    /** Defines the selected data */
+    /** Defines the selected data. */
     selectedData: Object[];
-    /** Defined the zoomPosition of the Stock chart */
+    /** Defined the zoomPosition of the Stock chart. */
     zoomPosition: number;
-    /** Defined the zoomFactor of the stock chart */
+    /** Defined the zoomFactor of the stock chart. */
     zoomFactor: number;
 }
 
 /** Stock event render event */
 export interface IStockEventRenderArgs {
-    /** stockChart */
+    /** stockChart. */
     stockChart: StockChart;
-    /** Event text  */
+    /** Event text.  */
     text: string;
-    /** Event shape */
+    /** Event shape. */
     type: FlagType;
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /** Defines the event cancel status. */
     cancel: boolean;
-    /** Defines the stock series */
+    /** Defines the stock series. */
     series: StockSeriesModel;
 }
 
 export interface IStockLegendRenderEventArgs extends IChartEventArgs {
-    /** Defines the current legend text */
+    /** Defines the current legend text. */
     text: string;
-    /** Defines the current legend fill color */
+    /** Defines the current legend fill color. */
     fill: string;
-    /** Defines the current legend shape */
+    /** Defines the current legend shape. */
     shape: LegendShape;
-    /** Defines the current legend marker shape */
+    /** Defines the current legend marker shape. */
     markerShape?: ChartShape;
 }
 
 export interface IStockLegendClickEventArgs extends IChartEventArgs {
-    /** Defines the chart when legendClick */
+    /** Defines the chart when legendClick. */
     chart: StockChart;
-    /** Defines the current legend shape */
+    /** Defines the current legend shape. */
     legendShape: LegendShape;
-    /** Defines the current series */
+    /** Defines the current series. */
     series: Series;
-    /** Defines the current legend text */
+    /** Defines the current legend text. */
     legendText: string;
 }
 
 export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
-     * Defines the type of the technical indicator
+     * Defines the type of the technical indicator.
      *
      * @default 'Sma'
      */
@@ -904,7 +904,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public type: TechnicalIndicators;
 
     /**
-     * Defines the period, the price changes over which will be considered to predict the trend
+     * Defines the period, the price changes over which will be considered to predict the trend.
      *
      * @default 14
      */
@@ -912,7 +912,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public period: number;
 
     /**
-     * Defines the period, the price changes over which will define the %D value in stochastic indicators
+     * Defines the period, the price changes over which will define the %D value in stochastic indicators.
      *
      * @default 3
      */
@@ -920,7 +920,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public dPeriod: number;
 
     /**
-     * Defines the look back period, the price changes over which will define the %K value in stochastic indicators
+     * Defines the look back period, the price changes over which will define the %K value in stochastic indicators.
      *
      * @default 14
      */
@@ -928,7 +928,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public kPeriod: number;
 
     /**
-     * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators
+     * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators.
      *
      * @default 80
      */
@@ -936,7 +936,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public overBought: number;
 
     /**
-     * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators
+     * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators.
      *
      * @default 20
      */
@@ -944,7 +944,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public overSold: number;
 
     /**
-     * Defines the field to compare the current value with previous values
+     * Defines the field to compare the current value with previous values.
      *
      * @default 'Close'
      */
@@ -952,7 +952,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public field: FinancialDataFields;
 
     /**
-     * Sets the standard deviation values that helps to define the upper and lower bollinger bands
+     * Sets the standard deviation values that helps to define the upper and lower bollinger bands.
      *
      * @default 2
      */
@@ -960,7 +960,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public standardDeviation: number;
 
     /**
-     * Sets the slow period to define the Macd line
+     * Sets the slow period to define the Macd line.
      *
      * @default 12
      */
@@ -968,7 +968,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public slowPeriod: number;
 
     /**
-     * Enables/Disables the over-bought and over-sold regions
+     * Enables/Disables the over-bought and over-sold regions.
      *
      * @default true
      */
@@ -976,7 +976,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public showZones: boolean;
 
     /**
-     * Sets the fast period to define the Macd line
+     * Sets the fast period to define the Macd line.
      *
      * @default 26
      */
@@ -985,7 +985,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
 
 
     /**
-     * Defines the appearance of the the MacdLine of Macd indicator
+     * Defines the appearance of the the MacdLine of Macd indicator.
      *
      * @default { color: '#ff9933', width: 2 }
      */
@@ -1001,7 +1001,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public macdType: MacdType;
 
     /**
-     * Defines the color of the negative bars in Macd indicators
+     * Defines the color of the negative bars in Macd indicators.
      *
      * @default '#e74c3d'
      */
@@ -1009,7 +1009,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public macdNegativeColor: string;
 
     /**
-     * Defines the color of the positive bars in Macd indicators
+     * Defines the color of the positive bars in Macd indicators.
      *
      * @default '#2ecd71'
      */
@@ -1027,13 +1027,13 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public bandColor: string;
 
     /**
-     * Defines the appearance of the upper line in technical indicators
+     * Defines the appearance of the upper line in technical indicators.
      */
     @Complex<StockChartConnectorModel>({ color: '#ffb735', width: 1 }, StockChartConnector)
     public upperLine: StockChartConnectorModel;
 
     /**
-     * Defines the name of the series, the data of which has to be depicted as indicator
+     * Defines the name of the series, the data of which has to be depicted as indicator.
      *
      * @default ''
      */
@@ -1041,14 +1041,14 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     public seriesName: string;
 
     /**
-     * Defines the appearance of period line in technical indicators
+     * Defines the appearance of period line in technical indicators.
      */
 
     @Complex<StockChartConnectorModel>({ color: '#f2ec2f', width: 1 }, StockChartConnector)
     public periodLine: StockChartConnectorModel;
 
     /**
-     * Defines the appearance of lower line in technical indicators
+     * Defines the appearance of lower line in technical indicators.
      */
 
     @Complex<ConnectorModel>({ color: '#f2ec2f', width: 1 }, StockChartConnector)
@@ -1539,7 +1539,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
     public crossesAt: Object;
 
     /**
-     * Specifies axis name with which the axis line has to be crossed
+     * Specifies axis name with which the axis line has to be crossed.
      *
      * @default null
      */
@@ -1548,7 +1548,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
     public crossesInAxis: string;
 
     /**
-     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
+     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line.
      *
      * @default true
      */
@@ -1688,7 +1688,7 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
     public tabIndex: number;
 
     /**
-     * Specifies the stripLine collection for the axis
+     * Specifies the stripLine collection for the axis.
      */
     @Collection<StockChartStripLineSettingsModel>([], StockChartStripLineSettings)
     public stripLines: StockChartStripLineSettingsModel[];
@@ -1731,7 +1731,7 @@ export class StockChartRow extends ChildProperty<StockChartRow> {
 export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
     /**
-     * Defines the period, the price changes over which will be considered to predict moving average trend line
+     * Defines the period, the price changes over which will be considered to predict moving average trend line.
      *
      * @default 2
      */
@@ -1739,7 +1739,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public period: number;
 
     /**
-     * Defines the name of trendline
+     * Defines the name of trendline.
      *
      * @default ''
      */
@@ -1747,7 +1747,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public name: string;
 
     /**
-     * Defines the type of the trendline
+     * Defines the type of the trendline.
      *
      * @default 'Linear'
      */
@@ -1755,7 +1755,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public type: TrendlineTypes;
 
     /**
-     * Defines the polynomial order of the polynomial trendline
+     * Defines the polynomial order of the polynomial trendline.
      *
      * @default 2
      */
@@ -1763,7 +1763,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public polynomialOrder: number;
 
     /**
-     * Defines the period, by which the trend has to forward forecast
+     * Defines the period, by which the trend has to forward forecast.
      *
      * @default 0
      */
@@ -1771,7 +1771,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public forwardForecast: number;
 
     /**
-     * Defines the period, by which the trend has to backward forecast
+     * Defines the period, by which the trend has to backward forecast.
      *
      * @default 0
      */
@@ -1779,13 +1779,13 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public backwardForecast: number;
 
     /**
-     * Options to customize the animation for trendlines
+     * Options to customize the animation for trendlines.
      */
     @Complex<AnimationModel>({}, Animation)
     public animation: AnimationModel;
 
     /**
-     * Enables/disables tooltip for trendlines
+     * Enables/disables tooltip for trendlines.
      *
      * @default true
      */
@@ -1793,7 +1793,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public enableTooltip: boolean;
 
     /**
-     * Options to customize the marker for trendlines
+     * Options to customize the marker for trendlines.
      */
     @Complex<MarkerSettingsModel>({}, MarkerSettings)
     public marker: MarkerSettingsModel;
@@ -1802,7 +1802,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
 
 
     /**
-     * Defines the intercept of the trendline
+     * Defines the intercept of the trendline.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -1811,7 +1811,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public intercept: number;
 
     /**
-     * Defines the fill color of trendline
+     * Defines the fill color of trendline.
      *
      * @default ''
      */
@@ -1819,7 +1819,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public fill: string;
 
     /**
-     * Sets the legend shape of the trendline
+     * Sets the legend shape of the trendline.
      *
      * @default 'SeriesType'
      */
@@ -1827,7 +1827,7 @@ export class StockChartTrendline extends ChildProperty<StockChartTrendline> {
     public legendShape: LegendShape;
 
     /**
-     * Defines the width of the trendline
+     * Defines the width of the trendline.
      *
      * @default 1
      */
@@ -1946,7 +1946,7 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
 export class StockChartIndexes extends ChildProperty<StockChartIndexes> {
 
     /**
-     * Specifies index of point
+     * Specifies index of point.
      *
      * @default 0
      * @aspType int
@@ -1955,7 +1955,7 @@ export class StockChartIndexes extends ChildProperty<StockChartIndexes> {
     public point: number;
 
     /**
-     * Specifies index of series
+     * Specifies index of series.
      *
      * @default 0
      * @aspType int

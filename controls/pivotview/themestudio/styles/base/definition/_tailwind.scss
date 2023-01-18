@@ -160,7 +160,7 @@ $shadow-focus-ring1: 0 0 0 1px rgba($primary, 1) !default;
 $shadow-focus-ring2: 0 0 0 2px rgba($content-bg-color, .95), 0 0 0 4px rgba($primary, 1) !default;
 
 // FontFamily
-$font-family: 'Inter';
+$font-family: 'Inter' !default;
 
 // Default Font Size
 $text-xxs: 10px !default;

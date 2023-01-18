@@ -72,7 +72,7 @@ describe('Chart Control', () => {
     let instance: any;
     let mouseUp: any;
     describe('Default Zooming Selection', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(elem);
             chartObj = new Chart(
@@ -321,7 +321,7 @@ describe('Chart Control', () => {
     });
 
     describe('Checking Zooming Toolkit', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(elem);
             chartObj = new Chart(
@@ -584,7 +584,7 @@ describe('Chart Control', () => {
     });
 
     describe('Checking Panning', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(elem);
             chartObj = new Chart(
@@ -971,7 +971,7 @@ describe('Chart Control', () => {
     });
 
     describe('Checking mode', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 900px' });
         let factor: number;
         beforeAll(() => {
             document.body.appendChild(elem);
@@ -1087,7 +1087,7 @@ describe('Chart Control', () => {
 
 
     describe('Checking Mouse Wheel', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 900px' });
         let wheelArgs: unknown;
         beforeAll(() => {
             document.body.appendChild(elem);
@@ -1286,7 +1286,7 @@ describe('Chart Control', () => {
     });
 
     describe('Checking Pinch Zooming', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 900px' });
         let areaElement: Element;
         let wheelArgs: wheel;
         beforeAll(() => {
@@ -1544,7 +1544,7 @@ describe('Chart Control', () => {
         });
     });
     describe('Checking touch and device ', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(elem);
             chartObj = new Chart(
@@ -1630,7 +1630,7 @@ describe('Chart Control', () => {
     });
 
     describe('Checking zooming with enablePan', () => {
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 900px' });
         let factor: number;
         beforeAll(() => {
             document.body.appendChild(elem);

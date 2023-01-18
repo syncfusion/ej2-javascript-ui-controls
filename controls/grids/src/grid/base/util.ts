@@ -1505,6 +1505,33 @@ export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], ta
     return cells;
 }
 
+/**
+ * @param {IGrid} gObj - Defines the grid object.
+ * @param {boolean} visibleOnly - Defines to return only visible columns.
+ * @returns {Column[], Column[], Column[]} Returns all frozenLeft, movable and frozenRight Columns as object.
+ * @hidden
+ */
+export function getExactFrozenMovableColumn(gObj: IGrid, visibleOnly?: boolean): { frozenLeft:Column[], movable:Column[], frozenRight: Column[] } {
+    let columnModel: Column[] = gObj.getColumns();
+    let movableColumns: Column[] = [];
+    let frozenLeftColumns: Column[] = [];
+    let frozenRightColumns: Column[] = [];
+    for (let i:number = 0; i < columnModel.length; i++) {
+        if (isNullOrUndefined(visibleOnly) || !visibleOnly || visibleOnly === columnModel[i].visible) {
+            if (columnModel[i].freeze === 'Left' || columnModel[i].freezeTable === 'frozen-left') {
+                frozenLeftColumns.push(columnModel[i]);
+            }
+            else if (columnModel[i].freeze === 'Right' || columnModel[i].freezeTable === 'frozen-right') {
+                frozenRightColumns.push(columnModel[i]);
+            }
+            else {
+                movableColumns.push(columnModel[i]);
+            }
+        }
+    }
+    return { frozenLeft: frozenLeftColumns, movable :movableColumns, frozenRight: frozenRightColumns };
+}
+
 // eslint-disable-next-line
 /** @hidden */
 export function gridActionHandler(

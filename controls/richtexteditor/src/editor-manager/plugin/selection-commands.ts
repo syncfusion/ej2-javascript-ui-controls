@@ -93,6 +93,8 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index as number], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
+                } else if ((format === 'fontsize' || format === 'fontname' || format === 'fontcolor') && range.startContainer.parentElement === endNode){
+                    formatNode = null;
                 }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
@@ -112,7 +114,7 @@ export class SelectionCommands {
                         domSelection,
                         endNode,
                         domNode);
-                } else {
+                } else if (range.startContainer.parentElement !== endNode || (range.commonAncestorContainer === endNode || nodes.length === 1)) {
                     nodes[index as number] = this.insertFormat(
                         docElement,
                         nodes,
@@ -124,7 +126,9 @@ export class SelectionCommands {
                         range,
                         nodeCutter,
                         format,
-                        value);
+                        value,
+                        domNode,
+                        endNode);
                 }
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
             }
@@ -402,10 +406,26 @@ export class SelectionCommands {
         range: Range,
         nodeCutter: NodeCutter,
         format: string,
-        value: string): Node {
+        value: string,
+        domNode: DOMNode,
+        endNode: Node): Node {
+        let rootBlockNode: Node;
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 if (nodes[index as number].nodeName !== 'BR') {
+                    if (format === 'fontsize' || format === 'fontname' || format === 'fontcolor') {
+                        let rangeNode: Node = nodes[index];
+                        while (rangeNode && !domNode.isBlockNode(rangeNode as Element) && rangeNode !== endNode) {
+                            if (domNode.isBlockNode(rangeNode.parentElement)) {
+                                rootBlockNode = rangeNode;
+                            }
+                            rangeNode = rangeNode.parentElement;
+                        }
+                        if (rootBlockNode && rootBlockNode.nodeType !== 3) {
+                            nodeCutter.SplitNode(range, rootBlockNode as HTMLElement, true).cloneNode(true);
+                            nodeCutter.SplitNode(range, rootBlockNode as HTMLElement, false).cloneNode(false);
+                        }
+                    }
                     nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
                     nodes[index as number].textContent = nodeCutter.TrimLineBreak((nodes[index as number] as Text).textContent);
                 }
@@ -414,23 +434,45 @@ export class SelectionCommands {
                         : nodes[index as number].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
                     const element: HTMLElement = this.GetFormatNode(format, value);
-                    if (format === 'fontsize' || format === 'fontcolor') {
-                        let liElement: HTMLElement = nodes[index as number].parentElement;
-                        let parentElement: HTMLElement = nodes[index as number].parentElement;
-                        while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
-                            parentElement = parentElement.parentElement;
-                            liElement = parentElement;
-                        }
-                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                            liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
-                            if (format === 'fontsize') {
-                                liElement.style.fontSize = value;
-                            } else {
-                                liElement.style.color = value;
-                                liElement.style.textDecoration = 'inherit';
+                    if (format === 'fontsize' || format === 'fontcolor' || format === 'fontname') {
+                        if (format !== 'fontname') {
+                            let liElement: HTMLElement = nodes[index as number].parentElement;
+                            let parentElement: HTMLElement = nodes[index as number].parentElement;
+                            while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                                parentElement = parentElement.parentElement;
+                                liElement = parentElement;
+                            }
+                            if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                                liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
+                                if (format === 'fontsize') {
+                                    liElement.style.fontSize = value;
+                                } else {
+                                    liElement.style.color = value;
+                                    liElement.style.textDecoration = 'inherit';
+                                }
                             }
                         }
-                        nodes[index as number] = this.applyStyles(nodes, index, element);
+                        if (rootBlockNode && rootBlockNode.nodeType !== 3) {
+                            const save: NodeSelection = new NodeSelection();
+                            save.save(range, docElement);
+                            domNode.setMarker(save);
+                            var cloneNode = rootBlockNode.cloneNode(true);
+                            element.appendChild(cloneNode);
+                            domNode.replaceWith(rootBlockNode as Element, element.outerHTML);
+                            const currentStartNode: Node = (endNode as Element).querySelector('.e-editor-select-start');
+                            const currrentEndNode: Node = (endNode as Element).querySelector('.e-editor-select-end');
+                            if (index === 0) {
+                                nodes[index] = currentStartNode ? currentStartNode.lastChild : nodes[index];
+                            }
+                            if (range.startContainer.parentElement === endNode) {
+                                if (nodes.length > 1) {
+                                    nodes[nodes.length - 1] =  currrentEndNode ? currrentEndNode.lastChild : nodes[index];
+                                }
+                            }
+                            domNode.saveMarker(save, null);
+                        } else {
+                            nodes[index as number] = this.applyStyles(nodes, index, element);
+                        }
                         if (format === 'fontsize') {
                             const bg: Element = closest(nodes[index as number].parentElement, 'span[style*=' + 'background-color' + ']');
                             if (!isNOU(bg)) {

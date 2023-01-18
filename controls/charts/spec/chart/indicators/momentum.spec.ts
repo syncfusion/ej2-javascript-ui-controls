@@ -62,7 +62,7 @@ describe('Chart', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(

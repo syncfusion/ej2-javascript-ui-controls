@@ -28,7 +28,7 @@ export class Circular {
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-    /** To render the circular track */
+    /** To render the circular track. */
     public renderCircularTrack(): void {
         const progress: ProgressBar = this.progress;
         const circularTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_CircularTrackGroup' });
@@ -221,7 +221,7 @@ export class Circular {
         progress.svgObject.appendChild(circularBufferGroup);
     }
 
-    /** To render the circular Label */
+    /** To render the circular Label. */
     public renderCircularLabel(isProgressRefresh: boolean = false): void {
         let end: number;
         let circularLabel: Element;

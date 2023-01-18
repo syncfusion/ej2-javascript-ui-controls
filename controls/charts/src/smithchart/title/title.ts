@@ -57,7 +57,7 @@ export class Subtitle extends ChildProperty<Subtitle> {
     public maximumWidth: number;
 
     /**
-     * options for customizing sub title font
+     * options for customizing sub title font.
      */
 
     @Complex<SmithchartFontModel>(Theme.smithchartSubtitleFont, SmithchartFont)
@@ -108,7 +108,7 @@ export class Title extends ChildProperty<Title> {
     public enableTrim: boolean;
 
     /**
-     * maximum width of the sub title
+     * maximum width of the sub title.
      *
      * @aspDefaultValueIgnore
      * @default null
@@ -117,21 +117,21 @@ export class Title extends ChildProperty<Title> {
     public maximumWidth: number;
 
     /**
-     * options for customizing sub title
+     * options for customizing sub title.
      */
 
     @Complex<SubtitleModel>({}, Subtitle)
     public subtitle: SubtitleModel;
 
     /**
-     * options for customizing title font
+     * options for customizing title font.
      */
 
     @Complex<SmithchartFontModel>(Theme.smithchartTitleFont, SmithchartFont)
     public font: SmithchartFontModel;
 
     /**
-     * options for customizing title text
+     * options for customizing title text.
      */
 
     @Complex<SmithchartFontModel>(Theme.smithchartTitleFont, SmithchartFont)

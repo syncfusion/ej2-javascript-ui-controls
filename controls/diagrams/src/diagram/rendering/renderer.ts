@@ -951,7 +951,7 @@ export class DiagramRenderer {
             options.visible = false;
         }
        const parentSvg: SVGSVGElement = this.getParentSvg(selector, 'selector');
-       this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel, true);
+       this.svgRenderer.drawRectangle(canvas as SVGElement, options, this.diagramId, true, true, parentSvg, ariaLabel, true,enableSelector);
     }
 
     /**

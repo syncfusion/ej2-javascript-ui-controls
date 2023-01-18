@@ -78,6 +78,7 @@ export class FormDesigner {
     private isSetFormFieldMode: boolean = false;
     private increasedSize: number = 5;
     private defaultZoomValue: number = 1;
+    private indicatorPaddingValue: number = 4;
     private signatureFieldPropertyChanged: any =
         {
             isReadOnlyChanged: false,
@@ -1090,7 +1091,7 @@ export class FormDesigner {
                         }
                     }
                 }
-                if (actualObject.formFieldAnnotationType === "SignatureField"){
+                if (actualObject.formFieldAnnotationType === "SignatureField"  || actualObject.formFieldAnnotationType === "InitialField"){
                     let signatureDiv = htmlElement.firstElementChild.firstElementChild as HTMLElement;
                     let indicatorSpan = signatureDiv.nextElementSibling as HTMLElement;
                     let bounds = this.getBounds(indicatorSpan as HTMLElement);
@@ -1098,6 +1099,11 @@ export class FormDesigner {
                         height: element.actualSize.height , 
                         width: element.actualSize.width,
                         signatureIndicatorSettings : {
+                            text : indicatorSpan.textContent,
+                            width : bounds.width,
+                            height : bounds.height,
+                        },
+                        initialIndicatorSettings : {
                             text : indicatorSpan.textContent,
                             width : bounds.width,
                             height : bounds.height,
@@ -1307,7 +1313,6 @@ export class FormDesigner {
         }
         spanElement.style.overflow = "hidden";
         spanElement.style.whiteSpace =  "nowrap";
-        spanElement.style.padding = "2px 3px 2px 1px";
         spanElement.style.boxSizing = "border-box";
         let zoomValue : number = this.pdfViewerBase.getZoomFactor() as number;
         spanElement.style.textAlign = "left";
@@ -1320,11 +1325,14 @@ export class FormDesigner {
         spanElement.style.width = signatureFieldIndicatorWidth;
         spanElement.style.position = "absolute";
         let widthNew : number = this.setHeightWidth(signatureFieldWidth,width,boundsOfSpan.width+fontSize,zoomValue);
-        spanElement.style.width = widthNew + (fontSize * zoomValue) + "px";
+        spanElement.style.width = widthNew + "px";
         let heightNew : number = this.setHeightWidth(signatureFieldHeight,height,boundsOfSpan.height,zoomValue);
         spanElement.style.height = heightNew + "px";
         if (!isPrint) {
             element.appendChild(spanElement);
+        }
+        if(!((widthNew + this.indicatorPaddingValue) > signatureFieldWidth * zoomValue) && !((heightNew + this.indicatorPaddingValue) > signatureFieldHeight * zoomValue )){
+            spanElement.style.padding = "2px 3px 2px 1px";
         }
         this.updateSignInitialFieldProperties(signatureField, signatureField.isInitialField, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip != "") {
@@ -1392,7 +1400,7 @@ export class FormDesigner {
                 }
                 if(indicatorSettings.width || options.width || indicatorSettings.text){
                     let width :number = this.setHeightWidth(fieldBounds.width,indicatorSettings.width,bounds.width,zoomValue);
-                    spanElement.style.width = width +(objIndicatorSettings.fontSize*zoomValue)+ "px";
+                    spanElement.style.width = width + "px";
                     objIndicatorSettings.width = width;
                 }
                 if(indicatorSettings.height || options.height|| indicatorSettings.text){
@@ -2028,7 +2036,7 @@ export class FormDesigner {
                         break;
                     }
                 }
-                obj.selectedIndex = (options as any).selectedIndex;
+                obj.selectedIndex = !isNullOrUndefined((options as any).selectedIndex) ? (options as any).selectedIndex : [0];
                 obj.thickness = !isNullOrUndefined((options as DropdownFieldSettings).thickness) ? (options as DropdownFieldSettings).thickness : 1;
                 obj.borderColor = !isNullOrUndefined((options as DropdownFieldSettings).borderColor) ? (options as DropdownFieldSettings).borderColor : '#303030';
                 break;
@@ -2852,7 +2860,7 @@ export class FormDesigner {
             type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily,
             fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color, backgroundColor: (formFieldObject as PdfFormFieldBaseModel).backgroundColor,
             alignment: (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
-            isPrint: formFieldObject.isPrint, tooltip:  (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor };
+            isPrint: formFieldObject.isPrint, tooltip:  (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor, pageIndex:formFieldObject.pageIndex };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formField.id)] = formField;
     }
     private colorNametoHashValue(colorString: string): string {

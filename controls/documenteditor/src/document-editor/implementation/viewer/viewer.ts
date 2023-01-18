@@ -792,8 +792,8 @@ export class DocumentHelper {
         this.initalizeStyles();
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
         this.editRanges = new Dictionary<string, EditRangeStartElementBox[]>();
-        this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
-        this.isMobileDevice = /Android|Windows Phone|webOS/i.test(navigator.userAgent);
+        this.isIosDevice = typeof window !== 'undefined' ? /Mac|iPad|iPod/i.test(navigator.userAgent) : false;
+        this.isMobileDevice = typeof window !== 'undefined' ? /Android|Windows Phone|webOS/i.test(navigator.userAgent) : false;
         this.formFillPopup = new FormFieldPopUp(this.owner);
         this.customXmlData = new Dictionary<string, string>();
         this.contentControlCollection = [];
@@ -1166,7 +1166,7 @@ export class DocumentHelper {
         this.viewerContainer.addEventListener('touchstart', this.onTouchStartInternal);
         this.viewerContainer.addEventListener('touchmove', this.onTouchMoveInternal);
         this.viewerContainer.addEventListener('touchend', this.onTouchUpInternal);
-        if (navigator.userAgent.match('Firefox')) {
+        if (navigator !== undefined && navigator.userAgent.match('Firefox')) {
             this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }
         this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
@@ -1544,7 +1544,7 @@ export class DocumentHelper {
             return;
         }
         if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
-            if (!Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')
+            if (navigator !== undefined && !Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')
                 && !isNullOrUndefined(this.iframe)) {
                 this.iframe.focus();
             }
@@ -3553,7 +3553,7 @@ export class DocumentHelper {
         window.removeEventListener('keyup', this.onKeyUpInternal);
         window.removeEventListener('mouseup', this.onImageResizer);
         window.removeEventListener('touchend', this.onImageResizer);
-        if (navigator.userAgent.match('Firefox')) {
+        if (navigator !== undefined && navigator.userAgent.match('Firefox')) {
             this.viewerContainer.removeEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }
         this.viewerContainer.removeEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);

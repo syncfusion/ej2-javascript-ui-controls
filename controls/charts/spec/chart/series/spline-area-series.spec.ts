@@ -85,7 +85,7 @@ describe('Chart Control', () => {
         let animationComplete: EmitType<IAnimationCompleteEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
         beforeAll(() => {
-            elem = createElement('div', { id: 'container' });
+            elem = createElement('div', { id: 'container', styles: 'width: 800px' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -560,7 +560,7 @@ describe('Chart Control', () => {
         let element: HTMLElement;
         let dataLabelY;
         let pointY;
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

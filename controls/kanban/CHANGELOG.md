@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I426567` - Now, drag and drop between the cards will work fine with out any flickering.
+
 ## 20.4.38 (2022-12-21)
 
 ### Kanban

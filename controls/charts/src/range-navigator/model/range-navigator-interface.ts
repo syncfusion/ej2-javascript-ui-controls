@@ -12,9 +12,9 @@ import { Rect, Size } from '@syncfusion/ej2-svg-base';
  * interface for load event
  */
 export interface ILoadEventArgs {
-    /** name of the event */
+    /** name of the event. */
     name: string;
-    /** rangeNavigator */
+    /** rangeNavigator. */
     rangeNavigator: RangeNavigator;
 }
 
@@ -22,11 +22,11 @@ export interface ILoadEventArgs {
  * interface for loaded event
  */
 export interface IRangeLoadedEventArgs {
-    /** name of the event */
+    /** name of the event. */
     name: string;
-    /** rangeNavigator */
+    /** rangeNavigator. */
     rangeNavigator: RangeNavigator;
-    /** theme */
+    /** theme. */
     theme ?: ChartTheme;
 }
 
@@ -34,16 +34,16 @@ export interface IRangeLoadedEventArgs {
  * Range Navigator Before Resize event arguments.
  */
 export interface IRangeBeforeResizeEventArgs {
-    /** Defines the name of the Event */
+    /** Defines the name of the Event. */
     name: string;
-    /** It is  used to cancel the resized event */
+    /** It is  used to cancel the resized event. */
     cancelResizedEvent: boolean;
 }
 
 export interface IRangeTooltipRenderEventArgs extends IRangeEventArgs {
-    /** Defines tooltip text collections */
+    /** Defines tooltip text collections. */
     text?: string[];
-    /** Defines tooltip text style */
+    /** Defines tooltip text style. */
     textStyle?: FontModel;
 }
 
@@ -51,17 +51,17 @@ export interface IRangeTooltipRenderEventArgs extends IRangeEventArgs {
  * Interface for label render event
  */
 export interface ILabelRenderEventsArgs {
-    /** name of the event */
+    /** name of the event. */
     name: string;
-    /** labelStyle */
+    /** labelStyle. */
     labelStyle: FontModel;
-    /** region */
+    /** region. */
     region: Rect;
-    /** text  */
+    /** text.  */
     text: string;
-    /** cancel for the event */
+    /** cancel for the event. */
     cancel: boolean;
-    /** value */
+    /** value. */
     value: number;
 }
 
@@ -100,26 +100,26 @@ export interface IRangeEventArgs {
  * Interface for changed events
  */
 export interface IChangedEventArgs extends IRangeEventArgs {
-    /** Defines the start value */
+    /** Defines the start value. */
     start: number | Date;
-    /** Defines the end value */
+    /** Defines the end value. */
     end: number | Date;
-    /** Defines the selected data */
+    /** Defines the selected data. */
     selectedData: DataPoint[];
-    /** Defined the zoomPosition of the range navigator */
+    /** Defined the zoomPosition of the range navigator. */
     zoomPosition: number;
-    /** Defined the zoomFactor of the range navigator */
+    /** Defined the zoomFactor of the range navigator. */
     zoomFactor: number;
-    /**Defined the selected Period of the range navigator */
+    /**Defined the selected Period of the range navigator. */
     selectedPeriod: string;
 }
 export interface IResizeRangeNavigatorEventArgs  {
-    /** Defines the name of the Event */
+    /** Defines the name of the Event. */
     name: string;
-    /** Defines the previous size of the accumulation chart */
+    /** Defines the previous size of the accumulation chart. */
     previousSize: Size;
-    /** Defines the current size of the accumulation chart */
+    /** Defines the current size of the accumulation chart. */
     currentSize: Size;
-    /** Defines the range navigator instance */
+    /** Defines the range navigator instance. */
     rangeNavigator: RangeNavigator;
 }

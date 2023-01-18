@@ -5125,7 +5125,8 @@ export class TextFormField extends FormField {
             format: this.format,
             helpText: this.helpText,
             maxLength: this.maxLength,
-            type: this.type
+            type: this.type,
+            name: this.name
         };
         return textFormField;
     }
@@ -5207,7 +5208,8 @@ export class CheckBoxFormField extends FormField {
             enabled: this.enabled,
             helpText: this.helpText,
             size: this.size,
-            sizeType: this.sizeType
+            sizeType: this.sizeType,
+            name: this.name
         };
         return checkBoxFormField;
     }
@@ -5273,7 +5275,8 @@ export class DropDownFormField extends FormField {
         let dropDownFormField: DropDownFormFieldInfo = {
             dropdownItems: this.dropdownItems.slice(),
             enabled: this.enabled,
-            helpText: this.helpText
+            helpText: this.helpText,
+            name: this.name
         };
         return dropDownFormField;
     }

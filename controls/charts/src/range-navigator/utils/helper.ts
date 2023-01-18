@@ -57,15 +57,15 @@ export function getNearestValue(values: number[], point: number): number {
  * @public
  */
 export class DataPoint {
-    /** point x */
+    /** point x. */
     public x: Object;
-    /** point y */
+    /** point y. */
     public y: Object;
-    /** point x value */
+    /** point x value. */
     public xValue?: number;
-    /** point y value */
+    /** point y value. */
     public yValue?: number;
-    /** point visibility */
+    /** point visibility. */
     public visible?: boolean;
 
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types

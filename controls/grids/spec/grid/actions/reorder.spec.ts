@@ -500,7 +500,7 @@ describe('Reorder module', () => {
             }, done);
         });
 
-        it('hide and simulate reorder action', () => {
+        it('hide contact column and simulate reorder action', () => {
             gridObj.showHider.hide('Extension', 'field');
             gridObj.showHider.hide('HomePhone', 'field');
             gridObj.dataBind();
@@ -521,10 +521,37 @@ describe('Reorder module', () => {
             (gridObj.headerModule as any).drop({ target: gridObj.getColumnHeaderByField('Title'), droppedElement: dropClone });
         });
 
-        it("check reorder element dropped index", () => {
+        it("check first level stacked header reorder element dropped index", () => {
             const stackedHdrElem: NodeListOf<Element> = document.querySelectorAll(".e-headercell.e-firstcell");
             const reorderElem: Element = gridObj.getColumnHeaderByField('LastName');
             expect(stackedHdrElem[3]).toBe(reorderElem);
+        });
+        
+        it('hide history column and simulate stacked header reorder with normal header', () => {
+            gridObj.showHider.hide('HireDate', 'field');
+            let srcHeaderCell: Element = document.querySelectorAll('.e-headercell')[1];
+            let destHeaderCell: Element = document.querySelectorAll('.e-headercell')[0];           
+            let dropClone = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
+            document.body.appendChild(dropClone);
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = srcHeaderCell;
+            (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: srcHeaderCell } });
+            (gridObj.headerModule as any).dragStart({ target: srcHeaderCell.children[0], event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
+            (gridObj.headerModule as any).dragStart({ target: srcHeaderCell, event: { clientX: 10, clientY: 10, target: srcHeaderCell.children[0] } });
+            (gridObj.headerModule as any).drag({ target: destHeaderCell, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] } });
+            (gridObj.headerModule as any).dragStop({
+                target: destHeaderCell,
+                element: gridObj.getHeaderTable().querySelector('tr'), helper: dropClone, event: { clientX: 10, clientY: 10, target: destHeaderCell.children[0] }
+            });
+            (gridObj.reorderModule as any).element = srcHeaderCell;
+            (gridObj.reorderModule as any).chkDropPosition = () => true;
+            (gridObj.reorderModule as any).chkDropAllCols = () => true;
+            (gridObj.headerModule as any).drop({ target: destHeaderCell, droppedElement: dropClone });
+        });
+
+        it("check stacked header reorder element dropped index", () => {
+            const stackedHdrElem: NodeListOf<Element> = document.querySelectorAll(".e-headercell");
+            expect(stackedHdrElem[0].textContent).toBe('Employee Details');
+            expect(stackedHdrElem[0].classList.contains('e-stackedheadercell')).toBe(true);
         });
 
         afterAll(() => {

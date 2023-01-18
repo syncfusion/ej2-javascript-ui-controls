@@ -273,7 +273,7 @@ export class AccumulationLegend extends BaseLegend {
         }
     }
     /**
-     * To find html entities value for legend
+     * To find html entities value for legend.
      *
      * @returns {string} converts the entities to normal string.
      */

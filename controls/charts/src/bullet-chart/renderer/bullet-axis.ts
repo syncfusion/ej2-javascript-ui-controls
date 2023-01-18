@@ -66,7 +66,7 @@ export class BulletChartAxis {
     }
 
     /**
-     * To render grid lines of bullet chart axis
+     * To render grid lines of bullet chart axis.
      */
     public renderXMajorTickLines(intervalValue: number, scale: Element): void {
         const bullet: BulletChart = this.bulletChart;
@@ -103,7 +103,7 @@ export class BulletChartAxis {
         }
     }
     /**
-     * To render grid lines of bullet chart axis
+     * To render grid lines of bullet chart axis.
      */
     public renderYMajorTickLines(intervalValue: number, scale: Element): void {
         const bulletChart: BulletChart = this.bulletChart;
@@ -165,7 +165,7 @@ export class BulletChartAxis {
     }
 
     /**
-     * To render minor tick lines of bullet chart
+     * To render minor tick lines of bullet chart.
      */
     public renderXMinorTickLines(intervalValue: number, scaleGroup: Element): void {
         const minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
@@ -203,7 +203,7 @@ export class BulletChartAxis {
     }
 
     /**
-     * To render minor tick lines of bullet chart
+     * To render minor tick lines of bullet chart.
      */
     public renderYMinorTickLines(intervalValue: number, scaleGroup: Element): void {
         const minorTickGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
@@ -285,7 +285,7 @@ export class BulletChartAxis {
     }
 
     /**
-     * To render axis labels of bullet chart
+     * To render axis labels of bullet chart.
      */
     public renderXAxisLabels(intervalValue: number, scaleGroup: Element): void {
         const axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
@@ -342,7 +342,7 @@ export class BulletChartAxis {
     }
 
     /**
-     * To render axis labels of bullet chart
+     * To render axis labels of bullet chart.
      */
     public renderYAxisLabels(intervalValue: number, scaleGroup: Element): void {
         const axisLabelGroup: Element = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });

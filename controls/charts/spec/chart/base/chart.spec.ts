@@ -74,7 +74,7 @@ describe('Chart Control', () => {
         });
         it('Checking the null width of the chart', (done: Function) => {
             chart.width = null;
-            ele.setAttribute('style', 'width:0px');
+            ele.setAttribute('style', 'width:600px');
             chart.loaded = (args: Object) => {
                 svg = document.getElementById('container_svg');
                 expect(svg.getAttribute('width')).toEqual('600');
@@ -541,7 +541,7 @@ describe('Chart Control', () => {
         let element: Element;        
         let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            ele = createElement('div', { id: 'seriesData' });
+            ele = createElement('div', { id: 'seriesData', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -654,7 +654,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'seriesData' });
+            ele = createElement('div', { id: 'seriesData', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {
@@ -701,7 +701,7 @@ describe('Chart Control', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'container' });
+            ele = createElement('div', { id: 'container', styles: 'width: 900px' });
             document.body.appendChild(ele);
             chart = new Chart(
                 {

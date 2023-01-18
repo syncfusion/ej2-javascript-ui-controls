@@ -64,7 +64,7 @@ export class MultiLevelLabel {
     }
 
     /**
-     * Finds multilevel label height
+     * Finds multilevel label height.
      *
      * @returns {void}
      */

@@ -14,7 +14,7 @@ import { LocationModel } from '../../common/legend/legend-model';
 export class Range extends ChildProperty<Range> {
 
     /**
-     * Default value for qualitative range end value
+     * Default value for qualitative range end value.
      *
      * @default null
      */
@@ -30,7 +30,7 @@ export class Range extends ChildProperty<Range> {
     public opacity: number;
 
     /**
-     * Default value for qualitative range Color
+     * Default value for qualitative range Color.
      *
      * @default null
      */
@@ -38,7 +38,7 @@ export class Range extends ChildProperty<Range> {
     public color: string;
 
     /**
-     * Default value for qualitative range Color
+     * Default value for qualitative range Color.
      *
      * @default null
      */
@@ -46,7 +46,7 @@ export class Range extends ChildProperty<Range> {
     public index: number;
 
     /**
-     * Default value for qualitative range name
+     * Default value for qualitative range name.
      *
      * @default null
      */
@@ -210,7 +210,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
     public fontFamily: string;
 
     /**
-     * Text alignment
+     * Text alignment.
      *
      * @default 'Center'
      */
@@ -218,7 +218,7 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
     public textAlignment: Alignment;
 
     /**
-     * Specifies the chart title text overflow
+     * Specifies the chart title text overflow.
      *
      * @default 'Trim'
      */
@@ -243,14 +243,14 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
     public enableTrim: boolean;
 
     /**
-     * Maximum label width of the bullet chart
+     * Maximum label width of the bullet chart.
      *
      * @default null
      */
     @Property(null)
     public maximumTitleWidth: number;
     /**
-     * Range color
+     * Range color.
      *
      * @default false
      */

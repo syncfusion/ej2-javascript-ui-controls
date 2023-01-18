@@ -356,10 +356,22 @@ export class HeaderRender implements IRenderer {
         const frzCols: number = this.parent.getFrozenColumns();
         if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[parseInt(index.toString(), 10)]) {
             const colFreezeMode: freezeTable = rows[0].cells[parseInt(index.toString(), 10)].column.getFreezeTableName();
-            if (colFreezeMode === 'movable' || (frozenMode === literals.leftRight && colFreezeMode === literals.frozenRight)) {
+            if (tableName === 'movable' && this.getStackedLockColsCount.length) {
+                for (let j: number = 0, len: number = rows.length; j < len; j++) {
+                    if (frozenMode === 'Right') {
+                        rows[parseInt(j.toString(), 10)].cells.pop();
+                    }
+                    else {
+                        rows[parseInt(j.toString(), 10)].cells.shift();
+                    }
+                }
+            }
+            else if ((colFreezeMode === 'movable' || (frozenMode === literals.leftRight &&
+                colFreezeMode === literals.frozenRight))) {
                 if (frozenMode === 'Right') {
                     rows[0].cells.pop();
-                } else {
+                }
+                else {
                     rows[0].cells.shift();
                 }
             } else if (!frzCols && colFreezeMode === literals.frozenLeft) {

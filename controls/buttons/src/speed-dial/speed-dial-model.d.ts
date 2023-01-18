@@ -245,6 +245,7 @@ export interface SpeedDialModel extends ComponentModel{
      * * BottomLeft: Positions the FAB at the target's top left corner.
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
+     *
      *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
      *

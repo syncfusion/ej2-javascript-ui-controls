@@ -13,7 +13,7 @@ import { Axis } from '../axis/axis';
 import { DragSettingsModel } from '../../common/model/base-model';
 
 /**
- * `DataEditing` module handles data editing
+ * `DataEditing` module handles data editing.
  */
 export class DataEditing {
     private chart: Chart;
@@ -35,7 +35,7 @@ export class DataEditing {
         this.chart = chart;
     }
     /**
-     * Point drag start here
+     * Point drag start here.
      */
     public pointMouseDown(): void {
         const chart: Chart = this.chart;
@@ -59,7 +59,7 @@ export class DataEditing {
     }
 
     /**
-     * Point dragging
+     * Point dragging.
      */
     public pointMouseMove(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
@@ -83,7 +83,7 @@ export class DataEditing {
         }
     }
     /**
-     * Get cursor style
+     * Get cursor style.
      */
     private getCursorStyle(pointData: PointData): void {
         const chart: Chart = this.chart;
@@ -98,7 +98,7 @@ export class DataEditing {
         }
     }
     /**
-     * Dragging calculation
+     * Dragging calculation.
      */
     private pointDragging(si: number, pi: number): void {
         const chart: Chart = this.chart;
@@ -142,7 +142,7 @@ export class DataEditing {
     }
 
     /**
-     * Point drag ends here
+     * Point drag ends here.
      */
     public pointMouseUp(): void {
         const chart: Chart = this.chart;

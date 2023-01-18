@@ -38,7 +38,7 @@ export interface LegendTitleModel {
     textAlignment?: SmithchartAlignment;
 
     /**
-     *  options for customizing font
+     *  options for customizing font.
      */
 
     textStyle?: SmithchartFont;
@@ -109,7 +109,7 @@ export interface LegendItemStyleModel {
     height?: number;
 
     /**
-     * options for customizing legend item style border
+     * options for customizing legend item style border.
      */
 
     border?: LegendItemStyleBorderModel;
@@ -236,31 +236,31 @@ export interface SmithchartLegendSettingsModel {
     toggleVisibility?: boolean;
 
     /**
-     *  options for customizing legend title
+     *  options for customizing legend title.
      */
 
     title?: LegendTitleModel;
 
     /**
-     *  options for customizing legend location
+     *  options for customizing legend location.
      */
 
     location?: LegendLocationModel;
 
     /**
-     *  options for customizing legend item style
+     *  options for customizing legend item style.
      */
 
     itemStyle?: LegendItemStyleModel;
 
     /**
-     *  options for customizing legend border
+     *  options for customizing legend border.
      */
 
     border?: LegendBorderModel;
 
     /**
-     *  options for customizing font
+     *  options for customizing font.
      */
 
     textStyle?: SmithchartFont;

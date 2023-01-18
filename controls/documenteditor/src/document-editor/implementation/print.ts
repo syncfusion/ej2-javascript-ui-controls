@@ -20,7 +20,7 @@ export class Print {
      * @returns {void}
      */
     public print(documentHelper: DocumentHelper, printWindow?: Window): void {
-        this.printWindow(documentHelper, navigator.userAgent, printWindow);
+        this.printWindow(documentHelper, navigator !== undefined ? navigator.userAgent : "", printWindow);
     }
     /**
      * Opens print window and displays current page to print.

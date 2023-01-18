@@ -1,4 +1,4 @@
-import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select } from '@syncfusion/ej2-base';
+import { addClass, Event, attributes, BaseEventArgs, compile, Component, EmitType, EventHandler, getUniqueID, INotifyPropertyChanged, select, Browser } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEventArgs, KeyboardEvents, MouseEventArgs, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { RatingModel } from './rating-model';
@@ -22,51 +22,52 @@ const SELECTEDVALUE: string = 'e-selected-value';
 const RATINGVALUE: string = '--rating-value';
 
 /**
- * Defines the position of the label in the rating.
+ * Defines where to position the label in rating
  */
 export enum LabelPosition {
     /**
-     * Shows the label above the rating.
+     * The label is positioned at the top center of the rating component.
      */
     Top = 'Top',
     /**
-     * Shows the label below the rating.
+     * The label is positioned at the bottom center of the rating component.
      */
     Bottom = 'Bottom',
     /**
-     * Shows the label to the left of rating.
+     * The label is positioned at the left side of the rating component.
      */
     Left = 'Left',
     /**
-     * Shows the label to the right of rating.
+     * The label is positioned at the right side of the rating component.
      */
     Right = 'Right'
 }
 
 /**
- * Defines the minimum increase in the value in Rating Control.
+ * Defines the precision type of the rating. 
+ * It is used to component the granularity of the rating, allowing users to provide ratings with varying levels of precision.
  */
 export enum PrecisionType {
     /**
-     * Process the value as whole numbers.
+     * The rating is increased in whole number increments.
      */
     Full = 'Full',
     /**
-     * Process the value in terms of 0.5 (half).
+     * The rating is increased in increments of 0.5 (half).
      */
     Half = 'Half',
     /**
-     * Process the value in terms of 0.25 (quarter).
+     * The rating is increased in increments of 0.25 (quarter).
      */
     Quarter = 'Quarter',
     /**
-     * Process the value in terms of 0.1.
+     * The rating is increased in increments of 0.1.
      */
     Exact = 'Exact'
 }
 
 /**
- * Event triggers whenever the value changes.
+ * Provides information about valueChanged event callback
  */
 export interface RatingChangedEventArgs extends BaseEventArgs {
     /**
@@ -91,11 +92,11 @@ export interface RatingChangedEventArgs extends BaseEventArgs {
 }
 
 /**
- * Event triggers whenever a new item is hovered.
+ * Provides information about onItemHover event callback.
  */
 export interface RatingHoverEventArgs extends BaseEventArgs {
     /**
-     * Provides the hovered item element.
+     * Provides the rating item element reference.
      */
     element: HTMLElement;
 
@@ -105,17 +106,17 @@ export interface RatingHoverEventArgs extends BaseEventArgs {
     event: Event;
 
     /**
-     * Provides the current value of the hovered item.
+     * Provides the hover value at hovered point of rating.
      */
     value: number;
 }
 
 /**
- * Event triggers before rendering each item.
+ * Provides information about beforeItemRender event callback.
  */
 export interface RatingItemEventArgs extends BaseEventArgs {
     /**
-     * Html element of the current item to be rendered.
+     * Provides the rating item element reference.
      */
     element: HTMLElement;
 
@@ -125,12 +126,26 @@ export interface RatingItemEventArgs extends BaseEventArgs {
     value: number;
 }
 
+/**
+ * The Rating component allows the user to rate something by clicking on a set of symbols on a numeric scale. 
+ * This allows users to provide feedback or ratings for products, services, or content.
+ * 
+ * ```html
+ * <input id="rating">
+ * ```
+ * ```typescript
+ * <script>
+ *   let ratingObj: Rating = new Rating();
+ *   ratingObj.appendTo('#rating');
+ * </script>
+ * ```
+ */
 @NotifyPropertyChanges
 export class Rating extends Component<HTMLElement> implements INotifyPropertyChanged {
 
     /**
-     * Defines whether to show or hide the reset button.
-     * If min is not zero, then reset button won’t be displayed regardless of allowReset value.
+     * Defines whether to show or hide the reset button in a rating component.
+     * When set to "true", the reset button will be visible to the user, and they will be able to click it to reset the rating value to its default value.
      *
      * @default false
      */
@@ -138,32 +153,26 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public allowReset: boolean;
 
     /**
-     * Defines the CSS class to customize the rating appearance.
-     *
+     * Defines one or more CSS classes that can be used to customize the appearance of a rating component.
+     * One or more CSS classes to customize the appearance of the rating component, such as by changing its colors, fonts, sizes, or other visual aspects.
+     * 
      * @default ''
      */
     @Property('')
     public cssClass: string;
 
     /**
-     * Defines whether the rating is enabled or disabled.
-     *
+     * Defines whether a rating component is enabled or disabled.
+     * A disabled rating component may have a different visual appearance than an enabled one.
+     * When set to "true", the rating component will be disabled, and the user will not be able to interact with it.
+     * 
      * @default false
      */
     @Property(false)
     public disabled: boolean;
 
     /**
-     * Defines whether to add animation when an item is hovered.
-     *
-     * @default true
-     */
-    @Property(true)
-    public enableAnimation: boolean;
-
-    /**
-     * Defines the template content for each item when it is not selected.
-     * The template context will contain the current item value for customization.
+     * Defines the template that defines the appearance of each un-rated item in a rating component.
      *
      * @default ''
      */
@@ -171,17 +180,26 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public emptyTemplate: string;
 
     /**
-     * Defines whether to enable single selection like radio button or not.
-     * If not enabled all the items before the selected item will also be in the selected state.
-     *
+     * Defines whether to add animation (to provide visual feedback to the user) when an item in a rating component is hovered.
+     * When set to "true", an animation will be added when the user hovers their cursor over an item in the rating component.
+     * 
+     * @default true
+     */
+    @Property(true)
+    public enableAnimation: boolean;
+
+    /**
+     * Defines whether to select all the items before the selected item should be in selected state in a rating component.
+     * When set to "true", only the selected item will be in the selected state, and all other items will be un-selected.
+     * When set to "false", all items before the selected one will be in the selected state.
+     * 
      * @default false
      */
     @Property(false)
     public enableSingleSelection: boolean;
 
     /**
-     * Defines the template content for each item when it is selected.
-     * The template context will contain the current item value for customization.
+     * Defines the template that defines the appearance of each rated item in a rating component.
      *
      * @default ''
      */
@@ -189,7 +207,8 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public fullTemplate: string;
 
     /**
-     * Defines the number of rating items.
+     * Defines the specific number of items (symbols) in rating component.
+     * The rating component typically consists of a number of items, such as stars or other symbols, that represent the rating value.
      *
      * @default 5
      * @aspType int
@@ -198,11 +217,13 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public itemsCount: number;
 
     /**
-     * Defines the position of the label in the rating.
-     * *Top
-     * *Bottom
-     * *Left
-     * *Right
+     * Defines the position of the label in rating component.
+     * 
+     * The possible values are:
+     * * Top
+     * * Bottom
+     * * Left
+     * * Right
      *
      * @isenumeration true
      * @default LabelPosition.Right
@@ -212,8 +233,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public labelPosition: string | LabelPosition;
 
     /**
-     * Defines the template content for the label.
-     * The template context will contain the current value and maximum value for customization.
+     * Defines the template that used as label over default label of the rating. The current value of rating passed as context to build the content.
      *
      * @default ''
      */
@@ -221,8 +241,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public labelTemplate: string;
 
     /**
-     * Defines the minimum value of the rating.
-     *
+     * Defines the value that specifies minimum rating that a user can select.
+     * The value is set to 0, which means that the minimum possible rating is 0.
+     * 
      * @default 0.0
      * @aspType double
      */
@@ -230,11 +251,14 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public min: number;
 
     /**
-     * Defines the minimum increase in the value.
-     * *Full
-     * *Half
-     * *Quarter
-     * *Exact
+     * Defines the precision type of the rating which used to component the granularity of the rating, 
+     * allowing users to provide ratings with varying levels of precision.
+     * 
+     * The possible values are:
+     * * Full
+     * * Half
+     * * Quarter
+     * * Exact
      *
      * @isenumeration true
      * @default PrecisionType.Full
@@ -244,7 +268,8 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public precision: string | PrecisionType;
 
     /**
-     * Defines whether the read only mode is enabled or not where interaction is disabled without any UI change.
+     * Defines a boolean value that specifies whether the read-only mode is enabled for a rating component,
+     * which prevents the user from modifying or interacting with the rating value but allows them to read it.
      *
      * @default false
      */
@@ -252,24 +277,26 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public readOnly: boolean;
 
     /**
-     * Defines whether to show a label which display the current value.
-     *
+     * Defines a value that specifies whether to display a label that shows the current value of a rating.
+     * When set to "true", a label will be displayed that shows the current value of the rating; otherwise false.
+     * 
      * @default false
      */
     @Property(false)
     public showLabel: boolean;
 
     /**
-     * Defines whether to show tooltip for the items.
-     *
+     * Defines a value that defines whether to show tooltip for the items.
+     * When set to "true", show tooltip for the items.
+     * 
      * @default true
      */
     @Property(true)
     public showTooltip: boolean;
 
     /**
-     * Defines the template content for the tooltip.
-     * The template context will contain the current value for customization.
+     * Defines the template that used as tooltip content over default tooltip content of the rating.
+     * The current value of rating passed as context to build the content. 
      *
      * @default ''
      */
@@ -277,7 +304,10 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public tooltipTemplate: string;
 
     /**
-     * Defines the rating value.
+     * Defines the current rating value which used to display and update the rating selected by the user.
+     * Based on "PrecisionType", users can select ratings with varying levels of precision.
+     * The "value" is a decimal value that ranges from the minimum value to the items count, 
+     * as specified by the "min" and "itemsCount" properties of the rating.
      *
      * @default 0.0
      * @aspType double
@@ -286,7 +316,8 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public value: number;
 
     /**
-     * Defines whether the rating is visible or hidden.
+     * Defines a value that indicates whether the rating component is visible or hidden.
+     * When set to "true", if the rating component is visible. 
      *
      * @default true
      */
@@ -294,7 +325,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public visible: boolean;
 
     /**
-     * Event triggers before rendering each item.
+     * Event callback that is raised before rendering each item.
      *
      * @event beforeItemRender
      */
@@ -302,7 +333,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public beforeItemRender: EmitType<RatingItemEventArgs>;
 
     /**
-     * Event triggers after the creation of Rating.
+     * Event callback that is raised after rendering the rating.
      *
      * @event created
      */
@@ -310,7 +341,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public created: EmitType<Event>;
 
     /**
-     * Event triggers whenever a new item is hovered.
+     * Event callback that is raised when a user hovers over an item.
      *
      * @event onItemHover
      */
@@ -318,13 +349,14 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     public onItemHover: EmitType<RatingHoverEventArgs>;
 
     /**
-     * Event triggers whenever the value changes.
+     * Event callback that is raised when the value is changed.
      *
      * @event valueChanged
      */
     @Event()
     public valueChanged: EmitType<RatingChangedEventArgs>;
 
+    /* Private variables */
     private wrapper: HTMLElement;
     private ratingItemList: HTMLElement;
     private spanLabel: HTMLElement;
@@ -416,7 +448,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         attributes(this.ratingItemList, { 'aria-label': 'rating', 'role': 'slider' });
         this.wrapper.appendChild(this.ratingItemList);
         EventHandler.add(this.ratingItemList, 'touchmove', (e: Event) => this.touchMoveHandler(e), this);
-        EventHandler.add(this.ratingItemList, 'touchend', this.touchEndHandler, this);
+        EventHandler.add(this.ratingItemList, Browser.touchEndEvent, this.touchEndHandler, this);
     }
 
     private touchMoveHandler(e: Event): void {
@@ -504,9 +536,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.showTooltip) {
             this.tooltipObj = new Tooltip({
                 target: '.e-rating-item-container', windowCollision: true,
-                opensOn: 'Custom', cssClass: 'e-rating-tooltip'
+                opensOn: 'Custom', cssClass: this.cssClass? ('e-rating-tooltip ' + this.cssClass) : 'e-rating-tooltip'
             });
-            this.tooltipObj.appendTo('#' + this.ratingItemList.id);
+            this.tooltipObj.appendTo(this.ratingItemList);
         }
         else {
             if (!isNullOrUndefined(this.tooltipObj)) {
@@ -947,6 +979,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
                 }
                 if (newProp.cssClass) {
                     addClass([this.wrapper], newProp.cssClass.split(' '));
+                }
+                if(this.tooltipObj) {
+                    this.tooltipObj.setProperties({ cssClass: this.cssClass ? ('e-rating-tooltip ' + this.cssClass) : 'e-rating-tooltip'}); 
                 }
                 break;
             case 'labelPosition':

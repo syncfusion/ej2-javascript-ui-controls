@@ -9508,6 +9508,55 @@ describe('DateRangePicker', () => {
             expect(daterangePicker.inputElement.value === "1/1/2020 - 2/2/20201").toBe(true)
         });
     });
+    describe('EJ2-68040', () => {
+        let daterangepicker: any;
+        let startEle: HTMLElement;
+        let startValue: Date;
+        let endEle: HTMLElement;
+        let endValue: Date;
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: null,
+            stopPropagation: (): void => { /** NO Code */ }
+        };
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: 'enter'
+        };
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('When you click outside the DateRangePicker component, the range changes', function () {
+            daterangepicker = new DateRangePicker({
+                format: 'MMM yyyy',
+                start: 'Year',
+                depth: 'Year'
+            });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            let startEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element).querySelector('.e-focused-date')
+            let endEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element).querySelector('.e-focused-date')
+            startValue = daterangepicker.getIdValue(null, startEle);
+            endValue = daterangepicker.getIdValue(null, endEle);
+            (startEle).dispatchEvent(clickEvent);
+            (endEle).dispatchEvent(clickEvent);
+            <HTMLElement>(daterangepicker.applyButton.element).click();
+            daterangepicker.preventBlur = false;
+            daterangepicker.inputBlurHandler();
+            expect(+daterangepicker.startDate).toBe(+new Date('01/01/2023'));
+            expect(+daterangepicker.endDate).toBe(+new Date('01/31/2023'));
+        });
+    })
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

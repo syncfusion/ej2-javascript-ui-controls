@@ -236,7 +236,7 @@ export class DataManipulation {
                     if (isRemoteData(this.parent) && this.parent.enableVirtualization) {
                         const childRecords: ITreeData[] = [];
                         const parent: TreeGrid = this.parent;
-                        records.filter(function (e: ITreeData) {
+                        records.filter((e: ITreeData): void => {
                             if (e[`${parent.parentIdMapping}`] === records[parseInt(rec.toString(), 10)][`${parent.idMapping}`]) {
                                 childRecords.push(e);
                             }
@@ -286,7 +286,7 @@ export class DataManipulation {
             && this.parent.grid.aggregates.length && this.parent.grid.sortSettings.columns.length === 0
             && this.parent.grid.filterSettings.columns.length === 0 && !this.parent.grid.searchSettings.key.length) {
             const query: string = 'query';
-            const summaryQuery: QueryOptions[] = args[`${query}`].queries.filter((q: QueryOptions) => {q.fn === 'onAggregates'});
+            const summaryQuery: QueryOptions[] = args[`${query}`].queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
             args.result = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData, true);
         }
         this.parent.notify('updateResults', args);
@@ -348,7 +348,7 @@ export class DataManipulation {
     }
 
     private fetchRemoteChildData(rowDetails: { action: string, record: ITreeData, rows: HTMLTableRowElement[],
-         parentRow: HTMLTableRowElement }): void {
+        parentRow: HTMLTableRowElement }): void {
         const args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
         const dm: DataManager = <DataManager>this.parent.dataSource;
         const qry: Query = this.parent.grid.getDataModule().generateQuery();
@@ -357,13 +357,13 @@ export class DataManipulation {
         qry.isCountRequired = true;
         if (this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
             qry.take(this.parent.pageSettings.pageSize);
-            let expandDetail = [];
+            const expandDetail: Object[] = [];
             expandDetail.push('ExpandingAction', rowDetails.record[this.parent.idMapping]);
             qry.expand(expandDetail);
         }
         else if (this.parent.enableVirtualization && rowDetails.action === 'collapse') {
             qry.take(this.parent.grid.pageSettings.pageSize);
-            var expandDetail = [];
+            const expandDetail: Object[] = [];
             expandDetail.push('CollapsingAction', rowDetails.record[this.parent.idMapping]);
             qry.expand(expandDetail);
         }

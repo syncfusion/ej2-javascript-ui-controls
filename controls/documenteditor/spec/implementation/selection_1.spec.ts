@@ -242,3 +242,41 @@ console.log('Page unresponsive error');
     expect(() => { editor.editorModule.onEnter(); }).not.toThrowError();
   })
 });
+let selection : any = {"sections":[{"blocks":[{"inlines":[{"text":"Ragu"},{"text":"\u000b"}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart","pageNumberStyle":"Arabic","numberOfColumns":2,"equalWidth":true,"lineBetweenColumns":false,"columns":[{"width":216.0,"space":36.0},{"width":216.0,"space":36.0}],"breakCode":"NoBreak"}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":22.0,"fontFamilyBidi":"minorBidi","fontFamilyAscii":"minorHAnsi","fontFamilyFarEast":"minorHAnsi","fontFamilyNonFarEast":"minorHAnsi","localeId":1033,"localeIdEastAsia":1033,"localeIdBidi":1025},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal"},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"Endnote Text","basedOn":"Normal","next":"Endnote Text","link":"Endnote Text Char","characterFormat":{"fontSize":10.0,"fontSizeBidi":10.0},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"}},{"type":"Character","name":"Endnote Text Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":10.0,"fontSizeBidi":10.0}},{"type":"Character","name":"Endnote Reference","basedOn":"Default Paragraph Font","characterFormat":{"baselineAlignment":"Superscript"}}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\u0003"}]}],"continuationSeparator":[{"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"},"inlines":[{"text":"\u0004"}]}],"continuationNotice":[{"inlines":[]}]},"compatibilityMode":"Word2013","themeFontLanguages":{"localeId":1033},"themes":{"fontScheme":{"fontSchemeName":"Office","majorFontScheme":{"fontSchemeList":[{"name":"latin","typeface":"Calibri Light","panose":"020F0302020204030204"},{"name":"ea","panose":"020F0302020204030204"},{"name":"cs","panose":"020F0302020204030204"}],"fontTypeface":{"Jpan":"游ゴシック Light","Hang":"맑은 고딕","Hans":"等线 Light","Hant":"新細明體","Arab":"Times New Roman","Hebr":"Times New Roman","Thai":"Angsana New","Ethi":"Nyala","Beng":"Vrinda","Gujr":"Shruti","Khmr":"MoolBoran","Knda":"Tunga","Guru":"Raavi","Cans":"Euphemia","Cher":"Plantagenet Cherokee","Yiii":"Microsoft Yi Baiti","Tibt":"Microsoft Himalaya","Thaa":"MV Boli","Deva":"Mangal","Telu":"Gautami","Taml":"Latha","Syrc":"Estrangelo Edessa","Orya":"Kalinga","Mlym":"Kartika","Laoo":"DokChampa","Sinh":"Iskoola Pota","Mong":"Mongolian Baiti","Viet":"Times New Roman","Uigh":"Microsoft Uighur","Geor":"Sylfaen","Armn":"Arial","Bugi":"Leelawadee UI","Bopo":"Microsoft JhengHei","Java":"Javanese Text","Lisu":"Segoe UI","Mymr":"Myanmar Text","Nkoo":"Ebrima","Olck":"Nirmala UI","Osma":"Ebrima","Phag":"Phagspa","Syrn":"Estrangelo Edessa","Syrj":"Estrangelo Edessa","Syre":"Estrangelo Edessa","Sora":"Nirmala UI","Tale":"Microsoft Tai Le","Talu":"Microsoft New Tai Lue","Tfng":"Ebrima"}},"minorFontScheme":{"fontSchemeList":[{"name":"latin","typeface":"Calibri","panose":"020F0502020204030204"},{"name":"ea","panose":"020F0502020204030204"},{"name":"cs","panose":"020F0502020204030204"}],"fontTypeface":{"Jpan":"游明朝","Hang":"맑은 고딕","Hans":"等线","Hant":"新細明體","Arab":"Arial","Hebr":"Arial","Thai":"Cordia New","Ethi":"Nyala","Beng":"Vrinda","Gujr":"Shruti","Khmr":"DaunPenh","Knda":"Tunga","Guru":"Raavi","Cans":"Euphemia","Cher":"Plantagenet Cherokee","Yiii":"Microsoft Yi Baiti","Tibt":"Microsoft Himalaya","Thaa":"MV Boli","Deva":"Mangal","Telu":"Gautami","Taml":"Latha","Syrc":"Estrangelo Edessa","Orya":"Kalinga","Mlym":"Kartika","Laoo":"DokChampa","Sinh":"Iskoola Pota","Mong":"Mongolian Baiti","Viet":"Arial","Uigh":"Microsoft Uighur","Geor":"Sylfaen","Armn":"Arial","Bugi":"Leelawadee UI","Bopo":"Microsoft JhengHei","Java":"Javanese Text","Lisu":"Segoe UI","Mymr":"Myanmar Text","Nkoo":"Ebrima","Olck":"Nirmala UI","Osma":"Ebrima","Phag":"Phagspa","Syrn":"Estrangelo Edessa","Syrj":"Estrangelo Edessa","Syre":"Estrangelo Edessa","Sora":"Nirmala UI","Tale":"Microsoft Tai Le","Talu":"Microsoft New Tai Lue","Tfng":"Ebrima"}}}}};
+describe('"Undo" not removing some of the Bullets applied', () => {
+  let editor: DocumentEditor = undefined;
+  beforeAll(() => {
+      document.body.innerHTML = '';
+      let ele: HTMLElement = createElement('div', { id: 'container' });
+      document.body.appendChild(ele);
+      editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableEditorHistory: true, enableComment: true, enableSelection: true, enableSfdtExport:true });
+      DocumentEditor.Inject(Editor, Selection);
+      editor.documentEditorSettings.showHiddenMarks =true;
+      (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+      (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+      (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+      (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+      editor.appendTo('#container');
+  });
+  afterAll((done) => {
+      editor.destroy();
+      document.body.removeChild(document.getElementById('container'));
+      editor = undefined;
+      document.body.innerHTML = '';
+      setTimeout(() => {
+          done();
+      }, 1000);
+  });
+  it('line break moved to next line.', (done: DoneFn) => {
+console.log('line break moved to next line.');
+  editor.open(JSON.stringify(selection));
+  editor.selection.checkForCursorVisibility();
+  editor.selection.select({ x: 160.89906311035156, y: 96 });
+  editor.editorModule.onEnter();
+  let textElementBox : any = editor.selection.start.currentWidget.children;
+  setTimeout(() => {
+    expect(textElementBox[0].text).toBe('\v');
+      }, 50);
+      done();
+  }, 10);
+  });

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I418727` - Milliseconds is displayed but time is incorrect issue has been fixed.
+
 ## 19.4.52 (2022-02-15)
 
 ### DataManager

@@ -517,6 +517,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * * BottomLeft: Positions the FAB at the target's top left corner.
      * * BottomCenter: Places the FAB on the bottom-center position of the target.
      * * BottomRight: Positions the FAB at the target's bottom right corner.
+     *
      *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
      *
@@ -940,10 +941,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         }
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
+        e.preventDefault();
         switch (e.action) {
         case 'enter':
         case 'space':
-            e.preventDefault();
             if (this.isMenuOpen) {
                 if (this.focusedIndex !== -1) {
                     this.triggerItemClick(e, this.items[this.focusedIndex]);
@@ -1002,7 +1003,6 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     /*Linear*/
     private focusLinearElement(isLeftUp: boolean): void {
-        if (this.focusedIndex === -1) { this.focusFirstElement(); return; }
         const isReversed: boolean = this.popupEle.classList.contains(SDVERTICALBOTTOM) ||
             this.popupEle.classList.contains(SDHORIZONTALRIGHT);
         /* Elements will be in reverse (RTL) order for these classes are present.
@@ -1013,7 +1013,6 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     /*Radial*/
     private focusLeftRightElement(isLeft: boolean): void {
-        if (this.focusedIndex === -1) { this.focusFirstElement(); return; }
         /*radialTop position  and left + anticlock or right + clock is previous
         other positions and right + anticlock or left + clock is previous
         ((isLeft && !this.isClock)||(!isLeft && this.isClock)) ==> isLeft!==this.isClock */
@@ -1026,7 +1025,6 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     /*Radial*/
     private focusUpDownElement(isUp: boolean): void {
-        if (this.focusedIndex === -1) { this.focusFirstElement(); return; }
         /*radialRight position  and up + anticlock or down + clock is previous
         other positions and down + anticlock or up + clock is previous
         ((isUp && !this.isClock)||(!isUp && this.isClock)) ==> isUp!==this.isClock */

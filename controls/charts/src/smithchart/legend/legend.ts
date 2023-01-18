@@ -47,7 +47,7 @@ export class LegendTitle extends  ChildProperty<LegendTitle> {
     public textAlignment: SmithchartAlignment;
 
     /**
-     *  options for customizing font
+     *  options for customizing font.
      */
 
     @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)
@@ -117,7 +117,7 @@ export class LegendItemStyle extends ChildProperty<LegendItemStyle> {
     public height: number;
 
     /**
-     * options for customizing legend item style border
+     * options for customizing legend item style border.
      */
 
     @Complex<LegendItemStyleBorderModel>({}, LegendItemStyleBorder)
@@ -254,35 +254,35 @@ export class SmithchartLegendSettings extends ChildProperty<SmithchartLegendSett
     public toggleVisibility: boolean;
 
     /**
-     *  options for customizing legend title
+     *  options for customizing legend title.
      */
 
     @Complex<LegendTitleModel>({}, LegendTitle)
     public title: LegendTitleModel;
 
     /**
-     *  options for customizing legend location
+     *  options for customizing legend location.
      */
 
     @Complex<LegendLocationModel>({}, LegendLocation)
     public location: LegendLocationModel;
 
     /**
-     *  options for customizing legend item style
+     *  options for customizing legend item style.
      */
 
     @Complex<LegendItemStyleModel>({}, LegendItemStyle)
     public itemStyle: LegendItemStyleModel;
 
     /**
-     *  options for customizing legend border
+     *  options for customizing legend border.
      */
 
     @Complex<LegendBorderModel>({}, LegendBorder)
     public border: LegendBorderModel;
 
     /**
-     *  options for customizing font
+     *  options for customizing font.
      */
 
     @Complex<SmithchartFontModel>(Theme.legendLabelFont, SmithchartFont)

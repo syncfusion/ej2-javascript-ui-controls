@@ -14,7 +14,7 @@ export class TooltipRender {
     private mouseY: number;
     private locationX: number;
     private locationY: number;
-    /** To define the tooltip element */
+    /** To define the tooltip element. */
     public tooltipElement: Tooltip;
     public smithchartMouseMove(smithchart: Smithchart, e: PointerEvent): Tooltip {
         let touchArg: TouchEvent;

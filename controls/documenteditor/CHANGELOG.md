@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#425697` - Resolved the positioning and line spacing issue in shape document
+
+#### New Features
+
+- `#419514` - Added API to modify form field name
+
 ## 20.4.43 (2023-01-10)
 
 ### Document Editor

@@ -105,7 +105,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * Method to get data label collection
+     * Method to get data label collection.
      */
     public calculateLabelCollection(point: AccPoints, dataLabel: AccumulationDataLabelSettingsModel): void {
         if (point.argsData.template !== null) {
@@ -145,7 +145,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     }
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * To calculate label collection text size
+     * To calculate label collection text size.
      */
     public getTextSize(labelCollection : string[], dataLabel: AccumulationDataLabelSettingsModel): Size {
         let height : number = 0;

@@ -328,6 +328,11 @@ export class Layout {
             viewer.updateHFClientArea(section.sectionFormat, true);
             page.headerWidget = this.layoutHeaderFooterItems(viewer, header);
             //this.updateHeaderFooterToParent(header);
+            //When the vertical position is related to margin, then it should be adjusted based on the layouted header height. Not default header height.
+            if (section.sectionFormat.topMargin < page.boundingRectangle.bottom && page.headerWidget.floatingElements.length > 0)
+            {
+                page.headerWidget = this.shiftItemsForVerticalAlignment(page.headerWidget);
+            }
         }
         //Footer Layout
         headerFooterWidget = viewer.getCurrentPageHeaderFooter(section, false);
@@ -350,6 +355,32 @@ export class Layout {
             this.updateRevisionsToHeaderFooter(footer, page);
             page.footerWidget = this.layoutHeaderFooterItems(viewer, footer);
         }
+    }
+    private shiftItemsForVerticalAlignment(headerWidget: HeaderFooterWidget): HeaderFooterWidget {
+        let floatingElements: (ShapeBase | TableWidget)[] = headerWidget.floatingElements;
+        for (let i: number = 0; i < floatingElements.length; i++) {
+            let floatingItem: ShapeBase = floatingElements[i] as ShapeBase;
+            let verticalOrigin: VerticalOrigin = floatingItem.verticalOrigin;
+            let paragraph: ParagraphWidget = floatingItem.paragraph;
+            // When a owner paragraph is inside the table, we have to skip the vertical alignment of the floating entity.
+            if (verticalOrigin === 'Margin' && !paragraph.isInsideTable) {
+                let yPosition: number = floatingItem.verticalPosition;
+                if (yPosition != 0) {
+                    yPosition += this.viewer.clientActiveArea.y;
+                    let diff: number = yPosition - floatingItem.y;
+                    floatingItem.y = yPosition;
+                    if (floatingItem instanceof ShapeElementBox) {
+                        for (let j: number = 0; j < floatingItem.textFrame.childWidgets.length; j++) {
+                            let block: BlockWidget = floatingItem.textFrame.childWidgets[j] as BlockWidget;
+                            if (block instanceof ParagraphWidget) {
+                                block.y = block.y + diff;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return headerWidget;
     }
     public updateHeaderFooterToParent(node: HeaderFooterWidget): HeaderFooterWidget {
         const sectionIndex: number = node.page.sectionIndex;
@@ -1095,9 +1126,6 @@ export class Layout {
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
-                if (element.fieldType !== 2 && isNullOrUndefined(element.fieldSeparator)) {
-                    this.layoutEmptyLineWidget(paragraph, false, element.line);
-                }
                 this.moveToNextLine(line);
             } else if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);

@@ -69,7 +69,7 @@ export class ExportUtils {
         return div;
     }
     /**
-     * To export the file as image/svg format
+     * To export the file as image/svg format.
      *
      * @param {SmithchartExportType} exportType export type
      * @param {string} fileName export file name
@@ -133,7 +133,7 @@ export class ExportUtils {
         }
     }
     /**
-     * To trigger the download element
+     * To trigger the download element.
      *
      * @param {string} fileName export file name
      * @param {SmithchartExportType} exportType export type

@@ -1,4 +1,4 @@
-import { createElement, EventHandler, isNullOrUndefined, remove } from "@syncfusion/ej2-base";
+import { Browser, createElement, EventHandler, isNullOrUndefined, remove } from "@syncfusion/ej2-base";
 import { LabelPosition, PrecisionType, Rating, RatingChangedEventArgs, RatingHoverEventArgs, RatingItemEventArgs } from "../src/rating/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
 
@@ -803,6 +803,29 @@ describe('Rating', () => {
             expect(document.body.querySelector('.e-tip-content').innerHTML).toEqual('<span>testTemplate</span>');
         });
 
+        it('Custom tooltip using cssClass', () => {
+            rating = new Rating({
+                cssClass: 'testClass',
+                showTooltip: true
+            });
+            rating.appendTo('#rating');
+            let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
+            (rating as any).tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'None' } };
+            expect(ratingElement.parentElement.querySelector('.e-rating-item-list').classList.contains('e-tooltip')).toBe(true);
+            mouseEventArs.target = liElementArray[1];
+            EventHandler.trigger(liElementArray[1], "mousemove");
+            (rating as any).tooltipObj.open(liElementArray[1]);
+            expect(document.body.querySelector('.e-rating-tooltip').classList.contains("testClass")).toEqual(true);
+            (rating as any).tooltipObj.close(liElementArray[1]);
+            rating.cssClass = 'testClass1';
+            rating.dataBind();
+            EventHandler.trigger(liElementArray[1], "mousemove");
+            (rating as any).tooltipObj.open(liElementArray[1]);
+            expect(document.body.querySelector('.e-rating-tooltip').classList.contains("testClass")).toEqual(false);
+            expect(document.body.querySelector('.e-rating-tooltip').classList.contains("testClass1")).toEqual(true);
+            (rating as any).tooltipObj.close(liElementArray[1]);
+        });
+
         it('Single Selection ', () => {
             rating = new Rating({
                 enableSingleSelection: true,
@@ -1077,7 +1100,7 @@ describe('Rating', () => {
             EventHandler.trigger(ulElement, "touchmove", touchEvent);
             (rating as any).tooltipObj.open(liElementArray[0]);
             expect(document.body.querySelector('.e-tooltip-wrap') != null).toEqual(true);
-            EventHandler.trigger(ulElement, "touchend", touchEvent);
+            EventHandler.trigger(ulElement, Browser.touchEndEvent, touchEvent);
             (rating as any).tooltipObj.close();
             expect(document.body.querySelector('.e-tooltip-wrap') != null).toEqual(false);
         });

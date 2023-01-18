@@ -2009,3 +2009,8 @@ ejs-multiselect {
 .e-multiselect.e-control-container.e-input-group.e-disabled .e-clear-icon {
   cursor: not-allowed;
 }
+
+.e-multiselect.e-control-wrapper.e-control-container.e-input-group.e-checkbox .e-multi-select-wrapper.e-down-icon,
+.e-multiselect.e-control-wrapper.e-control-container.e-input-group.e-checkbox .e-multi-select-wrapper.e-down-icon .e-multi-searcher .e-dropdownbase.e-control.e-multiselect.e-lib {
+  cursor: pointer;
+}

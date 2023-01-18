@@ -72,7 +72,7 @@ export interface BulletChartModel extends ComponentModel{
     interval?: number;
 
     /**
-     * specifies the interval of minor ticks
+     * specifies the interval of minor ticks.
      *
      * @default 4
      */
@@ -86,7 +86,7 @@ export interface BulletChartModel extends ComponentModel{
     labelStyle?: BulletLabelStyleModel;
 
     /**
-     * Options for customizing values labels
+     * Options for customizing values labels.
      */
 
     categoryLabelStyle?: BulletLabelStyleModel;
@@ -108,7 +108,7 @@ export interface BulletChartModel extends ComponentModel{
     title?: string;
 
     /**
-     * Options for customizing the title styles of the bullet chart
+     * Options for customizing the title styles of the bullet chart.
      */
     titleStyle?: BulletLabelStyleModel;
 
@@ -121,12 +121,12 @@ export interface BulletChartModel extends ComponentModel{
     subtitle?: string;
 
     /**
-     * Options for customizing the sub title styles of the bullet chart
+     * Options for customizing the sub title styles of the bullet chart.
      */
     subtitleStyle?: BulletLabelStyleModel;
 
     /**
-     * Orientation of the scale
+     * Orientation of the scale.
      *
      * @default 'Horizontal'
      */
@@ -150,7 +150,7 @@ export interface BulletChartModel extends ComponentModel{
     ranges?: RangeModel[];
 
     /**
-     * specifies the axis label position of the bullet chart
+     * specifies the axis label position of the bullet chart.
      *
      * @default 'Outside'
      */
@@ -158,7 +158,7 @@ export interface BulletChartModel extends ComponentModel{
     labelPosition?: LabelsPlacement;
 
     /**
-     * specifies the tick position of the bullet chart
+     * specifies the tick position of the bullet chart.
      *
      * @default 'Outside'
      */
@@ -206,7 +206,7 @@ export interface BulletChartModel extends ComponentModel{
     legendSettings?: BulletChartLegendSettingsModel;
 
     /**
-     * default value for enableGroupSeparator
+     * default value for enableGroupSeparator.
      *
      * @default false
      */
@@ -219,7 +219,7 @@ export interface BulletChartModel extends ComponentModel{
     margin?: MarginModel;
 
     /**
-     * Options for customizing comparative bar color bullet chart
+     * Options for customizing comparative bar color bullet chart.
      *
      * @default 5
      */
@@ -235,7 +235,7 @@ export interface BulletChartModel extends ComponentModel{
     targetColor?: string;
 
     /**
-     * Options for customizing feature bar height of the bullet chart
+     * Options for customizing feature bar height of the bullet chart.
      *
      * @default 6
      */

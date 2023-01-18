@@ -120,7 +120,7 @@ export class SmithchartBorder extends ChildProperty<SmithchartBorder> {
  * Internal use of type rect
  */
 export class SmithchartRect {
-    /** x value for rect */
+    /** x value for rect. */
     public x: number;
     public y: number;
     public width: number;

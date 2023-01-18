@@ -118,17 +118,17 @@ import { ExportUtils } from '../common/utils/export';
  */
 export class RangeColorSetting extends ChildProperty<RangeColorSetting> {
     /**
-     * Specify the start value of color mapping range
+     * Specify the start value of color mapping range.
      */
     @Property()
     public start: number;
     /**
-     * Specify the end value of color mapping range
+     * Specify the end value of color mapping range.
      */
     @Property()
     public end: number;
     /**
-     * Specify the fill colors of point those lies on the given range, if multiple colors mentioned, then we need to fill gradient
+     * Specify the fill colors of point those lies on the given range, if multiple colors mentioned, then we need to fill gradient.
      */
     @Property([])
     public colors: string[];
@@ -651,7 +651,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public titleStyle: FontModel;
 
     /**
-     * SubTitle of the chart
+     * SubTitle of the chart.
      *
      * @default ''
      */
@@ -967,7 +967,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public isTransposed: boolean;
 
     /**
-     * It specifies whether the chart should be rendered in canvas mode
+     * It specifies whether the chart should be rendered in canvas mode.
      *
      * @default false
      */
@@ -983,7 +983,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public backgroundImage: string;
 
     /**
-     * Defines the collection of technical indicators, that are used in financial markets
+     * Defines the collection of technical indicators, that are used in financial markets.
      */
     @Collection<TechnicalIndicatorModel>([], TechnicalIndicator)
     public indicators: TechnicalIndicatorModel[];
@@ -1021,7 +1021,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public enableSideBySidePlacement: boolean;
 
     /**
-     * Triggers after resizing of chart
+     * Triggers after resizing of chart.
      *
      * @event resized
      * @blazorProperty 'Resized'
@@ -1171,7 +1171,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     @Event()
     public axisMultiLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
     /**
-     * Triggers after click on legend
+     * Triggers after click on legend.
      *
      * @event legendClick
      */
@@ -1179,7 +1179,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public legendClick: EmitType<ILegendClickEventArgs>;
 
     /**
-     * Triggers after click on multiLevelLabelClick
+     * Triggers after click on multiLevelLabelClick.
      *
      * @event multiLevelLabelClick
      */

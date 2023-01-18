@@ -99,6 +99,10 @@ describe('DataUtil', () => {
             const parsedDate: any = DataUtil.parse.parseJson(['2021-02-03T00:00:03.556Z']);
             expect((parsedDate[0] as Date).getMilliseconds()).toBe(556);
         });
+        it('EJ2-67751 - Milliseconds is displayed but time is incorrect', () => {
+            const parsedDate: any = DataUtil.parse.parseJson(['2021-02-03T00:00:03.556123Z']);
+            expect((parsedDate[0] as Date).getMilliseconds()).toBe(556);
+        });
     });
     describe('isJson method', () => {
         it('To check method is properly working.', () => {

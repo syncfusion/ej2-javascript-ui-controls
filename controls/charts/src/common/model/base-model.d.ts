@@ -87,7 +87,7 @@ export interface FontModel {
     color?: string;
 
     /**
-     * text alignment
+     * text alignment.
      *
      * @default 'Center'
      */
@@ -108,7 +108,7 @@ export interface FontModel {
     opacity?: number;
 
     /**
-     * Specifies the chart title text overflow
+     * Specifies the chart title text overflow.
      *
      * @default 'Wrap'
      */
@@ -146,7 +146,7 @@ export interface BorderModel {
 export interface OffsetModel {
 
     /**
-     * x value of the marker position
+     * x value of the marker position.
      *
      * @default 0
      */
@@ -154,7 +154,7 @@ export interface OffsetModel {
     x?: number;
 
     /**
-     * y value of the marker position
+     * y value of the marker position.
      *
      * @default 0
      */
@@ -319,7 +319,7 @@ export interface AnimationModel {
 export interface IndexesModel {
 
     /**
-     * Specifies the series index
+     * Specifies the series index.
      *
      * @default 0
      * @aspType int
@@ -328,7 +328,7 @@ export interface IndexesModel {
     series?: number;
 
     /**
-     * Specifies the point index
+     * Specifies the point index.
      *
      * @default 0
      * @aspType int
@@ -344,7 +344,7 @@ export interface IndexesModel {
 export interface CornerRadiusModel {
 
     /**
-     * Specifies the top left corner radius value
+     * Specifies the top left corner radius value.
      *
      * @default 0
      */
@@ -352,7 +352,7 @@ export interface CornerRadiusModel {
     topLeft?: number;
 
     /**
-     * Specifies the top right corner radius value
+     * Specifies the top right corner radius value.
      *
      * @default 0
      */
@@ -360,7 +360,7 @@ export interface CornerRadiusModel {
     topRight?: number;
 
     /**
-     * Specifies the bottom left corner radius value
+     * Specifies the bottom left corner radius value.
      *
      * @default 0
      */
@@ -368,7 +368,7 @@ export interface CornerRadiusModel {
     bottomLeft?: number;
 
     /**
-     * Specifies the bottom right corner radius value
+     * Specifies the bottom right corner radius value.
      *
      * @default 0
      */
@@ -422,7 +422,7 @@ export interface EmptyPointSettingsModel {
 export interface DragSettingsModel {
 
     /**
-     * To enable the drag the points
+     * To enable the drag the points.
      *
      * @default false
      */
@@ -430,7 +430,7 @@ export interface DragSettingsModel {
     enable?: boolean;
 
     /**
-     * To set the minimum y of the point
+     * To set the minimum y of the point.
      *
      * @default null
      */
@@ -438,7 +438,7 @@ export interface DragSettingsModel {
     minY?: number;
 
     /**
-     * To set the maximum y of the point
+     * To set the maximum y of the point.
      *
      * @default null
      */
@@ -446,7 +446,7 @@ export interface DragSettingsModel {
     maxY?: number;
 
     /**
-     * To set the color of the edited point
+     * To set the color of the edited point.
      *
      * @default null
      */
@@ -584,7 +584,7 @@ export interface TooltipSettingsModel {
 export interface PeriodsModel {
 
     /**
-     * IntervalType of button
+     * IntervalType of button.
      *
      * @default 'Years'
      */
@@ -592,7 +592,7 @@ export interface PeriodsModel {
     intervalType?: RangeIntervalType;
 
     /**
-     * Count value for the button
+     * Count value for the button.
      *
      * @default 1
      */
@@ -600,7 +600,7 @@ export interface PeriodsModel {
     interval?: number;
 
     /**
-     * Text to be displayed on the button
+     * Text to be displayed on the button.
      *
      * @default null
      */
@@ -608,7 +608,7 @@ export interface PeriodsModel {
     text?: string;
 
     /**
-     * To select the default period
+     * To select the default period.
      *
      * @default false
      */
@@ -623,7 +623,7 @@ export interface PeriodsModel {
 export interface PeriodSelectorSettingsModel {
 
     /**
-     * Height for the period selector
+     * Height for the period selector.
      *
      * @default 43
      */
@@ -631,7 +631,7 @@ export interface PeriodSelectorSettingsModel {
     height?: number;
 
     /**
-     * vertical position of the period selector
+     * vertical position of the period selector.
      *
      * @default 'Bottom'
      */

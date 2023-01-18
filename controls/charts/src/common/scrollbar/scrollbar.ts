@@ -164,7 +164,7 @@ export class ScrollBar {
     }
 
     /**
-     * Handles the mouse down on scrollbar
+     * Handles the mouse down on scrollbar.
      *
      * @param e
      */
@@ -278,7 +278,7 @@ export class ScrollBar {
         axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
     }
     /**
-     * Handles the mouse move on scrollbar
+     * Handles the mouse move on scrollbar.
      *
      * @param e
      */
@@ -328,7 +328,7 @@ export class ScrollBar {
         }
     }
     /**
-     * Handles the mouse wheel on scrollbar
+     * Handles the mouse wheel on scrollbar.
      *
      * @param e
      */
@@ -376,7 +376,7 @@ export class ScrollBar {
         }
     }
     /**
-     * Handles the mouse up on scrollbar
+     * Handles the mouse up on scrollbar.
      *
      * @param e
      */
@@ -461,7 +461,7 @@ export class ScrollBar {
     }
 
     /**
-     * Range calculation for lazy loading
+     * Range calculation for lazy loading.
      *
      * @param scrollThumbX
      * @param scrollThumbWidth
@@ -582,7 +582,7 @@ export class ScrollBar {
         this.scrollbarThemeStyle = getScrollbarThemeColor(this.component.theme);
     }
     /**
-     * Method to remove existing scrollbar
+     * Method to remove existing scrollbar.
      *
      * @returns {void}
      */
@@ -742,7 +742,7 @@ export class ScrollBar {
     }
 
     /**
-     * Lazy load default values
+     * Lazy load default values.
      *
      * @param axis
      */
@@ -803,7 +803,7 @@ export class ScrollBar {
     }
 
     /**
-     * Method for injecting scrollbar module
+     * Method for injecting scrollbar module.
      *
      * @param axis
      * @param component
@@ -814,7 +814,7 @@ export class ScrollBar {
     }
 
     /**
-     * Method to destroy scrollbar
+     * Method to destroy scrollbar.
      *
      * @returns {void}
      */
@@ -833,7 +833,7 @@ export class ScrollBar {
         }
     }
     /**
-     * Method to get scrollbar module name
+     * Method to get scrollbar module name.
      *
      * @returns {string}
      */

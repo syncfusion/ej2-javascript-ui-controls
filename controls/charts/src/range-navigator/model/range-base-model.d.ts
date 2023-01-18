@@ -13,28 +13,28 @@ export interface RangeNavigatorSeriesModel {
     dataSource?: Object | DataManager;
 
     /**
-     * It defines the xName for the series
+     * It defines the xName for the series.
      *
      * @default null
      */
     xName?: string;
 
     /**
-     * It defines the yName for the series
+     * It defines the yName for the series.
      *
      * @default  null
      */
     yName?: string;
 
     /**
-     * It defines the query for the data source
+     * It defines the query for the data source.
      *
      * @default null
      */
     query?: Query;
 
     /**
-     * It defines the series type of the range navigator
+     * It defines the series type of the range navigator.
      *
      * @default 'Line'
      */
@@ -93,7 +93,7 @@ export interface RangeNavigatorSeriesModel {
 export interface ThumbSettingsModel {
 
     /**
-     * width of thumb
+     * width of thumb.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -101,7 +101,7 @@ export interface ThumbSettingsModel {
     width?: number;
 
     /**
-     * height of thumb
+     * height of thumb.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -109,19 +109,19 @@ export interface ThumbSettingsModel {
     height?: number;
 
     /**
-     * border for the thumb
+     * border for the thumb.
      */
     border?: BorderModel;
 
     /**
-     * fill color for the thumb
+     * fill color for the thumb.
      *
      * @default null
      */
     fill?: string;
 
     /**
-     * type of thumb
+     * type of thumb.
      *
      * @default `Circle`
      */
@@ -135,19 +135,19 @@ export interface ThumbSettingsModel {
 export interface StyleSettingsModel {
 
     /**
-     * thumb settings
+     * thumb settings.
      */
     thumb?: ThumbSettingsModel;
 
     /**
-     * Selected region color
+     * Selected region color.
      *
      * @default null
      */
     selectedRegionColor?: string;
 
     /**
-     * Un Selected region color
+     * Un Selected region color.
      *
      * @default null
      */
@@ -212,7 +212,7 @@ export interface RangeTooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * It defines display mode for tooltip
+     * It defines display mode for tooltip.
      *
      * @default 'OnDemand'
      */

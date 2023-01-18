@@ -6,7 +6,7 @@ import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import {
 export interface RangeModel {
 
     /**
-     * Default value for qualitative range end value
+     * Default value for qualitative range end value.
      *
      * @default null
      */
@@ -20,21 +20,21 @@ export interface RangeModel {
     opacity?: number;
 
     /**
-     * Default value for qualitative range Color
+     * Default value for qualitative range Color.
      *
      * @default null
      */
     color?: string;
 
     /**
-     * Default value for qualitative range Color
+     * Default value for qualitative range Color.
      *
      * @default null
      */
     index?: number;
 
     /**
-     * Default value for qualitative range name
+     * Default value for qualitative range name.
      *
      * @default null
      */
@@ -184,14 +184,14 @@ export interface BulletLabelStyleModel {
     fontFamily?: string;
 
     /**
-     * Text alignment
+     * Text alignment.
      *
      * @default 'Center'
      */
     textAlignment?: Alignment;
 
     /**
-     * Specifies the chart title text overflow
+     * Specifies the chart title text overflow.
      *
      * @default 'Trim'
      */
@@ -213,14 +213,14 @@ export interface BulletLabelStyleModel {
     enableTrim?: boolean;
 
     /**
-     * Maximum label width of the bullet chart
+     * Maximum label width of the bullet chart.
      *
      * @default null
      */
     maximumTitleWidth?: number;
 
     /**
-     * Range color
+     * Range color.
      *
      * @default false
      */

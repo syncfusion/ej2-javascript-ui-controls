@@ -740,7 +740,7 @@ export class Axis extends ChildProperty<Axis> {
     public crossesAt: Object;
 
     /**
-     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line
+     * Specifies whether axis elements like axis labels, axis title, etc has to be crossed with axis line.
      *
      * @default true
      */
@@ -749,7 +749,7 @@ export class Axis extends ChildProperty<Axis> {
     public placeNextToAxisLine: boolean;
 
     /**
-     * Specifies axis name with which the axis line has to be crossed
+     * Specifies axis name with which the axis line has to be crossed.
      *
      * @default null
      */
@@ -802,7 +802,7 @@ export class Axis extends ChildProperty<Axis> {
     public enableTrim: boolean;
 
     /**
-     * Specifies the labelPadding from axis
+     * Specifies the labelPadding from axis.
      *
      * @default 5
      */
@@ -811,7 +811,7 @@ export class Axis extends ChildProperty<Axis> {
     public labelPadding: number;
 
     /**
-     * Specifies the titlePadding from axis label
+     * Specifies the titlePadding from axis label.
      *
      * @default 5
      */
@@ -921,12 +921,12 @@ export class Axis extends ChildProperty<Axis> {
     @Property(2)
     public tabIndex: number;
     /**
-     * Specifies the stripLine collection for the axis
+     * Specifies the stripLine collection for the axis.
      */
     @Collection<StripLineSettings>([], StripLineSettings)
     public stripLines: StripLineSettingsModel[];
     /**
-     * Specifies the multi level labels collection for the axis
+     * Specifies the multi level labels collection for the axis.
      */
     @Collection<MultiLevelLabelsModel>([], MultiLevelLabels)
     public multiLevelLabels: MultiLevelLabelsModel[];
@@ -938,7 +938,7 @@ export class Axis extends ChildProperty<Axis> {
     public border: LabelBorderModel;
 
     /**
-     * Option to customize scrollbar with lazy loading
+     * Option to customize scrollbar with lazy loading.
      */
     @Complex<ScrollbarSettingsModel>({}, ScrollbarSettings)
     public scrollbarSettings: ScrollbarSettingsModel;
@@ -1418,13 +1418,13 @@ export class Axis extends ChildProperty<Axis> {
  * @public
  */
 export interface VisibleRangeModel {
-    /** axis minimum value */
+    /** axis minimum value. */
     min?: number;
-    /** axis maximum value */
+    /** axis maximum value. */
     max?: number;
-    /** axis interval value */
+    /** axis interval value. */
     interval?: number;
-    /** axis delta value */
+    /** axis delta value. */
     delta?: number;
 }
 /** @private */

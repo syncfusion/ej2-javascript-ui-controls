@@ -66,7 +66,7 @@ export class LineBase {
         return tempPoints2;
     }
     /**
-     * To generate the line path direction
+     * To generate the line path direction.
      *
      * @param {Points} firstPoint firstPoint
      * @param {Points} secondPoint secondPoint
@@ -159,7 +159,7 @@ export class LineBase {
         });
     }
     /**
-     * To store the symbol location and region
+     * To store the symbol location and region.
      *
      * @param {Points} point point
      * @param {Series} series series

@@ -85,7 +85,7 @@ describe('Candle Series ', () => {
         let loaded: EmitType<ILoadedEventArgs>;
         let animationComplete: EmitType<IAnimationCompleteEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -1099,7 +1099,7 @@ describe('Candle Series ', () => {
 
         describe('Checking for multiple axes', () => {
             let chartObj: Chart;
-            let elem: HTMLElement = createElement('div', { id: 'container' });
+            let elem: HTMLElement = createElement('div', { id: 'container',styles: 'width: 1000px' });
             let targetElement: HTMLElement;
             let loaded: EmitType<ILoadedEventArgs>;
             let marker0: HTMLElement;

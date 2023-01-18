@@ -61,7 +61,7 @@ export class PeriodSelector {
         this.control.disableRangeSelector = (control as RangeNavigator).disableRangeSelector;
     }
     /**
-     * To initialize the period selector properties
+     * To initialize the period selector properties.
      *
      * @param options
      * @param x
@@ -74,7 +74,7 @@ export class PeriodSelector {
         this.renderSelector();
     }
     /**
-     * renderSelector div
+     * renderSelector div.
      *
      * @param control
      * @param options
@@ -110,7 +110,7 @@ export class PeriodSelector {
     }
 
     /**
-     * renderSelector elements
+     * renderSelector elements.
      *
      * @returns {void}
      */
@@ -302,7 +302,7 @@ export class PeriodSelector {
         return selector;
     }
     /**
-     * To set and remove the period style
+     * To set and remove the period style.
      *
      * @param buttons
      * @param selectedIndex
@@ -321,7 +321,7 @@ export class PeriodSelector {
     }
 
     /**
-     * Button click handling
+     * Button click handling.
      *
      * @param args
      * @param control

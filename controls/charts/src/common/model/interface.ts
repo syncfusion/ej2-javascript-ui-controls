@@ -2,13 +2,13 @@ import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeNavigator, RangeSlider, PeriodsModel } from '../../range-navigator';
 
 export interface ISelectorRenderArgs {
-    /** Defines the thumb size of the slider */
+    /** Defines the thumb size of the slider. */
     thumbSize: number;
-    /** Defines the selector appending element */
+    /** Defines the selector appending element. */
     element: HTMLElement;
-    /** Defines the selector width */
+    /** Defines the selector width. */
     width: number;
-    /** Defines the selector height */
+    /** Defines the selector height. */
     height: number;
 }
 

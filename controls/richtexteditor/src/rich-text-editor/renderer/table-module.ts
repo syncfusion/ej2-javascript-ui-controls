@@ -220,14 +220,15 @@ export class Table {
         }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule
         && event.code !== 'KeyK') {
+            let selection: NodeSelection;
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            const selection: NodeSelection = this.parent.formatter.editorManager.
-                nodeSelection.save(range, this.contentModule.getDocument());
             let ele: HTMLElement = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0] as HTMLElement;
             ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? ele.parentElement : ele;
             if (((event as KeyboardEventArgs).keyCode === 8 || (event as KeyboardEventArgs).keyCode === 46) ||
             (event.ctrlKey && (event as KeyboardEventArgs).keyCode === 88)) {
                 if (ele && ele.tagName === 'TBODY') {
+                    if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule)
+                    selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                     event.preventDefault();
                     proxy.removeTable(selection, event as KeyboardEventArgs, true);
                 } else if (ele && ele.querySelectorAll('table').length > 0) {
@@ -240,6 +241,8 @@ export class Table {
                 ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
             }
             if (ele && (ele.tagName === 'TD' || ele.tagName === 'TH')) {
+                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule)
+                selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 switch ((event as KeyboardEventArgs).keyCode) {
                 case 9:
                 case 37:

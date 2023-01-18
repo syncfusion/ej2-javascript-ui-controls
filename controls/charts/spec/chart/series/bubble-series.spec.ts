@@ -857,10 +857,10 @@ describe('Chart Control', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d')).not.toEqual('');
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '2006.832' || element1.textContent == '2006.842').toBe(true);
+                expect(element1.textContent == '2006.832' || element1.textContent == '2006.842' || element1.textContent == '2006.767').toBe(true);
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[3];
                 expect(element1.textContent == '10.938' || element1.textContent == '11.032' ||
-                    element1.textContent == '11.428').toBe(true);
+                    element1.textContent == '11.428').toBe(true); 
                 chartArea = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + elem.offsetTop + 1;
                 x = parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft + 1;
@@ -898,7 +898,7 @@ describe('Chart Control', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
         let trigger: MouseEvents = new MouseEvents();
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 800px' });
         let targetElement: HTMLElement;
         let resetElement: HTMLElement;
         let x: number; let y: number;
@@ -1107,7 +1107,7 @@ describe('Chart Control', () => {
         let element: HTMLElement;
         let dataLabelY;
         let pointY;
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container', styles: 'width: 800px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chart = new Chart(

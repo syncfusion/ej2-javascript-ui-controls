@@ -900,7 +900,10 @@
       border-color: $grid-dragcell-border-color;
     }
 
-    .e-gridcontent .e-rowdragdrop.e-lastrowcell {
+    .e-gridcontent .e-rowdragdrop.e-lastrowcell,
+    .e-gridcontent .e-recordpluscollapse.e-lastrowcell,
+    .e-gridcontent .e-indentcell.e-lastrowcell,
+    .e-gridcontent .e-groupcaption.e-lastrowcell {
       border-bottom-width: $grid-border-bottom-width;
     }
 
@@ -2309,7 +2312,9 @@
     }
 
     .e-gridheader .e-headercontent .e-reorderuparrow,
-    .e-gridheader .e-headercontent .e-reorderdownarrow {
+    .e-gridheader .e-headercontent .e-reorderdownarrow,
+    .e-gridheader .e-headercontent .e-reorderuparrow-virtual,
+    .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
       font-size: $grid-reorderarrow-font-size;
       margin-left: $grid-reorderarrow-margin-left;
       margin-top: $grid-reorderarrow-margin-top;

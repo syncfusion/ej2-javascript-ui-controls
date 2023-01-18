@@ -64,7 +64,7 @@ export class RangeSlider {
             (thumb.fill || range.themeStyle.thumbBackground);
     }
     /**
-     * Render Slider elements for range navigator
+     * Render Slider elements for range navigator.
      *
      * @param {RangeNavigator} range RangeNavigator instance
      */
@@ -108,7 +108,7 @@ export class RangeSlider {
         range.svgObject.appendChild(sliderGroup);
     }
     /**
-     * Thumb creation performed
+     * Thumb creation performed.
      *
      * @param {SvgRenderer} render SvgRenderer
      * @param {Rect} bounds bounds
@@ -182,7 +182,7 @@ export class RangeSlider {
         }
     }
     /**
-     * Set slider value for range navigator
+     * Set slider value for range navigator.
      */
     public setSlider(start: number, end: number, trigger: boolean, showTooltip: boolean, resize: boolean = false): void {
         const range: RangeNavigator = this.control;
@@ -244,7 +244,7 @@ export class RangeSlider {
         }
     }
     /**
-     * Trigger changed event
+     * Trigger changed event.
      *
      * @param {VisibleRangeModel} range axis visible range
      */
@@ -507,7 +507,7 @@ export class RangeSlider {
         control.endValue = this.currentEnd;
     }
     /**
-     * Animation Calculation for slider navigation
+     * Animation Calculation for slider navigation.
      */
     public performAnimation(start: number, end: number, control: RangeNavigator, animationDuration ?: number): void {
         const currentStart: number = this.currentStart;

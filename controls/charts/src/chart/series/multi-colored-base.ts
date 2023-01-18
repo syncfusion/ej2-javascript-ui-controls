@@ -21,7 +21,7 @@ import {PathAttributes }  from '@syncfusion/ej2-svg-base';
 
 export class MultiColoredSeries extends LineBase {
     /**
-     * To Generate the area path direction
+     * To Generate the area path direction.
      *
      * @param {number} xValue xValue
      * @param {number} yValue yValue
@@ -45,7 +45,7 @@ export class MultiColoredSeries extends LineBase {
         return direction;
     }
     /**
-     * To Generate the empty point direction
+     * To Generate the empty point direction.
      *
      * @param {ChartLocation} firstPoint firstPoint
      * @param {ChartLocation} secondPoint secondPoint
@@ -69,7 +69,7 @@ export class MultiColoredSeries extends LineBase {
         return direction;
     }
     /**
-     * To set point color
+     * To set point color.
      */
     public setPointColor(currentPoint: Points, previous: Points, series: Series, isXSegment : boolean,
                          segments: ChartSegmentModel[]): boolean {
@@ -107,7 +107,7 @@ export class MultiColoredSeries extends LineBase {
     }
 
     /**
-     * Segment calculation performed here
+     * Segment calculation performed here.
      *
      * @param {Series} series series
      * @param {PathOption[]} options options
@@ -170,7 +170,7 @@ export class MultiColoredSeries extends LineBase {
         }
     }
     /**
-     * To create clip rect for segment axis
+     * To create clip rect for segment axis.
      *
      * @param {number} startValue startValue
      * @param {number} endValue endValue
@@ -215,7 +215,7 @@ export class MultiColoredSeries extends LineBase {
         return null;
     }
     /**
-     * To get exact value from segment value
+     * To get exact value from segment value.
      *
      * @param {Object} segmentValue segmentValue
      * @param {Axis} axis axis

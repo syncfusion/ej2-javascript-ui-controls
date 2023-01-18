@@ -203,8 +203,8 @@ describe('RTE CR issues', () => {
             item.click();
             dispatchEvent(item, 'mousedown');
             let span: HTMLSpanElement = pEle.querySelector('span span');
-            expect(span.style.color === 'rgb(255, 0, 0)').toBe(true);
-            expect(span.style.textDecoration === 'inherit').toBe(true);
+            expect(span.parentElement.style.color === 'rgb(255, 0, 0)').toBe(true);
+            expect(span.parentElement.style.textDecoration === 'inherit').toBe(true);
             done();
         });
         afterAll(() => {
@@ -1555,4 +1555,411 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
+    describe('EJ2-68037- Numbering list not applied properly after applying indents to the pasted list content in RichTextEditor', () => {
+        let rteObj: RichTextEditor ;
+        const targetElm: HTMLElement = createElement('div', { className: 'target' });
+        beforeEach( () => {
+            rteObj = new RichTextEditor({
+                toolbarSettings : {
+                    items: ['Indent', '|', 'Outdent', 'UnorderedList', 'OrderedList']
+                }, value : `<ol level="1" style="list-style-type: decimal;margin-bottom:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><strong><span style="font-size:10.5pt;
+                line-height:107%;font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:
+                white;">Lorem Ipsum</span></strong><span style="font-size:10.5pt;line-height:
+                107%;font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">&nbsp;is
+                simply dummy text of the printing and typesetting industry.</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+                font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">Lorem Ipsum
+                has been the industry's standard dummy text ever since the 1500s, when an
+                unknown printer took a galley of type and scrambled it to make a type specimen
+                book. It has survived not only five centuries, but also the leap into
+                electronic typesetting, remaining essentially unchanged.</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+                font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">It is a long
+                established fact that a reader will be distracted by the readable content of a
+                page when looking at its layout.</span></p><ul level="2" style="list-style-type: disc;margin-bottom:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+                font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">There are many
+                variations of passages of Lorem Ipsum available, but the majority have suffered
+                alteration in some form, by injected humour, or randomised words which don't
+                look even slightly believable.</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+                font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">Contrary to
+                popular belief, Lorem Ipsum is not simply random text</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+                font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">The standard
+                chunk of Lorem Ipsum used since the 1500s is reproduced below for those
+                interested.</span></p></li></ul></li><li style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+                font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">There are many
+                variations of passages of Lorem Ipsum available, but the majority have suffered
+                alteration in some form, by injected humour, or randomised words which don't
+                look even slightly believable. If you are going to use a passage of Lorem
+                Ipsum, you need to be sure there isn't anything embarrassing hidden in the
+                middle of text.</span></p></li></ol>`
+            });
+            document.body.appendChild(targetElm);
+            rteObj.appendTo(targetElm);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        })
+        it('Should not remove the list after clicking the outdent', (done: Function) => {
+            rteObj.focusIn();
+            const range: Range = document.createRange();
+            const contentDiv : NodeList = document.querySelectorAll('.e-content');
+            range.setStart(contentDiv[0].childNodes[0].firstChild, 0);
+            range.setEnd(contentDiv[0].childNodes[0].lastChild, 1);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document ,range );
+            (document.querySelector('.e-outdent') as HTMLElement).click();
+            (document.querySelector('.e-order-list') as HTMLElement).click();
+            expect(rteObj.element.querySelectorAll('li').length ).toEqual(7);
+            expect(rteObj.element.querySelectorAll('ol').length ).toEqual(3);
+            done();
+        });
+        it('Should not remove the list after clicking the outdent Multiple times', (done: Function) => {
+            const secondValue: string = `<ul level="1" style="list-style-type: disc;margin-bottom:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><strong><span style="font-size:10.5pt;
+            line-height:107%;font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:
+            white;">Lorem Ipsum</span></strong><span style="font-size:10.5pt;line-height:
+            107%;font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">&nbsp;is
+            simply dummy text of the printing and typesetting industry.</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+            font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">Lorem Ipsum
+            has been the industry's standard dummy text ever since the 1500s, when an
+            unknown printer took a galley of type and scrambled it to make a type specimen
+            book. It has survived not only five centuries, but also the leap into
+            electronic typesetting, remaining essentially unchanged.</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+            font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">It is a long
+            established fact that a reader will be distracted by the readable content of a
+            page when looking at its layout.</span></p><ul level="2" style="list-style-type: circle;margin-bottom:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+            font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">There are many
+            variations of passages of Lorem Ipsum available, but the majority have suffered
+            alteration in some form, by injected humour, or randomised words which don't
+            look even slightly believable.</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+            font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">Contrary to
+            popular belief, Lorem Ipsum is not simply random text</span></p></li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+            font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">The standard
+            chunk of Lorem Ipsum used since the 1500s is reproduced below for those
+            interested.</span></p></li></ul></li><li style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:.5in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><p><span style="font-size:10.5pt;line-height:107%;
+            font-family:&quot;Open Sans&quot;,sans-serif;color:black;background:white;">There are many
+            variations of passages of Lorem Ipsum available, but the majority have suffered
+            alteration in some form, by injected humour, or randomised words which don't
+            look even slightly believable. If you are going to use a passage of Lorem
+            Ipsum, you need to be sure there isn't anything embarrassing hidden in the
+            middle of text.</span></p></li></ul>`;
+            rteObj.value = secondValue;
+            document.querySelector('.e-content').innerHTML = secondValue;
+            rteObj.focusIn();
+            const range: Range = document.createRange();
+            const contentDiv : NodeList = document.querySelectorAll('.e-content');
+            range.setStart(contentDiv[0].childNodes[0].firstChild, 0);
+            range.setEnd(contentDiv[0].childNodes[0].lastChild, 1);
+            rteObj.formatter.editorManager.nodeSelection.setRange(document ,range );
+            (document.querySelector('.e-outdent') as HTMLElement).click();
+            (document.querySelector('.e-unorder-list') as HTMLElement).click();
+            expect(rteObj.element.querySelectorAll('li').length ).toEqual(7);
+            expect(rteObj.element.querySelectorAll('ul').length ).toEqual(3);
+            done();
+        });
+    });
+
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 1' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontSize','SuperScript', 'SubScript', 'FontColor']
+                } ,value:'Testing'
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterEach( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it('should add span element with font size to around the text node', (done: Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const toolbarButtons : NodeList = document.body.querySelectorAll('.e-tbar-btn');
+            ( toolbarButtons[0] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[1] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[2] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[3] as HTMLElement ).click(); // StrikeThrough
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            (dropButton[0] as HTMLElement).click(); // Font size
+            const dropItems : NodeList= document.body.querySelectorAll('.e-item');
+            (dropItems[6] as HTMLElement).click(); // Apply 34 pt
+            const correctElementString : string = `<p><span style="font-size: 36pt;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></em></strong></span></p>`;
+            expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
+            ( toolbarButtons[3] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[2] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[1] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[0] as HTMLElement ).click(); // StrikeThrough
+            expect( rteObject.inputElement.innerHTML === '<p><span style="font-size: 36pt;">Testing</span></p>' ).toBe( true );
+            done();
+        });
+        it('Test for only font size of selected text',(done: Function) =>{
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn');
+            (dropButton[0] as HTMLElement).click();
+            const dropItems : NodeList= document.body.querySelectorAll('.e-item');
+            (dropItems[6] as HTMLElement).click();
+            const correctElementString : string = `<p><span style="font-size: 36pt;">Testing</span></p>`;
+            expect( rteObject.inputElement.innerHTML === correctElementString ).toBe( true );
+            done();
+        });
+    });
+
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 2' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value:'Testing'
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterEach( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it('should add span element with font size to around the text node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const toolbarButtons : NodeList = document.body.querySelectorAll('.e-tbar-btn');
+            ( toolbarButtons[0] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[1] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[2] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[3] as HTMLElement ).click(); // StrikeThrough
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[0] as HTMLElement ).click(); // Font 
+            const dropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( dropItems[1] as HTMLElement ).click(); // Apply font
+            ( dropButton[2] as HTMLElement ).click(); // Font color
+            const row : NodeList= document.body.querySelectorAll('.e-row');
+            const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
+            ( tileItems[9] as HTMLElement ).click();
+            // Background color
+            ( document.body.querySelector('.e-apply') as HTMLElement).click();
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            const correctElementString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="font-family: Arial, Helvetica, sans-serif;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="background-color: rgb(255, 255, 255);">Testing</span></span></span></em></strong></span></span></span></p>`;
+            expect(rteObject.inputElement.innerHTML === correctElementString).toBe(true);
+            ( toolbarButtons[3] as HTMLElement ).click(); // Bold
+            ( toolbarButtons[2] as HTMLElement ).click(); // Italic
+            ( toolbarButtons[1] as HTMLElement ).click(); // Underline
+            ( toolbarButtons[0] as HTMLElement ).click(); // StrikeThrough
+            const correctString : string = `<p><span style="font-size: 36pt;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="font-family: Arial, Helvetica, sans-serif;"><span style="background-color: rgb(255, 255, 255);">Testing</span></span></span></span></p>`;
+            expect( rteObject.inputElement.innerHTML === correctString ).toBe( true );
+            done();
+        });
+    });
+    
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 3 Table Element' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
+        let innerHTML: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 33.3333%;" class=""><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>';
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterEach( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it('should add span element with font size to around the span node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('span[style="text-decoration: underline;"],span[style="text-decoration: line-through;"]');
+            let range : Range = new Range();
+            range.setStart( contentElem.firstChild.firstChild,0 );
+            range.setEnd( contentElem.firstChild.firstChild,7 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        });
+    } );
+    
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 4 Link Element' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
+        let innerHTML: string = '<p><span><a classname="e-rte-anchor" href="https://syncfusion.atlassian.net/browse/EJ2-65567" title="https://syncfusion.atlassian.net/browse/EJ2-65567" target="_blank"><span style="text-decoration: underline;">https://syncfusion.atlassian.net/browse/EJ2-65567</span> </a></span><br></p>';
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterEach( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it( 'should add span element with font size to around the span node', ( done: Function ) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('a');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem, 1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        });
+    } );
+    
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 5 Code Block' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
+        let innerHTML: string = '<pre><span style="text-decoration: line-through;"><span style="text-decoration: underline;">Testing﻿﻿</span></span><br></pre>';
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterEach( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it('should add span element with font size to around the span node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('pre');
+            let range : Range = new Range();
+            range.setStart( contentElem ,0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        });
+    } );
+
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 6 Heading' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
+        let innerHTML: string = '<h1><span style="text-decoration: line-through;"><strong>Testing 1</strong></span></h1><h2><span style="text-decoration: underline;"><strong>Testing 2</strong></span></h2><h3><span style="text-decoration: line-through;"><em><span style="text-decoration: underline;">Testing 3</span></em></span></h3><h4><strong><em><span style="text-decoration: underline;">Testing 4</span></em></strong></h4>';
+        beforeAll( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterAll( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it('should wrap font size span element immediate to h1 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h1');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        } );
+        it('should wrap font size span element immediate to h2 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h2');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        } );
+        it('should wrap font size span element immediate to h3 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h3');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        } );
+        it('should wrap font size span element immediate to h4 node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('h4');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem ,1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((contentElem.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        } );
+        
+    } );
+
+    describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 7 Image Element Alt Text' , () => {
+        let rteObject : RichTextEditor ;
+        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
+        let innerHTML: string = '<p><span class="e-img-caption e-rte-img-caption null e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap null"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1277px; min-height: 0px;"><span class="e-img-inner null" contenteditable="true">Caption</span></span></span> </p>';
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObject = new RichTextEditor({ 
+                toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                } ,value: innerHTML
+            });
+            rteObject.appendTo('#defaultRTE');
+        })
+        afterEach( () => {
+            destroy( rteObject );
+            detach( defaultRTE );
+        })
+        it('should wrap span element with font size to around the style span node', (done : Function) => {
+            const contentElem : HTMLElement = rteObject.element.querySelector('.e-img-inner');
+            let range : Range = new Range();
+            range.setStart( contentElem, 0 );
+            range.setEnd( contentElem, 1 );
+            rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
+            const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
+            ( dropButton[1] as HTMLElement ).click(); // Font Size
+            const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
+            ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
+            expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            done();
+        });
+    } );
 });

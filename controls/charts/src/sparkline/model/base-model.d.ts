@@ -191,26 +191,26 @@ export interface LineSettingsModel {
 export interface RangeBandSettingsModel {
 
     /**
-     * To configure sparkline start range
+     * To configure sparkline start range.
      *
      * @aspDefaultValueIgnore
      */
     startRange?: number;
 
     /**
-     * To configure sparkline end range
+     * To configure sparkline end range.
      *
      * @aspDefaultValueIgnore
      */
     endRange?: number;
 
     /**
-     * To configure sparkline rangeband color
+     * To configure sparkline rangeband color.
      */
     color?: string;
 
     /**
-     * To configure sparkline rangeband opacity
+     * To configure sparkline rangeband opacity.
      *
      * @default 1
      */

@@ -80,7 +80,7 @@ describe('Chart Control Selection ', () => {
     let draggedRectGroup: string = id + '_ej2_drag_rect';
     let closeId: string = id + '_ej2_drag_close';
     beforeAll(() => {
-        chartContainer = createElement('div', { id: id });
+        chartContainer = createElement('div', { id: id, styles: 'width: 800px' });
         document.body.appendChild(chartContainer);
         document.body.appendChild(createElement('style', {
             innerHTML: ' .selection { stroke-width: 5; fill: lime; stroke: red; opacity: 1; } '

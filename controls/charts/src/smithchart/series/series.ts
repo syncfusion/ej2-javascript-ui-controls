@@ -22,7 +22,7 @@ export class SeriesTooltipBorder extends ChildProperty<SeriesTooltipBorder> {
     public width: number;
 
     /**
-     * border color for tooltip
+     * border color for tooltip.
      *
      * @default null
      */
@@ -58,7 +58,7 @@ export class SeriesTooltip extends ChildProperty<SeriesTooltip> {
     public opacity: number;
 
     /**
-     * template for tooltip
+     * template for tooltip.
      *
      * @default ''
      */
@@ -66,7 +66,7 @@ export class SeriesTooltip extends ChildProperty<SeriesTooltip> {
     public template: string;
 
     /**
-     *  options for customizing tooltip border
+     *  options for customizing tooltip border.
      */
 
     @Complex<SeriesTooltipBorderModel>({}, SeriesTooltipBorder)
@@ -138,7 +138,7 @@ export class SeriesMarkerDataLabel extends ChildProperty<SeriesMarkerDataLabel> 
     public visible: boolean;
 
     /**
-     * showing template for data label template
+     * showing template for data label template.
      *
      * @default ''
      */
@@ -159,18 +159,18 @@ export class SeriesMarkerDataLabel extends ChildProperty<SeriesMarkerDataLabel> 
     @Property(1)
     public opacity: number;
     /**
-     * options for customizing data label border
+     * options for customizing data label border.
      *
      */
     @Complex<SeriesMarkerDataLabelBorderModel>({}, SeriesMarkerDataLabelBorder)
     public border: SeriesMarkerDataLabelBorderModel;
     /**
-     * options for customizing data label connector line
+     * options for customizing data label connector line.
      */
     @Complex<SeriesMarkerDataLabelConnectorLineModel>({}, SeriesMarkerDataLabelConnectorLine)
     public connectorLine: SeriesMarkerDataLabelConnectorLineModel;
     /**
-     * options for customizing font
+     * options for customizing font.
      */
     @Complex<SmithchartFontModel>(Theme.dataLabelFont, SmithchartFont)
     public textStyle: SmithchartFontModel;
@@ -210,7 +210,7 @@ export class SeriesMarker extends ChildProperty<SeriesMarker> {
     @Property(6)
     public height: number;
     /**
-     * Url for the image that is to be displayed as marker
+     * Url for the image that is to be displayed as marker.
      *
      * @default ''
      */
@@ -234,13 +234,13 @@ export class SeriesMarker extends ChildProperty<SeriesMarker> {
 
 
     /**
-     *  options for customizing marker border
+     *  options for customizing marker border.
      */
 
     @Complex<SeriesMarkerBorderModel>({}, SeriesMarkerBorder)
     public border: SeriesMarkerBorderModel;
     /**
-     * options for customizing marker data label
+     * options for customizing marker data label.
      */
     @Complex<SeriesMarkerDataLabelModel>({}, SeriesMarkerDataLabel)
     public dataLabel: SeriesMarkerDataLabelModel;
@@ -263,7 +263,7 @@ export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
     public points: ISmithChartPoint[];
 
     /**
-     * resistance name for dataSource
+     * resistance name for dataSource.
      *
      * @default ''
      */
@@ -272,7 +272,7 @@ export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
     public resistance: string;
 
     /**
-     * reactance name for dataSource
+     * reactance name for dataSource.
      *
      * @default ''
      */
@@ -281,7 +281,7 @@ export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
     public reactance: string;
 
     /**
-     * tooltip mapping name for the series
+     * tooltip mapping name for the series.
      *
      * @default ''
      */
@@ -352,13 +352,13 @@ export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
     public opacity: number;
 
     /**
-     * options for customizing marker
+     * options for customizing marker.
      */
     @Complex<SeriesMarkerModel>({}, SeriesMarker)
     public marker: SeriesMarkerModel;
 
     /**
-     * options for customizing tooltip
+     * options for customizing tooltip.
      */
     @Complex<SeriesTooltipModel>({}, SeriesTooltip)
     public tooltip: SeriesTooltipModel;

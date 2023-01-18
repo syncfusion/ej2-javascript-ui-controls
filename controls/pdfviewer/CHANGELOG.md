@@ -2,17 +2,22 @@
 
 ## [Unreleased]
 
-## 20.4.42 (2023-01-04)
+## 20.4.44 (2023-01-18)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `#I422813` - Now, value in the free text annotation will be updated properly in mobile environment.
+- `#I426541` - Now, the signature renders successfully even if the document contains an invalid signature field name.
+- `#F179704` - If `enableMeasureAnnotation` is set to false, the Annotation events for shape annotations are now properly triggered.
+- `#I426591` -  After programmatically updating the signature field, the focus form field is now functioning.
+- `#I427179` - Now, blank pages prints on iPad printing issue has been fixed.
+- `#I427451` - Now, script error does not occurs while changing the dropdown value.
+- `#I427404` - Now, the signature field indicator sizes have been adjusted in consistent with the signature fields.
 
-#### New Features
+## 20.4.42 (2023-01-04)
 
-- `#I424468` - Provided support for rendering the existing comb type textbox in form designer module.
+### PDF Viewer
 
 #### Bug Fixes
 
@@ -23,6 +28,11 @@
 - `#I427364` - Now, the button images are rendered properly while scrolling the document.
 - `#I421445` - Now, the multiple Font-styles(bold, italic, underline and strikeout) can be applied together for textbox fields.
 - `#I426174` - Now, the form fields that have been selected programmatically can be deleted by using the delete key.
+- `#I422813` - Now, value in the free text annotation will be updated properly in mobile environment.
+
+#### New Features
+
+- `#I424468` - Provided support for rendering the existing comb type textbox in form designer module.
 
 ## 20.4.40 (2022-12-28)
 

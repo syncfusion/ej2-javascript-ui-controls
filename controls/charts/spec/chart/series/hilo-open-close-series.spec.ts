@@ -111,7 +111,7 @@ describe('Chart Control Series', () => {
     describe('HiloOpenClose Series', () => {
         let chartObj: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
-        element = createElement('div', { id: 'container' });
+        element = createElement('div', { id: 'container', styles: 'width: 1000px' });
         beforeAll(() => {
             document.body.appendChild(element);
             chartObj = new Chart(
@@ -1050,7 +1050,7 @@ describe('Chart Control Series', () => {
 
     describe('checking for multiple axes', () => {
         let chartObj: Chart;
-        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let elem: HTMLElement = createElement('div', { id: 'container', styles: 'width: 1000px' });
         let targetElement: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         let marker0: HTMLElement;

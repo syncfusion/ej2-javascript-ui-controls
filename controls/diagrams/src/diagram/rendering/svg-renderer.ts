@@ -107,7 +107,7 @@ export class SvgRenderer implements IRenderer {
      */
     public drawRectangle(
         svg: SVGElement, options: RectAttributes, diagramId: string, onlyRect?: boolean,
-        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object, isCircularHandle?: boolean):
+        isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object, isCircularHandle?: boolean,enableSelector?: number):
         void {
         if (options.shadow && !onlyRect) {
             this.renderShadow(options, svg, undefined, parentSvg);
@@ -156,8 +156,15 @@ export class SvgRenderer implements IRenderer {
             attr['role'] = 'img';
             attr['aria-label'] = ariaLabel;
         }
+        // EJ2-63581-Lockissue - After Lock the CSS class disabled added to the locked object
+        let classval = options.class || '';
+        if (!enableSelector) {
+            if(classval.includes('e-diagram-resize-handle') ||classval.includes('e-diagram-endpoint-handle')){
+                classval += ' e-disabled';
+            }
+         }
         if (options.class) {
-            attr['class'] = options.class;
+            attr['class'] = classval;
         }
         const poiterEvents: string = 'pointer-events';
         if (!ariaLabel) {

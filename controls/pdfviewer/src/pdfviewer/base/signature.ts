@@ -1617,7 +1617,7 @@ export class Signature {
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds, pageAnnotationObject.pageIndex));
-                        if (pageAnnotationObject.annotations[parseInt(z.toString(), 10)].shapeAnnotationType === 'HandWrittenSignature') {
+                        if (pageAnnotationObject.annotations[parseInt(z.toString(), 10)].shapeAnnotationType === 'HandWrittenSignature'|| pageAnnotationObject.annotations[parseInt(z.toString(), 10)].signatureName === 'ink') {
                             // eslint-disable-next-line
                             let collectionData: any = processPathData(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].data);
                             // eslint-disable-next-line
@@ -1797,7 +1797,7 @@ export class Signature {
                     }
                     else{
                         annot = {
-                            id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data:data,shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                            id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data:data,shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName?currentAnnotation.SignatureName:"ink"
                         };
                     }
                 }
@@ -1827,17 +1827,34 @@ export class Signature {
     // eslint-disable-next-line
     public storeSignatureData(pageNumber: number, annotations: any): void {
         // eslint-disable-next-line max-len
-        this.pdfViewer.annotation.addAction(annotations.pageIndex, null, annotations as PdfAnnotationBase, 'Addition', '', annotations as PdfAnnotationBase, annotations);
+        this.pdfViewer.annotation.addAction(annotations.pageIndex?annotations.pageIndex:annotations.PageIndex, null, annotations as PdfAnnotationBase, 'Addition', '', annotations as PdfAnnotationBase, annotations);
         let annotation: ISignAnnotation = null;
-        let left: number = annotations.bounds.left ? annotations.bounds.left : annotations.bounds.x;
-        let top: number = annotations.bounds.top ? annotations.bounds.top : annotations.bounds.y;
+        let left: number;
+        let top: number;
+        let width: number;
+        let height: number;
+        let pageIndex:number;
+        if(annotations.bounds){
+             left = annotations.bounds.left ? annotations.bounds.left : annotations.bounds.x;
+             top = annotations.bounds.top ? annotations.bounds.top : annotations.bounds.y;
+             width = annotations.bounds.width;
+             height = annotations.bounds.height;
+             pageIndex = annotations.pageIndex;
+        }
+        else{
+             left = annotations.Bounds.left ? annotations.Bounds.left : annotations.Bounds.x;
+             top = annotations.Bounds.top ? annotations.Bounds.top : annotations.Bounds.y;
+             width = annotations.LineBounds.Width;
+             height = annotations.LineBounds.Height;
+             pageIndex = annotations.PageIndex;
+        }
+        
         if (annotations.wrapper && annotations.wrapper.bounds) {
             left = annotations.wrapper.bounds.left;
             top = annotations.wrapper.bounds.top;
         }
         annotation = {
-            // eslint-disable-next-line max-len
-            id: annotations.id, bounds: { left: left, top: top, width: annotations.bounds.width, height: annotations.bounds.height }, shapeAnnotationType: annotations.shapeAnnotationType, opacity: annotations.opacity, thickness: annotations.thickness, strokeColor: annotations.strokeColor, pageIndex: annotations.pageIndex, data: annotations.data, fontSize: annotations.fontSize, fontFamily: annotations.fontFamily, signatureName: annotations.signatureName
+            id: annotations.id?annotations.id:null, bounds: { left: left, top: top, width: width, height: height }, shapeAnnotationType: annotations.shapeAnnotationType?annotations.shapeAnnotationType: "ink", opacity: annotations.opacity?annotations.opacity:1, thickness: annotations.thickness?annotations.thickness:1, strokeColor: annotations.strokeColor?annotations.strokeColor:null, pageIndex: pageIndex, data: annotations.data?annotations.data:annotations.Value, fontSize: annotations.fontSize?annotations.fontSize:null, fontFamily: annotations.fontFamily?annotations.fontFamily:null, signatureName: annotations.signatureName? annotations.signatureName:annotations.Name
         };
         // eslint-disable-next-line
         const sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);

@@ -86,7 +86,7 @@ export class BaseSelection {
         }
     }
     /**
-     * To create the pattern for series/points
+     * To create the pattern for series/points.
      *
      * @param chart
      * @param color

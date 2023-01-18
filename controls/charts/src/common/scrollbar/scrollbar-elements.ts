@@ -154,7 +154,7 @@ export class ScrollElements {
         parent.appendChild(this.rightArrowEle);
     }
     /**
-     * Methods to set the arrow width
+     * Methods to set the arrow width.
      *
      * @param thumbRectX
      * @param thumbRectWidth
@@ -172,7 +172,7 @@ export class ScrollElements {
         this.rightArrowEle.setAttribute('d', rightDirection);
     }
     /**
-     * Method to render thumb
+     * Method to render thumb.
      *
      * @param scroll
      * @param renderer

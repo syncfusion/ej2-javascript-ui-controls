@@ -105,7 +105,7 @@ export class Lists {
             range.startContainer.parentElement.closest('LI');
         const endNode: Element = range.endContainer.nodeName === 'LI' ? (range.endContainer as Element) :
             range.endContainer.parentElement.closest('LI');
-        // Checks for Image, Audio , Video Element inside List Element 
+        // Checks for Image, Audio , Video Element inside List Element
         let hasMediaElem: boolean = false;
         if (!isNOU(startNode)) {
             const videoElemList : NodeList = startNode.querySelectorAll('.e-video-clickelem');
@@ -723,6 +723,10 @@ export class Lists {
                     node.previousElementSibling .appendChild(contentNodes[f as number]);
                 }
                 node.parentNode.removeChild(node);
+            } else if (!isNOU(node.getAttribute('level'))){
+                if (node.tagName === node.previousElementSibling.tagName){
+                    (node.previousElementSibling.lastChild as HTMLElement).append(node);
+                }
             }
         }
     }

@@ -2144,6 +2144,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isDestroyed || !this.isRendered) {
             return;
         }
+        if (!isNOU(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
         if (this.element.offsetParent === null) {
             if (!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
             this.notify(events.moduleDestroy, {});
@@ -2151,10 +2155,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.notify(events.destroy, {});
         this.destroyDependentModules();
-        if (!isNOU(this.timeInterval)) {
-            clearInterval(this.timeInterval);
-            this.timeInterval = null;
-        }
         this.unWireEvents();
         if (this.originalElement.tagName === 'TEXTAREA') {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);

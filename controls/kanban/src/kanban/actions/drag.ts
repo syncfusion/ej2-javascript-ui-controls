@@ -17,6 +17,7 @@ export class DragAndDrop {
     private kanbanObj: Kanban;
     private isExternalDrop: boolean;
     private borderElm: NodeListOf<HTMLElement>;
+    private insertClone: InsertPosition = 'afterend';
 
     /**
      * Constructor for drag and drop module
@@ -154,21 +155,23 @@ export class DragAndDrop {
                 if (target.classList.contains(cls.DRAGGED_CLONE_CLASS)) {
                     this.removeElement(this.dragObj.targetClone, this.kanbanObj);
                 }
-                if (target.classList.contains(cls.CARD_CLASS)) {
+                if (target.classList.contains(cls.CARD_CLASS) || this.insertClone === 'beforebegin') {
                     const element: Element = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ?
                         (target.previousElementSibling.classList.contains(cls.DRAGGED_CARD_CLASS) ? null : target.previousElementSibling)
                         : target.previousElementSibling;
-                    let insertClone: InsertPosition = 'afterend';
+                    this.insertClone = 'afterend';
                     if (isNullOrUndefined(element)) {
                         const pageY: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? (this.dragObj.pageY / 2) :
                             this.dragObj.pageY;
                         const height: number = target.classList.contains(cls.DRAGGED_CLONE_CLASS) ? target.offsetHeight :
                             (target.offsetHeight / 2);
                         if ((pageY - (this.kanbanObj.element.getBoundingClientRect().top + target.offsetTop)) < height) {
-                            insertClone = 'beforebegin';
+                            this.insertClone = 'beforebegin';
                         }
                     }
-                    target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
+                    if (target.classList.contains(cls.CARD_CLASS)) {
+                        target.insertAdjacentElement(this.insertClone, this.dragObj.targetClone);
+                    }
                 } else if (target.classList.contains(cls.CONTENT_CELLS_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)) {
                     if (target.querySelectorAll('.' + cls.DRAGGED_CARD_CLASS).length !== 0 &&
                         target.querySelectorAll('.' + cls.CARD_CLASS + ':not(.e-kanban-dragged-card):not(.e-cloned-card)').length === 0) {

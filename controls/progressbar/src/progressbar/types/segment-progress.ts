@@ -12,7 +12,7 @@ import { RangeColorModel } from '../model';
  */
 export class Segment {
 
-    /** To render the linear segment */
+    /** To render the linear segment. */
     public createLinearSegment(
         progress: ProgressBar, id: string, width: number, opacity: number, thickness: number, progressWidth: number
     ): Element {
@@ -66,7 +66,7 @@ export class Segment {
         return 'M' + ' ' + x + ' ' + y + ' ' + 'L' + (x + ((enableRtl) ? -width : width)) + ' ' + y;
     }
 
-    /** To render the circular segment */
+    /** To render the circular segment. */
     public createCircularSegment(
         progress: ProgressBar, id: string, x: number, y: number, r: number,
         value: number, opacity: number, thickness: number, totalAngle: number, progressWidth: number

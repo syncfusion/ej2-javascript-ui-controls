@@ -1563,8 +1563,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public showColumnChooser: boolean;
     /**
      * Configures the column chooser in the Grid.
+     *  <br><br>
+     * The available operators are,
+     * `startsWith` - Checks whether a value begins with the specified value.
+     * `endsWith` - Checks whether a value ends with the specified value.
+     * `contains` - Checks whether a value contains the specified value.
+     * `equal` - Checks whether a value is equal to the specified value.
+     * `notEqual` - Checks for values not equal to the specified value.
      *
-     * @default { columnChooserOperator: 'startsWith' }
+     * @default { operator: 'startsWith' }
      */
     @Complex<ColumnChooserSettingsModel>({}, ColumnChooserSettings)
     public columnChooserSettings: ColumnChooserSettingsModel;
@@ -1904,7 +1911,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /* eslint-disable */
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc., starts.
-     * 
+     *
      * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event actionBegin

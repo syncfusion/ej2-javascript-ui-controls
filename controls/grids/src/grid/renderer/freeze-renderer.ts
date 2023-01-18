@@ -612,7 +612,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         for (let i: number = 0, len: number = fTr.length; i < len; i++) {
             fRowSpan = this.getRowSpan(fTr[parseInt(i.toString(), 10)]);
             mRowSpan = this.getRowSpan(mTr[parseInt(i.toString(), 10)]);
-            if (fRowSpan.min > 1) {
+            if (fRowSpan.min > 1 || this.parent.isRowDragable() &&
+                isNullOrUndefined(this.parent.getFrozenVirtualHeader().querySelector('.e-stackedheadercell'))) {
                 this.updateStackedHdrRowHgt(i, fRowSpan.max, fTr[parseInt(i.toString(), 10)], mTr);
             } else if (mRowSpan.min > 1) {
                 this.updateStackedHdrRowHgt(i, mRowSpan.max, mTr[parseInt(i.toString(), 10)], fTr);
@@ -621,12 +622,25 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         if (this.parent.allowResizing) {
             this.updateResizeHandler();
         }
+        const cols: Column[] = <Column[]>this.parent.columns;
+        for (let i: number = 0, len: number = cols.length; i < len; i++) {
+            if (this.parent.isRowDragable() && isNullOrUndefined(cols[parseInt(i.toString(), 10)].columns) &&
+                isNullOrUndefined(this.parent.getFrozenVirtualHeader().querySelector('.e-stackedheadercell'))) {
+                const emptyCellIndex: number = this.frozenHeader.querySelectorAll('.e-columnheader').length - 1;
+                this.frozenHeader.querySelectorAll('.e-columnheader')[parseInt(emptyCellIndex.toString(), 10)].remove();
+                break;
+            }
+        }
     }
 
     protected getRowSpan(row: Element): { min: number, max: number } {
         let rSpan: number;
         let minRowSpan: number;
         let maxRowSpan: number;
+        const lastCellIndex: number = row.childElementCount - 1;
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() === 'Right') {
+            row.children[parseInt(lastCellIndex.toString(), 10)].remove();
+        }
         for (let i: number = 0, len: number = row.childElementCount; i < len; i++) {
             if (i === 0) {
                 minRowSpan = (row.children[0] as HTMLTableDataCellElement).rowSpan;

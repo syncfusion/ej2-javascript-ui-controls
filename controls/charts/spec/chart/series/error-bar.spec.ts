@@ -64,7 +64,7 @@ describe('Chart Control', () => {
         let targetElement: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         beforeAll(() => {
-            elem = createElement('div', { id: 'container' });
+            elem = createElement('div', { id: 'container',styles: 'width: 800px' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {
@@ -562,7 +562,7 @@ describe('Chart Control', () => {
             let animationComplete: EmitType<IAnimationCompleteEventArgs>;
 
             beforeAll(() => {
-                elem = createElement('div', { id: 'container' });
+                elem = createElement('div', { id: 'container', styles: 'width: 800px' });
                 document.body.appendChild(elem);
                 chartObj = new Chart(
                     {
@@ -1007,7 +1007,7 @@ describe('Chart Control', () => {
 
 
         beforeAll(() => {
-            elem = createElement('div', { id: 'container' });
+            elem = createElement('div', { id: 'container',styles: 'width: 800px' });
             document.body.appendChild(elem);
             chartObj = new Chart(
                 {

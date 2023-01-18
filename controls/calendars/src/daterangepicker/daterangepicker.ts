@@ -1528,8 +1528,10 @@ export class DateRangePicker extends CalendarBase {
                 if (range.length > 1) {
                     this.invalidValueString = null;
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-                    const startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
-                    const endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
+                    const start : Date = new Date(range[0]);
+                    const end : Date = new Date(range[1]);
+                    const startDate = this.getStartEndDate(start, false, range, dateOptions);
+                    const endDate = this.getStartEndDate(end, true, range, dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
                         const prevStartVal: Date = this.startValue;
                         this.startValue = startDate;
@@ -1597,6 +1599,15 @@ export class DateRangePicker extends CalendarBase {
             }
         }
         this.updateHiddenInput();
+    }
+    private getStartEndDate(date : Date, isEnd : boolean, range : string[], dateOptions : object) {
+        if (this.depth === 'Month') {
+            return this.globalize.parseDate(range[isEnd ? 1 : 0].trim(), dateOptions);
+        } else if (this.depth === 'Year') {
+            return new Date(date.getFullYear(), date.getMonth() + (isEnd ? 1 : 0), isEnd ? 0 : 1);
+        } else {
+            return new Date(date.getFullYear(), isEnd ? 11 : 0, isEnd ? 31 : 1);
+        }
     }
     private clearRange(): void {
         this.previousStartValue = this.previousEndValue = null;
@@ -4577,6 +4588,15 @@ export class DateRangePicker extends CalendarBase {
             this.updateHeader();
         }
     }
+    private getStartEndValue(date : Date, isEnd : boolean) {
+        if (this.depth === 'Month') {
+            return this.checkDateValue(new Date(this.checkValue(date)));
+        } else if (this.depth === 'Year') {
+            return new Date(date.getFullYear(), date.getMonth() + (isEnd ? 1 : 0), isEnd ? 0 : 1);
+        } else {
+            return new Date(date.getFullYear(), isEnd ? 11 : 0, isEnd ? 31 : 1);
+        }
+    }
     /**
      * Called internally if any of the property value changed.
      *
@@ -4664,7 +4684,7 @@ export class DateRangePicker extends CalendarBase {
                     newProp.startDate = this.globalize.parseDate(<string>newProp.startDate, format);
                 }
                 if (+this.initStartDate !== +newProp.startDate) {
-                    this.startValue = this.checkDateValue(new Date(this.checkValue(newProp.startDate)));
+                    this.startValue = this.getStartEndValue(newProp.startDate, false);
                     this.setDate();
                     this.setValue();
                 }
@@ -4674,7 +4694,7 @@ export class DateRangePicker extends CalendarBase {
                     newProp.endDate = this.globalize.parseDate(<string>newProp.endDate, format);
                 }
                 if (+this.initEndDate !== +newProp.endDate) {
-                    this.endValue = this.checkDateValue(new Date(this.checkValue(newProp.endDate)));
+                    this.endValue = this.getStartEndValue(newProp.endDate, true);
                     this.setDate();
                     this.setValue();
                 }

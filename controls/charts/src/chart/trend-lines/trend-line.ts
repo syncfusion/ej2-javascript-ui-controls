@@ -143,7 +143,7 @@ export class Trendlines {
     }
 
     /**
-     * Defines the points to draw the trendlines
+     * Defines the points to draw the trendlines.
      */
     public initDataSource(trendline: Trendline): void {
         const points: Points[] = trendline.points;
@@ -609,7 +609,7 @@ export class Trendlines {
     }
 
     /**
-     * Defines the trendline elements
+     * Defines the trendline elements.
      */
     public getTrendLineElements(series: Series, chart: Chart): void {
         findClipRect(series);
@@ -642,7 +642,7 @@ export class Trendlines {
     }
 
     /**
-     * To destroy the trendline
+     * To destroy the trendline.
      */
     public destroy(): void {
         /**

@@ -72,7 +72,7 @@ describe('accumulation and Doughnut Control Checking', () => {
     });
     it('Checking the null width of the accumulation', (done: Function) => {
         accumulation.width = null;
-        element.setAttribute('style', 'width:0px');
+        element.setAttribute('style', 'width:600px');
         accumulation.loaded = (args: Object) => {
             svgObject = getElement(id + '_svg');
             expect(svgObject.getAttribute('width')).toEqual('600');
@@ -501,7 +501,7 @@ describe('Checking RTL Behaviour for Title', () => {
     let accumulation: AccumulationChart;
     let anchor: string;
     beforeAll((): void => {
-        ele = createElement('div', { id: id });
+        ele = createElement('div', { id: id, styles: 'width: 600px' });
         document.body.appendChild(ele);
         accumulation = new AccumulationChart({
             border: { width: 1, color: 'blue' },

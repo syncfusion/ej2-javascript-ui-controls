@@ -4611,14 +4611,14 @@ export class Editor {
             let txt: string = pasteContent;
             txt = txt.replace(/\r\n/g, '\r');
             if (this.isInsertText) {
-                if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                if (navigator !== undefined && navigator.userAgent.indexOf('Firefox') !== -1) {
                     txt = txt.replace(/\r/g, '\n');
                 }
                 else {
                     txt = txt.replace(/\n/g, '\r');
                 }
             }
-            if (navigator.userAgent.indexOf('Firefox') !== -1) {
+            if (navigator !== undefined && navigator.userAgent.indexOf('Firefox') !== -1) {
                 arr = txt.split('\n');
             } else {
                 arr = txt.split('\r');
@@ -18053,7 +18053,7 @@ export class Editor {
             formField = new DropDownFormField();
         }
         if (!isNullOrUndefined(type) && !isNullOrUndefined(formField)) {
-            formField.name = field.formFieldData.name;
+            formField.name = !isNullOrUndefined(info.name) ? info.name : field.formFieldData.name;
             formField.copyFieldInfo(info);
             this.editFormField(type, formField);
         }

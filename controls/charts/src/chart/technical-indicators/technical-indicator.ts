@@ -16,7 +16,7 @@ import { Chart } from '../chart';
  */
 export class TechnicalIndicator extends SeriesBase {
     /**
-     * Defines the type of the technical indicator
+     * Defines the type of the technical indicator.
      *
      * @default 'Sma'
      */
@@ -24,7 +24,7 @@ export class TechnicalIndicator extends SeriesBase {
     public type: TechnicalIndicators;
 
     /**
-     * Defines the period, the price changes over which will be considered to predict the trend
+     * Defines the period, the price changes over which will be considered to predict the trend.
      *
      * @default 14
      */
@@ -32,7 +32,7 @@ export class TechnicalIndicator extends SeriesBase {
     public period: number;
 
     /**
-     * Defines the look back period, the price changes over which will define the %K value in stochastic indicators
+     * Defines the look back period, the price changes over which will define the %K value in stochastic indicators.
      *
      * @default 14
      */
@@ -40,7 +40,7 @@ export class TechnicalIndicator extends SeriesBase {
     public kPeriod: number;
 
     /**
-     * Defines the period, the price changes over which will define the %D value in stochastic indicators
+     * Defines the period, the price changes over which will define the %D value in stochastic indicators.
      *
      * @default 3
      */
@@ -48,7 +48,7 @@ export class TechnicalIndicator extends SeriesBase {
     public dPeriod: number;
 
     /**
-     * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators
+     * Defines the over-bought(threshold) values. It is applicable for RSI and stochastic indicators.
      *
      * @default 80
      */
@@ -56,7 +56,7 @@ export class TechnicalIndicator extends SeriesBase {
     public overBought: number;
 
     /**
-     * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators
+     * Defines the over-sold(threshold) values. It is applicable for RSI and stochastic indicators.
      *
      * @default 20
      */
@@ -64,7 +64,7 @@ export class TechnicalIndicator extends SeriesBase {
     public overSold: number;
 
     /**
-     * Sets the standard deviation values that helps to define the upper and lower bollinger bands
+     * Sets the standard deviation values that helps to define the upper and lower bollinger bands.
      *
      * @default 2
      */
@@ -72,7 +72,7 @@ export class TechnicalIndicator extends SeriesBase {
     public standardDeviation: number;
 
     /**
-     * Defines the field to compare the current value with previous values
+     * Defines the field to compare the current value with previous values.
      *
      * @default 'Close'
      */
@@ -80,7 +80,7 @@ export class TechnicalIndicator extends SeriesBase {
     public field: FinancialDataFields;
 
     /**
-     * Sets the slow period to define the Macd line
+     * Sets the slow period to define the Macd line.
      *
      * @default 12
      */
@@ -88,7 +88,7 @@ export class TechnicalIndicator extends SeriesBase {
     public slowPeriod: number;
 
     /**
-     * Sets the fast period to define the Macd line
+     * Sets the fast period to define the Macd line.
      *
      * @default 26
      */
@@ -96,7 +96,7 @@ export class TechnicalIndicator extends SeriesBase {
     public fastPeriod: number;
 
     /**
-     * Enables/Disables the over-bought and over-sold regions
+     * Enables/Disables the over-bought and over-sold regions.
      *
      * @default true
      */
@@ -104,7 +104,7 @@ export class TechnicalIndicator extends SeriesBase {
     public showZones: boolean;
 
     /**
-     * Defines the appearance of the the MacdLine of Macd indicator
+     * Defines the appearance of the the MacdLine of Macd indicator.
      *
      * @default { color: '#ff9933', width: 2 }
      */
@@ -120,7 +120,7 @@ export class TechnicalIndicator extends SeriesBase {
     public macdType: MacdType;
 
     /**
-     * Defines the color of the positive bars in Macd indicators
+     * Defines the color of the positive bars in Macd indicators.
      *
      * @default '#2ecd71'
      */
@@ -128,7 +128,7 @@ export class TechnicalIndicator extends SeriesBase {
     public macdPositiveColor: string;
 
     /**
-     * Defines the color of the negative bars in Macd indicators
+     * Defines the color of the negative bars in Macd indicators.
      *
      * @default '#e74c3d'
      */
@@ -145,27 +145,27 @@ export class TechnicalIndicator extends SeriesBase {
     public bandColor: string;
 
     /**
-     * Defines the appearance of the upper line in technical indicators
+     * Defines the appearance of the upper line in technical indicators.
      */
     @Complex<ConnectorModel>({ color: '#ffb735', width: 1 }, Connector)
     public upperLine: ConnectorModel;
 
     /**
-     * Defines the appearance of lower line in technical indicators
+     * Defines the appearance of lower line in technical indicators.
      */
 
     @Complex<ConnectorModel>({ color: '#f2ec2f', width: 1 }, Connector)
     public lowerLine: ConnectorModel;
 
     /**
-     * Defines the appearance of period line in technical indicators
+     * Defines the appearance of period line in technical indicators.
      */
 
     @Complex<ConnectorModel>({ color: '#f2ec2f', width: 1 }, Connector)
     public periodLine: ConnectorModel;
 
     /**
-     * Defines the name of the series, the data of which has to be depicted as indicator
+     * Defines the name of the series, the data of which has to be depicted as indicator.
      *
      * @default ''
      */

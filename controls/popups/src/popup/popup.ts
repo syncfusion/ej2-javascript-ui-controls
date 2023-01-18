@@ -728,9 +728,12 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      * @param { HTMLElement } relativeElement - To calculate the zIndex value dynamically.
      */
     public show(animationOptions?: AnimationModel, relativeElement?: HTMLElement): void {
-        this.fmDialogContainer = <HTMLElement>this.element.getElementsByClassName('e-file-select-wrap')[0];
+        const relateToElement : HTMLElement = this.getRelateToElement();
+        if (relateToElement.classList.contains('e-filemanager')){
+            this.fmDialogContainer = <HTMLElement>this.element.getElementsByClassName('e-file-select-wrap')[0];
+        }
         this.wireEvents();
-        if (this.fmDialogContainer && Browser.isIos) {
+        if (!isNullOrUndefined(this.fmDialogContainer) && Browser.isIos) {
             this.fmDialogContainer.style.display = 'block';
         }
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {

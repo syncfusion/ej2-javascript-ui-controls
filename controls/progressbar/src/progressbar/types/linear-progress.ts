@@ -23,7 +23,7 @@ export class Linear {
     constructor(progress: ProgressBar) {
         this.progress = progress;
     }
-    /** To render the linear track  */
+    /** To render the linear track.  */
     public renderLinearTrack(): void {
         const progress: ProgressBar = this.progress;
         const linearTrackGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearTrackGroup' });
@@ -62,7 +62,7 @@ export class Linear {
         progress.svgObject.appendChild(linearTrackGroup);
     }
 
-    /** To render the linear progress  */
+    /** To render the linear progress.  */
     // tslint:disable-next-line:max-func-body-length
     public renderLinearProgress(refresh?: boolean, previousWidth: number = 0): void {
         const progress: ProgressBar = this.progress; let option: PathOption;
@@ -178,7 +178,7 @@ export class Linear {
         }
     }
 
-    /** To render the linear buffer */
+    /** To render the linear buffer. */
     private renderLinearBuffer(progress: ProgressBar): void {
         let linearBuffer: Element;
         let clipPathBuffer: Element;
@@ -243,7 +243,7 @@ export class Linear {
         progress.svgObject.appendChild(linearBufferGroup);
     }
 
-    /** Render the Linear Label */
+    /** Render the Linear Label. */
     //tslint:disable-next-line:max-func-body-length
     public renderLinearLabel(isProgressRefresh: boolean = false): void {
         let linearlabel: Element;
@@ -348,7 +348,7 @@ export class Linear {
         }
     }
 
-    /** To render a progressbar active state */
+    /** To render a progressbar active state. */
     private renderActiveState(
         progressGroup: Element, progressWidth: number, linearProgressWidth: number,
         thickness: number, refresh: boolean
@@ -398,7 +398,7 @@ export class Linear {
         this.animation.doLinearAnimation(activeClip, progress, 0, 0, linearActive);
     }
 
-    /** To render a striped stroke */
+    /** To render a striped stroke. */
     private renderLinearStriped(color: string, group: Element, progress: ProgressBar): void {
         const defs: Element = progress.renderer.createDefs();
         let linearGradient: Element = document.createElementNS(svgLink, gradientType);
@@ -425,7 +425,7 @@ export class Linear {
         }
     }
 
-    /** checking progress color */
+    /** checking progress color. */
     private checkingLinearProgressColor(): string {
         let linearColor: string;
         const progress: ProgressBar = this.progress;
@@ -449,7 +449,7 @@ export class Linear {
         return linearColor;
     }
 
-    /** Bootstrap 3 & Bootstrap 4 corner path */
+    /** Bootstrap 3 & Bootstrap 4 corner path. */
     private cornerRadius(x: number, y: number, width: number, height: number, radius: number, pathtype: string): string {
         let path: string = '';
         const endWidth: number = width;
@@ -498,7 +498,7 @@ export class Linear {
         return path;
     }
 
-    /** Bootstrap 3 & Bootstrap 4 corner segment */
+    /** Bootstrap 3 & Bootstrap 4 corner segment. */
     public createRoundCornerSegment(
         id: string, stroke: string, thickness: number, isTrack: boolean,
         progressWidth: number, progress: ProgressBar, opacity?: number

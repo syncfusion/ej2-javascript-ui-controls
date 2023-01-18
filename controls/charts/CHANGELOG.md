@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.44 (2023-01-18)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I426511` - Chart cut off when the parent container width is less than the chart width has been fixed.
+- `#I427185` - The DateTimeCategory axis now correctly sorts data.
+
 ## 20.4.43 (2023-01-10)
 
 ### Chart

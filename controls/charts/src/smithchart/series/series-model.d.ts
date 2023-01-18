@@ -13,7 +13,7 @@ export interface SeriesTooltipBorderModel {
     width?: number;
 
     /**
-     * border color for tooltip
+     * border color for tooltip.
      *
      * @default null
      */
@@ -48,14 +48,14 @@ export interface SeriesTooltipModel {
     opacity?: number;
 
     /**
-     * template for tooltip
+     * template for tooltip.
      *
      * @default ''
      */
     template?: string;
 
     /**
-     *  options for customizing tooltip border
+     *  options for customizing tooltip border.
      */
 
     border?: SeriesTooltipBorderModel;
@@ -138,7 +138,7 @@ export interface SeriesMarkerDataLabelModel {
     visible?: boolean;
 
     /**
-     * showing template for data label template
+     * showing template for data label template.
      *
      * @default ''
      */
@@ -159,18 +159,18 @@ export interface SeriesMarkerDataLabelModel {
     opacity?: number;
 
     /**
-     * options for customizing data label border
+     * options for customizing data label border.
      *
      */
     border?: SeriesMarkerDataLabelBorderModel;
 
     /**
-     * options for customizing data label connector line
+     * options for customizing data label connector line.
      */
     connectorLine?: SeriesMarkerDataLabelConnectorLineModel;
 
     /**
-     * options for customizing font
+     * options for customizing font.
      */
     textStyle?: SmithchartFontModel;
 
@@ -210,7 +210,7 @@ export interface SeriesMarkerModel {
     height?: number;
 
     /**
-     * Url for the image that is to be displayed as marker
+     * Url for the image that is to be displayed as marker.
      *
      * @default ''
      */
@@ -232,13 +232,13 @@ export interface SeriesMarkerModel {
     opacity?: number;
 
     /**
-     *  options for customizing marker border
+     *  options for customizing marker border.
      */
 
     border?: SeriesMarkerBorderModel;
 
     /**
-     * options for customizing marker data label
+     * options for customizing marker data label.
      */
     dataLabel?: SeriesMarkerDataLabelModel;
 
@@ -264,7 +264,7 @@ export interface SmithchartSeriesModel {
     points?: ISmithChartPoint[];
 
     /**
-     * resistance name for dataSource
+     * resistance name for dataSource.
      *
      * @default ''
      */
@@ -272,7 +272,7 @@ export interface SmithchartSeriesModel {
     resistance?: string;
 
     /**
-     * reactance name for dataSource
+     * reactance name for dataSource.
      *
      * @default ''
      */
@@ -280,7 +280,7 @@ export interface SmithchartSeriesModel {
     reactance?: string;
 
     /**
-     * tooltip mapping name for the series
+     * tooltip mapping name for the series.
      *
      * @default ''
      */
@@ -347,12 +347,12 @@ export interface SmithchartSeriesModel {
     opacity?: number;
 
     /**
-     * options for customizing marker
+     * options for customizing marker.
      */
     marker?: SeriesMarkerModel;
 
     /**
-     * options for customizing tooltip
+     * options for customizing tooltip.
      */
     tooltip?: SeriesTooltipModel;
 

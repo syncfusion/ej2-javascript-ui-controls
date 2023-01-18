@@ -32,7 +32,7 @@ import { FilterSettingsModel } from '../models/filter-settings-model';
 import { SearchSettings} from '../models/search-settings';
 import { SearchSettingsModel } from '../models/search-settings-model';
 import {RowInfo, RowDataBoundEventArgs, PageEventArgs, FilterEventArgs, FailureEventArgs, SortEventArgs } from '@syncfusion/ej2-grids';
-import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, IIndex, ISelectedCell } from '@syncfusion/ej2-grids';
+import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectingEventArgs, RowDeselectEventArgs, IIndex, ISelectedCell } from '@syncfusion/ej2-grids';
 import {ColumnModel as GridColumnModel, Column as GridColumn, CellSelectEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { SelectionSettings } from '../models/selection-settings';
 import { SelectionSettingsModel } from '../models/selection-settings-model';
@@ -54,7 +54,7 @@ import { DataManipulation } from './data';
 import { RowDD } from '../actions/rowdragdrop';
 import { Sort } from '../actions/sort';
 import { ITreeData, RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs, TreeGridExcelExportProperties } from './interface';
-import { CellSaveEventArgs, DataStateChangeEventArgs, RowExpandingEventArgs, TreeGridPdfExportProperties } from './interface';
+import { DataStateChangeEventArgs, RowExpandingEventArgs, TreeGridPdfExportProperties } from './interface';
 import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';
 import { DataSourceChangedEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
 import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems, RowPosition, CopyHierarchyType } from '../enum';
@@ -1972,7 +1972,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private triggerEvents(args?: Object): void {
         this.trigger(getObject('name', args), args);
     }
-    private IsExpandCollapseClicked(args: RowDeselectEventArgs): void {
+    private IsExpandCollapseClicked(args: RowDeselectingEventArgs): void {
         if (!isNullOrUndefined(args.target) && (args.target.classList.contains('e-treegridexpand')
             || args.target.classList.contains('e-treegridcollapse') || args.target.classList.contains('e-summarycell'))
             && (!isNullOrUndefined(args.data) && args.data['hasChildRecords'])) {
@@ -1981,11 +1981,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     private bindGridEvents(): void {
-        this.grid.rowSelecting = (args: RowDeselectEventArgs): void => {
+        this.grid.rowSelecting = (args: RowDeselectingEventArgs): void => {
             this.IsExpandCollapseClicked(args);
             this.trigger(events.rowSelecting, args);
         };
-        this.grid.rowDeselecting = (args: RowDeselectEventArgs): void => {
+        this.grid.rowDeselecting = (args: RowDeselectingEventArgs): void => {
             this.IsExpandCollapseClicked(args);
             this.trigger(events.rowDeselecting, args);
         };
@@ -2661,7 +2661,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         let treeGridColumn: ColumnModel;
         let gridColumn: GridColumnModel;
-        if (this.columnModel.length == 0) {
+        if (this.columnModel.length === 0) {
             index = index === 0 ? -1 : index;
         }
         const gridColumnCollection: GridColumnModel[] = [];
@@ -4157,6 +4157,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     this.localExpand(action, row, record);
                 }
             }
+            if (isCountRequired(this) && action === 'expand') {
+                this.dataResults.result = this.getCurrentViewRecords() as ReturnOption;
+            }
             if (!isNullOrUndefined(targetEle) && targetEle.closest('.e-treerowcell').classList.contains('e-cellselectionbackground')) {
                 targetEle.closest('.e-treerowcell').classList.remove('e-cellselectionbackground');
                 targetEle.closest('.e-treerowcell').removeAttribute('aria-selected');
@@ -4351,14 +4354,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
                     ));
         }
-        let gridRowsObject: Row<GridColumn>[] = this.grid.getRowsObject();
+        const gridRowsObject: Row<GridColumn>[] = this.grid.getRowsObject();
         const currentViewData: Object[] = this.getCurrentViewRecords();
         const currentRecord: ITreeData[] = currentViewData.filter((e: ITreeData) => {
             return e.uniqueID === record.uniqueID;
         });
         const currentIndex: number = currentViewData.indexOf(currentRecord[0]);
-        if (!isNullOrUndefined(gridRowsObject[currentIndex].visible) && gridRowsObject[currentIndex].visible !== false) {
-            gridRowsObject[currentIndex].visible = true;
+        if (!isNullOrUndefined(gridRowsObject[parseInt(currentIndex.toString(), 10)].visible) &&
+            gridRowsObject[parseInt(currentIndex.toString(), 10)].visible !== false) {
+            gridRowsObject[parseInt(currentIndex.toString(), 10)].visible = true;
         }
         const detailrows: HTMLTableRowElement[] = gridRows.filter(
             (r: HTMLTableRowElement) =>
@@ -4370,13 +4374,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (!isNullOrUndefined(rows[parseInt(i.toString(), 10)])) {
                 rows[parseInt(i.toString(), 10)].style.display = displayAction;
             }
-            if (!isNullOrUndefined(rows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
-                gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction != 'none' ? true : false;
+            if (!isNullOrUndefined(rows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization
+                || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
+                gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'none' ? true : false;
                 const parentRecord: ITreeData[] = currentViewData.filter((e: ITreeData) => {
                     return e.uniqueID === currentRecord[0].parentUniqueID;
                 });
                 if (!isNullOrUndefined(parentRecord[0]) && gridRows[currentViewData.indexOf(parentRecord[0])].getElementsByClassName('e-treegridcollapse').length) {
-                    gridRowsObject[currentIndex].visible = false;
+                    gridRowsObject[parseInt(currentIndex.toString(), 10)].visible = false;
                 }
             }
             if (!isNullOrUndefined(movableRows)) {
@@ -4395,12 +4400,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         for (let i: number = 0; i < detailrows.length; i++) {
-            if (!isNullOrUndefined(detailrows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
-                gridRowsObject[detailrows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction != 'none' ? true : false;
+            if (!isNullOrUndefined(detailrows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization
+                || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
+                gridRowsObject[detailrows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'none' ? true : false;
                 detailrows[parseInt(i.toString(), 10)].style.display = displayAction;
             }
         }
-        if (!this.allowPaging && !(this.enableVirtualization || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
+        if (!this.allowPaging && !(this.enableVirtualization || this.enableInfiniteScrolling || isRemoteData(this)
+            || isCountRequired(this))) {
             this.grid.notify('refresh-Expand-and-Collapse', {rows: this.grid.getRowsObject()});
         }
     }

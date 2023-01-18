@@ -222,7 +222,7 @@ export class RangeSeries extends NiceInterval {
     }
 
     /**
-     * Append series elements in element
+     * Append series elements in element.
      */
     public appendSeriesElements(control: RangeNavigator): void {
         control.svgObject.appendChild(this.chartGroup);

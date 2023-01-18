@@ -40,7 +40,7 @@ export class ExportUtils {
     }
 
     /**
-     * To print the accumulation and chart elements
+     * To print the accumulation and chart elements.
      *
      * @param elements
      */
@@ -84,7 +84,7 @@ export class ExportUtils {
         return div;
     }
     /**
-     * To export the file as image/svg format
+     * To export the file as image/svg format.
      *
      * @param type
      * @param fileName
@@ -222,7 +222,7 @@ export class ExportUtils {
     }
 
     /**
-     * To trigger the download element
+     * To trigger the download element.
      *
      * @param fileName
      * @param type

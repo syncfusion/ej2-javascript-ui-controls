@@ -6,7 +6,7 @@ import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import {
 export interface SmithchartMajorGridLinesModel {
 
     /**
-     * width of the major grid lines
+     * width of the major grid lines.
      *
      * @default 1
      */
@@ -30,7 +30,7 @@ export interface SmithchartMajorGridLinesModel {
     visible?: boolean;
 
     /**
-     * option for customizing the majorGridLine color
+     * option for customizing the majorGridLine color.
      *
      * @default null
      */
@@ -53,7 +53,7 @@ export interface SmithchartMajorGridLinesModel {
 export interface SmithchartMinorGridLinesModel {
 
     /**
-     * width of the minor grid lines
+     * width of the minor grid lines.
      *
      * @default 1
      */
@@ -76,7 +76,7 @@ export interface SmithchartMinorGridLinesModel {
     visible?: boolean;
 
     /**
-     * option for customizing the minorGridLine color
+     * option for customizing the minorGridLine color.
      *
      * @default null
      */
@@ -105,14 +105,14 @@ export interface SmithchartAxisLineModel {
     visible?: boolean;
 
     /**
-     * width of the axis lines
+     * width of the axis lines.
      *
      * @default 1
      */
     width?: number;
 
     /**
-     * option for customizing the axisLine color
+     * option for customizing the axisLine color.
      *
      * @default null
      */

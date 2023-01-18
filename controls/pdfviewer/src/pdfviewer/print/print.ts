@@ -495,12 +495,22 @@ export class Print {
                     this.pdfViewerBase.showPrintLoadingIndicator(false);
                     this.iframe.contentWindow.print();
                     this.iframe.contentWindow.focus();
-                    document.body.removeChild(this.iframe);
+                    if(this.pdfViewerBase.isDeviceiOS || Browser.isDevice){
+                        let proxy = this;
+                        window.onafterprint = function (event){
+                            document.body.removeChild(proxy.iframe);
+                        };
+                    }
+                    else{
+                        document.body.removeChild(this.iframe);
+                    }
                 } else {
                     if (this.printWindow) {
                         this.printWindow.print();
                         this.printWindow.focus();
-                        this.printWindow.close();
+                        if(!Browser.isDevice || this.pdfViewerBase.isDeviceiOS){
+                            this.printWindow.close();
+                        }
                     }
                 }
             }, 200);
