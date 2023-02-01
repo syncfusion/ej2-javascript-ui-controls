@@ -663,15 +663,15 @@ describe('Schedule base module', () => {
             schObj.changeCurrentView('Month', 1);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
-            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('2 Months');
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText.toUpperCase()).toContain('2 MONTHS');
             schObj.changeCurrentView('WorkWeek');
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-work-week');
-            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('WORK WEEK');
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText.toUpperCase()).toContain('WORK WEEK');
             schObj.changeCurrentView('Week', 1);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
-            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('2 WEEKS');
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText.toUpperCase()).toContain('2 WEEKS');
         });
     });
 

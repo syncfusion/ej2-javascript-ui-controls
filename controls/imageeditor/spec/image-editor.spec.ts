@@ -15,8 +15,8 @@
   
      let imageEditor: any;
      const wrapper: HTMLInputElement = createElement('div', { className: 'wrapper' }) as HTMLInputElement;
-     wrapper.style.width = '99vw';
-     wrapper.style.height = '97vh';
+     wrapper.style.width = '96vw';
+     wrapper.style.height = '95vh';
      const element: HTMLInputElement = wrapper.appendChild(createElement('div', { id: 'image-editor', className: 'e-image-editor' }) as HTMLInputElement);
      let mousemoveEvent: MouseEvent = document.createEvent('MouseEvents');
      mousemoveEvent.initEvent('mousemove', true, true);
@@ -81,9 +81,9 @@
                  setTimeout(function () { });
                  (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_upperCanvas')).dispatchEvent(mouseupEvent);
                  imageEditor.drawRectangle(0, 0, 300, 200, 15, 'red', 'green');
-                 // expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                //  expect(imageEditor.activeObj.shape).toEqual('rectangle');
                  imageEditor.applyActObj();
-                 // expect(imageEditor.objColl.length).toEqual(1);
+                //  expect(imageEditor.objColl.length).toEqual(1);
                  imageEditor.zoom(.1);
                  (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_upperCanvas')).dispatchEvent(mousemoveEvent);
                  setTimeout(function () { });
@@ -104,9 +104,9 @@
                  setTimeout(function () { });
                  (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_lowerCanvas')).dispatchEvent(mouseupEvent);
                  imageEditor.drawRectangle(0, 0, 300, 200, 15, 'red', 'green');
-                 // expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                //  expect(imageEditor.activeObj.shape).toEqual('rectangle');
                  imageEditor.applyActObj();
-                 // expect(imageEditor.objColl.length).toEqual(1);
+                //  expect(imageEditor.objColl.length).toEqual(1);
                  imageEditor.zoom(.1);
                  (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_lowerCanvas')).dispatchEvent(mousemoveEvent);
                  setTimeout(function () { });
@@ -136,16 +136,16 @@
                  setTimeout(function () { });
                  (<HTMLCanvasElement>document.getElementById(imageEditor.element.id + '_upperCanvas')).dispatchEvent(mouseupEvent);
                  imageEditor.drawRectangle(0, 0, 300, 200, 15, 'red', 'green');
-                 // expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                //  expect(imageEditor.activeObj.shape).toEqual('rectangle');
                  imageEditor.applyActObj();
-                 // expect(imageEditor.objColl.length).toEqual(1);
+                //  expect(imageEditor.objColl.length).toEqual(1);
                  imageEditor.selectShape('shape_1');
                  let event: any = new KeyboardEvent('keydown', {key: 'Delete', code: 'delete'});
                  (imageEditor as any).keyDownEventHandler(event);
                  imageEditor.drawRectangle(0, 0, 300, 200, 15, 'red', 'green');
-                 // expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                //  expect(imageEditor.activeObj.shape).toEqual('rectangle');
                  imageEditor.applyActObj();
-                 // expect(imageEditor.objColl.length).toEqual(1);
+                //  expect(imageEditor.objColl.length).toEqual(1);
                  imageEditor.selectShape('shape_2');
                  event = new KeyboardEvent('keydown', {key: 'Escape', code: 'escape'});
                  (imageEditor as any).keyDownEventHandler(event);
@@ -164,20 +164,21 @@
  
          it('Rotate with Annotation', (done) => {
              imageEditor = new ImageEditor({
+                height: '450px'
              },'#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
                  imageEditor.drawRectangle(200, 250, 300, 200, 15, 'red', 'green');
-                 // expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                 expect(imageEditor.activeObj.shape).toEqual('rectangle');
                  imageEditor.applyActObj();
-                 // expect(imageEditor.objColl.length).toEqual(1);
+                 expect(imageEditor.objColl.length).toEqual(1);
                  imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
-                 // expect(imageEditor.activeObj.shape).toEqual('ellipse');
+                 expect(imageEditor.activeObj.shape).toEqual('ellipse');
                  imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
-                 // expect(imageEditor.activeObj.shape).toEqual('line');
+                 expect(imageEditor.activeObj.shape).toEqual('line');
                  imageEditor.drawText(100, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040');
-                 // expect(imageEditor.activeObj.shape).toEqual('text');
-                 // expect(imageEditor.activeObj.keyHistory).toEqual('Syncfusion');
+                 expect(imageEditor.activeObj.shape).toEqual('text');
+                 expect(imageEditor.activeObj.keyHistory).toEqual('Syncfusion');
                  imageEditor.rotate(90);
                  expect(imageEditor.degree).toEqual(90);
                  imageEditor.drawText(100, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040');
@@ -204,12 +205,16 @@
                  imageEditor.clearSelection();
                  imageEditor.reset();
                  expect(imageEditor.objColl.length).toEqual(0);
+                 imageEditor.freeHandDraw(true);
+                 expect(imageEditor.togglePen).toEqual(true);
+                 imageEditor.applyPenDraw();
                  done();
              }, 100);
          });
   
          it('Flip with Annotation', (done) => {
              imageEditor = new ImageEditor({
+                height: '450px'
              },'#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -253,6 +258,7 @@
   
          it('Zoom with Annotation', (done) => {
              imageEditor = new ImageEditor({
+                height: '450px'
              },'#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -266,11 +272,11 @@
                  expect(imageEditor.activeObj.shape).toEqual('line');
                  imageEditor.applyActObj();
                  imageEditor.zoom(.1);
-                 expect(imageEditor.factor).toEqual(1.4296264326950867);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
                  imageEditor.zoom(-.1);
-                 expect(imageEditor.factor).toEqual(1);
+                 expect(imageEditor.zoomFactor).toEqual(0);
                  imageEditor.zoom(.1);
-                 expect(imageEditor.factor).toEqual(1.4296264326950867);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
                  imageEditor.drawText(100, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040');
                  expect(imageEditor.activeObj.shape).toEqual('text');
                  imageEditor.drawRectangle(200, 250, 300, 200, 15, 'red', 'green');
@@ -280,9 +286,9 @@
                  imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
                  expect(imageEditor.activeObj.shape).toEqual('line');
                  imageEditor.zoom(-.1);
-                 expect(imageEditor.factor).toEqual(1);
+                 expect(imageEditor.zoomFactor).toEqual(0);
                  imageEditor.zoom(.1);
-                 expect(imageEditor.factor).toEqual(1.4296264326950867);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
                  imageEditor.pan(true);
                  expect(imageEditor.togglePan).toEqual(true);
                  imageEditor.reset();
@@ -292,6 +298,7 @@
   
          it('Selection with Crop', (done) => {
              imageEditor = new ImageEditor({
+                height: '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -314,13 +321,13 @@
          });
  
          it('onPropertyChanged', (done) => {
-             imageEditor = new ImageEditor({
-                 cssClass : 'e-img-editor',
-                 height : '50%',
-                 width : '50%',
-                 theme : 'bootstrap5-dark',
-                 disabled : true,
-             }, '#image-editor');
+            imageEditor = new ImageEditor({
+                cssClass : 'e-img-editor',
+                height : '450px',
+                width : '50%',
+                theme : 'bootstrap5-dark',
+                disabled : true,
+            }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
                  expect(imageEditor.disabled).toEqual(true);
@@ -342,6 +349,7 @@
  
          it('resizing', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -435,6 +443,7 @@
  
          it('Text Click', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -1292,10 +1301,10 @@
                  ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                  ul.children[0].children[4].click();
                  expect(imageEditor.activeObj.shape).toEqual('text');
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.display = 'block';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontFamily = 'Calibri';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontWeight = 'bold';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontStyle = 'italic';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontWeight = 'bold';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontStyle = 'italic';
                  let drpDownBtn: any = document.getElementById('image-editor_fontFamilyBtn');
                  drpDownBtn.click();
                  setTimeout(() => {});
@@ -1349,10 +1358,10 @@
                  ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
                  ul.children[0].children[4].click();
                  expect(imageEditor.activeObj.shape).toEqual('text');
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.display = 'block';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontFamily = 'Calibri';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontWeight = 'bold';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontStyle = 'italic';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontWeight = 'bold';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontStyle = 'italic';
                  (document.querySelectorAll('#image-editor_cancel')[0] as HTMLElement).click();
                  setTimeout(() => {});
                  done();
@@ -1374,19 +1383,19 @@
                  imageEditor.rotate(-90);
                  imageEditor.flip('horizontal');
                  imageEditor.selectShape('shape_1');
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.display = 'block';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontFamily = 'Calibri';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontWeight = 'bold';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontStyle = 'italic';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).dispatchEvent(mousedownEvent);
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontWeight = 'bold';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontStyle = 'italic';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).dispatchEvent(mousedownEvent);
                  imageEditor.rotate(270);
                  imageEditor.flip('vertical');
                  imageEditor.selectShape('shape_1');
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.display = 'block';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontFamily = 'Calibri';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontWeight = 'bold';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontStyle = 'italic';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).dispatchEvent(mousedownEvent);
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontWeight = 'bold';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontStyle = 'italic';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).dispatchEvent(mousedownEvent);
                  done();
              }, 100);
          });
@@ -1403,11 +1412,11 @@
                  ul.children[0].children[4].click();
                  setTimeout(function () { });
                  imageEditor.selectShape('shape_1');
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.display = 'block';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontFamily = 'Calibri';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontWeight = 'bold';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).style.fontStyle = 'italic';
-                 (document.querySelector('#image-editor_textBox') as HTMLElement).dispatchEvent(mousedownEvent);
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontFamily = 'Calibri';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontWeight = 'bold';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).style.fontStyle = 'italic';
+                 (document.querySelector('#image-editor_textArea') as HTMLElement).dispatchEvent(mousedownEvent);
                  let event: any = new KeyboardEvent('keydown', { key: 's', code: 's', ctrlKey: false });
                  (imageEditor as any).textKeyDown(event);
                  done();
@@ -3226,6 +3235,7 @@
          // End zooming after transformation 
          it('Shape Click', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -3261,6 +3271,7 @@
          });
          it('Shape Click after zoom', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -3281,6 +3292,7 @@
  
          it('Crop Select Click', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -3289,9 +3301,9 @@
                  setTimeout(() => {});
                  let ul: any = document.querySelectorAll('#image-editor_cropBtn-popup');
                  ul = document.querySelectorAll('#image-editor_cropBtn-popup')[ul.length - 1];
-                 ul.children[0].children[2].click();
+                 ul.children[0].children[1].click();
                  setTimeout(() => {});
-                 expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-circle');
                  const cancelBtn: any = document.querySelectorAll('#image-editor_cancel')[0];
                  cancelBtn.click();
                  setTimeout(() => {});
@@ -3301,6 +3313,7 @@
  
          it('Transform Click for Rotate', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -3334,6 +3347,7 @@
  
          it('Transform Click for Flip', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -3359,11 +3373,10 @@
  
          it('Reset and Save Click', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
                  btn.click();
                  setTimeout(() => {});
@@ -3377,11 +3390,10 @@
  
          it('PNG Save', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
                  btn.click();
                  setTimeout(() => {});
@@ -3395,11 +3407,10 @@
  
          it('SVG Save', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  let btn: any = document.querySelectorAll('#image-editor_saveBtn')[0];
                  btn.click();
                  setTimeout(() => {});
@@ -3421,6 +3432,7 @@
          });
          it('Pen Click', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
@@ -3524,11 +3536,10 @@
   
          it('Selection and Crop', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('custom');
                  imageEditor.crop();
                  setTimeout(() => {});
@@ -3537,11 +3548,10 @@
          });
          it('Rotate and Crop', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.rotate(90);
                  setTimeout(() => {});
                  imageEditor.select('custom');
@@ -3552,11 +3562,10 @@
          });
          it('Select Rotate and Crop', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('custom');
                  setTimeout(() => {});
                  imageEditor.rotate(180);
@@ -3566,11 +3575,10 @@
          });
          it('Flip and Crop', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.flip('horizontal');
                  imageEditor.select('custom', 100, 100);
                  imageEditor.crop();
@@ -3580,11 +3588,10 @@
          });
          it('Crop Canvas', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.flip('horizontal');
                  imageEditor.select('canvas', 100, 100, 100, 100);
                  imageEditor.crop();
@@ -3594,11 +3601,10 @@
          });
          it('Crop Circle', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.flip('horizontal');
                  imageEditor.select('circle', 100, 100, 100, 100);
                  imageEditor.crop();
@@ -3608,11 +3614,10 @@
          });
          it('Zoom and Export', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.zoom(0.1);
                  imageEditor.export();
                  setTimeout(() => {});
@@ -3621,11 +3626,10 @@
          });
          it('Rotate, Zoom and Crop', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.rotate(90);
                  imageEditor.zoom(0.1);
                  imageEditor.select('circle');
@@ -3636,11 +3640,10 @@
          });
          it('Flip, Zoom and Crop', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.flip('horizontal');
                  imageEditor.zoom(0.1);
                  imageEditor.select('circle');
@@ -3651,11 +3654,10 @@
          });
          it('Shape and Export', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle();
                  setTimeout(() => {});
                  imageEditor.export();
@@ -3665,11 +3667,10 @@
          });
          it('Shape, Zoom and Export', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle();
                  setTimeout(() => {});
                  imageEditor.zoom(0.1);
@@ -3681,11 +3682,10 @@
          });
          it('Freehand draw and Export', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.freeHandDraw(true);
                  setTimeout(() => {});
                  imageEditor.export();
@@ -3695,11 +3695,10 @@
          });
          it('Shape Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle(0, 0);
                  imageEditor.selectShape('shape_1');
                  setTimeout(() => {});
@@ -3708,11 +3707,10 @@
          });
          it('Shape Delete', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle(0, 0);
                  imageEditor.drawRectangle(300, 300);
                  imageEditor.deleteShape('shape_1');
@@ -3722,11 +3720,10 @@
          });
          it('Get Shape Setting', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle(0, 0);
                  imageEditor.getShapeSetting('shape_1');
                  setTimeout(() => {});
@@ -3735,11 +3732,10 @@
          });
          it('Get Shape Settings', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle(0, 0);
                  setTimeout(() => {});
                  imageEditor.drawEllipse(200, 200);
@@ -3753,11 +3749,10 @@
          });
          it('Get Shape Settings with Text', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawText(200, 200, 'Syncfusion', 'Arial', 20, true, true);
                  setTimeout(() => {});
                  imageEditor.getShapeSettings();
@@ -3767,11 +3762,10 @@
          });
          it('Zoom after Rotate', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.rotate(90);
                  setTimeout(() => {});
                  imageEditor.zoom(0.1);
@@ -3781,11 +3775,10 @@
          });
          it('Zoom after custom Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('custom');
                  setTimeout(() => {});
                  imageEditor.zoom(0.1);
@@ -3795,11 +3788,10 @@
          });
          it('Zoom after circle Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('circle');
                  setTimeout(() => {});
                  imageEditor.zoom(0.1);
@@ -3809,11 +3801,10 @@
          });
          it('Rotate after zoom', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.zoom(0.1);
                  setTimeout(() => {});
                  imageEditor.rotate(360);
@@ -3823,11 +3814,10 @@
          });
          it('Flip after zoom', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.zoom(0.1);
                  setTimeout(() => {});
                  imageEditor.flip('horizontal');
@@ -3837,11 +3827,10 @@
          });
          it('Rotate after custom Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('custom');
                  setTimeout(() => {});
                  imageEditor.rotate(90);
@@ -3851,11 +3840,10 @@
          });
          it('Rotate after circle Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('circle');
                  setTimeout(() => {});
                  imageEditor.rotate(90);
@@ -3865,11 +3853,10 @@
          });
          it('Flip after custom Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('custom');
                  setTimeout(() => {});
                  imageEditor.flip('horizontal');
@@ -3879,11 +3866,10 @@
          });
          it('Flip after circle Select', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.select('circle');
                  setTimeout(() => {});
                  imageEditor.flip('horizontal');
@@ -3893,11 +3879,10 @@
          });
          it('Flip with Shape', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle();
                  setTimeout(() => {});
                  imageEditor.flip('horizontal');
@@ -3907,11 +3892,10 @@
          });
          it('Flip, Zoom with Shape', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.drawRectangle();
                  setTimeout(() => {});
                  imageEditor.flip('horizontal');
@@ -3925,11 +3909,10 @@
          });
          it('Freehand Draw', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.freeHandDraw(false);
                  setTimeout(() => {});
                  imageEditor.zoom(0.1);
@@ -3939,35 +3922,14 @@
          });
          it('Open using ImageData', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  const imageData: any = imageEditor.getImageData();
                  setTimeout(() => {});
                  imageEditor.open(imageData);
                  setTimeout(() => {});
-                 done();
-             }, 100);
-         });
-         it('Methods for coverage', (done) => {
-             imageEditor = new ImageEditor({
-             }, '#image-editor');
-             imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
-             setTimeout(() => {
-                 imageEditor.canUndo();
-                 imageEditor.canRedo();
-                 imageEditor.clear();
-                 imageEditor.draw('hai', 'arial', 12);
-                 imageEditor.getBlob();
-                 imageEditor.isEmpty();
-                 imageEditor.undo();
-                 imageEditor.redo();
-                 imageEditor.saveAsBlob();
-                 imageEditor.save();
-                 imageEditor.load();
-                 imageEditor.getLocalData();
                  done();
              }, 100);
          });
@@ -4009,11 +3971,10 @@
   
          it('CSS Class', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.cssClass = 'e-custom';
                  imageEditor.dataBind();
                  setTimeout(() => {});
@@ -4025,11 +3986,10 @@
          });
          it('Disabled', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.disabled = true;
                  imageEditor.dataBind();
                  setTimeout(() => {});
@@ -4041,11 +4001,10 @@
          });
          it('Height and Width', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.height = '600px';
                  imageEditor.dataBind();
                  setTimeout(() => {});
@@ -4057,11 +4016,10 @@
          });
          it('Theme', (done) => {
              imageEditor = new ImageEditor({
+                height : '450px'
              }, '#image-editor');
              imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
              setTimeout(() => {
-                 imageEditor.lowerCanvas.style.maxWidth = '1000px';
-                 imageEditor.lowerCanvas.style.maxHeight = '600px';
                  imageEditor.theme = 'tailwind';
                  imageEditor.dataBind();
                  setTimeout(() => {});
@@ -4093,5 +4051,1797 @@
              }, 100);
          });
      });
- });
+    describe('Rotate With Annotations', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('90 Degree Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.drawText(753.6052631578948, 50, 'Syncfusion', 'Arial', 60, true, true, 'red');
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(2);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.49999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.49999999999994);
+                expect(imageEditor.objColl[1].shape).toEqual('text');
+                expect(imageEditor.objColl[1].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[1].activePoint.startY).toEqual(17.932031249999977);
+                expect(imageEditor.objColl[1].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[1].activePoint.endY).toEqual(286.49999999999994);
+                done();
+            }, 100);
+        });
+        // Need to change value from here
+        it('180 Degree Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.drawText(753.6052631578948, 50, 'Syncfusion', 'Arial', 60, true, true, 'red');
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(2);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                expect(imageEditor.objColl[1].shape).toEqual('text');
+                expect(imageEditor.objColl[1].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[1].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[1].activePoint.endX).toEqual(557.9315378289474);
+                expect(imageEditor.objColl[1].activePoint.endY).toEqual(251);
+                done();
+            }, 100);
+        });
+        it('270 Degree Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.drawText(753.6052631578948, 50, 'Syncfusion', 'Arial', 60, true, true, 'red');
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(2);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000021);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000001);
+                expect(imageEditor.objColl[1].shape).toEqual('text');
+                expect(imageEditor.objColl[1].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[1].activePoint.startY).toEqual(14.500000000000021);
+                expect(imageEditor.objColl[1].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[1].activePoint.endY).toEqual(283.06796875000003);
+                done();
+            }, 100);
+        });
+        it('360 or 0 Degree Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.drawText(753.6052631578948, 50, 'Syncfusion', 'Arial', 60, true, true, 'red');
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(2);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
+                expect(imageEditor.objColl[1].shape).toEqual('text');
+                expect(imageEditor.objColl[1].activePoint.startX).toEqual(209.06846217105254);
+                expect(imageEditor.objColl[1].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[1].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[1].activePoint.endY).toEqual(125.00000000000003);
+                done();
+            }, 100);
+        });
+    });
+    describe('Rotate With Zoom', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('90 Degree Rotate With Zoom', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75.99999999999997);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(269.804);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(227.392);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.69999999999999);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(83.59999999999994);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.2);
+                expect(imageEditor.destLeft).toEqual(259.468);
+                expect(imageEditor.destTop).toEqual(-12.699999999999989);
+                expect(imageEditor.destWidth).toEqual(248.064);
+                expect(imageEditor.destHeight).toEqual(326.4);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(68.40000000000003);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(91.19999999999999);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(269.804);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(227.392);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.7000000000000459);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(83.59999999999994);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(57.00000000000006);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75.99999999999997);
+                done();
+            }, 100);
+        });
+        it('180 Degree Rotate With Zoom', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(186.6578947368421);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(393.6842105263158);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(82.49999999999994);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.2);
+                expect(imageEditor.destLeft).toEqual(168.76315789473685);
+                expect(imageEditor.destTop).toEqual(-12.699999999999989);
+                expect(imageEditor.destWidth).toEqual(429.4736842105263);
+                expect(imageEditor.destHeight).toEqual(326.4);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(120);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(89.99999999999997);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(186.6578947368421);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(393.6842105263158);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(82.49999999999994);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(74.99999999999997);
+                done();
+            }, 100);
+        });
+        it('270 Degree Rotate With Zoom', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', {x: 553.6052631578948, y: 50}, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(76);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(269.804);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(227.392);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.700000000000045);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(83.59999999999998);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.2);
+                expect(imageEditor.destLeft).toEqual(259.468);
+                expect(imageEditor.destTop).toEqual(-12.699999999999989);
+                expect(imageEditor.destWidth).toEqual(248.064);
+                expect(imageEditor.destHeight).toEqual(326.4);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(68.40000000000009);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(91.19999999999999);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(269.804);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(227.392);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.700000000000045);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(83.59999999999998);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(76);
+                done();
+            }, 100);
+        });
+        it('360 or 0 Degree Rotate With Zoom', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(186.6578947368421);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(393.6842105263158);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(82.5);
+                imageEditor.zoom(0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.2);
+                expect(imageEditor.destLeft).toEqual(168.76315789473685);
+                expect(imageEditor.destTop).toEqual(-12.699999999999989);
+                expect(imageEditor.destWidth).toEqual(429.4736842105263);
+                expect(imageEditor.destHeight).toEqual(326.4);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(120);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(90);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0.1);
+                expect(imageEditor.destLeft).toEqual(186.6578947368421);
+                expect(imageEditor.destTop).toEqual(0.9000000000000057);
+                expect(imageEditor.destWidth).toEqual(393.6842105263158);
+                expect(imageEditor.destHeight).toEqual(299.2);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(82.5);
+                imageEditor.zoom(-0.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75);
+                done();
+            }, 100);
+        });
+    });
+    describe('Rotate With Crop', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('90 Degree Rotate With Crop', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75.99999999999997);
+                imageEditor.select('square');
+                expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                imageEditor.crop();
+                expect(imageEditor.destLeft).toEqual(247.50000000000003);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(271.99999999999994);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(410.9950970164824);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(235.62413936991447);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(491.8630294179011);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(343.4480492384727);
+                done();
+            }, 100);
+        });
+        it('180 Degree Rotate With Crop', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75);
+                imageEditor.select('square');
+                expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                imageEditor.crop();
+                expect(imageEditor.destLeft).toEqual(247.5);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(272);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(194.10823264386647);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(177.48832684824902);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(300);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(256.8657587548638);
+                done();
+            }, 100);
+        });
+        it('270 Degree Rotate With Crop', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(76);
+                imageEditor.select('square');
+                expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                imageEditor.crop();
+                expect(imageEditor.destLeft).toEqual(247.5);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(272);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(275.1369705820989);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(-42.44804923847272);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(356.00490298351764);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(65.37586063008553);
+                done();
+            }, 100);
+        });
+        it('360 or 0 Degree Rotate With Crop', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
+                expect(imageEditor.objColl[0].activePoint.height).toEqual(75);
+                imageEditor.select('square');
+                expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                imageEditor.crop();
+                expect(imageEditor.destLeft).toEqual(247.5);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(272);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(467.05519148064707);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(44.13424124513622);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(572.8917673561335);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(123.51167315175101);
+                done();
+            }, 100);
+        });
+    });
+    // Changed till here
+    describe('Rotate With Flip', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('90 Degree Rotate With Horizontal and Vertical Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88 );
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.49999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.49999999999994);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.49999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.49999999999994);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                expect(imageEditor.rotateFlipColl[2]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000057);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000003);
+                done();
+            }, 100);
+        });
+        it('90 Degree Rotate With Vertical and Horizontal Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.49999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.49999999999994);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000057);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000003);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
+                expect(imageEditor.rotateFlipColl[2]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000057);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000003);
+                done();
+            }, 100);
+        });
+        it('180 Degree Rotate With Horizontal and Vertical Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual('horizontal');
+                expect(imageEditor.rotateFlipColl[3]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125);
+                done();
+            }, 100);
+        });
+        it('180 Degree Rotate With Vertical and Horizontal Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual('vertical');
+                expect(imageEditor.rotateFlipColl[3]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125);
+                done();
+            }, 100);
+        });
+        it('270 Degree Rotate With Horizontal and Vertical Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000021);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000001);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[3]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000021);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000001);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[3]).toEqual('horizontal');
+                expect(imageEditor.rotateFlipColl[4]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.5);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.5);
+                done();
+            }, 100);
+        });
+        it('270 Degree Rotate With Vertical and Horizontal Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000021);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000001);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[3]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.5);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.5);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
+                expect(imageEditor.rotateFlipColl[3]).toEqual('vertical');
+                expect(imageEditor.rotateFlipColl[4]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.5);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.5);
+                done();
+            }, 100);
+        });
+        it('360 or 0 Degree Rotate With Horizontal and Vertical Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.55263157894737);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual('horizontal');
+                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.55263157894737);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(175.99999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(250.99999999999997);
+                done();
+            }, 100);
+        });
+        it('360 or 0 Degree Rotate With Vertical and Horizontal Flip', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526 );
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual('vertical');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(175.99999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(250.99999999999997);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual('vertical')
+                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.55263157894737);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(175.99999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(250.99999999999997);
+                done();
+            }, 100);
+        });
+    });
+    describe('Flip With Zoom', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('Horizontal and Vertical Flip With Zoom', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.currFlipState).toEqual('horizontal');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(205);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(50);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(187);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(40);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(297);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(122);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.2);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(169);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(30);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(289);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(120);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(187);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(40);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(297);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(122);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(205);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(50);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(305);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(125);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.rotateFlipColl[0]).toEqual('horizontal');
+                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(205);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(176);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(305);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(251);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(187 );
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(179);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(297 );
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(261);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.2);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(169);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(181);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(289);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(271);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(187);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(179);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(297 );
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(261);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(205);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(176);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(305);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(251);
+                done();
+            }, 100);
+        });
+        it('Vertical and Horizontal Flip With Zoom', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.currFlipState).toEqual('vertical');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(470.3421052631578);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(179);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(580.3421052631578);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(261.04999999999995);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.2);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(478.2368421052631);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(181.1);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(598.2368421052631);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(271.09999999999997);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(470.3421052631578);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(179);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(580.3421052631578);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(261.04999999999995);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(250.99999999999997);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.rotateFlipColl[0]).toEqual('vertical');
+                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.55263157894737);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474 );
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(250.99999999999997);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(187);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(179);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(297);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(261.04999999999995);
+                imageEditor.zoom(.1);
+                expect(imageEditor.zoomFactor).toEqual(.2);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(169);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(181);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(289);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(271);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(.1);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(187);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(179);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(297);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(261.04999999999995);
+                imageEditor.zoom(-.1);
+                expect(imageEditor.zoomFactor).toEqual(0);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(205);
+                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(176);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(305);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(251);
+                done();
+            }, 100);
+        });
+    });
+    describe('Flip With Crop', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('Horizontal Flip With Crop', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.currFlipState).toEqual('horizontal');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.55263157894737);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125);
+                imageEditor.select('square');
+                expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                imageEditor.crop();
+                expect(imageEditor.destLeft).toEqual(247.5);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(272);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(194.10823264386647);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(44.13424124513619);
+                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(300);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(123.51167315175098);
+                done();
+            }, 100);
+        });
+        it('Vertical Flip With Crop', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.currFlipState).toEqual('vertical');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.select('square');
+                expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                imageEditor.crop();
+                expect(imageEditor.destLeft).toEqual(247.5);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(272);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(467.05519148064707);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(177.48832684824902);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(572.8917673561335);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(256.8657587548638);
+                done();
+            }, 100);
+        });
+    });
+    describe('Flip With Rotate', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('Horizontal Flip With Rotate', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.flip('Horizontal');
+                expect(imageEditor.currFlipState).toEqual('horizontal');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.55263157894737);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.5);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000001);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.49999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.49999999999994);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual( 304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
+                done();
+            }, 100);
+        });
+        it('Vertical Flip With Rotate', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawShape('rectangle', 15, 'red', 'white', { x: 553.6052631578948, y: 50 }, 100, 75);
+                expect(imageEditor.activeObj.shape).toEqual('rectangle');
+                imageEditor.applyActObj();
+                expect(imageEditor.objColl.length).toEqual(1);
+                imageEditor.flip('Vertical');
+                expect(imageEditor.currFlipState).toEqual('vertical');
+                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(90);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(307.12);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(210.49999999999997);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(364.12);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(286.49999999999994);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(180);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(204.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(304.5526315789474);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(270);
+                expect(imageEditor.destLeft).toEqual(280.14);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(206.72);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(402.88);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(14.500000000000021);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(459.88);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(90.50000000000001);
+                imageEditor.rotate(90);
+                expect(imageEditor.degree).toEqual(0);
+                expect(imageEditor.destLeft).toEqual(204.55263157894737);
+                expect(imageEditor.destTop).toEqual(14.5);
+                expect(imageEditor.destWidth).toEqual(357.89473684210526);
+                expect(imageEditor.destHeight).toEqual(272);
+                expect(imageEditor.objColl[0].activePoint.startX).toEqual(462.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.startY).toEqual(176);
+                expect(imageEditor.objColl[0].activePoint.endX).toEqual(562.4473684210526);
+                expect(imageEditor.objColl[0].activePoint.endY).toEqual(251);
+                done();
+            }, 100);
+        });
+    });
+    describe('Random Combination', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('Shape Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.drawShape('ellipse')
+                 expect(imageEditor.activeObj.shape).toEqual('ellipse');
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                 expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                 imageEditor.zoom(.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.select('3:2');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-3:2');
+                 imageEditor.crop();
+                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-3:2');
+                 imageEditor.finetuneImage('Brightness', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.finetuneImage('Contrast', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                done();
+            }, 100);
+        });
+        it('Text Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.drawText(imageEditor.destLeft, imageEditor.destTop, 'Syncfusion', 'Arial', 20, true, false, 'green');
+                 expect(imageEditor.activeObj.shape).toEqual('text');
+                 expect(imageEditor.activeObj.keyHistory).toEqual('Syncfusion');
+                 expect(imageEditor.activeObj.activePoint.startX).toEqual(imageEditor.destLeft);
+                 expect(imageEditor.activeObj.activePoint.startY).toEqual(imageEditor.destTop);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                 expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                 imageEditor.zoom(.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.select('circle');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-circle');
+                 imageEditor.crop();
+                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-circle');
+                 imageEditor.finetuneImage('Brightness', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.finetuneImage('Contrast', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                done();
+            }, 100);
+        });
+        it('Rotate Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(180);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(270);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(0);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-90);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-180);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-270);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(0);
+                 expect(imageEditor.rotateFlipColl.length).toEqual(0);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(180);
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                 expect(imageEditor.rotateFlipColl[1]).toEqual(90);
+                 expect(imageEditor.rotateFlipColl[2]).toEqual('horizontal');
+                 imageEditor.zoom(.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.zoom(.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.2);
+                 imageEditor.zoom(-.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.select('4:3');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-4:3');
+                 imageEditor.crop();
+                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-4:3');
+                 imageEditor.drawText(imageEditor.destLeft, imageEditor.destTop, 'Syncfusion', 'Arial', 20, true, false, 'green');
+                 expect(imageEditor.activeObj.shape).toEqual('text');
+                 expect(imageEditor.activeObj.keyHistory).toEqual('Syncfusion');
+                 expect(imageEditor.activeObj.activePoint.startX).toEqual(imageEditor.destLeft);
+                 expect(imageEditor.activeObj.activePoint.startY).toEqual(imageEditor.destTop);
+                 imageEditor.applyActObj();
+                 imageEditor.drawShape('line')
+                 expect(imageEditor.activeObj.shape).toEqual('line');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl.length).toEqual(2);
+                 expect(imageEditor.objColl[0].shape).toEqual('text');
+                 expect(imageEditor.objColl[1].shape).toEqual('line');
+                 imageEditor.finetuneImage('Brightness', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.finetuneImage('Contrast', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                done();
+            }, 100);
+        });
+        it('Flip Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('');
+                 imageEditor.flip('Vertical');
+                 expect(imageEditor.currFlipState).toEqual('vertical');
+                 imageEditor.flip('Vertical');
+                 expect(imageEditor.currFlipState).toEqual('');
+                 imageEditor.flip('Horizontal');
+                 imageEditor.flip('Vertical');
+                 expect(imageEditor.currFlipState).toEqual('vertical');
+                 expect(imageEditor.rotateFlipColl[0]).toEqual('horizontal');
+                 expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(180);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(270);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(0);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-90);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-180);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-270);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(0);
+                 expect(imageEditor.rotateFlipColl.length).toEqual(2);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(180);
+                 expect(imageEditor.rotateFlipColl.length).toEqual(4);
+                 imageEditor.zoom(.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.zoom(.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.2);
+                 imageEditor.zoom(-.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.select('5:4');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-5:4');
+                 imageEditor.crop();
+                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-5:4');
+                 imageEditor.drawText(imageEditor.destLeft, imageEditor.destTop, 'Syncfusion', 'Arial', 20, true, false, 'green');
+                 expect(imageEditor.activeObj.shape).toEqual('text');
+                 expect(imageEditor.activeObj.keyHistory).toEqual('Syncfusion');
+                 expect(imageEditor.activeObj.activePoint.startX).toEqual(imageEditor.destLeft);
+                 expect(imageEditor.activeObj.activePoint.startY).toEqual(imageEditor.destTop);
+                 imageEditor.applyActObj();
+                 imageEditor.drawShape('line')
+                 expect(imageEditor.activeObj.shape).toEqual('line');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl.length).toEqual(2);
+                 expect(imageEditor.objColl[0].shape).toEqual('text');
+                 expect(imageEditor.objColl[1].shape).toEqual('line');
+                 imageEditor.finetuneImage('Brightness', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.finetuneImage('Contrast', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                done();
+            }, 100);
+        });
+        it('Zoom Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.select('square');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                 imageEditor.zoom(0.1);
+                 expect(imageEditor.zoomFactor).toEqual(0.1);
+                 imageEditor.crop();
+                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-square');
+                 imageEditor.drawShape('rectangle');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                 expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                 imageEditor.finetuneImage('Brightness', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.finetuneImage('Contrast', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                done();
+            }, 100);
+        });
+        it('Crop Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.select('16:9');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-16:9');
+                 imageEditor.crop();
+                 expect(imageEditor.currSelectionPoint.shape).toEqual('crop-16:9');
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 expect(imageEditor.rotateFlipColl[0]).toEqual(90);
+                 expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
+                 imageEditor.drawShape('rectangle');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                 imageEditor.finetuneImage('Brightness', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.finetuneImage('Contrast', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                done();
+            }, 100);
+        });
+        it('Finetune Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.finetuneImage('Brightness', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Contrast', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Hue', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Saturation', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Exposure', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Opacity', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Blur', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+                done();
+            }, 100);
+        });
+        it('Filter Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.applyImageFilter('Chrome');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(140%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Cold');
+                expect(imageEditor.canvasFilter).toEqual('brightness(90%) contrast(150%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Warm');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(140%) opacity(1) blur(0px) sepia(25%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Grayscale');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(100%) invert(0%)');
+                imageEditor.applyImageFilter('Sepia');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(100%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Invert');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                imageEditor.applyImageFilter('Default');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                done();
+            }, 100);
+        });
+        it('Finetune and Filter Combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.finetuneImage('Brightness', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Contrast', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Hue', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Saturation', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Exposure', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Opacity', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.finetuneImage('Blur', 50);
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Chrome');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(210%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Cold');
+                expect(imageEditor.canvasFilter).toEqual('brightness(112.5%) contrast(187.5%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Warm');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(210%) opacity(1) blur(3px) sepia(25%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Grayscale');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(100%) invert(0%)');
+                imageEditor.applyImageFilter('Sepia');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(100%) grayscale(0%) invert(0%)');
+                imageEditor.applyImageFilter('Invert');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(100%)');
+                imageEditor.applyImageFilter('Default');
+                expect(imageEditor.canvasFilter).toEqual('brightness(1.25) contrast(125%) hue-rotate(150deg) saturate(150%) opacity(1) blur(3px) sepia(0%) grayscale(0%) invert(0%)');
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Combination testing', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('ok cancel button', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.zoom(0.5);
+                 expect(imageEditor.zoomFactor).toEqual(0.5);
+                 imageEditor.drawShape('rectangle');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                 imageEditor.applyImageFilter('Grayscale');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(100%) invert(0%)');
+                 const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                 okBtn.click();
+                 done();
+            }, 100);
+        });
+        it('To adjust brightness', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.finetuneImage('Brightness', 100);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1.5) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 done();
+            }, 100);
+        });
+        it('Crop/shape combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.select('custom');
+                 imageEditor.crop();
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 imageEditor.drawEllipse(300, 150, 300, 150, 18, 'blue', 'white');
+                 expect(imageEditor.activeObj.shape).toEqual('ellipse');
+                 imageEditor.applyImageFilter('Invert');
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(0deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(100%)');
+                 imageEditor.crop();
+                 const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                 okBtn.click();
+                 done();
+            }, 100);
+        });
+        it('Shape/crop combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.drawShape('rectangle');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                 imageEditor.select('square');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                 imageEditor.crop();
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-90);
+                 imageEditor.select('3:2');
+                 imageEditor.crop();
+                 imageEditor.select('custom', 100, 100);
+                 imageEditor.crop();
+                 done();
+            }, 100);
+        });
+        it('Rotate/shape combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.drawLine(100, 300, 300, 100, 20, 'red');
+                 expect(imageEditor.activeObj.shape).toEqual('line');
+                 imageEditor.select('square');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                 imageEditor.crop();
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(0);
+                 imageEditor.select('square');
+                 imageEditor.crop();
+                 done();
+            }, 100);
+        });
+        it('Text misalignment', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-90);
+                 imageEditor.drawShape('rectangle');
+                 imageEditor.applyActObj();
+                 expect(imageEditor.objColl[0].shape).toEqual('rectangle');
+                 imageEditor.drawText(1, 1, 'Syncfusion');
+                 expect(imageEditor.activeObj.shape).toEqual('text');
+                 imageEditor.zoom(0.5);
+                 expect(imageEditor.zoomFactor).toEqual(0.5);
+                 imageEditor.finetuneImage('Hue', 50);
+                 expect(imageEditor.canvasFilter).toEqual('brightness(1) contrast(100%) hue-rotate(150deg) saturate(100%) opacity(1) blur(0px) sepia(0%) grayscale(0%) invert(0%)');
+                 imageEditor.zoom(-0.5);
+                 expect(imageEditor.zoomFactor).toEqual(0);
+                 done();
+            }, 100);
+        });
+        it('Cancel button click', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 const cropBtn: any = document.querySelectorAll('#image-editor_cropBtn')[0];
+                 cropBtn.click();
+                 setTimeout(() => {});
+                 let ul: any = document.querySelectorAll('#image-editor_cropBtn-popup');
+                 ul = document.querySelectorAll('#image-editor_cropBtn-popup')[ul.length - 1];
+                 ul.children[0].children[2].click();
+                 setTimeout(() => {});
+                 expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                 imageEditor.crop();
+                 imageEditor.zoom(0.3);
+                 expect(imageEditor.zoomFactor).toEqual(0.3);
+                 const cancelBtn: any = document.querySelectorAll('#image-editor_cancel')[0];
+                 cancelBtn.click();
+                 done();
+            }, 100);
+        });
+        it('Text area misalignment', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(180);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(270);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(0);
+                 imageEditor.drawText(1, 1, 'Syncfusion');
+                 setTimeout(function () { });
+                 let shape1: any = imageEditor.getShapeSetting('shape_1');
+                 let boundRect: any = (document.querySelector('#image-editor_upperCanvas') as HTMLElement).getBoundingClientRect();
+                 let ratio: any = imageEditor.calcRatio();
+                 let x: any = (shape1.startX / ratio.width) + boundRect.left;
+                 let y: any = (shape1.startY / ratio.height) + boundRect.top;
+                 imageEditor.selectShape('shape_1');
+                 dblClickEvent.initMouseEvent('dblclick', true, true, window, 0, 0, 0, x + 10, y + 10, false, false, false, false, 0, null);
+                 (document.querySelector('#image-editor_upperCanvas') as HTMLElement).dispatchEvent(dblClickEvent);
+                 done();
+            }, 100);
+        });
+        it('Text size improper', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.drawText(1, 1, 'Syncfusion');
+                 expect(imageEditor.activeObj.shape).toEqual('text');
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-90);
+                 imageEditor.rotate(-90);
+                 expect(imageEditor.degree).toEqual(-180);
+                 expect(imageEditor.activeObj.textSettings.fontSize).toEqual(38);
+                 done();
+            }, 100);
+        });
+        it('flip and rotate combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.flip('Horizontal');
+                 expect(imageEditor.currFlipState).toEqual('horizontal');
+                 imageEditor.zoom(0.3);
+                 expect(imageEditor.zoomFactor).toEqual(0.3);
+                 imageEditor.rotate(90);
+                 expect(imageEditor.degree).toEqual(90);
+                 done();
+            }, 100);
+        });
+        it('Crop combination', (done) => {
+            imageEditor = new ImageEditor({
+                height: '350px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                 imageEditor.select('circle');
+                 expect(imageEditor.activeObj.shape).toEqual('crop-circle');
+                 imageEditor.zoom(.10);
+                 expect(imageEditor.zoomFactor).toEqual(.10);
+                 const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                 okBtn.click();
+                 const cropBtn: any = document.querySelectorAll('#image-editor_cropBtn')[0];
+                 cropBtn.click();
+                 setTimeout(() => {});
+                 let ul: any = document.querySelectorAll('#image-editor_cropBtn-popup');
+                 ul = document.querySelectorAll('#image-editor_cropBtn-popup')[ul.length - 1];
+                 ul.children[0].children[2].click();
+                 setTimeout(() => {});
+                 expect(imageEditor.activeObj.shape).toEqual('crop-square');
+                 const cancelBtn: any = document.querySelectorAll('#image-editor_cancel')[0];
+                 cancelBtn.click();
+                 expect(imageEditor.isCircleCrop).toEqual(true);
+                 done();
+            }, 100);
+        });
+    });
+});
+
  

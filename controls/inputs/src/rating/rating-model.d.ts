@@ -18,7 +18,7 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines one or more CSS classes that can be used to customize the appearance of a rating component.
      * One or more CSS classes to customize the appearance of the rating component, such as by changing its colors, fonts, sizes, or other visual aspects.
-     * 
+     *
      * @default ''
      */
     cssClass?: string;
@@ -27,7 +27,7 @@ export interface RatingModel extends ComponentModel{
      * Defines whether a rating component is enabled or disabled.
      * A disabled rating component may have a different visual appearance than an enabled one.
      * When set to "true", the rating component will be disabled, and the user will not be able to interact with it.
-     * 
+     *
      * @default false
      */
     disabled?: boolean;
@@ -42,7 +42,7 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines whether to add animation (to provide visual feedback to the user) when an item in a rating component is hovered.
      * When set to "true", an animation will be added when the user hovers their cursor over an item in the rating component.
-     * 
+     *
      * @default true
      */
     enableAnimation?: boolean;
@@ -51,7 +51,7 @@ export interface RatingModel extends ComponentModel{
      * Defines whether to select all the items before the selected item should be in selected state in a rating component.
      * When set to "true", only the selected item will be in the selected state, and all other items will be un-selected.
      * When set to "false", all items before the selected one will be in the selected state.
-     * 
+     *
      * @default false
      */
     enableSingleSelection?: boolean;
@@ -74,7 +74,7 @@ export interface RatingModel extends ComponentModel{
 
     /**
      * Defines the position of the label in rating component.
-     * 
+     *
      * The possible values are:
      * * Top
      * * Bottom
@@ -97,16 +97,16 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines the value that specifies minimum rating that a user can select.
      * The value is set to 0, which means that the minimum possible rating is 0.
-     * 
+     *
      * @default 0.0
      * @aspType double
      */
     min?: number;
 
     /**
-     * Defines the precision type of the rating which used to component the granularity of the rating, 
+     * Defines the precision type of the rating which used to component the granularity of the rating,
      * allowing users to provide ratings with varying levels of precision.
-     * 
+     *
      * The possible values are:
      * * Full
      * * Half
@@ -130,7 +130,7 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines a value that specifies whether to display a label that shows the current value of a rating.
      * When set to "true", a label will be displayed that shows the current value of the rating; otherwise false.
-     * 
+     *
      * @default false
      */
     showLabel?: boolean;
@@ -138,14 +138,14 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines a value that defines whether to show tooltip for the items.
      * When set to "true", show tooltip for the items.
-     * 
+     *
      * @default true
      */
     showTooltip?: boolean;
 
     /**
      * Defines the template that used as tooltip content over default tooltip content of the rating.
-     * The current value of rating passed as context to build the content. 
+     * The current value of rating passed as context to build the content.
      *
      * @default ''
      */
@@ -154,7 +154,7 @@ export interface RatingModel extends ComponentModel{
     /**
      * Defines the current rating value which used to display and update the rating selected by the user.
      * Based on "PrecisionType", users can select ratings with varying levels of precision.
-     * The "value" is a decimal value that ranges from the minimum value to the items count, 
+     * The "value" is a decimal value that ranges from the minimum value to the items count,
      * as specified by the "min" and "itemsCount" properties of the rating.
      *
      * @default 0.0
@@ -164,7 +164,7 @@ export interface RatingModel extends ComponentModel{
 
     /**
      * Defines a value that indicates whether the rating component is visible or hidden.
-     * When set to "true", if the rating component is visible. 
+     * When set to "true", if the rating component is visible.
      *
      * @default true
      */

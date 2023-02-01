@@ -234,7 +234,7 @@ export class BezierSettings extends ChildProperty<BezierSettings> {
     * @default 'true'
     */
     @Property(true)
-    public canResetSegments: boolean;
+    public allowSegmentsReset: boolean;
 }
 
 /**

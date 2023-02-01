@@ -274,11 +274,12 @@ export class Editor {
         return 'Editor';
     }
     /** 
-     * Sets the field information for the selected field. 
+     * Sets the field information for the selected field.
+     * 
+     * > Nested field gets replaced completely with the specified field information.
      * 
      * @param { FieldInfo } fieldInfo – Specifies the field information.  
-     * @returns {void} 
-     * > Nested field gets replaced completely with the specified field information. 
+     * @returns {void}
      */
     public setFieldInfo(fieldInfo: FieldInfo): void {
         const field: FieldElementBox = this.selection.getHyperlinkField(true);
@@ -366,7 +367,6 @@ export class Editor {
         clearDirectFormatting = isNullOrUndefined(clearDirectFormatting) ? false : clearDirectFormatting;
         let startPosition: number = undefined;
         let endPosition: number = undefined;
-        this.owner.notify(internalStyleCollectionChange, {});
         if (clearDirectFormatting) {
             this.initComplexHistory('ApplyStyle');
             this.setOffsetValue(this.selection);
@@ -2441,8 +2441,9 @@ export class Editor {
     /**
       * Inserts the section break at cursor position with specified section break type.
       *
-      * @param {SectionBreakType} sectionBreakType Specifies the section break type.
       * > If this parameter is not set, it inserts the section break of type new page.
+      * 
+      * @param {SectionBreakType} sectionBreakType Specifies the section break type.
       * @returns {void}
       */
     public insertSectionBreak(sectionBreakType?: SectionBreakType): void {
@@ -18690,6 +18691,14 @@ export class Editor {
         }
     }
 
+    /**
+    * @private
+    */
+    public clear(): void {
+        if (this.pageRefFields) {
+            this.pageRefFields = {};
+        }
+    }
 }
 /**
  * @private

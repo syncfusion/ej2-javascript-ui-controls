@@ -80,7 +80,7 @@ export class Resize extends ActionBase {
                 this.actionObj.cellWidth = trRect.width / noOfDays;
                 this.actionObj.cellHeight = trRect.height;
             }
-            const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+            const pages: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e);
             this.actionObj.X = pages.pageX;
             this.actionObj.Y = pages.pageY;
             this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
@@ -110,7 +110,7 @@ export class Resize extends ActionBase {
         if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
             return;
         }
-        const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+        const pages: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e);
         if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
             const doc: HTMLElement = document.documentElement;
             const left: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
@@ -534,7 +534,7 @@ export class Resize extends ActionBase {
     }
 
     private resizeValidation(e: MouseEvent & TouchEvent): boolean {
-        const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+        const pages: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e);
         const viewDimension: Record<string, any> = this.getContentAreaDimension();
         const isTimeScale: boolean = this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.timeScale.enable;
         let cellWidth: number = this.actionObj.cellWidth;

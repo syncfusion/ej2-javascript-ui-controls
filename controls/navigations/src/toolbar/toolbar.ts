@@ -694,8 +694,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 if (popObj && closest(trgt, '.e-popup')) {
                     const popEle: HTEle = popObj.element;
                     const popFrstEle: HTEle = popEle.firstElementChild as HTEle;
-                    if ((value === 'previous' && popFrstEle === clst) || (value === 'next' && popEle.lastElementChild === clst)) {
-                        return;
+                    if ((value === 'previous' && popFrstEle === clst)) {
+                        (<HTEle>popEle.lastElementChild.firstChild).focus();
+                    } else if (value === 'next' && popEle.lastElementChild === clst) {
+                        (<HTEle>popFrstEle.firstChild).focus();
                     } else {
                         this.eleFocus(clst, value);
                     }
@@ -782,7 +784,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private eleContains(el: HTEle): string | boolean {
-        return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+        return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el) || !el.classList.contains(CLS_ITEM);
     }
     private eleFocus(closest: HTEle, pos: Str): void {
         const sib: HTEle = Object(closest)[pos + 'ElementSibling'];
@@ -814,6 +816,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         this.elementFocus(el);
                     }
                 }
+            }
+        } else if (!isNOU(closest)) {
+            const tbrItems: NodeList = this.element.querySelectorAll('.' + CLS_ITEMS + ' .' + CLS_ITEM + ':not(.' + CLS_SEPARATOR + ')' + ':not(.' + CLS_DISABLE + ')' + ':not(.' + CLS_HIDDEN + ')');
+            if (pos === 'next' && tbrItems) {
+                this.elementFocus(tbrItems[0] as HTMLElement);
+            } else if (pos === 'previous' && tbrItems) {
+                this.elementFocus(tbrItems[tbrItems.length - 1] as HTMLElement);
             }
         }
     }

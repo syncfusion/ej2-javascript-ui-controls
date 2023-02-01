@@ -2174,6 +2174,9 @@ export class ListBox extends DropDownBase {
                 } else {
                     text = value;
                 }
+                if (typeof(text) === 'string') {
+                    text = text.split("\\").join("\\\\");
+                }
                 li = this.list.querySelector('[data-value="' + text + '"]');
                 if (li) {
                     if (this.selectionSettings.showCheckbox) {

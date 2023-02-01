@@ -639,7 +639,7 @@ export class Timeline {
             break;
         case 'Month':
             difference = Math.round((timeDifference / (1000 * 3600 * 24)) / 28);
-            tierCount = tierCount <= difference ? tierCount : difference > 0 ? difference : 1;
+            tierCount = tierCount <= difference ? tierCount : difference > 0 ? (difference + 1) : 1;
             if (this.topTier !== 'None' && tier === 'bottomTier') {
                 tierCount = this.validateBottomTierCount(mode, tierCount);
             }

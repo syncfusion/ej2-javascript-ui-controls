@@ -282,6 +282,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     private panelsSizeY: number = 0;
     private resizeHeight: boolean = false;
     private refreshListener: Function;
+    private eventVar: boolean = false;
 
     /**
      * If allowDragging is set to true, then the DashboardLayout allows you to drag and reorder the panels.
@@ -2345,54 +2346,76 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     abort: abortArray,
                     dragStart: this.onDraggingStart.bind(this),
                     dragStop: (args: DragEventArgs) => {
-                        const model: PanelModel = this.getCellInstance(this.mainElement.id);
-                        if (this.allowPushing &&
-                            this.collisions(model.row, model.col, model.sizeX, model.sizeY, this.mainElement).length > 0) {
-                            this.setHolderPosition(args);
-                            this.setPanelPosition(this.mainElement, model.row, model.col);
-                            this.updatePanelLayout(this.mainElement, model);
-                        } else {
-                            this.setPanelPosition(this.mainElement, model.row, model.col);
-                        }
-                        this.mainElement = null;
-                        const item: PanelModel = this.getPanelBase(args);
-                        if (this.shadowEle) {
-                            detach(this.shadowEle);
-                        }
-                        removeClass([this.element], [preventSelect]);
-                        removeClass([args.element], [dragging]);
-                        this.shadowEle = null;
-                        args.element.classList.remove('e-dragging');
-                        const row: number = this.getRowColumnDragValues(args)[0];
-                        const col: number = this.getRowColumnDragValues(args)[1];
-                        const panelModel: PanelModel = this.getCellInstance(args.element.id);
-                        if (this.allowPushing &&
-                            this.collisions(row, col, panelModel.sizeX, panelModel.sizeY, document.getElementById(item.id)).length === 0) {
-                            this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
-                            this.oldRowCol[args.element.id].row = row;
-                            this.oldRowCol[args.element.id].col = col;
-                            this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
-                            this.sortedPanel();
-                        } else {
-                            this.panelPropertyChange(this.getCellInstance(args.element.id), {
-                                row: this.oldRowCol[args.element.id].row,
-                                col: this.oldRowCol[args.element.id].col
-                            });
-                            args.element.setAttribute('data-col', this.getCellInstance(args.element.id).col.toString());
-                            args.element.setAttribute('data-row', this.getCellInstance(args.element.id).row.toString());
-                            this.sortedPanel();
-                        }
-                        const panelInstance: PanelModel = this.getCellInstance(args.element.id);
-                        this.setPanelPosition(args.element, panelInstance.row, panelInstance.col);
-                        this.updatePanels();
-                        this.updateCloneArrayObject();
-                        this.checkForChanges(true);
-                        this.dragStopEventArgs = { event: args.event, element: args.element };
                         this.trigger('dragStop', args);
-                        this.resizeEvents();
-                        this.rows = this.maxRow(true);
-                        this.setHeightWidth();
-                        this.updateDragArea();
+                        if(isNullOrUndefined(args.cancel)) {
+                            args.cancel = false;
+                        }
+                        if (!(args.cancel)) {
+                            const model: PanelModel = this.getCellInstance(this.mainElement.id);
+                            if (this.allowPushing &&
+                                this.collisions(model.row, model.col, model.sizeX, model.sizeY, this.mainElement).length > 0) {
+                                this.setHolderPosition(args);
+                                this.setPanelPosition(this.mainElement, model.row, model.col);
+                                this.updatePanelLayout(this.mainElement, model);
+                            } else {
+                                this.setPanelPosition(this.mainElement, model.row, model.col);
+                            }
+                            this.mainElement = null;
+                            const item: PanelModel = this.getPanelBase(args);
+                            if (this.shadowEle) {
+                                detach(this.shadowEle);
+                            }
+                            removeClass([this.element], [preventSelect]);
+                            removeClass([args.element], [dragging]);
+                            this.shadowEle = null;
+                            args.element.classList.remove('e-dragging');
+                            const row: number = this.getRowColumnDragValues(args)[0];
+                            const col: number = this.getRowColumnDragValues(args)[1];
+                            const panelModel: PanelModel = this.getCellInstance(args.element.id);
+                            if (this.allowPushing &&
+                                this.collisions(row, col, panelModel.sizeX, panelModel.sizeY, document.getElementById(item.id)).length === 0) {
+                                this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
+                                this.oldRowCol[args.element.id].row = row;
+                                this.oldRowCol[args.element.id].col = col;
+                                this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
+                                this.sortedPanel();
+                            } else {
+                                this.panelPropertyChange(this.getCellInstance(args.element.id), {
+                                    row: this.oldRowCol[args.element.id].row,
+                                    col: this.oldRowCol[args.element.id].col
+                                });
+                                args.element.setAttribute('data-col', this.getCellInstance(args.element.id).col.toString());
+                                args.element.setAttribute('data-row', this.getCellInstance(args.element.id).row.toString());
+                                this.sortedPanel();
+                            }
+                            const panelInstance: PanelModel = this.getCellInstance(args.element.id);
+                            this.setPanelPosition(args.element, panelInstance.row, panelInstance.col);
+                            this.updatePanels();
+                            this.updateCloneArrayObject();
+                            this.checkForChanges(true);
+                            this.dragStopEventArgs = { event: args.event, element: args.element };
+                            this.trigger('dragStop', args);
+                            this.resizeEvents();
+                            this.rows = this.maxRow(true);
+                            this.setHeightWidth();
+                            this.updateDragArea();
+                        }    
+                        else {
+                            let currentPanel: PanelModel = this.getCellInstance(this.mainElement.id);
+                            for (i = 0; i < this.panels.length; i++) {
+                                if (this.panels[i].id === currentPanel.id) {
+                                    args.element.setAttribute('data-col', this.panelsInitialModel[i].col.toString());
+                                    args.element.setAttribute('data-row', this.panelsInitialModel[i].row.toString());
+                                    currentPanel.col = this.panelsInitialModel[i].col;
+                                    currentPanel.row = this.panelsInitialModel[i].row;
+                                    this.setPanelPosition(this.mainElement, this.panelsInitialModel[i].row, this.panelsInitialModel[i].col);
+                                    this.updatePanelLayout(this.mainElement, currentPanel);
+                                }
+                            }
+                            if (this.shadowEle) {
+                                detach(this.shadowEle);
+                            }
+                        }    
                     },
                     drag: (args: DragEventArgs) => {
                         this.draggedEventArgs = {
@@ -2434,28 +2457,38 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     private onDraggingStart(args: DragEventArgs): void {
         const dragArgs: DragEventArgs = args;
         this.trigger('dragStart', dragArgs, (dragArgs: DragEventArgs) => {
+            if(isNullOrUndefined(args.cancel)) {
+                args.cancel = false;
+            }
         });
-        this.panelsInitialModel = this.cloneModels(this.panels);
-        this.mainElement = args.element;
-        this.cloneObject = JSON.parse(JSON.stringify(this.cloneObject));
-        const eleRowValue: number = this.startRow = parseInt(args.element.getAttribute('data-row'), 10);
-        this.startCol = parseInt(args.element.getAttribute('data-col'), 10);
-        const eleSizeY: number = parseInt(args.element.getAttribute('data-sizeY'), 10);
-        this.updateRowsHeight(eleRowValue, eleSizeY, eleSizeY);
-        this.updateDragArea();
-        this.shadowEle = document.createElement('div');
-        this.shadowEle.classList.add('e-holder');
-        this.shadowEle.classList.add('e-holder-transition');
-        setStyle(this.shadowEle, { 'position': 'absolute' });
-        addClass([this.element], [preventSelect]);
-        addClass([args.element], [dragging]);
-        this.element.appendChild(this.shadowEle);
-        this.renderReactTemplates();
-        this.shadowEle = document.querySelector('.e-holder');
-        this.shadowEle.style.height = (this.getCellInstance(args.element.id).sizeY * <number>this.cellSize[1]) + 'px';
-        this.shadowEle.style.width = (this.getCellInstance(args.element.id).sizeX * <number>this.cellSize[0]) + 'px';
-        const panelInstance: PanelModel = this.getCellInstance(args.element.id);
-        this.setPanelPosition(this.shadowEle, panelInstance.row, panelInstance.col);
+        this.eventVar = args.cancel;
+        if(!(args.cancel)) {
+            this.panelsInitialModel = this.cloneModels(this.panels);
+            this.mainElement = args.element;
+            this.cloneObject = JSON.parse(JSON.stringify(this.cloneObject));
+            const eleRowValue: number = this.startRow = parseInt(args.element.getAttribute('data-row'), 10);
+            this.startCol = parseInt(args.element.getAttribute('data-col'), 10);
+            const eleSizeY: number = parseInt(args.element.getAttribute('data-sizeY'), 10);
+            this.updateRowsHeight(eleRowValue, eleSizeY, eleSizeY);
+            this.updateDragArea();
+            this.shadowEle = document.createElement('div');
+            this.shadowEle.classList.add('e-holder');
+            this.shadowEle.classList.add('e-holder-transition');
+            setStyle(this.shadowEle, { 'position': 'absolute' });
+            addClass([this.element], [preventSelect]);
+            addClass([args.element], [dragging]);
+            this.element.appendChild(this.shadowEle);
+            this.renderReactTemplates();
+            this.shadowEle = document.querySelector('.e-holder');
+            this.shadowEle.style.height = (this.getCellInstance(args.element.id).sizeY * <number>this.cellSize[1]) + 'px';
+            this.shadowEle.style.width = (this.getCellInstance(args.element.id).sizeX * <number>this.cellSize[0]) + 'px';
+            const panelInstance: PanelModel = this.getCellInstance(args.element.id);
+            this.setPanelPosition(this.shadowEle, panelInstance.row, panelInstance.col);
+        }
+        else {
+            removeClass([this.element], [preventSelect]);
+            removeClass([args.element], [dragging]);
+        }    
     }
     // eslint-disable-next-line
     private cloneModels(source?: any, target?: any): PanelModel[] {
@@ -2479,60 +2512,67 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let endCol: number;
         let endRow: number;
         let dragCol: number;
-        const col: number = dragCol = this.getRowColumnDragValues(args)[1];
-        const row: number = this.getRowColumnDragValues(args)[0];
-        if (col < 0 || row < 0) {
-            return;
-        }
-        this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
-        const panelModel: PanelModel = this.getCellInstance(args.element.id);
-        this.updateRowsHeight(panelModel.row, panelModel.sizeY, 1);
-        this.updateDragArea();
-        if (this.allowPushing) {
-            this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
+        if(!this.eventVar) {
+            const col: number = dragCol = this.getRowColumnDragValues(args)[1];
+            const row: number = this.getRowColumnDragValues(args)[0];
+            if (col < 0 || row < 0) {
+                return;
+            }
             this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
-            endCol = this.oldRowCol[(args.element.id)].col;
-            endRow = this.oldRowCol[(args.element.id)].row;
-            this.oldRowCol[(args.element.id)] = { row: row, col: col };
-            this.updateOldRowColumn();
-            if (this.startCol !== endCol || this.startRow !== endRow) {
-                this.setHolderPosition(args);
-                if (this.startCol !== endCol) {
-                    this.startRow = endRow;
-                }
-                if (this.startRow !== endRow) {
-                    this.startCol = endCol;
-                }
-                if (this.allowPushing) {
-                    this.mainElement = args.element;
-                    const model: PanelModel = panelModel;
-                    this.checkCollision = this.collisions(model.row, model.col, model.sizeX, model.sizeY, args.element);
-                    if (panelModel.col >= this.checkColumnValue) {
-                        this.checkCollision = [];
+            const panelModel: PanelModel = this.getCellInstance(args.element.id);
+            this.updateRowsHeight(panelModel.row, panelModel.sizeY, 1);
+            this.updateDragArea();
+            if (this.allowPushing) {
+                this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
+                this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
+                endCol = this.oldRowCol[(args.element.id)].col;
+                endRow = this.oldRowCol[(args.element.id)].row;
+                this.oldRowCol[(args.element.id)] = { row: row, col: col };
+                this.updateOldRowColumn();
+                if (this.startCol !== endCol || this.startRow !== endRow) {
+                    this.setHolderPosition(args);
+                    if (this.startCol !== endCol) {
+                        this.startRow = endRow;
                     }
-                    this.updatePanelLayout(args.element, panelModel);
-                    this.moveItemsUpwards();
+                    if (this.startRow !== endRow) {
+                        this.startCol = endCol;
+                    }
+                    if (this.allowPushing) {
+                        this.mainElement = args.element;
+                        const model: PanelModel = panelModel;
+                        this.checkCollision = this.collisions(model.row, model.col, model.sizeX, model.sizeY, args.element);
+                        if (panelModel.col >= this.checkColumnValue) {
+                            this.checkCollision = [];
+                        }
+                        this.updatePanelLayout(args.element, panelModel);
+                        this.moveItemsUpwards();
+                    }
                 }
             }
+            if (this.allowPushing !== false) {
+                this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
+            }
+            if (this.oldRowCol[args.element.id].row !== row || this.oldRowCol[args.element.id].col !== col) {
+                this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
+                this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
+            }
+            if (this.startCol !== dragCol) {
+                this.startCol = endCol;
+                this.moveItemsUpwards();
+            }
+            if (!this.allowPushing) {
+                this.setHolderPosition(args);
+            }
+            this.removeResizeClasses(this.panelCollection);
+            this.setClasses(this.panelCollection);
+            if (this.allowPushing === false) {
+                return;
+            }
         }
-        if (this.allowPushing !== false) {
-            this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
-        }
-        if (this.oldRowCol[args.element.id].row !== row || this.oldRowCol[args.element.id].col !== col) {
-            this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
-            this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
-        }
-        if (this.startCol !== dragCol) {
-            this.startCol = endCol;
-            this.moveItemsUpwards();
-        }
-        if (!this.allowPushing) {
-            this.setHolderPosition(args);
-        }
-        this.removeResizeClasses(this.panelCollection);
-        this.setClasses(this.panelCollection);
-        if (this.allowPushing === false) {
-            return;
+        else {
+            this.dragobj.intDestroy(args.event);
+            removeClass([this.element], [preventSelect]);
+            removeClass([args.element], [dragging]);
         }
     }
 

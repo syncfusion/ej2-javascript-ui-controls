@@ -1355,7 +1355,7 @@ export class DateRangePicker extends CalendarBase {
         this.createControl();
         this.bindCalendarEvents();
         this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
-        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.renderDayCell)) {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
             this.disabledDateRender();
         }
         this.updateHeader();
@@ -2327,8 +2327,8 @@ export class DateRangePicker extends CalendarBase {
                 if (!this.isMobile) {
                     this.removeClassDisabled();
                 }
-                if (!isNullOrUndefined(this.renderDayCell)) {
-                this.disabledDateRender();
+                if (!isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled){
+                    this.disabledDateRender();
                 }
                 this.trigger('select', this.rangeArgs(event));
             } else if (+date < +this.startValue) {
@@ -3871,7 +3871,7 @@ export class DateRangePicker extends CalendarBase {
             this.clearRange();
 
         }
-        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !isDisabled && !isNullOrUndefined(this.renderDayCell)) {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !isDisabled && !isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
             this.disabledDateRender();
         }
         this.errorClass();
@@ -4342,7 +4342,7 @@ export class DateRangePicker extends CalendarBase {
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
             range = (Math.round(Math.abs((this.removeTimeValueFromDate(this.startValue).getTime() -
             this.removeTimeValueFromDate(this.endValue).getTime()) / (1000 * 60 * 60 * 24))) + 1);
-            if (!isNullOrUndefined(this.renderDayCell)) {
+            if (!isNullOrUndefined(this.renderDayCellArgs) && this.renderDayCellArgs.isDisabled) {
                 this.disabledDateRender();
             }
             if (!isNullOrUndefined(this.disabledDayCnt)) {

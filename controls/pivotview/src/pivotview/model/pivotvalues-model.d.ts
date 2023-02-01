@@ -42,11 +42,13 @@ export interface AxisSetModel {
 
     /**
      * Specifies its position in its field.
+     * @aspType int
      */
     ordinal?: number;
 
     /**
      * Specifies its level.
+     * @aspType int
      */
     level?: number;
 
@@ -62,11 +64,13 @@ export interface AxisSetModel {
 
     /**
      * Specifies its column span.
+     * @aspType int
      */
     colSpan?: number;
 
     /**
      * Specifies its row span.
+     * @aspType int
      */
     rowSpan?: number;
 

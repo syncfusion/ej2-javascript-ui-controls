@@ -217,9 +217,9 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
                     cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
                 } else {
                     // evaluate normal expression
-                    cnt = '"+' + addNameSpace(
+                    cnt = cnt !== '' ? '"+' + addNameSpace(
                         cnt.replace(/,/gi, '+' + nameSpace + '.'),
-                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys, ignorePrefix) + '+"';
+                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys, ignorePrefix) + '+"' : ' ';
                 }
             }
             return cnt;

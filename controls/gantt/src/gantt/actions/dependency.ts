@@ -735,6 +735,14 @@ export class Dependency {
                 if (record) { this.validatePredecessor(record, undefined, 'successor'); }
             }
             if (record && record.ganttProperties.taskId !== this.isValidatedParentTaskID && ganttProp) {
+                let validUpdate: boolean = false;
+                let predecessorNames: number | string | object[] = ganttProp.ganttProperties.predecessorsName ?
+                    (ganttProp.ganttProperties.predecessorsName as string).split(',').length : ganttProp.ganttProperties.predecessorsName;
+                let predecessorLength: number | IPredecessor[] = ganttProp.ganttProperties.predecessor ?
+                    ganttProp.ganttProperties.predecessor.length : ganttProp.ganttProperties.predecessor;
+                if ((predecessorLength && predecessorNames !== predecessorLength)) {
+                    validUpdate = true;
+                }
                 if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction !== 'ChildDrag')) {
                     if (!ganttProp.hasChildRecords && record.hasChildRecords) {
                         this.parent.editModule['updateChildItems'](record);
@@ -742,7 +750,7 @@ export class Dependency {
                     }
                 }
                 else if ((record.hasChildRecords && taskBarModule.taskBarEditAction == 'ChildDrag') ||
-                       (!ganttProp.ganttProperties.predecessorsName && taskBarModule.taskBarEditAction == 'ParentDrag')) {
+                       (validUpdate && taskBarModule.taskBarEditAction == 'ParentDrag')) {
                         this.parent.editModule['updateChildItems'](record);
                         this.isValidatedParentTaskID = record.ganttProperties.taskId;
                 }

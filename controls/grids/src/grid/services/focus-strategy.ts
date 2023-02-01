@@ -129,9 +129,9 @@ export class FocusStrategy {
             const toolbarElement: Element = gObj.toolbarModule.element;
             const focusableToolbarItems: NodeListOf<Element> = toolbarElement
                 .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
-            if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-btn,.e-input')) {
+            if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input')) {
                 (toolbarElement as HTMLElement).tabIndex = -1;
-                (focusableToolbarItems[0].querySelector('.e-btn,.e-input') as HTMLElement).tabIndex = 0;
+                (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).tabIndex = 0;
             } else {
                 (toolbarElement as HTMLElement).tabIndex = 0;
             }
@@ -317,11 +317,10 @@ export class FocusStrategy {
                 || parentsUntil(e.target as Element, 'e-groupdroparea')
                 || (e.target as HTMLElement).classList.contains('e-toolbar'))) {
                 const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
-                const focusableToolbarItems: NodeListOf<Element> = toolbarElement
-                    .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+                const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems()
                 if (focusableToolbarItems.length > 0) {
                     e.preventDefault();
-                    (focusableToolbarItems[0].querySelector('.e-btn,.e-input') as HTMLElement).focus();
+                    (focusableToolbarItems[0] as HTMLElement).focus();
                     return;
                 }
                 if (!(e.target as HTMLElement).classList.contains('e-toolbar')) {
@@ -667,7 +666,7 @@ export class FocusStrategy {
                 .querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
             e.preventDefault();
             if (focusableToolbarItems.length > 0) {
-                (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-btn,.e-input') as HTMLElement).focus();
+                (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
             } else {
                 (toolbarElement as HTMLElement).focus();
             }
@@ -1030,6 +1029,7 @@ export class FocusStrategy {
             groupModule.groupTextFocus = false;
             return;
         }
+        this.firstHeaderCellClick = true;
         this.addFocus(this.getContent().getFocusInfo());
     }
 

@@ -460,9 +460,9 @@ export class Splitter extends Component<HTMLElement> {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if ((this as any).isReact) {
                         let cPaneCount: number = 0;
-                        for ( let k = 0; k < this.paneSettings.length; k++ ){
-                            if (typeof(this.paneSettings[k].content) === 'function'){
-                                cPaneCount = cPaneCount+1;
+                        for ( let k: number = 0; k < this.paneSettings.length; k++ ){
+                            if (typeof(this.paneSettings[k as number].content) === 'function'){
+                                cPaneCount = cPaneCount + 1;
                             }
                         }
                         const hasAllContent: boolean = cPaneCount === this.paneSettings.length;
@@ -1469,18 +1469,20 @@ export class Splitter extends Component<HTMLElement> {
             }
             (<HTMLElement>e.target).classList.add(SPLIT_BAR_HOVER);
         }
+        this.splitterDetails(e);
         const icon: HTMLElement = (<HTMLElement>e.target);
-        if (icon.classList.contains(ARROW_LEFT) || icon.classList.contains(ARROW_UP)) {
-            this.collapseAction(e);
+        if (icon.classList.contains(ARROW_LEFT) || icon.classList.contains(ARROW_RIGHT) ||
+            icon.classList.contains(ARROW_DOWN) || icon.classList.contains(ARROW_UP)){
+            if (!this.nextPane.classList.contains(PANE_HIDDEN) && !this.previousPane.classList.contains(PANE_HIDDEN)){
+                this.collapseAction(e);
+            } else {
+                this.expandAction(e);
+            }
+            this.updateSplitterSize();
         }
-        if (icon.classList.contains(ARROW_RIGHT) || icon.classList.contains(ARROW_DOWN)) {
-            this.expandAction(e);
-        }
-        this.updateSplitterSize();
     }
 
     private expandAction(e: Event): void {
-        this.splitterDetails(e);
         const eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
         if (this.expandFlag) {
             this.trigger('beforeExpand', eventArgs, (beforeExpandArgs: BeforeExpandEventArgs) => {
@@ -1495,6 +1497,12 @@ export class Splitter extends Component<HTMLElement> {
         }
     }
 
+    private getIcon(e: Event) : string{
+        const targetClass: string[] = (e.target as HTMLElement).className.split(' ').filter((className: string) =>
+            className !== NAVIGATE_ARROW && className !== HIDE_ICON);
+        return targetClass[0];
+    }
+
     private expandPane(e: Event): void {
         this.removeStaticPanes();
         const collapseCount: number = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
@@ -1503,46 +1511,41 @@ export class Splitter extends Component<HTMLElement> {
             !this.nextPane.classList.contains(EXPAND_PANE) && this.nextPane.nextElementSibling.classList.contains(PANE) &&
             !this.nextPane.nextElementSibling.classList.contains(STATIC_PANE) && !(collapseCount === this.allPanes.length - 2));
         const collapseClass: string[] = [COLLAPSE_PANE, PANE_HIDDEN];
-        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.nextPane], EXPAND_PANE);
-            removeClass([this.previousPane], collapseClass);
-            addClass([this.previousPane], EXPAND_PANE);
-            addClass([this.nextPane], collapseClass);
-            if (this.expandFlag) {
-                this.updatePaneSettings(this.nextPaneIndex, true);
+        const icon: string = this.getIcon(e);
+        const isLeftOrUp: boolean = icon === ARROW_LEFT || icon === ARROW_UP;
+        const collapsePane: HTMLElement = isLeftOrUp ? this.nextPane : this.previousPane;
+        const expandPane: HTMLElement = isLeftOrUp ? this.previousPane : this.nextPane;
+        const expandPaneIndex: number = isLeftOrUp ? this.nextPaneIndex : this.prevPaneIndex;
+        removeClass([collapsePane], collapseClass);
+        collapsePane.setAttribute('aria-hidden', 'false');
+        // cCount is calculated after removing the COLLAPSE_PANE
+        const cCount: number = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
+        if (cCount > 0){
+            if (!expandPane.classList.contains(COLLAPSE_PANE)){
+                addClass([expandPane], EXPAND_PANE);
+                expandPane.setAttribute('aria-expanded', 'true');
             }
-        } else {
-            removeClass([this.previousPane], collapseClass);
-            removeClass([this.nextPane], EXPAND_PANE);
-            if (this.expandFlag) {
-                this.updatePaneSettings(this.prevPaneIndex, false);
+        } else if (cCount === 0){
+            for (let i: number = 0; i < this.allPanes.length; i++) {
+                if (!this.allPanes[i as number].classList.contains(COLLAPSE_PANE)) {
+                    removeClass([this.allPanes[i as number]], EXPAND_PANE);
+                    this.allPanes[i as number].setAttribute('aria-expanded', 'false');
+                }
             }
         }
-        this.updateIconsOnExpand(e);
-        this.previousPane.setAttribute('aria-expanded', 'true');
-        this.nextPane.setAttribute('aria-expanded', 'false');
-        this.updateFlexGrow(this.checkStaticPanes());
+        if (this.expandFlag) {
+            this.updatePaneSettings(expandPaneIndex, false);
+        }
+        this.updateIconsOnExpand(e , icon);
+        this.updateFlexGrow();
         if (flexStatus) {
             this.previousPane.classList.remove(EXPAND_PANE);
+            this.previousPane.setAttribute('aria-expanded', 'false');
             this.previousPane.style.flexGrow = '';
         }
     }
 
-    private checkStaticPanes(): boolean {
-        let staticPane: boolean = true;
-        for (let i: number = 0; i < this.allPanes.length; i++) {
-            if (!this.allPanes[i as number].classList.contains(COLLAPSE_PANE) && staticPane) {
-                if (this.allPanes[i as number].classList.contains(STATIC_PANE)) {
-                    staticPane = true;
-                } else {
-                    staticPane = false;
-                }
-            }
-        }
-        return staticPane;
-    }
-
-    private updateFlexGrow(status: boolean): void {
+    private updateFlexGrow(): void {
         let collapseCount: number = 0;
         for (let j: number = 0; j < this.element.children.length; j++) {
             if (this.element.children[j as number].classList.contains(COLLAPSE_PANE)) {
@@ -1553,9 +1556,6 @@ export class Splitter extends Component<HTMLElement> {
         const panes: HTMLElement[] = this.allPanes;
         for (let i: number = 0; i < panes.length; i++) {
             panes[i as number].style.flexGrow = '';
-            if (status && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
-                this.nextPane.style.flexGrow = '1';
-            }
             if (visiblePane && this.allPanes[i as number].classList.contains(COLLAPSE_PANE) && this.paneSettings[i as number].size &&
                 i !== this.allPanes.length - 1) {
                 panes[i as number].style.flexGrow = '';
@@ -1577,73 +1577,62 @@ export class Splitter extends Component<HTMLElement> {
         removeClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
     }
 
-    private updateIconsOnCollapse(e: Event): void {
+    private updateIconsOnCollapse(e: Event , targetIcon: string): void {
         this.splitterProperty();
-        if (this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
-            addClass([e.target as HTMLElement], HIDE_ICON);
-            if (this.paneSettings[this.prevPaneIndex].collapsible) {
-                this.showCurrentBarIcon();
+        const removeIcon: string = this.arrow;
+        const otherBar: HTMLElement = this.currentBarIndex === (this.allBars.length - 1) ? this.prevBar : this.nextBar;
+        const otherBarIndex: number  = this.currentBarIndex === (this.allBars.length - 1) ? this.currentBarIndex - 1
+            : this.currentBarIndex + 1;
+        if (!(e.target as HTMLElement).classList.contains(HIDE_ICON)) {
+            if (this.splitInstance.prevPaneCollapsed || this.splitInstance.nextPaneCollapsed){
+                if (this.paneSettings[this.prevPaneIndex].collapsible && this.paneSettings[this.nextPaneIndex].collapsible) {
+                    this.resizableModel(this.currentBarIndex , false);
+                    this.hideTargetBarIcon(this.currentSeparator , targetIcon);
+                    if (!isNullOrUndefined(otherBar)){
+                        const otherPrevPaneIndex: number = otherBarIndex;
+                        const otherNextPaneIndex: number = otherBarIndex + 1;
+                        const collapsecount: number = this.getCollapseCount(otherPrevPaneIndex, otherNextPaneIndex);
+                        if (this.paneSettings[otherPrevPaneIndex as number].collapsible &&
+                            this.paneSettings[otherNextPaneIndex as number].collapsible) {
+                            if (collapsecount === 1) {
+                                this.hideTargetBarIcon(otherBar, removeIcon);
+                                this.resizableModel(otherBarIndex , false);
+                            } else if (collapsecount === 2){
+                                this.hideBarIcons(otherBar);
+                                this.resizableModel(otherBarIndex , false);
+                            }
+                            if (!this.paneSettings[otherPrevPaneIndex as number].collapsible ||
+                                !this.paneSettings[otherNextPaneIndex as number].collapsible) {
+                                this.hideTargetBarIcon(otherBar , targetIcon);
+                            }
+                        }
+                    }
+                } else {
+                    this.showTargetBarIcon(this.currentSeparator , removeIcon);
+                    this.hideTargetBarIcon(this.currentSeparator , targetIcon);
+                    this.resizableModel(this.currentBarIndex , false);
+                }
             }
+        } else {
             this.resizableModel(this.currentBarIndex, false);
-            if (this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
-                !this.paneSettings[this.prevPaneIndex].collapsible) {
-                this.hideTargetBarIcon(this.prevBar, this.rightArrow);
+            if (!isNullOrUndefined(otherBar)) {
+                this.resizableModel(otherBarIndex, false);
             }
-            if (this.previousPane.previousElementSibling && !this.previousPane.previousElementSibling.classList.contains(COLLAPSE_PANE)) {
-                if (this.previousPane.classList.contains(COLLAPSE_PANE) && this.paneSettings[this.prevPaneIndex].collapsible) {
-                    this.showTargetBarIcon(this.prevBar, this.leftArrow);
-                } else if (!this.paneSettings[this.prevPaneIndex].collapsible) {
-                    this.hideTargetBarIcon(this.prevBar, this.leftArrow);
+            if (!this.paneSettings[this.prevPaneIndex].collapsible || !this.paneSettings[this.nextPaneIndex].collapsible) {
+                if (!isNullOrUndefined(otherBar)) {
+                    this.hideTargetBarIcon(otherBar , targetIcon);
                 }
-            }
-            if (!isNullOrUndefined(this.prevBar)) {
-                this.resizableModel(this.currentBarIndex - 1, false);
-                this.hideTargetBarIcon(this.prevBar, this.arrow);
-            }
-            if (!this.paneSettings[this.prevPaneIndex].collapsible) {
-                this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
-            }
-        } else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
-            if (this.paneSettings[this.currentBarIndex].resizable) {
-                this.resizableModel(this.currentBarIndex, true);
-            }
-            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE) &&
-                this.paneSettings[this.currentBarIndex + 1].resizable) {
-                this.resizableModel(this.currentBarIndex + 1, true);
-            }
-            if (!this.paneSettings[this.currentBarIndex].collapsible) {
-                addClass([e.target as HTMLElement], HIDE_ICON);
-            }
-            if (this.previousPane && this.prevPaneIndex === 0 && (this.paneSettings[this.prevPaneIndex].collapsible)) {
-                this.showTargetBarIcon(this.currentSeparator, this.leftArrow);
-            }
-            if (this.nextPane && this.nextPaneIndex === this.allPanes.length - 1 && (this.paneSettings[this.nextPaneIndex].collapsible)) {
-                this.showTargetBarIcon(this.getPrevBar(this.nextPaneIndex), this.rightArrow);
-            }
-            if (!(this.previousPane.classList.contains(COLLAPSE_PANE)) && this.paneSettings[this.nextPaneIndex].collapsible) {
-                this.showTargetBarIcon(this.currentSeparator, this.rightArrow);
-            }
-            if (!isNullOrUndefined(this.nextBar)) {
-                if (this.nextPane.nextElementSibling && (this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE) &&
-                    this.paneSettings[this.nextPaneIndex + 1].collapsible) ||
-                    (!this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE) &&
-                        this.paneSettings[this.nextPaneIndex].collapsible)) {
-                    this.showTargetBarIcon(this.nextBar, this.leftArrow);
-                } else if (!this.paneSettings[this.splitInstance.nextPaneIndex + 1].collapsible &&
-                    this.paneSettings[this.currentBarIndex]) {
-                    this.hideTargetBarIcon(this.nextBar, this.arrow);
+                this.hideTargetBarIcon(this.currentSeparator , removeIcon);
+            } else{
+                if (!isNullOrUndefined(otherBar)) {
+                    this.hideTargetBarIcon(otherBar , removeIcon);
                 }
-            }
-            if (!(this.nextPaneIndex === this.allPanes.length - 1) && this.nextPane.nextElementSibling &&
-                !this.nextPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE)
-                && !this.paneSettings[this.nextPaneIndex + 1].collapsible) {
-                this.hideTargetBarIcon(this.nextBar, this.rightArrow);
+                this.showTargetBarIcon(this.currentSeparator , removeIcon);
             }
         }
     }
 
     private collapseAction(e: Event): void {
-        this.splitterDetails(e);
         const eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
         if (this.collapseFlag) {
             this.collapsePane(e);
@@ -1669,25 +1658,42 @@ export class Splitter extends Component<HTMLElement> {
             !(collapseCount === this.allPanes.length - 2)) || (this.nextPane.classList.contains(COLLAPSE_PANE) &&
                 !this.previousPane.classList.contains(STATIC_PANE) && this.nextPane.classList.contains(STATIC_PANE));
         const collapseClass: string[] = [COLLAPSE_PANE, PANE_HIDDEN];
-        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-            if (!this.collapseFlag) {
-                this.updatePaneSettings(this.nextPaneIndex, false);
-            }
+        const icon: string = this.getIcon(e);
+        const isLeftOrUp: boolean = icon === ARROW_LEFT || icon === ARROW_UP;
+        const collapsePane: HTMLElement = isLeftOrUp ? this.previousPane : this.nextPane;
+        const expandPane: HTMLElement = isLeftOrUp ? this.nextPane : this.previousPane;
+        const collapsePaneIndex: number = isLeftOrUp ? this.prevPaneIndex : this.nextPaneIndex;
+        removeClass([collapsePane], EXPAND_PANE);
+        collapsePane.setAttribute('aria-expanded', 'false');
+        addClass([collapsePane], collapseClass);
+        collapsePane.setAttribute('aria-hidden', 'true');
+        const isFlexPane : boolean = collapsePane.style.flexBasis === '';
+        if (isFlexPane) {
+            addClass([expandPane], EXPAND_PANE);
+            expandPane.setAttribute('aria-expanded', 'true');
         } else {
-            removeClass([this.previousPane], EXPAND_PANE);
-            removeClass([this.nextPane], collapseClass);
-            addClass([this.nextPane], EXPAND_PANE);
-            addClass([this.previousPane], collapseClass);
-            if (!this.collapseFlag) {
-                this.updatePaneSettings(this.prevPaneIndex, true);
+            let isFlexPaneHidden: boolean = true;
+            for (let i: number = 0; i < this.allPanes.length; i++) {
+                if (!this.allPanes[i as number].classList.contains(COLLAPSE_PANE)) {
+                    if (this.allPanes[i as number].style.flexBasis === '' && !this.allPanes[i as number].classList.contains(COLLAPSE_PANE)
+                        && !this.allPanes[i as number].classList.contains(EXPAND_PANE)) {
+                        addClass([this.allPanes[i as number]], EXPAND_PANE);
+                        this.allPanes[i as number].setAttribute('aria-expanded', 'true');
+                        isFlexPaneHidden = false;
+                        break;
+                    }
+                }
+            }
+            if (isFlexPaneHidden){
+                addClass([expandPane], EXPAND_PANE);
+                expandPane.setAttribute('aria-expanded', 'true');
             }
         }
-        this.updateIconsOnCollapse(e);
-        this.previousPane.setAttribute('aria-expanded', 'false');
-        this.nextPane.setAttribute('aria-expanded', 'true');
-        this.updateFlexGrow(this.checkStaticPanes());
+        if (!this.collapseFlag) {
+            this.updatePaneSettings(collapsePaneIndex, true);
+        }
+        this.updateIconsOnCollapse(e , icon);
+        this.updateFlexGrow();
         if (flexStatus) {
             this.nextPane.classList.remove(EXPAND_PANE);
             this.nextPane.style.flexGrow = '';
@@ -1735,69 +1741,93 @@ export class Splitter extends Component<HTMLElement> {
         };
     }
 
-    private showCurrentBarIcon(): void {
+    private showCurrentBarIcons(): void {
         removeClass([select('.' + this.arrow, this.currentSeparator)], HIDE_ICON);
     }
 
-    private updateIconsOnExpand(e: Event): void {
+    private hideBarIcons(bar: HTMLElement): void {
+        addClass([select('.' + this.arrow, bar)], HIDE_ICON);
+    }
+
+    private getCollapseCount(prevPaneIndex: number , nextPaneIndex: number): number{
+        let collapsecount: number = 0;
+        if (this.allPanes[prevPaneIndex as number].classList.contains(COLLAPSE_PANE)) {
+            collapsecount = collapsecount + 1;
+        }
+        if (this.allPanes[nextPaneIndex as number].classList.contains(COLLAPSE_PANE)) {
+            collapsecount = collapsecount + 1;
+        }
+        return collapsecount;
+    }
+
+    private checkResizableProp(prevPaneIndex: number, nextPaneIndex: number): boolean{
+        if (this.paneSettings[prevPaneIndex as number].resizable && this.paneSettings[nextPaneIndex as number].resizable) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private updateIconsOnExpand(e: Event , targetIcon: string): void {
         this.splitterProperty();
-        addClass([e.target as HTMLElement], HIDE_ICON);
-        if (!this.splitInstance.prevPaneExpanded && !this.splitInstance.nextPaneCollapsed) {
-            if (this.paneSettings[this.prevPaneIndex].collapsible) {
-                this.showCurrentBarIcon();
-            }
-            if (this.paneSettings[this.nextPaneIndex].collapsible) {
-                removeClass([e.target as HTMLElement], HIDE_ICON);
-            }
-            if (this.paneSettings[this.currentBarIndex].resizable) {
-                this.resizableModel(this.currentBarIndex, true);
-            }
-            if (!isNullOrUndefined(this.prevBar) &&
-                !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
-                if (this.paneSettings[this.currentBarIndex - 1].resizable) {
-                    this.resizableModel(this.currentBarIndex - 1, true);
-                }
-                if (this.paneSettings[this.prevPaneIndex].collapsible) {
-                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
-                }
-                if (!this.paneSettings[this.currentBarIndex - 1].collapsible) {
-                    this.hideTargetBarIcon(this.prevBar, this.arrow);
-                    if (this.paneSettings[this.currentBarIndex].collapsible &&
-                        !this.paneSettings[this.currentBarIndex + 1].collapsible) {
-                        this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
+        const showIcon: string = this.arrow;
+        const otherBar: HTMLElement = this.currentBarIndex === (this.allBars.length - 1) ? this.prevBar : this.nextBar;
+        const otherBarIndex: number = this.currentBarIndex === (this.allBars.length - 1) ?
+            this.currentBarIndex - 1 : this.currentBarIndex + 1;
+        if (!(e.target as Element).classList.contains(HIDE_ICON)) {
+            // prevPane ! collapsed && nextPane ! collapsed
+            if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneCollapsed) {
+                if (this.paneSettings[this.prevPaneIndex].collapsible && this.paneSettings[this.nextPaneIndex].collapsible) {
+                    this.showCurrentBarIcons();
+                    if (this.checkResizableProp(this.prevPaneIndex, this.nextPaneIndex)){
+                        this.resizableModel(this.currentBarIndex, true);
+                    } else {
+                        this.resizableModel(this.currentBarIndex, false);
                     }
-                } else if (this.paneSettings[this.currentBarIndex].collapsible &&
-                    !this.paneSettings[this.currentBarIndex + 1].collapsible) {
-                    this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
+                    if (!isNullOrUndefined(otherBar)){
+                        const otherPrevPaneIndex: number = otherBarIndex;
+                        const otherNextPaneIndex: number = otherBarIndex + 1;
+                        const collapsecount: number = this.getCollapseCount(otherPrevPaneIndex, otherNextPaneIndex);
+                        if (this.paneSettings[otherPrevPaneIndex as number].collapsible &&
+                                this.paneSettings[otherNextPaneIndex as number].collapsible) {
+                            if (collapsecount === 0) {
+                                this.showTargetBarIcon(otherBar , targetIcon);
+                                this.showTargetBarIcon(otherBar , showIcon);
+                                if (this.checkResizableProp(otherPrevPaneIndex, otherNextPaneIndex)){
+                                    this.resizableModel(otherBarIndex, true);
+                                }
+                            } else if (collapsecount === 1){
+                                this.hideBarIcons(otherBar);
+                                // If condition Edge case in flexible cases
+                                if (this.allPanes[otherPrevPaneIndex as number].classList.contains(EXPAND_PANE) ||
+                                    this.allPanes[otherNextPaneIndex as number].classList.contains(EXPAND_PANE)){
+                                    this.showTargetBarIcon(otherBar, showIcon);
+                                } else {
+                                    // Common case
+                                    this.showTargetBarIcon(otherBar, targetIcon);
+                                }
+                                this.resizableModel(otherBarIndex, false);
+                            }
+                        }
+                    }
                 }
-            } else {
-                if (this.previousPane.previousElementSibling && this.paneSettings[this.prevPaneIndex].collapsible &&
-                    (this.previousPane.previousElementSibling.classList.contains(COLLAPSE_PANE) &&
-                        this.paneSettings[this.prevPaneIndex - 1].collapsible)) {
-                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                else {
+                    this.hideTargetBarIcon(this.currentSeparator, targetIcon);
+                    this.showTargetBarIcon(this.currentSeparator, showIcon);
+                    if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneCollapsed){
+                        if (this.checkResizableProp(this.prevPaneIndex, this.nextPaneIndex)){
+                            this.resizableModel(this.currentBarIndex, true);
+                        }
+                    } else {
+                        this.resizableModel(this.currentBarIndex, false);
+                    }
                 }
-                if (!this.paneSettings[this.currentBarIndex + 1].collapsible) {
-                    this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
+            }
+        } else {
+            if (!this.paneSettings[this.prevPaneIndex].collapsible && !this.paneSettings[this.nextPaneIndex].collapsible) {
+                if (this.checkResizableProp(this.prevPaneIndex, this.nextPaneIndex)){
+                    this.resizableModel(this.currentBarIndex, true);
                 }
-            }
-        } else if (this.splitInstance.prevPaneExpanded && this.splitInstance.nextPaneCollapsed) {
-            this.resizableModel(this.currentBarIndex, false);
-            this.resizableModel(this.currentBarIndex + 1, false);
-            if (this.paneSettings[this.nextPaneIndex].collapsible) {
-                this.showCurrentBarIcon();
-            }
-            if (!isNullOrUndefined(this.nextBar)) {
-                this.hideTargetBarIcon(this.nextBar, this.arrow);
-            }
-            if (this.nextPane && this.nextPaneIndex === this.allPanes.length - 1 && (!this.paneSettings[this.nextPaneIndex].collapsible &&
-                this.splitInstance.nextPaneCollapsed)) {
-                this.hideTargetBarIcon(this.currentSeparator, this.arrow);
-            }
-            if (!(this.nextPaneIndex === this.allPanes.length - 1) && this.nextPane.nextElementSibling &&
-                this.nextPane.classList.contains(COLLAPSE_PANE) &&
-                !this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE)
-                && this.paneSettings[this.nextPaneIndex].collapsible) {
-                this.showTargetBarIcon(this.nextBar, this.rightArrow);
             }
         }
     }
@@ -2132,7 +2162,7 @@ export class Splitter extends Component<HTMLElement> {
         }
         const allFlexiblePanes : boolean = flexPaneCount === this.allPanes.length;
         // Two flexible Pane Case.
-        if ( this.previousPane.style.flexBasis === '' && this.nextPane.style.flexBasis == '' && !allFlexiblePanes){
+        if ( this.previousPane.style.flexBasis === '' && this.nextPane.style.flexBasis === '' && !allFlexiblePanes){
             const middlePaneIndex: number = this.allPanes.length % this.allBars.length;
             if ( this.prevPaneIndex === middlePaneIndex ){
                 this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;

@@ -522,6 +522,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     private chartid: number = 57725;
     /** @private */
     public stockChart: StockChart;
+    redraw: boolean = false;
 
     /**
      * Constructor for creating the widget
@@ -1057,6 +1058,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             case 'value':
                 this.startValue = null; this.endValue = null;
                 refreshRange = true;
+                this.redraw = true;
                 break;
             }
         }

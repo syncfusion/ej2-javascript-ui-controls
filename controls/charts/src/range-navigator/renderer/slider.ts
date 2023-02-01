@@ -239,6 +239,12 @@ export class RangeSlider {
             this.control.rangeTooltipModule.renderLeftTooltip(this);
             this.control.rangeTooltipModule.renderRightTooltip(this);
         }
+        let periodSelectorModule: PeriodSelector = this.control.periodSelectorModule;
+        if (periodSelectorModule && this.control.redraw && (this.control.getModuleName() === 'rangeNavigator')) {
+            const selectedIndex: number = periodSelectorModule.findSelectedIndex(start, end, periodSelectorModule.control.periods);
+            periodSelectorModule.setSelectedStyle(selectedIndex);
+            this.control.redraw = false;
+        }
         if (trigger && !resize) {
             this.triggerEvent(axisRange);
         }

@@ -81,7 +81,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 if (col.template) {
                     setTimeout(
                         () => {
-                            this.parent.refreshReactColumnTemplateByUid(col.uid);
+                            this.parent.refreshReactColumnTemplateByUid(col.uid, true);
                         },
                         0);
                     break;

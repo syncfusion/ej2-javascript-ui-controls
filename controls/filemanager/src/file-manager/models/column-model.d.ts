@@ -134,4 +134,11 @@ export interface ColumnModel {
     /* eslint-disable */
     customFormat?: { [x: string]: Object };
 
+    /**
+     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     *
+     * @default false
+     */
+    isPrimaryKey?: boolean;
+
 }

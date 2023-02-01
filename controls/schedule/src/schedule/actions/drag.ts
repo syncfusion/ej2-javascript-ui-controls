@@ -281,7 +281,7 @@ export class DragAndDrop extends ActionBase {
             return;
         }
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
-        const eventArgs: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+        const eventArgs: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e);
         this.actionObj.Y = this.actionObj.pageY = eventArgs.pageY;
         this.actionObj.X = this.actionObj.pageX = eventArgs.pageX;
         this.actionObj.target = e.target;
@@ -424,7 +424,8 @@ export class DragAndDrop extends ActionBase {
             this.timelineEventModule.dateRender = this.parent.activeView.renderDates;
             this.timelineEventModule.cellWidth = this.actionObj.cellWidth;
             this.timelineEventModule.getSlotDates();
-            this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth : this.actionObj.cellWidth;
+            this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth :
+                this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS).getBoundingClientRect().width;
             this.calculateTimelineTime(e);
         } else {
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
@@ -1167,7 +1168,7 @@ export class DragAndDrop extends ActionBase {
     }
 
     private getColumnIndex(offsetLeft: number): number {
-        const index: number = Math.floor(offsetLeft / this.actionObj.cellWidth);
+        const index: number = Math.floor(offsetLeft / Math.trunc(this.actionObj.cellWidth));
         if (this.isHeaderRows) {
             return index;
         }

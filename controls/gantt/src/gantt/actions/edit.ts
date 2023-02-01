@@ -827,7 +827,7 @@ export class Edit {
             }
             this.parent.predecessorModule.isValidatedParentTaskID = '';
             /** validating predecessor for current edited records */
-            if (ganttRecord.ganttProperties.predecessor) {
+            if (ganttRecord.ganttProperties.predecessorsName) {
                 this.parent.isMileStoneEdited = ganttRecord.ganttProperties.isMilestone;
                 if (this.taskbarMoved) {
                     this.parent.editedTaskBarItem = ganttRecord;

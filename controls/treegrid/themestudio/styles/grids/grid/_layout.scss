@@ -3659,8 +3659,15 @@
         margin-top: $grid-reorder-arrow-top-margin;
       }
 
+      .e-gridheader .e-headercontent .e-reorderuparrow-virtual {
+        margin-top: $grid-reorder-virtualarrow-top-margin;
+      }
+
       .e-gridheader .e-headercontent .e-reorderdownarrow {
         margin-top: $grid-reorder-downarrow-top-margin;
+      }
+      .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
+        margin-top: $grid-reorder-virtualdownarrow-top-margin;
       }
 
       .e-masked-cell.e-rowcell .e-virtualcell {
@@ -3711,6 +3718,11 @@
       .e-checkboxlist .e-fltrcheck,
       .e-cc-contentdiv .e-choosercheck {
         white-space: $grid-filter-checkbox-white-space;
+      }
+	  
+      .e-filterdiv .e-multiselect.e-input-group:not(.e-rtl),
+      .e-fltrtempdiv .e-multiselect.e-input-group:not(.e-rtl){
+        text-align: left;
       }
     }
   }

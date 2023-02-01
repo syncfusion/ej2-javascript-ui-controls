@@ -93,7 +93,7 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index as number], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
-                } else if ((format === 'fontsize' || format === 'fontname' || format === 'fontcolor') && range.startContainer.parentElement === endNode){
+                } else if ((format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') && range.startContainer.parentElement === endNode){
                     formatNode = null;
                 }
                 if (index === 0 && formatNode === null) {
@@ -409,21 +409,21 @@ export class SelectionCommands {
         value: string,
         domNode: DOMNode,
         endNode: Node): Node {
-        let rootBlockNode: Node;
+        let rootElementNode: Node;
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
                 if (nodes[index as number].nodeName !== 'BR') {
-                    if (format === 'fontsize' || format === 'fontname' || format === 'fontcolor') {
+                    if (format === 'fontsize' || format === 'fontname' || format === 'fontcolor' || format === 'backgroundcolor') {
                         let rangeNode: Node = nodes[index];
                         while (rangeNode && !domNode.isBlockNode(rangeNode as Element) && rangeNode !== endNode) {
                             if (domNode.isBlockNode(rangeNode.parentElement)) {
-                                rootBlockNode = rangeNode;
+                                rootElementNode = rangeNode;
                             }
                             rangeNode = rangeNode.parentElement;
                         }
-                        if (rootBlockNode && rootBlockNode.nodeType !== 3) {
-                            nodeCutter.SplitNode(range, rootBlockNode as HTMLElement, true).cloneNode(true);
-                            nodeCutter.SplitNode(range, rootBlockNode as HTMLElement, false).cloneNode(false);
+                        if (rootElementNode && rootElementNode.nodeType !== 3) {
+                            nodeCutter.SplitNode(range, rootElementNode as HTMLElement, true).cloneNode(true);
+                            nodeCutter.SplitNode(range, rootElementNode as HTMLElement, false).cloneNode(false);
                         }
                     }
                     nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
@@ -434,11 +434,11 @@ export class SelectionCommands {
                         : nodes[index as number].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
                     const element: HTMLElement = this.GetFormatNode(format, value);
-                    if (format === 'fontsize' || format === 'fontcolor' || format === 'fontname') {
-                        if (format !== 'fontname') {
+                    if (format === 'fontsize' || format === 'fontcolor' || format === 'fontname' || format === 'backgroundcolor') {
+                        if (format !== 'fontname' && format !== 'backgroundcolor') {
                             let liElement: HTMLElement = nodes[index as number].parentElement;
                             let parentElement: HTMLElement = nodes[index as number].parentElement;
-                            while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                            while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li' && parentElement !== endNode) {
                                 parentElement = parentElement.parentElement;
                                 liElement = parentElement;
                             }
@@ -452,13 +452,13 @@ export class SelectionCommands {
                                 }
                             }
                         }
-                        if (rootBlockNode && rootBlockNode.nodeType !== 3) {
+                        if (rootElementNode && rootElementNode.nodeType !== 3) {
                             const save: NodeSelection = new NodeSelection();
                             save.save(range, docElement);
                             domNode.setMarker(save);
-                            var cloneNode = rootBlockNode.cloneNode(true);
+                            var cloneNode = rootElementNode.cloneNode(true);
                             element.appendChild(cloneNode);
-                            domNode.replaceWith(rootBlockNode as Element, element.outerHTML);
+                            domNode.replaceWith(rootElementNode as Element, element.outerHTML);
                             const currentStartNode: Node = (endNode as Element).querySelector('.e-editor-select-start');
                             const currrentEndNode: Node = (endNode as Element).querySelector('.e-editor-select-end');
                             if (index === 0) {

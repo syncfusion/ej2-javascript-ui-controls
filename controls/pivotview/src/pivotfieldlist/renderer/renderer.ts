@@ -9,6 +9,7 @@ import { AxisFieldRenderer } from './axis-field-renderer';
  */
 /** @hidden */
 export class Render {
+    /** @hidden */
     public parent: PivotFieldList;
 
     /** Constructor for render module

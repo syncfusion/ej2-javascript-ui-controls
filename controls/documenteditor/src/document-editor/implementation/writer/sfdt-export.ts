@@ -5,7 +5,7 @@ import { WListLevel } from '../list/list-level';
 import { WTabStop, WParagraphFormat } from '../format/paragraph-format';
 import { WCellFormat, WTableFormat, WRowFormat, WStyle, WListFormat, WCharacterFormat, WColumnFormat } from '../format/index';
 import { WBorder, WBorders, WShading } from '../format/index';
-import { LayoutViewer } from '../index';
+import { FontSchemeStruct, LayoutViewer } from '../index';
 import {
     IWidget, LineWidget, ParagraphWidget, BlockContainer, BodyWidget, TextElementBox, Page, ElementBox, FieldElementBox, TableWidget,
     TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters, ContentControl,
@@ -168,7 +168,7 @@ export class SfdtExport {
                 selectionEndCell = this.getParentCell(selectionEndCell);
             }
             let isSameCell: boolean = selectionStartCell instanceof TableCellWidget && selectionEndCell instanceof TableCellWidget
-                && selectionEndCell.equals(selectionEndCell);
+                && selectionStartCell.equals(selectionEndCell);
             if (isSameCell || isNullOrUndefined(endCell)) {
                 this.startLine  = line;
                 this.endLine = endLine;
@@ -1386,7 +1386,7 @@ export class SfdtExport {
     }
     private writeMajorMinorFontScheme(source: MajorMinorFontScheme): any {
         let majorMinorFontScheme: any = {};
-        majorMinorFontScheme.fontSchemeList = source.fontSchemeList;
+        majorMinorFontScheme.fontSchemeList = this.writeFontSchemeList(source.fontSchemeList);
         let keys: string [] = source.fontTypeface.keys;
         let fontTypeface: any = {};
         for(let key of keys) {
@@ -1394,6 +1394,17 @@ export class SfdtExport {
         }
         majorMinorFontScheme.fontTypeface = fontTypeface;
         return majorMinorFontScheme;
+    }
+    private writeFontSchemeList(source: FontSchemeStruct[]): any {
+        let fontSchemeStructs: any = [];
+        source.forEach(val => {
+            let schemeStruct: any = {};
+            schemeStruct.name = val.name;
+            schemeStruct.typeface = val.typeface;
+            schemeStruct.panose = val.panose;
+            fontSchemeStructs.push(schemeStruct);
+        });
+        return fontSchemeStructs;
     }
     private writeTabs(tabStops: WTabStop[]): any {
         if (isNullOrUndefined(tabStops) || tabStops.length < 1) {

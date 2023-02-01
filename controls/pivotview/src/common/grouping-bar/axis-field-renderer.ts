@@ -12,6 +12,7 @@ import { PivotButton } from '../actions/pivot-button';
  */
 /** @hidden */
 export class AxisFields {
+    /** @hidden */
     public parent: PivotView;
 
     /** Constructor for render module

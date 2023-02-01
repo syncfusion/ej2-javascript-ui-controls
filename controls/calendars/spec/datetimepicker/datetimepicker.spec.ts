@@ -1555,6 +1555,7 @@ describe('Localization testing', () => {
         loadCultureFiles('de');
         datetimepicker = new DateTimePicker({ value: new Date('2/2/2017'), locale: 'de' });
         datetimepicker.appendTo('#dateTime');
+        datetimepicker.show();
         expect(datetimepicker.firstDayOfWeek).toBe(1)
         expect(datetimepicker.tableHeadElement.querySelector('th').textContent).toBe('Mo.');
     });

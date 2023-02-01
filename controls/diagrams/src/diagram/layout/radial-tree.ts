@@ -227,8 +227,8 @@ export class RadialTree {
         const nodeInfo: INodeInfo = layout.graphNodes[node.id];
         const offsetX: number = nodeInfo.x + layout.anchorX;
         const offsetY: number = nodeInfo.y + layout.anchorY;
-        node.offsetX += offsetX;
-        node.offsetY += offsetY;
+        node.offsetX = offsetX;
+        node.offsetY = offsetY;
         for (let i: number = 0; i < nodeInfo.children.length; i++) {
             const childInfo: INode = nodeInfo.children[parseInt(i.toString(), 10)];
             this.updateNodes(layout, nameTable[childInfo.id], nameTable);

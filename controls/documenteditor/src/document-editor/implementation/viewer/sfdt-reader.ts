@@ -1810,9 +1810,9 @@ export class SfdtReader {
             for (let j: number = 0; j < sourceFormat.fontSchemeList.length; j++) {
                 let data: any = sourceFormat.fontSchemeList[j];
                 let fontList: FontSchemeStruct = new FontSchemeStruct();
-                fontList.name = data.name;
-                fontList.typeface = data.typeface;
-                fontList.panose = data.panose;
+                fontList.name = !isNullOrUndefined(data.fontName)? data.fontName : data.name;
+                fontList.typeface = !isNullOrUndefined(data.fontTypeface)? data.fontTypeface : data.typeface;
+                fontList.panose = !isNullOrUndefined(data.pnose)? data.pnose : data.panose;
                 majorMinor.fontSchemeList.push(fontList);
             }
             this.documentHelper.hasThemes = true;

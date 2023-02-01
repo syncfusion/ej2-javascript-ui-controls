@@ -528,6 +528,7 @@ export class WorkbookFormula {
 
     private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number, sheetIdx: number): string {
         if (!isNullOrUndefined(formula)) {
+            formula = this.autoCorrectCellRef(formula);
             formula = formula.toString();
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
                 formula += ')';
@@ -568,6 +569,98 @@ export class WorkbookFormula {
             }
         }
         return formula;
+    }
+
+    private correctCellReference(cellRef: string): { isInvalid: boolean, ref: string } {
+        const cellRefArr: string[] = cellRef.split(':');
+        let refArr: string[]; let sheetRefArr: string[]; let oprMatchArr: RegExpMatchArray; let isInvalid: boolean; let updatedRef: string;
+        cellRefArr.forEach((cellAddr: string, idx: number): void => {
+            sheetRefArr = cellAddr.split('!');
+            cellRef = sheetRefArr[1] || cellAddr;
+            updatedRef = null;
+            if (cellRef.includes('&')) {
+                refArr = cellRef.split('&');
+                if (this.calculateInstance.isCellReference(refArr[1].split('$').join(''))) {
+                    refArr[1] = this.getUpdatedCellRef(refArr[1]);
+                    updatedRef = refArr.join('&');
+                }
+            } else if (this.calculateInstance.isCellReference(cellRef.split('$').join(''))) {
+                updatedRef = this.getUpdatedCellRef(cellRef);
+                if (sheetRefArr.length > 1) {
+                    updatedRef = sheetRefArr[0] + '!' + updatedRef;
+                }
+            } else {
+                oprMatchArr = cellAddr.match(/[\/\+\-\*\^\>\<\>=\<=\<>]+/g);
+                if (oprMatchArr) {
+                    refArr = cellAddr.split(oprMatchArr[0]);
+                    for (let refIdx: number = 0; refIdx < refArr.length; refIdx++) {
+                        sheetRefArr = refArr[refIdx as number].split('!');
+                        cellRef = sheetRefArr[1] || sheetRefArr[0];
+                        if (this.calculateInstance.isCellReference(cellRef.split('$').join(''))) {
+                            refArr[refIdx as number] = this.getUpdatedCellRef(cellRef);
+                            if (sheetRefArr.length > 1) {
+                                refArr[refIdx as number] = sheetRefArr[0] + '!' + refArr[refIdx as number];
+                            }
+                        }
+                    }
+                    updatedRef = refArr.join(oprMatchArr[0]);
+                }
+            }
+            if (updatedRef && updatedRef !== cellAddr) {
+                isInvalid = true;
+                cellRefArr[idx as number] = updatedRef;
+            }
+        });
+        return { isInvalid: isInvalid, ref: cellRefArr.join(':') };
+    }
+
+    private autoCorrectCellRef(formula: string): string {
+        const rightParens: number = formula.lastIndexOf(')');
+        let refCorrectObj: { isInvalid: boolean, ref: string };
+        if (rightParens > -1 && formula.split(')').length === 2) {
+            let leftParens: number = rightParens - 1;
+            while (leftParens > -1 && formula[leftParens as number] !== '(') {
+                if (formula[leftParens as number] === ')') {
+                    return formula;
+                }
+                leftParens--;
+            }
+            if (leftParens > -1) {
+                const formulaArgs: string = formula.substring(leftParens + 1, rightParens);
+                const formulaArgsArr: string[] = formulaArgs.split(',');
+                let isInValidRef: boolean;
+                for (let argsIdx: number = 0; argsIdx < formulaArgsArr.length; argsIdx++) {
+                    refCorrectObj = this.correctCellReference(formulaArgsArr[argsIdx as number]);
+                    if (refCorrectObj.isInvalid) {
+                        isInValidRef = true;
+                        formulaArgsArr[argsIdx as number] = refCorrectObj.ref;
+                    }
+                }
+                if (isInValidRef) {
+                    formula = formula.split(formulaArgs).join(formulaArgsArr.join(','));
+                }
+            }
+        } else if (formula.startsWith('=') && !formula.includes(')')) {
+            refCorrectObj = this.correctCellReference(formula.substring(1, formula.length));
+            if (refCorrectObj.isInvalid) {
+                formula =  '=' + refCorrectObj.ref;
+            }
+        }
+        return formula;
+    }
+
+    private getUpdatedCellRef(cellRef: string): string {
+        const orgCellRef: string = cellRef;
+        cellRef = cellRef.trim();
+        let isAbsolute: boolean = cellRef.indexOf('$') === 0;
+        let alphabetStartIdx: number = cellRef.search(/[a-zA-Z]/);
+        const digitStartIdx: number = cellRef.search(/\d/);
+        alphabetStartIdx = isAbsolute ? alphabetStartIdx - 1 : alphabetStartIdx;
+        if ((isAbsolute ? digitStartIdx > 1 : digitStartIdx > 0) && isNumber(cellRef.substring(digitStartIdx, cellRef.length))) {
+            return orgCellRef;
+        } else {
+            return cellRef.substring(alphabetStartIdx, cellRef.length) + cellRef.substring(0, alphabetStartIdx);
+        }
     }
 
     private initiateDefinedNames(): void {

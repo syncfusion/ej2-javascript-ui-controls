@@ -420,8 +420,8 @@
   height: $ddl-input-height;
   min-height: $ddl-input-height;
   outline: none;
-  padding: 0;
-  text-indent: $ddl-input-text-indent;
+  padding: $ddl-input-placeholder-padding;
+  text-indent: 0;
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper input[type = 'text'] {
@@ -2003,4 +2003,14 @@ ejs-multiselect {
 
 .e-multiselect.e-input-group.e-control-wrapper .e-input-group-icon {
   margin-right: 0;
+}
+
+.e-multiselect.e-control-container.e-input-group.e-disabled .e-input-group-icon.e-ddl-icon.e-icons,
+.e-multiselect.e-control-container.e-input-group.e-disabled .e-clear-icon {
+  cursor: not-allowed;
+}
+
+.e-multiselect.e-control-wrapper.e-control-container.e-input-group.e-checkbox .e-multi-select-wrapper.e-down-icon,
+.e-multiselect.e-control-wrapper.e-control-container.e-input-group.e-checkbox .e-multi-select-wrapper.e-down-icon .e-multi-searcher .e-dropdownbase.e-control.e-multiselect.e-lib {
+  cursor: pointer;
 }

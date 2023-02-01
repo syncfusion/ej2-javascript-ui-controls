@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I423971` - Provided cancel option in Drag Start and Drag Stop events of the Dashboard Layout component.
+
+### Common
+
+#### Bug Fixes
+
+- `#I424071` - The issue with the "Tooltip component throws a script error when setting content as '${}'" has been resolved.
+
 ## 20.4.44 (2023-01-18)
 
 ### Common

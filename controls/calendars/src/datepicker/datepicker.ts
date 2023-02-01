@@ -515,7 +515,7 @@ export class DatePicker extends Calendar implements IInput {
         this.createInput();
         this.updateHtmlAttributeToWrapper();
         this.setAllowEdit();
-        this.updateInput();
+        this.updateInput(true);
         if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
             this.updateInputValue(this.maskedDateValue);
         }
@@ -579,8 +579,8 @@ export class DatePicker extends Calendar implements IInput {
     }
     protected updateInput(isDynamic: boolean = false): void {
         let formatOptions: DateFormatOptions;
-        if (this.value && !this.isCalendar() && !isDynamic) {
-            this.disabledDates();
+        if (this.value && !this.isCalendar()) {
+            this.disabledDates(isDynamic);
         }
         if (isNaN(+new Date(this.checkValue(this.value)))) {
             this.setProperties({ value: null }, true);
@@ -1991,14 +1991,15 @@ export class DatePicker extends Calendar implements IInput {
     protected getModuleName(): string {
         return 'datepicker';
     }
-    private disabledDates(): void {
+    private disabledDates(isDynamic: boolean = false): void {
         let formatOptions: DateFormatOptions;
         let globalize: string;
         const valueCopy: Date = this.checkDateValue(this.value) ? new Date(+this.value) : new Date(this.checkValue(this.value));
         const previousValCopy: Date = this.previousDate;
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
         this.minMaxUpdates();
-        super.render();
+        if (!isDynamic || (isDynamic && !isNullOrUndefined(this.renderDayCell))) {
+        super.render(); }
         this.previousDate = previousValCopy;
         const date: number = valueCopy && +(valueCopy);
         const dateIdString: string = '*[id^="/id"]'.replace('/id', '' + date);
@@ -2007,7 +2008,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.setProperties({ value: valueCopy }, true);
             }
         }
-        if (!isNullOrUndefined(this.calendarElement.querySelectorAll(dateIdString)[0])) {
+        if (!isNullOrUndefined(this.calendarElement) && !isNullOrUndefined(this.calendarElement.querySelectorAll(dateIdString)[0])) {
             if (this.calendarElement.querySelectorAll(dateIdString)[0].classList.contains('e-disabled')) {
                 if (!this.strictMode) {
                     this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
@@ -2066,8 +2067,8 @@ export class DatePicker extends Calendar implements IInput {
         const isDisabledDate: boolean = this.calendarElement &&
             this.calendarElement.querySelectorAll(dateIdString)[0] &&
             this.calendarElement.querySelectorAll(dateIdString)[0].classList.contains('e-disabled');
-        if ((!isNullOrUndefined(this.value) && !(+new Date(+this.value).setMilliseconds(0) >= +this.min
-            && +new Date(+this.value).setMilliseconds(0) <= +this.max))
+            if ((!isNullOrUndefined(this.value) && !isNullOrUndefined(this.min) && !isNullOrUndefined(this.max) && !(new Date(this.value as any).setMilliseconds(0) >= new Date(this.min as any).setMilliseconds(0)
+            && new Date(this.value as any).setMilliseconds(0) <= new Date(this.max as any).setMilliseconds(0)))
             || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue && isNullOrUndefined(this.value) || isDisabledDate)) {
             addClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'true' });

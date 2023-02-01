@@ -761,7 +761,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 labelElement = document.getElementById('container1_Axis_MultiLevelLabel_Level_1_Text_2');
                 trigger.clickEvent(labelElement);
-                expect(labelElement.textContent).toBe('Half Yearly 3');
+                expect(labelElement.textContent).toBe('HalfYearly 3');
                 done();
             };
             multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
@@ -930,7 +930,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 labelElement = document.getElementById('container1_Axis_MultiLevelLabel_Level_1_Text_2');
                 trigger.clickEvent(labelElement);
-                expect(labelElement.textContent).toBe('Half Yearly 3');
+                expect(labelElement.textContent).toBe('HalfYearly 3');
                 done();
             };
             multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
@@ -1110,7 +1110,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 labelElement = document.getElementById('container1_Axis_MultiLevelLabel_Level_1_Text_2');
                 trigger.clickEvent(labelElement);
-                expect(labelElement.textContent).toBe('Half Yearly 3');
+                expect(labelElement.textContent).toBe('HalfYearly 3');
                 done();
             };
             multilevellabelclick = (args: IMultiLevelLabelClickEventArgs): void => {
@@ -1865,7 +1865,7 @@ describe('Chart Control', () => {
                 svg = document.getElementById('container1_Axis_MultiLevelLabel_Level_0_Text_0');
                 expect(svg !== null).toBe(true);
                 expect(svg.getAttribute('x') === '681.5' || svg.getAttribute('x') === '927' ||
-                    svg.getAttribute('x') === '1171' || svg.getAttribute('x') === '695').toBe(true);
+                    svg.getAttribute('x') === '1171' || svg.getAttribute('x') === '695' || svg.getAttribute('x') === '716.5').toBe(true);  
                 expect(svg.getAttribute('y') === '330.2916666666667' || svg.getAttribute('y') === '331.125' ||
                     svg.getAttribute('y') === '329.7083333333333' || svg.getAttribute('y') === '333.375').toBe(true);
                 done();

@@ -4631,11 +4631,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @param {string} columnUid - Defines column uid
+     * @param {boolean} renderTemplates - Defines renderTemplates need to invoke
      * @returns {void}
      * @hidden
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public refreshReactColumnTemplateByUid(columnUid: string): void {
+    public refreshReactColumnTemplateByUid(columnUid: string, renderTemplates?: boolean): void {
         if ((<{ isReact?: boolean }>this).isReact) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).clearTemplate(['columnTemplate'], undefined, () => {
@@ -4667,6 +4668,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         }
                     }
                     isChildRow = false;
+                }
+                if (renderTemplates) {
+                    this.renderTemplates();
                 }
             });
         }
@@ -6611,7 +6615,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             (this.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'None';
         }
         const filterClear: Element = this.element.querySelector('.e-cancel:not(.e-hide)');
-        if (filterClear) {
+        if (filterClear && !filterClear.parentElement.classList.contains('e-tbar-btn')) {
             filterClear.classList.add('e-hide');
         }
         const relatedTarget: HTMLElement = e.relatedTarget as HTMLElement;

@@ -4156,6 +4156,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 if ((!isCountRequired(this) || childRecords.length) || action === 'collapse') {
                     this.localExpand(action, row, record);
                 }
+                const lastrowIdx: number = this.getVisibleRecords()[this.getVisibleRecords().length - 1]['index'];
+                const lastRow: Element = this.getRowByIndex(lastrowIdx);
+                if (this.grid.getContentTable().clientHeight <= this.grid.getContent().clientHeight && !isNullOrUndefined(lastRow as HTMLTableRowElement) && !(lastRow as HTMLTableRowElement).cells[0].classList.contains('e-lastrowcell')) {
+                    this.lastRowBorder(lastRow as HTMLTableRowElement, true);
+                }
             }
             if (isCountRequired(this) && action === 'expand') {
                 this.dataResults.result = this.getCurrentViewRecords() as ReturnOption;

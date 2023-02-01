@@ -1,4 +1,4 @@
-import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';
+import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType, isRippleEnabled } from '@syncfusion/ej2-base';
 import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect, getComponent } from '@syncfusion/ej2-base';
 import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { classList, removeClass } from '@syncfusion/ej2-base';
@@ -541,6 +541,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 EventHandler.remove(popupElement, this.closeActionEvents, this.focusoutHandler);
             }
         }
+        if (isRippleEnabled && this.rippleFn) {
+            this.rippleFn();
+        }
     }
 
     /**
@@ -793,6 +796,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 break;
             case 'cssClass':
                 if (newProp.cssClass.indexOf(classNames.VERTICAL) > -1) {
+                    if (!this.element.querySelector('span.e-caret')) {
+                        this.appendArrowSpan();
+                    }
                     const arrowSpan: Element = this.element.querySelector('span.e-caret');
                     classList(arrowSpan, ['e-icon-bottom'], ['e-icon-right']);
                 }

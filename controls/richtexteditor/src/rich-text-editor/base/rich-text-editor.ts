@@ -1155,7 +1155,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @event 'afterPasteCleanup'
      */
     @Event()
-    public afterPasteCleanup: EmitType<object>;
+    public afterPasteCleanup: EmitType<Object>;
 
     /**
      * Triggers before drop the image.

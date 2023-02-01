@@ -267,8 +267,8 @@ export class EventBase {
     }
 
     public sortByTime(appointmentsCollection: Record<string, any>[]): Record<string, any>[] {
-        if (this.parent.eventSettings.sortComparer) {
-            appointmentsCollection = this.parent.eventSettings.sortComparer.call(this.parent, appointmentsCollection);
+        if (this.parent.eventSettings.sortComparer && (typeof(this.parent.eventSettings.sortComparer) === 'function' || typeof(this.parent.eventSettings.sortComparer) === 'string')) {
+            appointmentsCollection = this.customSorting(appointmentsCollection);
         } else {
             const fieldMappings: EventFieldsMapping = this.parent.eventFields;
             appointmentsCollection.sort((a: Record<string, any>, b: Record<string, any>) => {
@@ -281,8 +281,8 @@ export class EventBase {
     }
 
     public sortByDateTime(appointments: Record<string, any>[]): Record<string, any>[] {
-        if (this.parent.eventSettings.sortComparer) {
-            appointments = this.parent.eventSettings.sortComparer.call(this.parent, appointments);
+        if (this.parent.eventSettings.sortComparer && (typeof(this.parent.eventSettings.sortComparer) === 'function' || typeof(this.parent.eventSettings.sortComparer) === 'string')) {
+            appointments = this.customSorting(appointments);
         } else {
             const fieldMapping: EventFieldsMapping = this.parent.eventFields;
             appointments.sort((object1: Record<string, any>, object2: Record<string, any>) => {
@@ -294,6 +294,22 @@ export class EventBase {
                 const d2: number = d6.getTime() - d4.getTime();
                 return (d3.getTime() - d4.getTime() || d2 - d1);
             });
+        }
+        return appointments;
+    }
+
+    private customSorting(appointments: Record<string, any>[]): Record<string, any>[] {
+        if (typeof(this.parent.eventSettings.sortComparer) === 'function') {
+            return this.parent.eventSettings.sortComparer.call(this.parent, appointments);
+        } else if (typeof(this.parent.eventSettings.sortComparer) === 'string') {
+            const splits: string[] = (this.parent.eventSettings.sortComparer as string).split('.');
+            let sortFn: Function;
+            if (!isNullOrUndefined(window)) {
+                sortFn = (window as Record<string, any>)[splits[splits.length - 1]];
+            }
+            if (sortFn) {
+                return sortFn(appointments);
+            }
         }
         return appointments;
     }
@@ -1250,6 +1266,15 @@ export class EventBase {
             index = index + 1;
         }
         return tr;
+    }
+
+    public getPageCoordinates(e: MouseEvent & TouchEvent): (MouseEvent & TouchEvent) | Touch {
+        if (isNullOrUndefined(e)) {
+            return e;
+        }
+        const eventArgs: TouchEvent = (e as Record<string, any> & MouseEvent & TouchEvent).event as TouchEvent;
+        return eventArgs && eventArgs.changedTouches ? eventArgs.changedTouches[0] : e.changedTouches ? e.changedTouches[0] :
+            (<MouseEvent & TouchEvent>eventArgs) || e;
     }
 
     private unWireEvents(): void {

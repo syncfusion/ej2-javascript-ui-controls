@@ -545,7 +545,7 @@ export class Toolbar {
     }
 
     private setFocusToolbarItem(element: Element): void {
-        let elementToFocus: Element = element.querySelector('.e-btn,.e-input');
+        let elementToFocus: Element = element.querySelector('.e-btn,.e-input,.e-toolbar-item-focus');
         if (!elementToFocus && this.parent.enableAdaptiveUI && !this.searchElement
             && element.classList.contains('e-search-wrapper')) {
             elementToFocus = element.querySelector('#' + this.gridID + '_searchbutton');
@@ -553,14 +553,21 @@ export class Toolbar {
         (elementToFocus as HTMLElement).focus();
     }
 
-    private getFocusableToolbarItems(): NodeListOf<Element> {
-        return this.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)');
+    public getFocusableToolbarItems(): Element[] {
+        const getFocusToolbarElements : Element[] = [].slice.call(this.element.querySelectorAll('.e-toolbar-item:not(.e-overlay):not(.e-hidden)'));
+        const getFocusToolbarItems : Element[] = [];
+        for (let i=0; i<getFocusToolbarElements.length; i++) {
+            if (!isNullOrUndefined(getFocusToolbarElements[i].querySelector('.e-btn,.e-input,.e-toolbar-item-focus'))) {
+                getFocusToolbarItems.push(getFocusToolbarElements[i]);
+            }
+        }
+        return getFocusToolbarItems;
     }
 
     private keyPressedHandler(e: KeyboardEventArgs): void {
         if (e.target && parentsUntil(e.target as Element, 'e-toolbar-item')) {
             const targetParent: Element = parentsUntil(e.target as Element, 'e-toolbar-item');
-            const focusableToolbarItems: NodeListOf<Element> = this.getFocusableToolbarItems();
+            const focusableToolbarItems: Element[] = this.getFocusableToolbarItems();
             if (e.action === 'tab' || e.action === 'shiftTab') {
                 if ((e.action === 'tab' && targetParent === focusableToolbarItems[focusableToolbarItems.length - 1])
                     || (e.action === 'shiftTab' && targetParent === focusableToolbarItems[0])) {

@@ -9,6 +9,7 @@ import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
  */
 /** @hidden */
 export class ErrorDialog {
+    /** @hidden */
     public parent: PivotCommon;
     /** @hidden */
     public errorPopUp: Dialog;

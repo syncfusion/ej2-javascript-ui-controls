@@ -1295,7 +1295,7 @@ export interface ImageUploadingEventArgs {
      *
      * @blazorType object
      */
-    customFormData: { [key: string]: Object; }[];
+    customFormData: { [key: string]: Object }[]
     /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
      *

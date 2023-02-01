@@ -15,6 +15,7 @@ import { PivotUtil } from '../../base/util';
  */
 /** @hidden */
 export class DialogRenderer {
+    /** @hidden */
     public parent: PivotFieldList;
     /** @hidden */
     public parentElement: HTMLElement;
@@ -622,6 +623,7 @@ export class DialogRenderer {
      *
      * @function destroy
      * @returns {void}
+     * @hidden
      */
     public destroy(): void {
         if (this.parent.renderMode === 'Popup') {

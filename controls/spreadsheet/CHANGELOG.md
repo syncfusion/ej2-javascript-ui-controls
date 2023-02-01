@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Spreadsheet
+
+#### New Features
+
+- `#F178912` - Now, you can specify the `orientation` type for PDF export.
+
 ## 20.4.40 (2022-12-28)
 
 ### Spreadsheet

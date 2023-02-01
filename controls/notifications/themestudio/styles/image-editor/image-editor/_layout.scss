@@ -201,6 +201,10 @@
 
     & .e-toolbar-area + .e-canvas-wrapper {
       border-top: $image-editor-border;
+
+      & .e-textarea {
+        line-height: initial !important; /* stylelint-disable-line declaration-no-important */
+      }
     }
 
     & .e-bottom-toolbar {

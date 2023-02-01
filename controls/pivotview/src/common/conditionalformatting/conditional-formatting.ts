@@ -17,6 +17,7 @@ import { PivotActionInfo } from '../base/interface';
 
 /** @hidden */
 export class ConditionalFormatting {
+    /** @hidden */
     public parent: PivotView;
 
     /**
@@ -598,6 +599,7 @@ export class ConditionalFormatting {
      * To create Conditional Formatting dialog.
      *
      * @returns {void}
+     * @hidden
      */
     public showConditionalFormattingDialog(): void {
         this.newFormat = [];

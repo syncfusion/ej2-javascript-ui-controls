@@ -25,12 +25,15 @@ import { AggregateTypes } from '../base/enum';
  */
 /** @hidden */
 export class PivotButton implements IAction {
+    /** @hidden */
     public parent: PivotView | PivotFieldList;
     /** @hidden */
     public parentElement: HTMLElement;
     private draggable: Draggable;
     private handlers: { load: Function };
+    /** @hidden */
     public menuOption: AggregateMenu;
+    /** @hidden */
     public axisField: AxisFieldRenderer;
     /** @hidden */
     public fieldName: string;

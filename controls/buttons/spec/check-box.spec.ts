@@ -120,6 +120,9 @@ describe('CheckBox', () => {
         it('CheckBox with cssClass', () => {
             checkbox = new CheckBox({ cssClass: 'class' }, '#checkbox');
             expect(element.parentElement.parentElement.classList.contains('class')).toEqual(true);
+            checkbox.cssClass = "syncfusion ";
+            checkbox.dataBind();
+            expect(element.parentElement.parentElement.classList.contains('syncfusion')).toEqual(true);
         });
 
         it('CheckBox with change event', () => {

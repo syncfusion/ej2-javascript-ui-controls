@@ -1203,7 +1203,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 isFullPost: true,
                 needBlobData: false,
                 cancel: false,
-                pdfLayoutSettings: { fitSheetOnOnePage: false }
+                pdfLayoutSettings: { fitSheetOnOnePage: false, orientation: 'Portrait' }
             };
             this.trigger('beforeSave', eventArgs);
             this.notify(beginAction, { eventArgs: eventArgs, action: 'beforeSave' });

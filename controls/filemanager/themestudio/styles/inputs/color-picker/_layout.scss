@@ -744,11 +744,25 @@
           & .e-slider-track {
             background: linear-gradient(to left, $cpicker-gradient-0 0, $cpicker-gradient-16 16%, $cpicker-gradient-33 33%, $cpicker-gradient-50 50%, $cpicker-gradient-67 67%, $cpicker-gradient-84 84%, $cpicker-gradient-100 100%);
           }
+
+          & .e-handle {
+            @if $skin-name == 'FluentUI' {
+              top: $cpicker-slider-handle-top !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
         }
 
         & .e-preview-container {
           margin-left: 0;
           margin-right: $cpicker-preview-margin-left;
+        }
+
+        & .e-opacity-slider {
+          & .e-handle-first {
+            @if $skin-name == 'FluentUI' {
+              top: $cpicker-slider-handle-top !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
         }
       }
 

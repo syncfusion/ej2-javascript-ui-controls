@@ -414,7 +414,7 @@ export class QuickPopups {
         if (deleteIcon) {
             this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.DELETE_ICON_CLASS, deleteAction, deleteIcon, this.deleteClick);
         }
-        this.beforeQuickPopupOpen(target, e);
+        this.beforeQuickPopupOpen(target, this.parent.eventBase.getPageCoordinates(e as MouseEvent & TouchEvent));
     }
 
     private isCellBlocked(args: CellClickEventArgs): boolean {
@@ -500,7 +500,7 @@ export class QuickPopups {
         this.quickPopup.content = quickCellPopup;
         this.quickPopup.relateTo = target as HTMLElement;
         this.quickPopup.dataBind();
-        this.beforeQuickPopupOpen(target, args.event);
+        this.beforeQuickPopupOpen(target, this.parent.eventBase.getPageCoordinates(args.event as MouseEvent & TouchEvent));
     }
 
     private isSameEventClick(events: EventClickArgs): boolean {
@@ -574,7 +574,7 @@ export class QuickPopups {
             this.quickPopup.relateTo = this.parent.isAdaptive ? document.body :
                 closest(<HTMLElement>events.element, '.' + cls.APPOINTMENT_CLASS) as HTMLElement;
             this.quickPopup.dataBind();
-            this.beforeQuickPopupOpen(events.element as Element, (events as any).originalEvent);
+            this.beforeQuickPopupOpen(events.element as Element, this.parent.eventBase.getPageCoordinates((events as any).originalEvent));
         }
     }
 
@@ -1055,7 +1055,7 @@ export class QuickPopups {
         });
     }
 
-    private beforeQuickPopupOpen(target: Element, originalEvent: MouseEvent | Event): void {
+    private beforeQuickPopupOpen(target: Element, originalEvent: (MouseEvent & TouchEvent) | Touch): void {
         this.parent.renderTemplates(() => {
             const isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
             const popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
@@ -1080,7 +1080,8 @@ export class QuickPopups {
                         this.quickPopup.element.style.display = 'block';
                         this.quickPopup.element.style.height = formatUnit((popupType === 'EditEventInfo') ? 65 : window.innerHeight);
                     } else {
-                        const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.virtualScrollModule.isHorizontalScroll
+                        const isVirtualScroll: boolean =
+                            this.parent.virtualScrollModule && this.parent.virtualScrollModule.isHorizontalScroll
                             && !isNullOrUndefined(closest(target, '.' + cls.CONTENT_TABLE_CLASS));
                         const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
                         this.quickPopup.offsetX = isVirtualScroll && !this.parent.enableRtl ? (util.getTranslateX(conTable) + 10) : 10;
@@ -1112,21 +1113,29 @@ export class QuickPopups {
                             this.quickPopup.dataBind();
                             this.quickPopup.refreshPosition(null, true);
                         }
-                        if (this.quickPopup.position.X === 'center' && this.quickPopup.position.Y === 'center' && !isNullOrUndefined(originalEvent)) {
+                        if (this.quickPopup.position.X === 'center' && this.quickPopup.position.Y === 'center' && !isNullOrUndefined(originalEvent) &&
+                            (originalEvent as MouseEvent).clientX && (originalEvent as MouseEvent).clientY) {
+                            const clientX: number = (originalEvent as MouseEvent).clientX;
+                            const clientY: number = (originalEvent as MouseEvent).clientY;
+                            const targetRect: ClientRect | DOMRect = target.getBoundingClientRect();
+                            const offsetY: number = (originalEvent as MouseEvent).offsetY || Math.ceil(clientY - (targetRect as any).y);
                             const previousOffset: number = this.quickPopup.offsetY;
-                            let collision: string[] = isCollide(target as HTMLElement, this.quickPopup.element);
+                            let collision: string[] = isCollide(this.quickPopup.element, target as HTMLElement);
                             const popupRect: ClientRect | DOMRect = this.quickPopup.element.getBoundingClientRect();
-                            if (collision.indexOf('top') > -1 || collision.indexOf('bottom') > -1) {
-                                if (popupRect.top <= (originalEvent as MouseEvent).clientY && (originalEvent as MouseEvent).clientY <= popupRect.top + popupRect.height) {
+                            const targetEle: Element = document.elementFromPoint(clientX, clientY);
+                            if (collision.indexOf('top') > -1 || collision.indexOf('bottom') > -1 || closest(targetEle, '.' + cls.POPUP_WRAPPER_CLASS)) {
+                                if (popupRect.top <= clientY &&
+                                    clientY <= popupRect.top + popupRect.height) {
                                     this.quickPopup.offsetY = previousOffset - popupRect.height - 10;
                                     this.quickPopup.dataBind();
                                     collision = isCollide(this.quickPopup.element, this.parent.element);
                                     if (collision.indexOf('top') > -1) {
-                                        this.quickPopup.offsetY = previousOffset + (originalEvent as MouseEvent).offsetY;
+                                        this.quickPopup.offsetY = previousOffset + offsetY + 10;
                                         this.quickPopup.dataBind();
                                     }
                                 } else if (isCollide(this.quickPopup.element, this.parent.element).indexOf('bottom') > -1) {
-                                    this.quickPopup.offsetY = previousOffset - (originalEvent as MouseEvent).offsetY - Math.ceil(popupRect.height) - 10;
+                                    this.quickPopup.offsetY =
+                                        previousOffset - offsetY - Math.ceil(popupRect.height) - 10;
                                     this.quickPopup.dataBind();
                                 }
                             }

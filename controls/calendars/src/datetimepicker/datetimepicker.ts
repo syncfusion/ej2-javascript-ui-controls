@@ -683,7 +683,7 @@ export class DateTimePicker extends DatePicker {
               module: "MaskedDateTime",
             });
           }
-        this.setValue();
+        this.setValue(true);
         if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
             Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
         }
@@ -702,7 +702,7 @@ export class DateTimePicker extends DatePicker {
         }
         this.renderComplete();
     }
-    private setValue(): void {
+    private setValue(isDynamic : boolean = false): void {
         this.initValue = this.validateMinMaxRange(this.value);
         if (!this.strictMode && this.isDateObject(this.initValue)) {
             const value: Date = this.validateMinMaxRange(this.initValue);
@@ -715,7 +715,7 @@ export class DateTimePicker extends DatePicker {
             }
         }
         this.valueWithMinutes = this.value;
-        super.updateInput();
+        super.updateInput(isDynamic);
     }
     private validateMinMaxRange(value: Date): Date {
         let result: Date = value;

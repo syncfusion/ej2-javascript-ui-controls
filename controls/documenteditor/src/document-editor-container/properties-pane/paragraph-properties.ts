@@ -1,6 +1,6 @@
 import { createElement, isNullOrUndefined, classList, L10n } from '@syncfusion/ej2-base';
 import { DocumentEditor, WAbstractList, WListLevel } from '../../document-editor/index';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Query } from '@syncfusion/ej2-data';
@@ -28,7 +28,7 @@ export class Paragraph {
     private increaseIndentBtn: Button;
     private decreaseIndentBtn: Button;
     private lineSpacing: DropDownButton;
-    private style: DropDownList;
+    private style: ComboBox;
     private isRetrieving: boolean = false;
     private styleName: string;
     public appliedBulletStyle: string = 'dot';
@@ -458,13 +458,14 @@ export class Paragraph {
         return liTag;
     }
     private createStyleDropDownList(selectElement: HTMLElement): void {
-        this.style = new DropDownList({
+        this.style = new ComboBox({
             dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',
             enableRtl: this.isRtl,
             query: new Query().select(['StyleName', 'Style']),
             fields: { text: 'StyleName', value: 'StyleName' },
+            showClearButton: false,
             change: this.selectStyleValue.bind(this)
         });
         if (!this.container.enableCsp) {
@@ -475,11 +476,14 @@ export class Paragraph {
             this.style.isStringTemplate = true;
         }
         this.style.appendTo(selectElement);
+        this.style.focus = (): void => {
+            this.isRetrieving = false;
+            (this.style.element as HTMLInputElement).select();
+        };
         selectElement.parentElement.setAttribute('title', this.localObj.getConstant('Styles'));
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private updateOptions(args: any): void {
-        this.updateStyleNames();
         args.popup.element.getElementsByClassName('e-de-ctnr-dropdown-ftr')[0].addEventListener('click', this.createStyle.bind(this));
     }
     public updateStyleNames(): void {

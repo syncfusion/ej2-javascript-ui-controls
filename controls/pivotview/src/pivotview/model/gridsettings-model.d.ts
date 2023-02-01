@@ -185,6 +185,7 @@ export interface GridSettingsModel {
      * > You can get the currently selected row index of the pivot table from the `selectedRowIndex` property using pivot table instance at run-time.
      *
      * @default -1
+     * @aspType int
      */
     selectedRowIndex?: number;
 

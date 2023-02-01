@@ -15,6 +15,7 @@ import * as events from '../base/constant';
  */
 /** @hidden */
 export class EventBase {
+    /** @hidden */
     public parent: PivotCommon;
     /** @hidden */
     public searchListItem: HTMLElement[] = [];
@@ -377,6 +378,14 @@ export class EventBase {
         return headers;
     }
 
+    /**
+     * 
+     * @param {TreeView} treeObj - Specifies the treeview instance.
+     * @param {string} id - Specifies the current node id.
+     * @param {string[]} parent - Specifies the collection of parent element.
+     * @returns {string[]}
+     * @hidden
+     */
     public getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {
         const data: { [key: string]: Object }[] = treeObj.fields.dataSource as { [key: string]: Object }[];
         let pid: string;
@@ -392,6 +401,15 @@ export class EventBase {
         }
         return parent;
     }
+
+    /**
+     * 
+     * @param {TreeView} treeObj - Specifies the treeview instance.
+     * @param {string} id - Specifies the current node id.
+     * @param {string[]} children - Specifies the collection of clid elements.
+     * @returns {string[]}
+     * @hidden
+     */
     public getChildIDs(treeObj: TreeView, id: string, children: string[]): string[] {
         const data: { [key: string]: Object }[] = treeObj.fields.dataSource as { [key: string]: Object }[];
         let cID: string;
@@ -630,6 +648,15 @@ export class EventBase {
         }
         return members;
     }
+
+    /**
+     * 
+     * @param {IOlapField[]} members - members.
+     * @param {string} fieldName - fieldName.
+     * @param {string} node - node.
+     * @param {boolean} state - state.
+     * @hidden
+     */
     public updateChildNodeStates(members: IOlapField[], fieldName: string, node: string, state: boolean): void {
         const cMembers: IMembers = (this.parent.engineModule as OlapEngine).fieldList[fieldName as string].members;
         const sMembers: IMembers = (this.parent.engineModule as OlapEngine).fieldList[fieldName as string].currrentMembers;

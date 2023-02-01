@@ -119,7 +119,7 @@ export interface BezierSettingsModel {
     *
     * @default 'true'
     */
-    canResetSegments?: boolean;
+    allowSegmentsReset?: boolean;
 
 }
 

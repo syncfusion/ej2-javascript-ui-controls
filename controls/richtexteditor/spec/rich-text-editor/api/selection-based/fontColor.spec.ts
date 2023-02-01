@@ -99,6 +99,8 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 done();
             })
             it(' Test the FontColor change dynamically ', (done) => {
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
                 let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
                 let palette = popup.querySelectorAll(".e-rte-square-palette");
                 expect(palette.length === 4).toBe(true);
@@ -144,6 +146,8 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                     modeSwitcher: true
                 };
                 rteObj.dataBind();
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
                 let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
                 let switchEle: HTMLElement = popup.querySelector(".e-mode-switch-btn");
                 expect(!isNullOrUndefined(switchEle)).toBe(true);
@@ -173,6 +177,8 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                     mode: 'Picker'
                 };
                 rteObj.dataBind();
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
                 let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
                 let container: HTMLElement = popup.querySelector(".e-hsv-container");
                 expect(!isNullOrUndefined(container)).toBe(true);
@@ -236,7 +242,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
 
             it(" Test the default value", () => {
                 let item: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content .e-font-color') as HTMLElement);
+                item = (item.querySelector('.e-rte-color-content .e-rte-font-color') as HTMLElement);
                 expect(item.style.borderBottomColor === 'rgb(191, 143, 0)').toBe(true);
             });
         });

@@ -93,8 +93,16 @@ function isValidLI(ul: HTMLElement, li: Element, index: number, keyCode: number,
  * @param {HTMLElement} popup - Specifies the popup element.
  * @returns {void}
  */
-export function setBlankIconStyle(popup: HTMLElement): void {
+export function setBlankIconStyle(popup: HTMLElement, blankIcon?: boolean): void {
     const blankIconList: HTMLElement[] = [].slice.call(popup.getElementsByClassName('e-blank-icon'));
+    if (blankIcon) {
+        const menuItem: HTMLElement[] = [].slice.call(popup.getElementsByClassName('e-item'));
+        menuItem.forEach((li: HTMLElement): void => {
+            if (li.style.paddingLeft || li.style.paddingRight) {
+                li.removeAttribute('style');
+            }
+        });
+    }
     if (!blankIconList.length) { return; }
     let iconLi: HTMLElement = popup.querySelector('.e-item:not(.e-blank-icon):not(.e-separator)') as HTMLElement;
     if (isNullOrUndefined(iconLi)) {return; }

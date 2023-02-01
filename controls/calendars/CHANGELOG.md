@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+- `#I426149` - The issue "show method target parameter not works as expected" has been resolved.
+
+## 20.4.44 (2023-01-18)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I428245` - The issue "selected range changes when we click outside the DateRangePicker component" has been resolved.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

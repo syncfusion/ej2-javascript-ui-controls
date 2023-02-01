@@ -1031,7 +1031,7 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
         let segment: StraightSegmentModel | BezierSegmentModel;
         let first: StraightSegmentModel | BezierSegmentModel;
         if (ele.type === 'Bezier') {
-            if ((ele.bezierSettings.canResetSegments || (ele.segments.length === 0 || 
+            if ((ele.bezierSettings.allowSegmentsReset || (ele.segments.length === 0 || 
                 (!Point.isEmptyPoint((ele.segments[ele.segments.length - 1] as BezierSegmentModel).point)))))  {
                 intermeditatePoints = findOrthoSegments(ele, source, target, undefined, lineDistribution);
                 intermeditatePoints = intermeditatePointsForStraight(ele, source, target);
@@ -3256,7 +3256,7 @@ function convertPointToBezierSegment(element: Connector, segCount: NoOfSegments,
         else{
             for(let i:number = 0; i<element.segments.length;i++)
             {
-                if(element.bezierSettings.canResetSegments){
+                if(element.bezierSettings.allowSegmentsReset){
                 (element.segments[parseInt(i.toString(), 10)] as BezierSegment).isInternalSegment = true;
                 }
             }

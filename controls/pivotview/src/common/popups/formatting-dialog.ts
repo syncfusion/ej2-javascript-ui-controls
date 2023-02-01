@@ -14,7 +14,9 @@ import { PivotUtil } from '../../base/util';
  */
 
 export class NumberFormatting implements IAction {
+    /** @hidden */
     public parent: PivotView;
+    /** @hidden */
     public dialog: Dialog;
     private valuesDropDown: DropDownList;
     private formatDropDown: DropDownList;
@@ -46,6 +48,7 @@ export class NumberFormatting implements IAction {
      * To show Number Formatting dialog.
      *
      * @returns {void}
+     * @hidden
      */
     public showNumberFormattingDialog(): void {
         const valueDialog: HTMLElement = createElement('div', {

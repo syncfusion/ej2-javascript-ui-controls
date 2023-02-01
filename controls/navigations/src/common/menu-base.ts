@@ -1859,6 +1859,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         navIdx.length = 0;
                     }
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((this as any).isReact && this.template) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (this as any).portals = []
+                }
                 break;
             }
             }

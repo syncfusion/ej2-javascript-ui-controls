@@ -730,6 +730,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
      */
 
     public draw(text: string, fontFamily?: string, fontSize?: number): void {
+        const args: SignatureChangeEventArgs = { actionName: 'draw-text'};
         this.canvasContext.clearRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
         fontFamily = fontFamily || 'Arial';
         fontSize = fontSize || 30;
@@ -739,6 +740,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         this.canvasContext.fillText(text, this.element.width / 2, this.element.height / 2);
         this.updateSnapCollection();
         this.isSignatureEmpty = false;
+        this.trigger('change', args);
     }
 
     /**

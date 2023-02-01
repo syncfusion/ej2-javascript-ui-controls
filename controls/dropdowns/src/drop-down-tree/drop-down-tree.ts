@@ -6,7 +6,7 @@ import { addClass, removeClass, detach, prepend, Complex, closest, setValue, get
 import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { Popup } from '@syncfusion/ej2-popups';
-import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
+import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs, NodeExpandEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
 import { DropDownTreeModel, FieldsModel, TreeSettingsModel } from './drop-down-tree-model';
 
@@ -1804,7 +1804,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const isValid: boolean = this.getValidMode();
             if (isValid && this.value !== null && (this.value && this.value.length !== 0)) {
                 addClass([this.inputEle], CHIP_INPUT);
-            } else if (this.value === null || (this.value && this.value.length === 0)) {
+            } else if (this.value === null || (this.value && this.value.length === 0) || this.chipWrapper) {
                 addClass([this.chipWrapper], HIDEICON);
             }
         }
@@ -2152,6 +2152,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             nodeSelected: this.onNodeSelected.bind(this),
             nodeChecked: this.onNodeChecked.bind(this),
             nodeChecking: this.beforeCheck.bind(this),
+            nodeExpanded: this.onNodeExpanded.bind(this),
             actionFailure: this.onActionFailure.bind(this),
             nodeClicked: this.onNodeClicked.bind(this),
             dataBound: this.OnDataBound.bind(this),
@@ -2250,7 +2251,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const height: number = Math.round(this.header.getBoundingClientRect().height);
             popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
         }
-        if (this.showCheckBox && this.showSelectAll) {
+        if (this.showCheckBox && this.showSelectAll && (!this.popupDiv.classList.contains(NODATA))) {
             const height: number = Math.round(this.checkAllParent.getBoundingClientRect().height);
             popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
         }
@@ -2656,6 +2657,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private beforeCheck(args: NodeCheckEventArgs): void {
         if (args.isInteracted) {
             this.oldValue = this.value ? this.value.slice() : this.value;
+        }
+    }
+
+    private onNodeExpanded(args: NodeExpandEventArgs): void {
+        if (this.hasTemplate && (this as any).portals) {
+            (this as any).portals = [].concat((this.treeObj as any).portals);
+            /* eslint-enable */
+            this.renderReactTemplates();
         }
     }
 
@@ -3229,8 +3238,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.noRecord.innerHTML = '';
         } else {
             this.noRecord = this.createElement('div');
-            addClass([this.noRecord], NODATACONTAINER);
-            prepend([this.noRecord], this.popupDiv);
         }
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
             const template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
@@ -3242,6 +3249,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             if (tempArr) {
                 tempArr = Array.prototype.slice.call(tempArr);
                 append(tempArr, this.noRecord);
+                addClass([this.noRecord], NODATACONTAINER);
+                prepend([this.noRecord], this.popupDiv);
             }
         } else {
             // eslint-disable-next-line
@@ -3249,7 +3258,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             this.noRecord.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
-        }
+                addClass([this.noRecord], NODATACONTAINER);
+                prepend([this.noRecord], this.popupDiv);
+            }
     }
 
     private updateRecordTemplate(action?: boolean): void {

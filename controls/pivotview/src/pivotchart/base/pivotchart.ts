@@ -67,6 +67,14 @@ export class PivotChart {
         return 'pivotChart';
     }
 
+    /**
+     * Initialize the pivot chart rendering
+     *
+     * @param {PivotView} parent - Specifies the pivot table component instance.
+     * @param {ChartSettingsModel} chartSettings - Specifies the chart settings.
+     * @returns {void}
+     * @private
+     */
     public loadChart(parent: PivotView, chartSettings: ChartSettingsModel): void {
         this.parent = parent;
         this.measuresNames = {};
@@ -392,6 +400,7 @@ export class PivotChart {
      * Refreshing chart based on the updated chartSettings.
      *
      * @returns {void}
+     * @hidden
      */
     public refreshChart(): void {
         this.chartSeries = [];
@@ -1507,6 +1516,10 @@ export class PivotChart {
         }
     }
 
+    /**
+     * @returns {string} - string.
+     * @hidden 
+     */
     public getChartHeight(): string {
         let height: string;
         let offSetHeight: number;

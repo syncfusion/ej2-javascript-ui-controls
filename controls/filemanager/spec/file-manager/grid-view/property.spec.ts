@@ -155,6 +155,24 @@ describe('FileManager control Grid view', () => {
                 responseText: JSON.stringify(data1)
             });
             expect(feObj.element.style.height).toEqual('');
+            feObj.destroy();
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                enableVirtualization: true,
+                showThumbnail: false,
+                height: '400px'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            expect(feObj.element.style.height).toEqual('400px');
         });
         it('for toolbarSettings', () => {
             feObj = new FileManager({

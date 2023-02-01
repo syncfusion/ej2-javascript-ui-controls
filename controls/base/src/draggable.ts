@@ -159,6 +159,10 @@ export interface DragEventArgs {
      * Specifies the current target element.
      */
     target?: HTMLElement;
+    /**
+     * 'true' if the drag or drop action is to be prevented; otherwise false.
+     */
+    cancel?: boolean;
 }
 
 /**

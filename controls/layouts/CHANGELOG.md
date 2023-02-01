@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I423971` - Provided cancel option in Drag Start and Drag Stop events of the Dashboard Layout component.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I425916` - Fixed issue with Expand and Collapse event triggering in splitter.
+
 ## 20.4.38 (2022-12-21)
 
 ### Dashboard Layout

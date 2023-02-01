@@ -486,6 +486,7 @@ export class Scroll implements IAction {
                     this.setSticky(headerEle, elemTop, contentRect.width, left, true);
                     if (!isNullOrUndefined(colMenuEle)) {
                         colMenuEle.style.position = 'fixed';
+                        colMenuEle.style.top = height + 'px';
                     }
                 }
                 else {
@@ -503,6 +504,8 @@ export class Scroll implements IAction {
                         }
                         if (!isNullOrUndefined(colMenuEle)) {
                             colMenuEle.style.position = 'absolute';
+                            const topStyle: number = contentRect.top - parentTop;
+                            colMenuEle.style.top = topStyle + 'px';
                         }
                     }
                 }

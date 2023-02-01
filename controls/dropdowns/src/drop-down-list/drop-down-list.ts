@@ -1383,8 +1383,8 @@ export class DropDownList extends DropDownBase implements IInput {
             this.setScrollPosition(e as KeyboardEventArgs);
         }
         if (Browser.info.name !== 'mozilla') {
-            attributes(this.targetElement(), { 'aria-label': this.inputElement.value });
             if (this.targetElement()) {
+                attributes(this.targetElement(), { 'aria-label': this.inputElement.value });
                 attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id != '' ? this.inputElement.id : this.element.id});
                 this.targetElement().removeAttribute('aria-live');
             }

@@ -2495,6 +2495,7 @@ describe('FileManager control Details view', () => {
                 status: 200,
                 responseText: JSON.stringify(folderCopyRead)
             });
+            setTimeout(function () {
             feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[0].firstElementChild.dispatchEvent(dblclickevent);
             setTimeout(function () {
                 (<HTMLElement>document.getElementsByClassName('e-fe-paste')[0]).click();
@@ -2513,6 +2514,7 @@ describe('FileManager control Details view', () => {
                     done();
                 }, 500);
             }, 500);
+            },100);
         });
     });
 });

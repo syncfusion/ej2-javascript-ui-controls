@@ -15,6 +15,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
  */
 /** @hidden */
 export class DrillThroughDialog {
+    /** @hidden */
     public parent: PivotView;
     /** @hidden */
     public dialogPopUp: Dialog;

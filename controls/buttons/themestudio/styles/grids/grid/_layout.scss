@@ -3659,8 +3659,15 @@
         margin-top: $grid-reorder-arrow-top-margin;
       }
 
+      .e-gridheader .e-headercontent .e-reorderuparrow-virtual {
+        margin-top: $grid-reorder-virtualarrow-top-margin;
+      }
+
       .e-gridheader .e-headercontent .e-reorderdownarrow {
         margin-top: $grid-reorder-downarrow-top-margin;
+      }
+      .e-gridheader .e-headercontent .e-reorderdownarrow-virtual {
+        margin-top: $grid-reorder-virtualdownarrow-top-margin;
       }
 
       .e-masked-cell.e-rowcell .e-virtualcell {

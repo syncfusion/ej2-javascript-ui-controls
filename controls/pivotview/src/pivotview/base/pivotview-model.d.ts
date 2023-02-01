@@ -754,7 +754,7 @@ export interface PivotViewModel extends ComponentModel{
      * Allows you to apply required number formatting to the pivot table values such as number, curreny, percentage or other custom formats at runtime through a built-in dialog, invoked from the toolbar.
      * To do so, set allowNumberFormatting and showToolbar properties to true to the component.
      * Also, include the toolbar option NumberFormatting in the toolbar property.
-     * > You can also view the number formatting dialog by clicking an external button using the ShowNumberFormattingDialog method.
+     * > You can also view the number formatting dialog by clicking an external button using the `showNumberFormattingDialog` method.
      *
      * @default false
      */
@@ -779,7 +779,7 @@ export interface PivotViewModel extends ComponentModel{
      * Allows the pivot table data to be exported as an Excel document. Export can be done in two different file formats such as  XLSX and CSV formats.
      * You can export pivot table using the build-in toolbar option. To do so, set `allowExcelExport` and `showToolbar` properties to true to the component.
      * Also, include the toolbar option **Exporting** in the `toolbar` property.
-     * > You can also export the pivot table data by clicking an external button using the excelExport method. Use csvExport method to export the pivot table data to CSV format.
+     * > You can also export the pivot table data by clicking an external button using the `excelExport` method. Use `csvExport` method to export the pivot table data to CSV format.
      *
      * @default false
      */
@@ -815,7 +815,7 @@ export interface PivotViewModel extends ComponentModel{
      * Allows the pivot table data to be exported as an PDF document. You can export pivot table using the build-in toolbar option.
      * To do so, set `allowPdfExport` and `showToolbar` properties to true to the component.
      * Also, include the toolbar option **Exporting** in the `toolbar` property.
-     * > You can also export the pivot table data by clicking an external button using the pdfExport method.
+     * > You can also export the pivot table data by clicking an external button using the `pdfExport` method.
      *
      * @default false
      */
@@ -1010,7 +1010,7 @@ export interface PivotViewModel extends ComponentModel{
      *
      * @default ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
      * 'SplineArea','StackingLine', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto', 'Polar',
-     * 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid' ])
+     * 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid' ]
      */
     chartTypes?: ChartSeriesType[];
 
@@ -1023,130 +1023,171 @@ export interface PivotViewModel extends ComponentModel{
     cssClass?: string;
 
     /**
+     * @event queryCellInfo
      * @hidden
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
 
     /**
+     * @event headerCellInfo
      * @hidden
      */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
+     * @event resizing
      * @hidden
      */
     resizing?: EmitType<ResizeArgs>;
 
     /**
+     * @event resizeStop
      * @hidden
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
+     * @event pdfHeaderQueryCellInfo
      * @hidden
      */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
+     * @event pdfQueryCellInfo
      * @hidden
      */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
 
     /**
+     * @event excelHeaderQueryCellInfo
      * @hidden
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /**
+     * @event excelQueryCellInfo
      * @hidden
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
 
     /**
+     * @event columnDragStart
+     * @hidden 
+     */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
 
     /**
+     * @event columnDrag
+     * @hidden 
+     */
     columnDrag?: EmitType<ColumnDragEventArgs>;
 
     /**
+     * @event columnDrop
+     * @hidden
+     */
     columnDrop?: EmitType<ColumnDragEventArgs>;
 
     /**
+     * @event beforePdfExport
+     * @hidden
+     */
     beforePdfExport?: EmitType<Object>;
 
     /**
+     * @event beforeExcelExport
+     * @hidden 
+     */
     beforeExcelExport?: EmitType<Object>;
 
     /**
+     * @event beforeColumnsRender
      * @hidden
      */
     beforeColumnsRender?: EmitType<ColumnRenderEventArgs>;
 
     /**
+     * @event selected
      * @hidden
      */
     selected?: EmitType<CellSelectEventArgs>;
 
     /**
+     * @event cellDeselected
      * @hidden
      */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
     /**
+     * @event rowSelected
      * @hidden
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
     /**
+     * @event rowDeselected
      * @hidden
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
     /**
+     * @event chartTooltipRender
      * @hidden
      */
     chartTooltipRender?: EmitType<ITooltipRenderEventArgs>;
 
     /**
+     * @event chartLegendClick
      * @hidden
      */
     chartLegendClick?: EmitType<ILegendClickEventArgs>;
 
     /**
+     * @event chartLoaded
      * @hidden
      */
     chartLoaded?: EmitType<ILoadedEventArgs>;
 
     /**
+     * @event chartLoad
+     * @hidden */
     chartLoad?: EmitType<ILoadedEventArgs>;
 
     /**
+     * @event chartResized
      * @hidden
      */
     chartResized?: EmitType<IResizeEventArgs>;
 
     /**
+     * @event chartAxisLabelRender
      * @hidden
      * @deprecated
      */
     chartAxisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
+     * @event multiLevelLabelClick
      * @hidden
      * @deprecated
      */
     multiLevelLabelClick?: EmitType<MultiLevelLabelClickEventArgs>;
 
     /**
+     * @event chartPointClick
+     * @hidden 
+     */
     chartPointClick?: EmitType<IPointEventArgs>;
 
     /**
+     * @event contentMenuClick
      * @hidden
      * @deprecated
      */
     contextMenuClick?: EmitType<ContextMenuClickEventArgs>;
 
     /**
+     * @event contextMenuOpen
      * @hidden
      * @deprecated
      */

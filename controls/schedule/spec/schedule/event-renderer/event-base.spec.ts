@@ -468,6 +468,64 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('EJ2-68038 - Checking custom sorting functionality in ASPcore', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Rank 1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 11, 30),
+            IsAllDay: false,
+            RankId: '1'
+        }, {
+            Id: 2,
+            Subject: 'Rank 3',
+            StartTime: new Date(2017, 9, 29, 10, 30),
+            EndTime: new Date(2017, 9, 29, 12, 30),
+            IsAllDay: false,
+            RankId: '3'
+        }, {
+            Id: 3,
+            Subject: 'Rank 6',
+            StartTime: new Date(2017, 9, 29, 7, 0),
+            EndTime: new Date(2017, 9, 29, 14, 30),
+            IsAllDay: false,
+            RankId: '6'
+        }, {
+            Id: 4,
+            Subject: 'Rank 9',
+            StartTime: new Date(2017, 9, 29, 11, 0),
+            EndTime: new Date(2017, 9, 29, 15, 30),
+            IsAllDay: false,
+            RankId: '9'
+        }];
+        beforeAll((done: DoneFn) => {
+            const ComparerFn: string = 'sortComparer';
+            (window as any).sortComparer = (args: any) => {
+                args.sort((a: any, b: any) => a.RankId.localeCompare(b.RankId, undefined, { numeric: true }));
+                return args;
+            };
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2017, 9, 29),
+                views: ['Week', 'Month', 'TimelineDay', 'TimelineMonth'],
+                currentView: 'Week',
+                eventSettings: {
+                    sortComparer: ComparerFn as any
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking event sorting by custom field in Week View', () => {
+            const eventElement: Element = schObj.element.querySelector('.e-appointment');
+            const expectedRankId: string = '1';
+            const eventDetails: Record<string, any> = schObj.getEventDetails(eventElement);
+            expect(eventDetails.RankId).toEqual(expectedRankId);
+        });
+    });
+
     describe('Checking events fill the full height with more indicator of the cell', () => {
         let schObj: Schedule;
         const eventData: Record<string, any>[] = [{

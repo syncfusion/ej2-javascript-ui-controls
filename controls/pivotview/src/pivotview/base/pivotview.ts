@@ -1110,7 +1110,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * Allows you to apply required number formatting to the pivot table values such as number, curreny, percentage or other custom formats at runtime through a built-in dialog, invoked from the toolbar.
      * To do so, set allowNumberFormatting and showToolbar properties to true to the component.
      * Also, include the toolbar option NumberFormatting in the toolbar property.
-     * > You can also view the number formatting dialog by clicking an external button using the ShowNumberFormattingDialog method.
+     * > You can also view the number formatting dialog by clicking an external button using the `showNumberFormattingDialog` method.
      *
      * @default false
      */
@@ -1138,7 +1138,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * Allows the pivot table data to be exported as an Excel document. Export can be done in two different file formats such as  XLSX and CSV formats.
      * You can export pivot table using the build-in toolbar option. To do so, set `allowExcelExport` and `showToolbar` properties to true to the component.
      * Also, include the toolbar option **Exporting** in the `toolbar` property.
-     * > You can also export the pivot table data by clicking an external button using the excelExport method. Use csvExport method to export the pivot table data to CSV format.
+     * > You can also export the pivot table data by clicking an external button using the `excelExport` method. Use `csvExport` method to export the pivot table data to CSV format.
      *
      * @default false
      */
@@ -1178,7 +1178,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * Allows the pivot table data to be exported as an PDF document. You can export pivot table using the build-in toolbar option.
      * To do so, set `allowPdfExport` and `showToolbar` properties to true to the component.
      * Also, include the toolbar option **Exporting** in the `toolbar` property.
-     * > You can also export the pivot table data by clicking an external button using the pdfExport method.
+     * > You can also export the pivot table data by clicking an external button using the `pdfExport` method.
      *
      * @default false
      */
@@ -1387,7 +1387,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      *
      * @default ['Line', 'Column', 'Area', 'Bar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea',
      * 'SplineArea','StackingLine', 'Scatter', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto', 'Polar',
-     * 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid' ])
+     * 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid' ]
      */
     @Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StackingLine', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'StackingLine100', 'Bubble', 'Pareto', 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid'])
     public chartTypes: ChartSeriesType[];
@@ -1403,132 +1403,167 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     //Event Declarations
     /**
+     * @event queryCellInfo
      * @hidden
      */
     @Event()
     protected queryCellInfo: EmitType<QueryCellInfoEventArgs>;
 
     /**
+     * @event headerCellInfo
      * @hidden
      */
     @Event()
     protected headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
 
     /**
+     * @event resizing
      * @hidden
      */
     @Event()
     protected resizing: EmitType<ResizeArgs>;
 
     /**
+     * @event resizeStop
      * @hidden
      */
     @Event()
     protected resizeStop: EmitType<ResizeArgs>;
 
     /**
+     * @event pdfHeaderQueryCellInfo
      * @hidden
      */
     @Event()
     protected pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
+     * @event pdfQueryCellInfo
      * @hidden
      */
     @Event()
     protected pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
 
     /**
+     * @event excelHeaderQueryCellInfo
      * @hidden
      */
     @Event()
     protected excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /**
+     * @event excelQueryCellInfo
      * @hidden
      */
     @Event()
     protected excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
 
-    /** @hidden */
+    /** 
+     * @event columnDragStart
+     * @hidden 
+     */
     @Event()
     protected columnDragStart: EmitType<ColumnDragEventArgs>;
 
-    /** @hidden */
+    /** 
+     * @event columnDrag
+     * @hidden 
+     */
     @Event()
     protected columnDrag: EmitType<ColumnDragEventArgs>;
 
-    /** @hidden */
+    /** 
+     * @event columnDrop
+     * @hidden
+     */
     @Event()
     protected columnDrop: EmitType<ColumnDragEventArgs>;
 
-    /** @hidden */
+    /** 
+     * @event beforePdfExport
+     * @hidden
+     */
     @Event()
     protected beforePdfExport: EmitType<Object>;
 
-    /** @hidden */
+    /** 
+     * @event beforeExcelExport
+     * @hidden 
+     */
     @Event()
     protected beforeExcelExport: EmitType<Object>;
 
     /**
+     * @event beforeColumnsRender
      * @hidden
      */
     @Event()
     public beforeColumnsRender: EmitType<ColumnRenderEventArgs>;
 
     /**
+     * @event selected
      * @hidden
      */
     @Event()
     public selected: EmitType<CellSelectEventArgs>;
 
     /**
+     * @event cellDeselected
      * @hidden
      */
     @Event()
     public cellDeselected: EmitType<CellDeselectEventArgs>;
 
     /**
+     * @event rowSelected
      * @hidden
      */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
 
     /**
+     * @event rowDeselected
      * @hidden
      */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
 
     /**
+     * @event chartTooltipRender
      * @hidden
      */
     @Event()
     protected chartTooltipRender: EmitType<ITooltipRenderEventArgs>;
 
     /**
+     * @event chartLegendClick
      * @hidden
      */
     @Event()
     protected chartLegendClick: EmitType<ILegendClickEventArgs>;
 
     /**
+     * @event chartLoaded
      * @hidden
      */
     @Event()
     protected chartLoaded: EmitType<ILoadedEventArgs>;
 
-    /** @hidden */
+    /**
+     * @event chartLoad
+     * @hidden */
     @Event()
     protected chartLoad: EmitType<ILoadedEventArgs>;
 
     /**
+     * @event chartResized
      * @hidden
      */
     @Event()
     protected chartResized: EmitType<IResizeEventArgs>;
 
     /**
+     * @event chartAxisLabelRender
      * @hidden
      * @deprecated
      */
@@ -1536,17 +1571,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     protected chartAxisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
+     * @event multiLevelLabelClick
      * @hidden
      * @deprecated
      */
     @Event()
     protected multiLevelLabelClick: EmitType<MultiLevelLabelClickEventArgs>;
 
-    /** @hidden */
+    /** 
+     * @event chartPointClick
+     * @hidden 
+     */
     @Event()
     protected chartPointClick: EmitType<IPointEventArgs>;
 
     /**
+     * @event contentMenuClick
      * @hidden
      * @deprecated
      */
@@ -1554,6 +1594,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public contextMenuClick: EmitType<ContextMenuClickEventArgs>;
 
     /**
+     * @event contextMenuOpen
      * @hidden
      * @deprecated
      */
@@ -1924,6 +1965,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public actionFailure: EmitType<PivotActionFailureEventArgs>;
+
     /** @hidden */
     public destroyEngine: boolean = false;
 
@@ -3341,7 +3383,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Method to parse the template string.
-     *
+     * @private
      */
 
     public templateParser(template: string): Function {
@@ -3361,6 +3403,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Method to get the cell template.
+     * @private
      */
 
     public getCellTemplate(): Function {
@@ -4449,6 +4492,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             (memberPos ? memberPos - 1 : memberPos);
         return levelPosition ? (levelPosition - 1) : 0;
     }
+    /** @hidden */
+    
     public getRowText(rowIndex: number, colIndex: number): string {
         let cell: IAxisSet = (this.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
         let level: number = this.getLevel(cell);
@@ -4778,6 +4823,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         for (const column of gridcolumns) {
             column.allowReordering = this.gridSettings.allowReordering;
             column.allowResizing = this.gridSettings.allowResizing;
+            column.clipMode = this.gridSettings.clipMode;
             this.posCount++;
             if (column.columns && column.columns.length > 0) {
                 this.fillGridColumns(column.columns as ColumnModel[]);

@@ -211,8 +211,8 @@ export class NavigationPane {
             args.cancel = eventArgs.cancel;
             if (args.cancel) {
                 this.restrictSelecting = this.isNodeClickCalled ? this.previousSelected[0] !== args.node.getAttribute('data-uid') : false;
-                this.treeObj.selectedNodes = this.isNodeClickCalled ? this.previousSelected : this.treeObj.selectedNodes;
                 this.previousSelected = this.treeObj.selectedNodes;
+                this.treeObj.selectedNodes = [args.node.getAttribute("data-uid")];
                 if (!isNOU(this.parent) && !isNOU(this.parent.contextmenuModule)) {
                     this.parent.contextmenuModule.contextMenu.enableItems(['Open'], true);
                 }
@@ -249,13 +249,17 @@ export class NavigationPane {
         this.parent.selectedItems = [];
         this.parent.itemData = nodeData;
         const previousPath: string = this.parent.path;
-        updatePath(args.node, this.parent.itemData[0], this.parent);
+        if (!this.isRightClick) {
+            updatePath(args.node, this.parent.itemData[0], this.parent);
+        }
         if (previousPath !== this.parent.path) {
             this.expandNodeTarget = null;
             if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
                 this.expandNodeTarget = 'add';
             }
-            read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+            if (!this.isRightClick) {
+                read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+            }
             this.parent.visitedItem = args.node;
         }
         this.isPathDragged = this.isRenameParent = this.isRightClick = false;

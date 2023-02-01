@@ -789,7 +789,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.currentLiElements = [];
         this.isNestedList = false;
         this.selectedData = [];
-        this.selectedId = [];
+        this.selectedId = this.enablePersistence ?this.selectedId: [];
         this.LISTVIEW_TEMPLATE_ID = `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`;
         this.LISTVIEW_GROUPTEMPLATE_ID = `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`;
         this.LISTVIEW_HEADERTEMPLATE_ID = `${this.element.id}${LISTVIEW_HEADERTEMPLATE_PROPERTY}`;
@@ -819,7 +819,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             args.item.firstElementChild.classList.add(classNames.checkbox);
             if (typeof (this.dataSource as string[])[0] !== 'string' && typeof (this.dataSource as number[])[0] !== 'number') {
                 fieldData = <DataSource>getFieldValues(args.curData, this.listBaseOption.fields);
-                if (<object>fieldData[this.listBaseOption.fields.isChecked]) {
+                if (this.enablePersistence && !isNullOrUndefined(this.selectedId)) {
+                    let index: number = this.selectedId.findIndex(e => e == fieldData[this.listBaseOption.fields.id].toString());
+                    if (index != -1) {
+                        this.checkInternally(args, checkboxElement);
+                    }
+                }
+                else if (<object>fieldData[this.listBaseOption.fields.isChecked]) {
                     this.checkInternally(args, checkboxElement);
                 }
             } else if (((typeof (this.dataSource as string[])[0] === 'string' ||
@@ -886,6 +892,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 checkboxIcon.parentElement.setAttribute('aria-checked', checked ? 'true' : 'false');
             }
             this.setSelectedItemData(liElement);
+            this.updateSelectedId();
         }
     }
 
@@ -934,6 +941,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.enableVirtualization) {
                 this.virtualizationModule.checkedItem(checked);
             }
+            this.updateSelectedId();
         }
     }
 
@@ -1046,6 +1054,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
+        this.updateSelectedId();
     }
 
     private removeElement(element: HTMLElement | Element): HTMLElement | Element {
@@ -1230,6 +1239,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             const eventArgs: object = this.selectEventData(li, e);
             merge(eventArgs, { isChecked: checkIcon ? checkIcon.classList.contains(classNames.checked) : false });
             this.trigger('select', eventArgs);
+            this.updateSelectedId();
         }
     }
 
@@ -1928,6 +1938,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         return parentId;
     }
 
+    private updateSelectedId(): void {
+        this.selectedId = [];
+        const liCollection: any = this.curUL.getElementsByClassName(classNames.selected);
+        for (let i: number = 0; i < liCollection.length; i++) {
+            const tempData: DataSource = this.getItemData(liCollection[i] as HTMLElement);
+            if (tempData[this.listBaseOption.fields.id]) {
+                this.selectedId.push(tempData[this.listBaseOption.fields.id] as any)
+            }
+        }
+    }
+
     /**
      * Gets the details of the currently selected item from the list items.
      *
@@ -2382,7 +2403,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     protected getPersistData(): string {
         return this.addOnPersist(['cssClass', 'enableRtl', 'htmlAttributes',
             'enable', 'fields', 'animation', 'headerTitle',
-            'sortOrder', 'showIcon', 'height', 'width', 'showCheckBox', 'checkBoxPosition']);
+            'sortOrder', 'showIcon', 'height', 'width', 'showCheckBox', 'checkBoxPosition','selectedId']);
     }
 
 }

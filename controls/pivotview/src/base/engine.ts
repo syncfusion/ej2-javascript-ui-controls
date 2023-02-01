@@ -197,6 +197,8 @@ export class PivotEngine {
     private enablePaging: boolean = false;
     private enableVirtualization: boolean = false;
     private isParentLevelAdded: boolean = true;
+    
+    /** @hidden */
     public renderEngine(
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function, onHeadersSort?: Function): void {
         this.getValueCellInfo = fn;
@@ -5860,10 +5862,19 @@ export interface IStringIndex {
     [key: string]: string;
 }
 /**
- * @hidden
+ * It holds the collection of cell information to render the pivot table component.
  */
 export interface IPivotValues {
-    [key: number]: IPivotRows;
+    /**
+     * Allows you to configure the pivot cell information retrieved from the data source.
+     */
+    [key: number]: {
+        [key: number]: number | string | Object | IAxisSet;
+        length: number;
+    };
+    /**
+     * Gets or sets the length of the array. This is a number one higher than the highest index in the array.
+     */
     length: number;
 }
 /**

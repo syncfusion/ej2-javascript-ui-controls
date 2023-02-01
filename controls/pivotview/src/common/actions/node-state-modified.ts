@@ -10,6 +10,7 @@ import { OlapEngine } from '../../base/olap/engine';
  */
 /** @hidden */
 export class NodeStateModified {
+    /** @hidden */
     public parent: PivotCommon;
     /**
      * Constructor for the dialog action.

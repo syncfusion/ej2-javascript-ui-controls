@@ -241,7 +241,7 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
             if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
                 txtValue = txtValue.slice(0, -1);
                 childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
-                txtValue = content[k + 1];
+                txtValue = content[k + 1] || '';
             }
             if (k === content.length - 1 && txtValue.length > 0) {
                 childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };

@@ -141,6 +141,7 @@ export class Font extends ChildProperty<Font> {
     /**
      * Allows to set font family to the text in the chart.
      *
+     * @default 'Segoe UI'
      */
     @Property('Segoe UI')
     public fontFamily: string;
@@ -289,7 +290,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
     public border: PivotChartBorderModel;
 
     /**
-     * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string.
      *
      * @default 'transparent'
      */
@@ -817,7 +818,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public color: string;
 
     /**
-     * Allows to set the stroke width of the error bar..
+     * Allows to set the stroke width of the error bar.
      *
      * @default 1
      */
@@ -1731,7 +1732,7 @@ export class PivotChartSeriesErrorSettings {
     public verticalError: number;
 
     /**
-     * Allows to set the stroke width of the error bar..
+     * Allows to set the stroke width of the error bar.
      *
      * @default 1
      */
@@ -2438,7 +2439,7 @@ export class PivotChartSettingsChartArea {
     public border: PivotChartBorderModel;
 
     /**
-     * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string.
      *
      * @default 'transparent'
      */
@@ -2524,11 +2525,8 @@ export class PivotChartSettingsLegendSettings {
     /**
      * Allows to set the location of the legend, relative to the chart.
      * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
-     * ```html
-     * <div id='Chart'></div>
-     * ```
+     * 
      * ```typescript
-     * let chart: Chart = new Chart({
      * ...
      *   legendSettings: {
      *     visible: true,
@@ -2536,8 +2534,6 @@ export class PivotChartSettingsLegendSettings {
      *     location: { x: 100, y: 150 },
      *   },
      * ...
-     * });
-     * chart.appendTo('#Chart');
      * ```
      */
     @Complex<PivotChartLocationModel>({ x: 0, y: 0 }, ChartLocation)
@@ -2950,27 +2946,25 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the type of the series are
-     * * StackingColumn
-     * * StackingArea
-     * * StackingBar
-     * * StackingLine
-     * * StepLine
-     * * Line
-     * * Column
-     * * Area
-     * * Bar
-     * * StepArea
-     * * Pareto
-     * * Bubble
-     * * Scatter
-     * * Spline
-     * * SplineArea
-     * * StackingColumn100
-     * * StackingBar100
-     * * StackingArea100
-     * * StackingLine100
-     * * Polar
-     * * Radar
+     * * Line - Allows to display the pivot chart with line series.
+     * * Column - Allows to display the pivot chart with column series.
+     * * Area - Allows to display the pivot chart with area series.
+     * * Bar - Allows to display the pivot chart with bar series.
+     * * StackingColumn - Allows to display the pivot chart with stacked column series.
+     * * StackingArea - Allows to display the pivot chart with stacked area series.
+     * * StackingBar - Allows to display the pivot chart with stacked bar series.
+     * * StepLine - Allows to display the pivot chart with step line series.
+     * * StepArea - Allows to display the pivot chart with step area series.
+     * * SplineArea - Allows to display the pivot chart with spline area series.
+     * * Scatter - Allows to display the pivot chart with scatter series.
+     * * Spline - Allows to display the pivot chart with spline series.
+     * * StackingColumn100 - Allows to display the pivot chart with 100% stacked column series.
+     * * StackingBar100 - Allows to display the pivot chart with 100% stacked bar series.
+     * * StackingArea100 - Allows to display the pivot chart with 100% stacked area series.
+     * * Bubble - Allows to display the pivot chart with bubble series.
+     * * Pareto - Allows to display the pivot chart with pareto series.
+     * * Polar - Allows to display the pivot chart with polar series.
+     * * Radar - Allows to display the pivot chart with radar series.
      *
      * @default 'Line'
      */
@@ -3013,16 +3007,17 @@ export class PivotSeries extends ChildProperty<PivotSeries> {
 
     /**
      * Allows to set the shape of the legend. Each series has its own legend shape. They are,
-     * * Circle
-     * * Rectangle
-     * * VerticalLine
-     * * Pentagon
-     * * InvertedTriangle
-     * * SeriesType
-     * * Triangle
-     * * Diamond
-     * * Cross
-     * * HorizontalLine
+     * * Circle - Renders a circle.
+     * * Rectangle - Renders a rectangle.
+     * * VerticalLine - Renders a verticalLine.
+     * * Pentagon - Renders a pentagon.
+     * * InvertedTriangle - Renders a invertedTriangle.
+     * * SeriesType - Render a legend shape based on series type.
+     * * Triangle - Renders a triangle.
+     * * Diamond - Renders a diamond.
+     * * Cross - Renders a cross.
+     * * HorizontalLine - Renders a horizontalLine.
+     * * Image - Renders a image.
      *
      * @default 'SeriesType'
      */
@@ -3514,12 +3509,15 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * If set to true, zooming will be performed on mouse up. It requires `enableSelectionZooming` to be true.
+     * 
+     * ```typescript
      * ...
      *    zoomSettings: {
      *      enableSelectionZooming: true,
      *      enableDeferredZooming: false
      *    }
      * ...
+     * ```
      *
      * @default false
      */
@@ -3541,13 +3539,15 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
      * * x,y: Chart can be zoomed both vertically and horizontally.
      *  It requires `enableSelectionZooming` to be true.
      *
+     * ```typescript
      * ...
-     *    zoomSettings: {
+     *   zoomSettings: {
      *      enableSelectionZooming: true,
      *      mode: 'XY'
-     *    }
+     *    },
      * ...
-     *
+     * ```
+     * 
      * @default 'XY'
      */
     @Property('XY')
@@ -3555,11 +3555,11 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
 
     /**
      * Allows to set the toolkit options for the zooming as follows:
-     * * ZoomIn
-     * * ZoomOut
-     * * Pan
-     * * Zoom
-     * * Reset
+     * * Zoom - Renders the zoom button.
+     * * ZoomIn - Renders the zoomIn button.
+     * * ZoomOut - Renders the zoomOut button.
+     * * Pan - Renders the pan button.
+     * * Reset - Renders the reset button.
      *
      * @default '["Zoom", "ZoomIn", "ZoomOut", "Pan", "Reset"]'
      */
@@ -4105,7 +4105,7 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
 
     /**
-     * Triggers when the chart legend of a specific series is clicked..
+     * Triggers when the chart legend of a specific series is clicked.
      *
      * @event legendClick
      */

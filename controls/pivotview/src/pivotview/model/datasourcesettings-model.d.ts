@@ -261,6 +261,7 @@ export interface FilterModel {
      * > This option is applicable only for user-defined hierarchies in OLAP data source.
      *
      * @default 1
+     * @aspType int
      */
     levelCount?: number;
 
@@ -310,6 +311,8 @@ export interface ConditionalFormatSettingsModel {
 
     /**
      * Allows to apply conditional formatting to the grand totals of row and column axis in the pivot table.
+     * 
+     * @default true
      */
     applyGrandTotals?: boolean;
 
@@ -356,21 +359,29 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify minimum fraction digits to the formatted value.
+     * 
+     * @aspType int
      */
     minimumFractionDigits?: number;
 
     /**
      * It allows to specify maximum fraction digits to the  formatted value.
+     * 
+     * @aspType int
      */
     maximumFractionDigits?: number;
 
     /**
      * It allows to specify minimum significant digits to the formatted value.
+     * 
+     * @aspType int
      */
     minimumSignificantDigits?: number;
 
     /**
      * It allows to specify maximum significant digits to the formatted value.
+     * 
+     * @aspType int
      */
     maximumSignificantDigits?: number;
 
@@ -399,6 +410,8 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify minimum integer digits to the formatted value.
+     * 
+     * @aspType int
      */
     minimumIntegerDigits?: number;
 
@@ -642,6 +655,7 @@ export interface DataSourceSettingsModel {
      * > It is applicale only for OLAP data source.
      *
      * @default 1033
+     * @aspType int
      */
     localeIdentifier?: number;
 
@@ -813,6 +827,7 @@ export interface DataSourceSettingsModel {
      * > It is applicale only for relational data source.
      *
      * @default '-1'
+     * @aspType int
      */
     valueIndex?: number;
 

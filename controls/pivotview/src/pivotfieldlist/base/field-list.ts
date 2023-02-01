@@ -219,6 +219,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     /**
      * It enables the search option in the field list UI, which can be used to search specific fields at runtime.
+     * 
+     * @default false
      */
     @Property(false)
     public enableFieldSearching: boolean;
@@ -324,6 +326,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * For example, to display "US Dollar($)" currency values, set the `currencyCode` to **USD**.
      * > It is applicable ony for Relational data.
      *
+     * @default 'USD'
      * @private
      */
     @Property('USD')
@@ -437,7 +440,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public dataBound: EmitType<Object>;
 
     /**
-     * It trigger when the Pivot Field List component is created..
+     * It trigger when the Pivot Field List component is created.
      *
      * @event created
      */

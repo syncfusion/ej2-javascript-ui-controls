@@ -141,6 +141,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
             } catch (e) {
                 /* action on catch */
             }
+			this.updateMenuItems(this.items);
         } else {
             this.updateMenuItems(this.items);
         }

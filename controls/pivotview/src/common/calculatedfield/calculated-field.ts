@@ -42,6 +42,7 @@ const AGRTYPE: string = 'AggregateType';
 
 /** @hidden */
 export class CalculatedField implements IAction {
+    /** @hidden */
     public parent: PivotView | PivotFieldList;
     /** @hidden */
     public isFormula: boolean = false;

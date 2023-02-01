@@ -11041,18 +11041,23 @@ describe('Tab Control', () => {
             expect(ele1.classList.contains('e-active')).toEqual(true);
             const contentItem1: HTMLElement = element.querySelectorAll('.e-item')[0] as HTMLElement;
             expect(ele1.getAttribute('id')).toEqual(contentItem1.getAttribute('aria-labelledby'));
+            expect(ele1.firstElementChild.getAttribute('aria-controls')).toEqual(contentItem1.getAttribute('id'));
             const ele2: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(1);
             ele2.click();
             expect(ele1.classList.contains('e-active')).toEqual(false);
             expect(ele2.classList.contains('e-active')).toEqual(true);
             const contentItem2: HTMLElement = element.querySelectorAll('.e-item')[1] as HTMLElement;
             expect(ele2.getAttribute('id')).toEqual(contentItem2.getAttribute('aria-labelledby'));
+            expect(ele1.firstElementChild.getAttribute('aria-controls')).not.toEqual(null);
+            expect(ele2.firstElementChild.getAttribute('aria-controls')).toEqual(contentItem2.getAttribute('id'));
             const ele3: HTMLElement = <HTMLElement>element.querySelectorAll('.e-toolbar-item').item(2);
             ele3.click();
             expect(ele2.classList.contains('e-active')).toEqual(false);
             expect(ele3.classList.contains('e-active')).toEqual(true);
             const contentItem3: HTMLElement = element.querySelectorAll('.e-item')[2] as HTMLElement;
             expect(ele3.getAttribute('id')).toEqual(contentItem3.getAttribute('aria-labelledby'));
+            expect(ele2.firstElementChild.getAttribute('aria-controls')).not.toEqual(null);
+            expect(ele3.firstElementChild.getAttribute('aria-controls')).toEqual(contentItem3.getAttribute('id'));
         });
     });
 

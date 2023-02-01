@@ -115,7 +115,7 @@ export class Print {
             const pageHeight: number = page.boundingRectangle.height;
             const pageWidth: number = page.boundingRectangle.width;
             documentHelper.render.isPrinting = true;
-            documentHelper.render.renderWidgets(page, 0, 0, 0, 0);
+            documentHelper.render.renderWidgets(page, 0, 0, pageWidth, 0);
             const canvasURL: string = documentHelper.render.pageCanvas.toDataURL();
             documentHelper.render.isPrinting = false;
             htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div><br/>';

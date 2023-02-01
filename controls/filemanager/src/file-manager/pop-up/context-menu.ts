@@ -96,6 +96,9 @@ export class ContextMenu {
             this.menuTarget = this.targetNodeElement = <HTMLElement>target;
         }
         this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr.e-row') as HTMLElement : target as HTMLElement;
+        if (this.parent.enableVirtualization && (target.classList.contains('e-virtual-bottom') || target.classList.contains('e-virtualtable'))) {
+            target = target.parentElement.closest("div");
+        }
         const view: string = this.getTargetView(target);
         this.updateActiveModule();
         /* istanbul ignore next */

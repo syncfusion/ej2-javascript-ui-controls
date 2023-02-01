@@ -29,6 +29,7 @@ import { Button } from '@syncfusion/ej2-buttons';
  */
 /** @hidden */
 export class FilterDialog {
+    /** @hidden */
     public parent: PivotCommon;
     /** @hidden */
     public dropMenu: DropDownButton;
@@ -46,6 +47,7 @@ export class FilterDialog {
     public allowExcelLikeFilter: boolean;
     /** @hidden */
     public isSearchEnabled: boolean;
+    /** @hidden */
     public filterObject: IFilter;
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timeOutObj: any;

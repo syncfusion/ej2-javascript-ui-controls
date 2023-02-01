@@ -332,24 +332,19 @@ describe('Rating', () => {
             });
             rating.appendTo('#rating');
             expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(rating.value).toBe(3);
             rating.precision = PrecisionType.Half;
             rating.dataBind();
-            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
-            rating.precision = PrecisionType.Full;
-            rating.dataBind();
             expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(rating.value).toBe(3);
             rating.precision = PrecisionType.Quarter;
             rating.dataBind();
-            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
-            rating.precision = PrecisionType.Full;
-            rating.dataBind();
             expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(rating.value).toBe(3);
             rating.precision = PrecisionType.Exact;
             rating.dataBind();
-            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
-            rating.precision = PrecisionType.Full;
-            rating.dataBind();
-            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);  
+            expect(rating.value).toBe(3);          
         });
 
         it('Enable Animation ', () => {
@@ -515,6 +510,210 @@ describe('Rating', () => {
             expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
             expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
             expect(rating.value).toBe(3.1);
+        });
+
+        it('Full Precision with Value(3.4) and enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.4
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('Full Precision with Value(3.6) enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.6
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(4);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(4);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(4);
+        });
+
+        it('Half Precision with Value(3.4) and enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.4,
+                precision: PrecisionType.Half
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+            expect(rating.value).toBe(3.5);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(4);
+        });
+
+        it('Half Precision with Value(3.2) enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.2,
+                precision: 'Half'
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('Quarter Precision with Value(3.1) enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.1,
+                precision: PrecisionType.Quarter
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('Quarter Precision with Value(3.2) enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.2,
+                precision: 'Quarter'
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+            expect(rating.value).toBe(3.25);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('Exact Precision with Value(3.04) enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.04,
+                precision: PrecisionType.Exact
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('Exact Precision with Value(3.05) enableSingleSelection property as true', () => {
+            rating = new Rating({
+                value: 3.05,
+                precision: 'Exact'
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+            expect(rating.value).toBe(3.1);
+            rating.enableSingleSelection = true;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('enableSingleSelection property as true With Full Precision ', () => {
+            rating = new Rating({
+                value: 3,
+                enableSingleSelection: true
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = false;
+            rating.dataBind();
+            rating.precision = PrecisionType.Full;
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+        });
+
+        it('enableSingleSelection property as true With Half Precision ', () => {
+            rating = new Rating({
+                value: 3,
+                enableSingleSelection: true
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = false;
+            rating.dataBind();
+            rating.precision = PrecisionType.Half;
+            rating.dataBind();
+            rating.value = 3.5
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+            expect(rating.value).toBe(3.5);
+        });
+
+        it('enableSingleSelection property as true With Quarter Precision ', () => {
+            rating = new Rating({
+                value: 3,
+                enableSingleSelection: true
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = false;
+            rating.dataBind();
+            rating.precision = PrecisionType.Quarter;
+            rating.dataBind();
+            rating.value = 3.75
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+            expect(rating.value).toBe(3.75);
+        });
+
+        it('enableSingleSelection property as true With Exact Precision ', () => {
+            rating = new Rating({
+                value: 3,
+                enableSingleSelection: true
+            });
+            rating.appendTo('#rating');
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(1);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(0);
+            expect(rating.value).toBe(3);
+            rating.enableSingleSelection = false;
+            rating.dataBind();
+            rating.precision = PrecisionType.Exact;
+            rating.dataBind();
+            rating.value = 3.4
+            rating.dataBind();
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-selected').length).toBe(3);
+            expect(ratingElement.parentElement.querySelectorAll('.e-rating-intermediate').length).toBe(1);
+            expect(rating.value).toBe(3.4);
         });
 
         describe('Dynamic Precision', () => {

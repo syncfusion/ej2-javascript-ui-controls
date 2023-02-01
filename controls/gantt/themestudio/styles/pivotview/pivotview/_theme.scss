@@ -111,15 +111,17 @@
     }
 
     .e-toolbar .e-tbar-btn {
-      @if ($skin-name == 'tailwind') {
-        background-color: transparent;
-    }
+      background-color: transparent;
+
+      @if ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+        border: none !important;
+      }
 
       &:hover {
         @if ($skin-name == 'tailwind') {
           background-color: $pivot-toolbar-icon-hover-color;
-    }
-    }
+        }
+      }
     }
 
 

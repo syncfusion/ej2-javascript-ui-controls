@@ -2563,7 +2563,7 @@ describe('Splitter Control', () => {
             it('onRight arrow', () => {
                 (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
                 (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
-                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
                 expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
                 expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
                 expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
@@ -2591,7 +2591,7 @@ describe('Splitter Control', () => {
             it('onfirst Splitbar right arrow', () => {
             (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
             (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
-            expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+            expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
             expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
             expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(false);
             expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
@@ -4554,7 +4554,7 @@ describe('Splitter Control', () => {
             splitterObj.allBars[1].lastElementChild.click();
             expect(splitterObj.allPanes[0].style.flexGrow).toBe('0');
             expect(splitterObj.allPanes[1].style.flexGrow).toBe('');
-            expect(splitterObj.allPanes[2].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[2].style.flexGrow).toBe('1');
             expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toBe(true);
             expect(splitterObj.allPanes[0].classList.contains('e-collapsed')).toBe(true);
             expect(splitterObj.allPanes[0].classList.contains('e-pane-hidden')).toBe(true);
@@ -4617,8 +4617,8 @@ describe('Splitter Control', () => {
             splitterObj.allBars[1].firstElementChild.click();
             splitterObj.allBars[0].lastElementChild.click();
             expect(splitterObj.allPanes[0].style.flexGrow).toBe('');
-            expect(splitterObj.allPanes[1].style.flexGrow).toBe('0');
-            expect(splitterObj.allPanes[2].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[1].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[2].style.flexGrow).toBe('1');
             expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toBe(false);
             expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toBe(true);
             expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toBe(true);
@@ -4671,7 +4671,7 @@ describe('Splitter Control', () => {
             splitterObj.allBars[1].lastElementChild.click();
             expect(splitterObj.allPanes[0].style.flexGrow).toBe('0');
             expect(splitterObj.allPanes[1].style.flexGrow).toBe('');
-            expect(splitterObj.allPanes[2].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[2].style.flexGrow).toBe('1');
             expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toBe(true);
             expect(splitterObj.allPanes[0].classList.contains('e-collapsed')).toBe(true);
             expect(splitterObj.allPanes[0].classList.contains('e-pane-hidden')).toBe(true);
@@ -4712,7 +4712,7 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[0].classList.contains('e-collapsed')).toBe(false);
             expect(splitterObj.allPanes[0].classList.contains('e-pane-hidden')).toBe(false);
             expect(splitterObj.allPanes[0].style.flexGrow).toBe('');
-            expect(splitterObj.allPanes[1].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[1].style.flexGrow).toBe('1');
             expect(splitterObj.allPanes[2].style.flexGrow).toBe('0');
             expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toBe(false);
             expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toBe(false);
@@ -4829,7 +4829,7 @@ describe('Splitter Control', () => {
             expect(splitterObj.allPanes[0].classList.contains('e-collapsed')).toBe(false);
             expect(splitterObj.allPanes[0].classList.contains('e-pane-hidden')).toBe(false);
             expect(splitterObj.allPanes[0].style.flexGrow).toBe('');
-            expect(splitterObj.allPanes[1].style.flexGrow).toBe('');
+            expect(splitterObj.allPanes[1].style.flexGrow).toBe('1');
             expect(splitterObj.allPanes[2].style.flexGrow).toBe('0');
             expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toBe(false);
             expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toBe(false);
@@ -5787,4 +5787,410 @@ describe('Splitter Control', () => {
             expect( splitterObj.element.querySelectorAll( '.e-pane-horizontal' )[ 1 ].style.flexBasis ).toEqual( '' );
         } );
     } );
+    describe('EJ2-59987 Splitter collapse not working properly CASE 1 Three Split Pane', () =>{
+        let splitterObj: any;
+        beforeEach(() =>{
+            let element : HTMLElement = createElement('div',{ id: 'splitter'});
+            let child1 : HTMLElement = createElement('div');
+            let child2 : HTMLElement = createElement('div');
+            let child3 : HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+        });
+        afterEach(() =>{
+            splitterObj.destroy();
+        });
+        it("First Pane Flexible Icon Update Checks Case 1 ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { content: 'First Pane', collapsible: true, },
+                    { content: 'Second Pane', collapsible: true, size: '50%' },
+                    { content: 'Third Pane', collapsible: true, size: '20%' }
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            appendSplitterStyles();
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[1].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[1].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[0].lastElementChild.click();
+        })
+        it("First Pane Flexible Middle Pane Collapsible false Icon Update Checks Case 2 ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { collapsed: false,collapsible: true, size: '30%' },
+                    { collapsed: false,collapsible: false, },
+                    { collapsed: false,collapsible: true, size: '30%' }
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            appendSplitterStyles();
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[1].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+        })
+        it("Resizable Property tests Case 1 ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { collapsed: false, collapsible: false, resizable: false, size: '30%' },
+                    { collapsed: false, collapsible: false, resizable: false },
+                    { collapsed: false, collapsible: false, resizable: false, size: '30%' }
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            splitterObj.collapse(0);
+             // First bar
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.collapse(1);
+            // First bar
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.collapse(2);
+            // First bar
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.expand(1);
+            // First bar
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.expand(1);
+            // First bar
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+        })
+        it("Resizable Property tests Case 2 ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { collapsed: true, collapsible: true, resizable: false, size: '30%' },
+                    { collapsed: true, collapsible: true, resizable: false },
+                    { collapsed: true, collapsible: true, resizable: false, size: '30%' }
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            splitterObj.allBars[1].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[1].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            // Seco0nd bar
+            expect(splitterObj.allBars[1].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+        })
+    });
+    describe('EJ2-59987 Splitter collapse not working properly CASE 2 Two Split Panes', () =>{
+        let splitterObj: any;
+        beforeEach(() =>{
+            let element : HTMLElement = createElement('div',{ id: 'splitter'});
+            let child1 : HTMLElement = createElement('div');
+            let child2 : HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+        });
+        afterEach(() =>{
+            splitterObj.destroy();
+        });
+        it("First Pane Flexible Icon Update Checks Case 1 ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { content: 'First Pane', collapsible: true, },
+                    { content: 'Second Pane', collapsible: true, size: '50%' },
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            appendSplitterStyles();
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].firstElementChild.click();
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+        })
+        it("Second Pane Flexible Second Pane Collapsible false Icon Update Checks Case 2 ",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    { collapsed: false,collapsible: true, size: '30%' },
+                    { collapsed: false,collapsible: false, },
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            appendSplitterStyles();
+            splitterObj.allBars[0].firstElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            splitterObj.allBars[0].lastElementChild.click();
+            // First bar
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(false);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(false);
+        })
+    });
+    describe('EJ2-59987 Splitter collapse not working properly Filemanager Internal Issue', () =>{
+        let splitterObj: any;
+        beforeEach(() =>{
+            let element : HTMLElement = createElement('div',{ id: 'splitter'});
+            document.body.appendChild(element);
+        });
+        afterEach(() =>{
+            splitterObj.destroy();
+        });
+        it("Test for Collapse pane of 1 in initial rendering",()=>{
+            splitterObj = new Splitter({
+                paneSettings: [
+                    {size: '25%', min: '240px', max: '650px'},
+                    {size: '75%', min: '270px'},
+                ],
+            })
+            splitterObj.appendTo(document.getElementById('splitter'));
+            splitterObj.collapse(0);
+            expect(splitterObj.allBars[0].firstElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].lastElementChild.classList.contains('e-icon-hidden')).toEqual(true);
+            expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toEqual(true);
+            expect(splitterObj.allPanes[0].classList.contains('e-collapsed')).toEqual(true);
+            expect(splitterObj.allPanes[1].classList.contains('e-expanded')).toEqual(false);
+        })
+    });
  });

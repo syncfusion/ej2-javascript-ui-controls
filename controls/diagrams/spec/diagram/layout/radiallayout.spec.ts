@@ -7,9 +7,10 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
     ConnectorModel, Node,
     DataBinding, PointModel, GraphLayoutManager, Layout, IConnector,
-    HierarchicalTree, NodeModel, Rect, BasicShapeModel, RadialTree
+    HierarchicalTree, NodeModel, Rect, BasicShapeModel, RadialTree, randomId
 } from '../../../src/diagram/index';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { MouseEvents } from '../interaction/mouseevents.spec';
 Diagram.Inject(RadialTree);
 
 let data: object[] = [{
@@ -229,5 +230,393 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+});
+describe('Diagram Control', () => {
+    describe('Radial Tree to check parent node position after adding nodes at runtime', () => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            var nodes : NodeModel[] = [
+                { 
+                id: 'node',
+                offsetX: 200,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                shape: {
+                  type: 'Basic',
+                  shape: 'Ellipse',
+                },}
+            ];
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: nodes,
+                layout: {
+                    type: 'RadialTree', horizontalSpacing: 30, verticalSpacing: 30, root: 'parent',
+                    orientation: 'BottomToTop'
+                },
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                    obj.height = 50;
+                    obj.width = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Straight';
+                    return connector;
+                },
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking root position for radial tree layout', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.layout.type = 'RadialTree';
+            diagram.layout.horizontalSpacing = 40;
+            diagram.layout.verticalSpacing = 40;
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 100).toBe(true);
+            mouseEvents.clickEvent(diagramCanvas, 200, 100);
+            for (let i : number = 1; i <= 20; i++) {
+                let newNode = {
+                    id: 'newnode' + randomId(),
+                    height: 100,
+                    width: 100,
+                    shape: {
+                        type: 'Basic',
+                        shape: 'Ellipse',
+                    },
+                };
+                diagram.add(newNode as Node);
+                let newConn = {
+                    id: 'newcon' + randomId(),
+                    sourceID: diagram.nodes[0].id,
+                    targetID: newNode.id,
+                };
+                diagram.add(newConn);
+            }
+            diagram.doLayout();
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 100).toBe(true);
+            done();
+        });
+    });
+});
+describe('Diagram Control', () => {
+    describe('Radial Tree to check parent node position after adding nodes at default and runtime', () => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            var nodes : NodeModel[] = [
+                { 
+                id: 'node0',
+                offsetX: 200,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                shape: {
+                  type: 'Basic',
+                  shape: 'Ellipse',
+                },},
+                { 
+                    id: 'node1',
+                    offsetX: 200,
+                    offsetY: 100,
+                    width: 100,
+                    height: 100,
+                    shape: {
+                      type: 'Basic',
+                      shape: 'Ellipse',
+                    },},
+                    { 
+                        id: 'node2',
+                        offsetX: 200,
+                        offsetY: 100,
+                        width: 100,
+                        height: 100,
+                        shape: {
+                          type: 'Basic',
+                          shape: 'Ellipse',
+                        },},
+                        { 
+                            id: 'node3',
+                            offsetX: 200,
+                            offsetY: 100,
+                            width: 100,
+                            height: 100,
+                            shape: {
+                              type: 'Basic',
+                              shape: 'Ellipse',
+                            },},
+                            { 
+                                id: 'node4',
+                                offsetX: 200,
+                                offsetY: 100,
+                                width: 100,
+                                height: 100,
+                                shape: {
+                                  type: 'Basic',
+                                  shape: 'Ellipse',
+                                },},
+                                { 
+                                    id: 'node5',
+                                    offsetX: 200,
+                                    offsetY: 100,
+                                    width: 100,
+                                    height: 100,
+                                    shape: {
+                                      type: 'Basic',
+                                      shape: 'Ellipse',
+                                    },}
+            ];
+            var connectors : ConnectorModel[] = [
+                {
+                    id : 'connector1',
+                    sourceID : 'node0',
+                    targetID : 'node1'
+                },
+                {
+                    id : 'connector2',
+                    sourceID : 'node0',
+                    targetID : 'node2'
+                },
+                {
+                    id : 'connector3',
+                    sourceID : 'node0',
+                    targetID : 'node3'
+                },
+                {
+                    id : 'connector4',
+                    sourceID : 'node0',
+                    targetID : 'node4'
+                },
+                {
+                    id : 'connector5',
+                    sourceID : 'node0',
+                    targetID : 'node5'
+                },
+            ];
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: nodes, connectors : connectors,
+                layout: {
+                    type: 'RadialTree', horizontalSpacing: 30, verticalSpacing: 30, root: 'parent',
+                    orientation: 'BottomToTop'
+                },
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                    obj.height = 50;
+                    obj.width = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Straight';
+                    return connector;
+                },
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking root position after adding default and runtime layout', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.layout.type = 'RadialTree';
+            diagram.layout.horizontalSpacing = 40;
+            diagram.layout.verticalSpacing = 40;
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 100).toBe(true);
+            mouseEvents.clickEvent(diagramCanvas, 200, 100);
+            for (let i : number = 1; i <= 5; i++) {
+                let newNode = {
+                    id: 'newnode' + randomId(),
+                    height: 100,
+                    width: 100,
+                    shape: {
+                        type: 'Basic',
+                        shape: 'Ellipse',
+                    },
+                };
+                diagram.add(newNode as Node);
+                let newConn = {
+                    id: 'newcon' + randomId(),
+                    sourceID: diagram.nodes[0].id,
+                    targetID: newNode.id,
+                };
+                diagram.add(newConn);
+            }
+            diagram.doLayout();
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 100).toBe(true);
+            done();
+        });
+    });
+});
+describe('Diagram Control', () => {
+    describe('Radial Tree to check parent node position after adding child for children node', () => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            var nodes : NodeModel[] = [
+                { 
+                id: 'node0',
+                offsetX: 200,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                shape: {
+                  type: 'Basic',
+                  shape: 'Ellipse',
+                },},
+                { 
+                    id: 'node1',
+                    offsetX: 200,
+                    offsetY: 100,
+                    width: 100,
+                    height: 100,
+                    shape: {
+                      type: 'Basic',
+                      shape: 'Ellipse',
+                    },},
+                    { 
+                        id: 'node2',
+                        offsetX: 200,
+                        offsetY: 100,
+                        width: 100,
+                        height: 100,
+                        shape: {
+                          type: 'Basic',
+                          shape: 'Ellipse',
+                        },},
+                        { 
+                            id: 'node3',
+                            offsetX: 200,
+                            offsetY: 100,
+                            width: 100,
+                            height: 100,
+                            shape: {
+                              type: 'Basic',
+                              shape: 'Ellipse',
+                            },},
+                            { 
+                                id: 'node4',
+                                offsetX: 200,
+                                offsetY: 100,
+                                width: 100,
+                                height: 100,
+                                shape: {
+                                  type: 'Basic',
+                                  shape: 'Ellipse',
+                                },},
+                                { 
+                                    id: 'node5',
+                                    offsetX: 200,
+                                    offsetY: 100,
+                                    width: 100,
+                                    height: 100,
+                                    shape: {
+                                      type: 'Basic',
+                                      shape: 'Ellipse',
+                                    },}
+            ];
+            var connectors : ConnectorModel[] = [
+                {
+                    id : 'connector1',
+                    sourceID : 'node0',
+                    targetID : 'node1'
+                },
+                {
+                    id : 'connector2',
+                    sourceID : 'node0',
+                    targetID : 'node2'
+                },
+                {
+                    id : 'connector3',
+                    sourceID : 'node0',
+                    targetID : 'node3'
+                },
+                {
+                    id : 'connector4',
+                    sourceID : 'node0',
+                    targetID : 'node4'
+                },
+                {
+                    id : 'connector5',
+                    sourceID : 'node0',
+                    targetID : 'node5'
+                },
+            ];
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: nodes, connectors : connectors,
+                layout: {
+                    type: 'RadialTree', horizontalSpacing: 30, verticalSpacing: 30, root: 'parent',
+                    orientation: 'BottomToTop'
+                },
+                getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                    obj.height = 50;
+                    obj.width = 50;
+                    obj.backgroundColor = 'lightgrey';
+                    obj.style = { fill: 'transparent', strokeWidth: 2 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = 'None';
+                    connector.type = 'Straight';
+                    return connector;
+                },
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking root position after adding nodes for child nodes', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.layout.type = 'RadialTree';
+            diagram.layout.horizontalSpacing = 40;
+            diagram.layout.verticalSpacing = 40;
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 100).toBe(true);
+            mouseEvents.clickEvent(diagramCanvas, 200, 100);
+            for (let i : number = 1; i <= 5; i++) {
+                let newNode = {
+                    id: 'newnode' + randomId(),
+                    height: 100,
+                    width: 100,
+                    shape: {
+                        type: 'Basic',
+                        shape: 'Ellipse',
+                    },
+                };
+                diagram.add(newNode as Node);
+                let newConn = {
+                    id: 'newcon' + randomId(),
+                    sourceID: diagram.nodes[i].id,
+                    targetID: newNode.id,
+                };
+                diagram.add(newConn);
+            }
+            diagram.doLayout();
+            diagram.dataBind();
+            expect(diagram.nodes[0].offsetX == 200 && diagram.nodes[0].offsetY == 100).toBe(true);
+            done();
+        });
     });
 });

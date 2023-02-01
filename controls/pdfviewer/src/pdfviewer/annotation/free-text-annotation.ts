@@ -193,7 +193,7 @@ export class FreeTextAnnotation {
     /**
      * @private
      */
-     public currentPosition: any= [];
+    public currentPosition: any = [];
 
 
 
@@ -244,15 +244,20 @@ export class FreeTextAnnotation {
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
         // eslint-disable-next-line max-len
         this.author = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
-        if(this.pdfViewer.freeTextSettings.fontFamily){
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+            if (this.getRgbCode(this.borderColor).a === 0) {
+                this.borderWidth = 0;
+            }
+        }
+        if (this.pdfViewer.freeTextSettings.fontFamily) {
             let fontName: string = this.pdfViewer.freeTextSettings.fontFamily;
-            if(fontName === 'Helvetica'|| fontName === 'Times New Roman' || fontName ==='Courier' || fontName === 'Symbol'|| fontName === 'ZapfDingbats'){
+            if (fontName === 'Helvetica' || fontName === 'Times New Roman' || fontName === 'Courier' || fontName === 'Symbol' || fontName === 'ZapfDingbats') {
                 this.fontFamily = fontName;
             }
-            else{
+            else {
                 this.fontFamily = 'Helvetica';
             }
-        }else{
+        } else {
             this.fontFamily = 'Helvetica';
         }
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
@@ -303,7 +308,7 @@ export class FreeTextAnnotation {
             this.isItalic = true;
         }
     }
-    
+
     /**
      * @param shapeAnnotations
      * @param pageNumber
@@ -492,7 +497,7 @@ export class FreeTextAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public getSettings(annotation : any) : any {
+    public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
             selector = annotation.AnnotationSelectorSettings;
@@ -509,20 +514,20 @@ export class FreeTextAnnotation {
         this.pdfViewerBase.disableTextSelectionMode();
         this.pdfViewer.annotationModule.isFormFieldShape = false;
         switch (type) {
-        case 'FreeText':
-            this.currentAnnotationMode = 'FreeText';
-            this.updateTextProperties();
-            // eslint-disable-next-line max-len
-            const modifiedDateRect: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
-            this.pdfViewer.drawingObject = {
-                shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
-                fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
-                thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
+            case 'FreeText':
+                this.currentAnnotationMode = 'FreeText';
+                this.updateTextProperties();
                 // eslint-disable-next-line max-len
-                author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
-            };
-            this.pdfViewer.tool = 'Select';
-            break;
+                const modifiedDateRect: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                this.pdfViewer.drawingObject = {
+                    shapeAnnotationType: 'FreeText', strokeColor: this.borderColor,
+                    fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
+                    thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
+                    // eslint-disable-next-line max-len
+                    author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
+                };
+                this.pdfViewer.tool = 'Select';
+                break;
         }
     }
 
@@ -547,10 +552,10 @@ export class FreeTextAnnotation {
      */
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any, isNewAdded?: boolean): IFreeTextAnnotation {
-        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== ""){
+        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== "") {
             this.pdfViewer.annotationModule.isFormFieldShape = true;
         }
-        else{
+        else {
             this.pdfViewer.annotationModule.isFormFieldShape = false;
         }
         if (!isNewAdded) {
@@ -698,7 +703,7 @@ export class FreeTextAnnotation {
             return { x: bounds.left + paddingValue, y: bounds.top + paddingValue, left: bounds.left + paddingValue, top: bounds.top + paddingValue, width: bounds.width, height: bounds.height };
         }
     }
-    
+
     private manageAnnotations(pageAnnotations: IFreeTextAnnotation[], pageNumber: number): void {
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
@@ -776,13 +781,13 @@ export class FreeTextAnnotation {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             // eslint-disable-next-line
-            let pageIndex : number = this.inputBoxElement.id && this.inputBoxElement.id.split("_freeText_")[1] && this.inputBoxElement.id.split("_freeText_")[1].split("_")[0] ? parseFloat(this.inputBoxElement.id.split("_freeText_")[1].split("_")[0]) : this.pdfViewerBase.currentPageNumber - 1;
+            let pageIndex: number = this.inputBoxElement.id && this.inputBoxElement.id.split("_freeText_")[1] && this.inputBoxElement.id.split("_freeText_")[1].split("_")[0] ? parseFloat(this.inputBoxElement.id.split("_freeText_")[1].split("_")[0]) : this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let width: number = parseFloat(this.inputBoxElement.style.width);
             let padding: number = parseFloat(this.inputBoxElement.style.paddingLeft);
             if (this.pdfViewer.freeTextSettings.enableAutoFit && !this.isMaximumWidthReached && !this.isNewFreeTextAnnot) {
                 let fontsize: number = parseFloat(this.inputBoxElement.style.fontSize);
-                this.inputBoxElement.style.width = ((width + padding) - fontsize)  + 'px';
+                this.inputBoxElement.style.width = ((width + padding) - fontsize) + 'px';
             }
             if (this.pdfViewer.freeTextSettings.enableAutoFit && !this.isMaximumWidthReached && this.isNewFreeTextAnnot) {
                 width = parseFloat(this.inputBoxElement.style.width);
@@ -816,13 +821,13 @@ export class FreeTextAnnotation {
                     document.getElementById(commentsDivid).id = annotationName;
                 }
                 // eslint-disable-next-line
-                let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
+                let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                 // eslint-disable-next-line
-                let annotationSettings: any =  this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+                let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                 // eslint-disable-next-line
-                this.author = this.author? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
+                this.author = this.author ? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
                 // eslint-disable-next-line
-                let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions: this.pdfViewer.annotationSettings.allowedInteractions;
+                let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
                 // eslint-disable-next-line
                 annot = {
                     author: this.author, modifiedDate: currentDateString, subject: 'Text Box', id: 'free_text' + this.inputBoxCount,
@@ -890,7 +895,7 @@ export class FreeTextAnnotation {
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 // eslint-disable-next-line
-                this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y, x:x } });
+                this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y, x: x } });
                 // eslint-disable-next-line
                 let commentsDiv: any = document.getElementById(this.selectedAnnotation.annotName);
                 if (commentsDiv && commentsDiv.childNodes) {
@@ -936,7 +941,7 @@ export class FreeTextAnnotation {
             event.preventDefault();
         }
         this.selectedAnnotation = this.pdfViewer.selectedItems.annotations && this.isNewFreeTextAnnot ? this.pdfViewer.selectedItems.annotations[0]
-        : this.selectedAnnotation;
+            : this.selectedAnnotation;
         setTimeout(() => {
             if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
                 // eslint-disable-next-line radix
@@ -949,7 +954,7 @@ export class FreeTextAnnotation {
         }, 0);
     }
 
-    private updateFreeTextAnnotationSize(isSize : boolean): void {
+    private updateFreeTextAnnotationSize(isSize: boolean): void {
         const inuptEleObj: FreeTextAnnotation = this;
         let enableAutoFit: Boolean = inuptEleObj.pdfViewer.freeTextSettings.enableAutoFit;
         if (enableAutoFit) {
@@ -967,7 +972,7 @@ export class FreeTextAnnotation {
             const difference: number = currentHeight - previousHeight;
             let fontSize: number = parseFloat(inuptEleObj.inputBoxElement.style.fontSize);
             // eslint-disable-next-line max-len
-            inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height :  inuptEleObj.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
+            inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
             inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
         }
         let zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
@@ -1003,7 +1008,7 @@ export class FreeTextAnnotation {
                 // eslint-disable-next-line
                 inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
             }
-            inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex,  this.selectedAnnotation.annotationSelectorSettings);
+            inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);
         }
     }
 
@@ -1029,8 +1034,8 @@ export class FreeTextAnnotation {
         // eslint-disable-next-line
         let textNodes: any[] = [];
         let textboxValue: string = this.inputBoxElement.value;
-        if ( textboxValue.indexOf('\n') > -1) {
-            textNodes =  textboxValue.split('\n');
+        if (textboxValue.indexOf('\n') > -1) {
+            textNodes = textboxValue.split('\n');
             for (var j = 0; j < textNodes.length; j++) {
                 // eslint-disable-next-line
                 let textNodeData: any = context.measureText(textNodes[j]);
@@ -1042,7 +1047,7 @@ export class FreeTextAnnotation {
             }
             this.isMaximumWidthReached = true;
         } else {
-            highestTextNode =  textboxValue;
+            highestTextNode = textboxValue;
             this.isMaximumWidthReached = false;
         }
         // eslint-disable-next-line
@@ -1050,13 +1055,13 @@ export class FreeTextAnnotation {
         fontSize = parseFloat(this.inputBoxElement.style.fontSize);
         let inputEleWidth: number;
         let characterLength: number = 8;
-        let inputEleHeight : number = (fontSize + (fontSize/2));
+        let inputEleHeight: number = (fontSize + (fontSize / 2));
         if (this.isNewFreeTextAnnot) {
             inputEleWidth = Math.ceil(textwidth.width + ((characterLength + 1) * 2));
             this.inputBoxElement.style.height = inputEleHeight + 'px';
             this.inputBoxElement.style.top = (yPosition) - (inputEleHeight / 2) + 'px';
         } else {
-            inputEleWidth = Math.ceil(textwidth.width) + fontSize + Math.ceil(characterLength/2);
+            inputEleWidth = Math.ceil(textwidth.width) + fontSize + Math.ceil(characterLength / 2);
         }
         if (!xPosition) {
             this.inputBoxElement.style.height = inputEleHeight + 'px';
@@ -1125,7 +1130,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
         this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
-        this.inputBoxElement.style.top = ((currentPosition.y)) - ((this.defaultHeight * zoomFactor)/2) + 'px';
+        this.inputBoxElement.style.top = ((currentPosition.y)) - ((this.defaultHeight * zoomFactor) / 2) + 'px';
         if (this.pdfViewer.freeTextSettings.enableAutoFit) {
             this.inputBoxElement.style.wordBreak = 'break-all';
         } else {
@@ -1170,7 +1175,7 @@ export class FreeTextAnnotation {
             this.pdfViewer.clearSelection(pageIndex);
         }
         if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
-            let annotationBounds : any = annotation.wrapper.bounds;
+            let annotationBounds: any = annotation.wrapper.bounds;
             if (annotationBounds.left) {
                 this.inputBoxElement.style.left = ((annotationBounds.left) * zoomFactor) + 'px';
             }
@@ -1180,7 +1185,7 @@ export class FreeTextAnnotation {
             // eslint-disable-next-line max-len
             this.inputBoxElement.style.height = annotationBounds.height ? (annotationBounds.height * zoomFactor) + 'px' : (this.defaultHeight * zoomFactor) + 'px';
             // eslint-disable-next-line max-len
-            this.inputBoxElement.style.width = annotationBounds.width ? (annotationBounds.width * zoomFactor)  + 'px' : (this.defautWidth * zoomFactor) + 'px';
+            this.inputBoxElement.style.width = annotationBounds.width ? (annotationBounds.width * zoomFactor) + 'px' : (this.defautWidth * zoomFactor) + 'px';
             this.selectedAnnotation = annotation;
             this.previousText = this.selectedAnnotation.dynamicText;
             this.selectedAnnotation.dynamicText = '';
@@ -1406,7 +1411,7 @@ export class FreeTextAnnotation {
                 // eslint-disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 customData: this.pdfViewer.annotation.getCustomData(annotation),
-                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock,isReadonly: annotation.IsReadonly,isPrint: annotation.IsPrint,
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }, pageNumber: pageNumber, annotationSettings: annotation.AnnotationSettings, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly, isPrint: annotation.IsPrint,
             };
             return annot;
         }
@@ -1420,112 +1425,110 @@ export class FreeTextAnnotation {
      * @returns Object
      * @private
      */
-    public updateAddAnnotationDetails(annotationObject: FreeTextSettings, offset: IPoint): Object 
-    {
+    public updateAddAnnotationDetails(annotationObject: FreeTextSettings, offset: IPoint): Object {
 
-       //Creating new object if annotationObject is null
-       if(!annotationObject)
-       {
-        annotationObject = { offset: { x: 1, y: 1}, pageNumber: 0, width: undefined, height: undefined} as FreeTextSettings;
-        offset = annotationObject.offset;
-       }
-       else if(!annotationObject.offset)
-        offset = { x: 1, y: 1};
-       else
-        offset = annotationObject.offset;
+        //Creating new object if annotationObject is null
+        if (!annotationObject) {
+            annotationObject = { offset: { x: 1, y: 1 }, pageNumber: 0, width: undefined, height: undefined } as FreeTextSettings;
+            offset = annotationObject.offset;
+        }
+        else if (!annotationObject.offset)
+            offset = { x: 1, y: 1 };
+        else
+            offset = annotationObject.offset;
 
-       //Creating the CurrentDate and Annotation name
-       let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
-       let annotationName: string = this.pdfViewer.annotation.createGUID();
-       let fontStyle: FontStyle = annotationObject.fontStyle?annotationObject.fontStyle:FontStyle.None;
-       
-       //Creating annotation settings
-       let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
-       let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
-       let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
-       annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
-       annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight:0;
-       annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth:0;
-       annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth:0;
-       annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight:0;
-       annotationObject.width = annotationObject.width?annotationObject.width :150;
-       annotationObject.height = annotationObject.height?annotationObject.height :24.6;
+        //Creating the CurrentDate and Annotation name
+        let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+        let fontStyle: FontStyle = annotationObject.fontStyle ? annotationObject.fontStyle : FontStyle.None;
 
-       //Creating Annotation objects with it's proper properties
-       let freeTextAnnotation: any = [];
-       let freeText :any = {
-           AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions:allowedInteractions,
-           AnnotName: annotationName,
-           AnnotType: 'freeText',
-           AnnotationFlags: 'Default',
-           AnnotationIntent: null,
-           AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotationSelectorSettings,
-           AnnotationSettings: annotationSettings,
-           Author: annotationObject.author ? annotationObject.author : 'Guest',
-           Border: {HorizontalRadius: 0, VerticalRadius: 0, Width: annotationObject.borderWidth?annotationObject.borderWidth:1},
-           BorderColor: {IsEmpty: true, B: 255, Blue: 1, C: 0, G: 255},
-           Bounds: {X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Right:offset.x+annotationObject.width , Bottom:offset.y+annotationObject.height},
-           CalloutLines: null,
-           Color: {IsEmpty: false, B: 51, Blue: 0.2, C: 0, G: 255},
-           Comments: null,
-           CreatedDate: currentDateString,
-           CustomData: annotationObject.customData?annotationObject.customData:null,
-           ExistingCustomData: null,
-           FillColor: annotationObject.fillColor?annotationObject.fillColor:'#ffffff00',
-           Flatten: false,
-           FlattenPopups: false,
-           Font: { Bold: fontStyle == FontStyle.Bold?true:false, Italic: fontStyle == FontStyle.Italic?true:false, Strikeout: fontStyle == FontStyle.Strikethrough?true:false, Underline: fontStyle == FontStyle.Underline?true:false },
-           FontColor: annotationObject.fontColor?annotationObject.fontColor:'#000',
-           FontFamily: annotationObject.fontFamily?annotationObject.fontFamily:'Helvetica',
-           FontSize: annotationObject.fontSize?annotationObject.fontSize:16,
-           FreeTextAnnotationType: 'Text Box',
-           InnerColor: null,
-           IsCommentLock: false,
-           IsLock: annotationObject.isLock?annotationObject.isLock:false,
-           IsPrint: (annotationObject.isPrint !== null && annotationObject.isPrint !== undefined) ? annotationObject.isPrint : true,
-           Layer: null,
-           LineEndingStyle: 'OpenArrow',
-           Location: null,
-           MarkupText: annotationObject.defaultText?annotationObject.defaultText:'Type Here',
-           ModifiedDate: currentDateString,
-           Name: annotationName,
-           Opacity: annotationObject.opacity?annotationObject.opacity:1,
-           Page: null,
-           PageTags: null,
-           ReviewHistory: null,
-           Rotate: 0,
-           IsReadonly: annotationObject.isReadonly?annotationObject.isReadonly:false,
-           State: 'Unmarked',
-           StateModel: 'None',
-           StrokeColor: annotationObject.borderColor?annotationObject.borderColor:'#ffffff00',
-           Subject: 'Text Box',
-           Text: annotationObject.defaultText?annotationObject.defaultText:'Type Here',
-           TextAlign: annotationObject.textAlignment?annotationObject.textAlignment:'Left',
-           TextMarkupColor: null,
-           Thickness: annotationObject.borderWidth?annotationObject.borderWidth:1,
-           isAddAnnotationProgramatically: true
-        };     
+        //Creating annotation settings
+        let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+        let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+        annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock : false;
+        annotationSettings.minHeight = annotationObject.minHeight ? annotationObject.minHeight : 0;
+        annotationSettings.minWidth = annotationObject.minWidth ? annotationObject.minWidth : 0;
+        annotationSettings.maxWidth = annotationObject.maxWidth ? annotationObject.maxWidth : 0;
+        annotationSettings.maxHeight = annotationObject.maxHeight ? annotationObject.maxHeight : 0;
+        annotationObject.width = annotationObject.width ? annotationObject.width : 150;
+        annotationObject.height = annotationObject.height ? annotationObject.height : 24.6;
+
+        //Creating Annotation objects with it's proper properties
+        let freeTextAnnotation: any = [];
+        let freeText: any = {
+            AllowedInteractions: annotationObject.allowedInteractions ? annotationObject.allowedInteractions : allowedInteractions,
+            AnnotName: annotationName,
+            AnnotType: 'freeText',
+            AnnotationFlags: 'Default',
+            AnnotationIntent: null,
+            AnnotationSelectorSettings: annotationObject.annotationSelectorSettings ? annotationObject.annotationSelectorSettings : annotationSelectorSettings,
+            AnnotationSettings: annotationSettings,
+            Author: annotationObject.author ? annotationObject.author : 'Guest',
+            Border: { HorizontalRadius: 0, VerticalRadius: 0, Width: annotationObject.borderWidth ? annotationObject.borderWidth : 1 },
+            BorderColor: { IsEmpty: true, B: 255, Blue: 1, C: 0, G: 255 },
+            Bounds: { X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Right: offset.x + annotationObject.width, Bottom: offset.y + annotationObject.height },
+            CalloutLines: null,
+            Color: { IsEmpty: false, B: 51, Blue: 0.2, C: 0, G: 255 },
+            Comments: null,
+            CreatedDate: currentDateString,
+            CustomData: annotationObject.customData ? annotationObject.customData : null,
+            ExistingCustomData: null,
+            FillColor: annotationObject.fillColor ? annotationObject.fillColor : '#ffffff00',
+            Flatten: false,
+            FlattenPopups: false,
+            Font: { Bold: fontStyle == FontStyle.Bold ? true : false, Italic: fontStyle == FontStyle.Italic ? true : false, Strikeout: fontStyle == FontStyle.Strikethrough ? true : false, Underline: fontStyle == FontStyle.Underline ? true : false },
+            FontColor: annotationObject.fontColor ? annotationObject.fontColor : '#000',
+            FontFamily: annotationObject.fontFamily ? annotationObject.fontFamily : 'Helvetica',
+            FontSize: annotationObject.fontSize ? annotationObject.fontSize : 16,
+            FreeTextAnnotationType: 'Text Box',
+            InnerColor: null,
+            IsCommentLock: false,
+            IsLock: annotationObject.isLock ? annotationObject.isLock : false,
+            IsPrint: (annotationObject.isPrint !== null && annotationObject.isPrint !== undefined) ? annotationObject.isPrint : true,
+            Layer: null,
+            LineEndingStyle: 'OpenArrow',
+            Location: null,
+            MarkupText: annotationObject.defaultText ? annotationObject.defaultText : 'Type Here',
+            ModifiedDate: currentDateString,
+            Name: annotationName,
+            Opacity: annotationObject.opacity ? annotationObject.opacity : 1,
+            Page: null,
+            PageTags: null,
+            ReviewHistory: null,
+            Rotate: 0,
+            IsReadonly: annotationObject.isReadonly ? annotationObject.isReadonly : false,
+            State: 'Unmarked',
+            StateModel: 'None',
+            StrokeColor: annotationObject.borderColor ? annotationObject.borderColor : '#ffffff00',
+            Subject: 'Text Box',
+            Text: annotationObject.defaultText ? annotationObject.defaultText : 'Type Here',
+            TextAlign: annotationObject.textAlignment ? annotationObject.textAlignment : 'Left',
+            TextMarkupColor: null,
+            Thickness: annotationObject.borderWidth ? annotationObject.borderWidth : 1,
+            isAddAnnotationProgramatically: true
+        };
 
         //Adding the annotation object to an array and return it
         freeTextAnnotation[0] = freeText;
-        return {freeTextAnnotation};
+        return { freeTextAnnotation };
     }
     /**
      * This method used to get the padding.
     */
-    private getPaddingValues(fontSize : number) : any{
-        let leftPadding : number = 4; // Left padding used in the drawing.js
-        let topPadding : number = 5; // Top padding used in the drawing.js
-        let inputBoxpadding : number = 2; // we have set the input box padding for the free text.
-        topPadding = (topPadding - inputBoxpadding)* (fontSize / 16); 
-        return [leftPadding , topPadding];
+    private getPaddingValues(fontSize: number): any {
+        let leftPadding: number = 4; // Left padding used in the drawing.js
+        let topPadding: number = 5; // Top padding used in the drawing.js
+        let inputBoxpadding: number = 2; // we have set the input box padding for the free text.
+        topPadding = (topPadding - inputBoxpadding) * (fontSize / 16);
+        return [leftPadding, topPadding];
     }
     /**
      * @private
      * This method used tp get the current position of x and y.
     */
-    public addInputInZoom(currentPosition : any) : void {
-        let zoomFactor : number = this.pdfViewerBase.getZoomFactor();
+    public addInputInZoom(currentPosition: any): void {
+        let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         this.inputBoxElement.style.left = (currentPosition.x * zoomFactor) + 'px';
         this.inputBoxElement.style.top = (currentPosition.y * zoomFactor) + 'px';
         this.inputBoxElement.style.height = (currentPosition.height * zoomFactor) + 'px'

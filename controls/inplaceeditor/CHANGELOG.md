@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#I427677` - Resolved issue with `maxLength` validation rules for RTE type in In-place Editor.
+
 ## 19.4.38 (2021-12-17)
 
 ### In-place Editor

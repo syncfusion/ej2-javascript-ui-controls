@@ -9557,6 +9557,39 @@ describe('DateRangePicker', () => {
             expect(+daterangepicker.endDate).toBe(+new Date('01/31/2023'));
         });
     })
+    describe('EJ2-67265', () => {
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Browser hangs when difference between start and end date value is high', function () {
+            daterangepicker = new DateRangePicker({
+                renderDayCell: function (args: any): void {
+                    if (args.date.getDay() === 0 || args.date.getDay() === 6) {
+                        args.isDisabled = true;        
+                    }
+                }
+            });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.popupObj.element.querySelectorAll('.e-content td')[10].dispatchEvent(clickEvent);
+            daterangepicker.popupObj.element.querySelectorAll('.e-content td')[16].dispatchEvent(clickEvent);
+           
+           (<HTMLElement>document.getElementsByClassName('e-apply')[0]).click();
+            expect(+daterangepicker.startDate).toBe(+(new Date('1/4/2023')));
+            expect(+daterangepicker.endDate).toBe(+(new Date('1/10/2023')));
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

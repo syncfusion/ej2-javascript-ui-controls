@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Signature
+
+#### Bug Fixes
+
+- `#F179949` - Provide the change event fires support for draw method of signature.
+
 ## 20.4.38 (2022-12-21)
 
 ### Rating

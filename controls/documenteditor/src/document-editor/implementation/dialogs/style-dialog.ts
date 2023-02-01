@@ -2,7 +2,7 @@ import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
-import { StyleType } from '../../base';
+import { internalStyleCollectionChange, StyleType } from '../../base/index';
 import { BulletsAndNumberingDialog } from './index';
 import { WList } from '../list/list';
 import { Query } from '@syncfusion/ej2-data';
@@ -711,6 +711,7 @@ export class StyleDialog {
                 this.documentHelper.styles.push(tmpStyle as any);
                 name = styleName;
                 this.documentHelper.owner.editorModule.applyStyle(name,true);
+                this.documentHelper.owner.notify(internalStyleCollectionChange, {});
             }
             this.documentHelper.dialog2.hide();
             this.documentHelper.updateFocus();

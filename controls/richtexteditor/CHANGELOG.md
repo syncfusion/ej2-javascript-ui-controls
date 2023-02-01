@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I425631` - Now, the Code Format feature will now work correctly when you copy and paste the code into the Editor with the paste clean up settings enabled.
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#FB39526` - Now, the page doesn't scroll down on the initial render when custom `background/foreground` toolbars are configured.
+
+- `#I430029` - Fixed the issue with an unwanted 'A' Letter appearing at the bottom of the font color picker popup.
+
 ## 20.4.44 (2023-01-18)
 
 ### RichTextEditor
@@ -11,6 +27,8 @@
 - `#F179573` - Now, when typing in the Rich Text Editor the issue of letters appearing slowly has been resolved.
 
 - `#I417838` - Now, the `Underline` and `Strikethrough` toolbar styles applied properly when we modify the `font-size` in the editor.
+
+- `#I428203` - Now, the `Numbered list` will work correctly after applying indent to the pasted list with the paste clean-up settings enabled.
 
 ## 20.4.43 (2023-01-10)
 

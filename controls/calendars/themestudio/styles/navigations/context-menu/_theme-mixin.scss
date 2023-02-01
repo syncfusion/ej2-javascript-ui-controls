@@ -1,20 +1,24 @@
 @mixin focused-icon-color {
-  & .e-caret {
-    color: $cmenu-caret-color;
-  }
-
-  & .e-menu-icon {
-    color: $cmenu-icon-color;
+  @if $skin-name != 'bootstrap5' {
+    & .e-caret {
+      color: $cmenu-caret-color;
+    }
+  
+    & .e-menu-icon {
+      color: $cmenu-icon-color;
+    }
   }
 }
 
 @mixin selected-icon-color {
-  & .e-caret {
-    color: $cmenu-caret-hover-color;
-  }
-
-  & .e-menu-icon {
-    color: $cmenu-hover-icon-color;
+  @if $skin-name != 'bootstrap5' {
+    & .e-caret {
+      color: $cmenu-caret-hover-color;
+    }
+  
+    & .e-menu-icon {
+      color: $cmenu-hover-icon-color;
+    }
   }
 }
 

@@ -192,6 +192,10 @@
     }
   }
 
+  .e-checkbox-wrapper[readonly] {
+    pointer-events: none;
+  }
+
   .e-small .e-checkbox-wrapper,
   .e-small.e-checkbox-wrapper,
   .e-small .e-css.e-checkbox-wrapper,

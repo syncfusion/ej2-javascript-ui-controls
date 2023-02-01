@@ -246,6 +246,70 @@ describe('Spreadsheet context menu module ->', () => {
             done();
         });
     });
+
+    describe('Opening context menu selection mode as none->', function () {
+        beforeAll((done: Function) => {
+            model = { sheets: [{ ranges: [{ dataSource: defaultData }] }], selectionSettings: { mode: 'None' },
+            created: (): void => {
+                    helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                }
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll(function () {
+            helper.invoke('destroy');
+        });
+        it('Selectionsetting mode as none to check disbaled items in cell context menu', (done: Function) => {
+            helper.invoke('selectRange', ['A5']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
+                done();
+            });
+        });
+        it('Selectionsetting mode as none to check disbaled items in column header context menu', (done: Function) => {
+            helper.invoke('selectRange', ['B1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[1];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').classList).toContain('e-disabled');
+                (document.getElementsByClassName("e-cell")[0] as HTMLElement).click();
+                done();
+            });
+        });
+        it('Selectionsetting mode as none to check disbaled items in row header context menu', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[0].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(8)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        it('Selectionsetting mode as none to check disbaled items in sheet tabs context menu', (done: Function) => {
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let sheetTab: HTMLElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            let coords: DOMRect = <DOMRect>sheetTab.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, sheetTab);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(1)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+    });
+
     describe('CR-Issues->', () => {
         describe('EJ2-51327, EJ2-55488, EJ2-55491, EJ2-62989', () => {
             beforeAll((done: Function) => {

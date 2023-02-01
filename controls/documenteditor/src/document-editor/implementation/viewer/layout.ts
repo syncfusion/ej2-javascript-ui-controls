@@ -143,9 +143,21 @@ export class Layout {
             }
         }
         if (isNullOrUndefined(nextOrPrevSibling)) {
-            return false;
+            if (currentParagraph.isInsideTable) {
+                if(currentParagraph.index === 0) {
+                    nextOrPrevSibling = this.updateFirstParagraphSpacingBasedOnContextualSpacing(currentParagraph, isAfterSpacing);
+                } else if (currentParagraph.index === currentParagraph.associatedCell.childWidgets.length - 1) {
+                    nextOrPrevSibling = this.updateLastParagraphSpacingBasedOnContextualSpacing(currentParagraph);
+                    if(nextOrPrevSibling === currentParagraph) {
+                        return true;
+                    }
+                }
+            }
+            if(isNullOrUndefined(nextOrPrevSibling)) {
+                return false;
+            }
         }
-        if (currentParagraph.paragraphFormat.baseStyle === nextOrPrevSibling.paragraphFormat.baseStyle) {
+        if (nextOrPrevSibling instanceof ParagraphWidget && currentParagraph.paragraphFormat.baseStyle === nextOrPrevSibling.paragraphFormat.baseStyle) {
             if(currentParagraph.paragraphFormat.listFormat.listId >= 0 && nextOrPrevSibling.paragraphFormat.listFormat.listId >= 0){
                 if(!currentParagraph.paragraphFormat.contextualSpacing){
                     if(isAfterSpacing && currentParagraph.paragraphFormat.spaceAfterAuto){
@@ -158,6 +170,89 @@ export class Layout {
             return currentParagraph.paragraphFormat.contextualSpacing;
         } 
         return false;
+    }
+
+    private updateFirstParagraphSpacingBasedOnContextualSpacing(paragraph: ParagraphWidget, isAfterSpacing: boolean): ParagraphWidget {
+        let ownerCell: TableCellWidget = paragraph.associatedCell;
+        let ownerRow: TableRowWidget = ownerCell.ownerRow;
+        let ownerTable: TableWidget = ownerRow.ownerTable;
+        let nextOrPrevSibling: ParagraphWidget;
+        if(isAfterSpacing) {
+            nextOrPrevSibling = isNullOrUndefined(paragraph.nextRenderedWidget) ? (!isNullOrUndefined(ownerCell.nextRenderedWidget)? (ownerCell.nextRenderedWidget as TableCellWidget).firstChild as ParagraphWidget : undefined) : paragraph.nextRenderedWidget as ParagraphWidget;
+        } else {
+            nextOrPrevSibling = isNullOrUndefined(paragraph.previousRenderedWidget) ? (!isNullOrUndefined(ownerCell.previousRenderedWidget)? (ownerCell.previousRenderedWidget as TableCellWidget).firstChild as ParagraphWidget : undefined) : paragraph.previousRenderedWidget as ParagraphWidget;
+        }
+        if (ownerCell.index === 0 && paragraph.index === 0)
+        {
+            if (ownerRow.index === 0)
+            {
+                if (ownerTable.isInsideTable && ownerTable.index == 0) {
+                    nextOrPrevSibling = this.checkOwnerTablePrevItem(ownerTable, paragraph);
+                }
+                else {
+                    //If paragraph is preserved in first row first cell means, need to check owner table previous sibling.
+                    let ownerTablePrevSibling: ParagraphWidget = ownerTable.previousRenderedWidget as ParagraphWidget;
+                    return ownerTablePrevSibling;
+                }
+            }
+            else {
+                return nextOrPrevSibling;
+            }
+        } else if (paragraph.index === 0 && !isAfterSpacing) {
+            //If para is first item in any cell excluding first cell, need to check previous cell last item.
+            let prevCell: TableCellWidget = ownerRow.childWidgets[ownerCell.index - 1] as TableCellWidget;
+            let prevCelllastItem: BlockWidget = prevCell.childWidgets[prevCell.childWidgets.length - 1] as BlockWidget;
+            //if previous cell last item is table means skip before spacing value no need to check any paragraph styles.
+            if (prevCelllastItem instanceof TableWidget && paragraph.paragraphFormat.baseStyle.name === "Normal" && paragraph.paragraphFormat.listFormat.listId < 0)
+            {
+                return paragraph;
+            }
+        }
+        return nextOrPrevSibling;
+    }
+
+    private updateLastParagraphSpacingBasedOnContextualSpacing(paragraph: ParagraphWidget): ParagraphWidget {
+        let ownerCell: TableCellWidget = paragraph.associatedCell;
+        let ownerRow: TableRowWidget = ownerCell.ownerRow;
+        let nextCellFirstItem: BlockWidget;
+        if (ownerCell.index === ownerRow.childWidgets.length - 1 && paragraph.index === ownerCell.childWidgets.length - 1) {
+            if (paragraph.paragraphFormat.baseStyle.name === "Normal" && paragraph.paragraphFormat.listFormat.listId < 0) {
+                //If para preserved in last item in cell and cell is last cell in current row means its after spacing value not considered.
+                return paragraph;
+            }
+        }
+        else if (paragraph.index === ownerCell.childWidgets.length - 1) {
+            //If current para is last item in current cell then need to check next cell first item.
+            let nextCell: TableCellWidget = ownerRow.childWidgets[ownerCell.index + 1] as TableCellWidget;
+            nextCellFirstItem = nextCell.firstChild as BlockWidget;
+
+            //If next cell first item is table then need to check inner table first para.
+            //This is applicable for multiple nested table so when first item is table it try to get its first paragraph.
+            while (nextCellFirstItem instanceof TableWidget) {
+                nextCellFirstItem = (((nextCellFirstItem as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as BlockWidget;
+            }
+        }
+        return nextCellFirstItem as ParagraphWidget;
+    }
+
+    private checkOwnerTablePrevItem(ownerTable: TableWidget, paragraph: ParagraphWidget): ParagraphWidget {
+        let row: TableRowWidget = ownerTable.associatedCell.ownerRow;
+        let prevSibling: BlockWidget;
+        if (row.index > 0) {
+            if (paragraph.paragraphFormat.baseStyle.name === "Normal" && paragraph.paragraphFormat.listFormat.listId < 0) {
+                return paragraph;
+            }
+        }
+        else {
+            if (row.ownerTable.isInsideTable && row.ownerTable.index === 0) {
+                this.checkOwnerTablePrevItem(row.ownerTable, paragraph);
+            }
+            else {
+                let prevSibling: BlockWidget = row.ownerTable.previousRenderedWidget as BlockWidget;
+                return prevSibling as ParagraphWidget;
+            }
+        }
+        return prevSibling as ParagraphWidget;
     }
 
     public constructor(documentHelper: DocumentHelper) {
@@ -327,6 +422,7 @@ export class Layout {
             this.updateRevisionsToHeaderFooter(header, page);
             viewer.updateHFClientArea(section.sectionFormat, true);
             page.headerWidget = this.layoutHeaderFooterItems(viewer, header);
+            header.parentHeaderFooter = header;
             //this.updateHeaderFooterToParent(header);
             //When the vertical position is related to margin, then it should be adjusted based on the layouted header height. Not default header height.
             if (section.sectionFormat.topMargin < page.boundingRectangle.bottom && page.headerWidget.floatingElements.length > 0)
@@ -5714,13 +5810,14 @@ export class Layout {
                             if (previousRow instanceof TableRowWidget) {
                                 rowToMove = previousRow as TableRowWidget;
                                 if (!rowToMove.ownerTable.equals(row.ownerTable)) {
+                                    block = rowToMove.ownerTable;
                                     removeTable = false;
                                 }
                             }
                             keepNext = true;
                         }
                     }
-                    bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : block, keepNext);
+                    bodyWidget = this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget : keepNext ? block.previousWidget as BlockWidget : block as BlockWidget, keepNext);
 
                     let curretTable: TableWidget = tableWidgets[tableWidgets.length - 1];
                     //Move Next RowWidge to next page
@@ -7487,7 +7584,7 @@ export class Layout {
             if (rowWidget === endRowWidget) {
                 break;
             }
-            this.updateHeightForRowWidget(this.viewer, true, tables, rows, rowWidget, true, endRowWidget);
+            this.updateHeightForRowWidget(this.viewer, true, tables, rows, rowWidget, false, endRowWidget);
         }
     }
 

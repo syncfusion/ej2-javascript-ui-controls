@@ -46,6 +46,7 @@ export class Render {
     public isAutoFitEnabled: boolean = false;
     /** @hidden */
     public pivotColumns: ColumnModel[] = [];
+    /** @hidden */
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
     private colPos: number = 0;
@@ -217,6 +218,7 @@ export class Render {
             allowPdfExport: parent.allowPdfExport,
             allowResizing: this.gridSettings.allowResizing,
             allowTextWrap: this.gridSettings.allowTextWrap,
+            clipMode: this.gridSettings.clipMode,
             allowReordering: (this.parent.showGroupingBar ? false : this.gridSettings.allowReordering),
             allowSelection: this.gridSettings.allowSelection,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -897,6 +899,7 @@ export class Render {
     public updateGridSettings(): void {
         this.injectGridModules(this.parent);
         this.parent.grid.allowResizing = this.gridSettings.allowResizing;
+        this.parent.grid.clipMode = this.gridSettings.clipMode;
         this.parent.grid.allowTextWrap = this.gridSettings.allowTextWrap;
         this.parent.grid.allowReordering = (this.parent.showGroupingBar ? false : this.gridSettings.allowReordering);
         this.parent.grid.allowSelection = this.gridSettings.allowSelection;
@@ -918,7 +921,7 @@ export class Render {
                 this.parent.grid.width = this.gridSettings.width;
             }
             this.updatePivotColumns();
-            if (keys.indexOf('allowTextWrap') > -1) {
+            if (keys.indexOf('allowTextWrap') > -1 || keys.indexOf('clipMode') > -1) {
                 this.parent.layoutRefresh();
             }
         }
@@ -1613,6 +1616,8 @@ export class Render {
         return dataContent;
     }
 
+    /** @hidden */
+
     public calculateColWidth(colCount: number): number {
         if (!isNullOrUndefined(this.parent.resizedValue)) {
             this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
@@ -1631,6 +1636,8 @@ export class Render {
         return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
     }
 
+    /** @hidden */
+
     public resizeColWidth(colCount: number): number {
         if (!isNullOrUndefined(this.parent.resizedValue)) {
             this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
@@ -1646,6 +1653,8 @@ export class Render {
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.gridSettings.columnWidth : Math.floor(colWidth);
     }
+
+    /** @hidden */
 
     public calculateGridWidth(): number | string {
         let parWidth: number | string = this.parent.width;
@@ -1716,6 +1725,8 @@ export class Render {
         return gridHeight < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     }
 
+    /** @hidden */
+    
     public frameStackedHeaders(): ColumnModel[] {
         const pivotColumns: PivotColumn[] = this.parent.pivotColumns;
         const gridColumns: ColumnModel[] = this.parent.grid['columnModel'];
@@ -1826,7 +1837,8 @@ export class Render {
                 headerText: '',
                 allowReordering: false,
                 allowResizing: this.parent.gridSettings.allowResizing,
-                visible: true
+                visible: true,
+                clipMode: this.parent.gridSettings.clipMode
             };
         } else {
             this.pivotColumns = this.frameEmptyColumns();

@@ -832,6 +832,9 @@ export class DocumentHelper {
      * @returns {void}
      */
     public clearDocumentItems(): void {
+        if (this.owner.editor) {
+            this.owner.editor.clear();
+        }
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
@@ -1536,7 +1539,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public updateFocus = (): void => {
-        if (!isNullOrUndefined(this.currentSelectedComment)) {
+        if (!isNullOrUndefined(this.currentSelectedComment) && !this.owner.commentReviewPane.commentPane.isEditMode) {
             if (this.owner.commentReviewPane && this.owner.commentReviewPane.commentPane.isEditMode) {
                 this.owner.commentReviewPane.commentPane.selectComment(this.currentSelectedComment);
             }

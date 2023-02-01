@@ -1,5 +1,6 @@
-import { NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';import { SignatureBase, Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
-import {ImageFinetuneValue,Theme,ImageEditorCommands,SaveEventArgs,BeforeSaveEventArgs,ZoomEventArgs,PanEventArgs,CropEventArgs,RotateEventArgs,FlipEventArgs,ShapeChangeEventArgs,FileOpenEventArgs,ToolbarEventArgs,ImageFilterEventArgs,FinetuneEventArgs} from "./image-editor";
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, addClass, removeClass, extend } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, getComponent, getInstance, isNullOrUndefined, L10n, getUniqueID } from '@syncfusion/ej2-base';import { Dimension, ActivePoint, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Complex, compile, compile as templateCompiler, Browser, detach, select, ChildProperty } from '@syncfusion/ej2-base';
+import {ImageFinetuneValue,Theme,ImageEditorCommands,SaveEventArgs,BeforeSaveEventArgs,ZoomEventArgs,PanEventArgs,CropEventArgs,RotateEventArgs,FlipEventArgs,ShapeChangeEventArgs,OpenEventArgs,ToolbarEventArgs,ImageFilterEventArgs,FinetuneEventArgs} from "./image-editor";
+import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class FinetuneSettings
@@ -60,7 +61,7 @@ export interface FinetuneSettingsModel {
 /**
  * Interface for a class ImageEditor
  */
-export interface ImageEditorModel {
+export interface ImageEditorModel extends ComponentModel{
 
     /**
      * Defines class/multiple classes separated by a space for customizing Image Editor UI.
@@ -95,13 +96,13 @@ export interface ImageEditorModel {
     /**
      * Specifies the theme of the Image Editor. The shape selection appearance will be decided based on this property.
      * The property supports all the built-in themes of Syncfusion.
+     * default 'Bootstrap5'
      *
      * @isenumeration true
      * @default Theme.Bootstrap5
      * @asptype Theme
      *
      */
-
     theme?: string | Theme;
 
     /**
@@ -109,16 +110,18 @@ export interface ImageEditorModel {
      * If the property is defined as empty collection, the toolbar will not be rendered.
      * Suppose the property is not defined in control, an image editor’s toolbar will be rendered with preconfigured toolbar commands.
      * The preconfigured toolbar commands are
-     * Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
-     * Annotate: help to insert a shape on image that supports rectangle, ellipse, line, text and freehand drawing with resize, drag and drop, and customize its appearance.
-     * Transform: helps to rotate and flip an image.
-     * ZoomIn: performs zoom-in an image.
-     * ZoomOut: performs zoom-out an image.
-     * Pan: performs panning once zoomed an image.
-     * Move: disable the pan action and move to perform other actions such as insert a shape, transform, and more.
-     * Save: save the modified image.
-     * Open: open an image to perform editing.
-     * Reset: reset the modification and restore the original image.
+     *  Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
+     *  Annotate: help to insert a shape on image that supports rectangle, ellipse, line, text and freehand drawing with resize, drag and drop, and customize its appearance.
+     *  Transform: helps to rotate and flip an image.
+     *  ZoomIn: performs zoom-in an image.
+     *  ZoomOut: performs zoom-out an image.
+     *  Pan: performs panning once zoomed an image.
+     *  Move: disable the pan action and move to perform other actions such as insert a shape, transform, and more.
+     *  Save: save the modified image.
+     *  Open: open an image to perform editing.
+     *  Reset: reset the modification and restore the original image.
+     *
+     * @default null
      ```html
      * <div id='imageeditor'></div>
      * ```
@@ -166,22 +169,12 @@ export interface ImageEditorModel {
     width?: string;
 
     /**
-     * Gets or sets the background color of the component.
-     * The background color of the component that accepts hex value, rgb and text (like 'red'). The default value is ''.
+     * Specifies whether to perform undo / redo operation.
      *
-     * @default ''
+     * @default false
      * @private
      */
-    backgroundColor?: string;
-
-    /**
-     * Gets or sets the background image for the component.
-     * An image that used to fill the background of the component. The default value is ''.
-     *
-     * @default ''
-     * @private
-     */
-    backgroundImage?: string;
+    allowUndoRedo?: boolean;
 
     /**
      * Gets or sets whether to prevent the interaction in signature component.
@@ -191,54 +184,6 @@ export interface ImageEditorModel {
      * @private
      */
     isReadOnly?: boolean;
-
-    /**
-     * Gets or sets whether to save the signature along with Background Color and background Image while saving.
-     * True, if signature component to save with background. The default value is true.
-     *
-     * @default true
-     * @private
-     */
-    saveWithBackground?: boolean;
-
-    /**
-     * Gets or sets the stroke color of the signature.
-     * The color of the signature stroke that accepts hex value, rgb and text (like 'red'). The default value is "#000000".
-     *
-     * @default '#000000'
-     * @private
-     */
-    strokeColor?: string;
-
-    /**
-     * Gets or sets the minimum stroke width for signature.
-     * The signature component calculates stroke width based on Velocity, MinStrokeWidth and MaxStrokeWidth.
-     * The minimum width of stroke. The default value is 0.5.
-     *
-     * @default 0.5
-     * @private
-     */
-    minStrokeWidth?: number;
-
-    /**
-     * Gets or sets the maximum stroke width for signature.
-     * The signature component calculates stroke width based on Velocity, MinStrokeWidth and MaxStrokeWidth.
-     * The maximum width of stroke. The default value is 2.0.
-     *
-     * @default 2
-     * @private
-     */
-    maxStrokeWidth?: number;
-
-    /**
-     * Gets or sets the velocity to calculate the stroke thickness based on the pressure of the contact on the digitizer surface.
-     * The Signature component calculates stroke thickness based on Velocity, MinStrokeWidth and MaxStrokeWidth.
-     * The default value is 0.7.
-     *
-     * @default 0.7
-     * @private
-     */
-    velocity?: number;
 
     /**
      * Specifies the Signature in RTL mode that displays the content in the right-to-left direction.
@@ -270,13 +215,6 @@ export interface ImageEditorModel {
      *
      */
     finetuneSettings?: FinetuneSettingsModel;
-
-    /**
-     * Gets or sets the last signature url to maintain the persist state.
-     *
-     * @private
-     */
-    signatureValue?: string;
 
     /**
      * Triggers before an image is saved.
@@ -346,7 +284,7 @@ export interface ImageEditorModel {
      *
      * @event fileOpened
      */
-    fileOpened?: EmitType<FileOpenEventArgs>
+    fileOpened?: EmitType<OpenEventArgs>
 
     /**
      * Triggers once an image is saved.
@@ -386,8 +324,8 @@ export interface ImageEditorModel {
     /**
      * Triggers when applying fine tune to an image.
      *
-     * @event fineTuneValueChanging
+     * @event finetuneValueChanging
      */
-    fineTuneValueChanging?: EmitType<FinetuneEventArgs>
+    finetuneValueChanging?: EmitType<FinetuneEventArgs>
 
 }

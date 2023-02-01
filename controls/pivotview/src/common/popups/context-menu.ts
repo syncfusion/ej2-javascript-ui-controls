@@ -11,6 +11,7 @@ import { SummaryTypes } from '../../base/types';
  */
 /** @hidden */
 export class PivotContextMenu {
+    /** @hidden */
     public parent: PivotView | PivotFieldList;
     /** @hidden */
     public menuObj: ContextMenu;

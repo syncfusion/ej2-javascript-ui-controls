@@ -817,6 +817,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(<HTEle>this.hdrEle);
         attributes(this.hdrEle, { role: 'tablist' });
+        if (!isNOU(this.element.getAttribute('aria-label'))) {
+            this.hdrEle.setAttribute('aria-label', this.element.getAttribute('aria-label'));
+            this.element.removeAttribute('aria-label');
+        } else if (!isNOU(this.element.getAttribute('aria-labelledby'))) {
+            this.hdrEle.setAttribute('aria-labelledby', this.element.getAttribute('aria-labelledby'));
+            this.element.removeAttribute('aria-labelledby');
+        }
         this.setCloseButton(this.showCloseButton);
         const toolbarHeader: HTEle = this.tbObj.element.querySelector('.' + CLS_TB_ITEMS);
         if (!isNOU(toolbarHeader)) {
@@ -1450,10 +1457,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             return;
         }
         if (!this.isTemplate) {
-            const prev: HTEle = this.tbItem[this.prevIndex];
-            if (!isNOU(prev)) {
-                prev.firstElementChild.removeAttribute('aria-controls');
-            }
             attributes(trg.firstElementChild, { 'aria-controls': CLS_CONTENT + this.tabId + '_' + value });
         }
         const id: Str = trg.id;

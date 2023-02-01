@@ -203,6 +203,12 @@
       border-top: $image-editor-border;
     }
 
+    & .e-canvas-wrapper {
+      & .e-textarea {
+        line-height: initial !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
     & .e-bottom-toolbar {
       border-top: $image-editor-border;
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I425048` - Resolved issue with last row border being invisible when the height was set to 100% on collapsing.
+
 ## 20.4.44 (2023-01-18)
 
 ### Tree Grid

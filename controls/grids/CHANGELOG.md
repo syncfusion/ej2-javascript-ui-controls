@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I425349` - Grid toolbar template item focus issue has been fixed.
+- `#I413517` - Column menu pop-up is not properly shown with sticky header issue has been fixed.
+- `#I426775` - Template items disappear on edit action issue has been fixed.
+
 ## 20.4.44 (2023-01-18)
 
 ### Grid
@@ -177,7 +187,7 @@
 - `#SF-362860` - Last column header cell border issue has been fixed.
 - `#SF-357202` - Wrong operator while filtering with Excel filter search box is fixed.
 - `#SF-362140` - Script error while selecting the row with `virtualization` issue has been fixed.
-- `#FB-31236` -  Multi-column sorting missing sort number indicators issue has been fixed.
+- `#FB-31236` - Multi-column sorting missing sort number indicators issue has been fixed.
 - `#FB-31556` - Row Height misalignment when show/hide the template column with frozen Grid is fixed.
 - `#F171116` - Border is not apply properly in the Excel exporting has been fixed.
 
@@ -220,7 +230,7 @@
 
 #### Bug Fixes
 
-- `#I345910` - Sticky header not working when group drop area  is hidden has been fixed.
+- `#I345910` - Sticky header not working when group drop area is hidden has been fixed.
 - `#I357254` - Outline is displayed in excel export has been fixed.
 - `#FB30729` - Filter dialog position issue when enable virtual scrolling is fixed.
 - `#I356122` - `actionComplete` event is trigger after row reorder is performed has been fixed.
@@ -432,7 +442,7 @@
 
 #### Bug Fixes
 
-- `#F167053` - Border misalignment when  adding a row in bottom has been fixed.
+- `#F167053` - Border misalignment when adding a row in bottom has been fixed.
 - `#I336216` - Cell Selection with box mode is not working properly after filtering, has been fixed.
 - `#I336097, #I335284` - Virtualization Grid in flex container produce blank space issue has been fixed.
 
@@ -519,7 +529,7 @@
 - `#I329350` - Immutable mode doesn’t work for date values issue has been fixed.
 - `#I329350` - Update the reordered data in immutable mode re-renders multiple rows issue has been fixed.
 - `#I327293` - CPU takes more usage when export the hierarchy grid issue has been fixed.
-- `#FB25510` -  Throws script error While grouping the complex columns is fixed.
+- `#FB25510` - Throws script error While grouping the complex columns is fixed.
 
 ## 19.1.67 (2021-06-08)
 
@@ -541,7 +551,7 @@
 - `#I326727` - Column resize issue with frozen right/left and aggregate has been resolved.
 - `#I327237` - Empty row appears while hiding/showing columns in `virtualized` grouping grid, has been fixed.
 - `#I299221` - Frozen part refresh issue with template column has been resolved.
-- `#I311142` -  Provided internal event to handle queries on custom `ExcelFilter` dataSource.
+- `#I311142` - Provided internal event to handle queries on custom `ExcelFilter` dataSource.
 
 ## 19.1.65 (2021-05-25)
 
@@ -1124,7 +1134,7 @@
 
 #### Bug Fixes
 
-- `#279922, #280077` -  Scrollbar when clicking `childgrid` summary row, issue has been fixed.
+- `#279922, #280077` - Scrollbar when clicking `childgrid` summary row, issue has been fixed.
 
 ## 18.1.57 (2020-06-16)
 
@@ -1158,13 +1168,13 @@
 
 - Now `data`, `row`, `foreignKeyData` these Grid selection event arguments are get array values only when we perform multi selection. Please find modified event arguments and it types from the below table,
 
-`Properties` |`Type`
------|-----
-`data` | `Object or Object[]`
-`rowIndex` | `number`
-`rowIndexes` | `number[]`
-`row` | `Element or Element[]`
-`foreignKeyData` | `Object or Object[]`
+| `Properties`     | `Type`                 |
+| ---------------- | ---------------------- |
+| `data`           | `Object or Object[]`   |
+| `rowIndex`       | `number`               |
+| `rowIndexes`     | `number[]`             |
+| `row`            | `Element or Element[]` |
+| `foreignKeyData` | `Object or Object[]`   |
 
 ## 18.1.55 (2020-06-02)
 
@@ -1228,7 +1238,7 @@
 
 - `#269945, #271023` - `editTemplate` element events are not triggered for movable content.
 - `#273042` - grouping after restoring the persist data issue has been resolved.
-- `#273483, #275002, #275153` -  `actionfailure` event error message issue has been fixed.
+- `#273483, #275002, #275153` - `actionfailure` event error message issue has been fixed.
 - `#273238` - Missing of `headerText` property in the template data has been fixed.
 - `#266631` - Hidden column headers in Grid did not reflect in pdf export while using `includeHiddenColumn` issue has been fixed.
 - `#271911` - column template in angular after print issue has been resolved.
@@ -1273,7 +1283,7 @@
 
 #### Bug Fixes
 
-- `#271625, #272096` -  Frozen Grid cell selection issue has been fixed.
+- `#271625, #272096` - Frozen Grid cell selection issue has been fixed.
 - `#271625` - Grid resize cursor issue with stacked header has been fixed.
 - `#271240` - Batch editing `cellSaved` event after escape key issue has been fixed.
 - `#260390` - Header misalignment in auto wrap enabled Grid with frozen columns has been fixed.
@@ -1475,7 +1485,7 @@
 - `#254164` - Support for `FilterItemTemplate` function like as `ValueAccessor` is given.
 - `#253705` - `Ctrl+A` in Grid does not select the last record in Batch mode issue has been fixed.
 - `#253106` - Error thrown on using `setCellValue` method when row drag and drop is enabled issue has been fixed.
-- `#253398` - Frozen header height discrepancy when setting `rowHeight` and `allowTextWrap`  property issue has been fixed.
+- `#253398` - Frozen header height discrepancy when setting `rowHeight` and `allowTextWrap` property issue has been fixed.
 - `#252923` - Grid footer element is invisible while dynamically bind the Grid dataSource issue has been fixed.
 - `#253614` - Changed the scope of the `filterOperator` variable as public.
 
@@ -1509,7 +1519,7 @@
 
 #### Breaking Changes
 
-- Now `disableHtmlEncode` default value  is set to true, so the HTML tags can be displayed in the Grid header and content by default, so to display it as html content `disableHtmlEncode` need to be set as false.
+- Now `disableHtmlEncode` default value is set to true, so the HTML tags can be displayed in the Grid header and content by default, so to display it as html content `disableHtmlEncode` need to be set as false.
 
 ## 17.3.21 (2019-10-30)
 
@@ -1706,7 +1716,7 @@
 
 #### Bug Fixes
 
-- `#237403` -  Footer template shows proper result when using both group footer and footer template in exported excel document.
+- `#237403` - Footer template shows proper result when using both group footer and footer template in exported excel document.
 - `#232272` - `RemoteSaveAdaptor` batch changes are now refreshed properly in grid when `ContractResolver` set to `DefaultContractResolver`.
 - `#236337, #234622` - Child grid data is now successfully loads with query property in the `url` adaptor.
 - `#236011` - Selection `api` example is now working properly in the sample browser.
@@ -1716,7 +1726,7 @@
 
 #### Breaking Changes
 
-- Now in dialog and inline template editing, the element name for complex fields should be given with triple underscore instead of single underscore.  This change has been made as underscore is valid identifier in DB field names.
+- Now in dialog and inline template editing, the element name for complex fields should be given with triple underscore instead of single underscore. This change has been made as underscore is valid identifier in DB field names.
 
 ## 17.2.28-beta (2019-06-27)
 
@@ -2439,7 +2449,7 @@ Interface changed for `PdfExportProperties`
 #### Bug Fixes
 
 - Column properties is not persisted after reordering columns resolved.
-- `args.cancel`  has included in `rowSelecting` event while select the rows through method and user interaction.
+- `args.cancel` has included in `rowSelecting` event while select the rows through method and user interaction.
 
 ## 16.1.29 (2018-03-13)
 
@@ -2447,7 +2457,7 @@ Interface changed for `PdfExportProperties`
 
 #### Bug Fixes
 
-- `args.cancel`  has included in `rowSelecting` event.
+- `args.cancel` has included in `rowSelecting` event.
 - Dynamically changing filter settings does not update `Filterbar` value and filter status message is resolved.
 - Batch edit should close on clicking outside grid and on pressing enter or tab key is resolved.
 - `updateRow` method is provided for Normal editing and Dialog editing.
@@ -2482,7 +2492,7 @@ Interface changed for `PdfExportProperties`
 #### Breaking Changes
 
 - All grid enum property values are changed from camel casing to pascal casing. Please refer the below link for complete API changes from `v15.4.23` to `v16.1.24`.
-[Migration](http://ej2.syncfusion.com/documentation/grid/migration.html).
+  [Migration](http://ej2.syncfusion.com/documentation/grid/migration.html).
 
 ## 15.4.30-preview (2018-02-14)
 
@@ -2668,7 +2678,7 @@ Grid component is used to display and manipulate tabular data with configuration
 - **Sorting and grouping** - Supports n levels of sorting and grouping.
 - **Selection** - Provides the option to select the grid rows single or multiple.
 - **Filtering** - Offers filter bar or menu , or checkbox at each column to filter data.
-- **Editing** -  Provides the options to dynamically insert, delete and update records.
+- **Editing** - Provides the options to dynamically insert, delete and update records.
 - **Virtualization** - Provides the options to load large amount of data without performance degradation.
 - **Aggregates** - Provides built in types are sum , average, min, max, count.
 - **Paging** - Provides the option to easily switch between pages using the pager bar.

@@ -1858,3 +1858,41 @@ describe('Check the insert comment functionality', () => {
 
     });
 });
+describe('Check if remove content is working while comment', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true, enableComment: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    beforeEach((): void => {
+        editor.openBlank();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('checking if removing content work while comment is on', () => {
+        editor.openBlank();
+        editor.editor.handleTextInput('hello World');
+        editor.selection.selectAll();
+        editor.editor.insertComment('hello');
+        editor.selection.select('0;0;0','0;0;0');
+        editor.selection.selectAll();
+        editor.editor.onBackSpace();
+        expect(editor.documentHelper.comments.length).toBe(0);
+    });
+});

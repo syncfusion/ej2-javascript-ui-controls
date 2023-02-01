@@ -398,7 +398,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private destroyBackDrop(): void {
         const sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) || this.targetEle;
-        if (this.target && this.showBackdrop && sibling) {
+        if (this.target && this.showBackdrop && sibling && !isNullOrUndefined(this.defaultBackdropDiv)) {
             removeClass([this.defaultBackdropDiv], DEFAULTBACKDROP);
         } else if (this.showBackdrop && this.modal) {
             this.modal.style.display = 'none';

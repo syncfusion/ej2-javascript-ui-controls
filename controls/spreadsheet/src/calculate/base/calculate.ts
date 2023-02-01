@@ -2395,10 +2395,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @returns {boolean} - Returns boolean value.
      */
     public isCellReference(args: string): boolean {
+        args = args.trim();
         if (args === this.emptyString) {
             return false;
         }
-        args = args.trim();
         args = this.setTokensForSheets(args);
         const sheetToken1: string = this.getSheetToken(args);
         let containsBoth: boolean = false;
@@ -2407,18 +2407,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         let isAlpha: boolean = false;
         let isNum: boolean = false;
-        let isError: boolean;
         if (args.indexOf(':') !== args.lastIndexOf(':')) {
             return false;
         }
         const charArray: string[] = (args.split('').join(this.getParseArgumentSeparator())).split(this.getParseArgumentSeparator());
         for (let c: number = 0; c < charArray.length; c++) {
             if (this.isChar(charArray[c as number])) {
-                if (!isNum) {
-                    isAlpha = true;
-                } else {
-                    isError = true;
-                }
+                isAlpha = true;
             } else if (this.isDigit(charArray[c as number])) {
                 isNum = true;
             } else if (charArray[c as number] === ':') {
@@ -2430,9 +2425,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             } else {
                 return false;
             }
-        }
-        if (isError) {
-            throw this.getErrorStrings()[1]; // Added for wrong cell reference address in formula like '1B' instead of 'B1'.
         }
         if (args.indexOf(':') > -1 && args.indexOf(this.tic) === -1) {
             if (containsBoth && isAlpha && isNum) {

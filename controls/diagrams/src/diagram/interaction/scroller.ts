@@ -769,31 +769,29 @@ export class DiagramScroller {
      * @private
      */
     public bringIntoView(rect: Rect): void {
-        if (rect && rect.width && rect.height) {
-            let bounds: Rect = rect;
-            if (bounds.x > 0 && bounds.x >= bounds.width) {
-                bounds.width = bounds.x + bounds.x / 3;
+    // EJ2-68130-Bringintoview shows the object outside the viewport
+        var x = 0;
+        var y = 0;
+        var scale = this.currentZoom;
+        var bounds = rect;
+        var hoffset = -this.horizontalOffset;
+        var voffset = -this.verticalOffset;
+        bounds = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
+        var view = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
+        if (!(view.containsRect(bounds))) {
+            if (bounds.right > (-hoffset + this.viewPortWidth)) {
+                x = bounds.right - this.viewPortWidth;
             }
-            if (bounds.x > 0 && bounds.y >= bounds.height) {
-                bounds.height = bounds.y + bounds.y / 3;
+            if (bounds.x < -hoffset) {
+                x = bounds.x;
             }
-            const scale: PointModel = { x: 0, y: 0 };
-            scale.x = (this.viewPortWidth - 50) / (bounds.width);
-            scale.y = (this.viewPortHeight - 50) / (bounds.height);
-            let zoomFactor: number;
-            let centerX: number;
-            let centerY: number;
-            let factor: number;
-            let deltaX: number = -this.horizontalOffset;
-            let deltaY: number = -this.verticalOffset;
-            zoomFactor = Math.min(scale.x, scale.y);
-            factor = (zoomFactor / this.currentZoom);
-            centerX = (this.viewPortWidth - (bounds.width) * zoomFactor) / 2 - bounds.x * zoomFactor;
-            centerY = (this.viewPortHeight - (bounds.height) * zoomFactor) / 2 - bounds.y * zoomFactor;
-            deltaX += centerX;
-            deltaY += centerY;
-            if(factor === 1){deltaX*=-1;deltaY*=-1};
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 });
+            if (bounds.bottom > (-voffset + this.viewPortHeight)) {
+                y = bounds.bottom - this.viewPortHeight;
+            }
+            if (bounds.y < -voffset) {
+                y = bounds.y;
+            }
+            this.zoom(1, -this.horizontalOffset - x, -this.verticalOffset - y, null);
         }
     }
 

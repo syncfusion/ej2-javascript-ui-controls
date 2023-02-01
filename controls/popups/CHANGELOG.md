@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I424071` - The issue of the Tooltip component throwing a script error when setting content as '${}' has been resolved.
+
 ## 20.4.44 (2023-01-18)
 
 ### Dialog

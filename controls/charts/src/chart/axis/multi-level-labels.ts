@@ -364,17 +364,18 @@ export class MultiLevelLabel {
                 argsData = this.triggerMultiLabelRender(
                     axis, categoryLabel.text, multiLevel.textStyle, multiLevel.alignment, categoryLabel.customAttributes);
                 if (!argsData.cancel) {
+                    let maximumWidth: number = ((categoryLabel.maximumTextWidth === null ? (this.yAxisMultiLabelHeight[level] / 2) : categoryLabel.maximumTextWidth / 2));
                     labelSize = measureText(argsData.text, argsData.textStyle);
                     gap = endY - startY;
                     x = rect.x - startX - this.yAxisPrevHeight[level as number] -
-                        (this.yAxisMultiLabelHeight[level as number] / 2) - padding / 2;
+                        (maximumWidth) - padding / 2;
                     y = rect.height + rect.y - startY - (gap / 2);
                     if (opposedPosition) {
-                        x = isOutside ? rect.x + startX + padding / 2 + (this.yAxisMultiLabelHeight[level as number] / 2) +
-                            this.yAxisPrevHeight[level as number] + scrollBarHeight : rect.x - startX - (this.yAxisMultiLabelHeight[level as number] / 2) -
+                        x = isOutside ? rect.x + startX + padding / 2 + (maximumWidth) +
+                            this.yAxisPrevHeight[level as number] + scrollBarHeight : rect.x - startX - (maximumWidth) -
                             this.yAxisPrevHeight[level as number] - padding / 2;
                     } else {
-                        x = isOutside ? x + scrollBarHeight : rect.x + startX + padding / 2 + (this.yAxisMultiLabelHeight[level as number] / 2) +
+                        x = isOutside ? x + scrollBarHeight : rect.x + startX + padding / 2 + (maximumWidth) +
                             this.yAxisPrevHeight[level as number];
                     }
                     if (argsData.alignment === 'Center') {
@@ -395,6 +396,12 @@ export class MultiLevelLabel {
                             (categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level as number] :
                                 categoryLabel.maximumTextWidth),
                             argsData.text, argsData.textStyle) : options.text;
+                    options.text = (multiLevel.overflow === 'Wrap') ?
+                        textWrap(argsData.text, (categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level as number] :
+                            categoryLabel.maximumTextWidth), argsData.textStyle) : options.text;
+                    if (typeof options.text !== 'string' && options.text.length > 1) {
+                        options.y -= (padding * options.text.length / 2);
+                    }               
                     textElement(
                         this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel,
                         this.labelElement, this.chart.redraw, true, null, null, null, null, null, null, this.chart.enableCanvas
@@ -432,7 +439,8 @@ export class MultiLevelLabel {
         const y: number = rect.y + rect.height - endY;
         let scrollBarHeight: number = isOutside && isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
         scrollBarHeight = scrollBarHeight * (opposedPosition ? 1 : -1);
-        let width: number = this.yAxisMultiLabelHeight[labelIndex as number] + padding;
+        let width: number = (groupLabel.categories[categoryIndex].maximumTextWidth === null ? this.yAxisMultiLabelHeight[labelIndex as number] :
+            (groupLabel.categories[categoryIndex].maximumTextWidth)) + padding;
         const x: number = (((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? rect.x - startX -
             this.yAxisPrevHeight[labelIndex as number] : rect.x + startX + this.yAxisPrevHeight[labelIndex as number]) + scrollBarHeight;
         const borderType: BorderType = categoryType ? categoryType : groupLabel.border.type;

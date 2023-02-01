@@ -31,7 +31,7 @@ export function getData(
         resolve((() => {
             let sheetIdx: number;
             if (address.indexOf('!') > -1) {
-                sheetIdx = getSheetIndex(context, getSheetNameFromAddress(address));
+                sheetIdx = getSheetIndex(context, address.split('!')[0]);
                 address = address.slice(address.indexOf('!') + 1, address.length);
             } else {
                 sheetIdx = context.activeSheetIndex;

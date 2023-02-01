@@ -77,6 +77,8 @@ describe(' RTE content selection with ', () => {
         clickEvent.initEvent('mousedown', true, true);
         fontColorPicker.dispatchEvent(clickEvent);
         fontColorPicker.click();
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].showButtons = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
         let fontColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
         mouseEventArgs = {
             target: fontColorPickerItem
@@ -122,6 +124,8 @@ describe(' RTE content selection with ', () => {
         rteObj.notify('selection-save', {});
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[1];
         backgroundColorPicker.click();
+        (document.querySelectorAll('.e-control.e-colorpicker')[1]  as any).ej2_instances[0].showButtons = true;
+        (document.querySelectorAll('.e-control.e-colorpicker')[1]  as any).ej2_instances[0].dataBind();
         let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
         mouseEventArgs = {
             target: backgroundColorPickerItem
@@ -239,6 +243,8 @@ describe(' RTE content selection with ', () => {
         rteObj.notify('selection-save', {});
         let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
         fontColorPicker.click();
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].showButtons = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
         let fontColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
         mouseEventArgs = {
             target: fontColorPickerItem
@@ -285,6 +291,8 @@ describe(' RTE content selection with ', () => {
         rteObj.notify('selection-save', {});
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[1];
         backgroundColorPicker.click();
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
         let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
         mouseEventArgs = {
             target: backgroundColorPickerItem
@@ -340,6 +348,8 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         rteObj.notify('selection-save', {});
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector(".e-rte-backgroundcolor-dropdown");
         backgroundColorPicker.click();
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
         dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'focusin');
         (document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild as any).value = '50';
         dispatchKeyEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'input');

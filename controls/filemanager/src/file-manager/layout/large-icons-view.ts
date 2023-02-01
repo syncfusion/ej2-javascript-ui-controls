@@ -138,16 +138,17 @@ export class LargeIconsView {
             this.items = [];
             this.items = this.renderList(args);
             this.items = this.allItems = getSortedData(this.parent, this.items);
-            // if (this.parent.virtualizationSettings.enable) {
-            //     this.items = this.allItems.slice(0, this.parent.virtualizationSettings.largeIconsViewItemsCount);
-            // }
+            iconsView.classList.remove(CLS.DISPLAY_NONE);
+            if (this.parent.enableVirtualization && this.allItems.length > 0) {
+                if (!this.element.style.height) { this.adjustHeight(); }
+                this.parent.virtualizationModule.setUIVirtualization();
+            }
             // eslint-disable-next-line
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
             this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.listElements));
             this.element.appendChild(this.listElements);
             this.preventImgDrag();
             this.createDragObj();
-            iconsView.classList.remove(CLS.DISPLAY_NONE);
             if (this.itemList.length === 0) {
                 const emptyList: Element = this.element.querySelector('.' + CLS.LIST_PARENT);
                 this.element.removeChild(emptyList);
@@ -181,10 +182,10 @@ export class LargeIconsView {
             this.getItemCount();
             this.addEventListener();
             this.wireEvents();
-            // if (this.parent.virtualizationSettings.enable && this.allItems.length > 0) {
-            //     this.parent.virtualizationModule.setUlElementHeight();
-            //     this.parent.virtualizationModule.wireScrollEvent(false);
-            // }
+            if (this.parent.enableVirtualization && this.allItems.length > 0) {
+                this.parent.virtualizationModule.setUlElementHeight();
+                this.parent.virtualizationModule.wireScrollEvent(false);
+            }
             this.isRendered = true;
             hideSpinner(this.parent.element);
             if (this.parent.selectedItems.length) { this.checkItem(); }
@@ -311,6 +312,7 @@ export class LargeIconsView {
     private onLayoutChange(args: ReadArgs): void {
         if (this.parent.view === 'LargeIcons') {
             this.destroy();
+            if (this.parent.enableVirtualization) { this.parent.setProperties({ selectedItems: [] }, true); }
             this.render(args);
             /* istanbul ignore next */
             if (getValue('name', args) === 'layout-change' && this.parent.fileAction === 'move' &&
@@ -984,10 +986,26 @@ export class LargeIconsView {
         const lastItem: Element = this.getLastItem();
         switch (e.action) {
         case 'end':
-            this.navigateItem(lastItem);
+            if (this.parent.enableVirtualization) {
+                this.clearSelect();
+                this.element.firstElementChild.scrollTo(0, this.element.firstElementChild.scrollHeight);
+                setTimeout(() => {
+                    this.navigateItem(this.itemList[this.itemList.length - 1]);
+                }, 10);
+            } else {
+                this.navigateItem(lastItem);
+            }
             break;
         case 'home':
-            this.navigateItem(firstItem);
+            if (this.parent.enableVirtualization) {
+                this.clearSelect();
+                this.element.firstElementChild.scrollTop = 0;
+                setTimeout(() => {
+                    this.navigateItem(this.itemList[0]);
+                }, 10);
+            } else {
+                this.navigateItem(firstItem);
+            }
             break;
         case 'tab':
             if (!isNOU(fItem)) {
@@ -1163,6 +1181,12 @@ export class LargeIconsView {
                 index = perRow ? index - perRow : index - 1;
             }
             nextItem = this.itemList[index as number];
+            if (this.parent.enableVirtualization && isNOU(nextItem)) {
+                const marginValue: number = parseInt(window.getComputedStyle(this.itemList[0]).getPropertyValue('margin-top'), 10) +
+                    parseInt(window.getComputedStyle(this.itemList[0]).getPropertyValue('margin-bottom'), 10);
+                const scrollHeight: number = this.itemList[0].getBoundingClientRect().height + marginValue ;
+                this.element.firstElementChild.scrollTo(this.element.firstElementChild.scrollTop, this.element.firstElementChild.scrollTop + scrollHeight);
+            }
             if (isNOU(nextItem)) {
                 return li;
             }

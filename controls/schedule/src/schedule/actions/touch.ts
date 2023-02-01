@@ -105,7 +105,7 @@ export class ScheduleTouch {
             if (offsetDist > time || (e.distanceX > (this.parent.element.offsetWidth / 2))) {
                 this.swapPanels(e.swipeDirection);
                 if (offsetDist > time && (e.distanceX > (this.parent.element.offsetWidth / 2))) {
-                    this.element.style.transitionDuration = ((offsetDist / time) / 10) + 's';
+                    this.element.style.transitionDuration = (((Browser.isDevice ? e.distanceX : offsetDist) / time) / 10) + 's';
                 }
                 this.confirmSwipe(e.swipeDirection);
             } else {
@@ -237,6 +237,7 @@ export class ScheduleTouch {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
+        this.element.style.transitionDuration = '';
         util.removeChildren(this.element);
         removeClass([this.element], cls.TRANSLATE_CLASS);
     }

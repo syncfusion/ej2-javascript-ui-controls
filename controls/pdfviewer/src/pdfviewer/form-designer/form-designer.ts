@@ -78,7 +78,6 @@ export class FormDesigner {
     private isSetFormFieldMode: boolean = false;
     private increasedSize: number = 5;
     private defaultZoomValue: number = 1;
-    private indicatorPaddingValue: number = 4;
     private signatureFieldPropertyChanged: any =
         {
             isReadOnlyChanged: false,
@@ -1313,6 +1312,7 @@ export class FormDesigner {
         }
         spanElement.style.overflow = "hidden";
         spanElement.style.whiteSpace =  "nowrap";
+        spanElement.style.padding = "2px 3px 2px 1px";
         spanElement.style.boxSizing = "border-box";
         let zoomValue : number = this.pdfViewerBase.getZoomFactor() as number;
         spanElement.style.textAlign = "left";
@@ -1330,9 +1330,6 @@ export class FormDesigner {
         spanElement.style.height = heightNew + "px";
         if (!isPrint) {
             element.appendChild(spanElement);
-        }
-        if(!((widthNew + this.indicatorPaddingValue) > signatureFieldWidth * zoomValue) && !((heightNew + this.indicatorPaddingValue) > signatureFieldHeight * zoomValue )){
-            spanElement.style.padding = "2px 3px 2px 1px";
         }
         this.updateSignInitialFieldProperties(signatureField, signatureField.isInitialField, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip != "") {

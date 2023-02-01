@@ -6562,6 +6562,46 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
             gridLayOut.addPanel({ row: 0, col: 1, sizeX: 1, sizeY: 1 });
         });
+        it('testing args.cancel in dragStart event', () => {
+            gridLayOut.dragStart = function (args: DragStartArgs) {
+                args.cancel = true;
+            };
+            let movingElemnt: HTMLElement = document.getElementById('0');
+            let targetElemnt: HTMLElement = document.getElementById('2');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 0, 0);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 60, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 62, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup)
+        });
+        it('testing args.cancel in dragStop event', () => {
+            gridLayOut.dragStop = function (args: DragStartArgs) {
+                args.cancel = true;
+            };
+            let movingElemnt: HTMLElement = document.getElementById('0');
+            let targetElemnt: HTMLElement = document.getElementById('2');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 0, 0);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 60, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 62, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup)
+        });
         it('Drag Restrict class testing inline rendering', () => {
             document.getElementById('0').classList.add("e-drag-restrict");
             let movingElemnt: HTMLElement = document.getElementById('0');

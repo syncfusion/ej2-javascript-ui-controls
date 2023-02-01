@@ -21,6 +21,7 @@ import { AggregateMenuOpenEventArgs } from '../base/interface';
  */
 /** @hidden */
 export class AggregateMenu {
+    /** @hidden */
     public parent: PivotView | PivotFieldList;
     private menuInfo: Menu[] = [];
     private parentElement: HTMLElement;

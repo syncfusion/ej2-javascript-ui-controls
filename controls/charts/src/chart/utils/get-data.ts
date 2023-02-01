@@ -285,7 +285,7 @@ export class ChartData {
     public commonXValue(visibleSeries: Series[]): number[] {
         const commonXValues: number[] = [];
         for (let j: number = 0; j < visibleSeries.length; j++) {
-            for (let i: number = 0; i < visibleSeries[j].points.length; i++) {
+            for (let i: number = 0; (visibleSeries[j].points && i < visibleSeries[j].points.length); i++) {
                 const point: Points = visibleSeries[j].points[i as number];
                 if (point && (point.index === 0 || point.index === visibleSeries[j].points.length - 1 || (point.symbolLocations && point.symbolLocations.length > 0))) {
                     commonXValues.push(point.xValue);

@@ -2710,7 +2710,7 @@ export class Selection implements IAction {
         if (this.parent.allowPaging) {
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
-        if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
+        if (!isNullOrUndefined(rows) && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             const indexes: number[] = [];
             for (let j: number = 0; j < rows.length; j++) {
                 const rowObj: Row<Column> = this.getRowObj(rows[parseInt(j.toString(), 10)]);

@@ -7,6 +7,7 @@ import * as cls from '../../common/base/css-constant';
  */
 /** @hidden */
 export class AxisTableRenderer {
+    /** @hidden */
     public parent: PivotFieldList;
     /** @hidden */
     public axisTable: Element;

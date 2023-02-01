@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I428125` - DropDownButton items selection overlay getting darker for multiple clicking has been resolved.
+- `#I428636` - DropDownButton control throws errors when changing multiple properties together using setProperties method has been resolved.
+
 ## 20.4.40 (2022-12-28)
 
 ### DropDownButton

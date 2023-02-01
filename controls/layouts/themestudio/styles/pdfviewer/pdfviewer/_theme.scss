@@ -2799,6 +2799,13 @@
     }
   }
 
+  .e-btn.e-outline.e-primary,
+  .e-css.e-btn.e-outline.e-primary {
+    @if $theme-name == 'material'  {
+      color: $pv-comment-panel-post-button-color;
+    }
+  }
+
   .e-pdfviewer .e-editable-inline .e-editable-form {
     margin-bottom: 1px;
   }

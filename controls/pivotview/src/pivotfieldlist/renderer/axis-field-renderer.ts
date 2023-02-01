@@ -11,6 +11,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 /** @hidden */
 export class AxisFieldRenderer {
+    /** @hidden */
     public parent: PivotFieldList;
 
     /** Constructor for render module */

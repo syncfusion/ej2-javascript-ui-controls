@@ -621,20 +621,6 @@
 
       .e-toolbar-items {
         background: $pivotgrid-grp-bg-color;
-
-        .e-toolbar-item {
-          .e-tbar-btn.e-btn.e-control {
-            @if ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='material') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') or ($skin-name =='bootstrap4') {
-              background: $pivotgrid-grp-bg-color;
-
-              &:hover {
-                @if ($skin-name =='material') or ($skin-name =='material-dark') or ($skin-name =='fabric-dark') or ($skin-name =='bootstrap4') {
-                  background: $pivotgrid-grp-bg-hover-color;
-                }
-              }
-            }
-          }
-        }
       }
 
       .e-toolbar-item .e-tbar-btn.e-btn {

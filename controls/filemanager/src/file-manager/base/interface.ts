@@ -1,7 +1,7 @@
 import { Component, EmitType, L10n } from '@syncfusion/ej2-base';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { FileManagerModel } from '../base/file-manager-model';
-import { ToolbarSettingsModel, AjaxSettingsModel, VirtualizationSettingsModel } from '../models/index';
+import { ToolbarSettingsModel, AjaxSettingsModel } from '../models/index';
 import { TreeView, ContextMenu, MenuItemModel, ItemModel } from '@syncfusion/ej2-navigations';
 import { DetailsView } from '../layout/details-view';
 import { Toolbar } from '../actions/toolbar';
@@ -532,7 +532,6 @@ export interface IFileManager extends Component<HTMLElement> {
     contextMenuSettings: ContextMenuSettingsModel;
     contextmenuModule?: IContextMenu;
     navigationPaneSettings: NavigationPaneSettingsModel;
-   // virtualizationSettings:  VirtualizationSettingsModel;
     targetPath: string;
     activeModule: string;
     selectedNodes: string[];
@@ -595,6 +594,7 @@ export interface IFileManager extends Component<HTMLElement> {
     folderPath: string;
     showFileExtension: boolean;
     enablePersistence: boolean;
+    enableVirtualization: boolean;
     showHiddenItems: boolean;
     persistData: boolean;
     localeObj: L10n;

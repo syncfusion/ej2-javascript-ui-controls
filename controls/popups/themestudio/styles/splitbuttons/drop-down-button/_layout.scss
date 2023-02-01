@@ -34,6 +34,9 @@
 
     .e-caret {
       font-size: $drop-down-btn-caret-icon-font-size;
+      @if $skin-name == 'FluentUI' or $skin-name == 'highcontrast' {
+        margin-top: 0;
+      }
     }
 
     &.e-vertical {

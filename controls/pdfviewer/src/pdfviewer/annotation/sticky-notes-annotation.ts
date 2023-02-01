@@ -427,6 +427,17 @@ export class StickyNotesAnnotation {
                         }
                         proxy.pdfViewerBase.annotationComments = annotationCollections;
                         proxy.pdfViewerBase.documentAnnotationCollections = annotationCollections;
+                        for (let i: number = data.startPageIndex; i < data.endPageIndex; i++) {
+                            var newData = data.annotationDetails[i];
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "stampAnnotations");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
+                            proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
+                        }
                         for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
                             if (data.annotationDetails[j]) {
                                 proxy.renderAnnotationCollections(data.annotationDetails[j], j, isInitialRender);
@@ -3397,7 +3408,7 @@ export class StickyNotesAnnotation {
     }
     private convertUTCDateToLocalDate(date:any) 
     {
-        let dateTime: Date = new Date( Date.parse(date+' '+'UTC'));
+        let dateTime: Date = new Date( Date.parse(date));
         this.globalize = new Internationalization(this.pdfViewer.locale);
         let timeValue: string = dateTime.toLocaleTimeString(this.globalize.culture);
         let newTime: string;

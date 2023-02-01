@@ -420,8 +420,8 @@
   height: $ddl-input-height;
   min-height: $ddl-input-height;
   outline: none;
-  padding: 0;
-  text-indent: $ddl-input-text-indent;
+  padding: $ddl-input-placeholder-padding;
+  text-indent: 0;
 }
 
 .e-multiselect.e-filled .e-multi-select-wrapper input[type = 'text'] {

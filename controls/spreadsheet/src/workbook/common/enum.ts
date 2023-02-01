@@ -263,3 +263,12 @@ export type AutoFillType = 'FillSeries' | 'CopyCells' | 'FillFormattingOnly' | '
  * Defines Auto fill direction options.
  */
 export type AutoFillDirection = 'Down' | 'Right' | 'Up' | 'Left';
+
+/**
+ * Defines the types of page orientation.
+ */
+export type PdfPageOrientation =
+/** Used to display content in a vertical layout. */
+'Portrait' |
+/** Used to display content in a horizontal layout. */
+'Landscape';

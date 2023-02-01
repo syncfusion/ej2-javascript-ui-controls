@@ -1,7 +1,7 @@
 import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
-import { CFColor, Workbook } from '../index';
+import { CFColor, Workbook, PdfPageOrientation } from '../index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {
@@ -12,8 +12,14 @@ export interface SaveOptions {
     pdfLayoutSettings?: pdfLayoutSettings;
 }
 
+/**
+ * Specifies the PDF layout options.
+ */
 export interface pdfLayoutSettings {
+    /** Renders the sheet data on one page. */
     fitSheetOnOnePage?: boolean;
+    /** Specify the orientation for PDF exporting. By default, PDF is created in Portrait orientation. */
+    orientation?: PdfPageOrientation;
 }
 
 export interface BeforeSaveEventArgs extends SaveOptions {

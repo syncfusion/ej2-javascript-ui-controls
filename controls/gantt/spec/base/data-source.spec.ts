@@ -716,7 +716,74 @@ export let projectData: Object[] = [
         ]
     }
 ];
-
+export let customZoomingdata: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            {
+                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                Predecessor: '2', Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+        Indicators: [
+            {
+                'date': new Date('04/10/2019'),
+                'name': '#briefing',
+                'title': 'Product concept breifing',
+            }
+        ]
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                        Predecessor: '5', Progress: 30
+                    },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                ]
+            },
+            {
+                TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                Predecessor: '7, 8', Progress: 30
+            },
+            { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+            {
+                TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '10',
+                Indicators: [
+                    {
+                        'date': new Date('04/20/2019'),
+                        'name': '#meeting',
+                        'title': '1st board of directors meeting',
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('06/21/2019'),
+    }
+];
 export let zoomingData: object[] = [ {
     TaskID: 1,
     TaskName: 'Project Initiation',

@@ -22,6 +22,7 @@ export interface FabModel extends ButtonModel{
      *
      *  To refresh the position of FAB on target resize, use refreshPosition method.
      *  The position will be refreshed automatically when browser resized.
+     * {% codeBlock src='fab/position/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
      * @default FabPosition.BottomRight

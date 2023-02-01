@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I427978` - Fixed an issue with cyclic navigation using arrow keys, where focus would shift to the first element after reaching the last element, and vice versa. Also, accessibility has been enhanced using the aria-label attributes.
+
+### Menu
+
+#### Bug Fixes
+
+- `#I425152` - The issue with "Menu item not render properly when we use ItemTemplate with custom menu items" has been resolved.
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#F179759` - Console error while using the showBackdrop property in the Sidebar component has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I428488` - Included the "action" and "nodeData" values in the dataSourceChanged event.
+- `#I428766` - Alignment issue in TreeView node without a sub-child has been resolved.
+
 ## 20.4.44 (2023-01-18)
 
 ### ContextMenu

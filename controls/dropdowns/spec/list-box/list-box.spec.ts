@@ -996,5 +996,16 @@ describe('ListBox', () => {
             expect(listObj2.ulElement.childElementCount).toEqual(9);
         });
 
+        it('EJ2-66007 - SelectItems function not work when values contain backslashes', () => {
+            listObj = new ListBox({ fields: { text: 'text', value: 'value' },
+              dataSource: [
+                { text: 'folder1\\item1', value: 'folder1\\item1' },
+                { text: 'folder1\\item2', value: 'folder1\\item2' }],
+              selectionSettings: { showCheckbox: true } }, elem);
+              listObj.selectItems(['folder1\\item1'], true, true);
+              let liEle: any = listObj.list.getElementsByClassName('e-list-item');
+              expect(liEle[0].getElementsByClassName('e-frame')[0].classList).toContain('e-check');
+        });
+
     });
 });

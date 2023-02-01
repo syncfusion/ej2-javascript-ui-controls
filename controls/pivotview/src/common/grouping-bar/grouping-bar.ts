@@ -527,6 +527,9 @@ export class GroupingBar implements IAction {
             return;
         }
     }
+    /**
+     * @hidden
+     */
     public RefreshFieldsPanel(): void {
         if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings != null) {
             if (selectAll('#' + this.parent.element.id + '_AllFields', this.parent.element).length > 0) {

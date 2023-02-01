@@ -3749,7 +3749,7 @@ describe('Toolbar Control', () => {
             };
             element.focus();
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement.children[0].innerHTML === 'New').toEqual(false);
+            expect(document.activeElement.children[0].innerHTML === 'New').toEqual(true);
             element.focus();
             toolbar.enableItems( toolbar.element.querySelector('.e-toolbar-item'), false);
             toolbar.enableItems( toolbar.element.querySelectorAll('.e-toolbar-item')[1], false);
@@ -3843,7 +3843,8 @@ describe('Toolbar Control', () => {
             };
             toolbar.popObj.show();
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement === toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild ).toEqual(true);
+            expect(document.activeElement === toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild ).toEqual(false);
+            expect(document.activeElement === toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild ).toEqual(true);
         });
         it('Home and End arrow Key testing in Scrollable', () => {
             let element: HTMLElement = document.getElementById('ej2Toolbar');

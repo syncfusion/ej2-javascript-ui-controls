@@ -38,7 +38,7 @@ latest: "bootstrap5"
 
 ![fluent](images/fluent.png)
 
-2.	**gulp compile-themes**, gulp task will get all scss files from dist folder and then generated with respective css files for our themes.
+2.	**gulp styles-compile**, gulp task will get all scss files from dist folder and then generated with respective css files for our themes.
 
 3.	Then we can use this generated css files in our demos and check the styles for our components. To check the samples run the **gulp test-samples** gulp task to run the local samples.
 

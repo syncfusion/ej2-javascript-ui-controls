@@ -731,7 +731,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenLeftContentTbody?(): Element;
     getFrozenRightHeaderTbody?(): Element;
     getFrozenRightContentTbody?(): Element;
-    refreshReactColumnTemplateByUid?(columnUid: string): void;
+    refreshReactColumnTemplateByUid?(columnUid: string, renderTemplates?: boolean): void;
     refreshReactHeaderTemplateByUid?(columnUid: string): void;
     refreshGroupCaptionFooterTemplate?(): void;
     getAllDataRows?(includeBatch: boolean): Element[];

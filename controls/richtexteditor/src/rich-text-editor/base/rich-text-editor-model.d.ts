@@ -948,7 +948,7 @@ export interface RichTextEditorModel extends ComponentModel{
      *
      * @event 'afterPasteCleanup'
      */
-    afterPasteCleanup?: EmitType<object>;
+    afterPasteCleanup?: EmitType<Object>;
 
     /**
      * Triggers before drop the image.

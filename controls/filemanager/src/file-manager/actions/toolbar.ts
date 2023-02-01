@@ -385,7 +385,7 @@ export class Toolbar {
             this.hideItems(this.selection, true);
         }
         const ele: Element = select('#' + this.getId('Selection'), this.toolbarObj.element);
-        if (this.parent.selectedItems.length > 0 && ele) {
+        if (this.parent.selectedItems.length > 0 && ele && !this.parent.enableVirtualization) {
             let txt: string;
             if (this.parent.selectedItems.length === 1) {
                 txt = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Item-Selection');

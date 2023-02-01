@@ -59,7 +59,7 @@ export let tools: { [key: string]: IToolsItems } = {
     },
     'fontcolor': {
         'id': 'FontColor',
-        'icon': 'e-font-color',
+        'icon': 'e-rte-font-color',
         'tooltip': 'Font Color',
         'command': 'Font',
         'subCommand': 'FontColor',

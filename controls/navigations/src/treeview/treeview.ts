@@ -360,6 +360,16 @@ export interface DataSourceChangedEventArgs {
      */
     // eslint-disable-next-line
     data: { [key: string]: Object }[];
+    /**
+     * Return the action which triggers the event
+     * 
+     */
+    action: string;
+    /**
+     * Return the new node data of updated data source
+     * 
+     */
+     nodeData: { [key: string]: Object }[];
 }
 
 interface ItemCreatedArgs {
@@ -683,6 +693,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     // Specifies whether the node is dropped or not
     private isNodeDropped: boolean = false;
     private isInteracted: boolean = false;
+    private isRightClick: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -2458,6 +2469,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
             }
+            if (event.originalEvent.which === 3){ this.isRightClick = true; }
             this.triggerClickEvent(event.originalEvent, li);
         }
     }
@@ -2896,7 +2908,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'select', e);
             this.trigger('nodeSelecting', eventArgs, (observedArgs: NodeSelectEventArgs) => {
-                if (!observedArgs.cancel  && !observedArgs.node.classList.contains(PREVENTSELECT)) {
+                if ((!observedArgs.cancel) && !observedArgs.node.classList.contains(PREVENTSELECT)) {
                     this.nodeSelectAction(li, e, observedArgs, multiSelect);
                 }
             });
@@ -2935,6 +2947,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
+        this.isRightClick = false;
     }
     private unselectNode(li: Element, e: MouseEvent | KeyboardEventArgs): void {
         let eventArgs: NodeSelectEventArgs;
@@ -3783,7 +3796,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
             this.updateText(liEle, txtEle, newText, isInput);
             if (observedArgs.oldText !== newText) {
-                this.triggerEvent();
+                this.triggerEvent('nodeEdited',[this.getNode(liEle)]);
             }
         });
     }
@@ -4076,6 +4089,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let level: number;
         let drop: boolean = false;
         let dragInstance: EJ2Instance;
+        let nodeData: { [key: string]: Object }[] = [];
+        let liArray: HTMLElement[] = [];
         dragInstance = <EJ2Instance>e.dragData.draggable;
         for (let i: number = 0; i < dragInstance.ej2_instances.length; i++) {
             if (dragInstance.ej2_instances[i] instanceof TreeView) {
@@ -4087,6 +4102,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let dragTarget: Element = dragObj.dragTarget;
         let dragLi: Element = (closest(dragTarget, '.' + LISTITEM));
         let dropLi: Element = (closest(dropTarget, '.' + LISTITEM));
+        liArray.push(<HTMLElement>dragLi);
         if (dropLi == null && dropTarget.classList.contains(ROOT)) {
             dropLi = dropTarget.firstElementChild;
         }
@@ -4100,6 +4116,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (dragObj.allowMultiSelection && dragLi.classList.contains(ACTIVE)) {
             let sNodes: HTMLElement[] = selectAll('.' + ACTIVE, dragObj.element);
+            liArray = sNodes;
             if (e.target.offsetHeight <= 33 && offsetY > e.target.offsetHeight - 10 && offsetY > 6 ) {
                 for (let i: number = sNodes.length - 1; i >= 0; i--) {
                     if (dropLi.isSameNode(sNodes[i]) || this.isDescendant(sNodes[i], dropLi)) {
@@ -4124,14 +4141,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
         }
+        for(var i=0;i<liArray.length;i++){
+            nodeData.push(this.getNode(liArray[i]));
+        }
         this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, <HTMLLIElement>e.dragData.draggedElement,
                 null, level, drop));
         if (dragObj.element.id !== this.element.id) {
-            dragObj.triggerEvent();
+            dragObj.triggerEvent('nodeDropped',nodeData);
             this.isNodeDropped = true;
             this.fields.dataSource = this.treeData;
         }
-        this.triggerEvent();
+        this.triggerEvent('nodeDropped',nodeData);
     }
 
     private appendNode(dropTarget: Element, dragLi: Element, dropLi: Element, e: DropEventArgs, dragObj: TreeView, offsetY: number): void {
@@ -4970,9 +4990,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return removedData;
     }
 
-    private triggerEvent(): void {
+    private triggerEvent(action: string, node ? :{ [key: string]: Object }[]): void {
         this.renderReactTemplates();
-        let eventArgs: DataSourceChangedEventArgs = { data: this.treeData };
+        if (action === 'addNodes') {
+            let nodeData: { [key: string]: Object }[] = [];
+            for (let i: number = 0; i < node.length; i++) {
+                nodeData.push(this.getNode(this.getElement(isNOU(node[i][this.fields.id]) ? getValue(this.fields.id, node[i]).toString() : null)));
+            }
+            node = nodeData;
+        }
+        let eventArgs: DataSourceChangedEventArgs = { data: this.treeData, action: action, nodeData: node };
         this.trigger('dataSourceChanged', eventArgs);
     }
 
@@ -5362,8 +5389,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private deleteSuccess(nodes: string[] | Element[]): void {
+        let nodeData: { [key: string]: Object }[] = [];
         for (let i: number = 0, len: number = nodes.length; i < len; i++) {
             let liEle: Element = this.getElement(nodes[i]);
+            nodeData.push(this.getNode(liEle));
             if (isNOU(liEle)) { continue; }
             this.removeNode(liEle);
         }
@@ -5371,7 +5400,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.dataType === 1) {
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
-        this.triggerEvent();
+        this.triggerEvent('removeNode', nodeData);
     }
 
     private editSucess(target: any, newText: string, prevent: boolean): void {
@@ -5389,11 +5418,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             proxy.renderChildNodes(dropLi, null, () => {
                 dropUl = dropLi.querySelector('.' + PARENTITEM);
                 proxy.addGivenNodes(nodes, dropLi, index, true, dropUl);
-                proxy.triggerEvent();
+                proxy.triggerEvent('addNodes', nodes);
             });
         } else {
             this.addGivenNodes(nodes, dropLi, index, true);
-            this.triggerEvent();
+            this.triggerEvent('addNodes', nodes);
         }
     }
 
@@ -5605,7 +5634,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if ((this.fields.dataSource instanceof DataManager === false)) {
             this.preventExpand = false;
-            this.triggerEvent();
+            this.triggerEvent('addNodes',nodes);
         }
     }
 
@@ -5763,11 +5792,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public moveNodes(sourceNodes: string[] | Element[], target: string | Element, index: number, preventTargetExpand ? : boolean): void {
         let dropLi: Element = this.getElement(target);
+        let nodeData:{[key: string]: Object;}[] = [];
         if (isNOU(dropLi)) {
             return;
         }
         for (let i: number = 0; i < sourceNodes.length; i++) {
             let dragLi: Element = this.getElement(sourceNodes[i]);
+            nodeData.push(this.getNode(dragLi));
             if (isNOU(dragLi) || dropLi.isSameNode(dragLi) || this.isDescendant(dragLi, dropLi)) {
                 continue;
             }
@@ -5777,7 +5808,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
         }
-        this.triggerEvent();
+        this.triggerEvent('moveNodes',nodeData);
     }
 
     /**
@@ -5876,7 +5907,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             addClass([liEle], ACTIVE);
         }
         this.isRefreshed = false;
-        this.triggerEvent();
+        this.triggerEvent('refreshNode',[this.getNode(liEle)]);
     }
 
     /**

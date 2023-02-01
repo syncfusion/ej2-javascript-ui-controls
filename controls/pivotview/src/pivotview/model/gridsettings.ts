@@ -210,6 +210,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
      * > You can get the currently selected row index of the pivot table from the `selectedRowIndex` property using pivot table instance at run-time.
      *
      * @default -1
+     * @aspType int
      */
     @Property(-1)
     public selectedRowIndex: number;

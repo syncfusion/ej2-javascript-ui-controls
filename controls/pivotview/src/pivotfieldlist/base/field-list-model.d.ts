@@ -92,6 +92,8 @@ export interface PivotFieldListModel extends ComponentModel{
 
     /**
      * It enables the search option in the field list UI, which can be used to search specific fields at runtime.
+     * 
+     * @default false
      */
     enableFieldSearching?: boolean;
 
@@ -190,6 +192,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * For example, to display "US Dollar($)" currency values, set the `currencyCode` to **USD**.
      * > It is applicable ony for Relational data.
      *
+     * @default 'USD'
      * @private
      */
     currencyCode?: string;
@@ -288,7 +291,7 @@ export interface PivotFieldListModel extends ComponentModel{
     dataBound?: EmitType<Object>;
 
     /**
-     * It trigger when the Pivot Field List component is created..
+     * It trigger when the Pivot Field List component is created.
      *
      * @event created
      */

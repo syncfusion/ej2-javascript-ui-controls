@@ -20,6 +20,7 @@ import { PivotView } from '../../pivotview/base/pivotview';
  */
 /** @hidden */
 export class TreeViewRenderer implements IAction {
+    /** @hidden */
     public parent: PivotFieldList;
     /** @hidden */
     public fieldTable: TreeView;

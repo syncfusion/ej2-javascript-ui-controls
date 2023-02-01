@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 20.4.44 (2023-01-18)
+## 20.4.48 (2023-02-01)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I427989` - The issue with the enablePersistence property not functioning correctly in the ListView component has been resolved.
+
+## 20.4.42 (2023-01-04)
 
 ### ListView
 

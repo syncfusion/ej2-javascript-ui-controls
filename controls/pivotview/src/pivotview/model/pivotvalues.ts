@@ -4,8 +4,8 @@ import { AxisSetModel } from './pivotvalues-model';
 
 /**
  * Configures the properties in pivotvalues fields.
+ * @hidden 
  */
-/** @hidden */
 
 export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
 
@@ -53,12 +53,14 @@ export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
 
     /**
      * Specifies its position in its field.
+     * @aspType int
      */
     @Property()
     public ordinal: number;
 
     /**
      * Specifies its level.
+     * @aspType int
      */
     @Property()
     public level: number;
@@ -77,12 +79,14 @@ export class AxisSet extends ChildProperty<AxisSet> implements IAxisSet {
 
     /**
      * Specifies its column span.
+     * @aspType int
      */
     @Property()
     public colSpan: number;
 
     /**
      * Specifies its row span.
+     * @aspType int
      */
     @Property()
     public rowSpan: number;

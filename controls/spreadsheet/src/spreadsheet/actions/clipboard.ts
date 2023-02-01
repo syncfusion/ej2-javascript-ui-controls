@@ -1011,8 +1011,7 @@ export class Clipboard {
                 (rows as RowModel[]).push({ cells: cells });
                 cells = [];
             });
-        } else if (args.clipboardData.types.length === 1 && args.clipboardData.types[0] === 'Files' && args.clipboardData.files[0] &&
-            args.clipboardData.files[0].type.includes('image')) {
+        } else if (args.clipboardData.files && args.clipboardData.files[0] && args.clipboardData.files[0].type.includes('image')) {
             return { file: args.clipboardData.files[0] };
         }
         setTimeout(() => { this.getClipboardEle().innerHTML = ''; }, 0);

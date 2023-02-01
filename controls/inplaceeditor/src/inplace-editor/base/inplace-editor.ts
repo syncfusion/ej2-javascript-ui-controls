@@ -9,7 +9,7 @@ import { DatePicker, DatePickerModel, DateTimePicker, DateRange, RangeEventArgs 
 import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
 import { createSpinner, hideSpinner, SpinnerArgs, showSpinner} from '@syncfusion/ej2-popups';
 import { Tooltip, TooltipEventArgs, TipPointerPosition } from '@syncfusion/ej2-popups';
-import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel, SliderChangeEventArgs,ValidArgs  } from '@syncfusion/ej2-inputs';
 import { ColorPickerModel, FormValidator, MaskedTextBox, MaskedTextBoxModel, SliderModel } from '@syncfusion/ej2-inputs';
 import { ChangeEventArgs as InputChangeEventArgs, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { AutoCompleteModel, ComboBoxModel, DropDownList, DropDownListModel, MultiSelectModel } from '@syncfusion/ej2-dropdowns';
@@ -1287,6 +1287,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             let count : number = 0;
             this.formValidate = new FormValidator(this.formEle as HTMLFormElement, {
                 rules: this.validationRules,
+                validationBegin: (e: ValidArgs) => {
+                    if (this.type ==='RTE') {
+                        let ele : HTMLElement =document.createElement('div');                          
+                        ele.innerHTML = e.value;
+                        e.value = ele.innerText;
+                    }                                           
+                },
                 validationComplete: (e: FormEventArgs) => {
                     count = count + 1;
                     args = {

@@ -1,4 +1,4 @@
-import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, isBlazor, Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfViewer, TextLayer, ContextMenu, Signature, AnnotationType, TileRenderingSettingsModel, PdfFormFieldBase } from '../index';
 import { NavigationPane } from './navigation-pane';
@@ -665,7 +665,7 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-    public zoomInterval : number = 5;
+    public zoomInterval: number = 5;
     /**
      * @private
      */
@@ -677,12 +677,13 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-     public isDeviceiOS: Boolean = ((['iPad Simulator','iPhone Simulator','iPod Simulator','iPad','iPhone','iPod'] as any).includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document));
+    public isDeviceiOS: Boolean = ((['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'] as any).includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document));
     /**
      * @private
      */
     // eslint-disable-next-line
-    public isMacSafari : boolean = navigator.userAgent.indexOf("Safari") > -1  && navigator.userAgent.indexOf("Chrome") === -1 && !this.isDeviceiOS;
+    public isMacSafari: boolean = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1 && !this.isDeviceiOS;
+    private globalize: Internationalization;
     /**
      * Initialize the constructor of PDFViewerBase
      *
@@ -1463,7 +1464,7 @@ export class PdfViewerBase {
         } else {
             this.isPasswordAvailable = false;
             this.passwordData = '';
-            jsonObject = { document: documentData, zoomFactor: "1", isFileName: this.isFileName.toString(), uniqueId: this.documentId, hideEmptyDigitalSignatureFields : this.pdfViewer.hideEmptyDigitalSignatureFields, showDigitalSignatureAppearance: this.pdfViewer.showDigitalSignatureAppearance };
+            jsonObject = { document: documentData, zoomFactor: "1", isFileName: this.isFileName.toString(), uniqueId: this.documentId, hideEmptyDigitalSignatureFields: this.pdfViewer.hideEmptyDigitalSignatureFields, showDigitalSignatureAppearance: this.pdfViewer.showDigitalSignatureAppearance };
         }
         return jsonObject;
     }
@@ -1881,7 +1882,7 @@ export class PdfViewerBase {
         proxy.isFocusField = false;
         proxy.focusField = [];
         proxy.updateDocumentEditedProperty(false);
-        pdfViewer.clipboardData.clipObject= {};
+        pdfViewer.clipboardData.clipObject = {};
         if (pdfViewer.formDesignerModule) {
             pdfViewer.formDesignerModule.formFieldIndex = 0;
             if (proxy.activeElements) {
@@ -2472,13 +2473,13 @@ export class PdfViewerBase {
         this.viewerContainer.addEventListener('mouseup', this.viewerContainerOnMouseup);
         this.viewerContainer.addEventListener("wheel", this.detectTouchPad, false);
         this.viewerContainer.addEventListener('wheel', this.viewerContainerOnMouseWheel);
-        if(this.isMacSafari){
+        if (this.isMacSafari) {
             window.addEventListener('gesturestart', e => e.preventDefault());
             window.addEventListener('gesturechange', e => e.preventDefault());
             window.addEventListener('gestureend', e => e.preventDefault());
-            this.viewerContainer.addEventListener('gesturestart', this.handleMacGestureStart,false);
-            this.viewerContainer.addEventListener('gesturechange', this.handleMacGestureChange,false);
-            this.viewerContainer.addEventListener('gestureend', this.handleMacGestureEnd,false);
+            this.viewerContainer.addEventListener('gesturestart', this.handleMacGestureStart, false);
+            this.viewerContainer.addEventListener('gesturechange', this.handleMacGestureChange, false);
+            this.viewerContainer.addEventListener('gestureend', this.handleMacGestureEnd, false);
         }
         this.viewerContainer.addEventListener('mousemove', this.viewerContainerOnMousemove);
         this.viewerContainer.addEventListener('mouseleave', this.viewerContainerOnMouseLeave);
@@ -2503,7 +2504,7 @@ export class PdfViewerBase {
             this.viewerContainer.addEventListener('pointerleave', this.viewerContainerOnPointerEnd);
         } else {
             this.viewerContainer.addEventListener('touchstart', this.viewerContainerOnTouchStart);
-            if(this.isWebkitMobile && this.isDeviceiOS){
+            if (this.isWebkitMobile && this.isDeviceiOS) {
                 // eslint-disable-next-line max-len
                 this.viewerContainer.addEventListener("touchmove", (e) => { if ((e as any).scale !== 1) { e.preventDefault(); } }, { passive: false });
             }
@@ -2523,13 +2524,13 @@ export class PdfViewerBase {
         this.viewerContainer.removeEventListener('mouseup', this.viewerContainerOnMouseup);
         this.viewerContainer.removeEventListener("wheel", this.detectTouchPad, false);
         this.viewerContainer.removeEventListener('wheel', this.viewerContainerOnMouseWheel);
-        if(this.isMacSafari){
+        if (this.isMacSafari) {
             window.removeEventListener('gesturestart', e => e.preventDefault());
             window.removeEventListener('gesturechange', e => e.preventDefault());
             window.removeEventListener('gestureend', e => e.preventDefault());
-            this.viewerContainer.removeEventListener('gesturestart', this.handleMacGestureStart,false);
-            this.viewerContainer.removeEventListener('gesturechange', this.handleMacGestureChange,false);
-            this.viewerContainer.removeEventListener('gestureend', this.handleMacGestureEnd,false);
+            this.viewerContainer.removeEventListener('gesturestart', this.handleMacGestureStart, false);
+            this.viewerContainer.removeEventListener('gesturechange', this.handleMacGestureChange, false);
+            this.viewerContainer.removeEventListener('gestureend', this.handleMacGestureEnd, false);
         }
         this.viewerContainer.removeEventListener('mousemove', this.viewerContainerOnMousemove);
         this.viewerContainer.removeEventListener('mouseleave', this.viewerContainerOnMouseLeave);
@@ -2551,7 +2552,7 @@ export class PdfViewerBase {
             this.viewerContainer.removeEventListener('pointerleave', this.viewerContainerOnPointerEnd);
         } else {
             this.viewerContainer.removeEventListener('touchstart', this.viewerContainerOnTouchStart);
-            if(this.isWebkitMobile && this.isDeviceiOS){
+            if (this.isWebkitMobile && this.isDeviceiOS) {
                 // eslint-disable-next-line max-len
                 this.viewerContainer.removeEventListener("touchmove", (e) => { if ((e as any).scale !== 1) { e.preventDefault(); } }, false);
             }
@@ -3150,7 +3151,7 @@ export class PdfViewerBase {
         var negativeCount: number = ((this.currentPageNumber - diCount) < 0) ? 0 : this.currentPageNumber - diCount;
         var positiveCount: number = ((this.currentPageNumber - diCount) > this.pageCount) ? this.pageCount : this.currentPageNumber + diCount;
         if (this.pdfViewer.textSelectionModule) {
-            for (var i:number = negativeCount; i < positiveCount; i++) {
+            for (var i: number = negativeCount; i < positiveCount; i++) {
                 if (i >= 0) {
                     bounds = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(i);
                     if (bounds) {
@@ -3336,37 +3337,37 @@ export class PdfViewerBase {
      * @param {any} event - The Wheel event.
      * @returns {void}
      */
-     private handleMacGestureStart = (event: any): void => {
+    private handleMacGestureStart = (event: any): void => {
         event.preventDefault();
         event.stopPropagation();
         this.macGestureStartScale = this.pdfViewer.magnification.zoomFactor;
-     }
+    }
     /**
      * @param {any} event - The Wheel event.
      * @returns {void}
      */
-     private handleMacGestureChange = (event: any): void => {
+    private handleMacGestureChange = (event: any): void => {
         event.preventDefault();
         event.stopPropagation();
-        let macX:number = event.clientX;
-        let macY:number = event.clientY;
-        let scale:number = Number((this.macGestureStartScale * event.scale).toFixed(2));
-        if(!this.isMacGestureActive){
+        let macX: number = event.clientX;
+        let macY: number = event.clientY;
+        let scale: number = Number((this.macGestureStartScale * event.scale).toFixed(2));
+        if (!this.isMacGestureActive) {
             this.isMacGestureActive = true;
             this.pdfViewer.magnification.initiateMouseZoom(macX, macY, scale * 100);
             setTimeout(() => {
                 this.isMacGestureActive = false;
             }, 50);
         }
-     }
+    }
     /**
      * @param {any} event - The Wheel event.
      * @returns {void}
      */
-     private handleMacGestureEnd = (event: any): void => {
+    private handleMacGestureEnd = (event: any): void => {
         event.preventDefault();
         event.stopPropagation();
-     }
+    }
     /**
      * @param {WheelEvent} event - The MouseEvent.
      * @returns {void}
@@ -3384,7 +3385,7 @@ export class PdfViewerBase {
             if (this.pdfViewer.magnification.zoomFactor >= 2) {
                 zoomDifference = 50;
             }
-            if(this.isTouchPad && !this.isMacSafari){
+            if (this.isTouchPad && !this.isMacSafari) {
                 zoomDifference = zoomDifference / this.zoomInterval;
             }
             // eslint-disable-next-line
@@ -3672,7 +3673,7 @@ export class PdfViewerBase {
         if (this.isShapeBasedAnnotationsEnabled()) {
             let canvas: Rect;
             // eslint-disable-next-line max-len
-            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation ||  (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')) {
+            if (event.target && ((event.target as PdfAnnotationBaseModel).id.indexOf('_text') > -1 || ((event.target as HTMLElement).parentElement.classList.contains('foreign-object')) || (event.target as PdfAnnotationBaseModel).id.indexOf('_annotationCanvas') > -1 || (event.target as HTMLElement).classList.contains('e-pv-hyperlink')) && this.pdfViewer.annotation || (event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')) {
                 const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
                 const diagram: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
                 if (diagram) {
@@ -4117,7 +4118,7 @@ export class PdfViewerBase {
         // eslint-disable-next-line max-len
         if (touchPoints.length === 1 && !((event.target as HTMLElement).classList.contains('e-pv-touch-select-drop') || (event.target as HTMLElement).classList.contains('e-pv-touch-ellipse'))) {
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pageCount > 0 && !this.isThumb && !((event.target as HTMLElement).classList.contains('e-pv-hyperlink'))) {
-                this.handleTaps(touchPoints , event);
+                this.handleTaps(touchPoints, event);
             }
             if (!isBlazor() || !Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.handleTextBoxTaps(touchPoints);
@@ -4192,14 +4193,14 @@ export class PdfViewerBase {
 
     private handleTaps(touchPoints: TouchList, event: TouchEvent): void {
         //EJ2CORE-813 - Implemented focus removing logic for iOS devices
-        if(this.isDeviceiOS){
+        if (this.isDeviceiOS) {
             const obj: IElement = findActiveElement(event, this, this.pdfViewer);
             // eslint-disable-next-line
-            let isRemoveFocus : boolean = !this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot && (obj && this.pdfViewer.selectedItems.annotations[0]? (obj as any).id !== this.pdfViewer.selectedItems.annotations[0].id : true ) && document.activeElement.classList.contains('free-text-input') && this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations);
+            let isRemoveFocus: boolean = !this.pdfViewer.annotation.freeTextAnnotationModule.isNewFreeTextAnnot && (obj && this.pdfViewer.selectedItems.annotations[0] ? (obj as any).id !== this.pdfViewer.selectedItems.annotations[0].id : true) && document.activeElement.classList.contains('free-text-input') && this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations);
             if (!this.singleTapTimer) {
                 this.singleTapTimer = setTimeout(
                     () => {
-                        if(isRemoveFocus){
+                        if (isRemoveFocus) {
                             this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
                             this.focusViewerContainer(true);
                         }
@@ -4216,7 +4217,7 @@ export class PdfViewerBase {
                 }
             }
         }
-        else{
+        else {
             if (!this.singleTapTimer) {
                 this.singleTapTimer = setTimeout(
                     () => {
@@ -4241,11 +4242,11 @@ export class PdfViewerBase {
             }, 300);
         this.inputTapCount++;
         //EJ2CORE-813 - Removing timer function for iOS Devices
-        if(this.isDeviceiOS){
+        if (this.isDeviceiOS) {
             // eslint-disable-next-line
             this.onTextBoxDoubleTap(touchPoints);
         }
-        else{
+        else {
             let timer: any = setTimeout(
                 () => {
                     this.onTextBoxDoubleTap(touchPoints);
@@ -4262,7 +4263,7 @@ export class PdfViewerBase {
                 if (this.pdfViewer.annotationModule) {
                     let currentAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
                     //EJ2CORE-813 - Removing focus from all active free text elements before focusing on free text annotation on iOS devices
-                    if(this.isDeviceiOS && document.activeElement.classList.contains('free-text-input') && (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations))){
+                    if (this.isDeviceiOS && document.activeElement.classList.contains('free-text-input') && (this.isFreeTextAnnotation(this.pdfViewer.selectedItems.annotations))) {
                         this.focusViewerContainer(true);
                     }
                     this.pdfViewer.annotationModule.annotationSelect(currentAnnotation.annotName, currentAnnotation.pageIndex, currentAnnotation, null, true);
@@ -4525,10 +4526,10 @@ export class PdfViewerBase {
             if (Math.abs(speed) > 1.5) {
                 // eslint-disable-next-line
                 let scrollTop: any = (difference) + ((duration) * speed);
-            if (scrollTop > 0) {
-                this.viewerContainer.scrollTop += scrollTop;
-                this.updateMobileScrollerPosition();
-                }             
+                if (scrollTop > 0) {
+                    this.viewerContainer.scrollTop += scrollTop;
+                    this.updateMobileScrollerPosition();
+                }
             }
         }
         this.diagramMouseUp(event);
@@ -4556,7 +4557,7 @@ export class PdfViewerBase {
                             currentStampObj.bounds.y = (event.changedTouches[0].clientY - pageCurrentRect.top) / zoomFactor;
                             stampModule.updateDeleteItems(pageIndex, currentStampObj, currentStampObj.opacity);
                             this.pdfViewer.add(currentStampObj);
-                            let canvas : any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                            let canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
                             this.pdfViewer.renderDrawing(canvas, pageIndex);
                         } else {
                             // eslint-disable-next-line max-len
@@ -4926,7 +4927,7 @@ export class PdfViewerBase {
                             }
                             proxy.isDrawnCompletely = true;
                         }
-                        image.setAttribute('alt', 'Page ' + (pageIndex +1));
+                        image.setAttribute('alt', 'Page ' + (pageIndex + 1));
                     };
                     let currentImageWidth: number = (((width * this.getZoomFactor()) / zoomFactor) / scaleFactor);
                     let matrixElements: any = matrix.Elements ? matrix.Elements : matrix.Values;
@@ -4990,7 +4991,7 @@ export class PdfViewerBase {
                                     }
                                     proxy.isDrawnCompletely = true;
                                 }
-                                (node as HTMLImageElement).setAttribute('alt', 'Page ' + (pageIndex +1));
+                                (node as HTMLImageElement).setAttribute('alt', 'Page ' + (pageIndex + 1));
                             };
                             if (tileData)
                                 (node as HTMLImageElement).src = tileData.image;
@@ -5094,7 +5095,7 @@ export class PdfViewerBase {
                         if (this.pdfViewer.magnificationModule) {
                             this.pdfViewer.magnificationModule.pushImageObjects(canvas);
                         }
-                        canvas.setAttribute('alt', 'Page ' + (pageIndex +1));
+                        canvas.setAttribute('alt', 'Page ' + (pageIndex + 1));
                     };
                     canvas.src = imageData;
                 }
@@ -5753,10 +5754,10 @@ export class PdfViewerBase {
                 if (verticalScrollPosition > 0) {
                     if (this.pageSize[parseInt(i.toString(), 10)] != null) {
                         const pageHeight: number = this.getPageHeight(i);
-                        if(pageLeft >= 0){
-                        if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[parseInt(i.toString(), 10)].width)))) {
-                            return -1;
-                        }
+                        if (pageLeft >= 0) {
+                            if ((pointX < pageLeft) || (pointX > (pageLeft + (this.pageSize[parseInt(i.toString(), 10)].width)))) {
+                                return -1;
+                            }
                         }
                         if (verticalScrollPosition <= (this.getPageTop(i) + pageTop)) {
                             return i + 1;
@@ -5936,11 +5937,11 @@ export class PdfViewerBase {
         }
     }
 
-    private downloadExportFormat (blobUrl: string, annotationDataFormat?: AnnotationDataFormat, formFieldDataFormat?: FormFieldDataFormat, isForm?: boolean): void {
-        let isJson = annotationDataFormat === 'Json'|| formFieldDataFormat === 'Json';
+    private downloadExportFormat(blobUrl: string, annotationDataFormat?: AnnotationDataFormat, formFieldDataFormat?: FormFieldDataFormat, isForm?: boolean): void {
+        let isJson = annotationDataFormat === 'Json' || formFieldDataFormat === 'Json';
         // eslint-disable-next-line max-len
-        let extension = isJson ? '.json' : formFieldDataFormat === 'Fdf' ? '.fdf' : formFieldDataFormat === 'Xml' ? '.xml' : (annotationDataFormat === 'Xfdf' || formFieldDataFormat === 'Xfdf') ? '.xfdf' : null; 
-        if(!isNullOrUndefined(extension)){
+        let extension = isJson ? '.json' : formFieldDataFormat === 'Fdf' ? '.fdf' : formFieldDataFormat === 'Xml' ? '.xml' : (annotationDataFormat === 'Xfdf' || formFieldDataFormat === 'Xfdf') ? '.xfdf' : null;
+        if (!isNullOrUndefined(extension)) {
             // eslint-disable-next-line
             let Url: any = URL || webkitURL;
             blobUrl = Url.createObjectURL(blobUrl);
@@ -5995,7 +5996,7 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-    public importFormFields(data: string, formFieldDataFormat?: FormFieldDataFormat): void {               
+    public importFormFields(data: string, formFieldDataFormat?: FormFieldDataFormat): void {
         this.createRequestForImportingFormfields(data, formFieldDataFormat);
     }
 
@@ -6013,7 +6014,7 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             let jsonObject: any = proxy.createFormfieldsJsonData();
 
-            if(formFieldDataFormat === 'Json' || formFieldDataFormat === 'Fdf' || formFieldDataFormat === 'Xfdf' || formFieldDataFormat === "Xml"){
+            if (formFieldDataFormat === 'Json' || formFieldDataFormat === 'Fdf' || formFieldDataFormat === 'Xfdf' || formFieldDataFormat === "Xml") {
                 jsonObject.formFieldDataFormat = formFieldDataFormat;
                 proxy.pdfViewer.fireFormExportStarted(jsonObject);
             }
@@ -6034,10 +6035,10 @@ export class PdfViewerBase {
                 // eslint-disable-next-line
                 (jsonObject as any).document = proxy.jsonDocumentId;
             }
-			
-			let formFieldsPageList: any = this.getFormFieldsPageList();
+
+            let formFieldsPageList: any = this.getFormFieldsPageList();
             jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
-			jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
+            jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
             const url: string = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.exportFormFields;
             proxy.exportFormFieldsRequestHandler = new AjaxHandler(this.pdfViewer);
             proxy.exportFormFieldsRequestHandler.url = url;
@@ -6092,7 +6093,7 @@ export class PdfViewerBase {
      */
     // eslint-disable-next-line
     public getLastIndexValue(fileName: string, sliceBy: string): string {
-        let indexName: string = fileName.slice(fileName.lastIndexOf(sliceBy)+1);
+        let indexName: string = fileName.slice(fileName.lastIndexOf(sliceBy) + 1);
         return indexName;
     }
 
@@ -6113,12 +6114,12 @@ export class PdfViewerBase {
             jsonObject['fileName'] = proxy.pdfViewer.fileName;
             jsonObject.formFieldDataFormat = formFieldDataFormat;
         }
-        else{
+        else {
             jsonObject.formFieldDataFormat = formFieldDataFormat;
-            if(formFieldDataFormat === 'Json'){
+            if (formFieldDataFormat === 'Json') {
                 jsonObject.data = JSON.stringify(source);
             }
-            else{
+            else {
                 jsonObject.data = source;
             }
         }
@@ -6303,17 +6304,17 @@ export class PdfViewerBase {
 
         if (this.pdfViewer.annotationModule) {
             let annotationsPageList: any = this.getAnnotationsPageList();
-            jsonObject['isAnnotationsExist'] = this.isAnnotationsExist(jsonObject["textMarkupAnnotations"]) || this.isAnnotationsExist(jsonObject["shapeAnnotations"]) || this.isAnnotationsExist(jsonObject["measureShapeAnnotations"]) || this.isAnnotationsExist(jsonObject["stampAnnotations"]) || this.isAnnotationsExist(jsonObject["stickyNotesAnnotation"])  || this.isAnnotationsExist(jsonObject["signatureData"]) || this.isAnnotationsExist(jsonObject["freeTextAnnotation"]) || this.isAnnotationsExist(jsonObject["inkSignatureData"]) || annotationsPageList.length > 0;
+            jsonObject['isAnnotationsExist'] = this.isAnnotationsExist(jsonObject["textMarkupAnnotations"]) || this.isAnnotationsExist(jsonObject["shapeAnnotations"]) || this.isAnnotationsExist(jsonObject["measureShapeAnnotations"]) || this.isAnnotationsExist(jsonObject["stampAnnotations"]) || this.isAnnotationsExist(jsonObject["stickyNotesAnnotation"]) || this.isAnnotationsExist(jsonObject["signatureData"]) || this.isAnnotationsExist(jsonObject["freeTextAnnotation"]) || this.isAnnotationsExist(jsonObject["inkSignatureData"]) || annotationsPageList.length > 0;
             jsonObject['annotationsPageList'] = JSON.stringify(annotationsPageList);
         }
 
         if (this.pdfViewer.formDesignerModule || this.pdfViewer.formFieldsModule) {
             let formFieldsPageList: any = this.getFormFieldsPageList();
-            jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;        
+            jsonObject['isFormFieldAnnotationsExist'] = this.isAnnotationsExist(jsonObject["formDesigner"]) || this.isFieldsDataExist(jsonObject["fieldsData"]) || formFieldsPageList.length > 0;
             jsonObject['formFieldsPageList'] = JSON.stringify(formFieldsPageList);
-        }        
-        if(this.pdfViewer.annotationCollection){
-                
+        }
+        if (this.pdfViewer.annotationCollection) {
+
             jsonObject['annotationCollection'] = JSON.stringify(this.pdfViewer.annotationCollection);
         }
         return jsonObject;
@@ -6322,7 +6323,7 @@ export class PdfViewerBase {
      * @private
      * @returns {boolean} - Returns whether annotation is present.
      */
-     private isAnnotationsExist(annotationInfo: string): boolean {
+    private isAnnotationsExist(annotationInfo: string): boolean {
         // eslint-disable-next-line max-len
         return !isNullOrUndefined(annotationInfo) ? JSON.parse(annotationInfo).flat(1).length > 0 : false;
     }
@@ -6330,7 +6331,7 @@ export class PdfViewerBase {
      * @private
      * @returns {boolean} - Returns whether fields data is present.
      */
-     private isFieldsDataExist(fieldsData: string): boolean {
+    private isFieldsDataExist(fieldsData: string): boolean {
         // eslint-disable-next-line max-len
         return !isNullOrUndefined(fieldsData) ? (<any>Object).entries(JSON.parse(fieldsData)).length !== 0 : false;
     }
@@ -6338,9 +6339,9 @@ export class PdfViewerBase {
      * @private
      * @returns {boolean} - Returns annotations page number list.
      */
-     private getAnnotationsPageList(): any {
+    private getAnnotationsPageList(): any {
         // eslint-disable-next-line max-len
-        let annotCollection = this.pdfViewer.annotationCollection .map(a => a.pageNumber);
+        let annotCollection = this.pdfViewer.annotationCollection.map(a => a.pageNumber);
         let annotActionCollection = this.pdfViewer.annotationModule.actionCollection.filter((value, index, self) => value.annotation.propName !== "formFields" && value.annotation.formFieldAnnotationType == undefined).map(a => a.pageIndex);
         let fullPageList = annotCollection.concat(annotActionCollection);
         return fullPageList.filter((value, index, self) => self.indexOf(value) === index && value !== undefined);
@@ -6349,14 +6350,13 @@ export class PdfViewerBase {
      * @private
      * @returns {boolean} - Returns form fields page number list.
      */
-     private getFormFieldsPageList(): any {
+    private getFormFieldsPageList(): any {
         // eslint-disable-next-line max-len
-        let formFieldsCollection = this.pdfViewer.formFieldCollection.map(function(item){
-            if(!isNullOrUndefined(item.properties))
-            {
+        let formFieldsCollection = this.pdfViewer.formFieldCollection.map(function (item) {
+            if (!isNullOrUndefined(item.properties)) {
                 return item.properties.pageNumber;
 
-            }else{
+            } else {
                 return item.pageNumber + 1;
 
             }
@@ -6687,11 +6687,11 @@ export class PdfViewerBase {
         }
     }
 
-     /**
-     * @private
-     * @returns {boolean}
-     */
-    public digitalSignaturePresent(pageIndex: number):boolean {
+    /**
+    * @private
+    * @returns {boolean}
+    */
+    public digitalSignaturePresent(pageIndex: number): boolean {
         let digitalSignaturePresent: boolean = false;
         if (this.digitalSignaturePages && (this.digitalSignaturePages.length !== 0) && (this.digitalSignaturePages.indexOf(pageIndex) != -1)) {
             digitalSignaturePresent = true;
@@ -7299,7 +7299,7 @@ export class PdfViewerBase {
                     targetParentRect = (e as any).path[4].getBoundingClientRect();
                 }
                 else {
-                    for (let i:number = 0; i < (e as any).path.length; i++) {
+                    for (let i: number = 0; i < (e as any).path.length; i++) {
                         if ((e as any).path[parseInt(i.toString(), 10)].className === 'e-pv-page-div') {
                             targetParentRect = (e as any).path[parseInt(i.toString(), 10)].getBoundingClientRect();
                             break;
@@ -7979,9 +7979,8 @@ export class PdfViewerBase {
                             // eslint-disable-next-line max-len
                             this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions, viewerPositions);
                     }
-                } 
-                else if(!this.pdfViewer.formDesignerModule && event.target.classList.contains('e-pdfviewer-formFields'))
-                {
+                }
+                else if (!this.pdfViewer.formDesignerModule && event.target.classList.contains('e-pdfviewer-formFields')) {
                     let pageIndex: any = this.pdfViewer.annotation.getEventPageNumber(event);
                     let currentPosition: any = this.getMousePosition(event);
                     let relativePosition: any = this.relativePosition(event);
@@ -8162,8 +8161,8 @@ export class PdfViewerBase {
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
         let touches: TouchList;
-        let isAnnotResized = this.action.toLowerCase().includes('resize');
-        let isAnnotationDrawn: any = (this.action === 'Drag' || isAnnotResized ) ||((this.tool instanceof NodeDrawingTool || this.tool instanceof LineTool || this.tool instanceof PolygonDrawingTool) && (this.tool.dragging && this.tool.drawingObject));
+        let isAnnotResized = (this.action.toLowerCase().includes('resize') || this.action.toLowerCase().includes('connectorsegmentpoint'));
+        let isAnnotationDrawn: any = (this.action === 'Drag' || isAnnotResized) || ((this.tool instanceof NodeDrawingTool || this.tool instanceof LineTool || this.tool instanceof PolygonDrawingTool) && (this.tool.dragging && this.tool.drawingObject));
         if (this.tool) {
             if (!this.inAction && (evt as MouseEvent).which !== 3) {
                 if (this.action === 'Drag') {
@@ -8198,7 +8197,7 @@ export class PdfViewerBase {
                     // eslint-disable-next-line max-len
                     if ((this.isShapeAnnotationModule() || this.isCalibrateAnnotationModule())) {
                         this.pdfViewer.annotation.onShapesMouseup(obj as PdfAnnotationBaseModel, evt);
-                    }                    
+                    }
                 }
                 this.isAnnotationDrawn = false;
             }
@@ -8243,11 +8242,11 @@ export class PdfViewerBase {
     public diagramMouseDown(evt: MouseEvent | TouchEvent): void {
         if (this.tool instanceof MoveTool && !(this.tool instanceof StampTool) && this.tool['inAction']) {
             this.diagramMouseUp(evt);
-            if((evt as MouseEvent).which === 1){
-                    this.preventContextmenu =true;
-                    setTimeout(()=>{
-                        this.preventContextmenu = false;
-                },200)
+            if ((evt as MouseEvent).which === 1) {
+                this.preventContextmenu = true;
+                setTimeout(() => {
+                    this.preventContextmenu = false;
+                }, 200)
             }
         }
         let allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
@@ -8814,6 +8813,53 @@ export class PdfViewerBase {
         }
     }
 
+    /**
+    * @private
+    */
+    public updateModifiedDateToLocalDate(newData: any, annotationType: any) {
+        if (newData[annotationType] && newData[annotationType].length > 0) {
+            let data: any = newData[annotationType];
+            if (data) {
+                for (let j: number = 0; j < data.length; j++) {
+                    data[j].ModifiedDate = this.convertUTCDateTimeToLocalDateTime(data[j].ModifiedDate);
+                    if (data[j].Comments) {
+                        for (let i: number = 0; i < data[j].Comments.length; i++) {
+                            data[j].Comments[i].ModifiedDate = this.convertUTCDateTimeToLocalDateTime(data[j].Comments[i].ModifiedDate);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public convertUTCDateTimeToLocalDateTime(date: any) {
+        let dateTime: Date;
+        if (date !== null && date !== undefined && date !== '') {
+            dateTime = new Date(Date.parse(date + ' ' + 'UTC'));
+        }
+        else {
+            var now : Date = new Date() as Date;
+            var now_utc: number = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(),
+                now.getUTCDate(), now.getUTCHours(),
+                now.getUTCMinutes(), now.getUTCSeconds());
+            dateTime = new Date(now_utc) as Date;
+        }
+        this.globalize = new Internationalization(this.pdfViewer.locale);
+        let timeValue: string = dateTime.toLocaleTimeString(this.globalize.culture);
+        let newTime: string;
+        if (!isNullOrUndefined(timeValue.split(' ')[1])) {
+            newTime = timeValue.split(' ')[0] + ' ' + timeValue.split(' ')[1];
+        }
+        else {
+            newTime = timeValue.split(' ')[0];
+        }
+        let newDate: string = dateTime.toLocaleDateString(this.globalize.culture);
+        let dateTimeValue: string = newDate + ',' + ' ' + newTime;
+        return dateTimeValue;
+    }
+
     // eslint-disable-next-line
     private createRequestForImportAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat, isXfdf?: boolean): void {
         let jsonObject: object;
@@ -8828,6 +8874,22 @@ export class PdfViewerBase {
                 this.isJsonImported = true;
             } else {
                 this.isJsonImported = false;
+            }
+            if (importData && importData.pdfAnnotation) {
+                var newArray = Object.keys(importData.pdfAnnotation);
+                for (var i = 0; i < newArray.length; i++) {
+                    var newData = importData.pdfAnnotation[newArray[i]];
+                    this.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
+                    this.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
+                    this.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
+                    this.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
+                    this.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
+                    this.updateModifiedDateToLocalDate(newData, "stampAnnotations");
+                    this.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
+                    this.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
+
+                }
+
             }
             proxy.reRenderAnnotations(importData.pdfAnnotation);
             proxy.isImportedAnnotation = true;
@@ -8887,6 +8949,17 @@ export class PdfViewerBase {
                     if (data) {
                         proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importAnnotations, data);
                         if (data.pdfAnnotation) {
+                            for (var i = 0; i < Object.keys(data.pdfAnnotation).length; i++) {
+                                var newData = data.pdfAnnotation[i];
+                                proxy.updateModifiedDateToLocalDate(newData, "freeTextAnnotation");
+                                proxy.updateModifiedDateToLocalDate(newData, "measureShapeAnnotation");
+                                proxy.updateModifiedDateToLocalDate(newData, "shapeAnnotation");
+                                proxy.updateModifiedDateToLocalDate(newData, "signatureAnnotation");
+                                proxy.updateModifiedDateToLocalDate(newData, "signatureInkAnnotation");
+                                proxy.updateModifiedDateToLocalDate(newData, "stampAnnotations");
+                                proxy.updateModifiedDateToLocalDate(newData, "stickyNotesAnnotation");
+                                proxy.updateModifiedDateToLocalDate(newData, "textMarkupAnnotation");
+                            }
                             proxy.reRenderAnnotations(data.pdfAnnotation);
                             proxy.isImportedAnnotation = true;
                             proxy.updateDocumentEditedProperty(true);
@@ -9935,46 +10008,46 @@ export class PdfViewerBase {
             for (let j: number = 0; j < newCollection.length; j++) {
                 if (existingCollection[parseInt(i.toString(), 10)].AnnotName === newCollection[parseInt(j.toString(), 10)].AnnotName) {
                     let len: number = this.pdfViewer.annotationCollection.length;
-                    for(let x: number = 0; x < len; x++){
-                        if(this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].annotationId===newCollection[parseInt(j.toString(), 10)].AnnotName){
+                    for (let x: number = 0; x < len; x++) {
+                        if (this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].annotationId === newCollection[parseInt(j.toString(), 10)].AnnotName) {
                             // To update the comment panel values in a collections while importing the annotation with the same name. (EJ2-62092)
                             this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].comments = this.pdfViewer.annotationModule.getAnnotationComments(newCollection[parseInt(j.toString(), 10)].Comments, newCollection[parseInt(j.toString(), 10)], newCollection[parseInt(j.toString(), 10)].Author);
                             this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].review = { state: newCollection[parseInt(j.toString(), 10)].State, stateModel: newCollection[parseInt(j.toString(), 10)].StateModel, modifiedDate: newCollection[parseInt(j.toString(), 10)].ModifiedDate, author: newCollection[parseInt(j.toString(), 10)].Author }
                             this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)].note = newCollection[parseInt(j.toString(), 10)].Note;
                             let annot: any = this.pdfViewer.annotationCollection[parseInt(x.toString(), 10)];
-                            if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="shape" && this.pdfViewer.annotationModule.shapeAnnotationModule){
+                            if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "shape" && this.pdfViewer.annotationModule.shapeAnnotationModule) {
                                 this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].shapeAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_shape")
-                            }                            
-                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="textMarkup" && this.pdfViewer.annotationModule.textMarkupAnnotationModule){
-                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].textMarkupAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_textMarkup")
-                            }                            
-                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="shape_measure" && this.pdfViewer.annotationModule.measureAnnotationModule){
-                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].measureShapeAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_shape_measure")
-                            }                            
-                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="stamp" &&  this.pdfViewer.annotationModule.stampAnnotationModule){
-                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].stampAnnotations[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_stamp")
-                            }                            
-                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="freeText" && this.pdfViewer.annotationModule.freeTextAnnotationModule ){
-                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].freeTextAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_freetext")
-                            }                            
-                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="ink" && this.pdfViewer.annotationModule.inkAnnotationModule ){
-                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].signatureInkAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_ink")
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_shape")
                             }
-                        
-                            else if(existingCollection[parseInt(i.toString(), 10)].AnnotType==="sticky"){
+                            else if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "textMarkup" && this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].textMarkupAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_textMarkup")
+                            }
+                            else if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "shape_measure" && this.pdfViewer.annotationModule.measureAnnotationModule) {
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].measureShapeAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_shape_measure")
+                            }
+                            else if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "stamp" && this.pdfViewer.annotationModule.stampAnnotationModule) {
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].stampAnnotations[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_stamp")
+                            }
+                            else if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "freeText" && this.pdfViewer.annotationModule.freeTextAnnotationModule) {
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].freeTextAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_freetext")
+                            }
+                            else if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "ink" && this.pdfViewer.annotationModule.inkAnnotationModule) {
+                                this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].signatureInkAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_ink")
+                            }
+
+                            else if (existingCollection[parseInt(i.toString(), 10)].AnnotType === "sticky") {
                                 this.documentAnnotationCollections[parseInt(pageIndex.toString(), 10)].stickyNotesAnnotation[parseInt(i.toString(), 10)] = newCollection[parseInt(j.toString(), 10)];
-                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)],annot,"_annotations_sticky")
+                                this.updateAnnotationsInSessionStorage(newCollection[parseInt(j.toString(), 10)], annot, "_annotations_sticky")
                             }
                             break;
                         }
                     }
-                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createCommentControlPanel(newCollection[parseInt(j.toString(), 10)], (pageIndex+1),null,null, true);                     
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createCommentControlPanel(newCollection[parseInt(j.toString(), 10)], (pageIndex + 1), null, null, true);
                     newCollection.splice(j, 1);
                     j = j - 1;
                 }
@@ -9999,14 +10072,14 @@ export class PdfViewerBase {
     }
 
     // To update the comment panel values in a session storage while importing the annotation with the same name. (EJ2-62092)
-    private updateAnnotationsInSessionStorage(newCollection: any,annot: any,type: string): any {
-        let annotation: any = window.sessionStorage.getItem(this.documentId+type);
+    private updateAnnotationsInSessionStorage(newCollection: any, annot: any, type: string): any {
+        let annotation: any = window.sessionStorage.getItem(this.documentId + type);
         let annotObject: any = JSON.parse(annotation);
-        if(annotObject){
-            for(let b: number = 0 ;b < annotObject.length; b++){
-                if(annotObject[parseInt(b.toString(), 10)].annotations){
-                    for ( let z: number = 0; z < annotObject[parseInt(b.toString(), 10)].annotations.length; z++){
-                        if(annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].annotName === newCollection.AnnotName){
+        if (annotObject) {
+            for (let b: number = 0; b < annotObject.length; b++) {
+                if (annotObject[parseInt(b.toString(), 10)].annotations) {
+                    for (let z: number = 0; z < annotObject[parseInt(b.toString(), 10)].annotations.length; z++) {
+                        if (annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].annotName === newCollection.AnnotName) {
                             annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].comments = annot.comments;
                             annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].review = annot.review;
                             annotObject[parseInt(b.toString(), 10)].annotations[parseInt(z.toString(), 10)].note = annot.note;
@@ -10015,7 +10088,7 @@ export class PdfViewerBase {
                     }
                 }
             }
-            window.sessionStorage.setItem(this.documentId+type,JSON.stringify(annotObject));
+            window.sessionStorage.setItem(this.documentId + type, JSON.stringify(annotObject));
         }
     }
 

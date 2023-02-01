@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I428396` - Now, when using the overflow property, multilevel labels are wrapped based on the maximumTextWidth.
+- `#I430286` - Now the period selectors are updating properly with respect to the range selector.
+- `#I426849` - Resolved the console error in the tooltip when the data for the series is empty.
+
 ## 20.4.44 (2023-01-18)
 
 ### Chart

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I425450` - Now, when exporting as XFDF, the border no longer displays on free text annotation.
+- `#F179811` - Now, the `AnnotationResize` event is triggered properly for Line and Arrow annotation.
+
 ## 20.4.44 (2023-01-18)
 
 ### PDF Viewer

@@ -2204,3 +2204,137 @@ describe('Gantt taskbar editing', () => {
     //     });
     // });
 });
+describe('parent taskbar editing', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Parent 1',
+            StartDate: new Date('07/01/2022'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Child 1',
+                    StartDate: new Date('07/01/2022'),
+                    EndDate: new Date('07/04/2022'),
+                },
+            ],
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Parent 2',
+            Predecessor: '1FS,2FS',
+            subtasks: [
+                {
+                    TaskID: 6,
+                    TaskName: 'Child 1',
+                    StartDate: new Date('07/11/2022'),
+                    EndDate: new Date('07/14/2022'),
+                },
+            ],
+        },
+        {
+            TaskID: 7,
+            TaskName: 'Parent 3',
+            Predecessor: '5FS',
+            subtasks: [
+                {
+                    TaskID: 8,
+                    TaskName: 'Child 1',
+                    StartDate: new Date('07/18/2022'),
+                    EndDate: new Date('07/25/2022'),
+                },
+            ],
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor' }
+                ],
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
+    });
+    it('parent taskbar drag with predecessor', () => {
+        ganttObj.actionComplete = (args: any) => {
+           if (args.requestType == 'save') {
+              expect(ganttObj.getFormatedDate(args.data.childRecords[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('07/11/2022');
+           }
+        };
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.getElementsByClassName('e-gantt-parent-taskbar-inner-div e-gantt-parent-taskbar e-row-expand')[1] as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+    });
+});

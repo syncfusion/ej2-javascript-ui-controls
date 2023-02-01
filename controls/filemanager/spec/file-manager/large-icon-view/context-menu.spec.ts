@@ -75,7 +75,7 @@ describe('FileManager control LargeIcons view', () => {
             feObj.navigationpaneModule.treeObj.clickHandler(mouseEventArgs);
             feObj.navigationpaneModule.treeObj.dataBind();
             setTimeout(() => {
-                expect(feObj.path).toBe('/Documents/');
+                expect(feObj.path).toBe('/');
                 done();
             }, 500);
         })

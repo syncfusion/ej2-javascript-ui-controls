@@ -39,7 +39,7 @@
           font-size: $rte-toolbar-big-icon-size;
         }
 
-        .e-toolbar-item .e-font-color .e-selected-color.e-icons::before,
+        .e-toolbar-item .e-rte-font-color .e-selected-color.e-icons::before,
         .e-toolbar-item .e-background-color .e-selected-color.e-icons::before {
           top: -20px;
         }
@@ -283,13 +283,13 @@
             padding-right: $rte-drop-btn-action-padding-right;
           }
 
-          .e-font-color .e-selected-color.e-icons::before {
+          .e-rte-font-color .e-selected-color.e-icons::before {
             font-size: 12px;
             position: relative;
             top: -18px;
           }
 
-          .e-font-color.e-icons::before {
+          .e-rte-font-color.e-icons::before {
             font-size: 13px;
           }
 

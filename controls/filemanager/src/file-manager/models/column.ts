@@ -194,4 +194,12 @@ export class Column extends ChildProperty<Column> {
     @Property(null)
     public customFormat: { [x: string]: Object };
     /* eslint-enable */
+
+    /**
+     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isPrimaryKey: boolean;
 }

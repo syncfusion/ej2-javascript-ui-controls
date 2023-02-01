@@ -349,6 +349,7 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
      * > This option is applicable only for user-defined hierarchies in OLAP data source.
      *
      * @default 1
+     * @aspType int
      */
     @Property(1)
     public levelCount: number;
@@ -405,6 +406,8 @@ export class ConditionalFormatSettings extends ChildProperty<ConditionalFormatSe
 
     /**
      * Allows to apply conditional formatting to the grand totals of row and column axis in the pivot table.
+     * 
+     * @default true
      */
     @Property(true)
     public applyGrandTotals: boolean;
@@ -455,24 +458,32 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify minimum fraction digits to the formatted value.
+     * 
+     * @aspType int
      */
     @Property()
     public minimumFractionDigits: number;
 
     /**
      * It allows to specify maximum fraction digits to the  formatted value.
+     * 
+     * @aspType int
      */
     @Property()
     public maximumFractionDigits: number;
 
     /**
      * It allows to specify minimum significant digits to the formatted value.
+     * 
+     * @aspType int
      */
     @Property()
     public minimumSignificantDigits: number;
 
     /**
      * It allows to specify maximum significant digits to the formatted value.
+     * 
+     * @aspType int
      */
     @Property()
     public maximumSignificantDigits: number;
@@ -506,6 +517,8 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
 
     /**
      * It allows to specify minimum integer digits to the formatted value.
+     * 
+     * @aspType int
      */
     @Property()
     public minimumIntegerDigits: number;
@@ -825,6 +838,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * > It is applicale only for OLAP data source.
      *
      * @default 1033
+     * @aspType int
      */
     @Property(1033)
     public localeIdentifier: number;
@@ -1007,6 +1021,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      * > It is applicale only for relational data source.
      *
      * @default '-1'
+     * @aspType int
      */
     @Property(-1)
     public valueIndex: number;

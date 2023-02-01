@@ -535,3 +535,732 @@ describe('TabElementBox testing while rendering', () => {
         expect(container.documentHelper.render.getTabLeader(tabElementBox)).toBe('');
     });
 });
+let tab :any = {
+	"sections": [
+		{
+			"sectionFormat": {
+				"pageWidth": 612,
+				"pageHeight": 792,
+				"leftMargin": 72,
+				"rightMargin": 72,
+				"topMargin": 72,
+				"bottomMargin": 72,
+				"differentFirstPage": false,
+				"differentOddAndEvenPages": false,
+				"headerDistance": 36,
+				"footerDistance": 36,
+				"bidi": false,
+				"breakCode": "NewPage",
+				"pageNumberStyle": "Arabic",
+				"numberOfColumns": 1,
+				"equalWidth": true,
+				"lineBetweenColumns": false,
+				"columns": []
+			},
+			"blocks": [
+				{
+					"paragraphFormat": {
+						"borders": {
+							"top": {},
+							"left": {},
+							"right": {},
+							"bottom": {},
+							"horizontal": {},
+							"vertical": {}
+						},
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "Upon acceptance of a LEA student, LEA shall submit to CONTRACTOR an Individual Services Agreement "
+						},
+						{
+							"characterFormat": {},
+							"text": "(hereinafter referred to as “ISA”), and a Nonpublic Services Student Enrollment form."
+						}
+					]
+				}
+			],
+			"headersFooters": {}
+		}
+	],
+	"characterFormat": {
+		"bold": false,
+		"italic": false,
+		"fontSize": 11,
+		"fontFamily": "Calibri",
+		"underline": "None",
+		"strikethrough": "None",
+		"baselineAlignment": "Normal",
+		"highlightColor": "NoColor",
+		"fontColor": "#00000000",
+		"boldBidi": false,
+		"italicBidi": false,
+		"fontSizeBidi": 11,
+		"fontFamilyBidi": "minorBidi",
+		"allCaps": false,
+		"localeIdBidi": 1025,
+		"fontFamilyAscii": "minorHAnsi",
+		"fontFamilyNonFarEast": "minorHAnsi",
+		"fontFamilyFarEast": "minorHAnsi"
+	},
+	"paragraphFormat": {
+		"borders": {
+			"top": {},
+			"left": {},
+			"right": {},
+			"bottom": {},
+			"horizontal": {},
+			"vertical": {}
+		},
+		"leftIndent": 0,
+		"rightIndent": 0,
+		"firstLineIndent": 0,
+		"textAlignment": "Left",
+		"beforeSpacing": 0,
+		"afterSpacing": 8,
+		"lineSpacing": 1.0791666507720948,
+		"lineSpacingType": "Multiple",
+		"listFormat": {},
+		"bidi": false,
+		"keepLinesTogether": false,
+		"keepWithNext": false,
+		"widowControl": true
+	},
+	"themeFontLanguages": {},
+	"defaultTabWidth": 36,
+	"trackChanges": false,
+	"enforcement": false,
+	"hashValue": "",
+	"saltValue": "",
+	"formatting": false,
+	"protectionType": "NoProtection",
+	"dontUseHTMLParagraphAutoSpacing": false,
+	"formFieldShading": true,
+	"compatibilityMode": "Word2013",
+	"themes": {
+		"fontScheme": {
+			"fontSchemeName": "Office",
+			"majorFontScheme": {
+				"fontSchemeList": [
+					{
+						"name": "latin",
+						"typeface": "Calibri Light",
+						"panose": "020F0302020204030204"
+					},
+					{
+						"name": "ea",
+						"panose": "020F0302020204030204"
+					},
+					{
+						"name": "cs",
+						"panose": "020F0302020204030204"
+					}
+				],
+				"fontTypeface": {
+					"Jpan": "游ゴシック Light",
+					"Hang": "맑은 고딕",
+					"Hans": "等线 Light",
+					"Hant": "新細明體",
+					"Arab": "Times New Roman",
+					"Hebr": "Times New Roman",
+					"Thai": "Angsana New",
+					"Ethi": "Nyala",
+					"Beng": "Vrinda",
+					"Gujr": "Shruti",
+					"Khmr": "MoolBoran",
+					"Knda": "Tunga",
+					"Guru": "Raavi",
+					"Cans": "Euphemia",
+					"Cher": "Plantagenet Cherokee",
+					"Yiii": "Microsoft Yi Baiti",
+					"Tibt": "Microsoft Himalaya",
+					"Thaa": "MV Boli",
+					"Deva": "Mangal",
+					"Telu": "Gautami",
+					"Taml": "Latha",
+					"Syrc": "Estrangelo Edessa",
+					"Orya": "Kalinga",
+					"Mlym": "Kartika",
+					"Laoo": "DokChampa",
+					"Sinh": "Iskoola Pota",
+					"Mong": "Mongolian Baiti",
+					"Viet": "Times New Roman",
+					"Uigh": "Microsoft Uighur",
+					"Geor": "Sylfaen",
+					"Armn": "Arial",
+					"Bugi": "Leelawadee UI",
+					"Bopo": "Microsoft JhengHei",
+					"Java": "Javanese Text",
+					"Lisu": "Segoe UI",
+					"Mymr": "Myanmar Text",
+					"Nkoo": "Ebrima",
+					"Olck": "Nirmala UI",
+					"Osma": "Ebrima",
+					"Phag": "Phagspa",
+					"Syrn": "Estrangelo Edessa",
+					"Syrj": "Estrangelo Edessa",
+					"Syre": "Estrangelo Edessa",
+					"Sora": "Nirmala UI",
+					"Tale": "Microsoft Tai Le",
+					"Talu": "Microsoft New Tai Lue",
+					"Tfng": "Ebrima"
+				}
+			},
+			"minorFontScheme": {
+				"fontSchemeList": [
+					{
+						"name": "latin",
+						"typeface": "Calibri",
+						"panose": "020F0502020204030204"
+					},
+					{
+						"name": "ea",
+						"panose": "020F0502020204030204"
+					},
+					{
+						"name": "cs",
+						"panose": "020F0502020204030204"
+					}
+				],
+				"fontTypeface": {
+					"Jpan": "游明朝",
+					"Hang": "맑은 고딕",
+					"Hans": "等线",
+					"Hant": "新細明體",
+					"Arab": "Arial",
+					"Hebr": "Arial",
+					"Thai": "Cordia New",
+					"Ethi": "Nyala",
+					"Beng": "Vrinda",
+					"Gujr": "Shruti",
+					"Khmr": "DaunPenh",
+					"Knda": "Tunga",
+					"Guru": "Raavi",
+					"Cans": "Euphemia",
+					"Cher": "Plantagenet Cherokee",
+					"Yiii": "Microsoft Yi Baiti",
+					"Tibt": "Microsoft Himalaya",
+					"Thaa": "MV Boli",
+					"Deva": "Mangal",
+					"Telu": "Gautami",
+					"Taml": "Latha",
+					"Syrc": "Estrangelo Edessa",
+					"Orya": "Kalinga",
+					"Mlym": "Kartika",
+					"Laoo": "DokChampa",
+					"Sinh": "Iskoola Pota",
+					"Mong": "Mongolian Baiti",
+					"Viet": "Arial",
+					"Uigh": "Microsoft Uighur",
+					"Geor": "Sylfaen",
+					"Armn": "Arial",
+					"Bugi": "Leelawadee UI",
+					"Bopo": "Microsoft JhengHei",
+					"Java": "Javanese Text",
+					"Lisu": "Segoe UI",
+					"Mymr": "Myanmar Text",
+					"Nkoo": "Ebrima",
+					"Olck": "Nirmala UI",
+					"Osma": "Ebrima",
+					"Phag": "Phagspa",
+					"Syrn": "Estrangelo Edessa",
+					"Syrj": "Estrangelo Edessa",
+					"Syre": "Estrangelo Edessa",
+					"Sora": "Nirmala UI",
+					"Tale": "Microsoft Tai Le",
+					"Talu": "Microsoft New Tai Lue",
+					"Tfng": "Ebrima"
+				}
+			}
+		}
+	},
+	"styles": [
+		{
+			"name": "Normal",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"listFormat": {}
+			},
+			"characterFormat": {},
+			"next": "Normal"
+		},
+		{
+			"name": "Default Paragraph Font",
+			"type": "Character",
+			"characterFormat": {}
+		},
+		{
+			"name": "Heading 1",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 12,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level1",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 16,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 1 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 1 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 16,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 16,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 2",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level2",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 13,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 2 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 2 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 13,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontSizeBidi": 13,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 3",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level3",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontSizeBidi": 12,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 3 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 3 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontSize": 12,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontSizeBidi": 12,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 4",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level4",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"italicBidi": true,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 4 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 4 Char",
+			"type": "Character",
+			"characterFormat": {
+				"italic": true,
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"italicBidi": true,
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 5",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level5",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 5 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 5 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#2F5496",
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		},
+		{
+			"name": "Heading 6",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"borders": {
+					"top": {},
+					"left": {},
+					"right": {},
+					"bottom": {},
+					"horizontal": {},
+					"vertical": {}
+				},
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 2,
+				"afterSpacing": 0,
+				"lineSpacing": 1.0791666507720948,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "Level6",
+				"listFormat": {}
+			},
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Normal",
+			"link": "Heading 6 Char",
+			"next": "Normal"
+		},
+		{
+			"name": "Heading 6 Char",
+			"type": "Character",
+			"characterFormat": {
+				"fontFamily": "Calibri Light",
+				"fontColor": "#1F3763",
+				"fontFamilyAscii": "Calibri Light",
+				"fontFamilyNonFarEast": "Calibri Light",
+				"fontFamilyFarEast": "Calibri Light"
+			},
+			"basedOn": "Default Paragraph Font"
+		}
+	],
+	"lists": [],
+	"abstractLists": [],
+	"comments": [],
+	"revisions": [],
+	"customXml": [],
+	"footnotes": {
+		"separator": [
+			{
+				"paragraphFormat": {
+					"borders": {
+						"top": {},
+						"left": {},
+						"right": {},
+						"bottom": {},
+						"horizontal": {},
+						"vertical": {}
+					},
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0003"
+					}
+				]
+			}
+		],
+		"continuationSeparator": [
+			{
+				"paragraphFormat": {
+					"borders": {
+						"top": {},
+						"left": {},
+						"right": {},
+						"bottom": {},
+						"horizontal": {},
+						"vertical": {}
+					},
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0004"
+					}
+				]
+			}
+		],
+		"continuationNotice": [
+			{
+				"paragraphFormat": {
+					"borders": {
+						"top": {},
+						"left": {},
+						"right": {},
+						"bottom": {},
+						"horizontal": {},
+						"vertical": {}
+					},
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": []
+			}
+		]
+	},
+	"endnotes": {
+		"separator": [
+			{
+				"paragraphFormat": {
+					"borders": {
+						"top": {},
+						"left": {},
+						"right": {},
+						"bottom": {},
+						"horizontal": {},
+						"vertical": {}
+					},
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0003"
+					}
+				]
+			}
+		],
+		"continuationSeparator": [
+			{
+				"paragraphFormat": {
+					"borders": {
+						"top": {},
+						"left": {},
+						"right": {},
+						"bottom": {},
+						"horizontal": {},
+						"vertical": {}
+					},
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": [
+					{
+						"characterFormat": {},
+						"text": "\u0004"
+					}
+				]
+			}
+		],
+		"continuationNotice": [
+			{
+				"paragraphFormat": {
+					"borders": {
+						"top": {},
+						"left": {},
+						"right": {},
+						"bottom": {},
+						"horizontal": {},
+						"vertical": {}
+					},
+					"styleName": "Normal",
+					"listFormat": {}
+				},
+				"characterFormat": {},
+				"inlines": []
+			}
+		]
+	}
+};
+describe('enter tab key the paragraph first line', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Check first line indent value', function () {
+        console.log('Check first line indent value');
+        container.openBlank();
+        container.open(tab);
+        container.selection.select('0;0;0','0;0;0');
+        container.selection.handleTabKey(true, false);
+        expect(container.selection.start.paragraph.paragraphFormat.firstLineIndent).toBe(container.documentHelper.defaultTabWidth);
+    });
+});

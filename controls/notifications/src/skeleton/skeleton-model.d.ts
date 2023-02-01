@@ -34,7 +34,8 @@ export interface SkeletonModel extends ComponentModel{
 
     /**
      * Defines the shape of the Skeleton.
-     *
+     * {% codeBlock src='skeleton/shape/index.md' %}{% endcodeBlock %}
+     * 
      * @isenumeration true
      * @default SkeletonType.Text
      * @asptype SkeletonType
@@ -43,7 +44,8 @@ export interface SkeletonModel extends ComponentModel{
 
     /**
      * Defines the animation effect of the Skeleton.
-     *
+     * {% codeBlock src='skeleton/shimmerEffect/index.md' %}{% endcodeBlock %}
+     * 
      * @isenumeration true
      * @default ShimmerEffect.Wave
      * @asptype ShimmerEffect

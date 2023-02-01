@@ -15,6 +15,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 /** @hidden */
 export class DataSourceUpdate {
+    /** @hidden */
     public parent: PivotCommon;
     /** @hidden */
     public btnElement: HTMLElement;

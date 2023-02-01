@@ -18,9 +18,9 @@ class LicenseValidator {
     public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats/i;
     private errors: IErrorType = {
         noLicense: '<span>This application was built using a trial version of Syncfusion Essential Studio.' +
-            ' You should include the valid license key to remove the license validation message permanently.</span>',
+            ' To remove the license validation message permanently, a valid license key must be included.</span>',
         trailExpired: '<span>This application was built using a trial version of Syncfusion Essential Studio.' +
-            ' You should include the valid license key to remove the license validation message permanently.</span>',
+            ' To remove the license validation message permanently, a valid license key must be included.</span>',
         versionMismatched: '<span>The included Syncfusion license key is invalid.</span>',
         platformMismatched: '<span>The included Syncfusion license key is invalid.</span>',
         invalidKey: '<span>The included Syncfusion license key is invalid.</span>'

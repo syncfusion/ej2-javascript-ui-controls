@@ -119,6 +119,8 @@ export class ColumnMenu implements IAction {
     }
 
     private openColumnMenu(e: { target: Element | EventTarget, preventDefault?: Function }): void {
+        const headerEle: HTMLElement = this.parent.getHeaderContent() as HTMLElement;
+        const headerElemCliRect: ClientRect = headerEle.getBoundingClientRect();
         let pos: OffsetPosition = { top: 0, left: 0 };
         this.element.style.cssText = 'display:block;visibility:hidden';
         const elePos: ClientRect = this.element.getBoundingClientRect();
@@ -132,6 +134,9 @@ export class ColumnMenu implements IAction {
             pos = this.parent.enableStickyHeader ? calculatePosition(this.headerCell, 'right', 'bottom', true) :
                 calculatePosition(this.headerCell, 'right', 'bottom');
             pos.left -= elePos.width;
+            if (headerEle.classList.contains('e-sticky')) {
+                pos.top = this.parent.element.offsetTop + headerElemCliRect.top + headerElemCliRect.height;
+            }
             if ((pos.left + elePos.width + 1) >= gClient.right) {
                 pos.left -= 35;
             }

@@ -335,6 +335,8 @@ export class ToolbarRenderer implements IRenderer {
             target: colorPicker.element.parentElement, cssClass: css,
             enablePersistence: this.parent.enablePersistence, enableRtl: this.parent.enableRtl,
             beforeOpen: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
+                colorPicker.inline = true;
+                colorPicker.dataBind();
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     dropDownArgs.cancel = true; return;
                 }
@@ -487,7 +489,7 @@ export class ToolbarRenderer implements IRenderer {
         const colorPicker: ColorPicker = new ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            inline: true,
+            inline: false,
             value: '#fff',
             created: () => {
                 const value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;

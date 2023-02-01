@@ -152,6 +152,8 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                 done();
             })
             it(' Test the backgroundColor change dynamically ', (done) => {
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
                 let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_BackgroundColor-popup');
                 let palette = popup.querySelectorAll(".e-rte-square-palette");
                 expect(palette.length === 4).toBe(true);
@@ -197,6 +199,8 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     modeSwitcher: true
                 };
                 rteObj.dataBind();
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
                 let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_BackgroundColor-popup');
                 let switchEle: HTMLElement = popup.querySelector(".e-mode-switch-btn");
                 expect(!isNullOrUndefined(switchEle)).toBe(true);
@@ -226,6 +230,8 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     mode: 'Picker'
                 };
                 rteObj.dataBind();
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+                (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
                 let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_BackgroundColor-popup');
                 let container: HTMLElement = popup.querySelector(".e-hsv-container");
                 expect(!isNullOrUndefined(container)).toBe(true);

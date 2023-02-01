@@ -379,7 +379,7 @@ export class InsertHtml {
                         currentNode.nextSibling.nodeName === 'BR') {
                         detach(currentNode.nextSibling);
                     }
-                } else if (currentNode.nodeName === '#text' && !isNOU(currentNode.parentElement) &&
+                } else if ((currentNode.nodeName === '#text' || currentNode.nodeName === "BR") && !isNOU(currentNode.parentElement) &&
                 (currentNode.parentElement.nodeName === 'LI' || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
                 currentNode.parentElement.textContent.trim().length > 0) {
                     splitedElm = currentNode;

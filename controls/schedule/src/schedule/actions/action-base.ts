@@ -128,12 +128,6 @@ export class ActionBase {
         return viewDimension;
     }
 
-    public getPageCoordinates(e: MouseEvent & TouchEvent): (MouseEvent & TouchEvent) | Touch {
-        const eventArgs: TouchEvent = (e as Record<string, any> & MouseEvent & TouchEvent).event as TouchEvent;
-        return eventArgs && eventArgs.changedTouches ? eventArgs.changedTouches[0] : e.changedTouches ? e.changedTouches[0] :
-            (<MouseEvent & TouchEvent>eventArgs) || e;
-    }
-
     public getIndex(index: number): number {
         const contentElements: HTMLTableCellElement[] = [].slice.call(this.parent.getContentTable().querySelector('tr').children);
         const indexes: { [key: string]: number } = { minIndex: 0, maxIndex: contentElements.length - 1 };
@@ -267,7 +261,7 @@ export class ActionBase {
     }
 
     public getCursorElement(e: MouseEvent & TouchEvent): HTMLElement {
-        const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+        const pages: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e);
         return document.elementFromPoint(pages.clientX, pages.clientY) as HTMLElement;
     }
 

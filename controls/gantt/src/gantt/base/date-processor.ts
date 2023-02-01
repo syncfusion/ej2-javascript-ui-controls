@@ -198,7 +198,7 @@ export class DateProcessor {
             const cloneDate: Date = new Date(date.getTime()); const hour: number = this.getSecondsInDecimal(cloneDate);
             if (hour > this.parent.defaultEndTime) {
                 this.setTime(this.parent.defaultEndTime, cloneDate);
-            } else if (hour <= this.parent.defaultStartTime && !isNullOrUndefined(ganttProp) && !ganttProp.isMilestone) {
+            } else if (hour < this.parent.defaultStartTime && !isNullOrUndefined(ganttProp) && !ganttProp.isMilestone) {
                 cloneDate.setDate(cloneDate.getDate() - 1);
                 this.setTime(this.parent.defaultEndTime, cloneDate);
             } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {

@@ -391,6 +391,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     /**
      * Provides options to customize the animation applied while opening and closing the popup of speed dial
+     * {% codeBlock src='speeddial/animation/index.md' %}{% endcodeBlock %}
      *
      * @default { effect: 'Fade', duration: 400, delay: 0 }
      */
@@ -468,6 +469,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     /**
      * Defines the template content for the speed dial item.
+     * {% codeBlock src='speeddial/itemTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default ''
      */
@@ -479,6 +481,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * The possible values are:
      * * Linear
      * * Radial
+     * {% codeBlock src='speeddial/mode/index.md' %}{% endcodeBlock %}
      *
      * @isenumeration true
      * @default SpeedDialMode.Linear
@@ -548,6 +551,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     /**
      * Provides the options to customize the speed dial action buttons when mode of speed dial is radial
+     * {% codeBlock src='speeddial/radialSettings/index.md' %}{% endcodeBlock %}
      *
      * @default { startAngle: null, endAngle: null, direction: 'Auto' }
      */

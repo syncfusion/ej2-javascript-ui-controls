@@ -19,7 +19,7 @@ import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessCla
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule, getFullPath } from '../common/index';
 import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs } from '@syncfusion/ej2-grids';
+import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs  } from '@syncfusion/ej2-grids';
 
 /**
  * DetailsView module
@@ -132,14 +132,14 @@ export class DetailsView {
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
                 selectionSettings: {
                     type: this.parent.allowMultiSelection ? 'Multiple' : 'Single',
-                    checkboxMode: 'ResetOnRowClick'
+                    checkboxMode: 'ResetOnRowClick',
+                    persistSelection: (this.parent.enableVirtualization) ? true : false
                 },
                 enableRtl: this.parent.enableRtl,
                 pageSettings: { pageSize: 20 },
-             // enableVirtualization: this.parent.virtualizationSettings.enable,
+                enableVirtualization: this.parent.enableVirtualization,
                 enablePersistence:  this.parent.enablePersistence,
-             // enableVirtualMaskRow: true,
-             // pageSettings: { pageSize: this.parent.virtualizationSettings.detailsViewItemsCount },
+                enableVirtualMaskRow: true,
                 sortSettings: { allowUnsort: false, columns: sortSettings },
                 columns: columns,
                 recordDoubleClick: this.DblClickEvents.bind(this),
@@ -149,6 +149,7 @@ export class DetailsView {
                 actionBegin: this.onActionBegin.bind(this),
                 headerCellInfo: this.onHeaderCellInfo.bind(this),
                 width: '100%',
+                height: (this.parent.enableVirtualization) ? this.getGridHeight() : 'auto',
                 beforeCopy: (args: BeforeCopyEventArgs) => { args.cancel = true; },
                 // eslint-disable-next-line
                 load: function (args: Object): void {
@@ -162,6 +163,21 @@ export class DetailsView {
             this.adjustHeight();
             this.emptyArgs = args;
         }
+    }
+
+    /**
+     * Gets the grid height.
+     * @returns The grid height.
+     * @private
+     */
+    private getGridHeight(): number {
+        // Get the content pane and breadcrumb bar elements
+        const pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
+        const bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
+        // The maximum height of the header is 36
+        const headerMaxHeight: number = 36;
+        // Calculate and return the grid height
+        return (pane.offsetHeight - bar.offsetHeight - headerMaxHeight);
     }
 
     private checkNameWidth(): void {
@@ -349,20 +365,17 @@ export class DetailsView {
     }
 
     private onBeforeDataBound(args: BeforeDataBoundArgs): void {
-       // if (!this.parent.virtualizationSettings.enable) {
         showSpinner(this.parent.element);
         // eslint-disable-next-line
-        const items: Object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
+        const items: Object[] = getSortedData(this.parent, (this.parent.enableVirtualization) ? args.result : this.gridObj.dataSource as Object[]);
         args.result = items;
-       // }
     }
     /* istanbul ignore next */
     private onDataBound(): void {
         this.createDragObj();
-        // if ((this.parent.selectedItems.length !== 0 && !this.parent.virtualizationSettings.enable) || 
-        //         ((this.parent.selectedItems.length !== 0 && this.parent.virtualizationSettings.enable && 
-        //         this.element.querySelector('.e-content').scrollTop == 0))) {
-        if (this.parent.selectedItems.length !== 0) {
+        if ((this.parent.selectedItems.length !== 0 && !this.parent.enableVirtualization) || 
+                ((this.parent.selectedItems.length !== 0 && this.parent.enableVirtualization && 
+                this.element.querySelector('.e-content').scrollTop == 0))) {
             this.selectRecords(this.parent.selectedItems);
         }
         if (this.isPasteOperation === true) {
@@ -478,6 +491,9 @@ export class DetailsView {
             // eslint-disable-next-line
             this.gridObj.dataSource = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         }
+        if (this.element.querySelector('.e-content').scrollTop !== 0) {
+            this.gridObj.freezeRefresh();
+        }
     }
 
     private onPropertyChanged(e: NotifyArgs): void {
@@ -555,6 +571,7 @@ export class DetailsView {
             showSpinner(this.parent.element);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
+            this.gridObj.freezeRefresh();
         }
         this.emptyArgs = args;
     }
@@ -640,6 +657,9 @@ export class DetailsView {
                     this.parent.isFiltered = false;
                 }
                 this.element.focus();
+                if (this.parent.enableVirtualization ) {
+                    (this.parent.element.querySelector('#' + this.parent.element.id + CLS.IMG_DIALOG_ID) as HTMLElement).focus();
+                }
             }
         });
     }
@@ -647,6 +667,7 @@ export class DetailsView {
     /* istanbul ignore next */
     private onLayoutChange(args: ReadArgs): void {
         if (this.parent.view === 'Details') {
+            if (this.parent.enableVirtualization) { this.parent.setProperties({ selectedItems: [] }, true); }
             if (!this.gridObj) {
                 this.render(args);
             } else {
@@ -1124,11 +1145,10 @@ export class DetailsView {
             }
         }
         const len: number = rows.length;
-        if (len > 0) {
-        // if (this.parent.virtualizationSettings.enable) {
-        //     this.parent.currentItemText = getValue('name', args.data);
-        // }
-        // else if (len > 0) {
+        if (this.parent.enableVirtualization) {
+            this.parent.currentItemText = getValue('name', args.data);
+        }
+        else if (len > 0) {
             // eslint-disable-next-line
             const data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
             this.parent.currentItemText = getValue('name', data);
@@ -1142,11 +1162,13 @@ export class DetailsView {
             }
         }
         this.parent.visitedItem = <Element>args.row;
+        if ((!this.parent.enableVirtualization) || (!args.isHeaderCheckboxClicked)) {
         if (this.parent.allowMultiSelection && !isNOU(item) && !isNOU(item.querySelector('.e-checkselect'))) {
             const checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
             checkItem.focus();
         }
         this.addFocus(this.gridObj.selectedRowIndex);
+        }
         if (!this.parent.isLayoutChange) {
             this.isInteracted = true;
         }

@@ -170,7 +170,12 @@ export class PeriodSelector {
                                 period.intervalType, this.control.endValue, period.interval
                             ).getTime();
                             this.control.startValue = (period.text && period.text.toLowerCase() === 'all') ? this.control.seriesXMin : this.control.startValue;
+                            this.control.endValue = (period.text && period.text.toLowerCase() === 'all') ? this.control.seriesXMax : this.control.endValue;
                             this.selectedIndex = (this.nodes.childNodes.length - buttons.length) + index;
+                            const slider: RangeSlider = this.control.rangeSlider;
+                            if (slider) {
+                                slider.selectedPeriod = period.text;
+                            }
                         }
                     });
                 }

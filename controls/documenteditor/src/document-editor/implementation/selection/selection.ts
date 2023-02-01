@@ -469,8 +469,9 @@ export class Selection {
     /** 
      * Gets the field information for the selected field. 
      * 
-     * @returns { FieldInfo } Returns `FieldInfo` if selection is in field, otherwise `undefined` 
-     * > Returns `undefined` for text, image, table, shape. For nested fields, it returns combined field code and result. 
+     * > Returns `undefined` for text, image, table, shape. For nested fields, it returns combined field code and result.
+     * 
+     * @returns { FieldInfo } Returns `FieldInfo` if selection is in field, otherwise `undefined`
      */
     public getFieldInfo(): FieldInfo {
         const field: FieldElementBox = this.getHyperlinkField(true);
@@ -2402,11 +2403,15 @@ export class Selection {
     public handleTabKey(isNavigateInCell: boolean, isShiftTab: boolean): void {
         const start: TextPosition = this.start;
         let isCursorAtParaStart : boolean = false;
+        let isCursorAtLineStart : boolean = false;
         if (isNullOrUndefined(start)) {
             return;
         }
-        if (start.currentWidget.isFirstLine() && start.offset === 0 && start.paragraph.paragraphFormat.listFormat.listId == -1) {
-            isCursorAtParaStart = true;
+        if (start.offset === 0 && start.paragraph.paragraphFormat.listFormat.listId == -1) {
+            if (start.currentWidget.isFirstLine()) {
+                isCursorAtParaStart = true;
+            }
+            isCursorAtLineStart = true;
         }
         if (start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
             //Perform tab navigation
@@ -2439,7 +2444,10 @@ export class Selection {
                 this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
             }
         } else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
-            if (isCursorAtParaStart) {
+            if (isCursorAtParaStart && start.paragraph.paragraphFormat.firstLineIndent < this.documentHelper.defaultTabWidth) {
+                this.documentHelper.owner.editorModule.onApplyParagraphFormat('firstLineIndent', this.documentHelper.defaultTabWidth, true, false);
+            }
+            else if (isCursorAtLineStart) {
                 if (isShiftTab) {
                     this.owner.editorModule.decreaseIndent();
                 }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 20.4.48 (2023-02-01)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I431116` - The "clipMode" property now works properly in pivot table row headers.
+
 ## 20.4.44 (2023-01-18)
 
 ### Pivot Table
